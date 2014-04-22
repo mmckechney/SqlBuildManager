@@ -1,0 +1,1418 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F54DD837-AD98-4A45-A709-1AA9E38E1A24}</ProjectGuid>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProvider>
+    </SccProvider>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>SqlBuildManager.ico</ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>Sql Build Manager</AssemblyName>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>SqlSync</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <SccAuxPath>
+    </SccAuxPath>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>none</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="Tfs.Utility\Tfs.Utility.csproj">
+      <Project>{CA980B42-69F5-4A66-A327-4977E18A6018}</Project>
+      <Name>Tfs.Utility</Name>
+    </ProjectReference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.84.0.0, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.9.0, Culture=neutral, PublicKeyToken=b32731d11ce58905">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\log4net\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.ConnectionInfo, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\SqlServer\Microsoft.SqlServer.ConnectionInfo.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.ServiceBrokerEnum, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\SqlServer\Microsoft.SqlServer.ServiceBrokerEnum.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Smo, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\SqlServer\Microsoft.SqlServer.Smo.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SmoExtended, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\SqlServer\Microsoft.SqlServer.SmoExtended.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SqlEnum, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\SqlServer\Microsoft.SqlServer.SqlEnum.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.TeamFoundation, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Tfs.Utility\lib\Version 10\Microsoft.TeamFoundation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.TeamFoundation.Client, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Tfs.Utility\lib\Version 10\Microsoft.TeamFoundation.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.TeamFoundation.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Tfs.Utility\lib\Version 10\Microsoft.TeamFoundation.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.TeamFoundation.VersionControl.Client, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Tfs.Utility\lib\Version 10\Microsoft.TeamFoundation.VersionControl.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Windows.Forms">
+      <Name>System.Windows.Forms</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <ProjectReference Include="SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj">
+      <Project>{15497702-FB61-4316-949B-A8ED2EEC694A}</Project>
+      <Name>SqlBuildManager.Enterprise</Name>
+    </ProjectReference>
+    <ProjectReference Include="SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj">
+      <Project>{FDC576E6-ACC8-41D4-8A56-8E6E00221306}</Project>
+      <Name>SqlBuildManager.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj">
+      <Project>{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}</Project>
+      <Name>SqlBuildManager.ScriptHandling</Name>
+    </ProjectReference>
+    <ProjectReference Include="SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
+      <Project>{641F4F7D-7730-4760-9454-7B9FCE0AA32C}</Project>
+      <Name>SqlBuildManager.ServiceClient</Name>
+    </ProjectReference>
+    <ProjectReference Include="SqlSync.Compare\SqlSync.Compare.csproj">
+      <Name>SqlSync.Compare</Name>
+      <Project>{053B2B2A-51CF-48CD-BD22-8DED7D292690}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+    <ProjectReference Include="SqlSync.Connection\SqlSync.Connection.csproj">
+      <Name>SqlSync.Connection</Name>
+      <Project>{F3F1EFFF-265E-4995-958B-9763F947E5C8}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+    <ProjectReference Include="SqlSync.Constants\SqlSync.Constants.csproj">
+      <Name>SqlSync.Constants</Name>
+      <Project>{D68699E6-B97C-4BC4-AD52-5F3C63DB24A7}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+    <ProjectReference Include="SqlSync.DbInformation\SqlSync.DbInformation.csproj">
+      <Project>{37A22666-195A-4CBB-A541-CFFBFB9D7905}</Project>
+      <Name>SqlSync.DbInformation</Name>
+    </ProjectReference>
+    <ProjectReference Include="SqlSync.ObjectScript\SqlSync.ObjectScript.csproj">
+      <Name>SqlSync.ObjectScript</Name>
+      <Project>{CD09B7DB-851B-4321-9E21-16948DA7FA07}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+    <ProjectReference Include="SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj">
+      <Project>{14DFBF75-98B1-4FBD-9B48-191D8AA55A6F}</Project>
+      <Name>SqlSync.ScrollBarSync</Name>
+    </ProjectReference>
+    <ProjectReference Include="SqlSync.SprocTest\SqlSync.SprocTest.csproj">
+      <Project>{0959BC04-AEFF-42F4-918B-0636D0239830}</Project>
+      <Name>SqlSync.SprocTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="SqlSync.SqlBuild\SqlSync.SqlBuild.csproj">
+      <Name>SqlSync.SqlBuild</Name>
+      <Project>{9B495B5F-1578-482B-8CF7-615B04D3AE2A}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+    <ProjectReference Include="SqlSync.TableScript\SqlSync.TableScript.csproj">
+      <Name>SqlSync.TableScript</Name>
+      <Project>{7902D9B0-FC03-42C7-9615-A2072D546EBD}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+    <ProjectReference Include="SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj">
+      <Name>SyntaxHighlightingTextBox</Name>
+      <Project>{93EC5C55-84BB-4FA4-8599-A6C85841E982}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AddNameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddNameForm.Designer.cs">
+      <DependentUpon>AddNameForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Analysis\AnalysisForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Analysis\ComparisonForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Analysis\ConfigurationCompare.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Analysis\ConfigurationCompare.Designer.cs">
+      <DependentUpon>ConfigurationCompare.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Analysis\DatabaseSizeSummaryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Analysis\DatabaseSizeSummaryForm.Designer.cs">
+      <DependentUpon>DatabaseSizeSummaryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Analysis\LinkedRichTextBoxes.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Analysis\LinkedRichTextBoxes.Designer.cs">
+      <DependentUpon>LinkedRichTextBoxes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Analysis\SimpleDiffForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Analysis\SimpleDiffForm.Designer.cs">
+      <DependentUpon>SimpleDiffForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Auditing\DataAuditForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AutoScript\AutoScripting.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AutoScript\AutoScriptingSelect.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AutoScript\AutoScriptMDI.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AutoScript\PostScriptingAction.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AutoScript\PostScriptingAction.Designer.cs">
+      <DependentUpon>PostScriptingAction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ColumnSorter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ConnectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\CodeReviewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CodeReviewControl.Designer.cs">
+      <DependentUpon>CodeReviewControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CodeReviewItemControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CodeReviewItemControl.Designer.cs">
+      <DependentUpon>CodeReviewItemControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\OAKControls\OAKListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\RemoteExecutionLogsContextMenuStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\RemoteExecutionLogsContextMenuStrip.Designer.cs">
+      <DependentUpon>RemoteExecutionLogsContextMenuStrip.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SetLoggingLevelMenuItem.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\SetLoggingLevelMenuItem.Designer.cs">
+      <DependentUpon>SetLoggingLevelMenuItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\DatabaseDropDown.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DataDump\DataDumpForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DataDump\DataExtractScriptCreateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DataDump\DataExtractScriptCreateForm.Designer.cs">
+      <DependentUpon>DataExtractScriptCreateForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FinderCtrl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FinderCtrl.Designer.cs">
+      <DependentUpon>FinderCtrl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ImpersonationManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MRUManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="NewVersion.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewVersion.Designer.cs">
+      <DependentUpon>NewVersion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectComparison.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ProcessHelper.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\BackoutPackageForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\BackoutPackageForm.Designer.cs">
+      <DependentUpon>BackoutPackageForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\BuildDescriptionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\BuildDescriptionForm.Designer.cs">
+      <DependentUpon>BuildDescriptionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\BuildValidationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\BuildValidationForm.Designer.cs">
+      <DependentUpon>BuildValidationForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\PackageSignatureForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\BuildHistoryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\BuildHistoryForm.Designer.cs">
+      <DependentUpon>BuildHistoryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\ExecutionDistributionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\ExecutionDistributionForm.Designer.cs">
+      <DependentUpon>ExecutionDistributionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\ExecutionServerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\ExecutionServerForm.Designer.cs">
+      <DependentUpon>ExecutionServerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\RemoteServiceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\RemoteServiceForm.Designer.cs">
+      <DependentUpon>RemoteServiceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ScriptDisplayForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\SettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\AddScriptTextForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\BulkAddConfirmation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\BulkAddListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\CodeTable\PopulateUpdates.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\CommandLineBuilderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\CommandLineBuilderForm.Designer.cs">
+      <DependentUpon>CommandLineBuilderForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Default Scripts\DefaultScriptMaintenanceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Default Scripts\DefaultScriptMaintenanceForm.Designer.cs">
+      <DependentUpon>DefaultScriptMaintenanceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\FindForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\GetTableNameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\GetTableNameForm.Designer.cs">
+      <DependentUpon>GetTableNameForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\ImportListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BuildHistory\LogFileHistoryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\ManualDatabaseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\ManualDatabaseForm.Designer.cs">
+      <DependentUpon>ManualDatabaseForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\AdHocQueryExecution.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\AdHocQueryExecution.Designer.cs">
+      <DependentUpon>AdHocQueryExecution.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\ConfigurationViaQueryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\ConfigurationViaQueryForm.Designer.cs">
+      <DependentUpon>ConfigurationViaQueryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbAutoSequence.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbAutoSequence.Designer.cs">
+      <DependentUpon>MultiDbAutoSequence.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbConfig.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbConfig.Designer.cs">
+      <DependentUpon>MultiDbConfig.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbOverrideSequence.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbOverrideSequence.Designer.cs">
+      <DependentUpon>MultiDbOverrideSequence.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbPage.Designer.cs">
+      <DependentUpon>MultiDbPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbRunForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\MultiDbRunForm.Designer.cs">
+      <DependentUpon>MultiDbRunForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\ObjectComparisonAnalysisForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\ObjectComparisonAnalysisForm.Designer.cs">
+      <DependentUpon>ObjectComparisonAnalysisForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\ObjectComparisonReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\ObjectComparisonReportForm.Designer.cs">
+      <DependentUpon>ObjectComparisonReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\StatusReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\MultiDb\StatusReportForm.Designer.cs">
+      <DependentUpon>StatusReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\NewBuildScriptForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Notification\NotificationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Notification\NotificationForm.Designer.cs">
+      <DependentUpon>NotificationForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Notification\TableWatchControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Notification\TableWatchControl.Designer.cs">
+      <DependentUpon>TableWatchControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Objects\AddObjectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Objects\ObjectUpdatesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BuildHistory\PastBuildReviewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Policy\PolicyForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Policy\PolicyForm.Designer.cs">
+      <DependentUpon>PolicyForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Policy\PolicyViolationControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Policy\PolicyViolationControl.Designer.cs">
+      <DependentUpon>PolicyViolationControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Policy\PolicyViolationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Policy\PolicyViolationForm.Designer.cs">
+      <DependentUpon>PolicyViolationForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\RebuildForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\RebuildForm.Designer.cs">
+      <DependentUpon>RebuildForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\ServerDistributionListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\ServerDistributionListForm.Designer.cs">
+      <DependentUpon>ServerDistributionListForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\ServerSetNamePrompt.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Remote\ServerSetNamePrompt.Designer.cs">
+      <DependentUpon>ServerSetNamePrompt.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\RenameScriptForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\RenameScriptForm.Designer.cs">
+      <DependentUpon>RenameScriptForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\ScriptConfigCtrl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\ScriptConfigCtrl.Designer.cs">
+      <DependentUpon>ScriptConfigCtrl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BuildHistory\ScriptRunHistoryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BuildHistory\ScriptRunResultsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\SimpleListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\SimpleListForm.Designer.cs">
+      <DependentUpon>SimpleListForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlBuild\SqlBuildForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\UtilityReplacement.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\UtilityReplacementUnit.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\Utility\UtilityRegistry.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SqlBuild\ZipTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\SQLConnect.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlSync.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SqlSync.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="SyncConstants.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SyncForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TableScript\CodeTableScriptingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TableScript\NewLookUpDatabaseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TableScript\NewLookUpForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TableScript\PopulateScriptDisplay.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TableScript\WhereClauseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TargetDatabaseOverrideCtrl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TargetDatabaseOverrideCtrl.Designer.cs">
+      <DependentUpon>TargetDatabaseOverrideCtrl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Test\OutputResultCtrl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Test\OutputResultCtrl.Designer.cs">
+      <DependentUpon>OutputResultCtrl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Test\ParameterCtrl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Test\ParameterCtrl.Designer.cs">
+      <DependentUpon>ParameterCtrl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Test\PasteScriptForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Test\PasteScriptForm.Designer.cs">
+      <DependentUpon>PasteScriptForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Test\ResultsViewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Test\ResultsViewForm.Designer.cs">
+      <DependentUpon>ResultsViewForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Test\SetDatabaseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Test\SetDatabaseForm.Designer.cs">
+      <DependentUpon>SetDatabaseForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Test\SprocTestConfigCtrl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Test\SprocTestConfigCtrl.Designer.cs">
+      <DependentUpon>SprocTestConfigCtrl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Test\SprocTestConfigForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Test\SprocTestConfigForm.Designer.cs">
+      <DependentUpon>SprocTestConfigForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Test\SprocTestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Test\SprocTestForm.Designer.cs">
+      <DependentUpon>SprocTestForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CutCopyPasteContextMenuStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\CutCopyPasteContextMenuStrip.Designer.cs">
+      <DependentUpon>CutCopyPasteContextMenuStrip.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utility.cs" />
+    <Compile Include="Validate\ObjectValidation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VersionData.cs" />
+    <Compile Include="Controls\ViewLogFileMenuItem.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ViewLogFileMenuItem.Designer.cs">
+      <DependentUpon>ViewLogFileMenuItem.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="AddNameForm.resx">
+      <DependentUpon>AddNameForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Analysis\AnalysisForm.resx">
+      <DependentUpon>AnalysisForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Analysis\ComparisonForm.resx">
+      <DependentUpon>ComparisonForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Analysis\ConfigurationCompare.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ConfigurationCompare.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Analysis\DatabaseSizeSummaryForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>DatabaseSizeSummaryForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Analysis\LinkedRichTextBoxes.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>LinkedRichTextBoxes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Analysis\SimpleDiffForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SimpleDiffForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auditing\DataAuditForm.resx">
+      <DependentUpon>DataAuditForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AutoScript\AutoScripting.resx">
+      <DependentUpon>AutoScripting.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AutoScript\AutoScriptingSelect.resx">
+      <DependentUpon>AutoScriptingSelect.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AutoScript\AutoScriptMDI.resx">
+      <DependentUpon>AutoScriptMDI.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AutoScript\PostScriptingAction.resx">
+      <DependentUpon>PostScriptingAction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConnectionForm.resx">
+      <DependentUpon>ConnectionForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\CodeReviewControl.resx">
+      <DependentUpon>CodeReviewControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\CodeReviewItemControl.resx">
+      <DependentUpon>CodeReviewItemControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RemoteExecutionLogsContextMenuStrip.resx">
+      <DependentUpon>RemoteExecutionLogsContextMenuStrip.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DataDump\DataDumpForm.resx">
+      <DependentUpon>DataDumpForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DataDump\DataExtractScriptCreateForm.resx">
+      <DependentUpon>DataExtractScriptCreateForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FinderCtrl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>FinderCtrl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewVersion.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>NewVersion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ObjectComparison.resx">
+      <DependentUpon>ObjectComparison.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\BackoutPackageForm.resx">
+      <DependentUpon>BackoutPackageForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\BuildDescriptionForm.resx">
+      <DependentUpon>BuildDescriptionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\BuildValidationForm.resx">
+      <DependentUpon>BuildValidationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\PackageSignatureForm.resx">
+      <DependentUpon>PackageSignatureForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Remote\BuildHistoryForm.resx">
+      <DependentUpon>BuildHistoryForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Remote\ExecutionDistributionForm.resx">
+      <DependentUpon>ExecutionDistributionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Remote\ExecutionServerForm.resx">
+      <DependentUpon>ExecutionServerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Remote\RemoteServiceForm.resx">
+      <DependentUpon>RemoteServiceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ScriptDisplayForm.resx">
+      <DependentUpon>ScriptDisplayForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\SettingsControl.resx">
+      <DependentUpon>SettingsControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\AddScriptTextForm.resx">
+      <DependentUpon>AddScriptTextForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\BulkAddConfirmation.resx">
+      <DependentUpon>BulkAddConfirmation.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\BulkAddListForm.resx">
+      <DependentUpon>BulkAddListForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\CodeTable\PopulateUpdates.resx">
+      <DependentUpon>PopulateUpdates.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\CommandLineBuilderForm.resx">
+      <DependentUpon>CommandLineBuilderForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Default Scripts\DefaultScriptMaintenanceForm.resx">
+      <DependentUpon>DefaultScriptMaintenanceForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\FindForm.resx">
+      <DependentUpon>FindForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\GetTableNameForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GetTableNameForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\ImportListForm.resx">
+      <DependentUpon>ImportListForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuildHistory\LogFileHistoryForm.resx">
+      <DependentUpon>LogFileHistoryForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\ManualDatabaseForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ManualDatabaseForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\AdHocQueryExecution.resx">
+      <DependentUpon>AdHocQueryExecution.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\ConfigurationViaQueryForm.resx">
+      <DependentUpon>ConfigurationViaQueryForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\MultiDbAutoSequence.resx">
+      <DependentUpon>MultiDbAutoSequence.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\MultiDbConfig.resx">
+      <DependentUpon>MultiDbConfig.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\MultiDbOverrideSequence.resx">
+      <DependentUpon>MultiDbOverrideSequence.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\MultiDbPage.resx">
+      <DependentUpon>MultiDbPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\MultiDbRunForm.resx">
+      <DependentUpon>MultiDbRunForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\ObjectComparisonAnalysisForm.resx">
+      <DependentUpon>ObjectComparisonAnalysisForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\ObjectComparisonReportForm.resx">
+      <DependentUpon>ObjectComparisonReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\MultiDb\StatusReportForm.resx">
+      <DependentUpon>StatusReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\NewBuildScriptForm.resx">
+      <DependentUpon>NewBuildScriptForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Notification\NotificationForm.resx">
+      <DependentUpon>NotificationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Notification\TableWatchControl.resx">
+      <DependentUpon>TableWatchControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Objects\AddObjectForm.resx">
+      <DependentUpon>AddObjectForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Objects\ObjectUpdatesForm.resx">
+      <DependentUpon>ObjectUpdatesForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuildHistory\PastBuildReviewForm.resx">
+      <DependentUpon>PastBuildReviewForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Policy\PolicyForm.resx">
+      <DependentUpon>PolicyForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Policy\PolicyViolationControl.resx">
+      <DependentUpon>PolicyViolationControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Policy\PolicyViolationForm.resx">
+      <DependentUpon>PolicyViolationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\RebuildForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>RebuildForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Remote\ServerDistributionListForm.resx">
+      <DependentUpon>ServerDistributionListForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\Remote\ServerSetNamePrompt.resx">
+      <DependentUpon>ServerSetNamePrompt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\RenameScriptForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>RenameScriptForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\ScriptConfigCtrl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ScriptConfigCtrl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuildHistory\ScriptRunHistoryForm.resx">
+      <DependentUpon>ScriptRunHistoryForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuildHistory\ScriptRunResultsForm.resx">
+      <DependentUpon>ScriptRunResultsForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\SimpleListForm.resx">
+      <DependentUpon>SimpleListForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\SqlBuildForm.resx">
+      <DependentUpon>SqlBuildForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\UtilityReplacement.resx">
+      <DependentUpon>UtilityReplacement.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\UtilityReplacementUnit.resx">
+      <DependentUpon>UtilityReplacementUnit.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SqlBuild\ZipTest.resx">
+      <DependentUpon>ZipTest.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\SQLConnect.resx">
+      <DependentUpon>SQLConnect.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SyncForm.resx">
+      <DependentUpon>SyncForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TableScript\CodeTableScriptingForm.resx">
+      <DependentUpon>CodeTableScriptingForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TableScript\NewLookUpDatabaseForm.resx">
+      <DependentUpon>NewLookUpDatabaseForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TableScript\NewLookUpForm.resx">
+      <DependentUpon>NewLookUpForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TableScript\PopulateScriptDisplay.resx">
+      <DependentUpon>PopulateScriptDisplay.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TableScript\WhereClauseForm.resx">
+      <DependentUpon>WhereClauseForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TargetDatabaseOverrideCtrl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>TargetDatabaseOverrideCtrl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Test\OutputResultCtrl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>OutputResultCtrl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Test\ParameterCtrl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ParameterCtrl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Test\PasteScriptForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>PasteScriptForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Test\ResultsViewForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ResultsViewForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Test\SetDatabaseForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SetDatabaseForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Test\SprocTestConfigCtrl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SprocTestConfigCtrl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Test\SprocTestConfigForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SprocTestConfigForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Test\SprocTestForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SprocTestForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Validate\ObjectValidation.resx">
+      <DependentUpon>ObjectValidation.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="Images\Database-analysis.xcf" />
+    <None Include="Images\Database-clock.xcf" />
+    <None Include="Images\Database-commandline.xcf" />
+    <None Include="Images\Database-flag.xcf" />
+    <None Include="Images\Database-query.xcf" />
+    <None Include="Images\Database-ribbon.xcf" />
+    <None Include="Images\Database-sbx.xcf" />
+    <None Include="Images\Database-test.xcf" />
+    <None Include="Images\msi-banner.xcf" />
+    <None Include="Images\multi-db.xcf" />
+    <None Include="Images\multi-dbQ.xcf" />
+    <None Include="Images\open-xml.xcf" />
+    <None Include="Images\SqlBuildIcon.psp" />
+    <None Include="Images\SqlBuildIcon2.psp" />
+    <None Include="Images\storedproc.xcf" />
+    <None Include="Properties\DataSources\SqlBuildManager.ServiceClient.Sbm.BuildService.BuildRecord.datasource" />
+    <None Include="Properties\DataSources\SqlBuildManager.ServiceClient.ServerConfigData.datasource" />
+    <None Include="Properties\DataSources\SqlSync.DbInformation.DatabaseItem.datasource" />
+    <None Include="Properties\DataSources\SqlSync.SqlBuild.DefaultScripts.DefaultScriptRegistry.datasource" />
+    <None Include="Properties\DataSources\SqlSync.SqlBuild.ScriptRunLog.datasource" />
+    <None Include="Properties\DataSources\SqlSync.SqlBuild.SqlSyncBuildData.datasource" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="SimpleDataClassExample.xsc">
+      <DependentUpon>SimpleDataClassExample.xsd</DependentUpon>
+    </None>
+    <None Include="SimpleDataClassExample.xss">
+      <DependentUpon>SimpleDataClassExample.xsd</DependentUpon>
+    </None>
+    <None Include="Sql Build Manager.exe.manifest" />
+    <None Include="SqlBuild\Default Scripts\Versions Table Update.sql" />
+    <None Include="SqlBuild\Utility\Add Constraint.sql" />
+    <None Include="SqlBuild\Utility\Add NonClustered Index.sql" />
+    <None Include="Images\Help-2.png" />
+    <Content Include="change_notes.html" />
+    <Content Include="change_notes.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="change_notes.xslt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Include="Images\Copy.png" />
+    <None Include="Images\Cut-2.png" />
+    <None Include="Images\checkout.PNG" />
+    <None Include="Images\Clock.png" />
+    <Content Include="Images\Database-commandline.ico" />
+    <Content Include="Images\Document-Protect.png" />
+    <None Include="Images\fingerprint1.jpg" />
+    <None Include="Images\fingerprint.jpg" />
+    <None Include="Images\Folder-Closed.png" />
+    <None Include="Images\exclamation.png" />
+    <None Include="Images\errorIcon.gif" />
+    <None Include="Images\exclamation-shield-frame.png" />
+    <None Include="Images\Exclamation-square.png" />
+    <Content Include="Images\gears.ico" />
+    <None Include="Images\Move To.png" />
+    <None Include="Images\MoveTo.png" />
+    <None Include="Images\Hand.png" />
+    <Content Include="Images\msi-banner.jpg" />
+    <Content Include="Images\multi-dbq.ico" />
+    <Content Include="Images\multi-dbQ.jpg" />
+    <None Include="Images\Receipt-Delete.png" />
+    <None Include="Images\Receipt-New.png" />
+    <None Include="Images\Receipt.png" />
+    <None Include="Images\Paste.png" />
+    <None Include="Images\Ok-blueSquare.png" />
+    <None Include="Images\Ok-greenSquare.png" />
+    <Content Include="Images\Save All.png" />
+    <Content Include="Images\Script-2.png" />
+    <None Include="Images\Server-Internet.png" />
+    <None Include="Images\ScriptCheck.png" />
+    <None Include="Resources\multiline.png" />
+    <None Include="Images\Signature.png" />
+    <None Include="Images\Server-News.png" />
+    <None Include="Resources\Question-Block-icon.png" />
+    <None Include="Resources\laser warning.jpg" />
+    <None Include="Resources\x_warning.bmp" />
+    <None Include="Resources\imagesCAFC9RVF.jpg" />
+    <None Include="Resources\imagesCAFC9RVF1.jpg" />
+    <None Include="Images\Wait.png" />
+    <Content Include="SqlBuild\Utility\Add Client Index.sql" />
+    <Content Include="SqlBuild\Utility\Add Client Primary Key.sql" />
+    <Content Include="SqlBuild\Utility\Add MyVitrix Index.sql" />
+    <Content Include="SqlBuild\Utility\Add MyVitrix Primary Key.sql" />
+    <Content Include="SqlBuild\Utility\ClientIndexSetting.sql" />
+    <Content Include="SqlBuild\Utility\MasterIndexSetting.sql" />
+    <Content Include="SqlBuild\Utility\Wrap Alter Index.sql" />
+    <None Include="SqlBuild\Utility\Grant Func Execute.sql" />
+    <None Include="SqlBuild\Utility\Revoke Func Execute.sql" />
+    <None Include="SqlBuild\Utility\Grant SP Execute.sql" />
+    <None Include="SqlBuild\Utility\Revoke SP Execute.sql" />
+    <None Include="SqlBuild\Utility\RoutineHeader.sql" />
+    <None Include="SqlBuild\Utility\Wrap Add Trigger.sql" />
+    <None Include="SqlBuild\Utility\Add Unique Index.sql" />
+    <None Include="SqlBuild\Utility\Disable Trigger.sql" />
+    <None Include="SqlBuild\Utility\Drop Default Constraint.sql" />
+    <None Include="SqlBuild\Utility\Drop Index.sql" />
+    <None Include="SqlBuild\Utility\Drop Trigger.sql" />
+    <None Include="SqlBuild\Utility\Enable Trigger.sql" />
+    <None Include="SqlBuild\Utility\UtilityRegistry.xsx">
+      <DependentUpon>UtilityRegistry.xsd</DependentUpon>
+    </None>
+    <None Include="SqlSync.xsc">
+      <DependentUpon>SqlSync.xsd</DependentUpon>
+    </None>
+    <None Include="SqlSync.xss">
+      <DependentUpon>SqlSync.xsd</DependentUpon>
+    </None>
+    <None Include="SqlSync.xsx">
+      <DependentUpon>SqlSync.xsd</DependentUpon>
+    </None>
+    <Content Include="App.ico" />
+    <Content Include="autoscript.ico" />
+    <Content Include="buildmanager.ico" />
+    <Content Include="button_ok.ico" />
+    <Content Include="caution.ico" />
+    <Content Include="Copy.ico" />
+    <None Include="Images\view.JPG" />
+    <None Include="Images\function.JPG" />
+    <None Include="Images\storedproc.JPG" />
+    <None Include="Images\table.JPG" />
+    <None Include="Images\find.JPG" />
+    <None Include="Images\findAgain.JPG" />
+    <None Include="Images\downarrow_white.gif" />
+    <None Include="Images\edit.JPG" />
+    <None Include="Images\deleteIcon.gif" />
+    <None Include="Images\Delete.gif" />
+    <None Include="Images\greenPlus.jpg" />
+    <None Include="Images\FindDown.bmp" />
+    <None Include="Images\FindUp.bmp" />
+    <None Include="Images\caution.jpg" />
+    <None Include="Images\About.png" />
+    <None Include="Images\Book-Open.png" />
+    <None Include="Images\Box-Open-2.png" />
+    <Content Include="Images\button_ok.png" />
+    <Content Include="Images\caution.png" />
+    <None Include="Images\Certificate.png" />
+    <Content Include="Images\checkDB.ico" />
+    <None Include="Images\Help.png" />
+    <None Include="Images\Export.png" />
+    <None Include="Images\History.png" />
+    <None Include="Images\Debug-Watch.png" />
+    <None Include="Images\Import.png" />
+    <None Include="Images\DB-Refresh.png" />
+    <None Include="Images\DB-Add.png" />
+    <None Include="Images\db-next.png" />
+    <None Include="Images\db-edit-green.png" />
+    <Content Include="Images\checkDB.jpg" />
+    <Content Include="Images\checkDB.png" />
+    <None Include="Images\Database-Search.png" />
+    <None Include="Images\Database-Open.png" />
+    <None Include="Images\Database-Schema.png" />
+    <None Include="Images\Columns-2.png" />
+    <Content Include="Images\Database-analysis.ico" />
+    <Content Include="Images\Database-analysis.png" />
+    <Content Include="Images\Database-clock.ico" />
+    <Content Include="Images\Database-clock.png" />
+    <None Include="Images\Database-commandline.png" />
+    <Content Include="Images\Database-flag.ico" />
+    <Content Include="Images\Database-flag.png" />
+    <Content Include="Images\Database-Open.ico" />
+    <Content Include="Images\Database-query.ico" />
+    <Content Include="Images\Database-query.png" />
+    <Content Include="Images\Database-ribbon.ico" />
+    <Content Include="Images\Database-ribbon.png" />
+    <Content Include="Images\Database-sbx.ico" />
+    <Content Include="Images\Database-sbx.png" />
+    <Content Include="Images\Database-test.ico" />
+    <Content Include="Images\Database-test.png" />
+    <Content Include="Images\database.ico" />
+    <None Include="Images\Insert.png" />
+    <None Include="Images\Datasheet-View.png" />
+    <None Include="Images\Execute.png" />
+    <None Include="Images\Delete.png" />
+    <Content Include="Images\Datasheet-View.ico" />
+    <None Include="Images\Function-2.png" />
+    <None Include="Images\Key.png" />
+    <Content Include="Images\left.JPG" />
+    <None Include="Images\openFile.JPG" />
+    <None Include="Images\newText.JPG" />
+    <Content Include="Images\leftarrow_white.GIF" />
+    <None Include="Images\lock.jpg" />
+    <Content Include="Images\lock.png" />
+    <Content Include="Images\move-left.GIF" />
+    <Content Include="Images\move-left.JPG" />
+    <None Include="Images\ok.jpg" />
+    <None Include="Images\question.png" />
+    <None Include="Images\Open.png" />
+    <None Include="Images\New.png" />
+    <None Include="Images\Numbering-2.png" />
+    <None Include="Images\Procedure.png" />
+    <None Include="Images\Note Book.png" />
+    <None Include="Images\open-xml.png" />
+    <None Include="Images\multi-db.png" />
+    <Content Include="Images\multi-db.ico" />
+    <Content Include="Images\open-xml.ico" />
+    <Content Include="Images\Query.ico" />
+    <Content Include="Images\Query.png" />
+    <Content Include="Images\question.ico" />
+    <Content Include="Images\question.jpg" />
+    <Content Include="Images\refresh.JPG" />
+    <Content Include="Images\remove.JPG" />
+    <None Include="Images\Rename.png" />
+    <None Include="Images\Report-2.png" />
+    <Content Include="Images\resolve.JPG" />
+    <None Include="Images\run.JPG" />
+    <None Include="Images\rollback.JPG" />
+    <None Include="Images\right.JPG" />
+    <Content Include="Images\rightarrow_white.GIF" />
+    <None Include="Images\Save.png" />
+    <Content Include="Images\savefile.ico" />
+    <None Include="Images\server.jpg" />
+    <None Include="Images\Script-Delete.png" />
+    <None Include="Images\Script-New.png" />
+    <None Include="Images\Script-Edit.png" />
+    <None Include="Images\Script-Load.png" />
+    <None Include="Images\Search.png" />
+    <None Include="Images\Search-Next.png" />
+    <None Include="Images\Server1.png" />
+    <None Include="Images\Search-Previous.png" />
+    <Content Include="Images\server.png" />
+    <None Include="Images\Sort-Descending.png" />
+    <Content Include="Images\SqlBuildIcon.jpg" />
+    <Content Include="Images\SqlBuildManager.ico" />
+    <None Include="Images\uparrow_white.gif" />
+    <None Include="Images\Update.png" />
+    <None Include="Images\Table.png" />
+    <None Include="Images\Wizard.png" />
+    <None Include="Images\Table-Relationships.png" />
+    <None Include="Images\Tools.png" />
+    <Content Include="Images\SqlBuildManager.png" />
+    <None Include="Images\storedproc.png" />
+    <None Include="Images\Tick.png" />
+    <None Include="Images\Table-Import.png" />
+    <None Include="Images\Unlock.png" />
+    <Content Include="lock.ico" />
+    <Content Include="off_server.ico" />
+    <Content Include="Paste.ico" />
+    <Content Include="SaveAll.ico" />
+    <Content Include="savefile.ico" />
+    <Content Include="SqlBuildManager.ico" />
+    <Content Include="SqlBuild\Default Scripts\DefaultScriptRegistry.xml">
+    </Content>
+    <Content Include="SqlBuild\Default Scripts\Grant Database Permissions.sql">
+    </Content>
+    <Content Include="SqlBuild\Utility\Add Column.sql" />
+    <Content Include="SqlBuild\Utility\Add Foreign Key.sql" />
+    <Content Include="SqlBuild\Utility\WITH NOLOCK.txt" />
+    <Content Include="SqlBuild\Utility\Wrap Add Function.sql" />
+    <Content Include="SqlBuild\Utility\Add Index.sql" />
+    <Content Include="SqlBuild\Utility\Wrap Add Index.sql" />
+    <Content Include="SqlBuild\Utility\Wrap Add Primary Key.sql" />
+    <Content Include="SqlBuild\Utility\Wrap Add Stat.sql" />
+    <Content Include="SqlBuild\Utility\Wrap Stored Procedure.sql" />
+    <Content Include="SqlBuild\Utility\Wrap Add Table.sql" />
+    <Content Include="SqlBuild\Utility\ALTER COLUMN.sql" />
+    <Content Include="SqlBuild\Utility\DROP COLUMN.sql" />
+    <Content Include="SqlBuild\Utility\Drop Constraint.sql" />
+    <Content Include="SqlBuild\Utility\Drop Foreign Key.sql" />
+    <Content Include="SqlBuild\Utility\Drop Function.sql" />
+    <Content Include="SqlBuild\Utility\Drop Stored Procedure.sql" />
+    <Content Include="SqlBuild\Utility\Drop Table.sql" />
+    <Content Include="SqlBuild\Utility\EnforceForeignKeys.sql" />
+    <Content Include="SqlBuild\Utility\Grant Database Permissions.sql" />
+    <Content Include="SqlBuild\Utility\If Exists Column.sql" />
+    <Content Include="SqlBuild\Utility\If Not Exists Column.sql" />
+    <Content Include="SqlBuild\Utility\If Not Exists Object.sql" />
+    <Content Include="SqlBuild\Utility\IfExists.sql" />
+    <Content Include="SqlBuild\Utility\RemoveTableForeignKeys.sql" />
+    <Content Include="SqlBuild\Utility\Rename Column.sql" />
+    <Content Include="SqlBuild\Utility\UtilityRegistry.xml" />
+    <Content Include="SqlBuild\Utility\UtilityRegistry.xsd">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="SqlBuild\Utility\WITH NOCHECK.txt" />
+    <Content Include="SqlSync.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>SqlSync.Designer.cs</LastGenOutput>
+    </Content>
+    <Content Include="SwapViews.ico" />
+    <Content Include="SyntaxColor.ico" />
+    <Content Include="tablescript.ico" />
+    <Content Include="Validate\warning.JPG" />
+    <Content Include="Validate\warning3.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferences Include="Web References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\Debug\Manual\" />
+    <Folder Include="bin\Debug\Utility\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>%25SystemRoot%25\system32\xcopy "$(ProjectDir)SqlBuild\Utility" "$(TargetDir)Utility" /I /Y /D
+%25SystemRoot%25\system32\xcopy "$(ProjectDir)SqlBuild\Default Scripts" "$(TargetDir)Default Scripts" /I /Y /D
+</PreBuildEvent>
+    <PostBuildEvent>%25SystemRoot%25\system32\xcopy "$(ProjectDir)SqlBuildManager Manual\HTML" "$(TargetDir)Manual" /I /Y /D /S</PostBuildEvent>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,489 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Font Name="Tahoma" Size="8.25" />
+  <Class Name="SqlSync.About" Collapsed="true">
+    <Position X="3.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>About.cs</FileName>
+      <HashCode>AAgAACAAAKAAABAAgACACAACAACAAIACoCAAAEABAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.AuditForm" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="10.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Auditing\AuditForm.cs</FileName>
+      <HashCode>RDABjIj9BqgpoH5ggN61RNsWayY2ENExcShRHYQIJPI=</HashCode>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SqlSync.AutoScripting" Collapsed="true">
+    <Position X="12" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>AutoScript\AutoScripting.cs</FileName>
+      <HashCode>AAACAAAEwCAAIBAABACAAQDCgxACgQACgIAAAQKgAkA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.MessageUpdateEventArgs" Collapsed="true">
+    <Position X="13.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>AutoScript\AutoScripting.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.AutoScriptingSelect" Collapsed="true">
+    <Position X="13.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>AutoScript\AutoScriptingSelect.cs</FileName>
+      <HashCode>AAACAABAACAAEBAAAACAAAACAwIIAAAAAEAAAAACAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.ColumnSorter" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ColumnSorter.cs</FileName>
+      <HashCode>AAAAAgAAAAAAAAEAAAAQAAAAEAAAAAACAAhCAAAAAgA=</HashCode>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SqlSync.ConnectionForm" Collapsed="true">
+    <Position X="10.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ConnectionForm.cs</FileName>
+      <HashCode>AAQEEAAkACAAAAAAgACAAEACAAAAAAAAEBAAAAAFAAg=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.ImpersonationManager" Collapsed="true">
+    <Position X="5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ImpersonationManager.cs</FileName>
+      <HashCode>IAAAAAAAAAQAAAAAAAAAACAAAAIAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.ObjectComparison" Collapsed="true">
+    <Position X="8.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ObjectComparison.cs</FileName>
+      <HashCode>AAJACAA0SCQADKIAEACRAAICAAggAAABIIAAAgQEAEA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.ProcessHelper" Collapsed="true">
+    <Position X="3.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ProcessHelper.cs</FileName>
+      <HashCode>AAAAAAAAACAAAQAAAAEoAGAAKAAgAQAABAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Program" Collapsed="true">
+    <Position X="5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Program.cs</FileName>
+      <HashCode>AAgAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAABAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.ScriptDisplayForm" Collapsed="true">
+    <Position X="13.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ScriptDisplayForm.cs</FileName>
+      <HashCode>AAAAAAAAACAAAAAAAACAAAACAAAAAAAAAAAQAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SettingsControl" Collapsed="true">
+    <Position X="10.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SettingsControl.cs</FileName>
+      <HashCode>EAAAABCBACAAABABACCFCCBCiAAgAIAAAAAAAwAAAoA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SQLConnect" Collapsed="true">
+    <Position X="3.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SQLConnect.cs</FileName>
+      <HashCode>AAwAABEAAGAQSBASACiAAHgCAAACBAAGEAgBQACGABA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.ServerConnectedEventArgs" Collapsed="true">
+    <Position X="6.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SQLConnect.cs</FileName>
+      <HashCode>AAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.ServersEnumeratedEventArgs" Collapsed="true">
+    <Position X="8.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SQLConnect.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlSyncConfig" Collapsed="true">
+    <Position X="5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAwAAAAJABAAAQAIAAAgCQBgAEAAAAgEYBBA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SyncForm" Collapsed="true">
+    <Position X="12" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SyncForm.cs</FileName>
+      <HashCode>AgZBCBgHQiIAPDEAng6RAEMHAQkEECkBSAhgQnIQAEI=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.LookUpTableForm" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="12" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TableScript\LookUpTableForm.cs</FileName>
+      <HashCode>BHELiKj9BCizkFVOwN691NsGo091ENAyUShQGYQoJPo=</HashCode>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SqlSync.SqlBuildManagerFileExportEventArgs" Collapsed="true">
+    <Position X="15.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TableScript\LookUpTableForm.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.NewLookUpDatabaseForm" Collapsed="true">
+    <Position X="5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TableScript\NewLookUpDatabaseForm.cs</FileName>
+      <HashCode>AAIAAAAAACAAAAQAAACAAAAKAgAYAAAAAIAAAAAEAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.NewLookUpForm" Collapsed="true">
+    <Position X="6.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TableScript\NewLookUpForm.cs</FileName>
+      <HashCode>AAAAAAFAACAAAACAAAiAAAAGAgAYAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.PopulateScriptDisplay" Collapsed="true">
+    <Position X="13.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TableScript\PopulateScriptDisplay.cs</FileName>
+      <HashCode>BBAQAAAAAimIAhAIAACIAEQCIACMggAAAAAAAAAQACA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.WhereClauseForm" Collapsed="true">
+    <Position X="5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TableScript\WhereClauseForm.cs</FileName>
+      <HashCode>AEAIABAACCAAABAQAACAQACCAiA4AAABAEARAAAAAAg=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Analysis.AnalysisForm" Collapsed="true">
+    <Position X="8.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Analysis\AnalysisForm.cs</FileName>
+      <HashCode>AAAAAgAEACAAAAAAgACAAAACAAAAEIA/QAEAAAAKAEA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Analysis.ComparisonForm" Collapsed="true">
+    <Position X="8.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Analysis\ComparisonForm.cs</FileName>
+      <HashCode>SAAAQUJokCAKKnQgQgDAQJGSgwCDggAAQQEAYQAAIgE=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Analysis.DatabaseSizeSummaryForm" Collapsed="true">
+    <Position X="12" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Analysis\DatabaseSizeSummaryForm.cs</FileName>
+      <HashCode>ABABAABAACgQEAAAgQCRABACAAgAEAAAQAAAAAIAAAE=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Analysis.LinkedRichTextBoxes" Collapsed="true">
+    <Position X="8.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Analysis\LinkedRichTextBoxes.cs</FileName>
+      <HashCode>QQAAQEAAQDAgBAARAACCAAAKQBAAAQAAAAJAEAACwQA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Analysis.SimpleDiffForm" Collapsed="true">
+    <Position X="12" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Analysis\SimpleDiffForm.cs</FileName>
+      <HashCode>AAAAACAAACAgACQAAACAAAACAAAAAAgAAAAAAAIAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.AutoScript.AutoScriptMDI" Collapsed="true">
+    <Position X="15.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>AutoScript\AutoScriptMDI.cs</FileName>
+      <HashCode>IAACAAgEAEAAABAAAgAQAAACAAEEGABAAAAAAgAIAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.AutoScript.PostScriptingAction" Collapsed="true">
+    <Position X="15.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>AutoScript\PostScriptingAction.cs</FileName>
+      <HashCode>AAAAAAAAACAAAAAAAACAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.DataDump.DataDumpForm" Collapsed="true">
+    <Position X="13.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>DataDump\DataDumpForm.cs</FileName>
+      <HashCode>AAABCEBEACJAgBAAgIqZAJDiA4Ag0gAQUAECIIAAA0A=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.MRU.MRUManager" Collapsed="true">
+    <Position X="15.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>MRUManager.cs</FileName>
+      <HashCode>RIohIQAAAAYAAQAhAAAABAAAAACgAAABQAAgAAIAAAI=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Properties.Resources" Collapsed="true">
+    <Position X="10.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAJAAQAABEAgABEgAAQQQIAAAACQAAAgAAiIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.AddScriptTextForm" Collapsed="true">
+    <Position X="6.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\AddScriptTextForm.cs</FileName>
+      <HashCode>tQwAAgERACoAUpAUAAChRIgSEiIQCkQEKCgAASCiADA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.BulkAddConfirmation" Collapsed="true">
+    <Position X="3.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\BulkAddConfirmation.cs</FileName>
+      <HashCode>AAAAAAgABCCAAFAgAAKAAABCAwAYAAAAAGACQAJAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.BulkAddListForm" Collapsed="true">
+    <Position X="5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\BulkAddListForm.cs</FileName>
+      <HashCode>AAAAAAgIACAAABEgAACAAEACAAAAgAAAAAAAAAAAAAI=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.FindForm" Collapsed="true">
+    <Position X="3.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\FindForm.cs</FileName>
+      <HashCode>AAgAAAAAACCAABEAAACAAMACAAAAAEAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.ImportListForm" Collapsed="true">
+    <Position X="6.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\ImportListForm.cs</FileName>
+      <HashCode>EAAICAAAACCAABAAABDIAADGBwAYAAAAAGAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.LogFileHistoryForm" Collapsed="true">
+    <Position X="10.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\LogFileHistoryForm.cs</FileName>
+      <HashCode>BAAACYQEICUAAAAEAACAAIACAwAoEAADAAAAAAQAgAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.NewBuildScriptForm" Collapsed="true">
+    <Position X="3.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\NewBuildScriptForm.cs</FileName>
+      <HashCode>EAAAGAABACBiQBAEIACBUCACYQoZBIAAIEAQARBrQAg=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.PastBuildReviewForm" Collapsed="true">
+    <Position X="12" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\PastBuildReviewForm.cs</FileName>
+      <HashCode>AAAAAwAAACAACIAABACAAAACCAAAIIA/YAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.RebuildForm" Collapsed="true">
+    <Position X="6.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\RebuildForm.cs</FileName>
+      <HashCode>AQgBAQAAECAACAAgiACBQGDCAwACgAAAQAAYAACAAAE=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.ScriptConfigCtrl" Collapsed="true">
+    <Position X="12" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\ScriptConfigCtrl.cs</FileName>
+      <HashCode>IQQQAgARiCBAHBgEKACBGACCQQIAAAEAACAUgBACQAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.ScriptRunHistoryForm" Collapsed="true">
+    <Position X="3.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\ScriptRunHistoryForm.cs</FileName>
+      <HashCode>AAgAAgAAACAACBAAhACBAACCGAAAAIA4IAAAAQAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.ScriptRunResultsForm" Collapsed="true">
+    <Position X="5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\ScriptRunResultsForm.cs</FileName>
+      <HashCode>oAAAACAAACAYABAAAACAAAAKAAAAAAAAAAgAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.SqlBuildForm" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="13.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\SqlBuildForm.cs</FileName>
+      <HashCode>9p2fe6/9dLHF3r71F8vZc///u/0Hv1vP86y3VaOrGnk=</HashCode>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SqlSync.SqlBuild.UtilityReplacement" Collapsed="true">
+    <Position X="15.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\UtilityReplacement.cs</FileName>
+      <HashCode>AAAAAAAAAKAAAJAUAgCAgYCSACAAQAEAAAAAAUAAAEE=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.UtilityReplacementUnit" Collapsed="true">
+    <Position X="3.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\UtilityReplacementUnit.cs</FileName>
+      <HashCode>AAAAAAAVACAAAAQAAgCAAAACAAAAQIAAAACiCAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.ZipTest" Collapsed="true">
+    <Position X="6.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\ZipTest.cs</FileName>
+      <HashCode>ADAAAAAAACAABBAAAACQAgECAAAYkAAAEGAQAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.CodeTable.PopulateUpdates" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\CodeTable\PopulateUpdates.cs</FileName>
+      <HashCode>AAABACAABCAAAAEQAACAAEDCAwEBAAAAAAABAAAAAQI=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.Objects.AddObjectForm" Collapsed="true">
+    <Position X="5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\Objects\AddObjectForm.cs</FileName>
+      <HashCode>AAAAAACAFCAAACGRoACZAEDCEgAAAAAQQAAAACAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.Objects.ObjectUpdatesForm" Collapsed="true">
+    <Position X="0.5" Y="2" Width="1.75" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\Objects\ObjectUpdatesForm.cs</FileName>
+      <HashCode>AAABAAAABCAAAAAAAACAAEAiAAAAAAAAAAAAAAAAAQI=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.Utility.SqlSyncUtilityRegistry" Collapsed="true">
+    <Position X="6.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\Utility\UtilityRegistry.cs</FileName>
+      <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.Utility.UtilityQuery" Collapsed="true">
+    <Position X="13.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\Utility\UtilityRegistry.cs</FileName>
+      <HashCode>AAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.Utility.SubMenu" Collapsed="true">
+    <Position X="8.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\Utility\UtilityRegistry.cs</FileName>
+      <HashCode>AAAAAAAAAAAACAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.SqlBuild.Utility.Replace" Collapsed="true">
+    <Position X="8.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\Utility\UtilityRegistry.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAACAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Constants.DropDownConstants" Collapsed="true">
+    <Position X="15.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SyncConstants.cs</FileName>
+      <HashCode>AAAAAAAAAEAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Constants.SwapLinkText" Collapsed="true">
+    <Position X="10.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SyncConstants.cs</FileName>
+      <HashCode>AAAABAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Constants.ScriptingType" Collapsed="true">
+    <Position X="15.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SyncConstants.cs</FileName>
+      <HashCode>AAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SqlSync.Validate.ObjectValidation" Collapsed="true">
+    <Position X="10.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Validate\ObjectValidation.cs</FileName>
+      <HashCode>wAgBCIBEAKAACBsAgKGRAFDCIyQCkAAAQAUAIABAAEA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="SqlSync.MRU.IMRUClient" Collapsed="true">
+    <Position X="3.25" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>MRUManager.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="SqlSync.SECURITY_IMPERSONATION_LEVEL" Collapsed="true">
+    <Position X="3.25" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ImpersonationManager.cs</FileName>
+      <HashCode>AAgAAAAAAAAAAIAAACAAAAAAAAAAAAAAAAAAAAACAAA=</HashCode>
+    </TypeIdentifier>
+  </Enum>
+  <Delegate Name="SqlSync.ServerChangedEventHandler" Collapsed="true">
+    <Position X="3.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SettingsControl.cs</FileName>
+      <HashCode>AAAAAAAAAAAAABAAAAAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="SqlSync.ServerConnectedEventHandler" Collapsed="true">
+    <Position X="5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SQLConnect.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAgA=</HashCode>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="SqlSync.ServersEnumeratedEventHandler" Collapsed="true">
+    <Position X="6.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SQLConnect.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAIAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="SqlSync.SqlBuildManagerFileExportHandler" Collapsed="true">
+    <Position X="10.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TableScript\LookUpTableForm.cs</FileName>
+      <HashCode>AAAAAAAAAAEAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="SqlSync.SqlBuild.UnattendedProcessingCompleteEventHandler" Collapsed="true">
+    <Position X="12" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SqlBuild\SqlBuildForm.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="SqlSync.Validate.SetWarningVisability" Collapsed="true">
+    <Position X="8.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Validate\ObjectValidation.cs</FileName>
+      <HashCode>AAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Delegate>
+</ClassDiagram>

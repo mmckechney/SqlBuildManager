@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SimpleDataClass generateLanguage="cs" xmlns="http://McKechney/SimpleDataClass.xsd">
+  <namespace>SqlSync.SqlBuild</namespace>
+  <class_name>CommittedBuildData</class_name>
+  <using_namespace>
+    <using>System.Data</using>
+    <using>System.Xml</using>
+  </using_namespace>
+  <properties>
+    <property>
+      <public_name>BuildFileName</public_name>
+      <default_value>String.Empty</default_value>
+      <data_type>String</data_type>
+      <source_column>BuildFileName</source_column>
+    </property>
+    <property>
+      <public_name>ScriptCount</public_name>
+      <default_value></default_value>
+      <data_type>Int32</data_type>
+      <source_column>ScriptCount</source_column>
+    </property>
+    <property>
+      <public_name>CommitDate</public_name>
+      <default_value></default_value>
+      <data_type>DateTime</data_type>
+      <source_column>commitDate</source_column>
+    </property>
+    <property>
+      <public_name>Database</public_name>
+      <default_value></default_value>
+      <data_type>string</data_type>
+      <source_column>database</source_column>
+    </property>
+  </properties>
+</SimpleDataClass>
+

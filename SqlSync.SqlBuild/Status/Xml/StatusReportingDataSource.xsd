@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="unqualified">
+	<xs:element name="ServerStatusData">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" name="Server">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Databases">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element maxOccurs="unbounded" name="Database">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="ArrayOfScriptStatusData">
+														<xs:complexType>
+															<xs:sequence>
+																<xs:element maxOccurs="unbounded" name="ScriptStatusData">
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="ScriptName" type="xs:string" />
+																			<xs:element name="ScriptId" type="xs:string" />
+																			<xs:element name="ScriptStatus" type="xs:string" />
+																			<xs:element name="ServerName" type="xs:string" />
+																			<xs:element name="DatabaseName" type="xs:string" />
+																			<xs:element name="LastCommitDate" type="xs:dateTime" />
+																			<xs:element name="ServerChangeDate" type="xs:dateTime" />
+																		</xs:sequence>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+												<xs:attribute name="Name" type="xs:string" use="required" />
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="Name" type="xs:string" use="required" />
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xsd:schema>

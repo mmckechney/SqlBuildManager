@@ -1,0 +1,6 @@
+${Title: Add Table <<Table Name>>}
+IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '<<Table Name>>' AND TABLE_SCHEMA = '<<Table Schema>>')
+BEGIN
+	<<INSERT>>
+END
+GO

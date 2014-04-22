@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<xs:schema id="SqlSyncConfig" targetNamespace="http://schemas.mckechney.com/SqlSyncConfiguration.xsd" xmlns:mstns="http://schemas.mckechney.com/SqlSyncConfiguration.xsd" xmlns="http://schemas.mckechney.com/SqlSyncConfiguration.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+    <xs:element name="SqlSyncConfig" msdata:IsDataSet="true" msdata:EnforceConstraints="False">
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element name="RecentDatabase">
+                    <xs:complexType>
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" msprop:nullValue="_empty" />
+                        <xs:attribute name="LastAccessed" type="xs:dateTime" msprop:nullValue="_throw" form="unqualified" />
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="LastProgramUpdateCheck">
+                <xs:complexType>
+                  <xs:attribute name="CheckTime" form="unqualified" type="xs:dateTime"  />
+                </xs:complexType>
+              </xs:element>
+                <xs:element name="LastDirectory" maxOccurs="unbounded" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute name="ComponentName" form="unqualified" type="xs:string" msprop:nullValue="_empty" />
+                        <xs:attribute name="Directory" form="unqualified" type="xs:string" msprop:nullValue="_empty" />
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

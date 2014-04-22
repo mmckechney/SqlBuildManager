@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfBuildRecord xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <BuildRecord>
+    <RequestedBy>myuserid</RequestedBy>
+    <RootLogPath>C:\temp\run1</RootLogPath>
+    <ReturnValue>Successful</ReturnValue>
+    <BuildPackageName>BuildPackage1.sbm</BuildPackageName>
+    <SubmissionDate>2010-10-26T16:02:52.6049519-04:00</SubmissionDate>
+  </BuildRecord>
+  <BuildRecord>
+    <RequestedBy>myuserid</RequestedBy>
+    <RootLogPath>C:\temp\run2</RootLogPath>
+    <ReturnValue>FinishingWithErrors</ReturnValue>
+    <BuildPackageName>BuildPackage2.sbm</BuildPackageName>
+    <SubmissionDate>2010-10-26T16:02:58.8535519-04:00</SubmissionDate>
+  </BuildRecord>
+  <BuildRecord>
+    <RequestedBy>myuserid</RequestedBy>
+    <RootLogPath>C:\temp\run3</RootLogPath>
+    <ReturnValue>FinishingWithErrors</ReturnValue>
+    <BuildPackageName>BuildPackage3.sbm</BuildPackageName>
+    <SubmissionDate>2010-10-26T16:03:18.9271794-04:00</SubmissionDate>
+  </BuildRecord>
+  <BuildRecord>
+    <RequestedBy>myuseridAA</RequestedBy>
+    <RootLogPath>C:\temp\run4</RootLogPath>
+    <ReturnValue>FinishingWithErrors</ReturnValue>
+    <BuildPackageName>BuildPackage4.sbm</BuildPackageName>
+    <SubmissionDate>2010-10-26T16:21:31.5305365-04:00</SubmissionDate>
+  </BuildRecord>
+ </ArrayOfBuildRecord>

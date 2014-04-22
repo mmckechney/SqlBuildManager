@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<xs:schema id="AutoScriptList" targetNamespace="http://www.mckechney.com/AutoScriptList.xsd"
+	xmlns:mstns="http://www.mckechney.com/AutoScriptList.xsd" xmlns="http://www.mckechney.com/AutoScriptList.xsd"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+	attributeFormDefault="qualified" elementFormDefault="qualified">
+	<xs:element name="AutoScriptList" msdata:IsDataSet="true" msdata:EnforceConstraints="False">
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element name="Registration">
+					<xs:complexType>
+						<xs:attribute name="File" form="unqualified" type="xs:string" />
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
+<!-- xsd.exe /c /n:SqlSync.ObjectScript AutoScriptList.xsd -->

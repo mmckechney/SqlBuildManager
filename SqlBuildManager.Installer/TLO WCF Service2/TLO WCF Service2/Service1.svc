@@ -1,0 +1,2 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Factory="Paychex.Tlo.UnityExtensions.UnityServiceHostFactory" Service="TLO_WCF_Service2.Service1" CodeBehind="Service1.svc.cs" %>
+

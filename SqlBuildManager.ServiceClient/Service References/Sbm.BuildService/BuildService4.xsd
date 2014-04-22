@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/SqlBuildManager.Services.History" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Services.History" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://localhost:33273/BuildService.svc?xsd=xsd5" namespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Interfaces.Console" />
+  <xs:complexType name="ArrayOfBuildRecord">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="BuildRecord" nillable="true" type="tns:BuildRecord" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfBuildRecord" nillable="true" type="tns:ArrayOfBuildRecord" />
+  <xs:complexType name="BuildRecord">
+    <xs:sequence>
+      <xs:element name="buildPackageName" nillable="true" type="xs:string" />
+      <xs:element name="requestedBy" nillable="true" type="xs:string" />
+      <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/SqlBuildManager.Interfaces.Console" name="returnValue" type="q1:ExecutionReturn" />
+      <xs:element name="rootLogPath" nillable="true" type="xs:string" />
+      <xs:element name="submissionDate" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="BuildRecord" nillable="true" type="tns:BuildRecord" />
+</xs:schema>

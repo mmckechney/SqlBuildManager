@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<xs:schema id="SqlSyncUtilityRegistry" targetNamespace="http://schemas.mckechney.com/SqlSyncUtilityRegistry.xsd"
+	xmlns:mstns="http://schemas.mckechney.com/SqlSyncUtilityRegistry.xsd" xmlns="http://schemas.mckechney.com/SqlSyncUtilityRegistry.xsd"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+	attributeFormDefault="qualified" elementFormDefault="qualified">
+	<xs:complexType name="Replace">
+		<xs:attribute name="OldString" form="unqualified" type="xs:string" />
+		<xs:attribute name="NewString" form="unqualified" type="xs:string" />
+	</xs:complexType>
+	<xs:complexType name="UtilityQuery">
+		<xs:attribute name="Description" form="unqualified" type="xs:string" />
+		<xs:attribute name="FileName" form="unqualified" type="xs:string" />
+	</xs:complexType>
+	<xs:complexType name="SubMenu">
+		<xs:choice maxOccurs="unbounded">
+			<xs:element name="StringReplace" type="mstns:Replace" />
+			<xs:element name="QueryInserts" type="mstns:UtilityQuery" />
+			<xs:element name="SubMenu" type="mstns:SubMenu" />
+		</xs:choice>
+		<xs:attribute name="Name" form="unqualified" type="xs:string" />
+	</xs:complexType>
+	<xs:element name="SqlSyncUtilityRegistry" msdata:IsDataSet="true" msdata:EnforceConstraints="False">
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element name="StringReplace" type="mstns:Replace" />
+				<xs:element name="QueryInserts" type="mstns:UtilityQuery" />
+				<xs:element name="SubMenu" type="mstns:SubMenu" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
+<!--xsd.exe /c /n:SqlSync.SqlBuild.Utility UtilityRegistry.xsd -->

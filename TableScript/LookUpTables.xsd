@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<xs:schema id="SQLSyncData" targetNamespace="http://www.mckechney.com/LookUpTables.xsd" xmlns:mstns="http://www.mckechney.com/LookUpTables.xsd"
+	xmlns="http://www.mckechney.com/LookUpTables.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop"
+	attributeFormDefault="qualified" elementFormDefault="qualified">
+	<xs:element name="SQLSyncData" msdata:IsDataSet="true" msdata:EnforceConstraints="False">
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element name="Database">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="LookUpTable" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:attribute name="Name" form="unqualified" type="xs:string" />
+									<xs:attribute name="WhereClause" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+									<xs:attribute name="UseAsFullSelect" type="xs:boolean" msprop:nullValue="false" default="false"
+										form="unqualified" />
+									<xs:attribute name="CheckKeyColumns" type="xs:string" msprop:nullValue="_empty" form="unqualified" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="Name" form="unqualified" type="xs:string" />
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

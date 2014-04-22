@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<OrderedTest name="sqlbuildhelper_scriptrun" storage="c:\projects\sqlsync\sqlsync.sqlbuild.unittest\sqlbuildhelper_scriptrun.orderedtest" id="92a821ca-9f2d-4523-ac82-47664f00d22d" continueAfterFailure="true" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Css projectStructure="" iteration="" />
+  <Execution timeOut="2147483647" id="a676789e-7acd-44ad-9531-05c618d3a510" />
+  <Owners>
+    <Owner name="" />
+  </Owners>
+  <TestLinks>
+    <TestLink id="bd436845-0701-076b-9f85-c795be4bfb9a" name="RunBuildScriptsTest_FinishCommitted" storage="bin\debug\sqlsync.sqlbuild.unittest.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+    <TestLink id="7539f13c-ca5d-3e5f-50c5-e4d8c8d1996d" name="RunBuildScriptsTest_FinishRollback" storage="bin\debug\sqlsync.sqlbuild.unittest.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+    <TestLink id="0cc45521-fadf-f3c5-b331-c9041e32315b" name="RunBuildScriptsTest_MissingViewData" storage="bin\debug\sqlsync.sqlbuild.unittest.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+    <TestLink id="0fb30496-ae6c-6e23-5a89-eb6d0b07e0e2" name="RunBuildScriptsTest_UnableToConnectToDatabase" storage="bin\debug\sqlsync.sqlbuild.unittest.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+  </TestLinks>
+</OrderedTest>

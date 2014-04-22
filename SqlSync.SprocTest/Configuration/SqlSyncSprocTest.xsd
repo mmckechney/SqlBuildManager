@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="SprocTest" targetNamespace="http://schemas.mckechney.com/SprocTest.xsd" elementFormDefault="qualified" xmlns="http://schemas.mckechney.com/SprocTest.xsd" xmlns:mstns="http://schemas.mckechney.com/SprocTest.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="Database">
+    <xs:sequence>
+      <xs:element name="StoredProcedure" type="StoredProcedure" minOccurs="1" maxOccurs="1000" />
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" form="unqualified" default="" />
+  </xs:complexType>
+  <xs:complexType name="StoredProcedure">
+    <xs:sequence>
+      <xs:element name="TestCase" type="TestCase" minOccurs="1" maxOccurs="1000" />
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" form="unqualified" default="" />
+	  <xs:attribute name="SchemaOwner" type="xs:string" form="unqualified" default="dbo" />
+    <xs:attribute name="ID" type="xs:string" form="unqualified" default=""/>
+  </xs:complexType>
+  <xs:complexType name="TestCase">
+    <xs:sequence>
+      <xs:element name="Parameter" type="Parameter" minOccurs="0" maxOccurs="100" />
+      <xs:element name="ExpectedResult" type="ExpectedResult" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" form="unqualified" default="" />
+    <xs:attribute name="ExecuteType" type="ExecuteType" />
+    <xs:attribute name="TestCaseId" type="xs:string" form="unqualified" />
+    <xs:attribute name="CreatedBy" type="xs:string" form="unqualified" default="" />
+    <xs:attribute name="CreatedDate" type="xs:dateTime" form="unqualified" />
+    <xs:attribute name="ModifiedBy" type="xs:string" form="unqualified" default="" />
+    <xs:attribute name="ModifiedDate" type="xs:dateTime" />
+  </xs:complexType>
+  <xs:complexType name="Parameter">
+    <xs:sequence>
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" form="unqualified" default="" />
+    <xs:attribute name="Value" type="xs:string" form="unqualified" default="" />
+    <xs:attribute name="UseAsQuery" type="xs:boolean" form="unqualified" default="false" />
+  </xs:complexType>
+  <xs:complexType name="ExpectedResult">
+    <xs:sequence>
+      <xs:element name="OutputResult" type="OutputResult" minOccurs="0" maxOccurs="1000" />
+    </xs:sequence>
+    <xs:attribute name="RowCount" type="xs:int" />
+    <xs:attribute name="RowCountOperator" type="RowCountOperator" />
+    <xs:attribute name="ResultType" type="ResultType" default="Success" form="unqualified" />
+    <xs:attribute name="ColumnCount" type="xs:int" form="unqualified" />
+  </xs:complexType>
+  <xs:complexType name="OutputResult">
+    <xs:sequence />
+    <xs:attribute name="ColumnName" type="xs:string" form="unqualified" default="" />
+    <xs:attribute name="Value" type="xs:string" form="unqualified" default="" />
+    <xs:attribute name="RowNumber" type="xs:int" />
+  </xs:complexType>
+  <xs:element name="Database" type="Database">
+  </xs:element>
+  <xs:simpleType name="ExecuteType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Return Data" />
+      <xs:enumeration value="NonQuery" />
+      <xs:enumeration value="Scalar" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="RowCountOperator">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="GreaterThan" />
+      <xs:enumeration value="LessThan" />
+      <xs:enumeration value="EqualTo" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ResultType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Success" />
+      <xs:enumeration value="Generic SqlException" />
+      <xs:enumeration value="PK Violation" />
+      <xs:enumeration value="FK Violation" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+<!-- xsd.exe /c /n:SqlSync.SprocTest.Configuration SqlSyncSprocTest.xsd -->

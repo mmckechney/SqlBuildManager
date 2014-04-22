@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="SQLSyncAuditing" targetNamespace="http://www.mckechney.com/AuditTables.xsd" xmlns:mstns="http://www.mckechney.com/AuditTables.xsd" xmlns="http://www.mckechney.com/AuditTables.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:element name="SQLSyncAuditing" msdata:IsDataSet="true">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element name="Database">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableToAudit" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                  <xs:attribute name="InsertByColumn" form="unqualified" type="xs:string"  default=""/>
+                  <xs:attribute name="IndividualIDColumn" form="unqualified" type="xs:string" default="" />
+                  <xs:attribute name="ObjectTypeColumn" form="unqualified" type="xs:string" default="" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="Name" form="unqualified" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+<!-- xsd AuditTables.xsd /c /namespace:SqlSync.TableScript.Audit -->

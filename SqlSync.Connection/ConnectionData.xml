@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SimpleDataClass generateLanguage="cs" xmlns="http://McKechney/SimpleDataClass.xsd">
+	<namespace>SqlSync.Connection</namespace>
+	<class_name>ConnectionData</class_name>
+	<properties>
+		<property>
+			<public_name>SQLServerName</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>DatabaseName</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>Password</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>UserId</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>StartingDirectory</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>UseWindowAuthentication</public_name>
+			<default_value>false</default_value>
+			<data_type>Boolean</data_type>
+		</property>
+		<property>
+			<public_name>ScriptTimeout</public_name>
+			<default_value>20</default_value>
+			<data_type>System.Int32</data_type>
+		</property>
+	</properties>
+</SimpleDataClass>

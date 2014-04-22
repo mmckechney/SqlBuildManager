@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SimpleDataClass generateLanguage="cs" xmlns="http://McKechney/SimpleDataClass.xsd">
+	<namespace>SqlSync.ObjectScript</namespace>
+	<class_name>ObjectSyncData</class_name>
+	<properties>
+		<property>
+			<public_name>ObjectName</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+			<property>
+			<public_name>ObjectType</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>FullPath</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>IsInDatabase</public_name>
+			<default_value>false</default_value>
+			<data_type>Boolean</data_type>
+		</property>
+		<property>
+			<public_name>IsInFileSystem</public_name>
+			<default_value>false</default_value>
+			<data_type>Boolean</data_type>
+		</property>
+		<property>
+			<public_name>FileName</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>SchemaOwner</public_name>
+			<default_value>string.Empty</default_value>
+			<data_type>string</data_type>
+		</property>
+	</properties>
+</SimpleDataClass>

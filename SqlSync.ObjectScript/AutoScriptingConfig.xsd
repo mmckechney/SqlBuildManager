@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema id="AutoScriptingConfig" targetNamespace="http://www.mckechney.com/AutoScriptingConfig.xsd"
+	elementFormDefault="qualified" xmlns="http://www.mckechney.com/AutoScriptingConfig.xsd"
+	xmlns:mstns="http://www.mckechney.com/AutoScriptingConfig.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:msprop="urn:schemas-microsoft-com:xml-msprop">
+	<xs:element name="AutoScripting">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="DatabaseScriptConfig" type="DatabaseScriptConfig" minOccurs="1" />
+				<xs:element name="PostScriptingAction" type="PostScriptingAction" />
+			</xs:sequence>
+			<xs:attribute name="AllowManualSelection" type="xs:boolean" form="unqualified" msprop:nullValue="false" />
+			<xs:attribute name="IncludeFileHeaders" type="xs:boolean" msprop:nullValue="true" form="unqualified"
+				default="true" />
+			<xs:attribute name="DeletePreExistingFiles" type="xs:boolean" msprop:nullValue="true" form="unqualified"
+				default="true" />
+			<xs:attribute name="ZipScripts" type="xs:boolean" msprop:nullValue="true" form="unqualified" default="true" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="DatabaseScriptConfig" type="DatabaseScriptConfig"></xs:element>
+	<xs:complexType name="DatabaseScriptConfig">
+		<xs:sequence>
+			<xs:element name="ScriptToPath" type="xs:string" minOccurs="1" msprop:nullValue="_empty" />
+		</xs:sequence>
+		<xs:attribute name="ServerName" type="xs:string" msprop:nullValue="_empty" />
+		<xs:attribute name="DatabaseName" type="xs:string" msprop:nullValue="_empty" />
+		<xs:attribute name="UserName" type="xs:string" msprop:nullValue="_empty" />
+		<xs:attribute name="Password" type="xs:string" msprop:nullValue="_empty" />
+		<xs:attribute name="UseWindowsAuthentication" type="xs:boolean" default="true" />
+	</xs:complexType>
+	<xs:complexType name="PostScriptingAction">
+		<xs:sequence></xs:sequence>
+		<xs:attribute name="Name" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+		<xs:attribute name="Command" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+		<xs:attribute name="Arguments" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+	</xs:complexType>
+</xs:schema>

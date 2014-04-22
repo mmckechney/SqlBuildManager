@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema id="ScriptUpdates" targetNamespace="http://www.mckechney.com/ObjectUpdates.xsd"
+	elementFormDefault="qualified" xmlns="http://www.mckechney.com/ObjectUpdates.xsd" xmlns:mstns="http://www.mckechney.com/ObjectUpdates.xsd"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop">
+	<xs:complexType name="ObjectUpdates">
+		<xs:sequence></xs:sequence>
+		<xs:attribute name="ShortFileName" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+		<xs:attribute name="SourceObject" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+		<xs:attribute name="SourceDatabase" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+		<xs:attribute name="SourceServer" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+		<xs:attribute name="ObjectType" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+		<xs:attribute name="IncludePermissions" type="xs:boolean" form="unqualified" msprop:nullValue="false" />
+		<xs:attribute name="ScriptAsAlter" type="xs:boolean" form="unqualified" msprop:nullValue="false" />
+    <xs:attribute name="ScriptPkWithTable" type="xs:boolean" form="unqualified" msprop:nullValue="true" />
+	</xs:complexType>
+	<xs:element name="ObjectUpdates" type="ObjectUpdates"></xs:element>
+</xs:schema>
+<!-- xsd /c /namespace:SqlSync.SqlBuild.Objects ObjectUpdates.xsd -->

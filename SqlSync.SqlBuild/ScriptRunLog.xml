@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TypedTable>
+  <namespace>SqlSync.SqlBuild</namespace>
+  <typed_table_name>ScriptRunLog</typed_table_name>
+  <source_table_name>ScriptRunLog</source_table_name>
+  <typed_row_name>ScriptRunLogRow</typed_row_name>
+  <columns>
+    <column>
+      <typed_column_name>BuildFileName</typed_column_name>
+      <source_column_name>BuildFileName</source_column_name>
+      <data_type>string</data_type>
+    </column>
+    <column>
+      <typed_column_name>ScriptFileName</typed_column_name>
+      <source_column_name>ScriptFileName</source_column_name>
+      <data_type>string</data_type>
+    </column>
+    <column>
+      <typed_column_name>ScriptId</typed_column_name>
+      <source_column_name>ScriptId</source_column_name>
+      <data_type>System.Guid</data_type>
+    </column>
+    <column>
+      <typed_column_name>ScriptFileHash</typed_column_name>
+      <source_column_name>ScriptFileHash</source_column_name>
+      <data_type>string</data_type>
+    </column>
+    <column>
+      <typed_column_name>CommitDate</typed_column_name>
+      <source_column_name>CommitDate</source_column_name>
+      <data_type>DateTime</data_type>
+    </column>
+    <column>
+      <typed_column_name>Sequence</typed_column_name>
+      <source_column_name>Sequence</source_column_name>
+      <data_type>int</data_type>
+    </column>
+    <column>
+      <typed_column_name>UserId</typed_column_name>
+      <source_column_name>UserId</source_column_name>
+      <data_type>string</data_type>
+    </column>
+    <column>
+      <typed_column_name>AllowScriptBlock</typed_column_name>
+      <source_column_name>AllowScriptBlock</source_column_name>
+      <data_type>bool</data_type>
+    </column>
+    <column>
+      <typed_column_name>AllowBlockUpdateId</typed_column_name>
+      <source_column_name>AllowBlockUpdateId</source_column_name>
+      <data_type>string</data_type>
+    </column>
+    <column>
+      <typed_column_name>ScriptText</typed_column_name>
+      <source_column_name>ScriptText</source_column_name>
+      <data_type>string</data_type>
+    </column>
+    <column>
+      <typed_column_name>Tag</typed_column_name>
+      <source_column_name>Tag</source_column_name>
+      <data_type>string</data_type>
+    </column>
+  </columns>
+</TypedTable>
+
+

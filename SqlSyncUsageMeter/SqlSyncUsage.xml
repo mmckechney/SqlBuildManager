@@ -1,0 +1,470 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" version="2.0">
+   <channel>
+      <title>SqlSync Usage Feed</title>
+      <description>RSS Feed of recent SqlSync usage. Used to elucidate what versions are currently in use.</description>
+      <ttl>10</ttl>
+      <name />
+      <user />
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test\test.sbm @ 2/12/2007 11:44:21 PM(00:00:00)</title>
+         <description>Version 7.5.2.42650&lt;BR&gt;MM001125&lt;BR&gt;P12SXC51</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test\test.sbm @ 2/12/2007 11:45:50 PM(00:00:00)</title>
+         <description>Version 7.5.2.42650&lt;BR&gt;MM001125&lt;BR&gt;P12SXC51</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Table Schema.sbm @ 2/12/2007 11:45:19 PM(00:00:00)</title>
+         <description>Version 7.5.2.42650&lt;BR&gt;MM001125&lt;BR&gt;P12SXC51</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test\test.sbm @ 2/12/2007 11:51:13 PM(00:00:00)</title>
+         <description>Version 7.5.2.42650&lt;BR&gt;MM001125&lt;BR&gt;P12SXC51</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/16/2007 11:14:49 AM(00:00:00)</title>
+         <description>Version 7.5.6.18371&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/16/2007 11:18:58 AM(00:00:00)</title>
+         <description>Version 7.5.6.18542&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/16/2007 12:34:02 PM(00:00:00)</title>
+         <description>Version 7.5.6.19262&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 9:26:59 AM(00:00:00)</title>
+         <description>Version 7.5.6.15195&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 9:30:43 AM(00:00:00)</title>
+         <description>Version 7.5.6.15307&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 9:32:44 AM(00:00:00)</title>
+         <description>Version 7.5.6.15307&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 9:36:46 AM(00:00:00)</title>
+         <description>Version 7.5.6.15307&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 9:38:42 AM(00:00:00)</title>
+         <description>Version 7.5.6.15551&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 9:39:18 AM(00:00:00)</title>
+         <description>Version 7.5.6.15551&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 9:39:47 AM(00:00:00)</title>
+         <description>Version 7.5.6.15551&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 9:41:48 AM(00:00:00)</title>
+         <description>Version 7.5.6.15640&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 9:44:32 AM(00:00:00)</title>
+         <description>Version 7.5.6.15721&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 11:24:10 AM(00:00:00)</title>
+         <description>Version 7.5.6.18719&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/17/2007 1:26:36 PM(00:00:00)</title>
+         <description>Version 7.5.6.18719&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 8:25:15 AM(00:00:00)</title>
+         <description>Version 7.5.6.13348&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 8:56:17 AM(00:00:00)</title>
+         <description>Version 7.5.6.14203&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 8:59:35 AM(00:00:00)</title>
+         <description>Version 7.5.6.14380&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 9:20:50 AM(00:00:00)</title>
+         <description>Version 7.5.6.15012&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 9:26:37 AM(00:00:00)</title>
+         <description>Version 7.5.6.15193&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 9:28:27 AM(00:00:00)</title>
+         <description>Version 7.5.6.15248&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 9:47:10 AM(00:00:00)</title>
+         <description>Version 7.5.6.15802&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 10:08:52 AM(00:00:00)</title>
+         <description>Version 7.5.6.16457&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 10:29:50 AM(00:00:00)</title>
+         <description>Version 7.5.6.17085&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 10:31:34 AM(00:00:00)</title>
+         <description>Version 7.5.6.17138&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 10:48:41 AM(00:00:00)</title>
+         <description>Version 7.5.6.17629&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 10:50:50 AM(00:00:00)</title>
+         <description>Version 7.5.6.17719&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 10:52:59 AM(00:00:00)</title>
+         <description>Version 7.5.6.17719&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 11:16:35 AM(00:00:00)</title>
+         <description>Version 7.5.6.18491&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 11:21:30 AM(00:00:00)</title>
+         <description>Version 7.5.6.18639&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 11:23:20 AM(00:00:00)</title>
+         <description>Version 7.5.6.18692&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 3:08:08 PM(00:00:00)</title>
+         <description>Version 7.5.6.25312&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 3:10:41 PM(00:00:00)</title>
+         <description>Version 7.5.6.25513&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 3:18:06 PM(00:00:00)</title>
+         <description>Version 7.5.6.25513&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 3:22:35 PM(00:00:00)</title>
+         <description>Version 7.5.6.25862&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Procedures and Functions.sbm @ 5/18/2007 3:33:56 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Procedures and Functions.sbm @ 5/18/2007 3:39:13 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Procedures and Functions.sbm @ 5/18/2007 3:39:51 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 3:40:45 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 3:41:09 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Procedures and Functions.sbm @ 5/18/2007 3:42:11 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 3:42:37 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 3:44:16 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Procedures and Functions.sbm @ 5/18/2007 3:44:31 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Table changes.sbm @ 5/18/2007 3:44:57 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Procedures and Functions.sbm @ 5/18/2007 3:45:41 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Procedures and Functions.sbm @ 5/18/2007 3:46:13 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Procedures and Functions.sbm @ 5/18/2007 3:51:44 PM(00:00:00)</title>
+         <description>Version 7.5.6.26016&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 11:22:39 PM(00:00:00)</title>
+         <description>Version 7.5.6.40266&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 11:33:59 PM(00:00:00)</title>
+         <description>Version 7.5.6.40612&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/18/2007 11:42:47 PM(00:00:00)</title>
+         <description>Version 7.5.6.40872&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/19/2007 12:11:17 AM(00:00:00)</title>
+         <description>Version 7.5.6.41731&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Procedures and Functions.sbm @ 5/19/2007 12:24:40 AM(00:00:00)</title>
+         <description>Version 7.5.6.41731&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 5/19/2007 12:33:49 AM(00:00:00)</title>
+         <description>Version 7.5.6.42405&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.1\Build Files\Table changes.sbm @ 5/19/2007 12:35:37 AM(00:00:00)</title>
+         <description>Version 7.5.6.42405&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 5.6\Build Files\Procedures and Functions.sbm @ 5/21/2007 11:27:26 AM(00:00:00)</title>
+         <description>Version 7.6.0.13314&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 5.6\Build Files\Procedures and Functions.sbm @ 5/21/2007 1:14:19 PM(00:00:00)</title>
+         <description>Version 7.6.0.13314&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 5.6\Build Files\Procedures and Functions.sbm @ 5/21/2007 1:30:42 PM(00:00:00)</title>
+         <description>Version 7.6.0.13314&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 10:30:57 AM(00:00:00)</title>
+         <description>Version 7.6.6.17095&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 10:39:38 AM(00:00:00)</title>
+         <description>Version 7.6.6.17378&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 12:11:36 PM(00:00:00)</title>
+         <description>Version 7.6.6.20050&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 12:13:21 PM(00:00:00)</title>
+         <description>Version 7.6.6.20191&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:19:36 PM(00:00:00)</title>
+         <description>Version 7.6.6.27575&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:20:01 PM(00:00:00)</title>
+         <description>Version 7.6.6.27575&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:32:42 PM(00:00:00)</title>
+         <description>Version 7.6.6.27972&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:33:04 PM(00:00:00)</title>
+         <description>Version 7.6.6.27972&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:35:27 PM(00:00:00)</title>
+         <description>Version 7.6.6.28054&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:37:05 PM(00:00:00)</title>
+         <description>Version 7.6.6.28054&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:41:12 PM(00:00:00)</title>
+         <description>Version 7.6.6.28229&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:43:51 PM(00:00:00)</title>
+         <description>Version 7.6.6.28229&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:51:01 PM(00:00:00)</title>
+         <description>Version 7.6.6.28229&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 4:51:53 PM(00:00:00)</title>
+         <description>Version 7.6.6.28546&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/14/2007 5:00:03 PM(00:00:00)</title>
+         <description>Version 7.6.6.28546&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 1:33:28 PM(00:00:00)</title>
+         <description>Version 7.6.6.28546&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 2:40:26 PM(00:00:00)</title>
+         <description>Version 7.6.6.28546&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 2:40:45 PM(00:00:00)</title>
+         <description>Version 7.6.6.28546&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 2:41:26 PM(00:00:00)</title>
+         <description>Version 7.6.6.28546&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 2:42:12 PM(00:00:00)</title>
+         <description>Version 7.6.6.28546&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 2:43:16 PM(00:00:00)</title>
+         <description>Version 7.6.6.24686&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 2:43:35 PM(00:00:00)</title>
+         <description>Version 7.6.6.24686&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 2:43:57 PM(00:00:00)</title>
+         <description>Version 7.6.6.24686&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 3:09:29 PM(00:00:00)</title>
+         <description>Version 7.6.6.24686&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 3:10:33 PM(00:00:00)</title>
+         <description>Version 7.6.6.24686&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 3:12:42 PM(00:00:00)</title>
+         <description>Version 7.6.6.24686&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 3:13:38 PM(00:00:00)</title>
+         <description>Version 7.6.6.25602&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 3:13:56 PM(00:00:00)</title>
+         <description>Version 7.6.6.25602&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 3:22:49 PM(00:00:00)</title>
+         <description>Version 7.6.6.25841&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 3:34:00 PM(00:00:00)</title>
+         <description>Version 7.6.6.26213&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 3:41:06 PM(00:00:00)</title>
+         <description>Version 7.6.6.26410&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 4:30:15 PM(00:00:00)</title>
+         <description>Version 7.6.6.26925&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 4:32:10 PM(00:00:00)</title>
+         <description>Version 7.6.6.26925&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 4:39:18 PM(00:00:00)</title>
+         <description>Version 7.6.6.26925&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 4:45:10 PM(00:00:00)</title>
+         <description>Version 7.6.6.28349&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 4:47:55 PM(00:00:00)</title>
+         <description>Version 7.6.6.28428&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/15/2007 4:51:41 PM(00:00:00)</title>
+         <description>Version 7.6.6.28541&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Local Settings\Temporary Internet Files\Content.Outlook\MRYVB0AG\3761_Bug 6082.sbm @ 8/16/2007 10:16:52 AM(00:00:00)</title>
+         <description>Version 7.6.7.28665&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/17/2007 8:08:01 AM(00:00:00)</title>
+         <description>Version 7.6.7.28665&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/17/2007 8:27:28 AM(00:00:00)</title>
+         <description>Version 7.6.7.13414&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Table changes.sbm @ 8/17/2007 8:29:46 AM(00:00:00)</title>
+         <description>Version 7.6.7.13479&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Table changes.sbm @ 8/17/2007 8:31:46 AM(00:00:00)</title>
+         <description>Version 7.6.7.13515&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/17/2007 10:58:48 AM(00:00:00)</title>
+         <description>Version 7.6.7.13515&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/17/2007 11:42:12 AM(00:00:00)</title>
+         <description>Version 7.6.7.13515&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/17/2007 3:35:31 PM(00:00:00)</title>
+         <description>Version 7.6.7.13515&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/17/2007 3:38:03 PM(00:00:00)</title>
+         <description>Version 7.6.7.14706&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/17/2007 3:54:13 PM(00:00:00)</title>
+         <description>Version 7.6.7.26797&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Data Changes.sbm @ 8/17/2007 3:57:26 PM(00:00:00)</title>
+         <description>Version 7.6.7.26797&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/17/2007 4:14:45 PM(00:00:00)</title>
+         <description>Version 7.6.7.27432&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\IFO\IFO-SVN DEV 6.2\Build Files\Procedures and Functions.sbm @ 8/17/2007 4:15:19 PM(00:00:00)</title>
+         <description>Version 7.6.7.27432&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 8/17/2007 4:22:22 PM(00:00:00)</title>
+         <description>Version 7.6.7.27645&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 8/17/2007 4:26:12 PM(00:00:00)</title>
+         <description>Version 7.6.7.27750&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 8/17/2007 4:37:52 PM(00:00:00)</title>
+         <description>Version 7.6.7.28112&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+      <item>
+         <title>C:\Documents and Settings\mm001125\Desktop\test.sbm @ 8/17/2007 4:46:56 PM(00:00:00)</title>
+         <description>Version 7.6.8.28340&lt;BR&gt;MM001125&lt;BR&gt;PL3AE784</description>
+      </item>
+   </channel>
+</rss>

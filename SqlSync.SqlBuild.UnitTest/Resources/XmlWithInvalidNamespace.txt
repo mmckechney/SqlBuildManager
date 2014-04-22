@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<SqlSyncBuildData xmlns="http://INVALID.mckechney.com/SqlSyncBuildProject.xsd">
+  <SqlSyncBuildProject ProjectName="" ScriptTagRequired="false">
+    <Scripts>
+      <Script FileName="Create table.sql" BuildOrder="3" Description="" RollBackOnError="true" CausesBuildFailure="true" DateAdded="2008-06-26T14:28:15.2685768-04:00" ScriptId="bd58d42b-51f9-4052-85c8-44f247a690f4" Database="Client" StripTransactionText="true" AllowMultipleRuns="true" AddedBy="mmckechn" ScriptTimeOut="20" DateModified="2008-08-27T12:53:18.9312747-04:00" ModifiedBy="mmckechn" Tag="" />
+      <Script FileName="Insert Record.sql" BuildOrder="1" Description="CR13232323" RollBackOnError="true" CausesBuildFailure="true" DateAdded="2008-06-26T14:29:43.4453493-04:00" ScriptId="6e3112bf-8995-4351-bd4d-1c38fe8897a6" Database="Client" StripTransactionText="true" AllowMultipleRuns="true" AddedBy="mmckechn" ScriptTimeOut="20" DateModified="2008-07-02T11:39:13.7922181-04:00" ModifiedBy="mmckechn" Tag="" />
+     </Scripts>
+    <Builds />
+  </SqlSyncBuildProject>
+</SqlSyncBuildData>

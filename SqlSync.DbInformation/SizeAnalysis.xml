@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TypedTable>
+	<namespace>SqlSync.DbInformation</namespace>
+	<typed_table_name>SizeAnalysisTable</typed_table_name>
+	<source_table_name>sizeanalysis</source_table_name>
+	<typed_row_name>SizeAnalysisRow</typed_row_name>
+	<columns>
+		<column>
+			<typed_column_name>Name</typed_column_name>
+			<source_column_name>Table Name</source_column_name>
+			<data_type>String</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>String.Empty</null_value>
+		</column>
+		<column>
+			<typed_column_name>RowCount</typed_column_name>
+			<source_column_name>Row Count</source_column_name>
+			<data_type>Int32</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>0</null_value>
+		</column>
+	
+		<column>
+			<typed_column_name>DataSize</typed_column_name>
+			<source_column_name>Data Size</source_column_name>
+			<data_type>Int32</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>0</null_value>
+		</column>
+		<column>
+			<typed_column_name>IndexSize</typed_column_name>
+			<source_column_name>Index Size</source_column_name>
+			<data_type>Int32</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>0</null_value>
+		</column>
+		<column>
+			<typed_column_name>UnusedSize</typed_column_name>
+			<source_column_name>Unused Size</source_column_name>
+			<data_type>Int32</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>0</null_value>
+		</column>
+		<column>
+			<typed_column_name>TotalReservedSize</typed_column_name>
+			<source_column_name>Total Reserved Size</source_column_name>
+			<data_type>Int32</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>0</null_value>
+		</column>
+		<column>
+			<typed_column_name>AverageDataRowSize</typed_column_name>
+			<source_column_name>Average Data Row Size</source_column_name>
+			<data_type>Double</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>0.0</null_value>
+		</column>
+		<column>
+			<typed_column_name>AverageIndexRowSize</typed_column_name>
+			<source_column_name>Average Index Row Size</source_column_name>
+			<data_type>Double</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>0.0</null_value>
+		</column>
+	</columns>
+</TypedTable>

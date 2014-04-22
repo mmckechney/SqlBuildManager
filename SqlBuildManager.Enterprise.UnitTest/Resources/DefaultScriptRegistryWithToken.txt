@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<DefaultScriptRegistry xmlns="http://schemas.mckechney.com/DefaultScriptRegistry.xsd">
+	<DefaultScript ScriptName="{0}" AllowMultipleRuns="true" RollBackBuild="true" Description="Updates versions table"
+				   BuildOrder="1000" StripTransactions="true" />
+</DefaultScriptRegistry> 

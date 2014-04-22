@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="rss">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="channel" type="channel" form="unqualified">
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:decimal" use="required" />
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="channel">
+    <xs:sequence>
+      <xs:element name="title" type="xs:string" />
+      <xs:element name="link" type="xs:string" />
+      <xs:element name="description" type="xs:string" />
+      <xs:element name="ttl" type="xs:int" />
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="user" type="xs:string"/>
+      <xs:element name="item" type="item" minOccurs="1" maxOccurs="20000">
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="item">
+    <xs:sequence>
+      <xs:element name="title" type="xs:string" />
+      <xs:element name="description" type="xs:string" />
+      <xs:element name="link" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+
+<!-- xsd.exe /c /n:SqlSyncUsageMeter.Rss Rss.xsd-->

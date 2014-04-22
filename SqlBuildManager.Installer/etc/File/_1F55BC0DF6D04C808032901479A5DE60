@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema id="EnterpriseConfiguration" targetNamespace="http://www.mckechney.com/EnterpriseConfiguration.xsd"
+	elementFormDefault="qualified" xmlns="http://www.mckechney.com/EnterpriseConfiguration.xsd" xmlns:mstns="http://www.mckechney.com/EnterpriseConfiguration.xsd"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop">
+  <xs:element name="EnterpriseConfiguration" type="EnterpriseConfiguration"></xs:element>
+
+  <xs:complexType name="EnterpriseConfiguration">
+    <xs:sequence>
+      <xs:element name="TableWatch" type="TableWatch"  minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="SciptPolicyRunOnLoad" type="SciptPolicyRunOnLoad" minOccurs="0" maxOccurs="1" />
+      <xs:element name="ScriptPolicy" type="ScriptPolicy"  minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="FeatureAccess" type="FeatureAccess"  minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="DefaultMinumumScriptTimeOut" type="DefaultMinumumScriptTimeOut"  minOccurs="0" maxOccurs="1"/>
+      <xs:element name="RequireScriptTags" type="RequireScriptTags" minOccurs="0" maxOccurs="1" />
+      <xs:element name="ScriptTagInference" type="ScriptTagInference" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="RegisteredServerMasters" type="RegisteredServerMasters" minOccurs="0" maxOccurs="1" />
+      <xs:element name="DefaultScriptConfiguration" type="DefaultScriptConfiguration" minOccurs="0" maxOccurs="1" />
+      <xs:element name="CustomScriptTimeouts" type="CustomScriptTimeouts" minOccurs="0" maxOccurs="100" />
+      <xs:element name="CustomObjectScriptingSettings" type="CustomObjectScriptingSettings" minOccurs="0" maxOccurs="100"/>
+      <xs:element name="CodeReviewConfig" type="CodeReviewConfig" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="TableWatch">
+    <xs:sequence>
+      <xs:element name="Table" type="Table" minOccurs="1" maxOccurs="unbounded"></xs:element>
+      <xs:element name="Notify" type="Notify" minOccurs="1" maxOccurs="unbounded"></xs:element>
+    </xs:sequence>
+    <xs:attribute  name="Description" type="xs:string" default=""/>
+    <xs:attribute  name="EmailSubject" type="xs:string" default=""/>
+    <xs:attribute  name="EmailBody" type="xs:string" default=""/>
+
+  </xs:complexType>
+  <xs:complexType name="Table">
+    <xs:attribute name="Name" type="xs:string" default="" />
+  </xs:complexType>
+  <xs:complexType name="Notify">
+    <xs:attribute name="EMail" type="xs:string" default="" />
+    <xs:attribute name="Name" type="xs:string" default="" />
+  </xs:complexType>
+
+  <xs:complexType name="ScriptPolicy">
+    <xs:sequence>
+      <xs:element type="ScriptPolicyDescription" name="ScriptPolicyDescription" minOccurs="0" maxOccurs="1" />
+      <xs:element type="ScriptPolicyArgument" name="Argument" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="PolicyId" type="xs:string" default="" />
+    <xs:attribute name="Enforce" type="xs:boolean" default="true" />
+    <xs:attribute name="Severity" type="ViolationSeverity" default="High" />
+  </xs:complexType>
+  <xs:complexType name="ScriptPolicyArgument" >
+    <xs:attribute name="Name" type="xs:string" default="" />
+    <xs:attribute name="Value" type="xs:string" default="" />
+    <xs:attribute name="IsLineException" type="xs:boolean" default="false" />
+    <xs:attribute name="IsGlobalException" type="xs:boolean" default="false" />
+    <xs:attribute name="FailureMessage" type="xs:string" default="" />
+  </xs:complexType>
+  <xs:complexType name="ScriptPolicyDescription">
+    <xs:attribute name="ShortDescription" type="xs:string" default="" />
+    <xs:attribute name="LongDescription" type="xs:string" default="" />
+    <xs:attribute name="ErrorMessage" type="xs:string" default="" />
+  </xs:complexType>
+  <xs:complexType name="FeatureAccess">
+    <xs:sequence>
+      <xs:element name="Allow" type="AccessSetting" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="Deny" type="AccessSetting" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="FeatureId" type="xs:string" default="" />
+    <xs:attribute name="Enabled" type="xs:boolean" default="true" />
+
+  </xs:complexType>
+  <xs:complexType name="AccessSetting">
+    <xs:attribute name="LoginId" type="xs:string" default="" />
+    <xs:attribute name="GroupName" type="xs:string" default="" />
+  </xs:complexType>
+  <xs:complexType name="DefaultMinumumScriptTimeOut">
+    <xs:attribute name="Seconds" type="xs:int" default="90" />
+  </xs:complexType>
+  <xs:complexType name="RequireScriptTags">
+    <xs:attribute name="Value" type="xs:boolean" default="false" />
+    <xs:attribute name="Message" type="xs:string" default="A script Tag are required. Please add." />
+  </xs:complexType>
+  <xs:complexType name="RegisteredServerMasters">
+    <xs:sequence>
+      <xs:element name="RegisteredServerListFile" type="RegisteredServerListFile" minOccurs="1" maxOccurs="1000" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RegisteredServerListFile">
+    <xs:attribute name="Path" type="xs:string" default="" />
+    <xs:attribute name="FileName" type="xs:string" default="" />
+    <xs:attribute name="Description" type="xs:string" default="" />
+  </xs:complexType>
+
+  <xs:complexType name="DefaultScriptConfiguration">
+    <xs:sequence>
+      <xs:element name="DefaultScriptRegistryFile" type="DefaultScriptRegistryFile" minOccurs="1" maxOccurs="1000" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DefaultScriptRegistryFile">
+    <xs:attribute name="Path" type="xs:string" default="" />
+    <xs:attribute name="FileName" type="xs:string" default="" />
+    <xs:attribute name="ApplyToGroup" type="xs:string" default="" />
+  </xs:complexType>
+
+  <xs:complexType name="ScriptTagInference">
+    <xs:sequence>
+      <xs:element name="TagRegex" type="TagRegex" minOccurs="1" maxOccurs="1000" />
+      <xs:element name="ApplyToGroup" type="ApplyToGroup" minOccurs="0" maxOccurs="1000" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TagRegex">
+    <xs:attribute name="RegexValue" type="xs:string" default="" />
+    <!--<xs:attribute name="ApplyToGroup" type="xs:string" default="" />-->
+    <!--<xs:attribute name="TagSearchSource" type="TagSearchSource" default="NameOverText" />-->
+  </xs:complexType>
+
+  <xs:complexType name="ApplyToGroup">
+    <xs:attribute name="GroupName" type="xs:string" default="" />
+  </xs:complexType>
+
+  <xs:complexType name="CustomScriptTimeouts">
+    <xs:sequence>
+      <xs:element name="ApplyToGroup" type="ApplyToGroup" minOccurs="1" maxOccurs="100" />
+      <xs:element name="TimeoutSetting" type="TimeoutSetting" minOccurs="1" maxOccurs="100" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TimeoutSetting">
+    <xs:attribute name="FileExtension" type="xs:string" default="" />
+    <xs:attribute name="MinumumTimeout" type="xs:int" default="20" />
+  </xs:complexType>
+
+  <xs:complexType name="SciptPolicyRunOnLoad">
+    <xs:sequence>
+      <xs:element name="ApplyToGroup" type="ApplyToGroup" minOccurs="1" maxOccurs="200" />
+    </xs:sequence>
+    <xs:attribute name="Enabled" type="xs:boolean" default="true" />
+
+  </xs:complexType>
+
+  <xs:simpleType name="ViolationSeverity">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="High" />
+      <xs:enumeration value="Medium" />
+      <xs:enumeration value="Low" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="CustomObjectScriptingSettings">
+    <xs:sequence>
+      <xs:element name="ApplyToGroup" type="ApplyToGroup" minOccurs="1" maxOccurs="100" />
+      <xs:element name="ScriptingSetting" type="ScriptingSetting" minOccurs="1" maxOccurs="100" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ScriptingSetting">
+    <xs:attribute name="Name" type="xs:string" default="" />
+    <xs:attribute name="Value" type="xs:boolean" default="true" />
+  </xs:complexType>
+
+  <xs:complexType name="CodeReviewConfig">
+    <xs:sequence>
+      <xs:element name="DbaReviewGroup" type="AccessSetting" minOccurs="1" maxOccurs="1000" />
+      <xs:element name="SelfReviewer" type="AccessSetting" minOccurs="0" maxOccurs="1000" />
+    </xs:sequence>
+    <xs:attribute name="LinkToUrlFormat" type="xs:string" default="" />
+    <xs:attribute name="Enabled" type="xs:boolean" default="false" />
+    <xs:attribute name="DatabaseConnectionString" type="xs:string" default="" />
+  </xs:complexType>
+  
+  
+</xs:schema>
+<!-- xsd /c /namespace:SqlBuildManager.Enterprise EnterpriseConfiguration.xsd -->

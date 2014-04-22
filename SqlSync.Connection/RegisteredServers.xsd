@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="RegisteredServers"
+    targetNamespace="http://schemas.mckechney.com/SqlBuildManager/2010/05/RegisteredServers.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://schemas.mckechney.com/SqlBuildManager/2010/05/RegisteredServers.xsd"
+    xmlns:mstns="http://schemas.mckechney.com/SqlBuildManager/2010/05/RegisteredServers.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+
+	<xs:element name="RegisteredServers" type="RegisteredServers"></xs:element>
+	
+	<xs:complexType name="RegisteredServers">
+		<xs:sequence>
+			<xs:element name="ServerGroup" type="ServerGroup"  minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="ServerGroup">
+		<xs:sequence>
+			<xs:element name="RegServer" type="RegServer"  minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="Name" type="xs:string" default="" />
+	</xs:complexType>
+
+	<xs:complexType name="RegServer">
+		<xs:attribute name="Name" type="xs:string" default="" />
+	</xs:complexType>
+	
+</xs:schema>
+
+<!-- xsd /c /namespace:SqlSync.Connection RegisteredServers.xsd -->

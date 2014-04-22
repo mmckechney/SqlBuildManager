@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SimpleDataClass generateLanguage="cs" xmlns="http://McKechney/SimpleDataClass.xsd">
+	<namespace>SqlSync.Compare</namespace>
+	<class_name>FileDiff</class_name>
+	<using_namespace>
+		<using>System.Data</using>
+		<using>System.Xml</using>
+	</using_namespace>
+	<properties>
+		<property>
+			<public_name>FileName</public_name>
+			<default_value>String.Empty</default_value>
+			<data_type>System.String</data_type>
+		</property>
+		<property>
+			<public_name>UnifiedDiff</public_name>
+			<default_value>String.Empty</default_value>
+			<data_type>System.String</data_type>
+		</property>
+	</properties>
+</SimpleDataClass>

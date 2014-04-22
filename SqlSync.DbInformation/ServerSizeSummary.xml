@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TypedTable>
+	<namespace>SqlSync.DbInformation</namespace>
+	<typed_table_name>ServerSizeSummary</typed_table_name>
+	<source_table_name>serversizesummary</source_table_name>
+	<typed_row_name>ServerSizeSummaryRow</typed_row_name>
+	<columns>
+		<column>
+			<typed_column_name>DatabaseName</typed_column_name>
+			<source_column_name>DatabaseName</source_column_name>
+			<data_type>String</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>String.Empty</null_value>
+		</column>
+		<column>
+			<typed_column_name>Location</typed_column_name>
+			<source_column_name>Location</source_column_name>
+			<data_type>String</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>String.Empty</null_value>
+		</column>
+		<column>
+			<typed_column_name>DataSize</typed_column_name>
+			<source_column_name>DataSize</source_column_name>
+			<data_type>Int64</data_type>
+			<is_primary_key>false</is_primary_key>
+			<null_value>0</null_value>
+		</column>
+    <column>
+      <typed_column_name>DateCreated</typed_column_name>
+      <source_column_name>DateCreated</source_column_name>
+      <data_type>DateTime</data_type>
+      <is_primary_key>false</is_primary_key>
+      <null_value>DateTime.MinValue</null_value>
+    </column>
+  </columns>
+</TypedTable>

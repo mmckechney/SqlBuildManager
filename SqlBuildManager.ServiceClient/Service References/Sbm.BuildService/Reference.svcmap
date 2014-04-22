@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="ea1fc142-15ab-4b40-a7c6-735278e4f7a0" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:33273/BuildService.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="BuildService.xsd" MetadataType="Schema" ID="7b420db3-862e-4b43-8d6e-9fc445dbcd6d" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd3" />
+    <MetadataFile FileName="BuildService.wsdl" MetadataType="Wsdl" ID="80e03ea6-0a86-4a4a-8ceb-626c84e95ce4" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?wsdl" />
+    <MetadataFile FileName="BuildService.disco" MetadataType="Disco" ID="8fdf7d1e-8f34-4ce4-a6ca-2cf65bcbd23b" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?disco" />
+    <MetadataFile FileName="BuildService1.xsd" MetadataType="Schema" ID="cea5f9ce-6ff2-4590-b5ee-5f57b187a66a" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd0" />
+    <MetadataFile FileName="BuildService2.xsd" MetadataType="Schema" ID="e61349df-5165-4f70-9ae4-c070c24840ad" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd5" />
+    <MetadataFile FileName="BuildService1.wsdl" MetadataType="Wsdl" ID="4c9b82e7-dc65-4587-a761-adea519bb106" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?wsdl=wsdl0" />
+    <MetadataFile FileName="BuildService3.xsd" MetadataType="Schema" ID="d76e0cf5-276a-4376-9356-f5adb8a8d8a1" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd2" />
+    <MetadataFile FileName="BuildService4.xsd" MetadataType="Schema" ID="15a4bcd1-ad74-493e-9551-145a42b2a0a0" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd6" />
+    <MetadataFile FileName="BuildService5.xsd" MetadataType="Schema" ID="d68d2443-c2a5-4d44-ac8e-dec62fb5f4c8" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd4" />
+    <MetadataFile FileName="BuildService6.xsd" MetadataType="Schema" ID="8df91bde-294c-4308-b70f-093404afeb16" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd1" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

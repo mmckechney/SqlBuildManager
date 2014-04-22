@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SimpleDataClass generateLanguage="cs" xmlns="http://McKechney/SimpleDataClass.xsd">
+	<namespace>SqlSync.SqlBuild</namespace>
+	<class_name>BuildConnectData</class_name>
+	<using_namespace>
+		<using>System.Data</using>
+		<using>System.Xml</using>
+	</using_namespace>
+	<properties>
+		<property>
+			<public_name>Connection</public_name>
+			<default_value>null</default_value>
+			<data_type>System.Data.SqlClient.SqlConnection</data_type>
+		</property>
+		<property>
+			<public_name>Transaction</public_name>
+			<default_value>null</default_value>
+			<data_type>System.Data.SqlClient.SqlTransaction</data_type>
+		</property>
+		<property>
+			<public_name>DatabaseName</public_name>
+			<default_value>String.Empty</default_value>
+			<data_type>String</data_type>
+		</property>
+		<property>
+			<public_name>ServerName</public_name>
+			<default_value>String.Empty</default_value>
+			<data_type>String</data_type>
+		</property>
+		<property>
+			<public_name>HasLoggingTable</public_name>
+			<default_value>false</default_value>
+			<data_type>Boolean</data_type>
+		</property>
+	</properties>
+</SimpleDataClass>

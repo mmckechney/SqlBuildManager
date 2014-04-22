@@ -1,0 +1,107 @@
+<?xml version="1.0" ?>
+<xs:schema id="SqlSyncBuildData" targetNamespace="http://www.globalcrossing.com/SqlSyncBuildProject.xsd"
+	xmlns:mstns="http://www.globalcrossing.com/SqlSyncBuildProject.xsd" xmlns="http://www.globalcrossing.com/SqlSyncBuildProject.xsd"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+	xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+	<xs:element name="SqlSyncBuildProject">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Scripts" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Script" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:attribute name="FileName" form="unqualified" type="xs:string" msprop:nullValue="_empty" />
+									<xs:attribute name="BuildOrder" form="unqualified" type="xs:double" msprop:nullValue="0" />
+									<xs:attribute name="Description" form="unqualified" type="xs:string" />
+									<xs:attribute name="RollBackOnError" form="unqualified" type="xs:boolean" msprop:nullValue="true" />
+									<xs:attribute name="CausesBuildFailure" form="unqualified" type="xs:boolean" msprop:nullValue="false" />
+									<xs:attribute name="DateAdded" type="xs:dateTime" form="unqualified" />
+									<xs:attribute name="ScriptId" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+									<xs:attribute name="Database" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+									<xs:attribute name="StripTransactionText" type="xs:boolean" form="unqualified" msprop:nullValue="true"
+										default="true" />
+									<xs:attribute name="AllowMultipleRuns" type="xs:boolean" default="false" msprop:nullValue="false"
+										form="unqualified" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Builds" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Build" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="ScriptRun" minOccurs="0" maxOccurs="unbounded">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="FileHash" type="xs:string" minOccurs="0" msdata:Ordinal="0" />
+													<xs:element name="Results" type="xs:string" minOccurs="0" msdata:Ordinal="1" msprop:nullValue="_empty" />
+												</xs:sequence>
+												<xs:attribute name="FileName" form="unqualified" type="xs:string" msprop:nullValue="_empty" />
+												<xs:attribute name="RunOrder" form="unqualified" type="xs:double" />
+												<xs:attribute name="RunStart" form="unqualified" type="xs:dateTime" />
+												<xs:attribute name="RunEnd" form="unqualified" type="xs:dateTime" />
+												<xs:attribute name="Success" form="unqualified" type="xs:boolean" msprop:nullValue="0" />
+												<xs:attribute name="Database" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+												<xs:attribute name="ScriptRunId" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute name="Name" form="unqualified" type="xs:string" />
+									<xs:attribute name="BuildType" form="unqualified" type="mstns:BuildType" />
+									<xs:attribute name="BuildStart" form="unqualified" type="xs:dateTime" />
+									<xs:attribute name="BuildEnd" form="unqualified" type="xs:dateTime" />
+									<xs:attribute name="ServerName" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+									<xs:attribute name="FinalStatus" type="mstns:BuildItemStatus" form="unqualified" />
+									<xs:attribute name="BuildId" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+									<xs:attribute name="UserId" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="CommittedScript" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence />
+						<xs:attribute name="ScriptId" type="xs:string" form="unqualified" />
+						<xs:attribute name="ServerName" type="xs:string" form="unqualified" />
+						<xs:attribute name="CommittedDate" type="xs:dateTime" form="unqualified" />
+						<xs:attribute name="AllowScriptBlock" type="xs:boolean" form="unqualified" msprop:nullValue="true"
+							default="true" />
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="ProjectName" form="unqualified" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SqlSyncBuildData" msdata:IsDataSet="true" msdata:EnforceConstraints="False">
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="mstns:SqlSyncBuildProject" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="BuildType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Trial" />
+			<xs:enumeration value="Development Integration" />
+			<xs:enumeration value="Quality Assurance" />
+			<xs:enumeration value="User Acceptance" />
+			<xs:enumeration value="Staging" />
+			<xs:enumeration value="Production" />
+			<xs:enumeration value="Other" />
+			<xs:enumeration value="Trial - Partial" />
+			<xs:enumeration value="Partial" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="BuildItemStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Committed" />
+			<xs:enumeration value="RolledBack" />
+			<xs:enumeration value="TrialRolledBack" />
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

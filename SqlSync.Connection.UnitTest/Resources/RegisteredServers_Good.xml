@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<RegisteredServers xmlns="http://schemas.mckechney.com/SqlBuildManager/2010/05/RegisteredServers.xsd">
+  <ServerGroup Name="Group1" >
+    <RegServer Name="Server1" />
+    <RegServer Name="Server2" />
+  </ServerGroup>
+  <ServerGroup Name="Group2">
+    <RegServer Name="Server3" />
+    <RegServer Name="Server4" />
+  </ServerGroup>
+</RegisteredServers>

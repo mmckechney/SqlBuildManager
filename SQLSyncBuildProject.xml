@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SqlSyncBuildProject ProjectName="" xmlns="http://www.globalcrossing.com/SqlSyncBuildProject.xsd">
+	<Scripts>
+		<Script FileName="" BuildOrder="" Description="" RollBackOnError="" CausesBuildFailure=""></Script>
+	</Scripts>
+	<Builds>
+		<Build Name="" BuildType="" BuildStart="" BuildEnd="">
+			<ScriptRun FileName="" RunOrder="" RunStart="" RunEnd="" Success="">
+				<FileHash></FileHash>
+				<Results></Results>
+			</ScriptRun>
+		</Build>
+	</Builds>
+</SqlSyncBuildProject>

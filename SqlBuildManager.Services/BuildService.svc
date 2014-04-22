@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="SqlBuildManager.Services.BuildService" CodeBehind="BuildService.svc.cs" %>

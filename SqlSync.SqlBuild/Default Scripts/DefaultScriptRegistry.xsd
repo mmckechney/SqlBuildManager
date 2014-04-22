@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<xs:schema id="DefaultScriptRegistry" targetNamespace="http://schemas.mckechney.com/DefaultScriptRegistry.xsd" xmlns:mstns="http://schemas.mckechney.com/DefaultScriptRegistry.xsd" xmlns="http://schemas.mckechney.com/DefaultScriptRegistry.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified">
+    <xs:complexType name="DefaultScript">
+        <xs:attribute name="BuildOrder" form="unqualified" type="xs:int" default="1000" />
+        <xs:attribute name="ScriptName" form="unqualified" type="xs:string" default="" />
+        <xs:attribute name="Description" form="unqualified" type="xs:string" default="" />
+        <xs:attribute name="RollBackScript" form="unqualified" type="xs:boolean" default="true" />
+        <xs:attribute name="RollBackBuild" form="unqualified" type="xs:boolean" default="true" />
+        <xs:attribute name="StripTransactions" form="unqualified" type="xs:boolean" default="false" />
+        <xs:attribute name="DatabaseName" form="unqualified" type="xs:string" default="" />
+        <xs:attribute name="AllowMultipleRuns" type="xs:boolean" default="true" form="unqualified" />
+        <xs:attribute name="ScriptTimeout" type="xs:int" default="500" form="unqualified" />
+		<xs:attribute name="ScriptTag" type="xs:string" default="Default" form="unqualified" />
+		<xs:attribute name="ApplyToGroups" type="xs:string" default="" form="unqualified" />
+    </xs:complexType>
+    <xs:element name="DefaultScriptRegistry">
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded" minOccurs="0">
+                <xs:element name="DefaultScript" type="DefaultScript" />
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
+<!-- xsd /c /namespace:SqlSync.SqlBuild.DefaultScripts DefaultScriptRegistry.xsd -->

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SimpleDataClass generateLanguage="cs" xmlns="http://McKechney/SimpleDataClass.xsd">
+	<namespace>SqlSync.DbInformation</namespace>
+	<class_name>ObjectData</class_name>
+	<properties>
+		<property>
+			<public_name>ObjectName</public_name>
+			<default_value>string.Empty</default_value>
+			<source_column>ObjectName</source_column>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>ObjectType</public_name>
+			<default_value>string.Empty</default_value>
+			<source_column>ObjectType</source_column>
+			<data_type>string</data_type>
+		</property>
+		<property>
+			<public_name>CreateDate</public_name>
+			<default_value>DateTime.MinValue</default_value>
+			<source_column>CreateDate</source_column>
+			<data_type>System.DateTime</data_type>
+		</property>
+		<property>
+			<public_name>AlteredDate</public_name>
+			<default_value>DateTime.MinValue</default_value>
+			<source_column>AlteredDate</source_column>
+			<data_type>System.DateTime</data_type>
+		</property>
+		<property>
+			<public_name>SchemaOwner</public_name>
+			<default_value>"dbo"</default_value>
+			<source_column>SchemaOwner</source_column>
+			<data_type>string</data_type>
+		</property>
+	</properties>
+</SimpleDataClass>

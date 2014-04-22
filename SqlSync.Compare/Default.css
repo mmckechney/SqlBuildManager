@@ -1,0 +1,110 @@
+#msg DL {
+	BORDER-RIGHT: #006 1px solid; PADDING-RIGHT: 6px; BORDER-TOP: #006 1px solid; PADDING-LEFT: 6px; BACKGROUND: #369; PADDING-BOTTOM: 6px; BORDER-LEFT: #006 1px solid; COLOR: #fff; PADDING-TOP: 6px; BORDER-BOTTOM: #006 1px solid
+}
+#msg DT {
+	FONT-WEIGHT: bold; FLOAT: left; WIDTH: 6em
+}
+#msg DT:unknown {
+	content: ':'
+}
+#msg DL {
+	FONT-SIZE: 10pt; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+#msg DT {
+	FONT-SIZE: 10pt; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+#msg UL {
+	FONT-SIZE: 10pt; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+#msg LI {
+	FONT-SIZE: 10pt; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+#msg DL A {
+	FONT-WEIGHT: bold
+}
+#msg DL A:link {
+	COLOR: #fc3
+}
+#msg DL A:active {
+	COLOR: #ff0
+}
+#msg DL A:visited {
+	COLOR: #cc6
+}
+H3 {
+	FONT-WEIGHT: bold; FONT-SIZE: 10pt; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+#msg PRE {
+	BORDER-RIGHT: #fc0 1px solid; PADDING-RIGHT: 6px; BORDER-TOP: #fc0 1px solid; PADDING-LEFT: 6px; BACKGROUND: #ffc; PADDING-BOTTOM: 6px; OVERFLOW: auto; BORDER-LEFT: #fc0 1px solid; PADDING-TOP: 6px; BORDER-BOTTOM: #fc0 1px solid
+}
+#msg UL {
+	OVERFLOW: auto
+}
+PRE {
+	OVERFLOW: auto
+}
+#patch {
+	WIDTH: 100%
+}
+#patch H4 {
+	PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-SIZE: 10pt; BACKGROUND: #369; PADDING-BOTTOM: 8px; MARGIN: 0px; COLOR: #fff; PADDING-TOP: 8px; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+#patch .propset H4 {
+	MARGIN: 0px
+}
+#patch .binary H4 {
+	MARGIN: 0px
+}
+#patch PRE {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; MARGIN: 0px; LINE-HEIGHT: 1.2em; PADDING-TOP: 0px
+}
+#patch .diff {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; BACKGROUND: #eee; PADDING-BOTTOM: 10px; OVERFLOW: auto; WIDTH: 100%; PADDING-TOP: 0px
+}
+#patch .propset .diff {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 10px; PADDING-TOP: 10px
+}
+#patch .binary .diff {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 10px; PADDING-TOP: 10px
+}
+#patch SPAN {
+	PADDING-RIGHT: 10px; DISPLAY: block; PADDING-LEFT: 10px; PADDING-BOTTOM: 0px; PADDING-TOP: 0px
+}
+#patch .modfile {
+	BORDER-RIGHT: #ccc 1px solid; BORDER-TOP: #ccc 1px solid; MARGIN: 10px 0px; BORDER-LEFT: #ccc 1px solid; BORDER-BOTTOM: #ccc 1px solid
+}
+#patch .addfile {
+	BORDER-RIGHT: #ccc 1px solid; BORDER-TOP: #ccc 1px solid; MARGIN: 10px 0px; BORDER-LEFT: #ccc 1px solid; BORDER-BOTTOM: #ccc 1px solid
+}
+#patch .delfile {
+	BORDER-RIGHT: #ccc 1px solid; BORDER-TOP: #ccc 1px solid; MARGIN: 10px 0px; BORDER-LEFT: #ccc 1px solid; BORDER-BOTTOM: #ccc 1px solid
+}
+#patch .propset {
+	BORDER-RIGHT: #ccc 1px solid; BORDER-TOP: #ccc 1px solid; MARGIN: 10px 0px; BORDER-LEFT: #ccc 1px solid; BORDER-BOTTOM: #ccc 1px solid
+}
+#patch .binary {
+	BORDER-RIGHT: #ccc 1px solid; BORDER-TOP: #ccc 1px solid; MARGIN: 10px 0px; BORDER-LEFT: #ccc 1px solid; BORDER-BOTTOM: #ccc 1px solid
+}
+#patch .copfile {
+	BORDER-RIGHT: #ccc 1px solid; BORDER-TOP: #ccc 1px solid; MARGIN: 10px 0px; BORDER-LEFT: #ccc 1px solid; BORDER-BOTTOM: #ccc 1px solid
+}
+#patch INS {
+	PADDING-RIGHT: 10px; DISPLAY: block; PADDING-LEFT: 10px; BACKGROUND: #dfd; PADDING-BOTTOM: 0px; PADDING-TOP: 0px; TEXT-DECORATION: none
+}
+#patch DEL {
+	PADDING-RIGHT: 10px; DISPLAY: block; PADDING-LEFT: 10px; BACKGROUND: #fdd; PADDING-BOTTOM: 0px; PADDING-TOP: 0px; TEXT-DECORATION: none
+}
+#patch .lines {
+	BACKGROUND: #fff; COLOR: #888
+}
+.info {
+	BACKGROUND: #fff; COLOR: #888
+}
+.toplink
+{
+	FONT-SIZE: 9pt; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+.createdby
+{
+	FONT-SIZE: 7pt; FONT-FAMILY: verdana,arial,helvetica,sans-serif;color:Gray
+}

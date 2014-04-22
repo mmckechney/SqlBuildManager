@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<EnterpriseConfiguration xmlns="http://www.mckechney.com/EnterpriseConfiguration.xsd">
+	<TableWatch Description="Sample Table Watch" EmailBody="One of your watched tables has changed" EmailSubject="Alert Notice">
+		<Table Name="SqlBuild_logging" />
+		<Table Name="TransactionTest" />
+		<Notify EMail="michael@mckechney.com" Name="Michael McKechney"/>
+		<Notify EMail="help@sqlbuildmanager.com" Name="Sql Build Admin"/>
+	</TableWatch>
+	<ScriptPolicy PolicyId="CommentHeaderPolicy"/>
+	<ScriptPolicy PolicyId="ConstraintNamePolicy"/>
+	<ScriptPolicy PolicyId="GrantExecutePolicy"/>
+	<ScriptPolicy PolicyId="GrantExecuteToPublicPolicy"/>
+	<ScriptPolicy PolicyId="QualifiedNamesPolicy"/>
+	<ScriptPolicy PolicyId="ReRunablePolicy"/>
+	<ScriptPolicy PolicyId="SelectStarPolicy"/>
+	<ScriptPolicy PolicyId="StoredProcParameterPolicy">
+		<Argument Name="Schema" Value="xyz"/>
+		<Argument Name="Parameter" Value="@CustomerId"/>
+	</ScriptPolicy>
+	<ScriptPolicy PolicyId="WithNoLockPolicy"/>
+	
+	<FeatureAccess FeatureId="RemoteExecution" Enabled="true"/>
+</EnterpriseConfiguration>

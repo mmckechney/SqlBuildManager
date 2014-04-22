@@ -1,0 +1,38 @@
+7.5.3.1192
+7.4.2.27696
+Version 7.5.3
+ADD: Time display for each script duration.
+ADD: Setting flag to create build log file or not (default to not) - keeps build file smaller
+
+Version 7.5.2
+ADD: Completed stored procedure testing framework
+ADD: Compare between current script and script previously run on server
+ADD: Highlighted SQL view of scripts run on a server
+ADD: New index to SQLBuild_logging table to speed up list refresh
+
+Version 7.5.1
+ADD: Check to ensure that Stored Procedures (.PRC) and Functions (.UDF) never strip transactions.
+ADD: Ability to import Stored Procedure test configurations.
+
+Version 7.5.0.2914
+ADD: Sorting of build script list by status image.
+ADD: Stored procedure testing framework
+
+Version 7.4.11.29555
+ADD: Ability to cancel a build.
+ADD: Status timers for build duration and script duration.
+ADD: Added progress bar for Builds
+ADD: No script list refresh for failed builds (no need)
+ADD: Ability to change multiple script tags at once. 
+ADD: New utility scripts to wrap Stats and PK adds to make them re-runnable.
+ADD: Added CreateId and CreateDate for Code Table auditing
+
+Version 7.4.6.399
+FIX: Tag value not being saved with bulk add (ex. direct object scripting)
+ADD: Tool tip alert when an autoscripting candidate (<F12>) value is highlighted in script window
+
+Version 7.4.5.19792
+FIX: Corrected object scripting error
+FIX: Added error message when trying to open newer build files with old version.
+ADD: Automatic Checking for new versions
+ADD: Manual checking for new versions via Help menu

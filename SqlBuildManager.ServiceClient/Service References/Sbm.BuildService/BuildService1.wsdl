@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/Imports">
+      <xsd:import schemaLocation="http://localhost:33273/BuildService.svc?xsd=xsd0" namespace="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService" />
+      <xsd:import schemaLocation="http://localhost:33273/BuildService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="http://localhost:33273/BuildService.svc?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Services" />
+      <xsd:import schemaLocation="http://localhost:33273/BuildService.svc?xsd=xsd3" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+      <xsd:import schemaLocation="http://localhost:33273/BuildService.svc?xsd=xsd4" namespace="http://schemas.datacontract.org/2004/07/SqlSync.Connection" />
+      <xsd:import schemaLocation="http://localhost:33273/BuildService.svc?xsd=xsd5" namespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Interfaces.Console" />
+      <xsd:import schemaLocation="http://localhost:33273/BuildService.svc?xsd=xsd6" namespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Services.History" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IBuildService_SubmitBuildPackage_InputMessage">
+    <wsdl:part name="parameters" element="tns:SubmitBuildPackage" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_SubmitBuildPackage_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SubmitBuildPackageResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_TestDatabaseConnectivity_InputMessage">
+    <wsdl:part name="parameters" element="tns:TestDatabaseConnectivity" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_TestDatabaseConnectivity_OutputMessage">
+    <wsdl:part name="parameters" element="tns:TestDatabaseConnectivityResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetServiceStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceStatus" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetServiceStatus_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetLastExecutionCommitsLog_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetLastExecutionCommitsLog" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetLastExecutionCommitsLog_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetLastExecutionCommitsLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetLastExecutionErrorsLog_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetLastExecutionErrorsLog" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetLastExecutionErrorsLog_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetLastExecutionErrorsLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetServiceLogFile_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceLogFile" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetServiceLogFile_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceLogFileResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetDetailedDatabaseExecutionLog_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetDetailedDatabaseExecutionLog" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetDetailedDatabaseExecutionLog_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetDetailedDatabaseExecutionLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetServiceVersion_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceVersion" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetServiceVersion_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceVersionResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetServiceBuildHistory_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceBuildHistory" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetServiceBuildHistory_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceBuildHistoryResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetSpecificCommitsLog_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetSpecificCommitsLog" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetSpecificCommitsLog_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetSpecificCommitsLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetSpecificErrorsLog_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetSpecificErrorsLog" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetSpecificErrorsLog_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetSpecificErrorsLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetSpecificDatabaseExecutionLog_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetSpecificDatabaseExecutionLog" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetSpecificDatabaseExecutionLog_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetSpecificDatabaseExecutionLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetAllErrorLogsForExecution_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetAllErrorLogsForExecution" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetAllErrorLogsForExecution_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetAllErrorLogsForExecutionResponse" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetLastFailuresDatabaseConfig_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetLastFailuresDatabaseConfig" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_GetLastFailuresDatabaseConfig_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetLastFailuresDatabaseConfigResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IBuildService">
+    <wsdl:operation name="SubmitBuildPackage">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/SubmitBuildPackage" message="tns:IBuildService_SubmitBuildPackage_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/SubmitBuildPackageResponse" message="tns:IBuildService_SubmitBuildPackage_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="TestDatabaseConnectivity">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/TestDatabaseConnectivity" message="tns:IBuildService_TestDatabaseConnectivity_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/TestDatabaseConnectivityResponse" message="tns:IBuildService_TestDatabaseConnectivity_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceStatus">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetServiceStatus" message="tns:IBuildService_GetServiceStatus_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetServiceStatusResponse" message="tns:IBuildService_GetServiceStatus_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLastExecutionCommitsLog">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetLastExecutionCommitsLog" message="tns:IBuildService_GetLastExecutionCommitsLog_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetLastExecutionCommitsLogResponse" message="tns:IBuildService_GetLastExecutionCommitsLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLastExecutionErrorsLog">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetLastExecutionErrorsLog" message="tns:IBuildService_GetLastExecutionErrorsLog_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetLastExecutionErrorsLogResponse" message="tns:IBuildService_GetLastExecutionErrorsLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceLogFile">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetServiceLogFile" message="tns:IBuildService_GetServiceLogFile_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetServiceLogFileResponse" message="tns:IBuildService_GetServiceLogFile_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDetailedDatabaseExecutionLog">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetDetailedDatabaseExecutionLog" message="tns:IBuildService_GetDetailedDatabaseExecutionLog_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetDetailedDatabaseExecutionLogResponse" message="tns:IBuildService_GetDetailedDatabaseExecutionLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceVersion">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetServiceVersion" message="tns:IBuildService_GetServiceVersion_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetServiceVersionResponse" message="tns:IBuildService_GetServiceVersion_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceBuildHistory">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetServiceBuildHistory" message="tns:IBuildService_GetServiceBuildHistory_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetServiceBuildHistoryResponse" message="tns:IBuildService_GetServiceBuildHistory_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSpecificCommitsLog">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetSpecificCommitsLog" message="tns:IBuildService_GetSpecificCommitsLog_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetSpecificCommitsLogResponse" message="tns:IBuildService_GetSpecificCommitsLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSpecificErrorsLog">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetSpecificErrorsLog" message="tns:IBuildService_GetSpecificErrorsLog_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetSpecificErrorsLogResponse" message="tns:IBuildService_GetSpecificErrorsLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSpecificDatabaseExecutionLog">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetSpecificDatabaseExecutionLog" message="tns:IBuildService_GetSpecificDatabaseExecutionLog_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetSpecificDatabaseExecutionLogResponse" message="tns:IBuildService_GetSpecificDatabaseExecutionLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetAllErrorLogsForExecution">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetAllErrorLogsForExecution" message="tns:IBuildService_GetAllErrorLogsForExecution_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetAllErrorLogsForExecutionResponse" message="tns:IBuildService_GetAllErrorLogsForExecution_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLastFailuresDatabaseConfig">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetLastFailuresDatabaseConfig" message="tns:IBuildService_GetLastFailuresDatabaseConfig_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetLastFailuresDatabaseConfigResponse" message="tns:IBuildService_GetLastFailuresDatabaseConfig_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>

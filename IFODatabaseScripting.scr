@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<AutoScripting xmlns="http://www.mckechney.com/AutoScriptingConfig.xsd">
+	<DatabaseScriptConfig DatabaseName="IFOGlobal" ServerName="W2USSFJ41" UseWindowsAuthentication="true">
+		<ScriptToPath>C:\Documents and Settings\mm001125\My Documents\Visual Studio Projects\CRM\Database\IFOGlobal\W2USSFJ41</ScriptToPath>
+	</DatabaseScriptConfig>
+	<DatabaseScriptConfig DatabaseName="IFOGlobal" ServerName="UGRBDEVD001" UseWindowsAuthentication="true">
+		<ScriptToPath>C:\Documents and Settings\mm001125\My Documents\Visual Studio Projects\CRM\Database\IFOGlobal\UGRBDEVD001</ScriptToPath>
+	</DatabaseScriptConfig>
+	<DatabaseScriptConfig DatabaseName="IFOGlobal" ServerName="UCOMMANDQ1" UseWindowsAuthentication="true">
+		<ScriptToPath>C:\Documents and Settings\mm001125\My Documents\Visual Studio Projects\CRM\Database\IFOGlobal\UCOMMANDQ1</ScriptToPath>
+	</DatabaseScriptConfig>
+	<DatabaseScriptConfig DatabaseName="IFOGlobal" ServerName="UCOMMANDUA2" UseWindowsAuthentication="true">
+		<ScriptToPath>C:\Documents and Settings\mm001125\My Documents\Visual Studio Projects\CRM\Database\IFOGlobal\UCOMMANDUA2</ScriptToPath>
+	</DatabaseScriptConfig>
+	<DatabaseScriptConfig DatabaseName="IFOGlobal" ServerName="UGRBCRITP001" UseWindowsAuthentication="true">
+		<ScriptToPath>C:\Documents and Settings\mm001125\My Documents\Visual Studio Projects\CRM\Database\IFOGlobal\UGRBCRITP001</ScriptToPath>
+	</DatabaseScriptConfig>
+</AutoScripting>
