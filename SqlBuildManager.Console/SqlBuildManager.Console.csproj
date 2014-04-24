@@ -74,6 +74,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackoutCommandLine.cs" />
     <Compile Include="ProcessHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -102,6 +103,10 @@
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj">
       <Project>{37A22666-195A-4CBB-A541-CFFBFB9D7905}</Project>
       <Name>SqlSync.DbInformation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj">
+      <Project>{CD09B7DB-851B-4321-9E21-16948DA7FA07}</Project>
+      <Name>SqlSync.ObjectScript</Name>
     </ProjectReference>
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj">
       <Project>{9B495B5F-1578-482B-8CF7-615B04D3AE2A}</Project>

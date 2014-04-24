@@ -73,12 +73,8 @@ namespace SqlSync.SqlBuild
 
         private void SetSourceServerAndDatabase(string serverName, string databaseName)
         {
-            foreach (Objects.ObjectUpdates script in this.initialCanUpdateList)
-            {
-                script.SourceDatabase = databaseName;
-                script.SourceServer = serverName;
-            }
-
+            BackoutPackage.SetBackoutSourceDatabaseAndServer(ref this.initialCanUpdateList, serverName,databaseName);
+           
             if (serverName.Length > 0 && databaseName.Length > 0)
             {
                 while (this.bgCheckTargetObjects.IsBusy)
@@ -107,7 +103,7 @@ namespace SqlSync.SqlBuild
                 if (lblServerSetting.Text.Length == 0)
                     lblServerSetting.Text = String.Format(pleaseSelect, "server");
 
-                txtBackoutPackage.Text = String.Format("{0}Backout_{1}", Path.GetDirectoryName(this.sourceSbmFullFileName) + @"\", Path.GetFileName(this.sourceSbmFullFileName));
+                txtBackoutPackage.Text = BackoutPackage.GetDefaultPackageName(this.sourceSbmFullFileName); 
 
                 SetSourceServerAndDatabase(this.connData.SQLServerName, this.connData.DatabaseName);
 
@@ -285,28 +281,7 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region Checking Target DB Objects BG worker methods and event handlers
-        private List<SqlBuild.Objects.ObjectUpdates> GetObjectsNotPresentTargetDatabase(List<SqlBuild.Objects.ObjectUpdates> masterList, ConnectionData connData, string newServer, string newDatabase)
-        {
-            List<SqlBuild.Objects.ObjectUpdates> notPresent = new List<Objects.ObjectUpdates>();
-            ConnectionData tmp = new ConnectionData();
-            tmp.Fill(this.connData);
-            tmp.DatabaseName = newDatabase;
-            tmp.SQLServerName = newServer;
-
-            List<ObjectData> lstAllScriptAble = new List<ObjectData>();
-            lstAllScriptAble.AddRange(InfoHelper.GetStoredProcedureList(tmp));
-            lstAllScriptAble.AddRange(InfoHelper.GetViewList(tmp));
-            lstAllScriptAble.AddRange(InfoHelper.GetFunctionList(tmp));
-            lstAllScriptAble.AddRange(InfoHelper.GetTriggerObjectList(tmp));
-
-            var x = from m in masterList
-                    where !(from s in lstAllScriptAble select s.SchemaOwner+ "."+ s.ObjectName).Contains(m.SourceObject)
-                    select m;
-
-            return x.ToList();
-        }
-
-
+       
         private void bgCheckTargetObjects_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker bg = (BackgroundWorker)sender;
@@ -316,14 +291,14 @@ namespace SqlSync.SqlBuild
 
             string[] args = (string[])e.Argument;
 
-            this.notPresentOnTarget = GetObjectsNotPresentTargetDatabase(this.initialCanUpdateList, this.connData, args[0], args[1]);
+            this.notPresentOnTarget = BackoutPackage.GetObjectsNotPresentTargetDatabase(this.initialCanUpdateList, this.connData, args[0], args[1]);
             if (notPresentOnTarget.Count > 0)
             {
                 var cur = from i in initialCanUpdateList
                           where !(from n in notPresentOnTarget select n.SourceObject).Contains(i.SourceObject)
                           select i;
 
-                if (cur.Count() > 0)
+                if (cur.Any())
                     currentTargetCanUpdateList = cur.ToList();
                 else 
                     currentTargetCanUpdateList.Clear();

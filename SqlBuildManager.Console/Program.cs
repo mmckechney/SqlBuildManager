@@ -140,12 +140,26 @@ namespace SqlBuildManager.Console
                     System.Environment.Exit(621);
                 }
             }
+            else if (args.Length > 1 && args[0].ToLower() == "/createbackout")
+            {
+                string packageName =  BackoutCommandLine.CreateBackoutPackage(args);
+                if (!String.IsNullOrEmpty(packageName))
+                {
+                    System.Console.WriteLine(packageName);
+                    System.Environment.Exit(0);
+                }
+                else
+                {
+                    System.Environment.Exit(856);
+                }
+            }
             else
             {
                 log.Debug("Entering Standard Execution");
 
                 //Get the path of the Sql Build Manager executable - need to be co-resident
-                string sbmExe = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\Sql Build Manager.exe";
+                string sbmExe = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) +
+                                @"\Sql Build Manager.exe";
 
                 //Put any arguments that have spaces into quotes
                 for (int i = 0; i < args.Length; i++)

@@ -20,10 +20,8 @@ namespace SqlBuildManager.Enterprise.Policy
         }
         public p.ViolationSeverity Severity
         {
-            get
-            {
-                return p.ViolationSeverity.High;
-            }
+            get;
+            set;
         }
         public string ShortDescription
         {
@@ -93,7 +91,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 //See if we have any that are set to false...
                 var f = from r in rulesLine where r.Value == false select r.Key;
 
-                if (f == null || f.Count() == 0)
+                if (f.Any())
                 {
                     return true;
                 }
