@@ -1,6 +1,7 @@
 <SqlBuildManagerChangeNotes>
-  <Version Major="9" Minor="1" Revision="1">
+  <Version Major="9" Minor="2" Revision="0">
     <!--  -->
+    <added>Commandline ability to create a default backout package. Usage: SqlBuildManager.Console.exe /CreateBackout "&lt;Source Package Path and Name&gt;" /server="&lt;Backout source server&gt;" /database="&lt;Backout source database&gt;"</added>
     <fixed>Database login error for accounts that do not have code review database permissions</fixed>
   </Version>
   <Version Major="9" Minor="1" Revision="0">
@@ -10,7 +11,7 @@
     <fixed>Corrected issue with Code Review retrieval that could cause application errors </fixed>
   </Version>
   <Version Major="9" Minor="0" Revision="0">
-	<!-- February 5, 2013 -->
+    <!-- February 5, 2013 -->
     <note>** New install requires .NET Framework 4.0 ** If you do not have this version installed (but you really should), please contact Mike to assist in making your current tool version forward compatible.</note>
     <added>Ability to track and manage code reviews of the SQL scripts</added>
     <added>Prohibited the use of the Ad Hoc query execution to perform INSERT, UPDATE or DELETE queries. A build package should be used instead to ensure proper logging and tracking</added>
@@ -473,59 +474,67 @@
     <fixed>Database name showing with "*" when modifying multiple scripts</fixed>
     <fixed>Target database override list not refreshing when a database was removed.</fixed>
   </Version>
-  <!--
-
-Version 7.6.1 (May 25, 2007)
-FIX: Corrected roll-back error when database connection unavailable causing partially committed builds.
-FIX: Changed docking for resize of build manager group box.
-FIX: Error in refresh of status icons when Override target change is selected.
-CHANGE: Updated DefaultScriptRegistry.xml to remove the IFOOrder default script entry.
-
-Version 7.6.0 (May 21, 2007)
-ADD: Override target database settings
-ADD: Ability to maintain manual database entries
-
-Version 7.5.5 (March 13, 2007)
-ADD: Added "find" feature to SQL script windows
-ADD: Updated build review window to display results in full window
-FIX: Corrected thread contention error in unattended builds.
-
-Version 7.5.3 (February 13, 2007)
-ADD: Time display for each script duration.
-ADD: Setting flag to create build log file or not (default to not) - keeps build file smaller
-
-Version 7.5.2 (February 9, 2007)
-ADD: Completed stored procedure testing framework
-ADD: Compare between current script and script previously run on server
-ADD: Highlighted SQL view of scripts run on a server
-ADD: New index to SQLBuild_logging table to speed up list refresh
-
-Version 7.5.1 (January 23, 2007)
-ADD: Check to ensure that Stored Procedures (.PRC) and Functions (.UDF) never strip transactions.
-ADD: Ability to import Stored Procedure test configurations.
-
-Version 7.5.0 (January 23, 2007)
-ADD: Sorting of build script list by status image.
-ADD: Stored procedure testing framework
-
-Version 7.4.11 (January 8, 2007)
-ADD: Ability to cancel a build.
-ADD: Status timers for build duration and script duration.
-ADD: Added progress bar for Builds
-ADD: No script list refresh for failed builds (no need)
-ADD: Ability to change multiple script tags at once. 
-ADD: New utility scripts to wrap Stats and PK adds to make them re-runnable.
-ADD: Added CreateId and CreateDate for Code Table auditing
-
-Version 7.4.6 (December 1, 2006)
-FIX: Tag value not being saved with bulk add (ex. direct object scripting)
-ADD: Tool tip alert when an autoscripting candidate (<F12>) value is highlighted in script window
-
-Version 7.4.5 (November 28,2006)
-FIX: Corrected object scripting error
-FIX: Added error message when trying to open newer build files with old version.
-ADD: Automatic Checking for new versions
-ADD: Manual checking for new versions via Help menu
--->
+  <Version Major="7" Minor="6" Revision="1">
+    <!-- May 25, 2007 -->
+    <fixed>Corrected roll-back error when database connection unavailable causing partially committed builds.</fixed>
+    <fixed>Changed docking for resize of build manager group box.</fixed>
+    <fixed>Error in refresh of status icons when Override target change is selected.</fixed>
+    <updated>Updated DefaultScriptRegistry.xml to remove the IFOOrder default script entry.</updated>
+  </Version>
+  <Version Major="7" Minor="6" Revision="0">
+    <!--  May 21, 2007 -->
+    <added>Override target database settings</added>
+    <added>Ability to maintain manual database entries</added>
+  </Version>
+  <Version Major="7" Minor="5" Revision="5">
+    <!--  March 13, 2007 -->
+    <added>Added "find" feature to SQL script windows</added>
+    <added>Updated build review window to display results in full window </added>
+    <fixed>Corrected thread contention error in unattended builds.</fixed>
+  </Version>
+  <Version Major="7" Minor="5" Revision="3">
+    <!-- February 13, 2007 -->
+    <added>Time display for each script duration.</added>
+    <added>Setting flag to create build log file or not (default to not) - keeps build file smaller</added>
+  </Version>
+  <Version Major="7" Minor="5" Revision="2">
+    <!-- February 9, 2007 -->
+    <added>Completed stored procedure testing framework</added>
+    <added>Compare between current script and script previously run on server</added>
+    <added>Highlighted SQL view of scripts run on a server</added>
+    <added>New index to SQLBuild_logging table to speed up list refresh</added>
+  </Version>
+  <Version Major="7" Minor="5" Revision="1">
+    <!-- January 23, 2007 -->
+    <added>Check to ensure that Stored Procedures (.PRC) and Functions (.UDF) never strip transactions.</added>
+    <added>Ability to import Stored Procedure test configurations.</added>
+  </Version>
+  <Version Major="7" Minor="5" Revision="0">
+    <!-- January 23, 2007 -->
+    <added>Sorting of build script list by status image.</added>
+    <added>Stored procedure testing framework</added>
+  </Version>
+  <Version Major="7" Minor="4" Revision="11">
+    <!--  January 8, 2007 -->
+    <added>Ability to cancel a build.</added>
+    <added>Status timers for build duration and script duration.</added>
+    <added>Added progress bar for Builds</added>
+    <added>No script list refresh for failed builds (no need)</added>
+    <added>Ability to change multiple script tags at once. </added>
+    <added>New utility scripts to wrap Stats and PK adds to make them re-runnable.</added>
+    <added>Added CreateId and CreateDate for Code Table auditing</added>
+  </Version>
+  <Version Major="7" Minor="4" Revision="6">
+    <!-- December 1, 2006 -->
+    <fixed>Tag value not being saved with bulk add (ex. direct object scripting)</fixed>
+    <added>Tool tip alert when an autoscripting candidate (&lt;F12&gt;) value is highlighted in script window</added>
+  </Version>
+  <Version Major="7" Minor="4" Revision="5">
+    <!-- November 28,2006 -->
+    <fixed>Corrected object scripting error</fixed>
+    <fixed>Added error message when trying to open newer build files with old version.</fixed>
+    <added>Automatic Checking for new versions</added>
+    <added>Manual checking for new versions via Help menu</added>
+  </Version>
 
 </SqlBuildManagerChangeNotes>

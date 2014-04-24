@@ -38,7 +38,9 @@
 				</style>
   </head>
   <body>
-    <div class="version">Version 9.1.1</div>
+    <div class="version">Version 9.2.0</div>
+    <div>
+      <span class="added">ADDED: </span>Commandline ability to create a default backout package. Usage: SqlBuildManager.Console.exe /CreateBackout "&lt;Source Package Path and Name&gt;" /server="&lt;Backout source server&gt;" /database="&lt;Backout source database&gt;"</div>
     <div>
       <span class="fixed">FIXED: </span>Database login error for accounts that do not have code review database permissions</div>
     <br />
@@ -795,6 +797,90 @@
       <span class="fixed">FIXED: </span>Database name showing with "*" when modifying multiple scripts</div>
     <div>
       <span class="fixed">FIXED: </span>Target database override list not refreshing when a database was removed.</div>
+    <br />
+    <div class="version">Version 7.6.1</div>
+    <div>
+      <span class="fixed">FIXED: </span>Corrected roll-back error when database connection unavailable causing partially committed builds.</div>
+    <div>
+      <span class="fixed">FIXED: </span>Changed docking for resize of build manager group box.</div>
+    <div>
+      <span class="fixed">FIXED: </span>Error in refresh of status icons when Override target change is selected.</div>
+    <div>
+      <span class="updated">UPDATED: </span>Updated DefaultScriptRegistry.xml to remove the IFOOrder default script entry.</div>
+    <br />
+    <div class="version">Version 7.6.0</div>
+    <div>
+      <span class="added">ADDED: </span>Override target database settings</div>
+    <div>
+      <span class="added">ADDED: </span>Ability to maintain manual database entries</div>
+    <br />
+    <div class="version">Version 7.5.5</div>
+    <div>
+      <span class="added">ADDED: </span>Added "find" feature to SQL script windows</div>
+    <div>
+      <span class="added">ADDED: </span>Updated build review window to display results in full window </div>
+    <div>
+      <span class="fixed">FIXED: </span>Corrected thread contention error in unattended builds.</div>
+    <br />
+    <div class="version">Version 7.5.3</div>
+    <div>
+      <span class="added">ADDED: </span>Time display for each script duration.</div>
+    <div>
+      <span class="added">ADDED: </span>Setting flag to create build log file or not (default to not) - keeps build file smaller</div>
+    <br />
+    <div class="version">Version 7.5.2</div>
+    <div>
+      <span class="added">ADDED: </span>Completed stored procedure testing framework</div>
+    <div>
+      <span class="added">ADDED: </span>Compare between current script and script previously run on server</div>
+    <div>
+      <span class="added">ADDED: </span>Highlighted SQL view of scripts run on a server</div>
+    <div>
+      <span class="added">ADDED: </span>New index to SQLBuild_logging table to speed up list refresh</div>
+    <br />
+    <div class="version">Version 7.5.1</div>
+    <div>
+      <span class="added">ADDED: </span>Check to ensure that Stored Procedures (.PRC) and Functions (.UDF) never strip transactions.</div>
+    <div>
+      <span class="added">ADDED: </span>Ability to import Stored Procedure test configurations.</div>
+    <br />
+    <div class="version">Version 7.5.0</div>
+    <div>
+      <span class="added">ADDED: </span>Sorting of build script list by status image.</div>
+    <div>
+      <span class="added">ADDED: </span>Stored procedure testing framework</div>
+    <br />
+    <div class="version">Version 7.4.11</div>
+    <div>
+      <span class="added">ADDED: </span>Ability to cancel a build.</div>
+    <div>
+      <span class="added">ADDED: </span>Status timers for build duration and script duration.</div>
+    <div>
+      <span class="added">ADDED: </span>Added progress bar for Builds</div>
+    <div>
+      <span class="added">ADDED: </span>No script list refresh for failed builds (no need)</div>
+    <div>
+      <span class="added">ADDED: </span>Ability to change multiple script tags at once. </div>
+    <div>
+      <span class="added">ADDED: </span>New utility scripts to wrap Stats and PK adds to make them re-runnable.</div>
+    <div>
+      <span class="added">ADDED: </span>Added CreateId and CreateDate for Code Table auditing</div>
+    <br />
+    <div class="version">Version 7.4.6</div>
+    <div>
+      <span class="fixed">FIXED: </span>Tag value not being saved with bulk add (ex. direct object scripting)</div>
+    <div>
+      <span class="added">ADDED: </span>Tool tip alert when an autoscripting candidate (&lt;F12&gt;) value is highlighted in script window</div>
+    <br />
+    <div class="version">Version 7.4.5</div>
+    <div>
+      <span class="fixed">FIXED: </span>Corrected object scripting error</div>
+    <div>
+      <span class="fixed">FIXED: </span>Added error message when trying to open newer build files with old version.</div>
+    <div>
+      <span class="added">ADDED: </span>Automatic Checking for new versions</div>
+    <div>
+      <span class="added">ADDED: </span>Manual checking for new versions via Help menu</div>
     <br />
   </body>
 </html>
