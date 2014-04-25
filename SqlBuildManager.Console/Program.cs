@@ -6,6 +6,7 @@ using System.Diagnostics;
 using log4net;
 using System.Reflection;
 using SqlSync.SqlBuild;
+using SqlBuildManager.Enterprise.Policy;
 namespace SqlBuildManager.Console
 {
     class Program
@@ -124,6 +125,20 @@ namespace SqlBuildManager.Console
                 else
                 {
                     System.Environment.Exit(0);
+                }
+            }
+            else if (args.Length == 2 && args[0].ToLower() == "/policycheck")
+            {
+                string packageName = args[1].Trim();
+                PolicyHelper helper = new PolicyHelper();
+                bool passed = helper.CommandLinePolicyCheck(packageName);
+                if (passed)
+                {
+                    System.Environment.Exit(0);
+                }
+                else
+                {
+                    System.Environment.Exit(739);
                 }
             }
             else if (args.Length == 2 && args[0].ToLower() == "/gethash")

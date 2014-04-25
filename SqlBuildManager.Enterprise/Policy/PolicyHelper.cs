@@ -12,6 +12,7 @@ using System.Xml.XPath;
 using System.Xml.Xsl;
 using System.Xml;
 using SqlSync.SqlBuild;
+
 using System.Data;
 namespace SqlBuildManager.Enterprise.Policy
 {
@@ -374,6 +375,64 @@ namespace SqlBuildManager.Enterprise.Policy
             }
             if (line == 0) line++;
             return line;
+        }
+
+        public bool CommandLinePolicyCheck(string buildPackageName)
+        {
+            SqlSyncBuildData buildData = null;
+
+            if (String.IsNullOrEmpty(buildPackageName))
+                return true;
+
+            string projFileName = string.Empty;
+            string projectFilePath = string.Empty;
+            string workingDirectory = string.Empty;
+
+            string extension = Path.GetExtension(buildPackageName).ToLower();
+            switch ((extension))
+            {
+                case ".sbm":
+                    string result;
+                    SqlBuildFileHelper.ExtractSqlBuildZipFile(buildPackageName, ref workingDirectory, ref projectFilePath,
+                                           ref projFileName,
+                                           out result);
+                    SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projFileName, false);
+                    break;
+                case ".sbx":
+                    projectFilePath = Path.GetDirectoryName(buildPackageName);
+                    SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, buildPackageName, false);
+                    break;
+                default:
+                    return true;
+                    break;
+            }
+
+            if (buildData != null)
+            {
+                Package pkg = CreateScriptPolicyPackage(buildData, projectFilePath);
+
+                var highViolations = from s in pkg
+                                     from v in s.Violations
+                                     where v.Severity == "High"
+                                     select new {s.ScriptName, v.Message}; 
+
+                if (!highViolations.Any())
+                    return true;
+
+                foreach (var highViolation in highViolations)
+                {
+                   log.ErrorFormat("Policy Failure for script {0}: {1}", highViolation.ScriptName,highViolation.Message);   
+                }
+                return false;   
+                //if (!pkg.Select(p => p.Violations.Select(v => v.Severity == "High")).Any())
+                //    return true;
+
+
+            }
+            else
+            {
+                return true;
+            }
         }
 
     }
