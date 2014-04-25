@@ -52,10 +52,15 @@ namespace SqlBuildManager.Enterprise
 
         private static EnterpriseConfiguration LoadEnterpriseConfiguration()
         {
-            if(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"] != null ||
+            if(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"] != null &&
                 System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"].Length > 0)
             {
                 return LoadEnterpriseConfiguration(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"]);
+            }
+            else
+            {
+                if(File.Exists(@"I:\mmckechney\Sql Build Manager\Enterprise\EnterpriseConfiguration.xml"))
+                    return LoadEnterpriseConfiguration(@"I:\mmckechney\Sql Build Manager\Enterprise\EnterpriseConfiguration.xml");
             }
 
             return null;
