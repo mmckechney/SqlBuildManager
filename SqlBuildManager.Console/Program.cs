@@ -131,7 +131,17 @@ namespace SqlBuildManager.Console
             {
                 string packageName = args[1].Trim();
                 PolicyHelper helper = new PolicyHelper();
-                bool passed = helper.CommandLinePolicyCheck(packageName);
+                bool passed;
+                List<string> policyMessages = helper.CommandLinePolicyCheck(packageName, out passed);
+                if (policyMessages.Count > 0)
+                {
+                    System.Console.WriteLine("Script Policy Messages:");
+                    foreach (var policyMessage in policyMessages)
+                    {
+                        System.Console.WriteLine(policyMessage);
+                    }
+                }
+
                 if (passed)
                 {
                     System.Environment.Exit(0);

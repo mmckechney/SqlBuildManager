@@ -377,12 +377,15 @@ namespace SqlBuildManager.Enterprise.Policy
             return line;
         }
 
-        public bool CommandLinePolicyCheck(string buildPackageName)
+        public List<string> CommandLinePolicyCheck(string buildPackageName, out bool passed)
         {
+            string highSeverity = ViolationSeverity.High.ToString();
+            passed = true;
+            List<string> policyReturns = new List<string>();
             SqlSyncBuildData buildData = null;
 
             if (String.IsNullOrEmpty(buildPackageName))
-                return true;
+                return policyReturns;
 
             string projFileName = string.Empty;
             string projectFilePath = string.Empty;
@@ -403,35 +406,37 @@ namespace SqlBuildManager.Enterprise.Policy
                     SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, buildPackageName, false);
                     break;
                 default:
-                    return true;
+                    return policyReturns;
                     break;
             }
 
             if (buildData != null)
             {
                 Package pkg = CreateScriptPolicyPackage(buildData, projectFilePath);
+                passed = !pkg.Select(p => p.Violations.Select(v => v.Severity == highSeverity)).Any();
 
-                var highViolations = from s in pkg
+                var violationMessages = from s in pkg
                                      from v in s.Violations
-                                     where v.Severity == "High"
-                                     select new {s.ScriptName, v.Message}; 
+                                        select new {v.Severity, s.ScriptName, v.Message}; 
 
-                if (!highViolations.Any())
-                    return true;
-
-                foreach (var highViolation in highViolations)
+                foreach (var violation in violationMessages)
                 {
-                   log.ErrorFormat("Policy Failure for script {0}: {1}", highViolation.ScriptName,highViolation.Message);   
+                    string message = string.Format("Severity [{0}]; Script: {1}; Message: {2}",violation.Severity, violation.ScriptName, violation.Message);
+                    policyReturns.Add(message);
+
+                    //Add messages to log
+                    if(violation.Severity == ViolationSeverity.High.ToString())
+                        log.Error(message);   
+                    else if(violation.Severity == ViolationSeverity.Medium.ToString())
+                        log.Warn(message);
+                    else 
+                        log.Info(message);
                 }
-                return false;   
-                //if (!pkg.Select(p => p.Violations.Select(v => v.Severity == "High")).Any())
-                //    return true;
-
-
+                return policyReturns;   
             }
             else
             {
-                return true;
+                return policyReturns;
             }
         }
 
