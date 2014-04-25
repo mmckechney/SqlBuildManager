@@ -17,13 +17,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.GrantExecutePolicy;
             }
         }
-        public p.ViolationSeverity Severity
-        {
-            get
-            {
-                return p.ViolationSeverity.High;
-            }
-        }
+        public p.ViolationSeverity Severity { get; set; }
         public string ShortDescription
         {
             get { return "Check for GRANT EXECUTE"; }

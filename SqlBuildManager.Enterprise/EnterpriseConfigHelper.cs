@@ -57,10 +57,15 @@ namespace SqlBuildManager.Enterprise
             {
                 return LoadEnterpriseConfiguration(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"]);
             }
+            else if (File.Exists(@"I:\mmckechney\Sql Build Manager\Enterprise\EnterpriseConfiguration.xml"))
+            {
+                return
+                    LoadEnterpriseConfiguration(
+                        @"I:\mmckechney\Sql Build Manager\Enterprise\EnterpriseConfiguration.xml");
+            }
             else
             {
-                if(File.Exists(@"I:\mmckechney\Sql Build Manager\Enterprise\EnterpriseConfiguration.xml"))
-                    return LoadEnterpriseConfiguration(@"I:\mmckechney\Sql Build Manager\Enterprise\EnterpriseConfiguration.xml");
+                LoadEnterpriseConfiguration(@"C:\force_a_local_file_check");
             }
 
             return null;
@@ -106,6 +111,7 @@ namespace SqlBuildManager.Enterprise
                 return DeserializeConfiguration(configuration);
             }
 
+            log.ErrorFormat("Unable to load EnterpriseConfig from configuation file!");
             return null;
 
            

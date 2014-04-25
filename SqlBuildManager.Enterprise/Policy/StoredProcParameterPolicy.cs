@@ -19,10 +19,7 @@ namespace SqlBuildManager.Enterprise.Policy
         }
         public p.ViolationSeverity Severity
         {
-            get
-            {
-                return p.ViolationSeverity.High;
-            }
+            get; set;
         }
         public string ShortDescription
         {

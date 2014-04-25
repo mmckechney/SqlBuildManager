@@ -17,13 +17,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.ConstraintNamePolicy;
             }
         }
-        public p.ViolationSeverity Severity
-        {
-            get
-            {
-                return p.ViolationSeverity.Low;
-            }
-        }
+        public p.ViolationSeverity Severity { get; set; }
         public string ShortDescription
         {
             get { return "Constraint Naming (beta)"; }

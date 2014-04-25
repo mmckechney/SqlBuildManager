@@ -33,7 +33,7 @@ namespace SqlBuildManager.Interfaces.ScriptHandling.Policy
         /// <summary>
         /// Determines how bad the violation is. 
         /// </summary>
-        ViolationSeverity Severity { get; }
+        ViolationSeverity Severity { get; set; }
        
        
             

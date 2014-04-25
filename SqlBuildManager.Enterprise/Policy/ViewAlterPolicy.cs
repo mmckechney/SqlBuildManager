@@ -15,13 +15,7 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get { return PolicyIdKey.ViewAlterPolicy; }
         }
-        public p.ViolationSeverity Severity
-        {
-            get
-            {
-                return p.ViolationSeverity.Low;
-            }
-        }
+        public p.ViolationSeverity Severity { get; set; }
         public string ShortDescription
         {
             get { return "Alter View Reminder"; }
