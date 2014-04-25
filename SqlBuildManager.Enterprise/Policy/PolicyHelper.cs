@@ -98,6 +98,10 @@ namespace SqlBuildManager.Enterprise.Policy
                                 if (policy.ScriptPolicyDescription.ShortDescription.Length > 0)
                                     tmpNew.ShortDescription = policy.ScriptPolicyDescription.ShortDescription;
                             }
+
+                            tmpNew.Severity = (SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity)
+                                Enum.Parse(typeof(SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity),policy.Severity.ToString());
+
                             if (policy.Argument != null)
                             {
                                 foreach (ScriptPolicyArgument argument in policy.Argument)
@@ -108,7 +112,8 @@ namespace SqlBuildManager.Enterprise.Policy
                                        Value = argument.Value, 
                                        IsGlobalException = argument.IsGlobalException, 
                                        IsLineException = argument.IsLineException, 
-                                       FailureMessage = argument.FailureMessage });
+                                       FailureMessage = argument.FailureMessage,
+                                    });
                                    
                                 }
                             }
@@ -129,10 +134,17 @@ namespace SqlBuildManager.Enterprise.Policy
                                     FailureMessage = argument.FailureMessage
                                 });
                             }
+
+                            allPolicies[policy.PolicyId].Severity = (SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity)
+                                Enum.Parse(typeof(SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity), policy.Severity.ToString());
+
                             activePolicies.Add(allPolicies[policy.PolicyId]);
                         }
                         else if (allPolicies[policy.PolicyId] is p.IScriptPolicy)
                         {
+                            allPolicies[policy.PolicyId].Severity = (SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity)
+                              Enum.Parse(typeof(SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity), policy.Severity.ToString());
+
                             activePolicies.Add(allPolicies[policy.PolicyId]);
                         }
 

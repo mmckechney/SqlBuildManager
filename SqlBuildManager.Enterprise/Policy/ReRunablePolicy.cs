@@ -16,13 +16,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.ReRunablePolicy;
             }
         }
-        public p.ViolationSeverity Severity
-        {
-            get
-            {
-                return p.ViolationSeverity.Medium;
-            }
-        }
+        public p.ViolationSeverity Severity { get; set; }
         public string ShortDescription
         {
             get { return "Re-runable scripts"; }

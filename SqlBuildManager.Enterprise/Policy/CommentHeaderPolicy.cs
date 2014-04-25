@@ -17,13 +17,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.CommentHeaderPolicy;
             }
         }
-        public p.ViolationSeverity Severity
-        {
-            get
-            {
-                return p.ViolationSeverity.Low;
-            }
-        }
+        public p.ViolationSeverity Severity { get; set; }
         private int dayThreshold = 10;
 
         public int DayThreshold

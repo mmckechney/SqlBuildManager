@@ -6,18 +6,18 @@
 		<Notify EMail="michael@mckechney.com" Name="Michael McKechney"/>
 		<Notify EMail="help@sqlbuildmanager.com" Name="Sql Build Admin"/>
 	</TableWatch>
-	<ScriptPolicy PolicyId="CommentHeaderPolicy"/>
-	<ScriptPolicy PolicyId="ConstraintNamePolicy"/>
-	<ScriptPolicy PolicyId="GrantExecutePolicy"/>
-	<ScriptPolicy PolicyId="GrantExecuteToPublicPolicy"/>
-	<ScriptPolicy PolicyId="QualifiedNamesPolicy"/>
-	<ScriptPolicy PolicyId="ReRunablePolicy"/>
-	<ScriptPolicy PolicyId="SelectStarPolicy"/>
-	<ScriptPolicy PolicyId="StoredProcParameterPolicy">
+	<ScriptPolicy PolicyId="CommentHeaderPolicy" Severity="Low"/>
+	<ScriptPolicy PolicyId="ConstraintNamePolicy" Severity="Low"/>
+	<ScriptPolicy PolicyId="GrantExecutePolicy" Severity="High"/>
+	<ScriptPolicy PolicyId="GrantExecuteToPublicPolicy" Severity="High"/>
+	<ScriptPolicy PolicyId="QualifiedNamesPolicy" Severity="Medium"/>
+	<ScriptPolicy PolicyId="ReRunablePolicy" Severity="Medium"/>
+	<ScriptPolicy PolicyId="SelectStarPolicy" Severity="Medium"/>
+	<ScriptPolicy PolicyId="StoredProcParameterPolicy" Severity="Medium">
 		<Argument Name="Schema" Value="xyz"/>
 		<Argument Name="Parameter" Value="@CustomerId"/>
 	</ScriptPolicy>
-	<ScriptPolicy PolicyId="WithNoLockPolicy"/>
+	<ScriptPolicy PolicyId="WithNoLockPolicy" Severity="High"/>
 	
 	<FeatureAccess FeatureId="RemoteExecution" Enabled="true"/>
 </EnterpriseConfiguration>

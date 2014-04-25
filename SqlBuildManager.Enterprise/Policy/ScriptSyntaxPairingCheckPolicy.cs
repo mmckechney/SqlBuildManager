@@ -23,13 +23,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.ScriptSyntaxPairingCheckPolicy;
             }
         }
-        public p.ViolationSeverity Severity
-        {
-            get
-            {
-                return p.ViolationSeverity.High;
-            }
-        }
+        public p.ViolationSeverity Severity { get; set; }
         public string ShortDescription
         {
             get;

@@ -19,13 +19,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.WithNoLockPolicy;
             }
         }
-        public p.ViolationSeverity Severity
-        {
-            get
-            {
-                return p.ViolationSeverity.High;
-            }
-        }
+        public p.ViolationSeverity Severity { get; set; }
         public string ShortDescription
         {
             get { return "WITH (NOLOCK)"; }
