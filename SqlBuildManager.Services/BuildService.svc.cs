@@ -76,6 +76,7 @@ namespace SqlBuildManager.Services
 
         public bool SubmitBuildPackage(BuildSettings settings)
         {
+            
             this.Initialize();
 
             if (!log.Logger.Repository.Configured)
@@ -91,7 +92,7 @@ namespace SqlBuildManager.Services
             {
                 log.InfoFormat("Accepted package: {0}", settings.ToString());
             }
-
+            myReadiness = ServiceReadiness.Processing;
 
             try
             {
