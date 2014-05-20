@@ -139,11 +139,13 @@
 
   </xs:complexType>
 
+  <!-- Keep in sync with SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity -->
   <xs:simpleType name="ViolationSeverity">
     <xs:restriction base="xs:string">
       <xs:enumeration value="High" />
       <xs:enumeration value="Medium" />
       <xs:enumeration value="Low" />
+      <xs:enumeration value="ReviewWarning" />
     </xs:restriction>
   </xs:simpleType>
 

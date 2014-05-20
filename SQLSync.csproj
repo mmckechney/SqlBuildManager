@@ -1134,6 +1134,7 @@
     <None Include="Images\checkout.PNG" />
     <None Include="Images\Clock.png" />
     <Content Include="Images\Database-commandline.ico" />
+    <None Include="Images\Discuss.png" />
     <Content Include="Images\Document-Protect.png" />
     <None Include="Images\fingerprint1.jpg" />
     <None Include="Images\fingerprint.jpg" />

@@ -399,6 +399,7 @@ namespace SqlSync.SqlBuild
         private BackgroundWorker bgCodeReview;
         private ToolTip toolTip2;
         private ToolStripMenuItem waitingOnStatusCheckToolStripMenuItem;
+        private ToolStripMenuItem reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem;
         private MultiDbData multiDbRunData = null;
         #endregion
         public SqlBuildForm()
@@ -941,6 +942,18 @@ namespace SqlSync.SqlBuild
             this.imageListSlide = new System.Windows.Forms.ImageList(this.components);
             this.chkUpdateOnOverride = new System.Windows.Forms.CheckBox();
             this.chkScriptChanges = new System.Windows.Forms.CheckBox();
+            this.lstScriptFiles = new SqlSync.Controls.OAKControls.OAKListView();
+            this.colImage = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colPolicyIcon = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colCodeReviewIcon = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colSequence = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colScriptFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colDatabaseName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colScriptId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colScriptSize = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colTag = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colDateAdded = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colDateModified = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ctxScriptFile = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuEditScriptFile = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem4 = new System.Windows.Forms.ToolStripSeparator();
@@ -973,6 +986,7 @@ namespace SqlSync.SqlBuild
             this.openSbmFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.dlgAddScriptFile = new System.Windows.Forms.OpenFileDialog();
             this.grpManager = new System.Windows.Forms.GroupBox();
+            this.targetDatabaseOverrideCtrl1 = new SqlSync.TargetDatabaseOverrideCtrl();
             this.label2 = new System.Windows.Forms.Label();
             this.txtBuildDesc = new System.Windows.Forms.TextBox();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -1012,6 +1026,7 @@ namespace SqlSync.SqlBuild
             this.bgBuildProcess = new System.ComponentModel.BackgroundWorker();
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
             this.toolStripContainer2 = new System.Windows.Forms.ToolStripContainer();
+            this.settingsControl1 = new SqlSync.SettingsControl();
             this.bgCheckForUpdates = new System.ComponentModel.BackgroundWorker();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statGeneral = new System.Windows.Forms.ToolStripStatusLabel();
@@ -1069,11 +1084,12 @@ namespace SqlSync.SqlBuild
             this.policyCheckFailedActionRequiredToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.policyWarningActionMayBeRequiredToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.passesPolicyChecksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.waitingOnStatusCheckToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reviewNotStartedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reviewInProgressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reviewAcceptedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reviewAcceptedByDBAToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.waitingOnStatusCheckToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuActionMain = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuLoadProject = new System.Windows.Forms.ToolStripMenuItem();
             this.loadNewDirectoryControlFilesbxToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -1192,20 +1208,6 @@ namespace SqlSync.SqlBuild
             this.howToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
             this.projectSiteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.targetDatabaseOverrideCtrl1 = new SqlSync.TargetDatabaseOverrideCtrl();
-            this.lstScriptFiles = new SqlSync.Controls.OAKControls.OAKListView();
-            this.colImage = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colPolicyIcon = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colCodeReviewIcon = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colSequence = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colScriptFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colDatabaseName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colScriptId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colScriptSize = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colTag = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colDateAdded = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colDateModified = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.settingsControl1 = new SqlSync.SettingsControl();
             this.viewLogFileMenuItem2 = new SqlSync.Controls.ViewLogFileMenuItem();
             this.setLoggingLevelMenuItem2 = new SqlSync.Controls.SetLoggingLevelMenuItem();
             this.grbBuildScripts.SuspendLayout();
@@ -1282,6 +1284,101 @@ namespace SqlSync.SqlBuild
             this.chkScriptChanges.TabIndex = 15;
             this.chkScriptChanges.Text = "Check for script changes (Pre-run scripts only, may slow list refresh)";
             this.chkScriptChanges.Click += new System.EventHandler(this.chkScriptChanges_Click);
+            // 
+            // lstScriptFiles
+            // 
+            this.lstScriptFiles.Activation = System.Windows.Forms.ItemActivation.OneClick;
+            this.lstScriptFiles.AllowDrop = true;
+            this.lstScriptFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstScriptFiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lstScriptFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colImage,
+            this.colPolicyIcon,
+            this.colCodeReviewIcon,
+            this.colSequence,
+            this.colScriptFile,
+            this.colDatabaseName,
+            this.colScriptId,
+            this.colScriptSize,
+            this.colTag,
+            this.colDateAdded,
+            this.colDateModified});
+            this.lstScriptFiles.ContextMenuStrip = this.ctxScriptFile;
+            this.lstScriptFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstScriptFiles.FullRowSelect = true;
+            this.lstScriptFiles.GridLines = true;
+            this.lstScriptFiles.Location = new System.Drawing.Point(5, 17);
+            this.lstScriptFiles.Name = "lstScriptFiles";
+            this.lstScriptFiles.ShowItemToolTips = true;
+            this.lstScriptFiles.Size = new System.Drawing.Size(508, 455);
+            this.lstScriptFiles.SmallImageList = this.imageListBuildScripts;
+            this.lstScriptFiles.TabIndex = 0;
+            this.lstScriptFiles.UseCompatibleStateImageBehavior = false;
+            this.lstScriptFiles.View = System.Windows.Forms.View.Details;
+            this.lstScriptFiles.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lstScriptFiles_ColumnClick);
+            this.lstScriptFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.lstScriptFiles_ItemDrag);
+            this.lstScriptFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.lstScriptFiles_DragDrop);
+            this.lstScriptFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.lstScriptFiles_DragEnter);
+            this.lstScriptFiles.DoubleClick += new System.EventHandler(this.lstScriptFiles_DoubleClick);
+            this.lstScriptFiles.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lstScriptFiles_KeyDown);
+            // 
+            // colImage
+            // 
+            this.colImage.Text = "";
+            this.colImage.Width = 21;
+            // 
+            // colPolicyIcon
+            // 
+            this.colPolicyIcon.Text = "";
+            this.colPolicyIcon.Width = 16;
+            // 
+            // colCodeReviewIcon
+            // 
+            this.colCodeReviewIcon.Text = "";
+            this.colCodeReviewIcon.Width = 16;
+            // 
+            // colSequence
+            // 
+            this.colSequence.Text = "Seq #";
+            this.colSequence.Width = 47;
+            // 
+            // colScriptFile
+            // 
+            this.colScriptFile.Text = "Script File";
+            this.colScriptFile.Width = 217;
+            // 
+            // colDatabaseName
+            // 
+            this.colDatabaseName.Text = "Database ";
+            this.colDatabaseName.Width = 80;
+            // 
+            // colScriptId
+            // 
+            this.colScriptId.Text = "Script Id";
+            this.colScriptId.Width = 0;
+            // 
+            // colScriptSize
+            // 
+            this.colScriptSize.Text = "Size";
+            this.colScriptSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.colScriptSize.Width = 0;
+            // 
+            // colTag
+            // 
+            this.colTag.Text = "Tag";
+            this.colTag.Width = 85;
+            // 
+            // colDateAdded
+            // 
+            this.colDateAdded.Text = "Date Added";
+            this.colDateAdded.Width = 0;
+            // 
+            // colDateModified
+            // 
+            this.colDateModified.Text = "Date Modified";
+            this.colDateModified.Width = 0;
             // 
             // ctxScriptFile
             // 
@@ -1396,6 +1493,7 @@ namespace SqlSync.SqlBuild
             this.imageListBuildScripts.Images.SetKeyName(14, "Ok-blueSquare.ico");
             this.imageListBuildScripts.Images.SetKeyName(15, "Ok-greenSquare.ico");
             this.imageListBuildScripts.Images.SetKeyName(16, "Wait.png");
+            this.imageListBuildScripts.Images.SetKeyName(17, "Discuss.ico");
             // 
             // menuStrip1
             // 
@@ -1466,6 +1564,7 @@ namespace SqlSync.SqlBuild
             this.policyCheckIconHelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.policyChecksNotRunToolStripMenuItem,
             this.policyCheckFailedActionRequiredToolStripMenuItem,
+            this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem,
             this.policyWarningActionMayBeRequiredToolStripMenuItem,
             this.passesPolicyChecksToolStripMenuItem});
             this.policyCheckIconHelpToolStripMenuItem.ForeColor = System.Drawing.Color.Blue;
@@ -1585,6 +1684,17 @@ namespace SqlSync.SqlBuild
             this.grpManager.TabIndex = 15;
             this.grpManager.TabStop = false;
             this.grpManager.Text = "Build Manager / Run Settings";
+            // 
+            // targetDatabaseOverrideCtrl1
+            // 
+            this.targetDatabaseOverrideCtrl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.targetDatabaseOverrideCtrl1.Location = new System.Drawing.Point(99, 41);
+            this.targetDatabaseOverrideCtrl1.Name = "targetDatabaseOverrideCtrl1";
+            this.targetDatabaseOverrideCtrl1.Size = new System.Drawing.Size(437, 77);
+            this.targetDatabaseOverrideCtrl1.TabIndex = 1;
+            this.targetDatabaseOverrideCtrl1.TargetChanged += new SqlSync.TargetChangedEventHandler(this.targetDatabaseOverrideCtrl1_TargetChanged);
             // 
             // label2
             // 
@@ -1973,6 +2083,21 @@ namespace SqlSync.SqlBuild
             // toolStripContainer2.TopToolStripPanel
             // 
             this.toolStripContainer2.TopToolStripPanel.Controls.Add(this.mainMenu1);
+            // 
+            // settingsControl1
+            // 
+            this.settingsControl1.BackColor = System.Drawing.Color.White;
+            this.settingsControl1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.settingsControl1.Location = new System.Drawing.Point(0, 0);
+            this.settingsControl1.Name = "settingsControl1";
+            this.settingsControl1.Project = "(select / create project)";
+            this.settingsControl1.ProjectLabelText = "Project File:";
+            this.settingsControl1.Server = "";
+            this.settingsControl1.Size = new System.Drawing.Size(1073, 56);
+            this.settingsControl1.TabIndex = 17;
+            this.settingsControl1.Click += new System.EventHandler(this.settingsControl1_Click);
+            this.settingsControl1.DoubleClick += new System.EventHandler(this.settingsControl1_DoubleClick);
+            this.settingsControl1.ServerChanged += new SqlSync.ServerChangedEventHandler(this.settingsControl1_ServerChanged);
             // 
             // bgCheckForUpdates
             // 
@@ -2396,29 +2521,43 @@ namespace SqlSync.SqlBuild
             // 
             this.policyChecksNotRunToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Help_2;
             this.policyChecksNotRunToolStripMenuItem.Name = "policyChecksNotRunToolStripMenuItem";
-            this.policyChecksNotRunToolStripMenuItem.Size = new System.Drawing.Size(292, 22);
+            this.policyChecksNotRunToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
             this.policyChecksNotRunToolStripMenuItem.Text = "Policy checks not run";
             // 
             // policyCheckFailedActionRequiredToolStripMenuItem
             // 
             this.policyCheckFailedActionRequiredToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Exclamation_square;
             this.policyCheckFailedActionRequiredToolStripMenuItem.Name = "policyCheckFailedActionRequiredToolStripMenuItem";
-            this.policyCheckFailedActionRequiredToolStripMenuItem.Size = new System.Drawing.Size(292, 22);
+            this.policyCheckFailedActionRequiredToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
             this.policyCheckFailedActionRequiredToolStripMenuItem.Text = "Policy checks failed - ACTION REQUIRED!";
             // 
             // policyWarningActionMayBeRequiredToolStripMenuItem
             // 
             this.policyWarningActionMayBeRequiredToolStripMenuItem.Image = global::SqlSync.Properties.Resources.exclamation_shield_frame;
             this.policyWarningActionMayBeRequiredToolStripMenuItem.Name = "policyWarningActionMayBeRequiredToolStripMenuItem";
-            this.policyWarningActionMayBeRequiredToolStripMenuItem.Size = new System.Drawing.Size(292, 22);
+            this.policyWarningActionMayBeRequiredToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
             this.policyWarningActionMayBeRequiredToolStripMenuItem.Text = "Policy warning - action may be required.";
             // 
             // passesPolicyChecksToolStripMenuItem
             // 
             this.passesPolicyChecksToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Tick;
             this.passesPolicyChecksToolStripMenuItem.Name = "passesPolicyChecksToolStripMenuItem";
-            this.passesPolicyChecksToolStripMenuItem.Size = new System.Drawing.Size(292, 22);
+            this.passesPolicyChecksToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
             this.passesPolicyChecksToolStripMenuItem.Text = "Policy checks passed";
+            // 
+            // reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem
+            // 
+            this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Discuss;
+            this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem.Name = "reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem";
+            this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
+            this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem.Text = "Review warning - this script should be examined before deployment";
+            // 
+            // waitingOnStatusCheckToolStripMenuItem
+            // 
+            this.waitingOnStatusCheckToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Wait;
+            this.waitingOnStatusCheckToolStripMenuItem.Name = "waitingOnStatusCheckToolStripMenuItem";
+            this.waitingOnStatusCheckToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.waitingOnStatusCheckToolStripMenuItem.Text = "Waiting on status check";
             // 
             // reviewNotStartedToolStripMenuItem
             // 
@@ -2447,13 +2586,6 @@ namespace SqlSync.SqlBuild
             this.reviewAcceptedByDBAToolStripMenuItem.Name = "reviewAcceptedByDBAToolStripMenuItem";
             this.reviewAcceptedByDBAToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.reviewAcceptedByDBAToolStripMenuItem.Text = "Review Accepted by DBA";
-            // 
-            // waitingOnStatusCheckToolStripMenuItem
-            // 
-            this.waitingOnStatusCheckToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Wait;
-            this.waitingOnStatusCheckToolStripMenuItem.Name = "waitingOnStatusCheckToolStripMenuItem";
-            this.waitingOnStatusCheckToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.waitingOnStatusCheckToolStripMenuItem.Text = "Waiting on status check";
             // 
             // mnuActionMain
             // 
@@ -3502,127 +3634,6 @@ namespace SqlSync.SqlBuild
             this.projectSiteToolStripMenuItem.Visible = false;
             this.projectSiteToolStripMenuItem.Click += new System.EventHandler(this.projectSiteToolStripMenuItem_Click);
             // 
-            // targetDatabaseOverrideCtrl1
-            // 
-            this.targetDatabaseOverrideCtrl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.targetDatabaseOverrideCtrl1.Location = new System.Drawing.Point(99, 41);
-            this.targetDatabaseOverrideCtrl1.Name = "targetDatabaseOverrideCtrl1";
-            this.targetDatabaseOverrideCtrl1.Size = new System.Drawing.Size(437, 77);
-            this.targetDatabaseOverrideCtrl1.TabIndex = 1;
-            this.targetDatabaseOverrideCtrl1.TargetChanged += new SqlSync.TargetChangedEventHandler(this.targetDatabaseOverrideCtrl1_TargetChanged);
-            // 
-            // lstScriptFiles
-            // 
-            this.lstScriptFiles.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.lstScriptFiles.AllowDrop = true;
-            this.lstScriptFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lstScriptFiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lstScriptFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.colImage,
-            this.colPolicyIcon,
-            this.colCodeReviewIcon,
-            this.colSequence,
-            this.colScriptFile,
-            this.colDatabaseName,
-            this.colScriptId,
-            this.colScriptSize,
-            this.colTag,
-            this.colDateAdded,
-            this.colDateModified});
-            this.lstScriptFiles.ContextMenuStrip = this.ctxScriptFile;
-            this.lstScriptFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lstScriptFiles.FullRowSelect = true;
-            this.lstScriptFiles.GridLines = true;
-            this.lstScriptFiles.Location = new System.Drawing.Point(5, 17);
-            this.lstScriptFiles.Name = "lstScriptFiles";
-            this.lstScriptFiles.ShowItemToolTips = true;
-            this.lstScriptFiles.Size = new System.Drawing.Size(508, 455);
-            this.lstScriptFiles.SmallImageList = this.imageListBuildScripts;
-            this.lstScriptFiles.TabIndex = 0;
-            this.lstScriptFiles.UseCompatibleStateImageBehavior = false;
-            this.lstScriptFiles.View = System.Windows.Forms.View.Details;
-            this.lstScriptFiles.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lstScriptFiles_ColumnClick);
-            this.lstScriptFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.lstScriptFiles_ItemDrag);
-            this.lstScriptFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.lstScriptFiles_DragDrop);
-            this.lstScriptFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.lstScriptFiles_DragEnter);
-            this.lstScriptFiles.DoubleClick += new System.EventHandler(this.lstScriptFiles_DoubleClick);
-            this.lstScriptFiles.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lstScriptFiles_KeyDown);
-            // 
-            // colImage
-            // 
-            this.colImage.Text = "";
-            this.colImage.Width = 21;
-            // 
-            // colPolicyIcon
-            // 
-            this.colPolicyIcon.Text = "";
-            this.colPolicyIcon.Width = 16;
-            // 
-            // colCodeReviewIcon
-            // 
-            this.colCodeReviewIcon.Text = "";
-            this.colCodeReviewIcon.Width = 16;
-            // 
-            // colSequence
-            // 
-            this.colSequence.Text = "Seq #";
-            this.colSequence.Width = 47;
-            // 
-            // colScriptFile
-            // 
-            this.colScriptFile.Text = "Script File";
-            this.colScriptFile.Width = 217;
-            // 
-            // colDatabaseName
-            // 
-            this.colDatabaseName.Text = "Database ";
-            this.colDatabaseName.Width = 80;
-            // 
-            // colScriptId
-            // 
-            this.colScriptId.Text = "Script Id";
-            this.colScriptId.Width = 0;
-            // 
-            // colScriptSize
-            // 
-            this.colScriptSize.Text = "Size";
-            this.colScriptSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.colScriptSize.Width = 0;
-            // 
-            // colTag
-            // 
-            this.colTag.Text = "Tag";
-            this.colTag.Width = 85;
-            // 
-            // colDateAdded
-            // 
-            this.colDateAdded.Text = "Date Added";
-            this.colDateAdded.Width = 0;
-            // 
-            // colDateModified
-            // 
-            this.colDateModified.Text = "Date Modified";
-            this.colDateModified.Width = 0;
-            // 
-            // settingsControl1
-            // 
-            this.settingsControl1.BackColor = System.Drawing.Color.White;
-            this.settingsControl1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.settingsControl1.Location = new System.Drawing.Point(0, 0);
-            this.settingsControl1.Name = "settingsControl1";
-            this.settingsControl1.Project = "(select / create project)";
-            this.settingsControl1.ProjectLabelText = "Project File:";
-            this.settingsControl1.Server = "";
-            this.settingsControl1.Size = new System.Drawing.Size(1073, 56);
-            this.settingsControl1.TabIndex = 17;
-            this.settingsControl1.Click += new System.EventHandler(this.settingsControl1_Click);
-            this.settingsControl1.DoubleClick += new System.EventHandler(this.settingsControl1_DoubleClick);
-            this.settingsControl1.ServerChanged += new SqlSync.ServerChangedEventHandler(this.settingsControl1_ServerChanged);
-            // 
             // viewLogFileMenuItem2
             // 
             this.viewLogFileMenuItem2.Image = ((System.Drawing.Image)(resources.GetObject("viewLogFileMenuItem2.Image")));
@@ -4483,16 +4494,28 @@ namespace SqlSync.SqlBuild
                                     violation.LastChangeUserId = (row.ModifiedBy.Length == 0) ? row.AddedBy : row.ModifiedBy;
                                     currentViolations.Add(violation);
 
-                                    string highSev, medSev;
+                                    string highSev, medSev, reviewWarningSev,lowSev;
                                     highSev = Enum.GetName(typeof(ViolationSeverity), ViolationSeverity.High);
                                     medSev = Enum.GetName(typeof(ViolationSeverity), ViolationSeverity.Medium);
-                                    var high = (from v in violation.Violations
-                                                where v.Severity == highSev || v.Severity == medSev
-                                                select v.Severity);
+                                    lowSev = Enum.GetName(typeof(ViolationSeverity), ViolationSeverity.Low);
+                                    reviewWarningSev = Enum.GetName(typeof (ViolationSeverity),ViolationSeverity.ReviewWarning);
 
-                                    if (high.Count() > 0)
+                                    var high = (from v in violation.Violations
+                                                where v.Severity == highSev
+                                                select v.Severity).Any();
+
+                                    var mediumLow = (from v in violation.Violations
+                                                where v.Severity == medSev || v.Severity == lowSev
+                                                select v.Severity).Any();
+
+                                    var review = (from v in violation.Violations
+                                                  where v.Severity == reviewWarningSev
+                                                  select v.Severity).Any();
+                                    if (high)
                                         row.PolicyCheckState = ScriptStatusType.PolicyFail;
-                                    else
+                                    else if (review)
+                                        row.PolicyCheckState = ScriptStatusType.PolicyReviewWarning;
+                                    else if (mediumLow)
                                         row.PolicyCheckState = ScriptStatusType.PolicyWarning;
                                 }
                                 bg.ReportProgress(0, row);
