@@ -88,6 +88,9 @@ namespace SqlBuildManager.Enterprise.Policy
                         if ((allPolicies[policy.PolicyId] is p.IScriptPolicyMultiple)) //Create new instances for "Multiple" items...
                         {
                             p.IScriptPolicyMultiple tmpNew = (p.IScriptPolicyMultiple)Activator.CreateInstance(allPolicies[policy.PolicyId].GetType());
+                            p.ViolationSeverity severity;
+                            p.ViolationSeverity.TryParse(policy.Severity.ToString(), true, out severity);
+                            tmpNew.Severity = severity;
                             if (policy.ScriptPolicyDescription != null)
                             {
                                 if (policy.ScriptPolicyDescription.ErrorMessage.Length > 0)
