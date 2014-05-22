@@ -18,7 +18,12 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.SelectStarPolicy;
             }
         }
-        public p.ViolationSeverity Severity { get; set; }
+        private p.ViolationSeverity severity = p.ViolationSeverity.Medium;
+        public p.ViolationSeverity Severity
+        {
+            get { return severity; }
+            set { this.severity = value; }
+        }
         public string ShortDescription
         {
             get { return "SELECT *"; }

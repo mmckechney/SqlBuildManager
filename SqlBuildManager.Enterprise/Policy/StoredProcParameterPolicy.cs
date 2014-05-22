@@ -17,9 +17,11 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.StoredProcParameterPolicy;
             }
         }
+        private  p.ViolationSeverity severity = p.ViolationSeverity.High;
         public p.ViolationSeverity Severity
         {
-            get; set;
+            get { return severity; }
+            set { this.severity = value; }
         }
         public string ShortDescription
         {

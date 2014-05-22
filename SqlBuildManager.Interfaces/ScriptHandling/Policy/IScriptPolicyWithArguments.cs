@@ -12,6 +12,10 @@ namespace SqlBuildManager.Interfaces.ScriptHandling.Policy
         /// </summary>
         List<IScriptPolicyArgument> Arguments { get; set; }
         /// <summary>
+        /// 
+        /// </summary>
+        new ViolationSeverity Severity { get; set; }
+        /// <summary>
         /// Executes the policy rule against the input script
         /// </summary>
         /// <param name="script">Input script</param>

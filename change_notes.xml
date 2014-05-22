@@ -1,9 +1,13 @@
 <SqlBuildManagerChangeNotes>
   <Version Major="9" Minor="2" Revision="0">
     <!--  -->
+    <added>New policy check status that warns you that code should be reviewed before release</added>
     <added>Commandline abilty to check script policies. Usage: SqlBuildManager.Console.exe /PolicyCheck "&lt;Source Package Path and Name&gt;" </added>
     <added>Commandline ability to create a default backout package. Usage: SqlBuildManager.Console.exe /CreateBackout "&lt;Source Package Path and Name&gt;" /server="&lt;Backout source server&gt;" /database="&lt;Backout source database&gt;"</added>
     <fixed>Database login error for accounts that do not have code review database permissions</fixed>
+  </Version>
+  <Version Major="9" Minor="1" Revision="1">
+     <fixed>Database login error for accounts that do not have code review database permissions</fixed>
   </Version>
   <Version Major="9" Minor="1" Revision="0">
     <!-- October 25, 2013 -->

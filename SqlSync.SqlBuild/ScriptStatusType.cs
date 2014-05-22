@@ -27,6 +27,7 @@ namespace SqlSync.SqlBuild
         CodeReviewAccepted = 14,
         CodeReviewAcceptedDba = 15,
         CodeReviewStatusWaiting = 16,
+        PolicyReviewWarning = 17,
         Unknown = 99
     }
 
