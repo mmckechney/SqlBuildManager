@@ -7579,7 +7579,7 @@ namespace SqlSync.SqlBuild
                             statGeneral.Text = "Build Failed and Rolled Back";
                             break;
                         case BuildResultStatus.BUILD_COMMITTED:
-                            this.RefreshScriptFileList();
+                            this.RefreshScriptFileList(true);
                             statGeneral.Text = "Build Committed";
                             break;
                         case BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL:
