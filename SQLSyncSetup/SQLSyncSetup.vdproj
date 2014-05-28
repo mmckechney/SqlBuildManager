@@ -12038,7 +12038,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Sql Build Manager"
         "ProductCode" = "8:{4A10532D-1DAB-4B40-8BCD-138EF4AC91FC}"
-        "PackageCode" = "8:{B1F27C17-A7E5-4EF4-B00E-58A934798DBC}"
+        "PackageCode" = "8:{A713CAC4-1906-42A1-A21E-5CB0E5212C2D}"
         "UpgradeCode" = "8:{BC5877D3-35BE-43E8-A25F-44D0068B3EA9}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
