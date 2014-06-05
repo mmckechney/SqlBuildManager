@@ -1262,7 +1262,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlSync.DbInformation, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlSync.DbInformation, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_0785E98291355752BCCF0BCA2DACBCA2"
@@ -1324,7 +1324,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Tfs.Utility, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Tfs.Utility, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_0D146227C01014981BC8537E7DA418E1"
@@ -1406,7 +1406,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlSync.ObjectScript, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlSync.ObjectScript, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_1DC0E4B9EA79328C0A0853CAD0335157"
@@ -1499,7 +1499,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlBuildManager.Interfaces, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlBuildManager.Interfaces, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_353F468F2842BD4AE8BFF659AD9F5E4D"
@@ -1530,7 +1530,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlBuildManager.ServiceClient, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlBuildManager.ServiceClient, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_38FE95AFCE3E4EDA6244B2D1718AF30E"
@@ -1612,7 +1612,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlBuildManager.ScriptHandling, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlBuildManager.ScriptHandling, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_419E0F9411EE0CB24E52D846FAE55C04"
@@ -1674,7 +1674,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlBuildManager.Enterprise, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlBuildManager.Enterprise, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_4BE3A43E279A66BB32DD9A8AE0F67FBD"
@@ -1756,7 +1756,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlBuildManager.Console, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlBuildManager.Console, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_61CFE6705012661170164D5E881029B2"
@@ -2177,7 +2177,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlBuildManager.Services, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlBuildManager.Services, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_B5FD2A13537990A04BAD15A5950A4A8E"
@@ -2279,7 +2279,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlSync.Connection, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlSync.Connection, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_DEB6CC93B244A433A9D4F27C9EFDB11A"
@@ -2496,7 +2496,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SqlSync.SqlBuild, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SqlSync.SqlBuild, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_F16AE74137E6F4A9C0C083A8673F8D5E"
@@ -2527,7 +2527,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SQLSync.Constants, Version=9.2.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:SQLSync.Constants, Version=9.2.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_F31620900A3332213BCF64D527C4ED78"
@@ -2672,15 +2672,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Sql Build Manager Services"
-        "ProductCode" = "8:{E2DDE07A-7022-45DB-A596-DE3CC2386521}"
-        "PackageCode" = "8:{81DCA734-91CD-4937-8DDD-EA7F0C14B09E}"
+        "ProductCode" = "8:{C175B4E1-B343-4935-9B7D-F2DEFF390E6B}"
+        "PackageCode" = "8:{FA542C56-8A8E-474E-9507-4F4B08012A7D}"
         "UpgradeCode" = "8:{155370B7-103F-4A93-9E2D-DBABBDAA7CED}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:9.04"
+        "ProductVersion" = "8:9.01"
         "Manufacturer" = "8:Michael McKechney"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
