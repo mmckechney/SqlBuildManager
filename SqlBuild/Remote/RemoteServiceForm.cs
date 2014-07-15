@@ -331,7 +331,7 @@ namespace SqlSync.SqlBuild.Remote
                           where s.ConnectionTestResults.Count == 0 || c.Successful == false
                           select s;
 
-                if (err.Count() > 0)
+                if (err.Any())
                 {
                     var list = from er in err
                                from c in er.ConnectionTestResults

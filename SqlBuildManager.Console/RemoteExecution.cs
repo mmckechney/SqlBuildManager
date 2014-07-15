@@ -26,82 +26,15 @@ namespace SqlBuildManager.Console
         {
             this.args = arguments;
         }
+         
         public int Execute()
         {
-            if (this.settingsFile.Length > 0) //path for using .resp file...
-            {
-                this.settings = DeserializeBuildSettingsFile(this.settingsFile);
-
-                //If remote servers is set to "local", glean the servers from the multi-database configuration
-                if (this.settings.RemoteExecutionServers[0].ServerName.ToLower() == "derive")
-                {
-                    string[] exeServers = RemoteHelper.GetUniqueServerNamesFromMultiDb(this.settings.MultiDbTextConfig);
-                    List<ServerConfigData> tmpSrv = new List<ServerConfigData>();
-                    foreach (string serv in exeServers)
-                        tmpSrv.Add(new ServerConfigData() { ServerName = serv });
-
-                    this.settings.RemoteExecutionServers = tmpSrv;
-                }
-
-
-                //Go ahead and validate the availability of the designated servers
-                if (this.settings != null)
-                {
-                    string[] errorMessages;
-                    int tmp = ValidateRemoteServerAvailability(ref this.settings,out errorMessages);
-                    if (tmp != 0)
-                    {
-                        for (int i = 0; i < errorMessages.Length; i++)
-                        {
-                            log.Error(errorMessages[i]);
-                            System.Console.Error.WriteLine(errorMessages[i]);
-                        }
-                        return tmp;
-                    }
-                }
-            }
-            else if (this.args.Length > 0)
-            {
-                int result =  DigestAndValidateCommandLineArguments(this.args, out this.settings);
-            }
-            if (this.settings == null)
-            {
-                log.Error("Unable to get BuildSettings, returning code 600");
-                return (int)SqlBuildManager.Interfaces.Console.ExecutionReturn.UnableToLoadBuildSettings;
-            }
-            else
-            {
-                log.Debug("Successfully created BuildSettings object");
-            }
-
-            //Validate the load distribution...
-            List<string> untaskedExeServers;
-            List<string> unassignedDbServers;
             BuildServiceManager manager = new BuildServiceManager();
-            manager.ValidateLoadDistribution(settings.DistributionType, settings.RemoteExecutionServers, settings.MultiDbTextConfig, out untaskedExeServers, out unassignedDbServers);
-            if (unassignedDbServers.Count > 0)
-            {
-                string message = String.Format("The following database servers will not be updated with the current distribution type and remote execution server settings:\r\n{0}", String.Join("\r\n", unassignedDbServers.ToArray()));
-                log.Error(message);
-                System.Console.Error.WriteLine("Some databases will not get updated with the current settings. See \"SqlBuildManager.Console.log\" for details");
 
-                return (int)con.ExecutionReturn.UnassignedDatabaseServers;
-            }
+            int valid = this.ValidateAll(this.args, ref manager, out this.settings);
+            if (valid != 0)
+                return valid;
 
-            if (untaskedExeServers.Count > 0)
-            {
-
-                log.WarnFormat("The following remote execution servers will not be tasked with the current distribution type and remote execution server settings:\r\n{0}", String.Join("\r\n", untaskedExeServers.ToArray()));
-                
-                List<ServerConfigData> remaining = (from r in this.settings.RemoteExecutionServers
-                                                    where !(from u in untaskedExeServers select u).Contains(r.ServerName)
-                                                    select r).ToList();
-                
-                string[] rs = (from r in remaining select r.ServerName).ToArray();
-                log.WarnFormat("The remaining execution servers are:\r\n{0}", String.Join("\r\n", rs));
-
-                this.settings.RemoteExecutionServers = remaining;
-             }
         
             manager.SubmitBuildRequest(this.settings, this.settings.DistributionType);
             System.Threading.Thread.Sleep(1000);
@@ -140,7 +73,7 @@ namespace SqlBuildManager.Console
                                                          s.ServiceReadiness == ServiceReadiness.Error || s.ExecutionReturn !=  ExecutionReturn.Successful
                                                      select s;
 
-            if (hadError.Count() > 0)
+            if (hadError.Any())
             {
                 bool success = BuildFailureDatabaseConfig(settings.SqlBuildManagerProjectFileName, hadError, ref manager);
                 if (!success)
@@ -153,7 +86,36 @@ namespace SqlBuildManager.Console
                 return (int)con.ExecutionReturn.Successful;
 
         }
+        public int TestConnectivity()
+        {
+            BuildServiceManager manager = new BuildServiceManager();
 
+            int valid = this.ValidateAll(this.args, ref manager, out this.settings);
+            if (valid != 0)
+                return valid;
+
+            IList<ServerConfigData> connectivityResults = manager.TestDatabaseConnectivity(this.settings, this.settings.DistributionType);
+
+            var err = from s in connectivityResults
+                      from c in s.ConnectionTestResults
+                      where s.ConnectionTestResults.Count == 0 || c.Successful == false
+                      select new {Server = c.ServerName, Database = c.DatabaseName};
+
+            if (err.Any())
+            {
+                System.Console.Error.WriteLine(
+                    String.Format("Connectivity Errors to the following {0} Server/Databases:", err.Count()));
+
+                var errorList =
+                    err.Select(combined => combined.Server +": "+ combined.Database).Aggregate((start, add) => start + "\r\n" + add);
+                System.Console.Error.WriteLine(errorList);
+                return err.Count();
+            }
+
+            System.Console.Out.WriteLine("TestConnectivity passed for all Server/Databases");
+            return 0;
+
+        }
         private static bool BuildFailureDatabaseConfig(string sqlBuildFileName, IEnumerable<ServerConfigData> hadErrorServers, ref BuildServiceManager manager)
         {
             try
@@ -308,6 +270,110 @@ namespace SqlBuildManager.Console
 
             //setting.SqlBuildManagerProjectContents = File.ReadAllBytes(cmd.BuildFileName);
             setting.SqlBuildManagerProjectContents = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(cmd.BuildFileName);
+            return 0;
+        }
+
+        private int ValidateAll(string[] cmdArgs, ref BuildServiceManager manager, out BuildSettings bldSettings)
+        {
+            int returnVal = 0;
+            returnVal = ValidateRemoteArguments(cmdArgs, out bldSettings);
+            if (returnVal != 0)
+                return returnVal;
+
+            return ValidateLoadDistribution(ref manager, ref bldSettings);
+        }
+        /// <summary>
+        /// Consumes the build command arguments or a .resp file to create a BuildSettings object 
+        /// </summary>
+        /// <param name="cmdArgs">The command line arguments provided</param>
+        /// <param name="bldSettings">Returns a populated BuildSettings object</param>
+        /// <returns>Non-zero if BuildSettings object was not successfully created.</returns>
+        private int ValidateRemoteArguments(string[] cmdArgs, out BuildSettings bldSettings)
+        {
+            bldSettings = null;
+            int result = 0;
+            if (this.settingsFile.Length > 0) //path for using .resp file...
+            {
+                bldSettings = DeserializeBuildSettingsFile(this.settingsFile);
+
+                //If remote servers is set to "local", glean the servers from the multi-database configuration
+                if (this.settings.RemoteExecutionServers[0].ServerName.ToLower() == "derive")
+                {
+                    string[] exeServers = RemoteHelper.GetUniqueServerNamesFromMultiDb(this.settings.MultiDbTextConfig);
+                    List<ServerConfigData> tmpSrv = new List<ServerConfigData>();
+                    foreach (string serv in exeServers)
+                        tmpSrv.Add(new ServerConfigData() { ServerName = serv });
+
+                    this.settings.RemoteExecutionServers = tmpSrv;
+                }
+
+
+                //Go ahead and validate the availability of the designated servers
+                if (this.settings != null)
+                {
+                    string[] errorMessages;
+                    int tmp = ValidateRemoteServerAvailability(ref this.settings, out errorMessages);
+                    if (tmp != 0)
+                    {
+                        for (int i = 0; i < errorMessages.Length; i++)
+                        {
+                            log.Error(errorMessages[i]);
+                            System.Console.Error.WriteLine(errorMessages[i]);
+                        }
+                        return tmp;
+                    }
+                }
+            }
+            else if (this.args.Length > 0)
+            {
+                result = DigestAndValidateCommandLineArguments(cmdArgs, out bldSettings);
+            }
+            if (this.settings == null)
+            {
+                log.Error("Unable to get BuildSettings, returning code 600");
+                return (int)SqlBuildManager.Interfaces.Console.ExecutionReturn.UnableToLoadBuildSettings;
+            }
+            else
+            {
+                log.Debug("Successfully created BuildSettings object");
+            }
+            return result;
+        }
+        /// <summary>
+        /// Validate to make sure that all of the configured databases/ remote servers will be hit via the settings.
+        /// 
+        /// </summary>
+        /// <param name="manager">BuildServiceManager object</param>
+        /// <param name="bldSettings">BuildSettings object</param>
+        /// <returns>Return non-zero if there will be skipped databases but will return a zero and log a lost of execution agents that will be idle</returns>
+        private int ValidateLoadDistribution(ref BuildServiceManager manager, ref BuildSettings bldSettings)
+        {
+            List<string> untaskedExeServers;
+            List<string> unassignedDbServers;
+            manager.ValidateLoadDistribution(settings.DistributionType, settings.RemoteExecutionServers, settings.MultiDbTextConfig, out untaskedExeServers, out unassignedDbServers);
+            if (unassignedDbServers.Count > 0)
+            {
+                string message = String.Format("The following database servers will not be updated with the current distribution type and remote execution server settings:\r\n{0}", String.Join("\r\n", unassignedDbServers.ToArray()));
+                log.Error(message);
+                System.Console.Error.WriteLine("Some databases will not get updated with the current settings. See \"SqlBuildManager.Console.log\" for details");
+
+                return (int)con.ExecutionReturn.UnassignedDatabaseServers;
+            }
+
+            if (untaskedExeServers.Count > 0)
+            {
+
+                log.WarnFormat("The following remote execution servers will not be tasked with the current distribution type and remote execution server settings:\r\n{0}", String.Join("\r\n", untaskedExeServers.ToArray()));
+
+                List<ServerConfigData> remaining = (from r in this.settings.RemoteExecutionServers
+                                                    where !(from u in untaskedExeServers select u).Contains(r.ServerName)
+                                                    select r).ToList();
+
+                string[] rs = (from r in remaining select r.ServerName).ToArray();
+                log.WarnFormat("The remaining execution servers are:\r\n{0}", String.Join("\r\n", rs));
+
+                this.settings.RemoteExecutionServers = remaining;
+            }
             return 0;
         }
 
