@@ -19,6 +19,12 @@ namespace SqlBuildManager.Console
             log.Info("Received Command: " + String.Join(" | ", args));
             DateTime start = DateTime.Now;
 
+            if (String.Join(",", args).ToLower().Contains("/?") || String.Join(",", args).ToLower().Contains("/help"))
+            {
+                System.Console.WriteLine(Properties.Resources.ConsoleHelp);
+                Environment.Exit(0);
+            }
+
             if (String.Join(",", args).ToLower().Contains("/remote=true")) //Remote execution with all flags
             {
                 try
