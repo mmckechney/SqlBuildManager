@@ -128,6 +128,10 @@
       <Project>{37A22666-195A-4CBB-A541-CFFBFB9D7905}</Project>
       <Name>SqlSync.DbInformation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj">
+      <Project>{CD09B7DB-851B-4321-9E21-16948DA7FA07}</Project>
+      <Name>SqlSync.ObjectScript</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlSync.SqlBuild.UnitTest\SqlSync.SqlBuild.UnitTest.csproj">
       <Project>{0334A575-196C-470F-A2DF-75A599010FDC}</Project>
       <Name>SqlSync.SqlBuild.UnitTest</Name>

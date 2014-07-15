@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Configuration;
-using SqlBuildManager.ServiceClient.Sbm;
-using SqlBuildManager.ServiceClient.Sbm.BuildService;
 using System.ComponentModel;
-using log4net;
-using SqlBuildManager.ServiceClient.CustomExtensionMethods;
-using System.Security.Principal;
-using System.Net;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.Connection;
+using System.Configuration;
+using System.Linq;
 using System.ServiceModel;
+using SqlBuildManager.ServiceClient.CustomExtensionMethods;
+using SqlBuildManager.ServiceClient.Sbm.BuildService;
+using SqlSync.Connection;
+using SqlSync.SqlBuild.MultiDb;
 namespace SqlBuildManager.ServiceClient
 {
     public class BuildServiceManager
@@ -45,14 +39,15 @@ namespace SqlBuildManager.ServiceClient
         private void SetBuildServiceInstanceEndpoints(List<string> serverNames)
         {
             string httpTemplate = ConfigurationManager.AppSettings["DynamicHttpEndpointTemplate"];
-            if (httpTemplate == null || httpTemplate.Length == 0)
+ 
+            if (String.IsNullOrEmpty(httpTemplate))
             {
                 string msg = "Unable to load the Http Dynamic Endpoint. Please make sure you have an <appSettings> value for DynamicHttpEndpointTemplate";
                 logger.Fatal(msg);
                 throw new ApplicationException(msg);
             }
             string tcpTemplate = ConfigurationManager.AppSettings["DynamicTcpEndpointTemplate"];
-            if (tcpTemplate == null || tcpTemplate.Length == 0)
+            if(String.IsNullOrEmpty(tcpTemplate))
             {
                 string msg = "Unable to load the tcp Dynamic Endpoint. Please make sure you have an <appSettings> value for DynamicTcpEndpointTemplate";
                 logger.Fatal(msg);
@@ -175,6 +170,12 @@ namespace SqlBuildManager.ServiceClient
 
         public IList<ServerConfigData> TestDatabaseConnectivity(BuildSettings settings, DistributionType loadDistributionType)
         {
+            if ((this.endPoints == null || this.endPoints.Count == 0) &&
+                (settings.RemoteExecutionServers != null && settings.RemoteExecutionServers.Count > 0))
+            {
+                settings.RemoteExecutionServers.ForEach(r => this.endPoints.Add(r));
+            }
+
             List<ServerConfigData> tmpConfigData = new List<ServerConfigData>();
             IDictionary<ServerConfigData, BuildSettings> distibutedLoad = this.DistributeBuildLoad(settings, loadDistributionType, this.endPoints.ToList());
             foreach (KeyValuePair<ServerConfigData, BuildSettings> loadSet in distibutedLoad)

@@ -37,7 +37,7 @@ namespace SqlBuildManager.Console
 
         
             manager.SubmitBuildRequest(this.settings, this.settings.DistributionType);
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(2000);
             bool recheckStatus = true;
             List<ServerConfigData> stat = null;
             while (recheckStatus)

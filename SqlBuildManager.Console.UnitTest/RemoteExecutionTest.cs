@@ -1098,5 +1098,155 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             conn.Open();
             cmd.ExecuteNonQuery();
         }
+
+        /// <summary>
+        ///A test for TestConnectivity
+        ///</summary>
+        [TestMethod()]
+        public void TestConnectivityTest_Pass()
+        {
+            string fileName = Path.GetTempFileName();
+            File.WriteAllText(fileName, "localhost");
+
+            string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
+            File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+
+
+            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest";
+            string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
+            File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
+
+            string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
+
+            string[] args = new string[9];
+            args[0] = "/remote=true";
+            args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
+            args[2] = "/transactional=true";
+            args[3] = "/trial=true";
+            args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
+            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[6] = "/RemoteServers=\"" + fileName + "\"";
+            args[7] = "/DistributionType=equal";
+            args[8] = "/TestConnectivity=true";
+            RemoteExecution target = new RemoteExecution(args);
+            int expected = 0;
+            int actual;
+            actual = target.TestConnectivity();
+
+            if (Directory.Exists(loggingPath))
+                Directory.Delete(loggingPath, true);
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            if (File.Exists(sbmFileName))
+                File.Delete(sbmFileName);
+            if (File.Exists(multiDbOverrideSettingFileName))
+                File.Delete(multiDbOverrideSettingFileName);
+
+            if (actual == -600)
+                Assert.Fail("Unable to complete test. Please make sure you have a Remote Execution Service running on localhost");
+
+            Assert.AreEqual(expected, actual, "Ensure that you have your service running on \"localhost\\SQLEXPRESS\"");
+        }
+
+        /// <summary>
+        ///A test for TestConnectivity
+        ///</summary>
+        [TestMethod()]
+        public void TestConnectivityTest_FailToConnectToOne()
+        {
+            string fileName = Path.GetTempFileName();
+            File.WriteAllText(fileName, "localhost");
+
+            string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
+            File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+
+
+            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
+localhost\SQLEXPRESS:DoesntExist,DoesntExist";
+            string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
+            File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
+
+            string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
+
+            string[] args = new string[9];
+            args[0] = "/remote=true";
+            args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
+            args[2] = "/transactional=true";
+            args[3] = "/trial=true";
+            args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
+            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[6] = "/RemoteServers=\"" + fileName + "\"";
+            args[7] = "/DistributionType=equal";
+            args[8] = "/TestConnectivity=true";
+            RemoteExecution target = new RemoteExecution(args);
+            int expected = 1;
+            int actual;
+            actual = target.TestConnectivity();
+
+            if (Directory.Exists(loggingPath))
+                Directory.Delete(loggingPath, true);
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            if (File.Exists(sbmFileName))
+                File.Delete(sbmFileName);
+            if (File.Exists(multiDbOverrideSettingFileName))
+                File.Delete(multiDbOverrideSettingFileName);
+
+            if (actual == -600)
+                Assert.Fail("Unable to complete test. Please make sure you have a Remote Execution Service running on localhost");
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        /// <summary>
+        ///A test for TestConnectivity
+        ///</summary>
+        [TestMethod()]
+        public void TestConnectivityTest_FailToConnectToTwo()
+        {
+            string fileName = Path.GetTempFileName();
+            File.WriteAllText(fileName, "localhost");
+
+            string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
+            File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+
+
+            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
+localhost\SQLEXPRESS:DoesntExist,DoesntExist
+localhost\SQLEXPRESS:DoesntExist2,DoesntExist2";
+            string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
+            File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
+
+            string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
+
+            string[] args = new string[9];
+            args[0] = "/remote=true";
+            args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
+            args[2] = "/transactional=true";
+            args[3] = "/trial=true";
+            args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
+            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[6] = "/RemoteServers=\"" + fileName + "\"";
+            args[7] = "/DistributionType=equal";
+            args[8] = "/TestConnectivity=true";
+            RemoteExecution target = new RemoteExecution(args);
+            int expected = 2;
+            int actual;
+            actual = target.TestConnectivity();
+
+            if (Directory.Exists(loggingPath))
+                Directory.Delete(loggingPath, true);
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            if (File.Exists(sbmFileName))
+                File.Delete(sbmFileName);
+            if (File.Exists(multiDbOverrideSettingFileName))
+                File.Delete(multiDbOverrideSettingFileName);
+
+            if (actual == -600)
+                Assert.Fail("Unable to complete test. Please make sure you have a Remote Execution Service running on localhost");
+
+            Assert.AreEqual(expected, actual);
+        }
     }
 }
