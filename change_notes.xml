@@ -1,7 +1,8 @@
 <SqlBuildManagerChangeNotes>
   <Version Major="9" Minor="2" Revision="2">
     <!--  -->
-    <added>Commandline argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of hte target databases</added>
+    <added>Command line argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of hte target databases</added>
+    <added>New command line help (/? or /help) message</added>
   </Version>
   <Version Major="9" Minor="2" Revision="1">
     <!-- April 30, 2014 -->
