@@ -23,23 +23,42 @@ namespace SqlBuildManager.Console
             {
                 try
                 {
-                    log.Info("Entering Remote Server Execution - command flag option");
-                    System.Console.WriteLine("Running remote execution...");
-                    RemoteExecution remote = new RemoteExecution(args);
+                    if (String.Join(",", args).ToLower().Contains("/testconnectivity=true"))
+                    {
+                        log.Info("Entering Remote Server Connectivity Testing: agent and database connectivity");
+                        System.Console.WriteLine("Entering Remote Server Connectivity Testing...");
+                        RemoteExecution remote = new RemoteExecution(args);
 
-                    int retVal = remote.Execute();
-                    if (retVal != 0)
-                        System.Console.WriteLine("Completed with Errors - check log. Exiting with code: "+retVal.ToString());
+                        int retVal = remote.TestConnectivity();
+                        if (retVal != 0)
+                            System.Console.WriteLine(
+                                string.Format("Test Connectivity Failed for {0} server/databases. - check log.",
+                                              retVal.ToString()));
+                        else
+                            System.Console.WriteLine("Test Connectivity Completed Successfully. Exiting with code: " + retVal.ToString());
+                    }
                     else
-                        System.Console.WriteLine("Completed Successfully. Exiting with code: " + retVal.ToString());
+                    {
+                        log.Info("Entering Remote Server Execution - command flag option");
+                        System.Console.WriteLine("Running remote execution...");
+                        RemoteExecution remote = new RemoteExecution(args);
 
-                    TimeSpan span = DateTime.Now - start;
-                    string msg = "Total Run time: " + span.ToString();
-                    System.Console.WriteLine(msg);
-                    log.Debug(msg);
+                        int retVal = remote.Execute();
+                        if (retVal != 0)
+                            System.Console.WriteLine("Completed with Errors - check log. Exiting with code: " + retVal.ToString());
+                        else
+                            System.Console.WriteLine("Completed Successfully. Exiting with code: " + retVal.ToString());
 
-                    log.Info("Exiting Remote Execution");
-                    System.Environment.Exit(retVal);
+                        TimeSpan span = DateTime.Now - start;
+                        string msg = "Total Run time: " + span.ToString();
+                        System.Console.WriteLine(msg);
+                        log.Debug(msg);
+
+                        log.Info("Exiting Remote Execution");
+                        System.Environment.Exit(retVal);
+
+                    }
+                   
 
                 }
                 catch (Exception exe)
