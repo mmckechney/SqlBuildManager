@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="DbRunHistory"
+targetNamespace="http://www.mckechney.com/DbRunHistory.xsd" elementFormDefault="qualified" xmlns="http://www.mckechney.com/DbRunHistory.xsd"
+xmlns:mstns="http://www.mckechney.com/DbRunHistory.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="DatabaseRunHistory" type="DatabaseRunHistory"></xs:element>
+
+  <xs:complexType name="DatabaseRunHistory">
+    <xs:sequence>
+      <xs:element name="BuildFileHistory" type="BuildFileHistory" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="BuildFileHistory">
+    <xs:sequence>
+      <xs:element name="ScriptHistory" type="ScriptHistory" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="BuildFileName" type="xs:string" default=""/>
+    <xs:attribute name="BuildFileHash" type="xs:string" default=""/>
+    <xs:attribute name="CommitDate" type="xs:dateTime"/>
+  </xs:complexType>
+  
+  <xs:complexType name="ScriptHistory">
+    <xs:attribute name="ScriptName" type="xs:string" default=""/>
+    <xs:attribute name="ScriptHash" type="xs:string" default=""/>
+    <xs:attribute name="Sequence" type="xs:int" default="-1"/>
+    <xs:attribute name="ScriptId" type="xs:string" default=""/>
+  </xs:complexType>
+
+</xs:schema>
+<!-- xsd /c /out:Syncronizer /namespace:SqlSync.SqlBuild.Syncronizer Syncronizer/DatabaseRunHistory.xsd -->
