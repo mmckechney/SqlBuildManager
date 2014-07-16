@@ -10,8 +10,8 @@ using System.Security.Permissions;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
 [assembly: AssemblyProduct("SqlSync.SqlBuild.UnitTest")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2011")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2011")]
+[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2014")]
+[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2014")]
 [assembly: AssemblyCulture("")]
 
 //[assembly: EnvironmentPermissionAttribute(SecurityAction.RequestMinimum)]
@@ -32,5 +32,5 @@ using System.Security.Permissions;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("9.2.1.0")]
-[assembly: AssemblyFileVersion("9.2.1.0")]
+[assembly: AssemblyVersion("9.2.2.0")]
+[assembly: AssemblyFileVersion("9.2.2.0")]

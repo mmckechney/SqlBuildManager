@@ -10,8 +10,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
 [assembly: AssemblyProduct("SqlBuildManager.Console.UnitTest")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2011")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2011")]
+[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2014")]
+[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2014")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -31,6 +31,6 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("9.2.1.0")] 
-[assembly: AssemblyFileVersion("9.2.1.0")]
+[assembly: AssemblyVersion("9.2.2.0")] 
+[assembly: AssemblyFileVersion("9.2.2.0")]
 
