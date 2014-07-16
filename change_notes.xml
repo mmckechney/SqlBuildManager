@@ -3,6 +3,7 @@
     <!--  -->
     <added>Command line argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of hte target databases</added>
     <added>New command line help (/? or /help) message</added>
+    <updated>Remote execution validation between server names and execution agents is no longer case sensitive</updated>
   </Version>
   <Version Major="9" Minor="2" Revision="1">
     <!-- April 30, 2014 -->

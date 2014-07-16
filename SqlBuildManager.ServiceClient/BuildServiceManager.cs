@@ -457,9 +457,9 @@ namespace SqlBuildManager.ServiceClient
                 IEnumerable<string> distinctServers = (from x in multiDbTextConfigLines select x.Split(':')[0].Split('\\')[0]).Distinct();
 
                 //Get list of execution servers that won't be used...
-                lstUntaskedExecutionServers = (from x in readyExecutionServers where !distinctServers.Contains(x) select x).ToList<string>();
+                lstUntaskedExecutionServers = (from x in readyExecutionServers where !distinctServers.Contains(x,StringComparer.InvariantCultureIgnoreCase) select x).ToList<string>();
                 //Get list if database servers that won't have code updated...
-                lstUnassignedDatabaseServers = (from x in distinctServers select x).Except( (from y in readyExecutionServers select y)).ToList<string>();
+                lstUnassignedDatabaseServers = (from x in distinctServers select x).Except((from y in readyExecutionServers select y), StringComparer.InvariantCultureIgnoreCase).ToList<string>();
 
             }
             else

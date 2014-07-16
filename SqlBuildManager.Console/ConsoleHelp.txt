@@ -1,41 +1,42 @@
-﻿Usage: SqlBuildManager.Console [SBM file name] or use flags below
+﻿
+Usage: SqlBuildManager.Console [SBM file name] or use flags below
 
-	/? or /help						Show this help 
+    /? or /help                      Show this help 
 
 General Execution..
-	/Build="<filename>"				Name of the .sbm or .sbx file to execute				
-	/RootLoggingPath="<directory>"	Directory to save execution logs
-	/Trial=(true|false)				Whether or not to run in trial mode (default is false)
-	/Transaction=(true|false)		Whether or not to run with a wrapping transaction (default is true)
-	/Override=("<filename>"|list)	File containing the target database settings (usually a formatted .cfg file)
-	/Description="<description>"	A free form description for the execution run
-	/Threaded=(true|false)			Whether or not to run a multi-database run on multiple threads (default is false)
+    /Build="<filename>"              Name of the .sbm or .sbx file to execute                
+    /RootLoggingPath="<directory>"   Directory to save execution logs
+    /Trial=(true|false)              Whether or not to run in trial mode (default is false)
+    /Transaction=(true|false)        Whether or not to run with a wrapping transaction (default is true)
+    /Override=("<filename>"|list)    File containing the target database settings (usually a formatted .cfg file)
+    /Description="<description>"     A free form description for the execution run
+    /Threaded=(true|false)           Whether or not to run a multi-database run on multiple threads (default is false)
 
 Remote Execution..
-	/Remote=(true|false)			Master flag designating a remote agent execution
-	/TestConnectivity=(true|false)	True value will test connection to remote agent and databases but will not execute SQL scripts
-	/RemoteServers=("<filename>"|derive) Pointer to file that contains the list of remote execution servers or "derive" to parse servers from DB list
-	/TimeoutRetryCount=(integer)	Number of times to retry os a script timeout is encountered (default is 0)
-	/DistributionType=(equal|local)	Sets whether to split execution evenly across all execution servers or have each agent only run against its local databases
+    /Remote=(true|false)                 Master flag designating a remote agent execution
+    /TestConnectivity=(true|false)       True value will test connection to remote agent and databases but will not execute SQL scripts
+    /RemoteServers=("<filename>"|derive) Pointer to file that contains the list of remote execution servers or "derive" to parse servers from DB list
+    /TimeoutRetryCount=(integer)         Number of times to retry os a script timeout is encountered (default is 0)
+    /DistributionType=(equal|local)      Sets whether to split execution evenly across all execution servers or have each agent only run against its local databases
 
 Other settings..
-	/UserName="<username>"			The username to authenticate against the database if not using integrate auth
-	/Password="<password>"			The password to authenticate against the database if not using integrate auth
-	/Database="<database name>"		Name of a single database to run against
-	/Server="<server name>"			Name of a server for single database run
-	/ScriptSrcDir="<directory>"		Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)
-	/LogToDatabaseName="<db name>"	Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target)
-	/ScriptLogFile="<filename>"		Alternate name for the file containing the script run log
+    /UserName="<username>"            The username to authenticate against the database if not using integrate auth
+    /Password="<password>"            The password to authenticate against the database if not using integrate auth
+    /Database="<database name>"       Name of a single database to run against
+    /Server="<server name>"           Name of a server for single database run
+    /ScriptSrcDir="<directory>"       Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)
+    /LogToDatabaseName="<db name>"    Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target)
+    /ScriptLogFile="<filename>"       Alternate name for the file containing the script run log
 
 Helpers settings...
-	/Package "<directory>"			Stand along flag that will package the SBX files in the directory into SBM packages
-	/PolicyCheck "<package name>"	Stand along flag that will run script policy checks against the specified package
-	/GetHash "<package name>"		Stand along flag that will calculate the SHA1 script hash for the specified package	
-	/CreateBackout "<package name>"	Also needs /Server and /Database flags to auto generate backout package	
+    /Package "<directory>"            Stand along flag that will package the SBX files in the directory into SBM packages
+    /PolicyCheck "<package name>"     Stand along flag that will run script policy checks against the specified package
+    /GetHash "<package name>"         Stand along flag that will calculate the SHA1 script hash for the specified package    
+    /CreateBackout "<package name>"   Also needs /Server and /Database flags to auto generate backout package    
 
 Miscellaneous...
-	/Auto="<filename>"				Designates the .sqlauto file to use for database schema scripting
-	/LogAsText=(true|false)			Whether to log as text or HTML. Default is true
-	/Test=(true|false)				Whether or not the specified build file is an .sptest and should be run
+    /Auto="<filename>"                Designates the .sqlauto file to use for database schema scripting
+    /LogAsText=(true|false)           Whether to log as text or HTML. Default is true
+    /Test=(true|false)                Whether or not the specified build file is an .sptest and should be run
 
 

@@ -105,7 +105,7 @@ namespace SqlBuildManager.Console
             {
                 System.Console.Error.WriteLine(
                     String.Format("Connectivity Errors to the following {0} Server/Databases:", err.Count()));
-
+          
                 var errorList =
                     err.Select(combined => combined.Server +": "+ combined.Database).Aggregate((start, add) => start + "\r\n" + add);
                 System.Console.Error.WriteLine(errorList);

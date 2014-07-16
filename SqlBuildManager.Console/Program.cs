@@ -19,7 +19,7 @@ namespace SqlBuildManager.Console
             log.Info("Received Command: " + String.Join(" | ", args));
             DateTime start = DateTime.Now;
 
-            if (String.Join(",", args).ToLower().Contains("/?") || String.Join(",", args).ToLower().Contains("/help"))
+            if (args.Length == 0 || string.Join(",", args).ToLower().Contains("/?") || String.Join(",", args).ToLower().Contains("/help"))
             {
                 System.Console.WriteLine(Properties.Resources.ConsoleHelp);
                 Environment.Exit(0);
