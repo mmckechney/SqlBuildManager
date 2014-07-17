@@ -76,6 +76,7 @@
     <Compile Include="ClearScriptDataTest.cs" />
     <Compile Include="CommandLineTest.cs" />
     <Compile Include="CommandLine_ArgumentsTest.cs" />
+    <Compile Include="DatabaseDifferTest.cs" />
     <Compile Include="DbOverrideSequenceTest.cs" />
     <Compile Include="Initialization.cs" />
     <Compile Include="MultiDbDataTest.cs" />

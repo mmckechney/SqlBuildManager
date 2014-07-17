@@ -260,7 +260,6 @@
     <Compile Include="StringExtension.cs" />
     <Compile Include="Syncronizer\DatabaseDiffer.cs" />
     <Compile Include="Syncronizer\DatabaseRunHistory.cs" />
-    <Compile Include="Syncronizer\DatabaseRunHistory.cs" />
     <Compile Include="Validator\SchemaEnums.cs">
       <SubType>Code</SubType>
     </Compile>
