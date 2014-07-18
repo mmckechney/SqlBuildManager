@@ -14,25 +14,28 @@ namespace SqlSync.SqlBuild.Syncronizer
 
         public DatabaseRunHistory GetDatabaseHistoryDifference(ConnectionData goldenCopy, ConnectionData toBeUpdated)
         {
-            Stack<BuildFileHistory> q = new Stack<BuildFileHistory>();
 
             var golden = GetDatabaseRunHistory(goldenCopy).BuildFileHistory.OrderByDescending(x => x.CommitDate);
             var toUpdate = GetDatabaseRunHistory(toBeUpdated).BuildFileHistory.OrderByDescending(x => x.CommitDate);
 
             var unique = golden.Where(p => !toUpdate.Any(p2 => p2.BuildFileHash == p.BuildFileHash));
            
-          
-            return null;
+            DatabaseRunHistory uniqueHistory = new DatabaseRunHistory();
+            uniqueHistory.BuildFileHistory.AddRange(unique);
+
+            return uniqueHistory;
         }
 
         public DatabaseRunHistory GetDatabaseRunHistory(ConnectionData dbConnData)
         {
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
 
-            string sql = @" SELECT BuildProjectHash, BuildFileName,  CommitDate, ScriptFileHash, ScriptId, ScriptFileName, Sequence 
+            //Get the latest run of all the unique build hashes
+            string sql = @"SELECT BuildProjectHash, max(CommitDate)
                     FROM SqlBuild_Logging 
                     WHERE BuildProjectHash <> '' AND BuildProjectHash IS NOT NULL
-                    ORDER BY commitDate DESC , sequence ASC";
+                    GROUP BY BuildProjectHash
+                    ORDER BY max(CommitDate) DESC";
 
             DatabaseRunHistory history = new DatabaseRunHistory();
 
@@ -45,41 +48,14 @@ namespace SqlSync.SqlBuild.Syncronizer
                     bool filled;
                     while (reader.Read())
                     {
-                        //TODO: Change this to a loop since we know they are in order?
-                        var record = history.BuildFileHistory.FirstOrDefault(x => x.BuildFileHash == (string) reader["BuildProjectHash"]);
-
-                        if (record == null)
-                        {
-                            BuildFileHistory h = new BuildFileHistory()
-                               {
-                                   BuildFileHash = reader["BuildProjectHash"].ToString(),
-                                   BuildFileName =  reader["BuildFileName"].ToString(),
-                                   CommitDate = (DateTime)reader["CommitDate"]
-                               };
-                           h.ScriptHistory.Add(new ScriptHistory()
-                               {
-                                   ScriptHash = reader["ScriptFileHash"].ToString(),
-                                   ScriptId = reader["ScriptId"].ToString(),
-                                   ScriptName = reader["ScriptFileName"].ToString(),
-                                   Sequence = (int) reader["Sequence"]
-                               });
-                           history.BuildFileHistory.Add(h);
-                        }
-                     
-                        else if (record.CommitDate == (DateTime) reader["CommitDate"])
-                       {
-                           record.ScriptHistory.Add(new ScriptHistory()
-                               {
-                                   ScriptHash = reader["ScriptFileHash"].ToString(),
-                                   ScriptId = reader["ScriptId"].ToString(),
-                                   ScriptName = reader["ScriptFileName"].ToString(),
-                                   Sequence = (int) reader["Sequence"]
-                               });
-                       }
-                       else
-                       {
-                           //this is an older record for the same build file, so ignore it...
-                       }
+                      
+                            history.BuildFileHistory.Add(new BuildFileHistory()
+                            {
+                                BuildFileHash = reader["BuildProjectHash"].ToString(),
+                                CommitDate = (DateTime)reader["CommitDate"]
+                            });
+                            
+                        
                     }
                     conn.Close();
 
@@ -87,9 +63,78 @@ namespace SqlSync.SqlBuild.Syncronizer
             }
             catch (Exception exe)
             {
-                log.Error(String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName, dbConnData.DatabaseName),exe);
+                log.Error(String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName, dbConnData.DatabaseName), exe);
             }
             return history;
         }
+
+
+//        public DatabaseRunHistory GetDatabaseRunHistory(ConnectionData dbConnData)
+//        {
+//            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
+
+//            string sql = @" SELECT BuildProjectHash, BuildFileName,  CommitDate, ScriptFileHash, ScriptId, ScriptFileName, Sequence 
+//                    FROM SqlBuild_Logging 
+//                    WHERE BuildProjectHash <> '' AND BuildProjectHash IS NOT NULL
+//                    ORDER BY commitDate DESC , sequence ASC";
+
+     
+//            DatabaseRunHistory history = new DatabaseRunHistory();
+
+//            try
+//            {
+//                SqlCommand cmd = new SqlCommand(sql, conn);
+//                conn.Open();
+//                using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+//                {
+//                    bool filled;
+//                    while (reader.Read())
+//                    {
+//                        //TODO: Change this to a loop since we know they are in order?
+//                        var record = history.BuildFileHistory.FirstOrDefault(x => x.BuildFileHash == (string) reader["BuildProjectHash"]);
+
+//                        if (record == null)
+//                        {
+//                            BuildFileHistory h = new BuildFileHistory()
+//                               {
+//                                   BuildFileHash = reader["BuildProjectHash"].ToString(),
+//                                  // BuildFileName =  reader["BuildFileName"].ToString(),
+//                                   CommitDate = (DateTime)reader["CommitDate"]
+//                               };
+//                            h.ScriptHistory.Add(new ScriptHistory()
+//                                {
+//                                    ScriptHash = reader["ScriptFileHash"].ToString(),
+//                                    ScriptId = reader["ScriptId"].ToString(),
+//                                    ScriptName = reader["ScriptFileName"].ToString(),
+//                                    Sequence = (int)reader["Sequence"]
+//                                });
+//                           history.BuildFileHistory.Add(h);
+//                        }
+                     
+//                        else if (record.CommitDate == (DateTime) reader["CommitDate"])
+//                       {
+//                           record.ScriptHistory.Add(new ScriptHistory()
+//                               {
+//                                   ScriptHash = reader["ScriptFileHash"].ToString(),
+//                                   ScriptId = reader["ScriptId"].ToString(),
+//                                   ScriptName = reader["ScriptFileName"].ToString(),
+//                                   Sequence = (int) reader["Sequence"]
+//                               });
+//                       }
+//                       else
+//                       {
+//                           //this is an older record for the same build file, so ignore it...
+//                       }
+//                    }
+//                    conn.Close();
+
+//                }
+//            }
+//            catch (Exception exe)
+//            {
+//                log.Error(String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName, dbConnData.DatabaseName),exe);
+//            }
+//            return history;
+//        }
     }
 }
