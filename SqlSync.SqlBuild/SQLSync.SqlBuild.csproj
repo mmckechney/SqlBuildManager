@@ -156,6 +156,12 @@
   <ItemGroup>
     <Compile Include="AdHocQuery\BuildValidationType.cs" />
     <Compile Include="BulkAddData.cs" />
+    <Compile Include="CommittedBuildData.cs">
+      <DependentUpon>CommittedBuildData.xml</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Include="MultiDb\MultiDbQueryConfig.cs" />
     <Compile Include="AdHocQuery\ResultsDictionary.cs" />
     <Compile Include="AdHocQuery\QueryResultData.cs" />
@@ -179,12 +185,6 @@
       <DependentUpon>CommandLineArgs.xml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="CommittedBuildData.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>CommittedBuildData.xml</DependentUpon>
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Default Scripts\DefaultScriptRegistry.cs">
       <SubType>Code</SubType>
@@ -260,6 +260,7 @@
     <Compile Include="StringExtension.cs" />
     <Compile Include="Syncronizer\DatabaseDiffer.cs" />
     <Compile Include="Syncronizer\DatabaseRunHistory.cs" />
+    <Compile Include="Syncronizer\DatabaseSyncer.cs" />
     <Compile Include="Validator\SchemaEnums.cs">
       <SubType>Code</SubType>
     </Compile>

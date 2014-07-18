@@ -14,6 +14,12 @@
       <source_column>BuildFileName</source_column>
     </property>
     <property>
+      <public_name>BuildFileHash</public_name>
+      <default_value>String.Empty</default_value>
+      <data_type>String</data_type>
+      <source_column>BuildProjectHash</source_column>
+    </property>
+    <property>
       <public_name>ScriptCount</public_name>
       <default_value></default_value>
       <data_type>Int32</data_type>

@@ -23,6 +23,45 @@ namespace SqlSync.SqlBuild
             this.commitData = commitData;
             this.newBuildFileName = newBuildFileName;
         }
+
+        internal static List<RebuilderData> RetreiveBuildData(ConnectionData dbConnData, string buildFileHash,
+                                                              DateTime commitDate)
+        {
+;
+            string sql =
+                @"SELECT ScriptFileName, ScriptId, Sequence,ScriptText, '' as [database], Tag FROM SqlBuild_Logging 
+                    WHERE BuildProjectHash = @BuildFileHash AND CommitDate = @CommitDate
+                    ORDER BY Sequence ";
+
+            List<RebuilderData> data = new List<RebuilderData>();
+
+            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
+            SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@BuildFileHash", buildFileHash);
+            cmd.Parameters.AddWithValue("@CommitDate", buildFileHash);
+            conn.Open();
+            using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+            {
+                bool filled;
+                while (!reader.IsClosed)
+                {
+                    RebuilderData dat = new RebuilderData();
+                    filled = dat.Fill(reader, false);
+                    if (filled)
+                    {
+                        dat.Database = dbConnData.DatabaseName;
+                        data.Add(dat);
+                    }
+                }
+                conn.Close();
+            }
+
+
+
+            return data;
+
+        }
+
         private List<RebuilderData> RetreiveBuildData()
         {
             string startinDb = connData.DatabaseName;
@@ -61,15 +100,14 @@ namespace SqlSync.SqlBuild
             return data;
             
         }
-        public bool RebuildBuildManagerFile(int defaultTimeout)
+        internal static bool RebuildBuildManagerFile(int defaultTimeout, string buildFileName, List<RebuilderData> rebuildData)
         {
-
             string tempPath = System.IO.Path.GetTempPath() + System.Guid.NewGuid();
             Directory.CreateDirectory(tempPath);
             try
             {
-                string projFileName = tempPath + @"\"+SqlSync.SqlBuild.XmlFileNames.MainProjectFile;
-                List<RebuilderData> rebuildData = RetreiveBuildData();
+                string projFileName = tempPath + @"\" + SqlSync.SqlBuild.XmlFileNames.MainProjectFile;
+                
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
                     File.WriteAllText(tempPath + @"\" + rebuildData[i].ScriptFileName, rebuildData[i].ScriptText);
@@ -77,21 +115,21 @@ namespace SqlSync.SqlBuild
 
                 SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
                 buildData.AcceptChanges();
-                SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, tempPath, this.newBuildFileName);
-                ZipHelper.UnpackZipPackage(tempPath, this.newBuildFileName);
+                SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, tempPath, buildFileName);
+                ZipHelper.UnpackZipPackage(tempPath, buildFileName);
 
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
                     SqlBuildFileHelper.AddScriptFileToBuild(ref buildData,
                         projFileName,
                         rebuildData[i].ScriptFileName,
-                        rebuildData[i].Sequence+1,
+                        rebuildData[i].Sequence + 1,
                         string.Empty,
                         true,
                         true,
                         rebuildData[i].Database,
                         false,
-                        this.newBuildFileName,
+                        buildFileName,
                         false,
                         false,
                         System.Environment.UserName,
@@ -100,7 +138,7 @@ namespace SqlSync.SqlBuild
                         rebuildData[i].Tag);
                 }
 
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, this.newBuildFileName);
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildFileName);
 
                 return true;
             }
@@ -109,7 +147,11 @@ namespace SqlSync.SqlBuild
                 if (Directory.Exists(tempPath))
                     Directory.Delete(tempPath, true);
             }
-
+        }
+        public bool RebuildBuildManagerFile(int defaultTimeout)
+        {
+            List<RebuilderData> rebuildData = RetreiveBuildData();
+            return RebuildBuildManagerFile(defaultTimeout, this.newBuildFileName, rebuildData);
         }
 
         #region .: Discovery Methods :.

@@ -14,7 +14,7 @@ namespace SqlSync.SqlBuild.Syncronizer
 
         public DatabaseRunHistory GetDatabaseHistoryDifference(ConnectionData goldenCopy, ConnectionData toBeUpdated)
         {
-
+            //TODO: find the latest common run and have the unique start after that
             var golden = GetDatabaseRunHistory(goldenCopy).BuildFileHistory.OrderByDescending(x => x.CommitDate);
             var toUpdate = GetDatabaseRunHistory(toBeUpdated).BuildFileHistory.OrderByDescending(x => x.CommitDate);
 
@@ -31,11 +31,13 @@ namespace SqlSync.SqlBuild.Syncronizer
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
 
             //Get the latest run of all the unique build hashes
-            string sql = @"SELECT BuildProjectHash, max(CommitDate)
-                    FROM SqlBuild_Logging 
-                    WHERE BuildProjectHash <> '' AND BuildProjectHash IS NOT NULL
-                    GROUP BY BuildProjectHash
-                    ORDER BY max(CommitDate) DESC";
+            string sql = @"SELECT DISTINCT 
+	                        BuildProjectHash, 
+	                        FIRST_VALUE(CommitDate) OVER (PARTITION BY BuildProjectHash ORDER BY CommitDate DESC) as [CommitDate], 
+	                        FIRST_VALUE(BuildFileName) OVER (PARTITION BY BuildProjectHash ORDER BY CommitDate DESC) as [BuildFileName]
+                        FROM SqlBuild_Logging 
+                        WHERE BuildProjectHash <> '' AND BuildProjectHash IS NOT NULL
+                        ORDER BY CommitDate DESC";
 
             DatabaseRunHistory history = new DatabaseRunHistory();
 
@@ -52,6 +54,7 @@ namespace SqlSync.SqlBuild.Syncronizer
                             history.BuildFileHistory.Add(new BuildFileHistory()
                             {
                                 BuildFileHash = reader["BuildProjectHash"].ToString(),
+                                BuildFileName = reader["BuildFileName"].ToString(),
                                 CommitDate = (DateTime)reader["CommitDate"]
                             });
                             
