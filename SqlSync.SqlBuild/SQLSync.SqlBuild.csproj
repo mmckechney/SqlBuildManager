@@ -288,6 +288,7 @@
     <Content Include="CommittedBuildData.xml">
       <Generator>SimpleDataClassGenerator</Generator>
       <LastGenOutput>CommittedBuildData.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="Default Scripts\DefaultScriptRegistry.xml" />
     <Content Include="Default Scripts\DefaultScriptRegistry.xsd">

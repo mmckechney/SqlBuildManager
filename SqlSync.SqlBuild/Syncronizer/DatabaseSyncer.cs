@@ -32,8 +32,11 @@ namespace SqlSync.SqlBuild.Syncronizer
             foreach (var buildFileHistory in toBeRun.BuildFileHistory)
             {
                 PushInfo(string.Format("Rebuilding Package {0} (Hash:{1})", buildFileHistory.BuildFileName, buildFileHistory.BuildFileHash));
+
                 var fileName = tempPath + "\\" + Path.GetFileNameWithoutExtension(buildFileHistory.BuildFileName) + ".sbm"; //Make sure it creates and SBM and not an SBX
                 var rebuildData = Rebuilder.RetreiveBuildData(gold, buildFileHistory.BuildFileHash, buildFileHistory.CommitDate);
+                rebuildData.ForEach(h => h.ScriptFileName = Path.GetFileName(h.ScriptFileName)); //trim off the path, we just want the file name
+
                 bool success = Rebuilder.RebuildBuildManagerFile(500, fileName, rebuildData);
                 if (!success)
                 {
@@ -44,12 +47,22 @@ namespace SqlSync.SqlBuild.Syncronizer
                 rebuiltPackages.Add(fileName);
             }
 
-            if (!ProcessSyncronizationPackages(rebuiltPackages, toUpdate, true))
+            bool syncronized = ProcessSyncronizationPackages(rebuiltPackages, toUpdate, true);
+            
+            if (syncronized)
             {
-                ProcessDirectoryCleanup(tempPath);
-                return false;
+                PushInfo(string.Format("Syncronized database {0}.{1} to source {2}.{3}", toUpdate.SQLServerName,
+                                       toUpdate.DatabaseName, gold.SQLServerName, gold.DatabaseName));
             }
-            return true;
+            else
+            {
+                PushInfo(string.Format("Syncronize failed to {0}.{1} from source {2}.{3}. See log for details.", toUpdate.SQLServerName,
+                                       toUpdate.DatabaseName, gold.SQLServerName, gold.DatabaseName));
+            }
+             ProcessDirectoryCleanup(tempPath);
+            
+            return syncronized;
+            
         }
 
         private bool ProcessSyncronizationPackages(IEnumerable<string> sbmPackages, ConnectionData toUpdate, bool runAsTrial)
@@ -63,11 +76,19 @@ namespace SqlSync.SqlBuild.Syncronizer
             {
                 //Unzip and read the package
                 SqlSyncBuildData buildData;
-                SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmPackageName, ref workingDirectory, ref projectFilePath,
-                                                          ref projFileName,
-                                                          out result);
+                if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmPackageName, ref workingDirectory, ref projectFilePath,
+                                                               ref projFileName,
+                                                               out result))
+                {
+                    PushInfo(string.Format("Unable to extract build file {0}. See log for details", sbmPackageName));
+                    return false;
+                }
 
-                SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projFileName, false);
+                if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projFileName, false))
+                {
+                    PushInfo(string.Format("Unable to load build file {0}. See log for details", sbmPackageName));
+                    return false;
+                }
 
                 //Set the run meta-data
                 SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData()

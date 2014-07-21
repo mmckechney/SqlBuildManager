@@ -84,9 +84,15 @@ namespace SqlSync.SqlBuild.UnitTest
                 SQLServerName = @"localhost\SQLEXPRESS",
                 UseWindowAuthentication = true
             };
+            target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
             target.SyncronizeDatabases(gold, toUpdate);
 
             Assert.Inconclusive("A method that does not return a value cannot be verified.");
+        }
+
+        void target_SyncronizationInfoEvent(string message)
+        {
+           Console.WriteLine(message);
         }
     }
 }

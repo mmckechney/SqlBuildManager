@@ -30,7 +30,7 @@ namespace SqlSync.SqlBuild.Syncronizer
         {
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
 
-            //Get the latest run of all the unique build hashes
+            //Get the latest run of all the unique build hashes along with the build file name...
             string sql = @"SELECT DISTINCT 
 	                        BuildProjectHash, 
 	                        FIRST_VALUE(CommitDate) OVER (PARTITION BY BuildProjectHash ORDER BY CommitDate DESC) as [CommitDate], 
@@ -63,6 +63,82 @@ namespace SqlSync.SqlBuild.Syncronizer
                     conn.Close();
 
                 }
+            }
+            catch (Exception exe)
+            {
+                if (exe.Message.IndexOf("FIRST_VALUE",0, StringComparison.InvariantCultureIgnoreCase) > -1 )
+                    return GetDatabaseRunHistoryOldSqlServer(dbConnData);
+
+                log.Error(String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName, dbConnData.DatabaseName), exe);
+            }
+            return history;
+        }
+
+        /// <summary>
+        /// This method will only be used if the target SQL server is an older version that does
+        /// not have the FIRST_VALUE analytical command. This method will be slower as it makes multiple calls 
+        /// to the database to get the same information
+        /// </summary>
+        /// <param name="dbConnData"></param>
+        /// <returns></returns>
+        public DatabaseRunHistory GetDatabaseRunHistoryOldSqlServer(ConnectionData dbConnData)
+        {
+            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
+
+            //Get the latest run of all the unique build hashes along with the build file name...
+            string sql = @"SELECT BuildProjectHash, max(CommitDate) as CommitDate
+                        FROM SqlBuild_Logging 
+                        WHERE BuildProjectHash <> '' AND BuildProjectHash IS NOT NULL
+                        GROUP BY BuildProjectHash
+                        ORDER BY CommitDate DESC";
+
+            DatabaseRunHistory history = new DatabaseRunHistory();
+
+            try
+            {
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                conn.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+                {
+                    bool filled;
+                    while (reader.Read())
+                    {
+
+                        history.BuildFileHistory.Add(new BuildFileHistory()
+                        {
+                            BuildFileHash = reader["BuildProjectHash"].ToString(),
+                            CommitDate = (DateTime)reader["CommitDate"]
+                        });
+
+
+                    }
+                    conn.Close();
+                }
+
+                var dates = "'" + 
+                    history.BuildFileHistory.Select(d => d.CommitDate.ToString("yyyy-MM-dd HH:mm:ss.FFF")).Aggregate((root,add) => root + "','" + add) +"'";
+                          
+
+                string sql2 =
+                    String.Format(
+                        "SELECT DISTINCT BuildProjectHash, BuildFileName FROM SqlBuild_Logging WHERE CommitDate IN ({0})",
+                        dates);
+
+                cmd = new SqlCommand(sql2, conn);
+                conn.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+                {
+                    bool filled;
+                    while (reader.Read())
+                    {
+
+                        history.BuildFileHistory.FirstOrDefault(h => h.BuildFileHash == reader["BuildProjectHash"].ToString())
+                               .BuildFileName = reader["BuildFileName"].ToString();
+                    }
+                    conn.Close();
+                }
+
+
             }
             catch (Exception exe)
             {

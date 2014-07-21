@@ -38,7 +38,7 @@ namespace SqlSync.SqlBuild
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
             SqlCommand cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@BuildFileHash", buildFileHash);
-            cmd.Parameters.AddWithValue("@CommitDate", buildFileHash);
+            cmd.Parameters.AddWithValue("@CommitDate", commitDate.ToString("yyyy-MM-dd HH:mm:ss.FFF"));
             conn.Open();
             using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
             {
@@ -115,8 +115,16 @@ namespace SqlSync.SqlBuild
 
                 SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
                 buildData.AcceptChanges();
-                SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, tempPath, buildFileName);
-                ZipHelper.UnpackZipPackage(tempPath, buildFileName);
+
+                if (!SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, tempPath, buildFileName))
+                {
+                    return false;
+                }
+
+                if(!ZipHelper.UnpackZipPackage(tempPath, buildFileName))
+                {
+                    return false;
+                }
 
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
