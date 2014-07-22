@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using SqlSync.Connection;
+using System.Data;
 
 namespace SqlSync.SqlBuild.Syncronizer
 {
@@ -47,7 +48,7 @@ namespace SqlSync.SqlBuild.Syncronizer
                 rebuiltPackages.Add(fileName);
             }
 
-            bool syncronized = ProcessSyncronizationPackages(rebuiltPackages, toUpdate, true);
+            bool syncronized = ProcessSyncronizationPackages(rebuiltPackages, toUpdate, false);
             
             if (syncronized)
             {
@@ -90,6 +91,17 @@ namespace SqlSync.SqlBuild.Syncronizer
                     return false;
                 }
 
+                //set the build data for a new run 
+                buildData.Script.AsParallel().ForAll(r => r.Database = "placeholder");
+                buildData.Script.AsParallel().ForAll(r => r.AllowMultipleRuns = true);
+
+                List<DatabaseOverride> lstOverride = new List<DatabaseOverride>();
+                lstOverride.Add(new DatabaseOverride()
+                    {
+                        DefaultDbTarget = "placeholder",
+                        OverrideDbTarget = toUpdate.DatabaseName,
+                    });
+
                 //Set the run meta-data
                 SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData()
                     {
@@ -101,8 +113,8 @@ namespace SqlSync.SqlBuild.Syncronizer
                         ProjectFileName = projFileName,
                         IsTrial = runAsTrial,
                         BuildFileName = sbmPackageName,
-                        IsTransactional = true//,
-                       // TargetDatabaseOverrides = this.targetDatabaseOverrideCtrl1.GetOverrideData()
+                        IsTransactional = true,
+                        TargetDatabaseOverrides = lstOverride 
                     };
 
                 //Execute the package

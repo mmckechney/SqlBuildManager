@@ -1,4 +1,5 @@
-﻿using SqlSync.SqlBuild.Syncronizer;
+﻿using System.Data.SqlClient;
+using SqlSync.SqlBuild.Syncronizer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using SqlSync.Connection;
@@ -14,8 +15,11 @@ namespace SqlSync.SqlBuild.UnitTest
     [TestClass()]
     public class DatabaseSyncerTest
     {
-
-
+        [ClassInitialize()]
+        public static void Initilize(TestContext testContext)
+        {
+            Initialization init = new Initialization();
+        }
         private TestContext testContextInstance;
 
         /// <summary>
@@ -69,30 +73,80 @@ namespace SqlSync.SqlBuild.UnitTest
         ///A test for SyncronizeDatabases
         ///</summary>
         [TestMethod()]
-        public void SyncronizeDatabasesTest()
+        public void SyncronizeDatabasesTest_SyncWorked()
         {
             DatabaseSyncer target = new DatabaseSyncer(); // TODO: Initialize to an appropriate value
             ConnectionData gold = new ConnectionData()
             {
-                DatabaseName = "SqlBuildTest",
+                DatabaseName = "SqlBuildTest_SyncTest1",
                 SQLServerName = @"localhost\SQLEXPRESS",
                 UseWindowAuthentication = true
             };
             ConnectionData toUpdate = new ConnectionData()
             {
-                DatabaseName = "SqlBuildTest1",
+                DatabaseName = "SqlBuildTest_SyncTest2",
                 SQLServerName = @"localhost\SQLEXPRESS",
                 UseWindowAuthentication = true
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
-            target.SyncronizeDatabases(gold, toUpdate);
+            bool success = target.SyncronizeDatabases(gold, toUpdate);
 
-            Assert.Inconclusive("A method that does not return a value cannot be verified.");
+            CleanUpSyncTest2();
+
+            Assert.IsTrue(true);
         }
 
+        [TestMethod()]
+        public void SyncronizeDatabasesTest_SyncWorkedAndSticks()
+        {
+            DatabaseSyncer target = new DatabaseSyncer(); // TODO: Initialize to an appropriate value
+            ConnectionData gold = new ConnectionData()
+            {
+                DatabaseName = "SqlBuildTest_SyncTest1",
+                SQLServerName = @"localhost\SQLEXPRESS",
+                UseWindowAuthentication = true
+            };
+            ConnectionData toUpdate = new ConnectionData()
+            {
+                DatabaseName = "SqlBuildTest_SyncTest2",
+                SQLServerName = @"localhost\SQLEXPRESS",
+                UseWindowAuthentication = true
+            };
+            target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
+            bool success = target.SyncronizeDatabases(gold, toUpdate);
+
+            DatabaseDiffer differ = new DatabaseDiffer();
+            var history = differ.GetDatabaseHistoryDifference(gold, toUpdate);
+
+            CleanUpSyncTest2();
+           
+            Assert.AreEqual(0,history.BuildFileHistory.Count);
+
+        }
+        
         void target_SyncronizationInfoEvent(string message)
         {
            Console.WriteLine(message);
+        }
+
+        internal static void CleanUpSyncTest2()
+        {
+
+            string sql = "DELETE FROM [SqlBuildTest_SyncTest2].[dbo].[SqlBuild_Logging]";
+            ConnectionData sync2Conn = new ConnectionData()
+                {
+                    DatabaseName = "SqlBuildTest_SyncTest2",
+                    SQLServerName = @"localhost\SQLEXPRESS",
+                    UseWindowAuthentication = true
+                };
+            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(sync2Conn);
+            conn.Open();
+            using (SqlCommand cmd = new SqlCommand(sql, conn))
+            {
+                cmd.ExecuteNonQuery();
+                conn.Close();
+            }
+        
         }
     }
 }

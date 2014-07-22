@@ -1,6 +1,7 @@
 ﻿using SqlSync.SqlBuild.Syncronizer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 using SqlSync.Connection;
 
 namespace SqlSync.SqlBuild.UnitTest
@@ -72,7 +73,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void DatabaseDifferConstructorTest()
         {
             DatabaseDiffer target = new DatabaseDiffer();
-            Assert.Inconclusive("TODO: Implement code to verify target");
+            Assert.IsNotNull(target);
         }
 
         /// <summary>
@@ -84,41 +85,46 @@ namespace SqlSync.SqlBuild.UnitTest
             DatabaseDiffer target = new DatabaseDiffer(); 
             ConnectionData goldenCopy = new ConnectionData()
                 {
-                    DatabaseName = "SqlBuildTest",
+                    DatabaseName = "SqlBuildTest_SyncTest1",
                     SQLServerName = @"localhost\SQLEXPRESS",
                     UseWindowAuthentication = true
                 };
             ConnectionData toBeUpdated = new ConnectionData()
                 {
-                    DatabaseName = "SqlBuildTest1",
+                    DatabaseName = "SqlBuildTest_SyncTest2",
                     SQLServerName = @"localhost\SQLEXPRESS",
                     UseWindowAuthentication = true
                 };
-            DatabaseRunHistory expected = null; // TODO: Initialize to an appropriate value
             DatabaseRunHistory actual;
             actual = target.GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("Verify the correctness of this test method.");
+            Assert.AreEqual(3, actual.BuildFileHistory.Count);
+
+            //check that they are in chron order
+            Assert.IsTrue(actual.BuildFileHistory[0].CommitDate < actual.BuildFileHistory[1].CommitDate);
+            Assert.IsTrue(actual.BuildFileHistory[1].CommitDate < actual.BuildFileHistory[2].CommitDate);
+            Assert.AreEqual("7E704479328C9B2FDA48C7CF093B16F125EAB98A", actual.BuildFileHistory[2].BuildFileHash);
         }
 
         /// <summary>
         ///A test for GetDatabaseRunHistory
         ///</summary>
         [TestMethod()]
-        public void GetDatabaseRunHistoryTest()
+        public void GetDatabaseRunHistoryTest_TestCountAndSelection()
         {
-            DatabaseDiffer target = new DatabaseDiffer(); // TODO: Initialize to an appropriate value
+            DatabaseDiffer target = new DatabaseDiffer(); 
             ConnectionData dbConnData = new ConnectionData()
                 {
-                    DatabaseName = "SqlBuildTest",
+                    DatabaseName = "SqlBuildTest_SyncTest1",
                     SQLServerName = @"localhost\SQLEXPRESS",
                     UseWindowAuthentication = true
                 };
-            DatabaseRunHistory expected = null; // TODO: Initialize to an appropriate value
+
             DatabaseRunHistory actual;
             actual = target.GetDatabaseRunHistory(dbConnData);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("Verify the correctness of this test method.");
+            Assert.AreEqual(3,actual.BuildFileHistory.Count);
+
+            Assert.AreEqual(DateTime.Parse("2014-07-21 13:58:07.880"), 
+                actual.BuildFileHistory.Where(x => x.BuildFileHash == "7651E282160CAF9C92CB923004D94B91181C077E").Select(y => y.CommitDate).FirstOrDefault());
         }
     }
 }

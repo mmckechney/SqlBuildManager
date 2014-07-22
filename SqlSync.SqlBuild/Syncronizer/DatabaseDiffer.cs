@@ -18,7 +18,8 @@ namespace SqlSync.SqlBuild.Syncronizer
             var golden = GetDatabaseRunHistory(goldenCopy).BuildFileHistory.OrderByDescending(x => x.CommitDate);
             var toUpdate = GetDatabaseRunHistory(toBeUpdated).BuildFileHistory.OrderByDescending(x => x.CommitDate);
 
-            var unique = golden.Where(p => !toUpdate.Any(p2 => p2.BuildFileHash == p.BuildFileHash));
+            //Get the packages that are different and put them in chronological order for running...
+            var unique = golden.Where(p => !toUpdate.Any(p2 => p2.BuildFileHash == p.BuildFileHash)).OrderBy(x => x.CommitDate);
            
             DatabaseRunHistory uniqueHistory = new DatabaseRunHistory();
             uniqueHistory.BuildFileHistory.AddRange(unique);
