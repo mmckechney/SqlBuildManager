@@ -44,5 +44,6 @@ Database Synchronization...
     /GetDifference                    Flag to calculate and list out packages that need to be run between /Database and /GoldDatabase
     /GoldDatabase="<database name>"   The "gold copy" database that will serve as the model for what the /Database should look like
     /GoldServer="<server name>"       The server that the "gold copy" database can be found
+    /ContinueOnFailure=(true|false)   Whether or not to continue on the failure of a package. Default is false. 
 
 

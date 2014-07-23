@@ -119,18 +119,24 @@ namespace SqlSync.SqlBuild
                     cmdLine.AllowableTimeoutRetries = allowableTimeoutRetries;
             }
 
-            if (dict.ContainsKey("synchronize"))
-                cmdLine.Synchronize = true;
+            bool sync;
+            if (dict.ContainsKey("synchronize") && Boolean.TryParse(dict["synchronize"], out sync))
+                cmdLine.Synchronize = sync;
 
-            if (dict.ContainsKey("getdifference"))
-                cmdLine.Synchronize = true;
+            bool diff;
+            if (dict.ContainsKey("getdifference") && Boolean.TryParse(dict["getdifference"], out diff))
+                cmdLine.GetDifference = diff;
 
             if (dict.ContainsKey("golddatabase"))
                 cmdLine.GoldDatabase = dict["golddatabase"];
 
 
             if (dict.ContainsKey("goldserver"))
-                cmdLine.GoldServer = dict["goldserver"]; 
+                cmdLine.GoldServer = dict["goldserver"];
+
+            bool cont;
+            if (dict.ContainsKey("continueonfailure") && Boolean.TryParse(dict["continueonfailure"], out cont))
+                cmdLine.ContinueOnFailure = cont;
 
 
             return cmdLine;

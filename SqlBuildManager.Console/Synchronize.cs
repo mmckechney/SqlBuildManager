@@ -18,7 +18,12 @@ namespace SqlBuildManager.Console
             }
 
             var history = GetDatabaseRunHistoryDifference(cmdLine);
-            return history.ToString();
+            if(history.BuildFileHistory.Any())
+                return history.ToString();
+            else
+            {
+                return "No differences found";
+            }
 
         }
         public static DatabaseRunHistory GetDatabaseRunHistoryDifference(CommandLineArgs cmdLine)
@@ -26,6 +31,28 @@ namespace SqlBuildManager.Console
             DatabaseDiffer differ = new DatabaseDiffer();
             return differ.GetDatabaseHistoryDifference(cmdLine.GoldServer, cmdLine.GoldDatabase, cmdLine.Server,
                                                 cmdLine.Database);
+        }
+
+
+        public static bool SyncDatabases(string[] args)
+        {
+            CommandLineArgs cmdLine = ParseAndValidateFlags(args);
+            if (cmdLine == null)
+            {
+                return false;
+            }
+
+             DatabaseSyncer dbSync = new DatabaseSyncer();
+             dbSync.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(dbSync_SyncronizationInfoEvent);
+            
+            return dbSync.SyncronizeDatabases(cmdLine.GoldServer, cmdLine.GoldDatabase, cmdLine.Server,
+                                       cmdLine.Database,cmdLine.ContinueOnFailure);
+
+        }
+
+        static void dbSync_SyncronizationInfoEvent(string message)
+        {
+            System.Console.WriteLine(message);
         }
 
         private static CommandLineArgs ParseAndValidateFlags(string[] args)
@@ -57,5 +84,7 @@ namespace SqlBuildManager.Console
             }
             return cmdLine;
         }
+
+        
     }
 }

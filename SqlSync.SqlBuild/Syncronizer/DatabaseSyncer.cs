@@ -12,7 +12,25 @@ namespace SqlSync.SqlBuild.Syncronizer
     public class DatabaseSyncer
     {
         private bool lastBuildSuccessful = true;
-        public Boolean SyncronizeDatabases(ConnectionData gold, ConnectionData toUpdate)
+
+        public Boolean SyncronizeDatabases(string goldServer, string goldDatabase, string toUpdateServer, string toUpdateDatabase, bool continueOnFailure)
+        {
+            ConnectionData gold = new ConnectionData()
+            {
+                DatabaseName = goldDatabase,
+                SQLServerName = goldServer,
+                UseWindowAuthentication = true
+            };
+            ConnectionData toUpdate = new ConnectionData()
+            {
+                DatabaseName = toUpdateDatabase,
+                SQLServerName = toUpdateServer,
+                UseWindowAuthentication = true
+            };
+
+            return SyncronizeDatabases(gold, toUpdate,continueOnFailure);
+        }
+        public Boolean SyncronizeDatabases(ConnectionData gold, ConnectionData toUpdate, bool continueOnFailure)
         {
             DatabaseDiffer diff = new DatabaseDiffer();
 
@@ -48,7 +66,7 @@ namespace SqlSync.SqlBuild.Syncronizer
                 rebuiltPackages.Add(fileName);
             }
 
-            bool syncronized = ProcessSyncronizationPackages(rebuiltPackages, toUpdate, false);
+            bool syncronized = ProcessSyncronizationPackages(rebuiltPackages, toUpdate, false, continueOnFailure);
             
             if (syncronized)
             {
@@ -66,7 +84,7 @@ namespace SqlSync.SqlBuild.Syncronizer
             
         }
 
-        private bool ProcessSyncronizationPackages(IEnumerable<string> sbmPackages, ConnectionData toUpdate, bool runAsTrial)
+        private bool ProcessSyncronizationPackages(IEnumerable<string> sbmPackages, ConnectionData toUpdate, bool runAsTrial, bool continueOnFailure)
         {
             string projFileName = string.Empty;
             string projectFilePath = string.Empty;
@@ -92,8 +110,11 @@ namespace SqlSync.SqlBuild.Syncronizer
                 }
 
                 //set the build data for a new run 
-                buildData.Script.AsParallel().ForAll(r => r.Database = "placeholder");
-                buildData.Script.AsParallel().ForAll(r => r.AllowMultipleRuns = true);
+                foreach (SqlSyncBuildData.ScriptRow scriptRow in buildData.Script)
+                {
+                    scriptRow.Database = "placeholder";
+                    scriptRow.AllowMultipleRuns = true;
+                }
 
                 List<DatabaseOverride> lstOverride = new List<DatabaseOverride>();
                 lstOverride.Add(new DatabaseOverride()
@@ -127,6 +148,8 @@ namespace SqlSync.SqlBuild.Syncronizer
                         WorkerSupportsCancellation = true
                     };
                 DoWorkEventArgs e = new DoWorkEventArgs(null);
+
+                PushInfo(string.Format("Applying {0}", Path.GetFileName(sbmPackageName)));
                 helper.ProcessBuild(runData, 0, bg, e);
 
                 if (lastBuildSuccessful)
@@ -136,7 +159,15 @@ namespace SqlSync.SqlBuild.Syncronizer
                 else
                 {
                     PushInfo(string.Format("Failed to apply {0}", Path.GetFileName(sbmPackageName)));
-                    return false;
+                    if (!continueOnFailure)
+                    {
+                        PushInfo("Cancelling sync.");
+                        return false;
+                    }
+                    else
+                    {
+                        PushInfo("Continue On Failure set. Continuing sync process...");
+                    }
                 }
 
             }
@@ -168,6 +199,8 @@ namespace SqlSync.SqlBuild.Syncronizer
         {
             lastBuildSuccessful = false;
         }
+
+       
     }
     
 }

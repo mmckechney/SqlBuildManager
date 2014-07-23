@@ -215,7 +215,11 @@ namespace SqlBuildManager.Console
             }
             else if (joinedArgs.Contains("/synchronize"))
             {
-                
+               bool success = Synchronize.SyncDatabases(args);
+               if(success)
+                    System.Environment.Exit(0);
+               else
+                   System.Environment.Exit(954);
             }
             else
             {

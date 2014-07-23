@@ -42,8 +42,8 @@ namespace SqlSync.SqlBuild.Syncronizer
             var lastSyncDate = DateTime.MinValue;
             if (toUpdate.Any())
             {
-                lastSyncDate = toUpdate.Where(t => golden.Any(g => g.BuildFileHash == t.BuildFileHash))
-                                       .Max(t => t.CommitDate);
+                lastSyncDate = golden.Where(g => toUpdate.Any(t => t.BuildFileHash == g.BuildFileHash))
+                                       .Max(g => g.CommitDate);
             }
 
 
