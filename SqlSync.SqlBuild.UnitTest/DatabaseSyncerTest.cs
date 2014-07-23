@@ -89,7 +89,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 UseWindowAuthentication = true
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
-            bool success = target.SyncronizeDatabases(gold, toUpdate);
+            bool success = target.SyncronizeDatabases(gold, toUpdate,false);
 
             CleanUpSyncTest2();
 
@@ -113,7 +113,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 UseWindowAuthentication = true
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
-            bool success = target.SyncronizeDatabases(gold, toUpdate);
+            bool success = target.SyncronizeDatabases(gold, toUpdate,false);
 
             DatabaseDiffer differ = new DatabaseDiffer();
             var history = differ.GetDatabaseHistoryDifference(gold, toUpdate);

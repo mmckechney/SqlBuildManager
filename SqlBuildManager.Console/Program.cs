@@ -210,8 +210,6 @@ namespace SqlBuildManager.Console
                 string history = Synchronize.GetDatabaseRunHistoryDifference(args);
                 System.Console.WriteLine(history);
                 System.Environment.Exit(0);
-
-
             }
             else if (joinedArgs.Contains("/synchronize"))
             {
