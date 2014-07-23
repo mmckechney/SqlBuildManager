@@ -6,11 +6,12 @@ using System.Linq;
 using System.Text;
 using SqlSync.Connection;
 using System.Data;
-
+using log4net;
 namespace SqlSync.SqlBuild.Syncronizer
 {
     public class DatabaseSyncer
     {
+        private static ILog log = log4net.LogManager.GetLogger(typeof(DatabaseSyncer));
         private bool lastBuildSuccessful = true;
 
         public Boolean SyncronizeDatabases(string goldServer, string goldDatabase, string toUpdateServer, string toUpdateDatabase, bool continueOnFailure)
@@ -86,6 +87,8 @@ namespace SqlSync.SqlBuild.Syncronizer
 
         private bool ProcessSyncronizationPackages(IEnumerable<string> sbmPackages, ConnectionData toUpdate, bool runAsTrial, bool continueOnFailure)
         {
+            log.InfoFormat("Starting synchronization of {0} with {1} packages...", toUpdate.DatabaseName,sbmPackages.Count());
+
             string projFileName = string.Empty;
             string projectFilePath = string.Empty;
             string workingDirectory = string.Empty;
@@ -93,6 +96,7 @@ namespace SqlSync.SqlBuild.Syncronizer
 
             foreach (var sbmPackageName in sbmPackages)
             {
+                log.InfoFormat("Synchronization run for {0}", Path.GetFileName(sbmPackageName));
                 //Unzip and read the package
                 SqlSyncBuildData buildData;
                 if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmPackageName, ref workingDirectory, ref projectFilePath,
@@ -154,11 +158,15 @@ namespace SqlSync.SqlBuild.Syncronizer
 
                 if (lastBuildSuccessful)
                 {
-                    PushInfo(string.Format("Successfully applied {0}", Path.GetFileName(sbmPackageName)));
+                    string message = string.Format("Successfully applied {0}", Path.GetFileName(sbmPackageName));
+                    PushInfo(message);
+                    log.Info(message);
                 }
                 else
                 {
-                    PushInfo(string.Format("Failed to apply {0}", Path.GetFileName(sbmPackageName)));
+                    string message = string.Format("Failed to apply {0}", Path.GetFileName(sbmPackageName));
+                    PushInfo(message);
+                    log.Info(message);
                     if (!continueOnFailure)
                     {
                         PushInfo("Cancelling sync.");

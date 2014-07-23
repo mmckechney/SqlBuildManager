@@ -611,6 +611,7 @@ namespace SqlSync.SqlBuild
 							}
 							this.myRunRow.Success = false;
 							this.myRunRow.Results += sb.ToString();
+						    log.Debug(sb.ToString(),e);
 
 							//Write the error to the log...
                             if(ScriptLogWriteEvent != null)
