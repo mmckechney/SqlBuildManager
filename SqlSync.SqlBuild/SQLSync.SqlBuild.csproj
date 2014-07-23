@@ -156,6 +156,7 @@
   <ItemGroup>
     <Compile Include="AdHocQuery\BuildValidationType.cs" />
     <Compile Include="BulkAddData.cs" />
+    <Compile Include="CommandLineArgs_extended.cs" />
     <Compile Include="CommittedBuildData.cs">
       <DependentUpon>CommittedBuildData.xml</DependentUpon>
       <SubType>Component</SubType>

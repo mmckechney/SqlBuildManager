@@ -17,11 +17,29 @@ namespace SqlSync.SqlBuild.Syncronizer {
                 this.buildFileHistoryField = value;
             }
         }
+        public override string ToString()
+        {
+           if (this.BuildFileHistory.Any())
+           {
+               var result =
+                   this.BuildFileHistory.Select(
+                       h =>
+                       h.BuildFileHash + "\t" + h.CommitDate.ToString("yyyy-MM-dd HH:mm:ss.FFF") + "\t" +
+                       h.BuildFileName)
+                       .Aggregate((a, b) => a + "\r\n" + b);
+
+               return result;
+           }
+           else
+           {
+               return "No History Retrieved";
+           }
+        }
     }
     
        public partial class BuildFileHistory {
         
-        private List<ScriptHistory> scriptHistoryField = new List<ScriptHistory>();
+        //private List<ScriptHistory> scriptHistoryField = new List<ScriptHistory>();
         
         private string buildFileNameField;
         
@@ -35,14 +53,14 @@ namespace SqlSync.SqlBuild.Syncronizer {
             this.commitDateField = DateTime.MinValue;
         }
         
-        public List<ScriptHistory>  ScriptHistory {
-            get {
-                return this.scriptHistoryField;
-            }
-            set {
-                this.scriptHistoryField = value;
-            }
-        }
+        //public List<ScriptHistory>  ScriptHistory {
+        //    get {
+        //        return this.scriptHistoryField;
+        //    }
+        //    set {
+        //        this.scriptHistoryField = value;
+        //    }
+        //}
         
         public string BuildFileName {
             get {
@@ -73,57 +91,57 @@ namespace SqlSync.SqlBuild.Syncronizer {
     }
     
 
-    public partial class ScriptHistory {
+    //public partial class ScriptHistory {
         
-        private string scriptNameField;
+    //    private string scriptNameField;
         
-        private string scriptHashField;
+    //    private string scriptHashField;
         
-        private int sequenceField;
+    //    private int sequenceField;
         
-        private string scriptIdField;
+    //    private string scriptIdField;
         
-        public ScriptHistory() {
-            this.scriptNameField = "";
-            this.scriptHashField = "";
-            this.sequenceField = -1;
-            this.scriptIdField = "";
-        }
+    //    public ScriptHistory() {
+    //        this.scriptNameField = "";
+    //        this.scriptHashField = "";
+    //        this.sequenceField = -1;
+    //        this.scriptIdField = "";
+    //    }
         
-        public string ScriptName {
-            get {
-                return this.scriptNameField;
-            }
-            set {
-                this.scriptNameField = value;
-            }
-        }
+    //    public string ScriptName {
+    //        get {
+    //            return this.scriptNameField;
+    //        }
+    //        set {
+    //            this.scriptNameField = value;
+    //        }
+    //    }
         
-        public string ScriptHash {
-            get {
-                return this.scriptHashField;
-            }
-            set {
-                this.scriptHashField = value;
-            }
-        }
+    //    public string ScriptHash {
+    //        get {
+    //            return this.scriptHashField;
+    //        }
+    //        set {
+    //            this.scriptHashField = value;
+    //        }
+    //    }
         
-        public int Sequence {
-            get {
-                return this.sequenceField;
-            }
-            set {
-                this.sequenceField = value;
-            }
-        }
+    //    public int Sequence {
+    //        get {
+    //            return this.sequenceField;
+    //        }
+    //        set {
+    //            this.sequenceField = value;
+    //        }
+    //    }
         
-        public string ScriptId {
-            get {
-                return this.scriptIdField;
-            }
-            set {
-                this.scriptIdField = value;
-            }
-        }
-    }
+    //    public string ScriptId {
+    //        get {
+    //            return this.scriptIdField;
+    //        }
+    //        set {
+    //            this.scriptIdField = value;
+    //        }
+    //    }
+    //}
 }

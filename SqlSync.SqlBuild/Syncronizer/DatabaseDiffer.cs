@@ -6,32 +6,35 @@ using System.Linq;
 using System.Text;
 using SqlSync.Connection;
 using log4net;
+
 namespace SqlSync.SqlBuild.Syncronizer
 {
     public class DatabaseDiffer
     {
-        private static ILog log = log4net.LogManager.GetLogger(typeof(DatabaseDiffer));
+        private static ILog log = log4net.LogManager.GetLogger(typeof (DatabaseDiffer));
 
-        public DatabaseRunHistory GetDatabaseHistoryDifference(string goldServer, string goldDatabase, string toUpdateServer, string toUpdateDatabase)
+        public DatabaseRunHistory GetDatabaseHistoryDifference(string goldServer, string goldDatabase,
+                                                               string toUpdateServer, string toUpdateDatabase)
         {
             ConnectionData goldenCopy = new ConnectionData()
-            {
-                DatabaseName = goldDatabase,
-                SQLServerName = goldServer,
-                UseWindowAuthentication = true
-            };
+                {
+                    DatabaseName = goldDatabase,
+                    SQLServerName = goldServer,
+                    UseWindowAuthentication = true
+                };
             ConnectionData toBeUpdated = new ConnectionData()
-            {
-                DatabaseName = toUpdateDatabase,
-                SQLServerName = toUpdateServer,
-                UseWindowAuthentication = true
-            };
+                {
+                    DatabaseName = toUpdateDatabase,
+                    SQLServerName = toUpdateServer,
+                    UseWindowAuthentication = true
+                };
 
             return GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
         }
+
         public DatabaseRunHistory GetDatabaseHistoryDifference(ConnectionData goldenCopy, ConnectionData toBeUpdated)
         {
-            
+
             var golden = GetDatabaseRunHistory(goldenCopy).BuildFileHistory.OrderByDescending(x => x.CommitDate);
             var toUpdate = GetDatabaseRunHistory(toBeUpdated).BuildFileHistory.OrderByDescending(x => x.CommitDate);
 
@@ -40,19 +43,22 @@ namespace SqlSync.SqlBuild.Syncronizer
             if (toUpdate.Any())
             {
                 lastSyncDate = toUpdate.Where(t => golden.Any(g => g.BuildFileHash == t.BuildFileHash))
-                        .Max(t => t.CommitDate);
+                                       .Max(t => t.CommitDate);
             }
 
 
             //Get the packages that are different and put them in chronological order for running...
-            var unique = golden.Where(p => !toUpdate.Any(p2 => p2.BuildFileHash == p.BuildFileHash)).OrderBy(x => x.CommitDate).Where(g => g.CommitDate > lastSyncDate);
-           
+            var unique =
+                golden.Where(p => !toUpdate.Any(p2 => p2.BuildFileHash == p.BuildFileHash))
+                      .OrderBy(x => x.CommitDate)
+                      .Where(g => g.CommitDate > lastSyncDate);
+
             DatabaseRunHistory uniqueHistory = new DatabaseRunHistory();
             uniqueHistory.BuildFileHistory.AddRange(unique);
 
             return uniqueHistory;
         }
-      
+
         public DatabaseRunHistory GetDatabaseRunHistory(ConnectionData dbConnData)
         {
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
@@ -77,15 +83,15 @@ namespace SqlSync.SqlBuild.Syncronizer
                     bool filled;
                     while (reader.Read())
                     {
-                      
-                            history.BuildFileHistory.Add(new BuildFileHistory()
+
+                        history.BuildFileHistory.Add(new BuildFileHistory()
                             {
                                 BuildFileHash = reader["BuildProjectHash"].ToString(),
                                 BuildFileName = reader["BuildFileName"].ToString(),
-                                CommitDate = (DateTime)reader["CommitDate"]
+                                CommitDate = (DateTime) reader["CommitDate"]
                             });
-                            
-                        
+
+
                     }
                     conn.Close();
 
@@ -93,10 +99,12 @@ namespace SqlSync.SqlBuild.Syncronizer
             }
             catch (Exception exe)
             {
-                if (exe.Message.IndexOf("FIRST_VALUE",0, StringComparison.InvariantCultureIgnoreCase) > -1 )
+                if (exe.Message.IndexOf("FIRST_VALUE", 0, StringComparison.InvariantCultureIgnoreCase) > -1)
                     return GetDatabaseRunHistoryOldSqlServer(dbConnData);
 
-                log.Error(String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName, dbConnData.DatabaseName), exe);
+                log.Error(
+                    String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName,
+                                  dbConnData.DatabaseName), exe);
             }
             return history;
         }
@@ -132,19 +140,20 @@ namespace SqlSync.SqlBuild.Syncronizer
                     {
 
                         history.BuildFileHistory.Add(new BuildFileHistory()
-                        {
-                            BuildFileHash = reader["BuildProjectHash"].ToString(),
-                            CommitDate = (DateTime)reader["CommitDate"]
-                        });
+                            {
+                                BuildFileHash = reader["BuildProjectHash"].ToString(),
+                                CommitDate = (DateTime) reader["CommitDate"]
+                            });
 
 
                     }
                     conn.Close();
                 }
 
-                var dates = "'" + 
-                    history.BuildFileHistory.Select(d => d.CommitDate.ToString("yyyy-MM-dd HH:mm:ss.FFF")).Aggregate((root,add) => root + "','" + add) +"'";
-                          
+                var dates = "'" +
+                            history.BuildFileHistory.Select(d => d.CommitDate.ToString("yyyy-MM-dd HH:mm:ss.FFF"))
+                                   .Aggregate((root, add) => root + "','" + add) + "'";
+
 
                 string sql2 =
                     String.Format(
@@ -159,7 +168,8 @@ namespace SqlSync.SqlBuild.Syncronizer
                     while (reader.Read())
                     {
 
-                        history.BuildFileHistory.FirstOrDefault(h => h.BuildFileHash == reader["BuildProjectHash"].ToString())
+                        history.BuildFileHistory.FirstOrDefault(
+                            h => h.BuildFileHash == reader["BuildProjectHash"].ToString())
                                .BuildFileName = reader["BuildFileName"].ToString();
                     }
                     conn.Close();
@@ -169,8 +179,12 @@ namespace SqlSync.SqlBuild.Syncronizer
             }
             catch (Exception exe)
             {
-                log.Error(String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName, dbConnData.DatabaseName), exe);
+                log.Error(
+                    String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName,
+                                  dbConnData.DatabaseName), exe);
             }
             return history;
         }
+    }
 
+}

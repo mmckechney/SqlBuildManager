@@ -87,6 +87,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RemoteExecutionTest.cs" />
+    <Compile Include="SynchronizeTest.cs" />
     <Compile Include="ThreadedExecutionTest.cs" />
     <Compile Include="ThreadedRunnerTest.cs" />
     <Compile Include="ValidationTest.cs" />

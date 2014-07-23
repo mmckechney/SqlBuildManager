@@ -119,6 +119,20 @@ namespace SqlSync.SqlBuild
                     cmdLine.AllowableTimeoutRetries = allowableTimeoutRetries;
             }
 
+            if (dict.ContainsKey("synchronize"))
+                cmdLine.Synchronize = true;
+
+            if (dict.ContainsKey("getdifference"))
+                cmdLine.Synchronize = true;
+
+            if (dict.ContainsKey("golddatabase"))
+                cmdLine.GoldDatabase = dict["golddatabase"];
+
+
+            if (dict.ContainsKey("goldserver"))
+                cmdLine.GoldServer = dict["goldserver"]; 
+
+
             return cmdLine;
         }
 
