@@ -13,7 +13,7 @@ General Execution..
     /Threaded=(true|false)           Whether or not to run a multi-database run on multiple threads (default is false)
 
 Remote Execution..
-    /Remote=(true|false)                 Master flag designating a remote agent execution
+    /Remote                              Master flag designating a remote agent execution
     /TestConnectivity=(true|false)       True value will test connection to remote agent and databases but will not execute SQL scripts
     /RemoteServers=("<filename>"|derive) Pointer to file that contains the list of remote execution servers or "derive" to parse servers from DB list
     /TimeoutRetryCount=(integer)         Number of times to retry os a script timeout is encountered (default is 0)
@@ -38,5 +38,11 @@ Miscellaneous...
     /Auto="<filename>"                Designates the .sqlauto file to use for database schema scripting
     /LogAsText=(true|false)           Whether to log as text or HTML. Default is true
     /Test=(true|false)                Whether or not the specified build file is an .sptest and should be run
+
+Database Synchronization...
+    /Synchronize                      Flag to run a syncronize activity between /Database and /GoldDatabase
+    /GetDifference                    Flag to calculate and list out packages that need to be run between /Database and /GoldDatabase
+    /GoldDatabase="<database name>"   The "gold copy" database that will serve as the model for what the /Database should look like
+    /GoldServer="<server name>"       The server that the "gold copy" database can be found
 
 

@@ -16,6 +16,11 @@ namespace SqlSync.SqlBuild.UnitTest
     public class DatabaseDifferTest
     {
 
+        [ClassInitialize()]
+        public static void Initilize(TestContext testContext)
+        {
+            Initialization init = new Initialization();
+        }
 
         private TestContext testContextInstance;
 
@@ -103,6 +108,58 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.IsTrue(actual.BuildFileHistory[0].CommitDate < actual.BuildFileHistory[1].CommitDate);
             Assert.IsTrue(actual.BuildFileHistory[1].CommitDate < actual.BuildFileHistory[2].CommitDate);
             Assert.AreEqual("7E704479328C9B2FDA48C7CF093B16F125EAB98A", actual.BuildFileHistory[2].BuildFileHash);
+        }
+
+        /// <summary>
+        ///A test for GetDatabaseHistoryDifference
+        ///</summary>
+        [TestMethod()]
+        public void GetDatabaseHistoryDifferenceTest_PartialSync()
+        {
+            DatabaseDiffer target = new DatabaseDiffer();
+            ConnectionData goldenCopy = new ConnectionData()
+            {
+                DatabaseName = "SqlBuildTest_SyncTest1",
+                SQLServerName = @"localhost\SQLEXPRESS",
+                UseWindowAuthentication = true
+            };
+            ConnectionData toBeUpdated = new ConnectionData()
+            {
+                DatabaseName = "SqlBuildTest_SyncTest3",
+                SQLServerName = @"localhost\SQLEXPRESS",
+                UseWindowAuthentication = true
+            };
+            DatabaseRunHistory actual;
+            actual = target.GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
+            Assert.AreEqual(1, actual.BuildFileHistory.Count);
+
+            //check that they are in chron order
+            Assert.AreEqual("7E704479328C9B2FDA48C7CF093B16F125EAB98A", actual.BuildFileHistory[0].BuildFileHash);
+        }
+
+        /// <summary>
+        ///A test for GetDatabaseHistoryDifference
+        ///</summary>
+        [TestMethod()]
+        public void GetDatabaseHistoryDifferenceTest_SameSource()
+        {
+            DatabaseDiffer target = new DatabaseDiffer();
+            ConnectionData goldenCopy = new ConnectionData()
+            {
+                DatabaseName = "SqlBuildTest_SyncTest1",
+                SQLServerName = @"localhost\SQLEXPRESS",
+                UseWindowAuthentication = true
+            };
+            ConnectionData toBeUpdated = new ConnectionData()
+            {
+                DatabaseName = "SqlBuildTest_SyncTest1",
+                SQLServerName = @"localhost\SQLEXPRESS",
+                UseWindowAuthentication = true
+            };
+            DatabaseRunHistory actual;
+            actual = target.GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
+            Assert.AreEqual(0, actual.BuildFileHistory.Count);
+
         }
 
         /// <summary>
