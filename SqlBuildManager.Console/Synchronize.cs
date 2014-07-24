@@ -18,8 +18,9 @@ namespace SqlBuildManager.Console
             }
 
             var history = GetDatabaseRunHistoryDifference(cmdLine);
+            string header = String.Format("{0} Package differences found between Gold:[{1}].[{2}] and Target:[{3}].[{4}]\r\n", history.BuildFileHistory.Count(),cmdLine.GoldServer,cmdLine.GoldDatabase,cmdLine.Server,cmdLine.Database);
             if(history.BuildFileHistory.Any())
-                return history.ToString();
+                return header + history.ToString();
             else
             {
                 return "No differences found";
