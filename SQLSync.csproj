@@ -102,6 +102,10 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj">
+      <Project>{14dfbf75-98b1-4fbd-9b48-191d8aa55a6f}</Project>
+      <Name>SqlSync.ScrollBarSync</Name>
+    </ProjectReference>
     <ProjectReference Include="Tfs.Utility\Tfs.Utility.csproj">
       <Project>{CA980B42-69F5-4A66-A327-4977E18A6018}</Project>
       <Name>Tfs.Utility</Name>
@@ -224,10 +228,6 @@
       <Name>SqlSync.ObjectScript</Name>
       <Project>{CD09B7DB-851B-4321-9E21-16948DA7FA07}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
-    </ProjectReference>
-    <ProjectReference Include="SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj">
-      <Project>{14DFBF75-98B1-4FBD-9B48-191D8AA55A6F}</Project>
-      <Name>SqlSync.ScrollBarSync</Name>
     </ProjectReference>
     <ProjectReference Include="SqlSync.SprocTest\SqlSync.SprocTest.csproj">
       <Project>{0959BC04-AEFF-42F4-918B-0636D0239830}</Project>
