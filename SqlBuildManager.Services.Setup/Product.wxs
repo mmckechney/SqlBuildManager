@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:adx="http://schemas.add-in-express.com/wixdesigner">
   <Product Id="*" Name="SqlBuildManager.Services.Setup" Language="1033" Version="1.0.0.0" Manufacturer="Michael McKechney" UpgradeCode="97353994-ed40-43be-8749-1654c3fb9212">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <CustomAction Id="_54A80D0E_A97E_47B6_B7A6_8971B3FCDAC7" Execute="deferred" adx:VSName="start_service.vbs" VBScriptCall=""  FileKey="start_service.vbs" />
+    <CustomAction Id="_3D5CB418_D351_4297_8EEC_A1F48CCBA7F3" Execute="deferred" adx:VSName="stop_service.vbs" VBScriptCall="" FileKey="stop_service.vbs"/>
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate />
     <Feature Id="ProductFeature" Title="SqlBuildManager.Services.Setup" Level="1">
@@ -30,6 +32,8 @@
     </AdminUISequence>
     <InstallExecuteSequence>
       <Custom Action="DIRCA_TARGETDIR" Before="CostInitialize"><![CDATA[TARGETDIR = ""]]></Custom>
+      <Custom Action="_54A80D0E_A97E_47B6_B7A6_8971B3FCDAC7" After="StartServices"><![CDATA[$InstallVbs>2]]></Custom>
+      <Custom Action="_3D5CB418_D351_4297_8EEC_A1F48CCBA7F3" After="MsiUnpublishAssemblies"><![CDATA[$InstallVbs=2]]></Custom>
     </InstallExecuteSequence>
     <UIRef Id="WelcomeDlg" />
     <UIRef Id="FinishedDlg" />
@@ -352,6 +356,12 @@
         <File Id="_8D8A2605_E89C_44AB_B3EC_E1AE67729508" DiskId="1" Hidden="no" ReadOnly="no" TrueType="no" System="no" Vital="yes" Name="Microsoft.SqlServer.Management.SmoMetadataProvider.dll" Source="C:\Windows\assembly\GAC_MSIL\Microsoft.SqlServer.Management.SmoMetadataProvider\11.0.0.0__89845dcd8080cc91\Microsoft.SqlServer.Management.SmoMetadataProvider.dll" />
         <File Id="_49014537_3995_4B30_8C6F_6984EDBBC6C1" DiskId="1" Hidden="no" ReadOnly="no" TrueType="no" System="no" Vital="yes" Name="Microsoft.SqlServer.Management.SqlParser.dll" Source="C:\Windows\assembly\GAC_MSIL\Microsoft.SqlServer.Management.SqlParser\11.0.0.0__89845dcd8080cc91\Microsoft.SqlServer.Management.SqlParser.dll" />
         <File Id="_A45989CF_DA93_481D_B1FC_9692EBDC110B" DiskId="1" Hidden="no" ReadOnly="no" TrueType="no" System="no" Vital="yes" Name="Microsoft.SqlServer.SqlClrProvider.dll" Source="C:\Windows\assembly\GAC_MSIL\Microsoft.SqlServer.SqlClrProvider\11.0.0.0__89845dcd8080cc91\Microsoft.SqlServer.SqlClrProvider.dll" />
+      </Component>
+      <Component Id="InstallVbs" Guid="35E9D391-9DD5-44F6-83B7-6BC838D39A08">
+        <File Source="..\SqlBuildManager.Services.Host\start_service.vbs" Vital="yes" Name="start_service.vbs" Id="start_service.vbs" />
+        <File Source="..\SqlBuildManager.Services.Host\stop_service.vbs" Vital="yes" Name="stop_service.vbs" Id="stop_service.vbs"/>
+        <File Source="..\SqlBuildManager.Services.Host\install_service.vbs" Vital="yes" Name="install_service.vbs" Id="install_service.vbs" />
+        <File Source="..\SqlBuildManager.Services.Host\uninstall_service.vbs" Vital="yes" Name="uninstall_service.vbs" Id="uninstall_service.vbs"/>
       </Component>
     </ComponentGroup>
   </Fragment>
