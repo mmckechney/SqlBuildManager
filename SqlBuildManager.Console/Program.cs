@@ -19,17 +19,19 @@ namespace SqlBuildManager.Console
             log.Info("Received Command: " + String.Join(" | ", args));
             DateTime start = DateTime.Now;
 
-            if (args.Length == 0 || string.Join(",", args).ToLower().Contains("/?") || String.Join(",", args).ToLower().Contains("/help"))
+            string joinedArgs = string.Join(",", args).ToLower();
+
+            if (args.Length == 0 || joinedArgs.Contains("/?") || joinedArgs.Contains("/help"))
             {
                 System.Console.WriteLine(Properties.Resources.ConsoleHelp);
                 Environment.Exit(0);
             }
 
-            if (String.Join(",", args).ToLower().Contains("/remote=true")) //Remote execution with all flags
+            if (joinedArgs.Contains("/remote=true")) //Remote execution with all flags
             {
                 try
                 {
-                    if (String.Join(",", args).ToLower().Contains("/testconnectivity=true"))
+                    if (joinedArgs.Contains("/testconnectivity=true"))
                     {
                         log.Info("Entering Remote Server Connectivity Testing: agent and database connectivity");
                         System.Console.WriteLine("Entering Remote Server Connectivity Testing...");
@@ -110,7 +112,7 @@ namespace SqlBuildManager.Console
                     System.Environment.Exit(602);
                 }
             }
-            else if (String.Join(",", args).ToLower().Contains("/threaded=true") || String.Join(",", args).ToLower().Contains("/threaded=\"true\""))
+            else if (joinedArgs.Contains("/threaded=true") || joinedArgs.Contains("/threaded=\"true\""))
             {
                 log.Debug("Entering Threaded Execution");
                 System.Console.WriteLine("Running...");
@@ -202,6 +204,20 @@ namespace SqlBuildManager.Console
                 {
                     System.Environment.Exit(856);
                 }
+            }
+            else if (joinedArgs.Contains("/getdifference"))
+            {
+                string history = Synchronize.GetDatabaseRunHistoryDifference(args);
+                System.Console.WriteLine(history);
+                System.Environment.Exit(0);
+            }
+            else if (joinedArgs.Contains("/synchronize"))
+            {
+               bool success = Synchronize.SyncDatabases(args);
+               if(success)
+                    System.Environment.Exit(0);
+               else
+                   System.Environment.Exit(954);
             }
             else
             {

@@ -1011,6 +1011,24 @@ namespace SqlSync.SqlBuild
 
 			//return(strResult);
 		}
+
+        public static string JoinBatchedScripts(string[] batchedScripts)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < batchedScripts.Length - 1; i++)
+            {
+                if (batchedScripts[i].EndsWith("\r\n"))
+                {
+                    sb.Append(batchedScripts[i] + BatchParsing.Delimiter + "\r\n");
+                }
+                else
+                {
+                    sb.Append(batchedScripts[i] + "\r\n" + BatchParsing.Delimiter + "\r\n");
+                }
+            }
+            sb.Append(batchedScripts[batchedScripts.Length - 1]);
+            return sb.ToString();
+        }
         /// <summary>
         /// Gets the file hash of a file that has been split into batch scripts using the SqlBuildHelper.ReadBatchFromScriptFile or SqlBuildHelper.ReadBatchFromScriptText method
         /// </summary>
@@ -1018,15 +1036,15 @@ namespace SqlSync.SqlBuild
         /// <param name="textHash">SHA1 hash of the batched script.</param>
         public static void GetSHA1Hash(string[] batchedScriptLines, out string textHash)
         {
-            string scriptText = String.Join("\r\n" + BatchParsing.Delimiter + "\r\n", batchedScriptLines);
+            string scriptText = JoinBatchedScripts(batchedScriptLines);
             textHash = GetSHA1Hash(scriptText);
         }
         /// <summary>
-        /// Computes the SHA1 hash of a string.
+        /// Computes the SHA1 hash of a string. Should only be used on string recomposed from batching
         /// </summary>
         /// <param name="textContents"></param>
         /// <returns></returns>
-        public static string GetSHA1Hash(string textContents)
+        internal static string GetSHA1Hash(string textContents)
         {
             System.Security.Cryptography.SHA1CryptoServiceProvider oSHA1Hasher = new System.Security.Cryptography.SHA1CryptoServiceProvider();
 

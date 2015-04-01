@@ -84,7 +84,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             string localHash = string.Empty;
             try
             {
-                localHash = SqlBuildFileHelper.GetSHA1Hash(File.ReadAllText(localFilePath));
+                SqlBuildFileHelper.GetSHA1Hash(new string[] { File.ReadAllText(localFilePath) }, out localHash);
                 log.DebugFormat("Local file name and hash: {0} | {1}", localFilePath, localHash);
             }
             catch (Exception exe)
@@ -96,7 +96,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             string enterpriseHash = string.Empty;
             try
             {
-                enterpriseHash = SqlBuildFileHelper.GetSHA1Hash(File.ReadAllText(enterpriseFilePath));
+                SqlBuildFileHelper.GetSHA1Hash(new string[] { File.ReadAllText(enterpriseFilePath) }, out enterpriseHash);
                 log.DebugFormat("Enterprise file name and hash: {0} | {1}", enterpriseFilePath, enterpriseHash);
             }
             catch (Exception exe)

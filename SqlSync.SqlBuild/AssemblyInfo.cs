@@ -54,9 +54,9 @@ using System.Runtime.CompilerServices;
 //   (*) Delay Signing is an advanced option - see the Microsoft .NET Framework
 //       documentation for more information on this.
 //
-[assembly: AssemblyDelaySign(false)]
-[assembly: AssemblyKeyFile("")]
-[assembly: AssemblyKeyName("")]
+//[assembly: AssemblyDelaySign(false)]
+//[assembly: AssemblyKeyFile("")]
+//[assembly: AssemblyKeyName("")]
 
 //[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.Uni
-//[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.UnitTest")]

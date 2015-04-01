@@ -214,7 +214,7 @@ namespace SqlSync.SqlBuild.UnitTest
             buildData.Script.Rows.Add(row2);
             buildData.Script.Rows.Add(row3);
 
-            string expected = "EE8F866178ED2BB7F81275BEC20865C5BA6D5726";
+            string expected = "D218661A24E5D15CFBCA0FC498635460D268E963";
             string actual;
             actual = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
@@ -626,6 +626,47 @@ needs to be removed");
             Assert.AreNotEqual(fromPath123, fromBatch213);
             Assert.AreNotEqual(fromPath213, fromBatch123);
 
+        }
+        #endregion
+
+
+        #region  Individual Script Hash Calc
+        [TestMethod()]
+        public void CalculateScriptSHA1_CompareResults()
+        {
+            string script = @"/* 
+Source Server:	localhost\sqlexpress
+Source Db:	SqlBuildTest_SyncTest1
+Process Date:	7/21/2014 1:36:55 PM
+Object Scripted:dbo.SyncTestTable
+Object Type:	Table
+Scripted By:	mmckechn
+Include Permissions: True
+Script as ALTER: True
+Script PK with Table:False
+*/
+SET ANSI_NULLS ON
+GO
+
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[SyncTestTable]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[SyncTestTable](
+	[ColumnTable1] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[ColumnTable2] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY]
+END
+";
+
+            string[] arrScripts = SqlBuildHelper.ReadBatchFromScriptText(script,true, false).ToArray();
+            string hashFromArray;
+            SqlBuildFileHelper.GetSHA1Hash(arrScripts, out hashFromArray);
+            string hashFromString = SqlBuildFileHelper.GetSHA1Hash(script.ClearTrailingCarriageReturn());
+            Assert.AreEqual(hashFromString,hashFromArray);
         }
         #endregion
 

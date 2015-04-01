@@ -156,6 +156,13 @@
   <ItemGroup>
     <Compile Include="AdHocQuery\BuildValidationType.cs" />
     <Compile Include="BulkAddData.cs" />
+    <Compile Include="CommandLineArgs_extended.cs" />
+    <Compile Include="CommittedBuildData.cs">
+      <DependentUpon>CommittedBuildData.xml</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Include="MultiDb\MultiDbQueryConfig.cs" />
     <Compile Include="AdHocQuery\ResultsDictionary.cs" />
     <Compile Include="AdHocQuery\QueryResultData.cs" />
@@ -179,12 +186,6 @@
       <DependentUpon>CommandLineArgs.xml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="CommittedBuildData.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>CommittedBuildData.xml</DependentUpon>
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Default Scripts\DefaultScriptRegistry.cs">
       <SubType>Code</SubType>
@@ -258,6 +259,9 @@
     <Compile Include="Status\StatusReporting.cs" />
     <Compile Include="Status\StatusReportRunner.cs" />
     <Compile Include="StringExtension.cs" />
+    <Compile Include="Syncronizer\DatabaseDiffer.cs" />
+    <Compile Include="Syncronizer\DatabaseRunHistory.cs" />
+    <Compile Include="Syncronizer\DatabaseSyncer.cs" />
     <Compile Include="Validator\SchemaEnums.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -285,6 +289,7 @@
     <Content Include="CommittedBuildData.xml">
       <Generator>SimpleDataClassGenerator</Generator>
       <LastGenOutput>CommittedBuildData.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="Default Scripts\DefaultScriptRegistry.xml" />
     <Content Include="Default Scripts\DefaultScriptRegistry.xsd">

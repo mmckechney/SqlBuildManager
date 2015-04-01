@@ -33,6 +33,10 @@ namespace SqlSync.SqlBuild.UnitTest
             testDatabaseNames.Add("SqlBuildTest");
             testDatabaseNames.Add("SqlBuildTest1");
 
+            testDatabaseNames.Add("SqlBuildTest_SyncTest1");
+            testDatabaseNames.Add("SqlBuildTest_SyncTest2");
+            testDatabaseNames.Add("SqlBuildTest_SyncTest3");
+
             testGuid = Guid.NewGuid();
             testTimeStamp = DateTime.Now;
 

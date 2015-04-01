@@ -504,7 +504,7 @@ namespace SqlSync.SqlBuild
                     this.myRunRow.FileHash = textHash;
 
 					//Add script Id to the arraylist for use later
-					string scriptText = String.Join("\r\n"+BatchParsing.Delimiter+"\r\n",batchScripts);
+				    string scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts); // String.Join("\r\n"+BatchParsing.Delimiter+"\r\n",batchScripts);
                     CommittedScript tmpCommmittedScr = new CommittedScript(new Guid(myRow.ScriptId), this.myRunRow.FileHash, runSequence++, scriptText, myRow.Tag,cData.ServerName,cData.DatabaseName);
 
 
@@ -611,6 +611,7 @@ namespace SqlSync.SqlBuild
 							}
 							this.myRunRow.Success = false;
 							this.myRunRow.Results += sb.ToString();
+						    log.Debug(sb.ToString(),e);
 
 							//Write the error to the log...
                             if(ScriptLogWriteEvent != null)
