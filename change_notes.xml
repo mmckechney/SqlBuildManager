@@ -1,4 +1,10 @@
+<?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="9" Minor="3" Revision="0">
+    <added>New ability to compare package deploys between two databases</added>
+    <added>Ability to syncronize package deploys between a "golden copy" and a target</added>
+    <note>See the command-line reference for appropriate flags</note>
+  </Version>
   <Version Major="9" Minor="2" Revision="2">
     <!-- July 16, 2014 -->
     <added>Command line argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of hte target databases</added>
