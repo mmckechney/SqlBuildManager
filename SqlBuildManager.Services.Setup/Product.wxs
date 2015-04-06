@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:adx="http://schemas.add-in-express.com/wixdesigner">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*" Name="SqlBuildManager.Services.Setup" Language="1033" Version="1.0.0.0" Manufacturer="Michael McKechney" UpgradeCode="97353994-ed40-43be-8749-1654c3fb9212">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
-    <CustomAction Id="_54A80D0E_A97E_47B6_B7A6_8971B3FCDAC7" Execute="deferred" adx:VSName="start_service.vbs" VBScriptCall=""  FileKey="start_service.vbs" />
-    <CustomAction Id="_3D5CB418_D351_4297_8EEC_A1F48CCBA7F3" Execute="deferred" adx:VSName="stop_service.vbs" VBScriptCall="" FileKey="stop_service.vbs"/>
+    <CustomAction Id="_54A80D0E_A97E_47B6_B7A6_8971B3FCDAC7" Execute="deferred" VBScriptCall=""  FileKey="start_service.vbs" />
+    <CustomAction Id="_3D5CB418_D351_4297_8EEC_A1F48CCBA7F3" Execute="deferred" VBScriptCall="" FileKey="stop_service.vbs"/>
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate />
     <Feature Id="ProductFeature" Title="SqlBuildManager.Services.Setup" Level="1">

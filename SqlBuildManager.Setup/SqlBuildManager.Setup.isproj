@@ -29,19 +29,19 @@
 	</ItemGroup>
 	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2013Limited\InstallShield.targets"/>
 	<ItemGroup>
-		<ProjectReference Include="..\..\SQLSync.csproj">
+		<ProjectReference Include="..\SQLSync.csproj">
 			<Name>SQLSync</Name>
 			<Project>{F54DD837-AD98-4A45-A709-1AA9E38E1A24}</Project>
 		</ProjectReference>
-		<ProjectReference Include="..\..\SqlBuildManager.Console\SqlBuildManager.Console.csproj">
+		<ProjectReference Include="..\SqlBuildManager.Console\SqlBuildManager.Console.csproj">
 			<Name>SqlBuildManager.Console</Name>
 			<Project>{E4496045-D324-4297-BE19-EBE664129C71}</Project>
 		</ProjectReference>
-		<ProjectReference Include="..\..\SqlBuildManager.Services\SqlBuildManager.Services.csproj">
+		<ProjectReference Include="..\SqlBuildManager.Services\SqlBuildManager.Services.csproj">
 			<Name>SqlBuildManager.Services</Name>
 			<Project>{A4814E5E-BD38-4658-9D56-CA41DC44ABE0}</Project>
 		</ProjectReference>
-		<ProjectReference Include="..\..\SqlBuildManager.Services.Host\SqlBuildManager.Services.Host.csproj">
+		<ProjectReference Include="..\SqlBuildManager.Services.Host\SqlBuildManager.Services.Host.csproj">
 			<Name>SqlBuildManager.Services.Host</Name>
 			<Project>{186E33E4-D5A7-4543-9405-A46B8236F6CF}</Project>
 		</ProjectReference>

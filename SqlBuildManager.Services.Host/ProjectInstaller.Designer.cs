@@ -45,6 +45,7 @@
             this.SbmService.Description = "Agent service for receiving remote execution commands from Sql Build Manager";
             this.SbmService.ServiceName = "SqlBuildManager.Service";
             this.SbmService.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
+            this.SbmService.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.SbmService_AfterInstall);
             // 
             // ProjectInstaller
             // 
@@ -56,36 +57,9 @@
 
         #endregion
 
-        private const string password = "password";
-        private const string username = "username";
-        public override void Install(System.Collections.IDictionary stateSaver)
-        {
 
-            if (stateSaver.Contains(password))
-            {
-                this.serviceProcessInstaller1.Password = stateSaver[password].ToString();
-                System.Console.WriteLine("found custom password");
-
-            }
-            else
-            {
-                System.Console.WriteLine("no custom password");
-            }
-
-            if (stateSaver.Contains(username))
-            {
-                System.Console.WriteLine("found custom username");
-                this.serviceProcessInstaller1.Username = stateSaver[username].ToString();
-            }
-            else
-            {
-                System.Console.WriteLine("no custom username");
-            }
-
-            base.Install(stateSaver);
-        }
 
         private System.ServiceProcess.ServiceProcessInstaller serviceProcessInstaller1;
-        private System.ServiceProcess.ServiceInstaller SbmService;
+        internal System.ServiceProcess.ServiceInstaller SbmService;
     }
 }
