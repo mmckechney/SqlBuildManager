@@ -9,25 +9,9 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
 [assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2014")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2014")]
 [assembly: AssemblyCulture("")]		
 
-//
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Revision and Build Numbers 
-// by using the '*' as shown below:
-
-[assembly: AssemblyVersion("9.2.2.0")]
-[assembly: AssemblyFileVersion("9.2.2.0")]
 
 //
 // In order to sign your assembly you must specify a key to use. Refer to the 

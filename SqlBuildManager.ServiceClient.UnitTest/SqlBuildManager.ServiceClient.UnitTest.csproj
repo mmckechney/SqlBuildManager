@@ -79,6 +79,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+  <Compile Include="..\AssemblyVersioning.cs">
+      <Link>Properties\AssemblyVersioning.cs</Link>
+    </Compile>
     <Compile Include="BuildServiceManagerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

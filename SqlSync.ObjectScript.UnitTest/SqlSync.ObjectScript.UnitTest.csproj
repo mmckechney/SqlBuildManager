@@ -92,6 +92,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+  <Compile Include="..\AssemblyVersioning.cs">
+      <Link>Properties\AssemblyVersioning.cs</Link>
+    </Compile>
     <Compile Include="Initialization.cs" />
     <Compile Include="ObjectScriptHelperTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

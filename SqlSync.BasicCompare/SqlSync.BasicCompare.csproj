@@ -64,6 +64,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+  <Compile Include="..\AssemblyVersioning.cs">
+      <Link>Properties\AssemblyVersioning.cs</Link>
+    </Compile>
     <Compile Include="Algorithm\Diff\Diff.cs" />
     <Compile Include="Algorithm\Diff\Hunk.cs" />
     <Compile Include="Algorithm\Diff\IDiff.cs" />

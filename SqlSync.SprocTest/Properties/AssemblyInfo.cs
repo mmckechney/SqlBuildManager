@@ -8,10 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("SqlSync.SprocTest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
 [assembly: AssemblyProduct("SqlSync.SprocTest")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2014")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2014")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -21,16 +18,4 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("feb8d994-b47e-4d6f-91c4-2218fd238cbf")]
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Revision and Build Numbers 
-// by using the '*' as shown below:
-[assembly: AssemblyVersion("9.2.2.0")]
-[assembly: AssemblyFileVersion("9.2.2.0")]
 

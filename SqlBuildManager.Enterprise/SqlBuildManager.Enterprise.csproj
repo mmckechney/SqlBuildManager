@@ -70,6 +70,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+  <Compile Include="..\AssemblyVersioning.cs">
+      <Link>Properties\AssemblyVersioning.cs</Link>
+    </Compile>
     <Compile Include="ActiveDirectory\AdHelper.cs" />
     <Compile Include="CodeReview\CodeReviewManager.cs" />
     <Compile Include="CodeReview\CodeReviewStatus.cs" />

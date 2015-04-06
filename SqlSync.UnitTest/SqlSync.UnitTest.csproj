@@ -67,6 +67,9 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+  <Compile Include="..\AssemblyVersioning.cs">
+      <Link>Properties\AssemblyVersioning.cs</Link>
+    </Compile>
     <Compile Include="ColumnSorterTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

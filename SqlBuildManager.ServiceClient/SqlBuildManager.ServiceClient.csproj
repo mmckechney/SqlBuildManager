@@ -78,6 +78,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+  <Compile Include="..\AssemblyVersioning.cs">
+      <Link>Properties\AssemblyVersioning.cs</Link>
+    </Compile>
     <Compile Include="BuildServiceManager.cs" />
     <Compile Include="BuildSettings_partial.cs" />
     <Compile Include="BuildRecord_partial.cs" />

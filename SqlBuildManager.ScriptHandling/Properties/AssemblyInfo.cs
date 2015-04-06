@@ -8,10 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("SqlBuildManager.ScriptHandling")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
 [assembly: AssemblyProduct("SqlBuildManager.ScriptHandling")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2014")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2014")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -21,17 +18,5 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("e1163ad3-7227-41ef-a238-f39cb0dcfb13")]
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-[assembly: AssemblyVersion("9.2.2.0")]
-[assembly: AssemblyFileVersion("9.2.2.0")]
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.ScriptHandling.UnitTest")]

@@ -64,6 +64,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+  <Compile Include="..\AssemblyVersioning.cs">
+      <Link>Properties\AssemblyVersioning.cs</Link>
+    </Compile>
     <Compile Include="CodeReview\ICodeReviewLink.cs" />
     <Compile Include="Console\Enumerations.cs" />
     <Compile Include="Enterprise\Notification\INotification.cs" />

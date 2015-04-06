@@ -9,7 +9,7 @@ using System;
 //
 [assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
 [assembly: AssemblyCopyright("Michael McKechney")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2011")]
+[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2015")]
 
 //
 // Version information for an assembly consists of the following four values:
