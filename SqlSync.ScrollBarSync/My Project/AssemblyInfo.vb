@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("")> 
 <Assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")> 
 <Assembly: AssemblyProduct("SqlSync.ScrollBarSync")> 
-<Assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2011")> 
+<Assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2015")> 
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("9.2.2")> 
-<Assembly: AssemblyFileVersion("9.2.2")> 
+<Assembly: AssemblyVersion("9.3.0")> 
+<Assembly: AssemblyFileVersion("9.3.0")> 
