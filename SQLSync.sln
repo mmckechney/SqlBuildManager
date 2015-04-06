@@ -71,6 +71,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tfs.Utility", "Tfs.Utility\
 EndProject
 Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "SqlBuildManager.Setup", "SqlBuildManager.Setup\SqlBuildManager.Setup.isproj", "{1DCB01BF-B0CE-41F0-9783-0E3BAD613AE6}"
 EndProject
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "SqlBuildManager.Services.Azure", "SqlBuildManager.Services.Azure\SqlBuildManager.Services.Azure.ccproj", "{B5B35B38-9C09-4430-90E7-0A319F36BF0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CD_ROM|.NET = CD_ROM|.NET
@@ -1035,6 +1037,36 @@ Global
 		{1DCB01BF-B0CE-41F0-9783-0E3BAD613AE6}.SingleImage|Mixed Platforms.Build.0 = SingleImage
 		{1DCB01BF-B0CE-41F0-9783-0E3BAD613AE6}.SingleImage|x86.ActiveCfg = SingleImage
 		{1DCB01BF-B0CE-41F0-9783-0E3BAD613AE6}.SingleImage|x86.Build.0 = SingleImage
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.CD_ROM|.NET.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.CD_ROM|Any CPU.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.CD_ROM|Any CPU.Build.0 = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.CD_ROM|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.CD_ROM|Mixed Platforms.Build.0 = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.CD_ROM|x86.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.DVD-5|.NET.ActiveCfg = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.DVD-5|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.DVD-5|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.DVD-5|x86.ActiveCfg = Debug|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Release|.NET.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.Release|x86.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.SingleImage|.NET.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.SingleImage|Any CPU.Build.0 = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.SingleImage|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.SingleImage|Mixed Platforms.Build.0 = Release|Any CPU
+		{B5B35B38-9C09-4430-90E7-0A319F36BF0B}.SingleImage|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
