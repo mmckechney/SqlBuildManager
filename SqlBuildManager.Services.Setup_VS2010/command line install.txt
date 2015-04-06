@@ -1,1 +1,0 @@
-msiexec.exe /i "SqlBuildManager.Services.Setup.msi" USERNAME="<username>" PASSWORD="<password>"
