@@ -3,7 +3,9 @@
   <Version Major="9" Minor="3" Revision="0">
     <added>New ability to compare package deploys between two databases</added>
     <added>Ability to syncronize package deploys between a "golden copy" and a target</added>
-    <note>See the command-line reference for appropriate flags</note>
+    <updated>Installation for the Service is now a self-installing command-line for SqlBuildManager.Services.Host.exe</updated>
+    <updated>Installation for the SBM tool is through ClickOnce at www.sqlbuildmanager.com or an InstallShield installer</updated>
+    <note>See the command-line reference for appropriate flags for data syncronization</note>
   </Version>
   <Version Major="9" Minor="2" Revision="2">
     <!-- July 16, 2014 -->
