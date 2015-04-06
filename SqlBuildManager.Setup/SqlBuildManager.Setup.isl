@@ -597,7 +597,6 @@
 		<row><td>C__F9EB9D04AA684D859D6C6D02F77DFD68</td><td>{9A4EC35F-0D86-48DB-AF4F-6C000E6412B4}</td><td>_6DBDB568607E48868CBFBA4BA18BA292</td><td>2</td><td/><td>_F9EB9D04AA684D859D6C6D02F77DFD68</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__FB159BDB9F394936A8980D469D4FD111</td><td>{436110C9-A675-455A-A453-A154978D129D}</td><td>_6DBDB568607E48868CBFBA4BA18BA292</td><td>2</td><td/><td>_FB159BDB9F394936A8980D469D4FD111</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__FBE36843C82144B8806199C65C9063C8</td><td>{85BDFE4C-5BCA-4BA2-AA49-704473A9278D}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FBE36843C82144B8806199C65C9063C8</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>C__FBE5F4F7BDB24A12995F446794C10F5B</td><td>{7A944545-9ABC-4BEC-B417-302A4D2E6DF1}</td><td>INSTALLDIR</td><td>2</td><td/><td>_FBE5F4F7BDB24A12995F446794C10F5B</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__FD93DE900A844C60A9B93FAA390986E6</td><td>{CBF7A297-593C-458A-963C-3C9F2B02F1CF}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FD93DE900A844C60A9B93FAA390986E6</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td><td>{2619DBDF-5D4B-4A80-A1C2-5C38CD15B4C9}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FE1DD0604AD44BDE9FC190BA73D6419A</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__FED5073454C14A13B6AA66BAFCF5A600</td><td>{72705A47-07F1-4194-AA52-5433AACB38F4}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FED5073454C14A13B6AA66BAFCF5A600</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -2402,7 +2401,6 @@
 		<row><td>AlwaysInstall</td><td>C__F9EB9D04AA684D859D6C6D02F77DFD68</td></row>
 		<row><td>AlwaysInstall</td><td>C__FB159BDB9F394936A8980D469D4FD111</td></row>
 		<row><td>AlwaysInstall</td><td>C__FBE36843C82144B8806199C65C9063C8</td></row>
-		<row><td>AlwaysInstall</td><td>C__FBE5F4F7BDB24A12995F446794C10F5B</td></row>
 		<row><td>AlwaysInstall</td><td>C__FD93DE900A844C60A9B93FAA390986E6</td></row>
 		<row><td>AlwaysInstall</td><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td></row>
 		<row><td>AlwaysInstall</td><td>C__FED5073454C14A13B6AA66BAFCF5A600</td></row>
@@ -2681,7 +2679,6 @@
 		<row><td>_F9EB9D04AA684D859D6C6D02F77DFD68</td><td>C__F9EB9D04AA684D859D6C6D02F77DFD68</td><td>MASTER~1.SQL|MasterIndexSetting.sql</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuild\Utility\MasterIndexSetting.sql</td><td>5</td><td/></row>
 		<row><td>_FB159BDB9F394936A8980D469D4FD111</td><td>C__FB159BDB9F394936A8980D469D4FD111</td><td>ADDCLI~1.SQL|Add Client Index.sql</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuild\Utility\Add Client Index.sql</td><td>5</td><td/></row>
 		<row><td>_FBE36843C82144B8806199C65C9063C8</td><td>C__FBE36843C82144B8806199C65C9063C8</td><td>image099.png</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image099.png</td><td>5</td><td/></row>
-		<row><td>_FBE5F4F7BDB24A12995F446794C10F5B</td><td>C__FBE5F4F7BDB24A12995F446794C10F5B</td><td>SQLBUI~1.MAN|Sql Build Manager.exe.manifest</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\Sql Build Manager.exe.manifest</td><td>5</td><td/></row>
 		<row><td>_FD93DE900A844C60A9B93FAA390986E6</td><td>C__FD93DE900A844C60A9B93FAA390986E6</td><td>image061.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image061.jpg</td><td>5</td><td/></row>
 		<row><td>_FE1DD0604AD44BDE9FC190BA73D6419A</td><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td><td>image111.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image111.jpg</td><td>5</td><td/></row>
 		<row><td>_FED5073454C14A13B6AA66BAFCF5A600</td><td>C__FED5073454C14A13B6AA66BAFCF5A600</td><td>image101.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image101.jpg</td><td>5</td><td/></row>
@@ -3088,7 +3085,6 @@
 		<row><td>C__F9EB9D04AA684D859D6C6D02F77DFD68</td><td/><td/><td>_BDF56D34_BA26_4D87_985C_DB211C4BA0A4_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__FB159BDB9F394936A8980D469D4FD111</td><td/><td/><td>_BEE1CDA9_76CD_430B_A8CC_3BF8601F9B07_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__FBE36843C82144B8806199C65C9063C8</td><td/><td/><td>_0BF43C44_946F_4DA4_86E0_A4267C0C4432_FILTER</td><td/><td/><td/><td/></row>
-		<row><td>C__FBE5F4F7BDB24A12995F446794C10F5B</td><td/><td/><td>_ED7F48F5_95F0_4312_BBAA_97E296997598_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__FD93DE900A844C60A9B93FAA390986E6</td><td/><td/><td>_C460A71C_2014_4CDF_9528_674E2BF0F54A_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td><td/><td/><td>_EA2DC6B3_5B47_4C58_A430_C71460459A49_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__FED5073454C14A13B6AA66BAFCF5A600</td><td/><td/><td>_92BCCECA_40A0_402F_B674_CDD434D88BB7_FILTER</td><td/><td/><td/><td/></row>
