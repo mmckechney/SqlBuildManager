@@ -123,7 +123,7 @@ namespace SqlBuildManager.Console
                 StringBuilder sb = new StringBuilder();
                 foreach (ServerConfigData cfg in hadErrorServers)
                 {
-                    sb.AppendLine(manager.GetFailureDatabasesConfig(cfg.TcpServiceEndpoint));
+                    sb.AppendLine(manager.GetFailureDatabasesConfig(cfg.ActiveServiceEndpoint));
                 }
                 string fileFormat = @"{0}\{1}-{2}.cfg";
                 string fileName = String.Format(fileFormat, Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),

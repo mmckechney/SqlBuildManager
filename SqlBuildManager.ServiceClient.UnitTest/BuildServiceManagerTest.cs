@@ -26,14 +26,14 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             string[] evenConfig = new string[]{"SERVER1:default,target;default1,target1","SERVER2:default,target;default2,target2",
                     "SERVER3:default,target;default3,target3","SERVER4:default,target;default4,target4" };
 
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor(); // TODO: Initialize to an appropriate value
+            BuildServiceManager target = new BuildServiceManager(); // TODO: Initialize to an appropriate value
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.MultiDbTextConfig = evenConfig;
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
-            ServerConfigData exeServer2= new ServerConfigData("ExeServer2", "http://nothomeA.com", "tcp://nothomeA.com");
+            ServerConfigData exeServer2 = new ServerConfigData("ExeServer2", "http://nothomeA.com", "tcp://nothomeA.com", Protocol.Tcp);
             executionServers.Add(exeServer2);
 
             IDictionary<ServerConfigData, BuildSettings> actual;
@@ -62,17 +62,17 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             string[] evenConfig = new string[]{"SERVER1:default,target;default1,target1","SERVER2:default,target;default2,target2",
                     "SERVER3:default,target;default3,target3","SERVER4:default,target;default4,target4" };
 
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor(); // TODO: Initialize to an appropriate value
+            BuildServiceManager target = new BuildServiceManager(); // TODO: Initialize to an appropriate value
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.MultiDbTextConfig = evenConfig;
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
 
-            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData("ExeServer2", "http://nothomeA.com", "tcp://nothomeA.com");
+            ServerConfigData exeServer2 = new ServerConfigData("ExeServer2", "http://nothomeA.com", "tcp://nothomeA.com", Protocol.Tcp);
             executionServers.Add(exeServer2);
-            ServerConfigData exeServer3 = new ServerConfigData("ExeServer3", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer3 = new ServerConfigData("ExeServer3", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             executionServers.Add(exeServer3);
 
             IDictionary<ServerConfigData, BuildSettings> actual;
@@ -100,14 +100,14 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             string[] oddConfig = new string[]{"SERVER1:default,target;default1,target1","SERVER2:default,target;default2,target2",
                     "SERVER3:default,target;default3,target3","SERVER4:default,target;default4,target4","SERVER5:default,target;default5,target5" };
             
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor(); // TODO: Initialize to an appropriate value
+            BuildServiceManager target = new BuildServiceManager(); // TODO: Initialize to an appropriate value
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.MultiDbTextConfig = oddConfig;
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData("ExeServer2", "http://nothomeA.com", "tcp://nothomeA.com");
+            ServerConfigData exeServer2 = new ServerConfigData("ExeServer2", "http://nothomeA.com", "tcp://nothomeA.com", Protocol.Tcp);
             executionServers.Add(exeServer2);
 
             IDictionary<ServerConfigData, BuildSettings> actual;
@@ -135,16 +135,16 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             string[] oddConfig = new string[]{"SERVER1:default,target;default1,target1","SERVER2:default,target;default2,target2",
                     "SERVER3:default,target;default3,target3","SERVER4:default,target;default4,target4","SERVER5:default,target;default5,target5" };
 
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor(); // TODO: Initialize to an appropriate value
+            BuildServiceManager target = new BuildServiceManager(); // TODO: Initialize to an appropriate value
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.MultiDbTextConfig = oddConfig;
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData("ExeServer2", "http://nothomeA.com", "tcp://nothomeA.com");
+            ServerConfigData exeServer2 = new ServerConfigData("ExeServer2", "http://nothomeA.com", "tcp://nothomeA.com", Protocol.Tcp);
             executionServers.Add(exeServer2);
-            ServerConfigData exeServer3 = new ServerConfigData("ExeServer3", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer3 = new ServerConfigData("ExeServer3", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             executionServers.Add(exeServer3);
 
             IDictionary<ServerConfigData, BuildSettings> actual;
@@ -174,12 +174,12 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             string[] evenConfig = new string[]{"SERVER1:default,target;default1,target1","SERVER2:default,target;default2,target2",
                     "SERVER3:default,target;default3,target3","SERVER4:default,target;default4,target4" };
 
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor(); // TODO: Initialize to an appropriate value
+            BuildServiceManager target = new BuildServiceManager(); // TODO: Initialize to an appropriate value
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.MultiDbTextConfig = evenConfig;
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
 
             IDictionary<ServerConfigData, BuildSettings> actual;
@@ -201,12 +201,12 @@ namespace SqlBuildManager.ServiceClient.UnitTest
         {
             string[] oddConfig = new string[]{"SERVER1:default,target;default1,target1","SERVER2:default,target;default2,target2",
                     "SERVER3:default,target;default3,target3","SERVER4:default,target;default4,target4","SERVER5:default,target;default5,target5" };
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor(); // TODO: Initialize to an appropriate value
+            BuildServiceManager target = new BuildServiceManager(); // TODO: Initialize to an appropriate value
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.MultiDbTextConfig = oddConfig;
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
 
             IDictionary<ServerConfigData, BuildSettings> actual;
@@ -231,14 +231,14 @@ namespace SqlBuildManager.ServiceClient.UnitTest
         {
             string[] oddConfig = new string[]{"SERVER1:default,target;default1a,target1a","SERVER1:default,target;default1b,target1b",
                     "SERVER2:default,target;default2a,target2a","SERVER2:default,target;default2b,target2b" };
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor(); // TODO: Initialize to an appropriate value
+            BuildServiceManager target = new BuildServiceManager(); // TODO: Initialize to an appropriate value
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.MultiDbTextConfig = oddConfig;
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData("SERVER1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData("SERVER1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData("SERVER2", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData("SERVER2", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             executionServers.Add(exeServer2);
 
             IDictionary<ServerConfigData, BuildSettings> actual;
@@ -266,14 +266,14 @@ namespace SqlBuildManager.ServiceClient.UnitTest
         {
             string[] oddConfig = new string[]{"SERVER1:default,target;default1a,target1a","SERVER1:default,target;default1b,target1b",
                     "SERVER2:default,target;default2a,target2a","SERVER2:default,target;default2b,target2b", "SERVER3:default,target;default3b,target3b" };
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor(); // TODO: Initialize to an appropriate value
+            BuildServiceManager target = new BuildServiceManager(); // TODO: Initialize to an appropriate value
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.MultiDbTextConfig = oddConfig;
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData("SERVER1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData("SERVER1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData("SERVER2", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData("SERVER2", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             executionServers.Add(exeServer2);
 
             IDictionary<ServerConfigData, BuildSettings> actual;
@@ -299,16 +299,16 @@ namespace SqlBuildManager.ServiceClient.UnitTest
         [DeploymentItem("SqlBuildManager.ServiceClient.dll")]
         public void SplitLoadToOwningServersTest_InstanceNameTest()
         {
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor();
+            BuildServiceManager target = new BuildServiceManager();
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.DistributionType = DistributionType.OwnMachineName;
             unifiedSettings.MultiDbTextConfig  = new string[]{"SERVER1\\Instance_1:default,target;default1a,target1a","SERVER1\\Instance_1:default,target;default1b,target1b",
                     "SERVER2:default,target;default2a,target2a","SERVER2:default,target;default2b,target2b", "SERVER3:default,target;default3b,target3b" };
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             executionServers.Add(exeServer2); 
             
             IDictionary<ServerConfigData, BuildSettings> actual = target.SplitLoadToOwningServers(unifiedSettings, executionServers);
@@ -334,16 +334,16 @@ namespace SqlBuildManager.ServiceClient.UnitTest
         [DeploymentItem("SqlBuildManager.ServiceClient.dll")]
         public void SplitLoadToOwningServersTest_CaseSensitivityTest()
         {
-            BuildServiceManager_Accessor target = new BuildServiceManager_Accessor();
+            BuildServiceManager target = new BuildServiceManager();
             BuildSettings unifiedSettings = new BuildSettings();
             unifiedSettings.DistributionType = DistributionType.OwnMachineName;
             unifiedSettings.MultiDbTextConfig = new string[]{"SERVER1\\INSTANCE_1:DEFAULT,TARGET;DEFAULT1A,TARGET1A","SERVER1\\INSTANCE_1:DEFAULT,TARGET;DEFAULT1B,TARGET1B",
                     "SERVER2:DEFAULT,TARGET;DEFAULT2A,TARGET2A","SERVER2:DEFAULT,TARGET;DEFAULT2B,TARGET2B", "SERVER3:DEFAULT,TARGET;DEFAULT3B,TARGET3B" };
 
             IList<ServerConfigData> executionServers = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData(@"server1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData(@"server1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             executionServers.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData(@"server2", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData(@"server2", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             executionServers.Add(exeServer2);
 
             IDictionary<ServerConfigData, BuildSettings> actual = target.SplitLoadToOwningServers(unifiedSettings, executionServers);
@@ -374,10 +374,10 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             BuildServiceManager target = new BuildServiceManager();
             DistributionType distType = DistributionType.OwnMachineName;
             List<ServerConfigData> serverConfigs = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             exeServer1.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             exeServer2.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer2);
 
@@ -405,13 +405,13 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             BuildServiceManager target = new BuildServiceManager();
             DistributionType distType = DistributionType.OwnMachineName;
             List<ServerConfigData> serverConfigs = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             exeServer1.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             exeServer2.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer2);
-            ServerConfigData exeServer3 = new ServerConfigData(@"SERVER3", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer3 = new ServerConfigData(@"SERVER3", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             exeServer3.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer3);
 
@@ -441,10 +441,10 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             BuildServiceManager target = new BuildServiceManager();
             DistributionType distType = DistributionType.OwnMachineName;
             List<ServerConfigData> serverConfigs = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             exeServer1.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             exeServer2.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer2);
 
@@ -474,10 +474,10 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             BuildServiceManager target = new BuildServiceManager();
             DistributionType distType = DistributionType.OwnMachineName;
             List<ServerConfigData> serverConfigs = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             exeServer1.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER3", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER3", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             exeServer2.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer2);
 
@@ -508,10 +508,10 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             BuildServiceManager target = new BuildServiceManager();
             DistributionType distType = DistributionType.OwnMachineName;
             List<ServerConfigData> serverConfigs = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             exeServer1.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER2", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             exeServer2.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer2);
 
@@ -541,10 +541,10 @@ namespace SqlBuildManager.ServiceClient.UnitTest
             BuildServiceManager target = new BuildServiceManager();
             DistributionType distType = DistributionType.OwnMachineName;
             List<ServerConfigData> serverConfigs = new List<ServerConfigData>();
-            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com");
+            ServerConfigData exeServer1 = new ServerConfigData(@"SERVER1", "http://nothome.com", "tcp://nothome.com", Protocol.Tcp);
             exeServer1.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer1);
-            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER3", "http://nothomeB.com", "tcp://nothomeB.com");
+            ServerConfigData exeServer2 = new ServerConfigData(@"SERVER3", "http://nothomeB.com", "tcp://nothomeB.com", Protocol.Tcp);
             exeServer2.ServiceReadiness = ServiceReadiness.ReadyToAccept;
             serverConfigs.Add(exeServer2);
 

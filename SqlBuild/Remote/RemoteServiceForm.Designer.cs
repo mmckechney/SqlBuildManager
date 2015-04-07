@@ -81,7 +81,6 @@
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.btnSubmitPackage = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.serverConfigDataBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statGeneral = new System.Windows.Forms.ToolStripStatusLabel();
@@ -95,19 +94,23 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog2 = new System.Windows.Forms.SaveFileDialog();
             this.bgConnectionTest = new System.ComponentModel.BackgroundWorker();
+            this.activeProtocolToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.protocolComboBox = new System.Windows.Forms.ToolStripComboBox();
             this.dgvServerStatus = new System.Windows.Forms.DataGridView();
+            this.remoteExecutionLogsContextMenuStrip1 = new SqlSync.Controls.RemoteExecutionLogsContextMenuStrip();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.serverConfigDataBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.serverNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.serviceReadinessDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.lastStatusCheckDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.executionReturnDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ServiceVersion = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TcpServiceEndpoint = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.remoteExecutionLogsContextMenuStrip1 = new SqlSync.Controls.RemoteExecutionLogsContextMenuStrip();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             btnMultDbCfg = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRemoteServers)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -120,13 +123,14 @@
             this.groupBox5.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.serverConfigDataBindingSource)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvServerStatus)).BeginInit();
             this.remoteExecutionLogsContextMenuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.serverConfigDataBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // btnMultDbCfg
@@ -143,9 +147,9 @@
             // 
             // dgvRemoteServers
             // 
-            this.dgvRemoteServers.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvRemoteServers.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvRemoteServers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvRemoteServers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.ServerColumn});
@@ -165,10 +169,12 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.actionToolStripMenuItem,
-            this.helptoolStripMenuItem});
+            this.helptoolStripMenuItem,
+            this.activeProtocolToolStripMenuItem,
+            this.protocolComboBox});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1084, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1084, 27);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -182,14 +188,14 @@
             this.actionToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Execute;
             this.actionToolStripMenuItem.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.actionToolStripMenuItem.Name = "actionToolStripMenuItem";
-            this.actionToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
+            this.actionToolStripMenuItem.Size = new System.Drawing.Size(70, 23);
             this.actionToolStripMenuItem.Text = "&Action";
             // 
             // manageServerSetsToolStripMenuItem
             // 
             this.manageServerSetsToolStripMenuItem.Image = global::SqlSync.Properties.Resources.edit;
             this.manageServerSetsToolStripMenuItem.Name = "manageServerSetsToolStripMenuItem";
-            this.manageServerSetsToolStripMenuItem.Size = new System.Drawing.Size(315, 22);
+            this.manageServerSetsToolStripMenuItem.Size = new System.Drawing.Size(319, 22);
             this.manageServerSetsToolStripMenuItem.Text = "Manage Server Sets";
             this.manageServerSetsToolStripMenuItem.Click += new System.EventHandler(this.manageServerSetsToolStripMenuItem_Click);
             // 
@@ -197,20 +203,20 @@
             // 
             this.openRemoteExecutionServerPackagerespToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Open;
             this.openRemoteExecutionServerPackagerespToolStripMenuItem.Name = "openRemoteExecutionServerPackagerespToolStripMenuItem";
-            this.openRemoteExecutionServerPackagerespToolStripMenuItem.Size = new System.Drawing.Size(315, 22);
+            this.openRemoteExecutionServerPackagerespToolStripMenuItem.Size = new System.Drawing.Size(319, 22);
             this.openRemoteExecutionServerPackagerespToolStripMenuItem.Text = "Open Remote Execution Server Package (.resp)";
             this.openRemoteExecutionServerPackagerespToolStripMenuItem.Click += new System.EventHandler(this.openRemoteExecutionServerPackagerespToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(312, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(316, 6);
             // 
             // saveExecutionToolStripMenuItem
             // 
             this.saveExecutionToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Save;
             this.saveExecutionToolStripMenuItem.Name = "saveExecutionToolStripMenuItem";
-            this.saveExecutionToolStripMenuItem.Size = new System.Drawing.Size(315, 22);
+            this.saveExecutionToolStripMenuItem.Size = new System.Drawing.Size(319, 22);
             this.saveExecutionToolStripMenuItem.Text = "Save Remote Execution Server Package (.resp)";
             this.saveExecutionToolStripMenuItem.Click += new System.EventHandler(this.saveExecutionToolStripMenuItem_Click);
             // 
@@ -221,7 +227,7 @@
             this.helptoolStripMenuItem.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.helptoolStripMenuItem.Name = "helptoolStripMenuItem";
             this.helptoolStripMenuItem.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.helptoolStripMenuItem.Size = new System.Drawing.Size(28, 20);
+            this.helptoolStripMenuItem.Size = new System.Drawing.Size(28, 23);
             this.helptoolStripMenuItem.Click += new System.EventHandler(this.helptoolStripMenuItem_Click);
             // 
             // btnCheckServiceStatus
@@ -257,9 +263,9 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.groupBox9);
             this.groupBox2.Controls.Add(this.dgvRemoteServers);
             this.groupBox2.Location = new System.Drawing.Point(8, 7);
@@ -455,8 +461,8 @@
             // 
             // groupBox5
             // 
-            this.groupBox5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox5.Controls.Add(this.chkUseOverrideAsExeList);
             this.groupBox5.Controls.Add(this.lblOpenConfigForm);
             this.groupBox5.Controls.Add(this.lblCreateViaQuery);
@@ -513,8 +519,8 @@
             // 
             // txtOverride
             // 
-            this.txtOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOverride.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.txtOverride.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.txtOverride.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -536,8 +542,8 @@
             // 
             // groupBox4
             // 
-            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox4.Controls.Add(this.lnkViewSbmPackage);
             this.groupBox4.Controls.Add(this.btnOpenSbm);
             this.groupBox4.Controls.Add(this.txtSbmFile);
@@ -575,8 +581,8 @@
             // 
             // txtSbmFile
             // 
-            this.txtSbmFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSbmFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtSbmFile.Location = new System.Drawing.Point(181, 17);
             this.txtSbmFile.Name = "txtSbmFile";
             this.txtSbmFile.Size = new System.Drawing.Size(540, 20);
@@ -612,8 +618,8 @@
             // 
             // txtRootLoggingPath
             // 
-            this.txtRootLoggingPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtRootLoggingPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtRootLoggingPath.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.txtRootLoggingPath.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.txtRootLoggingPath.Location = new System.Drawing.Point(493, 19);
@@ -642,8 +648,8 @@
             // 
             // txtDescription
             // 
-            this.txtDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtDescription.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.txtDescription.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.txtDescription.Location = new System.Drawing.Point(493, 44);
@@ -664,27 +670,22 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.dgvServerStatus);
             this.groupBox1.Location = new System.Drawing.Point(7, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(1065, 274);
+            this.groupBox1.Size = new System.Drawing.Size(1065, 271);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Remove Service Status Dashboard";
-            // 
-            // serverConfigDataBindingSource
-            // 
-            this.serverConfigDataBindingSource.AllowNew = true;
-            this.serverConfigDataBindingSource.DataSource = typeof(SqlBuildManager.ServiceClient.ServerConfigData);
             // 
             // splitContainer2
             // 
             this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.splitContainer2.Location = new System.Drawing.Point(0, 24);
+            this.splitContainer2.Location = new System.Drawing.Point(0, 27);
             this.splitContainer2.Name = "splitContainer2";
             this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -696,7 +697,7 @@
             // 
             this.splitContainer2.Panel2.Controls.Add(this.groupBox1);
             this.splitContainer2.Panel2.Controls.Add(this.statusStrip1);
-            this.splitContainer2.Size = new System.Drawing.Size(1084, 699);
+            this.splitContainer2.Size = new System.Drawing.Size(1084, 696);
             this.splitContainer2.SplitterDistance = 390;
             this.splitContainer2.TabIndex = 4;
             // 
@@ -705,7 +706,7 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statGeneral,
             this.statProgBar});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 283);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 280);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(1084, 22);
             this.statusStrip1.TabIndex = 5;
@@ -726,12 +727,12 @@
             // fileSbm
             // 
             this.fileSbm.Filter = "Sql Build Manager *.sbm|*.sbm|Sql Build Control File *.sbx|*.sbx|All Files *.*|*." +
-                "*";
+    "*";
             // 
             // fileOverride
             // 
             this.fileOverride.Filter = "MultiDb Config Query file *.multiDbQ|*.multiDbQ|MultiDb Config file *.multidb|*.m" +
-                "ultidb|Config file *.cfg|*.cfg|All Files *.*|*.*";
+    "ultidb|Config file *.cfg|*.cfg|All Files *.*|*.*";
             // 
             // bgStatusCheck
             // 
@@ -778,6 +779,22 @@
             this.bgConnectionTest.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgConnectionTest_ProgressChanged);
             this.bgConnectionTest.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgConnectionTest_RunWorkerCompleted);
             // 
+            // activeProtocolToolStripMenuItem
+            // 
+            this.activeProtocolToolStripMenuItem.Name = "activeProtocolToolStripMenuItem";
+            this.activeProtocolToolStripMenuItem.Size = new System.Drawing.Size(103, 23);
+            this.activeProtocolToolStripMenuItem.Text = "Active Protocol:";
+            // 
+            // protocolComboBox
+            // 
+            this.protocolComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.protocolComboBox.Items.AddRange(new object[] {
+            "Tcp",
+            "Http"});
+            this.protocolComboBox.Name = "protocolComboBox";
+            this.protocolComboBox.Size = new System.Drawing.Size(121, 23);
+            this.protocolComboBox.SelectedIndexChanged += new System.EventHandler(this.protocolComboBox_SelectedIndexChanged);
+            // 
             // dgvServerStatus
             // 
             this.dgvServerStatus.AllowUserToAddRows = false;
@@ -785,9 +802,9 @@
             this.dgvServerStatus.AllowUserToOrderColumns = true;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.WhiteSmoke;
             this.dgvServerStatus.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgvServerStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvServerStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvServerStatus.AutoGenerateColumns = false;
             this.dgvServerStatus.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvServerStatus.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
@@ -804,9 +821,38 @@
             this.dgvServerStatus.ReadOnly = true;
             this.dgvServerStatus.RowHeadersVisible = false;
             this.dgvServerStatus.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.dgvServerStatus.Size = new System.Drawing.Size(1044, 249);
+            this.dgvServerStatus.Size = new System.Drawing.Size(1044, 246);
             this.dgvServerStatus.TabIndex = 0;
+            this.dgvServerStatus.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvServerStatus_CellContentClick);
             this.dgvServerStatus.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvServerStatus_CellFormatting);
+            // 
+            // remoteExecutionLogsContextMenuStrip1
+            // 
+            this.remoteExecutionLogsContextMenuStrip1.CommitsLogMenuItemText = "View Last Execution \"Commits\" log";
+            this.remoteExecutionLogsContextMenuStrip1.ErrorsLogMenuItemText = "View Last Execution \"Errors\" log";
+            this.remoteExecutionLogsContextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripSeparator1,
+            this.toolStripMenuItem1});
+            this.remoteExecutionLogsContextMenuStrip1.Name = "remoteExecutionLogsContextMenuStrip1";
+            this.remoteExecutionLogsContextMenuStrip1.Size = new System.Drawing.Size(340, 32);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(336, 6);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Image = global::SqlSync.Properties.Resources.History;
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(339, 22);
+            this.toolStripMenuItem1.Text = "View Build Request History for this Remote Service";
+            this.toolStripMenuItem1.Click += new System.EventHandler(this.viewBuildRequestHistoryForThisRemoteServiceToolStripMenuItem_Click);
+            // 
+            // serverConfigDataBindingSource
+            // 
+            this.serverConfigDataBindingSource.AllowNew = true;
+            this.serverConfigDataBindingSource.DataSource = typeof(SqlBuildManager.ServiceClient.ServerConfigData);
             // 
             // serverNameDataGridViewTextBoxColumn
             // 
@@ -852,34 +898,11 @@
             // 
             // TcpServiceEndpoint
             // 
-            this.TcpServiceEndpoint.DataPropertyName = "TcpServiceEndpoint";
-            this.TcpServiceEndpoint.HeaderText = "Tcp Service Endpoint";
+            this.TcpServiceEndpoint.DataPropertyName = "ActiveServiceEndpoint";
+            this.TcpServiceEndpoint.HeaderText = "Service Endpoint";
             this.TcpServiceEndpoint.Name = "TcpServiceEndpoint";
             this.TcpServiceEndpoint.ReadOnly = true;
             this.TcpServiceEndpoint.Width = 200;
-            // 
-            // remoteExecutionLogsContextMenuStrip1
-            // 
-            this.remoteExecutionLogsContextMenuStrip1.CommitsLogMenuItemText = "View Last Execution \"Commits\" log";
-            this.remoteExecutionLogsContextMenuStrip1.ErrorsLogMenuItemText = "View Last Execution \"Errors\" log";
-            this.remoteExecutionLogsContextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripSeparator1,
-            this.toolStripMenuItem1});
-            this.remoteExecutionLogsContextMenuStrip1.Name = "remoteExecutionLogsContextMenuStrip1";
-            this.remoteExecutionLogsContextMenuStrip1.Size = new System.Drawing.Size(328, 32);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(324, 6);
-            // 
-            // toolStripMenuItem1
-            // 
-            this.toolStripMenuItem1.Image = global::SqlSync.Properties.Resources.History;
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(327, 22);
-            this.toolStripMenuItem1.Text = "View Build Request History for this Remote Service";
-            this.toolStripMenuItem1.Click += new System.EventHandler(this.viewBuildRequestHistoryForThisRemoteServiceToolStripMenuItem_Click);
             // 
             // RemoteServiceForm
             // 
@@ -898,6 +921,7 @@
             this.menuStrip1.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox9.ResumeLayout(false);
@@ -913,15 +937,16 @@
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.groupBox1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.serverConfigDataBindingSource)).EndInit();
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvServerStatus)).EndInit();
             this.remoteExecutionLogsContextMenuStrip1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.serverConfigDataBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -978,12 +1003,6 @@
         private System.Windows.Forms.Button btnPreview;
         private System.Windows.Forms.LinkLabel lblCreateViaQuery;
         private System.Windows.Forms.LinkLabel lblOpenConfigForm;
-        private System.Windows.Forms.DataGridViewTextBoxColumn serverNameDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn serviceReadinessDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn lastStatusCheckDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn executionReturnDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ServiceVersion;
-        private System.Windows.Forms.DataGridViewTextBoxColumn TcpServiceEndpoint;
         private System.Windows.Forms.ToolStripMenuItem helptoolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem saveExecutionToolStripMenuItem;
@@ -1002,5 +1021,13 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.TextBox txtTimeoutRetryCount;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ToolStripMenuItem activeProtocolToolStripMenuItem;
+        private System.Windows.Forms.ToolStripComboBox protocolComboBox;
+        private System.Windows.Forms.DataGridViewTextBoxColumn serverNameDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn serviceReadinessDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn lastStatusCheckDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn executionReturnDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ServiceVersion;
+        private System.Windows.Forms.DataGridViewTextBoxColumn TcpServiceEndpoint;
     }
 }

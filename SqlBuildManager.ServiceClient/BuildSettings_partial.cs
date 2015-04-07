@@ -18,5 +18,7 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService
             get;
             set;
         }
+
+        
     }
 }

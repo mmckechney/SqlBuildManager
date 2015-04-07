@@ -14,11 +14,12 @@ namespace SqlBuildManager.ServiceClient
         {
             this.ConnectionTestResults = new List<ConnectionTestResult>();
         }
-        public ServerConfigData(string serverName, string httpServiceEndpoint, string tcpServiceEndpoint) : this()
+        public ServerConfigData(string serverName, string httpServiceEndpoint, string tcpServiceEndpoint,ServiceClient.Protocol protocol) : this()
         {
             this.serverName = serverName;
             this.httpServiceEndpoint = httpServiceEndpoint;
             this.tcpServiceEndpoint = tcpServiceEndpoint;
+            this.protocol = protocol;
         }
         private string serverName = string.Empty;
 
@@ -27,19 +28,43 @@ namespace SqlBuildManager.ServiceClient
             get { return serverName; }
             set { serverName = value; }
         }
+
+        private Protocol protocol = Protocol.Tcp;
+        public Protocol Protocol
+        {
+            get { return this.protocol; }
+            set { this.protocol = value; }
+        }
         private string tcpServiceEndpoint = string.Empty;
 
         public string TcpServiceEndpoint
         {
-            get { return tcpServiceEndpoint; }
+            //get { return tcpServiceEndpoint; }
             set { tcpServiceEndpoint = value; }
         }
         private string httpServiceEndpoint = string.Empty;
 
         public string HttpServiceEndpoint
         {
-            get { return httpServiceEndpoint; }
+            //get { return httpServiceEndpoint; }
             set { httpServiceEndpoint = value; }
+        }
+        public string ActiveServiceEndpoint
+        {
+            get
+            {
+                switch(this.protocol)
+                {
+                    case ServiceClient.Protocol.Http:
+                        return httpServiceEndpoint;
+                        break;
+                    case ServiceClient.Protocol.Tcp:
+                    default:
+                        return tcpServiceEndpoint;
+                        break;
+                }
+            }
+            
         }
 
         private ServiceReadiness serviceReadiness = ServiceReadiness.Unknown;

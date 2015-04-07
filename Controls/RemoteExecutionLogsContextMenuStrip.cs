@@ -42,8 +42,8 @@ namespace SqlSync.Controls
                     if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is ServerConfigData)
                     {
                         ServerConfigData server = (ServerConfigData)dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem;
-                        remoteEndpoint = server.TcpServiceEndpoint;
-                        text= buildManager.GetErrorsLog(server.TcpServiceEndpoint);
+                        remoteEndpoint = server.ActiveServiceEndpoint;
+                        text= buildManager.GetErrorsLog(server.ActiveServiceEndpoint);
                         serverName = server.ServerName;
                     }
                     else if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is BuildRecord)
@@ -85,8 +85,8 @@ namespace SqlSync.Controls
                     if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is ServerConfigData)
                     {
                         ServerConfigData server = (ServerConfigData)dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem;
-                        remoteEndpoint = server.TcpServiceEndpoint;
-                        text = buildManager.GetCommitsLog(server.TcpServiceEndpoint);
+                        remoteEndpoint = server.ActiveServiceEndpoint;
+                        text = buildManager.GetCommitsLog(server.ActiveServiceEndpoint);
                         serverName = server.ServerName;
                     }
                     else if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is BuildRecord)
@@ -157,7 +157,7 @@ namespace SqlSync.Controls
                         if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is ServerConfigData)
                         {
                             ServerConfigData server = (ServerConfigData)dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem;
-                            text = buildManager.GetDetailedDatabaseLog(server.TcpServiceEndpoint, txtDetailedLogTarget.Text);
+                            text = buildManager.GetDetailedDatabaseLog(server.ActiveServiceEndpoint, txtDetailedLogTarget.Text);
                             serverName = server.ServerName;
                         }
                         else if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is BuildRecord)
@@ -199,7 +199,7 @@ namespace SqlSync.Controls
                     if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is ServerConfigData)
                     {
                         ServerConfigData server = (ServerConfigData)dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem;
-                        remoteEndpoint = server.TcpServiceEndpoint;
+                        remoteEndpoint = server.ActiveServiceEndpoint;
                         serverName = server.ServerName;
                     }
                     else if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is BuildRecord)
@@ -267,7 +267,7 @@ namespace SqlSync.Controls
                 if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is ServerConfigData)
                 {
                     ServerConfigData server = (ServerConfigData)dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem;
-                    remoteEndpoint = server.TcpServiceEndpoint;
+                    remoteEndpoint = server.ActiveServiceEndpoint;
                     serverName = server.ServerName;
                 }
                 else if (dgvServerStatus.Rows[dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem is BuildRecord)

@@ -20,3 +20,5 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("54d66276-0150-4877-b2b4-25bbcf3e7a56")]
 
+[assembly: InternalsVisibleTo("SqlBuildManager.ServiceClient.UnitTest")]
+

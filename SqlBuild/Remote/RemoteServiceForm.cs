@@ -20,7 +20,7 @@ namespace SqlSync.SqlBuild.Remote
     public partial class RemoteServiceForm : Form
     {
         bool packageSubmitted = false;
-        BuildServiceManager buildManager = new BuildServiceManager();
+        BuildServiceManager buildManager = new BuildServiceManager(Protocol.Tcp);
         BindingList<ServerConfigData> serverData = new BindingList<ServerConfigData>();
         private DistributionType loadDistributionType = DistributionType.EqualSplit;
 
@@ -466,6 +466,7 @@ namespace SqlSync.SqlBuild.Remote
             txtUserName.AutoCompleteCustomSource = SqlSync.Properties.Settings.Default.RemoteUsername;
 
             ddDistribution.SelectedIndex = 1;
+            protocolComboBox.SelectedIndex = 0;
 
 
 
@@ -919,14 +920,14 @@ namespace SqlSync.SqlBuild.Remote
         {
             ServerConfigData server = (ServerConfigData)this.dgvServerStatus.Rows[this.dgvServerStatus.SelectedCells[0].RowIndex].DataBoundItem;
             string message;
-            IList<BuildRecord> history = this.buildManager.GetBuildServiceHistory(server.TcpServiceEndpoint, out message);
+            IList<BuildRecord> history = this.buildManager.GetBuildServiceHistory(server.ActiveServiceEndpoint, out message);
             if (history.Count == 0 && message.Length > 0)
             {
                 MessageBox.Show(message, "Can't get the history", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            BuildHistoryForm frmHist = new BuildHistoryForm(history, server.ServerName,server.TcpServiceEndpoint);
+            BuildHistoryForm frmHist = new BuildHistoryForm(history, server.ServerName,server.ActiveServiceEndpoint);
             frmHist.ShowDialog();
 
         }
@@ -937,6 +938,19 @@ namespace SqlSync.SqlBuild.Remote
             {
                 e.CellStyle.ForeColor = Color.Red;
             }
+        }
+
+        private void protocolComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (protocolComboBox.SelectedItem.ToString() == "Tcp")
+                buildManager.SetProtocol(Protocol.Tcp);
+            else if (protocolComboBox.SelectedItem.ToString() == "Http")
+                buildManager.SetProtocol(Protocol.Http);
+        }
+
+        private void dgvServerStatus_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
 
 

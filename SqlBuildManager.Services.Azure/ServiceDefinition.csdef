@@ -4,12 +4,12 @@
     <Sites>
       <Site name="Web">
         <Bindings>
-          <Binding name="Endpoint1" endpointName="Endpoint1" />
+          <Binding name="Endpoint1" endpointName="HttpConnection" />
         </Bindings>
       </Site>
     </Sites>
     <Endpoints>
-      <InputEndpoint name="Endpoint1" protocol="http" port="33273" />
+      <InputEndpoint name="HttpConnection" protocol="http" port="8675" />
     </Endpoints>
     <Imports>
       <Import moduleName="RemoteAccess" />

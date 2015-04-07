@@ -12,10 +12,15 @@ namespace SqlBuildManager.ServiceClient
 {
     public class BuildServiceManager
     {
+     
         private static log4net.ILog logger = log4net.LogManager.GetLogger(typeof(BuildServiceManager));
         public BuildServiceManager(List<string> serverNames) : this()
         {
             SetServerNames(serverNames);
+        }
+        public BuildServiceManager(ServiceClient.Protocol protocol)
+        {
+            this.protocol = protocol;
         }
         public BuildServiceManager()
         {
@@ -34,7 +39,18 @@ namespace SqlBuildManager.ServiceClient
                 return this.endPoints;
             }
         }
+
+        private Protocol protocol = Protocol.Tcp;
+        public void SetProtocol(Protocol protocol)
+        {
+            this.protocol = protocol;
+            foreach (var e in endPoints)
+            {
+                e.Protocol = protocol;
+            }
+        }
         private BindingList<ServerConfigData> endPoints = new BindingList<ServerConfigData>();
+
         public const string serverReplaceKey = "[[ServerName]]";
         private void SetBuildServiceInstanceEndpoints(List<string> serverNames)
         {
@@ -58,7 +74,7 @@ namespace SqlBuildManager.ServiceClient
                 IEnumerable<ServerConfigData> endPoint = (from e in endPoints where e.ServerName == server select e);
                 var enumer = endPoint.GetEnumerator();
                 if(!enumer.MoveNext())
-                    endPoints.Add(new ServerConfigData(server,httpTemplate.Replace(serverReplaceKey,server), tcpTemplate.Replace(serverReplaceKey, server)));
+                    endPoints.Add(new ServerConfigData(server,httpTemplate.Replace(serverReplaceKey,server), tcpTemplate.Replace(serverReplaceKey, server), this.protocol));
             }
 
             List<ServerConfigData> toRemove = (from e in endPoints where ! (from s in serverNames select s.ToString()).Contains(e.ServerName) select e).ToList();
@@ -70,16 +86,16 @@ namespace SqlBuildManager.ServiceClient
         {
             foreach (ServerConfigData data in this.endPoints)
             {
-               ServiceStatus stat=  GetServiceStatus(data.TcpServiceEndpoint);
-               data.ExecutionReturn = stat.ExecutionStatus;
-               data.ServiceReadiness = stat.Readiness;
-               data.ServiceVersion = stat.CurrentVersion;
-               data.LastStatusCheck = DateTime.Now;
+                ServiceStatus stat = GetServiceStatus(data.ActiveServiceEndpoint);
+                data.ExecutionReturn = stat.ExecutionStatus;
+                data.ServiceReadiness = stat.Readiness;
+                data.ServiceVersion = stat.CurrentVersion;
+                data.LastStatusCheck = DateTime.Now;
 
             }
             //avoid returning endpoints directly as it will cause a thread issue
             return new BindingList<ServerConfigData>(this.endPoints);
-   
+
         }
         private ServiceStatus GetServiceStatus(string endpointAddress)
         {
@@ -147,7 +163,7 @@ namespace SqlBuildManager.ServiceClient
             {
                 BuildServiceManager.Using<BuildServiceClient>(client =>
                     {
-                        client.Endpoint.Address = new System.ServiceModel.EndpointAddress(remoteServer.TcpServiceEndpoint);
+                        client.Endpoint.Address = new System.ServiceModel.EndpointAddress(remoteServer.ActiveServiceEndpoint);
                         if (client.SubmitBuildPackage(setting))
                         {
                             logger.Info("Submitted Package to " + client.Endpoint.Address + " with " + setting.MultiDbTextConfig.Length.ToString() + " target databases");
@@ -187,14 +203,14 @@ namespace SqlBuildManager.ServiceClient
 
                     BuildServiceManager.Using<BuildServiceClient>(client =>
                        {
-                           client.Endpoint.Address = new System.ServiceModel.EndpointAddress(remoteServer.TcpServiceEndpoint);
+                           client.Endpoint.Address = new System.ServiceModel.EndpointAddress(remoteServer.ActiveServiceEndpoint);
 
                            connTestSet = GetConnectionTestSettings(loadSet.Value.MultiDbTextConfig);
 
                            ConnectionTestResult[] result = client.TestDatabaseConnectivity(connTestSet);
                            if (result == null || result.Length == 0)
                            {
-                               logger.Error("TestConnection to " + remoteServer.TcpServiceEndpoint + " failed to return data");
+                               logger.Error("TestConnection to " + remoteServer.ActiveServiceEndpoint + " failed to return data");
                            }
                            else
                            {
@@ -206,7 +222,7 @@ namespace SqlBuildManager.ServiceClient
                 }
                 catch (ActionNotSupportedException actExe)
                 {
-                    logger.Error("Unable to execute connection test for " + loadSet.Key.TcpServiceEndpoint + ". This endpoint does not have this method available. Do you need to update your version?", actExe);
+                    logger.Error("Unable to execute connection test for " + loadSet.Key.ActiveServiceEndpoint + ". This endpoint does not have this method available. Do you need to update your version?", actExe);
                     remoteServer.ServiceReadiness = ServiceReadiness.Error;
                     var failList = (from ts in connTestSet.TargetServers
                             from db in ts.Value
@@ -216,7 +232,7 @@ namespace SqlBuildManager.ServiceClient
                 }
                 catch (Exception exe)
                 {
-                    logger.Error("Unable to execute connection test for " + loadSet.Key.TcpServiceEndpoint, exe);
+                    logger.Error("Unable to execute connection test for " + loadSet.Key.ActiveServiceEndpoint, exe);
                     remoteServer.ServiceReadiness = ServiceReadiness.Error;
                     var failList = (from ts in connTestSet.TargetServers
                                     from db in ts.Value
@@ -229,7 +245,7 @@ namespace SqlBuildManager.ServiceClient
             return tmpConfigData;
         }
 
-        private ConnectionTestSettings GetConnectionTestSettings(string[] multiDbTextConfig)
+        internal ConnectionTestSettings GetConnectionTestSettings(string[] multiDbTextConfig)
         {
             ConnectionTestSettings connTestSet = new ConnectionTestSettings();
             connTestSet.TargetServers = new Dictionary<string, string[]>();
@@ -476,7 +492,7 @@ namespace SqlBuildManager.ServiceClient
                 return SplitLoadEvenly(unifiedSettings, executionServers);
         }
 
-        private IDictionary<ServerConfigData, BuildSettings> SplitLoadToOwningServers(BuildSettings unifiedSettings, IList<ServerConfigData> executionServers)
+        internal IDictionary<ServerConfigData, BuildSettings> SplitLoadToOwningServers(BuildSettings unifiedSettings, IList<ServerConfigData> executionServers)
         {
             Dictionary<ServerConfigData, BuildSettings> distributedConfig = new Dictionary<ServerConfigData, BuildSettings>();
             foreach (ServerConfigData exeServer in executionServers)
@@ -491,7 +507,7 @@ namespace SqlBuildManager.ServiceClient
 
             return distributedConfig;
         }
-        private IDictionary<ServerConfigData, BuildSettings> SplitLoadEvenly(BuildSettings unifiedSettings, IList<ServerConfigData> executionServers)
+        internal IDictionary<ServerConfigData, BuildSettings> SplitLoadEvenly(BuildSettings unifiedSettings, IList<ServerConfigData> executionServers)
         {
             Dictionary<ServerConfigData, BuildSettings> distributedConfig = new Dictionary<ServerConfigData, BuildSettings>();
             IEnumerable<string> allDbTargets = unifiedSettings.MultiDbTextConfig.AsEnumerable();
