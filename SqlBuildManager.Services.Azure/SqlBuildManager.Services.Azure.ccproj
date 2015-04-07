@@ -12,6 +12,8 @@
     <AssemblyName>SqlBuildManager.Services.Azure</AssemblyName>
     <StartDevelopmentStorage>True</StartDevelopmentStorage>
     <Name>SqlBuildManager.Services.Azure</Name>
+    <PackageEnableRemoteDebugger>False</PackageEnableRemoteDebugger>
+    <UseWebProjectPorts>False</UseWebProjectPorts>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,12 +49,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="SqlBuildManager.Services.WebRoleContent\" />
+    <Folder Include="Profiles" />
     <Folder Include="SqlBuildManager.ServicesContent\" />
   </ItemGroup>
   <ItemGroup>
-    <DiagnosticsConfiguration Include="SqlBuildManager.Services.WebRoleContent\diagnostics.wadcfgx" />
     <DiagnosticsConfiguration Include="SqlBuildManager.ServicesContent\diagnostics.wadcfgx" />
+  </ItemGroup>
+  <ItemGroup>
+    <PublishProfile Include="Profiles\sqlbuildmanagerProduction.azurePubxml" />
   </ItemGroup>
   <!-- Import the target files for this project template -->
   <PropertyGroup>
