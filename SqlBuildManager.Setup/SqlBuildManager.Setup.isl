@@ -601,9 +601,7 @@
 		<row><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td><td>{2619DBDF-5D4B-4A80-A1C2-5C38CD15B4C9}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FE1DD0604AD44BDE9FC190BA73D6419A</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__FED5073454C14A13B6AA66BAFCF5A600</td><td>{72705A47-07F1-4194-AA52-5433AACB38F4}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FED5073454C14A13B6AA66BAFCF5A600</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__FED78720B45A4F1BA165B06258BAD2BD</td><td>{6D0C1B32-B24C-4A11-AA8A-7FEB46635579}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FED78720B45A4F1BA165B06258BAD2BD</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>ICSharpCode.SharpZipLib.dll</td><td>{F01BBC1B-01C7-4087-8C80-73E56FAA570F}</td><td>INSTALLDIR</td><td>2</td><td/><td>icsharpcode.sharpziplib.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>ISX_DEFAULTCOMPONENT1</td><td>{5252A630-2399-4CA3-AC4B-10E0D7320367}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>log4net.dll</td><td>{1114E497-AABE-437A-AB50-68B92F48D7AC}</td><td>INSTALLDIR</td><td>2</td><td/><td>log4net.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
 	<table name="Condition">
@@ -2405,9 +2403,7 @@
 		<row><td>AlwaysInstall</td><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td></row>
 		<row><td>AlwaysInstall</td><td>C__FED5073454C14A13B6AA66BAFCF5A600</td></row>
 		<row><td>AlwaysInstall</td><td>C__FED78720B45A4F1BA165B06258BAD2BD</td></row>
-		<row><td>AlwaysInstall</td><td>ICSharpCode.SharpZipLib.dll</td></row>
 		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT1</td></row>
-		<row><td>AlwaysInstall</td><td>log4net.dll</td></row>
 	</table>
 
 	<table name="File">
@@ -2683,8 +2679,6 @@
 		<row><td>_FE1DD0604AD44BDE9FC190BA73D6419A</td><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td><td>image111.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image111.jpg</td><td>5</td><td/></row>
 		<row><td>_FED5073454C14A13B6AA66BAFCF5A600</td><td>C__FED5073454C14A13B6AA66BAFCF5A600</td><td>image101.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image101.jpg</td><td>5</td><td/></row>
 		<row><td>_FED78720B45A4F1BA165B06258BAD2BD</td><td>C__FED78720B45A4F1BA165B06258BAD2BD</td><td>image038.png</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image038.png</td><td>5</td><td/></row>
-		<row><td>icsharpcode.sharpziplib.dll</td><td>ICSharpCode.SharpZipLib.dll</td><td>ICSHAR~1.DLL|ICSharpCode.SharpZipLib.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\ICSharpCode.SharpZipLib.dll</td><td>1</td><td/></row>
-		<row><td>log4net.dll</td><td>log4net.dll</td><td>log4net.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\lib\log4net\log4net.dll</td><td>1</td><td/></row>
 	</table>
 
 	<table name="FileSFPCatalog">
@@ -3089,9 +3083,7 @@
 		<row><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td><td/><td/><td>_EA2DC6B3_5B47_4C58_A430_C71460459A49_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__FED5073454C14A13B6AA66BAFCF5A600</td><td/><td/><td>_92BCCECA_40A0_402F_B674_CDD434D88BB7_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__FED78720B45A4F1BA165B06258BAD2BD</td><td/><td/><td>_61605EF1_6AA6_488D_BAA0_6C6301DB9FEB_FILTER</td><td/><td/><td/><td/></row>
-		<row><td>ICSharpCode.SharpZipLib.dll</td><td/><td/><td>_AA78632C_BF03_45E6_A669_0168249B267D_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>ISX_DEFAULTCOMPONENT1</td><td/><td/><td>_F34B2314_D475_4236_AE8F_66F68573E783_FILTER</td><td/><td/><td/><td/></row>
-		<row><td>log4net.dll</td><td/><td/><td>_253C26A9_75F8_4AF9_8A9E_4DBC341977F7_FILTER</td><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="ISCustomActionReference">
