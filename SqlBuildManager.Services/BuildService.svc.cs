@@ -14,6 +14,8 @@ using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using System.Xml.Serialization;
 using System.Xml;
+using SqlBuildManager.AzureStorage;
+using Microsoft.WindowsAzure.ServiceRuntime;
 namespace SqlBuildManager.Services
 {
     // NOTE: If you change the class name "BuildService" here, you must also update the reference to "BuildService" in Web.config.
@@ -21,7 +23,6 @@ namespace SqlBuildManager.Services
     {
         private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string buildHistoryFile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\SqlBuildManager.BuildHistory.xml";
-        
         public BuildService()
         {
 
@@ -70,6 +71,7 @@ namespace SqlBuildManager.Services
                 BuildService.currentVersion = new Version(0, 0, 0, 0);
                 log.Error("Unable to retrieve current service version", exe);
             }
+
         }
 
         #region IBuildService Members

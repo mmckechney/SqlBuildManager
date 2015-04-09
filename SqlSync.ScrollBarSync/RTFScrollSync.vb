@@ -1,5 +1,6 @@
 Imports System.Runtime.InteropServices
 Imports System.Windows.Forms
+Imports System.Windows
 
 Public Class RTFScrollSync
     Private Declare Auto Function SendScrollPosMessage Lib "user32.dll" Alias "SendMessage" (ByVal hWnd As IntPtr, _
@@ -14,12 +15,12 @@ Public Class RTFScrollSync
         Public y As Integer
     End Structure
     Private aControls As New ArrayList
-    Private sbScrollBarType As Windows.Forms.ScrollBars
-    Public Property ScrollBarToSync() As Windows.Forms.ScrollBars
+    Private sbScrollBarType As ScrollBars
+    Public Property ScrollBarToSync() As ScrollBars
         Get
             Return sbScrollBarType
         End Get
-        Set(ByVal Value As Windows.Forms.ScrollBars)
+        Set(ByVal Value As ScrollBars)
             sbScrollBarType = Value
         End Set
     End Property
@@ -52,7 +53,7 @@ Public Class RTFScrollSync
         End If
         If blnChangeVertPos = True Or blnChangeHorizPos = True Then
             Dim objSubClass As clsWindowSubClass
-            Dim objWindowMessage As New Windows.Forms.Message
+            Dim objWindowMessage As New Message
             For Each objSubClass In aControls
                 If objSubClass.Handle.ToInt32 <> Handle.ToInt32 Then
                     SendScrollPosMessage(objSubClass.Handle, EM_GETSCROLLPOS, New IntPtr(0), stcScrollPoint)

@@ -36,7 +36,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
-    <TargetFrameworkVersion>v4.5.3</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <PublishUrl>http://localhost/SqlSync.TableScript/</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
