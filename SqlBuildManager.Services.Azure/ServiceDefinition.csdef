@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ServiceDefinition name="SqlBuildManager.Services.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2014-06.2.4">
+ 
   <WebRole name="SqlBuildManager.Services" vmsize="Small">
+    <Startup>
+      <!--<Task commandLine="Azure\Startup.cmd" executionContext="elevated" taskType="simple" />-->
+    </Startup>
     <Sites>
       <Site name="Web">
         <Bindings>

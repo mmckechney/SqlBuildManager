@@ -22,7 +22,13 @@ namespace SqlBuildManager.AzureStorage
         {
             if(RoleEnvironment.IsAvailable)
             {
-                this.storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
+                string connection = CloudConfigurationManager.GetSetting("StorageConnectionString");
+                if (log.IsDebugEnabled)
+                {
+                    log.DebugFormat("Storage connection string: {0}", connection);
+                }
+
+                this.storageAccount = CloudStorageAccount.Parse(connection);
                 InitializeRoleTable();
             }
         }

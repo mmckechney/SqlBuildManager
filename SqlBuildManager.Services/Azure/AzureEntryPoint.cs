@@ -13,16 +13,16 @@ namespace SqlBuildManager.Services.Azure
     class AzureEntryPoint : RoleEntryPoint 
     {
         private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static RoleManager roleManager = null;
-        public static RoleManager RoleManager
+        private static RoleManager storageRoleManager = null;
+        public static RoleManager StorageRoleManager
         {
             get
             {
-                if(roleManager == null)
+                if(storageRoleManager == null)
                 {
-                    roleManager = new RoleManager();
+                    storageRoleManager = new SqlBuildManager.AzureStorage.RoleManager();
                 }
-                return roleManager;
+                return storageRoleManager;
             }
         }
         public override void Run()  /* Worker Role entry point */
@@ -38,8 +38,20 @@ namespace SqlBuildManager.Services.Azure
             bool success = false;
             try
             {
-               
-                success = AzureEntryPoint.RoleManager.InsertCloudRoleEntity(Environment.MachineName, GetIpAddress());
+                log4net.Config.XmlConfigurator.Configure();
+                if (!log.Logger.Repository.Configured)
+                {
+                    log4net.Config.BasicConfigurator.Configure(new log4net.Appender.EventLogAppender());
+                }
+            }
+            catch(Exception exe)
+            {
+               System.IO.File.WriteAllText("C:\\Errorlog.txt", string.Format("Unable to configure Log4Net: {0}", exe.ToString()));
+            }
+
+            try
+            {
+                success = AzureEntryPoint.StorageRoleManager.InsertCloudRoleEntity(Environment.MachineName, GetIpAddress());
             }
             catch(Exception exe)
             {
@@ -58,11 +70,11 @@ namespace SqlBuildManager.Services.Azure
             bool success = false;
             try
             {
-                if (AzureEntryPoint.roleManager == null)
+                if (AzureEntryPoint.storageRoleManager == null)
                 {
-                    roleManager = new RoleManager();
+                    storageRoleManager = new RoleManager();
                 }
-                success = AzureEntryPoint.RoleManager.DeleteCloudRoleEntity(Environment.MachineName);
+                success = AzureEntryPoint.StorageRoleManager.DeleteCloudRoleEntity(Environment.MachineName);
             }
             catch (Exception exe)
             {
