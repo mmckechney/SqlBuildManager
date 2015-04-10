@@ -112,27 +112,27 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\SqlSync.Connection.ConnectionTestResult1.datasource" />
-    <None Include="Service References\Sbm.BuildService\BuildService.wsdl" />
-    <None Include="Service References\Sbm.BuildService\BuildService.xsd">
+    <None Include="Service References\Sbm.BuildService\BuildService2.wsdl" />
+    <None Include="Service References\Sbm.BuildService\BuildService21.wsdl" />
+    <None Include="Service References\Sbm.BuildService\BuildService7.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\Sbm.BuildService\BuildService1.wsdl" />
-    <None Include="Service References\Sbm.BuildService\BuildService1.xsd">
+    <None Include="Service References\Sbm.BuildService\BuildService71.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\Sbm.BuildService\BuildService2.xsd">
+    <None Include="Service References\Sbm.BuildService\BuildService72.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\Sbm.BuildService\BuildService3.xsd">
+    <None Include="Service References\Sbm.BuildService\BuildService73.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\Sbm.BuildService\BuildService4.xsd">
+    <None Include="Service References\Sbm.BuildService\BuildService74.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\Sbm.BuildService\BuildService5.xsd">
+    <None Include="Service References\Sbm.BuildService\BuildService75.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\Sbm.BuildService\BuildService6.xsd">
+    <None Include="Service References\Sbm.BuildService\BuildService76.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\Sbm.BuildService\configuration91.svcinfo" />
@@ -181,7 +181,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\Sbm.BuildService\BuildService.disco" />
+    <None Include="Service References\Sbm.BuildService\BuildService1.disco" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

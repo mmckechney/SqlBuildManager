@@ -18,19 +18,19 @@
     <ServiceContractMappings />
   </ClientOptions>
   <MetadataSources>
-    <MetadataSource Address="http://localhost:33273/BuildService.svc" Protocol="http" SourceId="1" />
+    <MetadataSource Address="http://localhost:8675/BuildService.svc" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="BuildService.xsd" MetadataType="Schema" ID="7b420db3-862e-4b43-8d6e-9fc445dbcd6d" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd3" />
-    <MetadataFile FileName="BuildService.wsdl" MetadataType="Wsdl" ID="80e03ea6-0a86-4a4a-8ceb-626c84e95ce4" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?wsdl" />
-    <MetadataFile FileName="BuildService.disco" MetadataType="Disco" ID="8fdf7d1e-8f34-4ce4-a6ca-2cf65bcbd23b" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?disco" />
-    <MetadataFile FileName="BuildService1.xsd" MetadataType="Schema" ID="cea5f9ce-6ff2-4590-b5ee-5f57b187a66a" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd0" />
-    <MetadataFile FileName="BuildService2.xsd" MetadataType="Schema" ID="e61349df-5165-4f70-9ae4-c070c24840ad" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd5" />
-    <MetadataFile FileName="BuildService1.wsdl" MetadataType="Wsdl" ID="4c9b82e7-dc65-4587-a761-adea519bb106" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?wsdl=wsdl0" />
-    <MetadataFile FileName="BuildService3.xsd" MetadataType="Schema" ID="d76e0cf5-276a-4376-9356-f5adb8a8d8a1" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd2" />
-    <MetadataFile FileName="BuildService4.xsd" MetadataType="Schema" ID="15a4bcd1-ad74-493e-9551-145a42b2a0a0" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd6" />
-    <MetadataFile FileName="BuildService5.xsd" MetadataType="Schema" ID="d68d2443-c2a5-4d44-ac8e-dec62fb5f4c8" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd4" />
-    <MetadataFile FileName="BuildService6.xsd" MetadataType="Schema" ID="8df91bde-294c-4308-b70f-093404afeb16" SourceId="1" SourceUrl="http://localhost:33273/BuildService.svc?xsd=xsd1" />
+    <MetadataFile FileName="BuildService7.xsd" MetadataType="Schema" ID="df91dded-5a96-4022-a6c2-0b53802f3f4e" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd0" />
+    <MetadataFile FileName="BuildService71.xsd" MetadataType="Schema" ID="b090a12a-a5ab-4497-b860-ed73c73e393c" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd1" />
+    <MetadataFile FileName="BuildService72.xsd" MetadataType="Schema" ID="41a2aa63-a767-47d3-a606-2267431a7f11" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd2" />
+    <MetadataFile FileName="BuildService73.xsd" MetadataType="Schema" ID="e5066db3-99aa-4de8-9281-838091b0d5c4" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd5" />
+    <MetadataFile FileName="BuildService74.xsd" MetadataType="Schema" ID="90edd698-c2e1-45de-9845-71fc1ba268a5" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd4" />
+    <MetadataFile FileName="BuildService75.xsd" MetadataType="Schema" ID="dcc85457-5c03-4fe8-8519-45746611669a" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd3" />
+    <MetadataFile FileName="BuildService76.xsd" MetadataType="Schema" ID="196ef18e-e813-4e44-8717-99ef343ae8a2" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd6" />
+    <MetadataFile FileName="BuildService1.disco" MetadataType="Disco" ID="f7b386a6-05d9-4012-8920-4527b1d81406" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?disco" />
+    <MetadataFile FileName="BuildService2.wsdl" MetadataType="Wsdl" ID="df1cf1d7-e2c4-4f35-9a99-a13925401cd4" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?wsdl=wsdl0" />
+    <MetadataFile FileName="BuildService21.wsdl" MetadataType="Wsdl" ID="b753d2db-f716-4014-b288-f40261520af8" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?wsdl" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
