@@ -250,6 +250,7 @@ namespace SqlBuildManager.Console
 
             //Now that all of the validation is complete... create the settings object to return
             setting = new BuildSettings();
+            setting.BuildRunGuid = Guid.NewGuid().ToString();
             setting.TimeoutRetryCount = cmd.AllowableTimeoutRetries;
             setting.AlternateLoggingDatabase = cmd.LogToDatabaseName;
             setting.Description = cmd.Description;

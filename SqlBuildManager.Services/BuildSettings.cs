@@ -95,6 +95,14 @@ namespace SqlBuildManager.Services
             set { timeoutRetryCount = value; }
         }
 
+        private string buildRunGuid = string.Empty;
+        [DataMember(IsRequired=false)]
+        public string BuildRunGuid
+        {
+            get { return buildRunGuid; }
+            set { buildRunGuid = value; }
+        }
+
         public override string ToString()
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();

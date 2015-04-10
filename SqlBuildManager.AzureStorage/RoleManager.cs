@@ -18,6 +18,8 @@ namespace SqlBuildManager.AzureStorage
         CloudStorageAccount storageAccount;
         CloudTableClient roleTableClient;
         CloudTable roleTable;
+        
+    
         public RoleManager()
         {
             if(RoleEnvironment.IsAvailable)

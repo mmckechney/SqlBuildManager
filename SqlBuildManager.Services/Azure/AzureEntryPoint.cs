@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using log4net;
+using log4net.Appender;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using System.Threading;
@@ -36,19 +37,7 @@ namespace SqlBuildManager.Services.Azure
         public override bool OnStart()
         {
             bool success = false;
-            try
-            {
-                log4net.Config.XmlConfigurator.Configure();
-                if (!log.Logger.Repository.Configured)
-                {
-                    log4net.Config.BasicConfigurator.Configure(new log4net.Appender.EventLogAppender());
-                }
-            }
-            catch(Exception exe)
-            {
-               System.IO.File.WriteAllText("C:\\Errorlog.txt", string.Format("Unable to configure Log4Net: {0}", exe.ToString()));
-            }
-
+            InitializeLogging();
             try
             {
                 success = AzureEntryPoint.StorageRoleManager.InsertCloudRoleEntity(Environment.MachineName, GetIpAddress());
@@ -85,6 +74,16 @@ namespace SqlBuildManager.Services.Azure
             {
                 log.Warn("Unable to unregister service.");
             }
+
+            var appenders =log.Logger.Repository.GetAppenders();
+            foreach(var appender in appenders)
+            {
+                if(appender is BufferingAppenderSkeleton)
+                {
+                    ((BufferingAppenderSkeleton)appender).Flush();
+                }
+            }
+
         }
 
         private string GetIpAddress()
@@ -101,6 +100,30 @@ namespace SqlBuildManager.Services.Azure
             }
 
             return "0.0.0.0";
+        }
+
+        private void InitializeLogging()
+        {
+            try
+            {
+                log4net.Config.XmlConfigurator.Configure();
+                if (!log.Logger.Repository.Configured)
+                {
+                    log4net.Config.BasicConfigurator.Configure(new log4net.Appender.EventLogAppender());
+                }
+
+                //var tableAppender = log.Logger.Repository.GetAppenders().Where(a => a.Name == "AzureTableAppender").First();
+                //if(tableAppender != null && tableAppender is log4net.Appender.AzureTableAppender)
+                //{
+                //    string connection = CloudConfigurationManager.GetSetting("StorageConnectionString");
+                //    ((AzureTableAppender)tableAppender).ConnectionString = connection;
+                //}
+            }
+            catch (Exception exe)
+            {
+                System.IO.File.WriteAllText("C:\\Errorlog.txt", string.Format("Unable to configure Log4Net: {0}", exe.ToString()));
+            }
+
         }
 
         

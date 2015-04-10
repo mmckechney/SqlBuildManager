@@ -594,7 +594,7 @@ namespace SqlSync.SqlBuild.Remote
 
                 buildManager.ValidateLoadDistribution(this.loadDistributionType, this.serverData.ToList(), settings.MultiDbTextConfig, out untaskedExecutionServers, out unassignedDatabaseServers);
 
-
+                settings.BuildRunGuid = Guid.NewGuid().ToString();
                 settings.IsTransactional = !chkNotTransactional.Checked;
                 settings.IsTrialBuild = chkRunTrial.Checked;
                 settings.LocalRootLoggingPath = txtRootLoggingPath.Text;
