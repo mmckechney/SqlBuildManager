@@ -118,6 +118,7 @@ namespace SqlBuildManager.Services.Azure
                 //    string connection = CloudConfigurationManager.GetSetting("StorageConnectionString");
                 //    ((AzureTableAppender)tableAppender).ConnectionString = connection;
                 //}
+                log.Info("Initialized Logging!");
             }
             catch (Exception exe)
             {
