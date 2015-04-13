@@ -112,12 +112,8 @@ namespace SqlBuildManager.Services.Azure
                     log4net.Config.BasicConfigurator.Configure(new log4net.Appender.EventLogAppender());
                 }
 
-                //var tableAppender = log.Logger.Repository.GetAppenders().Where(a => a.Name == "AzureTableAppender").First();
-                //if(tableAppender != null && tableAppender is log4net.Appender.AzureTableAppender)
-                //{
-                //    string connection = CloudConfigurationManager.GetSetting("StorageConnectionString");
-                //    ((AzureTableAppender)tableAppender).ConnectionString = connection;
-                //}
+                var appender = log.Logger.Repository.GetAppenders().Select(a => a.Name).Aggregate((i,j) => i +"; "+ j);
+                log.InfoFormat("Configured Appenders: {0}", appender);
                 log.Info("Initialized Logging!");
             }
             catch (Exception exe)
