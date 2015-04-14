@@ -3,9 +3,12 @@ using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using System.Configuration;
 using System;
 using System.Net;
 using System.Reflection;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace SqlBuildManager.AzureStorage
 {
@@ -18,21 +21,26 @@ namespace SqlBuildManager.AzureStorage
         CloudStorageAccount storageAccount;
         CloudTableClient roleTableClient;
         CloudTable roleTable;
-        
-    
+
+
         public RoleManager()
         {
-            if(RoleEnvironment.IsAvailable)
+            string connection = string.Empty;
+            if (RoleEnvironment.IsAvailable)
             {
-                string connection = CloudConfigurationManager.GetSetting("StorageConnectionString");
-                if (log.IsDebugEnabled)
-                {
-                    log.DebugFormat("Storage connection string: {0}", connection);
-                }
-
-                this.storageAccount = CloudStorageAccount.Parse(connection);
-                InitializeRoleTable();
+                connection = CloudConfigurationManager.GetSetting("StorageConnectionString");
             }
+            else
+            {
+                connection = ConfigurationManager.AppSettings["StorageConnectionString"];
+            }
+            if (log.IsDebugEnabled)
+            {
+                log.DebugFormat("Storage connection string: {0}", connection);
+            }
+
+            this.storageAccount = CloudStorageAccount.Parse(connection);
+            InitializeRoleTable();
         }
         public RoleManager(string storageConnectionString)
         {
@@ -95,6 +103,24 @@ namespace SqlBuildManager.AzureStorage
             {
                 log.Error(string.Format("Unable to delete CloudRole entity with vmName: {0}", vmName), exe);
                 return false;
+            }
+
+        }
+
+        public List<string> GetRegisteredCloudRoleEntityNames()
+        {
+
+            try
+            {
+                TableQuery<CloudRoleEntity> query = new TableQuery<CloudRoleEntity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, CloudRoleEntity.PartitionKeyName));
+                var vmnames = roleTable.ExecuteQuery(query).Select(a => a.VmName).ToList();
+                return vmnames;
+
+            }
+            catch (Exception exe)
+            {
+                log.Error("Unable to select cloud role entities", exe);
+                return new List<string>();
             }
 
         }

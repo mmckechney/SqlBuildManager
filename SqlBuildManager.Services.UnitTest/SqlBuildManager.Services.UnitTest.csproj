@@ -98,6 +98,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="CloudBuildServiceTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Shadow Include="Test References\SqlBuildManager.Services.accessor" />
@@ -110,6 +111,10 @@
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj">
       <Project>{FDC576E6-ACC8-41D4-8A56-8E6E00221306}</Project>
       <Name>SqlBuildManager.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
+      <Project>{641f4f7d-7730-4760-9454-7b9fce0aa32c}</Project>
+      <Name>SqlBuildManager.ServiceClient</Name>
     </ProjectReference>
     <ProjectReference Include="..\SqlBuildManager.Services\SqlBuildManager.Services.csproj">
       <Project>{A4814E5E-BD38-4658-9D56-CA41DC44ABE0}</Project>
@@ -125,6 +130,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

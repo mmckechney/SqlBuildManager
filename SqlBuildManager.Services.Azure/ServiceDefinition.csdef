@@ -14,6 +14,11 @@
     </Sites>
     <Endpoints>
       <InputEndpoint name="HttpConnection" protocol="http" port="8675" />
+      <InstanceInputEndpoint name="Instance" localPort="1000" protocol="tcp">
+        <AllocatePublicPortFrom>
+          <FixedPortRange min="10000" max="10100"/>
+        </AllocatePublicPortFrom>
+      </InstanceInputEndpoint>
     </Endpoints>
     <Imports>
       <Import moduleName="RemoteAccess" />
