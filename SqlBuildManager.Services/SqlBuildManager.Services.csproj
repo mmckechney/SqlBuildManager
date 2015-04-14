@@ -122,7 +122,6 @@
     <Compile Include="BuildWorker.cs" />
     <Compile Include="ConnectionTestSettings.cs" />
     <Compile Include="IBuildService.cs" />
-    <Compile Include="ICloudBuildService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceStatus.cs" />
     <Compile Include="WorkArgs.cs" />

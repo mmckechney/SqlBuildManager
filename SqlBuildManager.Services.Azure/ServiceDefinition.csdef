@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ServiceDefinition name="SqlBuildManager.Services.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2014-06.2.4">
- 
   <WebRole name="SqlBuildManager.Services" vmsize="Small">
     <Startup>
       <!--<Task commandLine="Azure\Startup.cmd" executionContext="elevated" taskType="simple" />-->
@@ -8,17 +7,17 @@
     <Sites>
       <Site name="Web">
         <Bindings>
-          <Binding name="Endpoint1" endpointName="HttpConnection" />
+          <Binding name="Endpoint1" endpointName="Endpoint1" />
         </Bindings>
       </Site>
     </Sites>
     <Endpoints>
-      <InputEndpoint name="HttpConnection" protocol="http" port="8675" />
-      <InstanceInputEndpoint name="Instance" localPort="1000" protocol="tcp">
+      <InstanceInputEndpoint name="InstanceDynamic" localPort="80" protocol="tcp">
         <AllocatePublicPortFrom>
-          <FixedPortRange min="10000" max="10100"/>
+          <FixedPortRange min="10000" max="10100" />
         </AllocatePublicPortFrom>
       </InstanceInputEndpoint>
+      <InputEndpoint name="Endpoint1" protocol="http" port="80" />
     </Endpoints>
     <Imports>
       <Import moduleName="RemoteAccess" />

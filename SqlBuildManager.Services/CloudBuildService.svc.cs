@@ -22,41 +22,17 @@ using System.Xml.Serialization;
 namespace SqlBuildManager.Services
 {
     // NOTE: If you change the class name "BuildService" here, you must also update the reference to "BuildService" in Web.config.
-    public class CloudBuildService : ICloudBuildService
+    public class CloudBuildService : BuildService
     {
         private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string buildHistoryFile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\SqlBuildManager.BuildHistory.xml";
         private static Version currentVersion;
         RoleManager rm = null;
 
-        public CloudBuildService()
+        public CloudBuildService() :base()
         {
-
-            try
-            {
-                CloudBuildService.currentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            }
-            catch
-            {
-                CloudBuildService.currentVersion = new Version(0, 0, 0, 0);
-            }
-
-            if (!log.Logger.Repository.Configured)
-                log4net.Config.BasicConfigurator.Configure();
-
-             rm = new RoleManager();
-
         }
-        
-        public IList<ServerConfigData> GetInstanceServiceStatus()
-        {
-            var registeredInstances = rm.GetRegisteredCloudRoleEntityNames();
-
-            var client = new BuildServiceManager(Protocol.Http);
-            client.SetServerNames(registeredInstances);
-            return client.GetServiceStatus();
-        }
-
+       
 
 
        
