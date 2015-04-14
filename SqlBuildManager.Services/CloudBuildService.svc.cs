@@ -4,7 +4,6 @@ using Microsoft.WindowsAzure.ServiceRuntime;
 using SqlBuildManager.AzureStorage;
 using SqlBuildManager.Interfaces.Console;
 using SqlBuildManager.Services.History;
-using SqlBuildManager.ServiceClient;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using System;
@@ -26,8 +25,6 @@ namespace SqlBuildManager.Services
     {
         private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string buildHistoryFile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\SqlBuildManager.BuildHistory.xml";
-        private static Version currentVersion;
-        RoleManager rm = null;
 
         public CloudBuildService() :base()
         {

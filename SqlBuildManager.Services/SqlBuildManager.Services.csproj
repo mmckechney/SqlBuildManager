@@ -139,10 +139,6 @@
       <Project>{FDC576E6-ACC8-41D4-8A56-8E6E00221306}</Project>
       <Name>SqlBuildManager.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
-      <Project>{641f4f7d-7730-4760-9454-7b9fce0aa32c}</Project>
-      <Name>SqlBuildManager.ServiceClient</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj">
       <Project>{9B495B5F-1578-482B-8CF7-615B04D3AE2A}</Project>
       <Name>SqlSync.SqlBuild</Name>
