@@ -946,9 +946,20 @@ namespace SqlSync.SqlBuild.Remote
                 buildManager.SetProtocol(Protocol.Tcp);
             else if (protocolComboBox.SelectedItem.ToString() == "Http")
                 buildManager.SetProtocol(Protocol.Http);
+            else if (protocolComboBox.SelectedItem.ToString() == "Azure-Http")
+            {
+                buildManager.SetProtocol(Protocol.AzureHttp);
+
+               List<ServerConfigData> serverData =  buildManager.GetListOfAzureInstancePublicUrls();
+            }
         }
 
         private void dgvServerStatus_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void protocolComboBox_Click(object sender, EventArgs e)
         {
 
         }

@@ -8,6 +8,7 @@ namespace SqlBuildManager.ServiceClient
     public enum Protocol
     {
         Http,
-        Tcp
+        Tcp, 
+        AzureHttp
     }
 }

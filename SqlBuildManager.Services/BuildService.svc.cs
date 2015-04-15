@@ -724,6 +724,11 @@ namespace SqlBuildManager.Services
         }
         #endregion
 
+        public IList<string> GetListOfAzureInstancePublicUrls()
+        {
+            throw new NotImplementedException();
+        }
+
         private enum LogType
         {
             Commits,

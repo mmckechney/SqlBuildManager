@@ -9,8 +9,8 @@
     <AzureEnableRemoteDesktop>True</AzureEnableRemoteDesktop>
     <AzureEnableWebDeploy>False</AzureEnableWebDeploy>
     <AzureFallbackToDeleteAndRecreateIfUpgradeFails>False</AzureFallbackToDeleteAndRecreateIfUpgradeFails>
-    <AzureHostedServiceLabel>sqlbuildmanager2</AzureHostedServiceLabel>
-    <AzureHostedServiceName>sqlbuildmanager2</AzureHostedServiceName>
+    <AzureHostedServiceLabel>sqlbuildmanager</AzureHostedServiceLabel>
+    <AzureHostedServiceName>sqlbuildmanager</AzureHostedServiceName>
     <AzureEnableIntelliTrace>False</AzureEnableIntelliTrace>
     <AzureEnableProfiling>False</AzureEnableProfiling>
     <AzureServiceConfiguration>Cloud</AzureServiceConfiguration>

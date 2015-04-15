@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="ea1fc142-15ab-4b40-a7c6-735278e4f7a0" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="29eb34e1-ea98-4430-953b-a8cd06fc7e36" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
   <ClientOptions>
     <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
     <EnableDataBinding>true</EnableDataBinding>
     <ExcludedTypes />
     <ImportXmlTypes>false</ImportXmlTypes>
@@ -18,19 +19,19 @@
     <ServiceContractMappings />
   </ClientOptions>
   <MetadataSources>
-    <MetadataSource Address="http://localhost:8675/BuildService.svc" Protocol="http" SourceId="1" />
+    <MetadataSource Address="http://localhost/SqlBuildManager.Services/BuildService.svc" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="BuildService7.xsd" MetadataType="Schema" ID="df91dded-5a96-4022-a6c2-0b53802f3f4e" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd0" />
-    <MetadataFile FileName="BuildService71.xsd" MetadataType="Schema" ID="b090a12a-a5ab-4497-b860-ed73c73e393c" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd1" />
-    <MetadataFile FileName="BuildService72.xsd" MetadataType="Schema" ID="41a2aa63-a767-47d3-a606-2267431a7f11" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd2" />
-    <MetadataFile FileName="BuildService73.xsd" MetadataType="Schema" ID="e5066db3-99aa-4de8-9281-838091b0d5c4" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd5" />
-    <MetadataFile FileName="BuildService74.xsd" MetadataType="Schema" ID="90edd698-c2e1-45de-9845-71fc1ba268a5" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd4" />
-    <MetadataFile FileName="BuildService75.xsd" MetadataType="Schema" ID="dcc85457-5c03-4fe8-8519-45746611669a" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd3" />
-    <MetadataFile FileName="BuildService76.xsd" MetadataType="Schema" ID="196ef18e-e813-4e44-8717-99ef343ae8a2" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?xsd=xsd6" />
-    <MetadataFile FileName="BuildService1.disco" MetadataType="Disco" ID="f7b386a6-05d9-4012-8920-4527b1d81406" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?disco" />
-    <MetadataFile FileName="BuildService2.wsdl" MetadataType="Wsdl" ID="df1cf1d7-e2c4-4f35-9a99-a13925401cd4" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?wsdl=wsdl0" />
-    <MetadataFile FileName="BuildService21.wsdl" MetadataType="Wsdl" ID="b753d2db-f716-4014-b288-f40261520af8" SourceId="1" SourceUrl="http://localhost:8675/BuildService.svc?wsdl" />
+    <MetadataFile FileName="BuildService.disco" MetadataType="Disco" ID="e121e50a-8419-472b-a6a4-aea5c845f707" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?disco" />
+    <MetadataFile FileName="BuildService.xsd" MetadataType="Schema" ID="761f5687-0522-4ff5-b705-a0e49fe210fa" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?xsd=xsd2" />
+    <MetadataFile FileName="BuildService1.xsd" MetadataType="Schema" ID="84cb697d-0c17-4691-ae20-8933c0d79c10" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?xsd=xsd4" />
+    <MetadataFile FileName="BuildService2.xsd" MetadataType="Schema" ID="0f30e6d6-142e-4a42-a160-f7f28f3205d3" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?xsd=xsd3" />
+    <MetadataFile FileName="BuildService3.xsd" MetadataType="Schema" ID="21cae23e-2fca-41ed-bb8b-780f675f3536" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?xsd=xsd6" />
+    <MetadataFile FileName="BuildService4.xsd" MetadataType="Schema" ID="fc3ca036-a34d-47e4-918b-97611dcdf255" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?xsd=xsd0" />
+    <MetadataFile FileName="BuildService.wsdl" MetadataType="Wsdl" ID="e0449d16-c146-4e26-b4b8-64fb9f2d10e1" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?wsdl=wsdl0" />
+    <MetadataFile FileName="BuildService1.wsdl" MetadataType="Wsdl" ID="41aef0af-8b41-4254-a5a6-a57cdc28158d" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?wsdl" />
+    <MetadataFile FileName="BuildService5.xsd" MetadataType="Schema" ID="c8da32ce-c615-4ae1-8c19-72e95b0f53a5" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?xsd=xsd1" />
+    <MetadataFile FileName="BuildService6.xsd" MetadataType="Schema" ID="9fe3ec5a-dd24-42cb-bd0a-8c292ee93956" SourceId="1" SourceUrl="http://localhost/SqlBuildManager.Services/BuildService.svc?xsd=xsd5" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

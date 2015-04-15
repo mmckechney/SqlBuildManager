@@ -69,6 +69,14 @@ namespace SqlBuildManager.ServiceClient
                 logger.Fatal(msg);
                 throw new ApplicationException(msg);
             }
+
+            string azureTemplate = ConfigurationManager.AppSettings["DynamicAzureHttpEndpointTemplate"];
+            if (String.IsNullOrEmpty(azureTemplate))
+            {
+                string msg = "Unable to load the tcp Dynamic Endpoint. Please make sure you have an <appSettings> value for DynamicTcpEndpointTemplate";
+                logger.Fatal(msg);
+                throw new ApplicationException(msg);
+            }
             foreach (string server in serverNames)
             {
                 IEnumerable<ServerConfigData> endPoint = (from e in endPoints where e.ServerName == server select e);
@@ -568,6 +576,44 @@ namespace SqlBuildManager.ServiceClient
             }
         }
 
+
+        public List<ServerConfigData> GetListOfAzureInstancePublicUrls()
+        {
+            //string dns = ConfigurationManager.AppSettings["AzureDnsName"];
+            //if(string.IsNullOrEmpty(dns))
+            //{
+            //    logger.Error("Unable to find \"AzureDnsName\" app setting. Can not connect to Azure");
+            //}
+
+            //try
+            //{
+            //    string address = string.Format("http://{0}/CloudBuildService.svc", dns);
+            //    BuildServiceManager.Using<Sbm.CloudBuildService.I>(client =>
+            //    {
+            //        client.Endpoint.Address = new System.ServiceModel.EndpointAddress(new Uri(address));
+            //        if (client.g
+            //        {
+            //            logger.Info("Submitted Package to " + client.Endpoint.Address + " with " + setting.MultiDbTextConfig.Length.ToString() + " target databases");
+            //            remoteServer.ServiceReadiness = ServiceReadiness.PackageAccepted;
+            //        }
+            //        else
+            //        {
+            //            logger.Error("Package submission failed to " + " with " + setting.MultiDbTextConfig.Length.ToString() + " target databases");
+            //        }
+            //    });
+
+
+            //}
+            //catch (Exception exe)
+            //{
+            //    logger.Error("Unable to check for Azure instances.", exe);
+                
+            //}
+
+
+            return new List<ServerConfigData>();
+
+        }
     }
     public enum SummaryLogType
     {

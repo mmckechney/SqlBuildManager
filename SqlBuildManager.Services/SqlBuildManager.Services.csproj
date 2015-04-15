@@ -19,7 +19,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <TargetFrameworkProfile />
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -102,18 +102,16 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CloudBuildService.svc" />
     <Content Include="BuildService.svc" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs">
       <Link>Properties\AssemblyVersioning.cs</Link>
     </Compile>
     <Compile Include="Azure\AzureEntryPoint.cs" />
-    <Compile Include="CloudBuildService.svc.cs">
-      <DependentUpon>CloudBuildService.svc</DependentUpon>
-    </Compile>
     <Compile Include="History\BuildRecord.cs" />
     <Compile Include="BuildSettings.cs" />
     <Compile Include="BuildService.svc.cs">
@@ -186,9 +184,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>14769</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:8675/</IISUrl>
-          <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
-          <IISAppRootUrl>http://localhost:8675/</IISAppRootUrl>
+          <IISUrl>http://localhost/SqlBuildManager.Services</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

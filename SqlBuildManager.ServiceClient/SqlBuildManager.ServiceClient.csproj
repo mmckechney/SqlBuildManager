@@ -92,12 +92,12 @@
       <DependentUpon>RemoteExecutionServerConfig.xsd</DependentUpon>
     </Compile>
     <Compile Include="RemoteServerManager.cs" />
+    <Compile Include="ServerConfigData.cs" />
     <Compile Include="Service References\Sbm.BuildService\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="ServerConfigData.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
@@ -106,52 +106,35 @@
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\DataSources\SqlSync.Connection.ConnectionTestResult.datasource" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\Sbm.BuildService\" />
+    <None Include="Service References\Sbm.BuildService\BuildService.wsdl" />
+    <None Include="Service References\Sbm.BuildService\BuildService.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService1.wsdl" />
+    <None Include="Service References\Sbm.BuildService\BuildService1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService2.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService3.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService4.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService5.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService6.xsd">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\SqlSync.Connection.ConnectionTestResult1.datasource" />
-    <None Include="Service References\Sbm.BuildService\BuildService2.wsdl" />
-    <None Include="Service References\Sbm.BuildService\BuildService21.wsdl" />
-    <None Include="Service References\Sbm.BuildService\BuildService7.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService71.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService72.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService73.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService74.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService75.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService76.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\Sbm.BuildService\configuration.svcinfo" />
   </ItemGroup>
   <ItemGroup>
     <None Include="RemoteExecutionServerConfig.xsd" />
-    <None Include="Service References\Sbm.BuildService\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Service References\Sbm.BuildService\SqlBuildManager.ServiceClient.Sbm.BuildService.BuildRecord.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\Sbm.BuildService\SqlBuildManager.ServiceClient.Sbm.BuildService.ServiceStatus.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -181,7 +164,22 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\Sbm.BuildService\BuildService1.disco" />
+    <WCFMetadataStorage Include="Service References\Sbm.BuildService\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\Sbm.BuildService\BuildService.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\Sbm.BuildService\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\Sbm.BuildService\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\Sbm.BuildService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

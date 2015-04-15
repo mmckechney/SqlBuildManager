@@ -573,9 +573,19 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         bool SubmitBuildPackage(SqlBuildManager.ServiceClient.Sbm.BuildService.BuildSettings settings);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "SubmitBuildPackage", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "SubmitBuildPackageResponse")]
+        System.Threading.Tasks.Task<bool> SubmitBuildPackageAsync(SqlBuildManager.ServiceClient.Sbm.BuildService.BuildSettings settings);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "TestDatabaseConnectivity", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "TestDatabaseConnectivityResponse")]
         SqlSync.Connection.ConnectionTestResult[] TestDatabaseConnectivity(SqlBuildManager.ServiceClient.Sbm.BuildService.ConnectionTestSettings settings);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "TestDatabaseConnectivity", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "TestDatabaseConnectivityResponse")]
+        System.Threading.Tasks.Task<SqlSync.Connection.ConnectionTestResult[]> TestDatabaseConnectivityAsync(SqlBuildManager.ServiceClient.Sbm.BuildService.ConnectionTestSettings settings);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetServiceStatus", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
@@ -583,9 +593,19 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         SqlBuildManager.ServiceClient.Sbm.BuildService.ServiceStatus GetServiceStatus();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetServiceStatus", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetServiceStatusResponse")]
+        System.Threading.Tasks.Task<SqlBuildManager.ServiceClient.Sbm.BuildService.ServiceStatus> GetServiceStatusAsync();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetLastExecutionCommitsLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetLastExecutionCommitsLogResponse")]
         string GetLastExecutionCommitsLog();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetLastExecutionCommitsLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetLastExecutionCommitsLogResponse")]
+        System.Threading.Tasks.Task<string> GetLastExecutionCommitsLogAsync();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetLastExecutionErrorsLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
@@ -593,9 +613,19 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         string GetLastExecutionErrorsLog();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetLastExecutionErrorsLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetLastExecutionErrorsLogResponse")]
+        System.Threading.Tasks.Task<string> GetLastExecutionErrorsLogAsync();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetServiceLogFile", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetServiceLogFileResponse")]
         string GetServiceLogFile();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetServiceLogFile", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetServiceLogFileResponse")]
+        System.Threading.Tasks.Task<string> GetServiceLogFileAsync();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetDetailedDatabaseExecutionLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
@@ -603,9 +633,19 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         string GetDetailedDatabaseExecutionLog(string serverAndDatabase);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetDetailedDatabaseExecutionLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetDetailedDatabaseExecutionLogResponse")]
+        System.Threading.Tasks.Task<string> GetDetailedDatabaseExecutionLogAsync(string serverAndDatabase);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetServiceVersion", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetServiceVersionResponse")]
         string GetServiceVersion();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetServiceVersion", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetServiceVersionResponse")]
+        System.Threading.Tasks.Task<string> GetServiceVersionAsync();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetServiceBuildHistory", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
@@ -613,9 +653,19 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         SqlBuildManager.ServiceClient.Sbm.BuildService.BuildRecord[] GetServiceBuildHistory();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetServiceBuildHistory", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetServiceBuildHistoryResponse")]
+        System.Threading.Tasks.Task<SqlBuildManager.ServiceClient.Sbm.BuildService.BuildRecord[]> GetServiceBuildHistoryAsync();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetSpecificCommitsLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetSpecificCommitsLogResponse")]
         string GetSpecificCommitsLog(System.DateTime submittedDate);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetSpecificCommitsLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetSpecificCommitsLogResponse")]
+        System.Threading.Tasks.Task<string> GetSpecificCommitsLogAsync(System.DateTime submittedDate);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetSpecificErrorsLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
@@ -623,9 +673,19 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         string GetSpecificErrorsLog(System.DateTime submittedDate);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetSpecificErrorsLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetSpecificErrorsLogResponse")]
+        System.Threading.Tasks.Task<string> GetSpecificErrorsLogAsync(System.DateTime submittedDate);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetSpecificDatabaseExecutionLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetSpecificDatabaseExecutionLogResponse")]
         string GetSpecificDatabaseExecutionLog(System.DateTime submittedDate, string serverAndDatabase);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetSpecificDatabaseExecutionLog", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetSpecificDatabaseExecutionLogResponse")]
+        System.Threading.Tasks.Task<string> GetSpecificDatabaseExecutionLogAsync(System.DateTime submittedDate, string serverAndDatabase);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetAllErrorLogsForExecution", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
@@ -633,9 +693,29 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         byte[] GetAllErrorLogsForExecution(System.DateTime submittedDate);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetAllErrorLogsForExecution", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetAllErrorLogsForExecutionResponse")]
+        System.Threading.Tasks.Task<byte[]> GetAllErrorLogsForExecutionAsync(System.DateTime submittedDate);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetLastFailuresDatabaseConfig", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetLastFailuresDatabaseConfigResponse")]
         string GetLastFailuresDatabaseConfig();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetLastFailuresDatabaseConfig", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetLastFailuresDatabaseConfigResponse")]
+        System.Threading.Tasks.Task<string> GetLastFailuresDatabaseConfigAsync();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetListOfAzureInstancePublicUrls", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetListOfAzureInstancePublicUrlsResponse")]
+        string[] GetListOfAzureInstancePublicUrls();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetListOfAzureInstancePublicUrls", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "GetListOfAzureInstancePublicUrlsResponse")]
+        System.Threading.Tasks.Task<string[]> GetListOfAzureInstancePublicUrlsAsync();
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -669,56 +749,120 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
             return base.Channel.SubmitBuildPackage(settings);
         }
         
+        public System.Threading.Tasks.Task<bool> SubmitBuildPackageAsync(SqlBuildManager.ServiceClient.Sbm.BuildService.BuildSettings settings) {
+            return base.Channel.SubmitBuildPackageAsync(settings);
+        }
+        
         public SqlSync.Connection.ConnectionTestResult[] TestDatabaseConnectivity(SqlBuildManager.ServiceClient.Sbm.BuildService.ConnectionTestSettings settings) {
             return base.Channel.TestDatabaseConnectivity(settings);
+        }
+        
+        public System.Threading.Tasks.Task<SqlSync.Connection.ConnectionTestResult[]> TestDatabaseConnectivityAsync(SqlBuildManager.ServiceClient.Sbm.BuildService.ConnectionTestSettings settings) {
+            return base.Channel.TestDatabaseConnectivityAsync(settings);
         }
         
         public SqlBuildManager.ServiceClient.Sbm.BuildService.ServiceStatus GetServiceStatus() {
             return base.Channel.GetServiceStatus();
         }
         
+        public System.Threading.Tasks.Task<SqlBuildManager.ServiceClient.Sbm.BuildService.ServiceStatus> GetServiceStatusAsync() {
+            return base.Channel.GetServiceStatusAsync();
+        }
+        
         public string GetLastExecutionCommitsLog() {
             return base.Channel.GetLastExecutionCommitsLog();
+        }
+        
+        public System.Threading.Tasks.Task<string> GetLastExecutionCommitsLogAsync() {
+            return base.Channel.GetLastExecutionCommitsLogAsync();
         }
         
         public string GetLastExecutionErrorsLog() {
             return base.Channel.GetLastExecutionErrorsLog();
         }
         
+        public System.Threading.Tasks.Task<string> GetLastExecutionErrorsLogAsync() {
+            return base.Channel.GetLastExecutionErrorsLogAsync();
+        }
+        
         public string GetServiceLogFile() {
             return base.Channel.GetServiceLogFile();
+        }
+        
+        public System.Threading.Tasks.Task<string> GetServiceLogFileAsync() {
+            return base.Channel.GetServiceLogFileAsync();
         }
         
         public string GetDetailedDatabaseExecutionLog(string serverAndDatabase) {
             return base.Channel.GetDetailedDatabaseExecutionLog(serverAndDatabase);
         }
         
+        public System.Threading.Tasks.Task<string> GetDetailedDatabaseExecutionLogAsync(string serverAndDatabase) {
+            return base.Channel.GetDetailedDatabaseExecutionLogAsync(serverAndDatabase);
+        }
+        
         public string GetServiceVersion() {
             return base.Channel.GetServiceVersion();
+        }
+        
+        public System.Threading.Tasks.Task<string> GetServiceVersionAsync() {
+            return base.Channel.GetServiceVersionAsync();
         }
         
         public SqlBuildManager.ServiceClient.Sbm.BuildService.BuildRecord[] GetServiceBuildHistory() {
             return base.Channel.GetServiceBuildHistory();
         }
         
+        public System.Threading.Tasks.Task<SqlBuildManager.ServiceClient.Sbm.BuildService.BuildRecord[]> GetServiceBuildHistoryAsync() {
+            return base.Channel.GetServiceBuildHistoryAsync();
+        }
+        
         public string GetSpecificCommitsLog(System.DateTime submittedDate) {
             return base.Channel.GetSpecificCommitsLog(submittedDate);
+        }
+        
+        public System.Threading.Tasks.Task<string> GetSpecificCommitsLogAsync(System.DateTime submittedDate) {
+            return base.Channel.GetSpecificCommitsLogAsync(submittedDate);
         }
         
         public string GetSpecificErrorsLog(System.DateTime submittedDate) {
             return base.Channel.GetSpecificErrorsLog(submittedDate);
         }
         
+        public System.Threading.Tasks.Task<string> GetSpecificErrorsLogAsync(System.DateTime submittedDate) {
+            return base.Channel.GetSpecificErrorsLogAsync(submittedDate);
+        }
+        
         public string GetSpecificDatabaseExecutionLog(System.DateTime submittedDate, string serverAndDatabase) {
             return base.Channel.GetSpecificDatabaseExecutionLog(submittedDate, serverAndDatabase);
+        }
+        
+        public System.Threading.Tasks.Task<string> GetSpecificDatabaseExecutionLogAsync(System.DateTime submittedDate, string serverAndDatabase) {
+            return base.Channel.GetSpecificDatabaseExecutionLogAsync(submittedDate, serverAndDatabase);
         }
         
         public byte[] GetAllErrorLogsForExecution(System.DateTime submittedDate) {
             return base.Channel.GetAllErrorLogsForExecution(submittedDate);
         }
         
+        public System.Threading.Tasks.Task<byte[]> GetAllErrorLogsForExecutionAsync(System.DateTime submittedDate) {
+            return base.Channel.GetAllErrorLogsForExecutionAsync(submittedDate);
+        }
+        
         public string GetLastFailuresDatabaseConfig() {
             return base.Channel.GetLastFailuresDatabaseConfig();
+        }
+        
+        public System.Threading.Tasks.Task<string> GetLastFailuresDatabaseConfigAsync() {
+            return base.Channel.GetLastFailuresDatabaseConfigAsync();
+        }
+        
+        public string[] GetListOfAzureInstancePublicUrls() {
+            return base.Channel.GetListOfAzureInstancePublicUrls();
+        }
+        
+        public System.Threading.Tasks.Task<string[]> GetListOfAzureInstancePublicUrlsAsync() {
+            return base.Channel.GetListOfAzureInstancePublicUrlsAsync();
         }
     }
 }
