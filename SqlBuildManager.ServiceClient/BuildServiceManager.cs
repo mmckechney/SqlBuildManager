@@ -9,6 +9,8 @@ using SqlBuildManager.ServiceClient.Sbm.BuildService;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using System.ServiceModel.Configuration;
+using System.Threading.Tasks;
+using System.Threading;
 namespace SqlBuildManager.ServiceClient
 {
     public class BuildServiceManager
@@ -105,15 +107,16 @@ namespace SqlBuildManager.ServiceClient
 
         public IList<ServerConfigData> GetServiceStatus()
         {
-            foreach (ServerConfigData data in this.endPoints)
-            {
-                ServiceStatus stat = GetServiceStatus(data.ActiveServiceEndpoint);
-                data.ExecutionReturn = stat.ExecutionStatus;
-                data.ServiceReadiness = stat.Readiness;
-                data.ServiceVersion = stat.CurrentVersion;
-                data.LastStatusCheck = DateTime.Now;
 
-            }
+            Parallel.ForEach(this.endPoints, data =>
+                {
+                    ServiceStatus stat = GetServiceStatus(data.ActiveServiceEndpoint);
+                    data.ExecutionReturn = stat.ExecutionStatus;
+                    data.ServiceReadiness = stat.Readiness;
+                    data.ServiceVersion = stat.CurrentVersion;
+                    data.LastStatusCheck = DateTime.Now;
+                });
+            
             //avoid returning endpoints directly as it will cause a thread issue
             return new BindingList<ServerConfigData>(this.endPoints);
 
@@ -617,7 +620,7 @@ namespace SqlBuildManager.ServiceClient
 
                 foreach(var url in instanceUrls)
                 {
-                    srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace("[[ServerName]]", url)));
+                    srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace(serverReplaceKey, url)));
                 }
             }
             catch (Exception exe)
