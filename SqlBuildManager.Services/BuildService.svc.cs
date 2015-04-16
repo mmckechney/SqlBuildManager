@@ -16,6 +16,10 @@ using System.Xml.Serialization;
 using System.Xml;
 using SqlBuildManager.AzureStorage;
 using Microsoft.WindowsAzure.ServiceRuntime;
+using Microsoft.WindowsAzure.Diagnostics.Management;
+using Microsoft.WindowsAzure.Diagnostics;
+using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.ServiceRuntime;
 namespace SqlBuildManager.Services
 {
     // NOTE: If you change the class name "BuildService" here, you must also update the reference to "BuildService" in Web.config.
@@ -726,7 +730,25 @@ namespace SqlBuildManager.Services
 
         public IList<string> GetListOfAzureInstancePublicUrls()
         {
-            throw new NotImplementedException();
+            if(!RoleEnvironment.IsAvailable && !RoleEnvironment.IsEmulated)
+            {
+                throw new ApplicationException("Service is not running in Azure.");
+            }
+
+
+            var sqlBuildRole = RoleEnvironment.Roles.Where(n => n.Key == "SqlBuildManager.Services").Select(n => n.Value).First();
+            int basePort = 10000;
+            string baseUrl = "sqlbuildmanager.cloudapp.net:{0}";
+            List<string> urls = new List<string>();
+
+            for (int i = 0; i < sqlBuildRole.Instances.Count;i++ )
+            {
+                urls.Add(string.Format(baseUrl, basePort + i));
+            }
+
+
+            return urls;
+            
         }
 
         private enum LogType

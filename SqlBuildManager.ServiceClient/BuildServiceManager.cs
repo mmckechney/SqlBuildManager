@@ -8,6 +8,7 @@ using SqlBuildManager.ServiceClient.CustomExtensionMethods;
 using SqlBuildManager.ServiceClient.Sbm.BuildService;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
+using System.ServiceModel.Configuration;
 namespace SqlBuildManager.ServiceClient
 {
     public class BuildServiceManager
@@ -73,16 +74,28 @@ namespace SqlBuildManager.ServiceClient
             string azureTemplate = ConfigurationManager.AppSettings["DynamicAzureHttpEndpointTemplate"];
             if (String.IsNullOrEmpty(azureTemplate))
             {
-                string msg = "Unable to load the tcp Dynamic Endpoint. Please make sure you have an <appSettings> value for DynamicTcpEndpointTemplate";
+                string msg = "Unable to load the Azure Dynamic Endpoint. Please make sure you have an <appSettings> value for DynamicAzureHttpEndpointTemplate";
                 logger.Fatal(msg);
                 throw new ApplicationException(msg);
             }
             foreach (string server in serverNames)
             {
                 IEnumerable<ServerConfigData> endPoint = (from e in endPoints where e.ServerName == server select e);
+
                 var enumer = endPoint.GetEnumerator();
-                if(!enumer.MoveNext())
-                    endPoints.Add(new ServerConfigData(server,httpTemplate.Replace(serverReplaceKey,server), tcpTemplate.Replace(serverReplaceKey, server), this.protocol));
+                if (!enumer.MoveNext())
+                {
+                    switch(this.protocol)
+                    {
+                        case Protocol.AzureHttp:
+                            endPoints.Add(new ServerConfigData(azureTemplate.Replace(serverReplaceKey, server)));
+                            break;
+                        default:
+                            endPoints.Add(new ServerConfigData(server, httpTemplate.Replace(serverReplaceKey, server), tcpTemplate.Replace(serverReplaceKey, server), this.protocol));
+                            break;
+                    }
+                    
+                }
             }
 
             List<ServerConfigData> toRemove = (from e in endPoints where ! (from s in serverNames select s.ToString()).Contains(e.ServerName) select e).ToList();
@@ -114,7 +127,7 @@ namespace SqlBuildManager.ServiceClient
                     {
                         client.Endpoint.Address = new System.ServiceModel.EndpointAddress(new Uri(endpointAddress));
                         status = client.GetServiceStatus();
-                    });
+                    }, GetEndpointConfigName(endpointAddress));
 
                 return status;
             }
@@ -181,7 +194,7 @@ namespace SqlBuildManager.ServiceClient
                         {
                             logger.Error("Package submission failed to " + " with " + setting.MultiDbTextConfig.Length.ToString() + " target databases");
                         }
-                    });
+                    }, GetEndpointConfigName(remoteServer.ActiveServiceEndpoint));
                     
                 
             }
@@ -225,7 +238,7 @@ namespace SqlBuildManager.ServiceClient
                                loadSet.Key.ConnectionTestResults = result.ToList();
                                tmpConfigData.Add(loadSet.Key);
                            }
-                       });
+                       }, GetEndpointConfigName(remoteServer.ActiveServiceEndpoint));
 
                 }
                 catch (ActionNotSupportedException actExe)
@@ -284,7 +297,7 @@ namespace SqlBuildManager.ServiceClient
             {
                 client.Endpoint.Address = new System.ServiceModel.EndpointAddress(endpointAddress);
                 retValue = client.GetLastExecutionCommitsLog();
-            });
+            }, GetEndpointConfigName(endpointAddress));
             return retValue;
         }
         public string GetErrorsLog(string endpointAddress)
@@ -294,7 +307,7 @@ namespace SqlBuildManager.ServiceClient
             {
                 client.Endpoint.Address = new System.ServiceModel.EndpointAddress(endpointAddress);
                 retValue = client.GetLastExecutionErrorsLog();
-            });
+            }, GetEndpointConfigName(endpointAddress));
             return retValue;
         }
         public string GetSpecificSummaryLogFile(string endpointAddress, SummaryLogType type, DateTime submittedDate)
@@ -313,7 +326,7 @@ namespace SqlBuildManager.ServiceClient
                     {
                         retValue = client.GetSpecificErrorsLog(submittedDate);
                     }
-                });
+                }, GetEndpointConfigName(endpointAddress));
             }
             catch (ActionNotSupportedException actExe)
             {
@@ -334,7 +347,7 @@ namespace SqlBuildManager.ServiceClient
             {
                 client.Endpoint.Address = new System.ServiceModel.EndpointAddress(endpointAddress);
                 retValue = client.GetDetailedDatabaseExecutionLog(serverAndDatabase);
-            });
+            },GetEndpointConfigName(endpointAddress));
 
             return retValue;
         }
@@ -348,7 +361,7 @@ namespace SqlBuildManager.ServiceClient
                 {
                     client.Endpoint.Address = new System.ServiceModel.EndpointAddress(endpointAddress);
                     retValue = client.GetSpecificDatabaseExecutionLog(submittedDate, serverAndDatabase);
-                });
+                }, GetEndpointConfigName(endpointAddress));
             }
             catch (ActionNotSupportedException actExe)
             {
@@ -374,7 +387,7 @@ namespace SqlBuildManager.ServiceClient
 
                     logContents = client.GetServiceLogFile();
 
-                });
+                }, GetEndpointConfigName(endpointAddress));
 
             }
             catch (ActionNotSupportedException actExe)
@@ -402,7 +415,7 @@ namespace SqlBuildManager.ServiceClient
                 {
                     client.Endpoint.Address = new System.ServiceModel.EndpointAddress(endpointAddress);
                     buildHistory = client.GetServiceBuildHistory().ToList();
-                });
+                }, GetEndpointConfigName(endpointAddress));
 
             }
             catch (ActionNotSupportedException actExe)
@@ -451,7 +464,7 @@ namespace SqlBuildManager.ServiceClient
                     logger.ErrorFormat(String.Format("Unable to save zip file {0}",localZipFileName),exe);
                     returnValue = false;
                 }
-            });
+            }, GetEndpointConfigName(endpointAddress));
 
             return returnValue;
         }
@@ -462,7 +475,7 @@ namespace SqlBuildManager.ServiceClient
             {
                 client.Endpoint.Address = new System.ServiceModel.EndpointAddress(endpointAddress);
                 retValue = client.GetLastFailuresDatabaseConfig();
-            });
+            }, GetEndpointConfigName(endpointAddress));
             return retValue;
         }
 
@@ -540,23 +553,26 @@ namespace SqlBuildManager.ServiceClient
         }
         #endregion
 
+
         /// <summary>
         /// WCF proxys do not clean up properly if they throw an exception. This method ensures that the service proxy is handeled correctly.
         /// Do not call TService.Close() or TService.Abort() within the action lambda.
         /// </summary>
         /// <typeparam name="TService">The type of the service to use</typeparam>
         /// <param name="action">Lambda of the action to performwith the service</param>
-        public static void Using<TService>(Action<TService> action)
-            where TService : ICommunicationObject, IDisposable, new()
+        public static void Using<TService>(Action<TService> action, string configurationName)
+            where TService : BuildServiceClient, IDisposable, new()
+            
         {
-            var service = new TService();
+
+            TService service = (TService)new BuildServiceClient(configurationName);
             bool success = false;
             try
             {
                 action(service);
                 if (service.State != CommunicationState.Faulted)
                 {
-                    
+
                     logger.DebugFormat("Service in non-faulted state. Calling Close()");
                     service.Close();
                     success = true;
@@ -579,40 +595,62 @@ namespace SqlBuildManager.ServiceClient
 
         public List<ServerConfigData> GetListOfAzureInstancePublicUrls()
         {
-            //string dns = ConfigurationManager.AppSettings["AzureDnsName"];
-            //if(string.IsNullOrEmpty(dns))
-            //{
-            //    logger.Error("Unable to find \"AzureDnsName\" app setting. Can not connect to Azure");
-            //}
+            string dynamicAzureTemplate = ConfigurationManager.AppSettings["DynamicAzureHttpEndpointTemplate"];
+            List<ServerConfigData> srvData = new List<ServerConfigData>();
+            string dns = ConfigurationManager.AppSettings["AzureDnsName"];
+            if(string.IsNullOrEmpty(dns))
+            {
+                logger.Error("Unable to find \"AzureDnsName\" app setting. Can not connect to Azure");
+            }
 
-            //try
-            //{
-            //    string address = string.Format("http://{0}/CloudBuildService.svc", dns);
-            //    BuildServiceManager.Using<Sbm.CloudBuildService.I>(client =>
-            //    {
-            //        client.Endpoint.Address = new System.ServiceModel.EndpointAddress(new Uri(address));
-            //        if (client.g
-            //        {
-            //            logger.Info("Submitted Package to " + client.Endpoint.Address + " with " + setting.MultiDbTextConfig.Length.ToString() + " target databases");
-            //            remoteServer.ServiceReadiness = ServiceReadiness.PackageAccepted;
-            //        }
-            //        else
-            //        {
-            //            logger.Error("Package submission failed to " + " with " + setting.MultiDbTextConfig.Length.ToString() + " target databases");
-            //        }
-            //    });
+            List<string> instanceUrls = new List<string>();
+            try
+            {
+                string address = string.Format("http://{0}/BuildService.svc", dns);
 
+                BuildServiceManager.Using<BuildServiceClient>(client => 
+                {
+                    client.Endpoint.Address = new System.ServiceModel.EndpointAddress(new Uri(address));
+                    instanceUrls = client.GetListOfAzureInstancePublicUrls().ToList();
+                   
+                },"http_BuildServiceEndpoint");
 
-            //}
-            //catch (Exception exe)
-            //{
-            //    logger.Error("Unable to check for Azure instances.", exe);
+                foreach(var url in instanceUrls)
+                {
+                    srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace("[[ServerName]]", url)));
+                }
+            }
+            catch (Exception exe)
+            {
+                logger.Error("Unable to check for Azure instances.", exe);
                 
-            //}
+            }
+            return srvData;
 
+        }
 
-            return new List<ServerConfigData>();
+        private static ChannelEndpointElementCollection configEndpointCollection = null;
+        private static string GetEndpointConfigName(string endpointUrl)
+        {
+            if (configEndpointCollection == null)
+            {
+                ClientSection clientSection = ConfigurationManager.GetSection("system.serviceModel/client") as ClientSection;
+                configEndpointCollection = clientSection.ElementInformation.Properties[string.Empty].Value as ChannelEndpointElementCollection;
+            }
 
+            foreach (ChannelEndpointElement endpointElement in configEndpointCollection)
+            {
+               if(endpointElement.Address.ToString().StartsWith("http") && endpointUrl.StartsWith("http"))
+               {
+                   return endpointElement.Name;
+               }
+               if (endpointElement.Address.ToString().StartsWith("tcp") && endpointUrl.StartsWith("tcp"))
+               {
+                   return endpointElement.Name;
+               }
+
+            }
+            return configEndpointCollection[0].Name;
         }
     }
     public enum SummaryLogType

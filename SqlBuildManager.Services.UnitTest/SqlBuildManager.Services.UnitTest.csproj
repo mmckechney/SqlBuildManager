@@ -98,7 +98,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="CloudBuildServiceTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Shadow Include="Test References\SqlBuildManager.Services.accessor" />

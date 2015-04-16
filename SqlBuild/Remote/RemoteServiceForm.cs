@@ -905,7 +905,7 @@ namespace SqlSync.SqlBuild.Remote
             catch
             {
             }
-            if (settings == null || settings.MultiDbTextConfig.Length == 0)
+            if (settings == null || settings.MultiDbTextConfig.Count() == 0)
             {
                 MessageBox.Show("Sorry... Unable to compile connection settings.\r\n Maybe you can check your settings and try again.", "Oh No... :-(", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -951,18 +951,18 @@ namespace SqlSync.SqlBuild.Remote
                 buildManager.SetProtocol(Protocol.AzureHttp);
 
                List<ServerConfigData> serverData =  buildManager.GetListOfAzureInstancePublicUrls();
+               this.serverData = new BindingList<ServerConfigData>(serverData);
+               this.dgvServerStatus.DataSource = this.serverData;
+
+               dgvRemoteServers.Rows.Clear();
+
+               foreach (var s in this.serverData)
+                   dgvRemoteServers.Rows.Add(s.ServerName);
+
+               dgvRemoteServers.Invalidate();
             }
         }
 
-        private void dgvServerStatus_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void protocolComboBox_Click(object sender, EventArgs e)
-        {
-
-        }
 
 
  

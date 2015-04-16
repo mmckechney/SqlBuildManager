@@ -21,6 +21,14 @@ namespace SqlBuildManager.ServiceClient
             this.tcpServiceEndpoint = tcpServiceEndpoint;
             this.protocol = protocol;
         }
+        public ServerConfigData(string azureHttpServiceEndpoint)
+            : this()
+        {
+            var tmp = new Uri(azureHttpServiceEndpoint);
+            this.serverName = tmp.Host + ":" + tmp.Port;
+            this.azureHttpServiceEndpoint = azureHttpServiceEndpoint;
+            this.protocol = Protocol.AzureHttp;
+        }
         private string serverName = string.Empty;
 
         public string ServerName
@@ -49,19 +57,26 @@ namespace SqlBuildManager.ServiceClient
             //get { return httpServiceEndpoint; }
             set { httpServiceEndpoint = value; }
         }
+        private string azureHttpServiceEndpoint = string.Empty;
+        public string AzureHttpServiceEndpoint
+        {
+            //get { return httpServiceEndpoint; }
+            set { azureHttpServiceEndpoint = value; }
+        }
         public string ActiveServiceEndpoint
         {
             get
             {
-                switch(this.protocol)
+                switch (this.protocol)
                 {
                     case ServiceClient.Protocol.Http:
                         return httpServiceEndpoint;
-                        break;
+                    case ServiceClient.Protocol.AzureHttp:
+                        return azureHttpServiceEndpoint;
                     case ServiceClient.Protocol.Tcp:
                     default:
                         return tcpServiceEndpoint;
-                        break;
+
                 }
             }
             

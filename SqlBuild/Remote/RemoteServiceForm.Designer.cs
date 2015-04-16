@@ -246,7 +246,6 @@
             this.protocolComboBox.Name = "protocolComboBox";
             this.protocolComboBox.Size = new System.Drawing.Size(121, 23);
             this.protocolComboBox.SelectedIndexChanged += new System.EventHandler(this.protocolComboBox_SelectedIndexChanged);
-            this.protocolComboBox.Click += new System.EventHandler(this.protocolComboBox_Click);
             // 
             // btnCheckServiceStatus
             // 
@@ -727,7 +726,6 @@
             this.dgvServerStatus.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dgvServerStatus.Size = new System.Drawing.Size(1044, 246);
             this.dgvServerStatus.TabIndex = 0;
-            this.dgvServerStatus.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvServerStatus_CellContentClick);
             this.dgvServerStatus.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvServerStatus_CellFormatting);
             // 
             // serverNameDataGridViewTextBoxColumn
