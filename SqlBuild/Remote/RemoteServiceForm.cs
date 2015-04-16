@@ -943,23 +943,33 @@ namespace SqlSync.SqlBuild.Remote
         private void protocolComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (protocolComboBox.SelectedItem.ToString() == "Tcp")
+            {
                 buildManager.SetProtocol(Protocol.Tcp);
+                ddDistribution.Enabled = true;
+            }
             else if (protocolComboBox.SelectedItem.ToString() == "Http")
+            {
                 buildManager.SetProtocol(Protocol.Http);
+                ddDistribution.Enabled = true;
+            }
             else if (protocolComboBox.SelectedItem.ToString() == "Azure-Http")
             {
                 buildManager.SetProtocol(Protocol.AzureHttp);
 
-               List<ServerConfigData> serverData =  buildManager.GetListOfAzureInstancePublicUrls();
-               this.serverData = new BindingList<ServerConfigData>(serverData);
-               this.dgvServerStatus.DataSource = this.serverData;
+                ddDistribution.SelectedIndex = 0;
+                ddDistribution.Enabled = false;
+                
 
-               dgvRemoteServers.Rows.Clear();
+                List<ServerConfigData> serverData = buildManager.GetListOfAzureInstancePublicUrls();
+                this.serverData = new BindingList<ServerConfigData>(serverData);
+                this.dgvServerStatus.DataSource = this.serverData;
 
-               foreach (var s in this.serverData)
-                   dgvRemoteServers.Rows.Add(s.ServerName);
+                dgvRemoteServers.Rows.Clear();
 
-               dgvRemoteServers.Invalidate();
+                foreach (var s in this.serverData)
+                    dgvRemoteServers.Rows.Add(s.ServerName);
+
+                dgvRemoteServers.Invalidate();
             }
         }
 
