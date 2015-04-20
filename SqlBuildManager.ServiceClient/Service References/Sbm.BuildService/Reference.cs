@@ -32,6 +32,12 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         private string BuildRunGuidField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string DbPasswordField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string DbUserNameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string DescriptionField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -103,6 +109,32 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
                 if ((object.ReferenceEquals(this.BuildRunGuidField, value) != true)) {
                     this.BuildRunGuidField = value;
                     this.RaisePropertyChanged("BuildRunGuid");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string DbPassword {
+            get {
+                return this.DbPasswordField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.DbPasswordField, value) != true)) {
+                    this.DbPasswordField = value;
+                    this.RaisePropertyChanged("DbPassword");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string DbUserName {
+            get {
+                return this.DbUserNameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.DbUserNameField, value) != true)) {
+                    this.DbUserNameField = value;
+                    this.RaisePropertyChanged("DbUserName");
                 }
             }
         }
@@ -708,6 +740,16 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         System.Threading.Tasks.Task<string> GetLastFailuresDatabaseConfigAsync();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "ResetServerStatus", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "ResetServerStatusResponse")]
+        bool ResetServerStatus();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "ResetServerStatus", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
+            "ResetServerStatusResponse")]
+        System.Threading.Tasks.Task<bool> ResetServerStatusAsync();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetListOfAzureInstancePublicUrls", ReplyAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/" +
             "GetListOfAzureInstancePublicUrlsResponse")]
         string[] GetListOfAzureInstancePublicUrls();
@@ -855,6 +897,14 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         
         public System.Threading.Tasks.Task<string> GetLastFailuresDatabaseConfigAsync() {
             return base.Channel.GetLastFailuresDatabaseConfigAsync();
+        }
+        
+        public bool ResetServerStatus() {
+            return base.Channel.ResetServerStatus();
+        }
+        
+        public System.Threading.Tasks.Task<bool> ResetServerStatusAsync() {
+            return base.Channel.ResetServerStatusAsync();
         }
         
         public string[] GetListOfAzureInstancePublicUrls() {

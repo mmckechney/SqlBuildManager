@@ -54,6 +54,9 @@ namespace SqlBuildManager.Services
         string GetLastFailuresDatabaseConfig();
 
         [OperationContract]
+        bool ResetServerStatus();
+
+        [OperationContract]
         IList<string> GetListOfAzureInstancePublicUrls();
     }
 }

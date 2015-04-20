@@ -27,7 +27,7 @@ namespace SqlBuildManager.Console
                 Environment.Exit(0);
             }
 
-            if (joinedArgs.Contains("/remote=true")) //Remote execution with all flags
+            if (joinedArgs.Contains("/remote=true") || joinedArgs.Contains("/remote,")) //Remote execution with all flags
             {
                 try
                 {

@@ -97,6 +97,33 @@ namespace SqlSync.SqlBuild.MultiDb
             get;
             set;
         }
+        [XmlIgnore()]
+
+        private string username = string.Empty;
+        public string UserName
+        {
+            get
+            {
+                return username;
+            }
+             set
+            {
+                username = value;
+            }
+        }
+        private string password = string.Empty;
+        [XmlIgnore()]
+        public string Password
+        {
+            get
+            {
+                return password;
+            }
+            set
+            {
+                password = value;
+            }
+        }
 
     }
     public class ServerData 

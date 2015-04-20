@@ -166,6 +166,7 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="Cryptography.cs" />
     <Compile Include="MultiDb\MultiDbQueryConfig.cs" />
     <Compile Include="AdHocQuery\ResultsDictionary.cs" />
     <Compile Include="AdHocQuery\QueryResultData.cs" />

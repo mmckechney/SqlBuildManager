@@ -13,11 +13,13 @@ General Execution..
     /Threaded=(true|false)           Whether or not to run a multi-database run on multiple threads (default is false)
 
 Remote Execution..
-    /Remote                              Master flag designating a remote agent execution
-    /TestConnectivity=(true|false)       True value will test connection to remote agent and databases but will not execute SQL scripts
-    /RemoteServers=("<filename>"|derive) Pointer to file that contains the list of remote execution servers or "derive" to parse servers from DB list
-    /TimeoutRetryCount=(integer)         Number of times to retry os a script timeout is encountered (default is 0)
-    /DistributionType=(equal|local)      Sets whether to split execution evenly across all execution servers or have each agent only run against its local databases
+    /Remote								       Master flag designating a remote agent execution
+    /TestConnectivity=(true|false)             True value will test connection to remote agent and databases but will not execute SQL scripts
+    /RemoteServers=("<filename>"|derive|azure) Pointer to file that contains the list of remote execution servers,
+	                                           "derive" to parse servers from DB list, azure to use Azure PaaS instances
+    /TimeoutRetryCount=(integer)               Number of times to retry os a script timeout is encountered (default is 0)
+    /DistributionType=(equal|local)            Sets whether to split execution evenly across all execution servers 
+	                                           or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
 
 Other settings..
     /UserName="<username>"            The username to authenticate against the database if not using integrate auth

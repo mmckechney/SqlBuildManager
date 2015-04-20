@@ -208,6 +208,10 @@ namespace SqlBuildManager.Console
                 this.cmdLine.Trial = multiData.RunAsTrial;
                 this.cmdLine.Description = description;
                 this.cmdLine.AllowableTimeoutRetries = multiData.AllowableTimeoutRetries; //set the retries count...
+                if(!string.IsNullOrWhiteSpace(multiData.UserName))
+                    this.cmdLine.UserName = multiData.UserName;
+                if (!string.IsNullOrWhiteSpace(multiData.Password))
+                    this.cmdLine.Password = multiData.Password;
             }
 
                

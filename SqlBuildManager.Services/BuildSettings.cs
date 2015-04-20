@@ -103,6 +103,22 @@ namespace SqlBuildManager.Services
             set { buildRunGuid = value; }
         }
 
+        private string dbUserName = string.Empty;
+        [DataMember(IsRequired = false)]
+        public string DbUserName
+        {
+            get { return dbUserName; }
+            set { dbUserName = value; }
+        }
+
+        private string dbPassword = string.Empty;
+        [DataMember(IsRequired = false)]
+        public string DbPassword
+        {
+            get { return dbPassword; }
+            set { dbPassword = value; }
+        }
+
         public override string ToString()
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();

@@ -8,6 +8,7 @@ using con = SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Remote;
+
 using System.Text;
 namespace SqlBuildManager.Console
 {
@@ -197,29 +198,53 @@ namespace SqlBuildManager.Console
                 return -700;
             }
 
-            if(!File.Exists(cmd.RemoteServers) && cmd.RemoteServers.ToLower() != "derive")
+            if(!File.Exists(cmd.RemoteServers) && cmd.RemoteServers.ToLower() != "derive" && cmd.RemoteServers.ToLower() != "azure")
             {
-                string err = "The command line arguments value for \"RemoteServers\" is not a valid file name, nor is the value set to \"derive\"";
+                string err = "The command line arguments value for \"RemoteServers\" is not a valid file name, nor is the value set to \"derive\" or \"azure\"";
                 log.Error(err);
                 System.Console.Error.WriteLine(err);
                 return -701;
             }
 
-            if(cmd.DistributionType.Length == 0)
+            if (cmd.DistributionType.Length == 0 && cmd.RemoteServers.ToLower() != "azure")
             {
-                string err = "The command line arguments is missing a value for \"DistributionType\". This is required for a remote server execution";
+                string err = "The command line arguments is missing a value for \"DistributionType\". This is required for non-Azure remote server execution";
                 log.Error(err);
                 System.Console.Error.WriteLine(err);
                 return -702;
             }
 
-            if(cmd.DistributionType.ToLower() != "equal" && cmd.DistributionType.ToLower() != "local")
+            if (cmd.DistributionType.ToLower() == "local" && cmd.RemoteServers.ToLower() == "azure")
             {
-                string err = "The command line argument \"DistributionType\" has an invalid value. Allowed values are \"equal\" or \"local\"";
+                string err = "The command line combination of  DistributionType=local and RemoteServers=azure is not allowed.";
                 log.Error(err);
                 System.Console.Error.WriteLine(err);
-                return -703;
+                return -704;
             }
+
+            if (cmd.RemoteServers.ToLower() != "azure")
+            {
+                if (cmd.DistributionType.ToLower() != "equal" && cmd.DistributionType.ToLower() != "local")
+                {
+                    string err = "The command line argument \"DistributionType\" has an invalid value. Allowed values are \"equal\" or \"local\"";
+                    log.Error(err);
+                    System.Console.Error.WriteLine(err);
+                    return -703;
+                }
+            }
+            else
+            {
+                cmd.DistributionType = "equal";
+            }
+
+             if (cmd.RemoteServers.ToLower() == "azure" && (String.IsNullOrWhiteSpace(cmd.UserName) || string.IsNullOrWhiteSpace(cmd.Password)))
+             {
+                  string err = "When running a remote execution on Azure, a username and password are required";
+                    log.Error(err);
+                    System.Console.Error.WriteLine(err);
+                    return -707;
+             }
+
 
             MultiDbData multiDb;
             int valRet = Validation.ValidateAndLoadMultiDbData(cmd.MultiDbRunConfigFileName, out multiDb, out errorMessages);
@@ -233,10 +258,21 @@ namespace SqlBuildManager.Console
                 return valRet;
             }
 
-            List<string> remote = RemoteHelper.GetRemoteExecutionServers(cmd.RemoteServers, multiDb);
+            List<string> remote = null;
+            if (cmd.RemoteServers.ToLower() != "azure")
+            {
+                remote = RemoteHelper.GetRemoteExecutionServers(cmd.RemoteServers, multiDb);
+            }
+            else
+            {
+                BuildServiceManager manager = new BuildServiceManager();
+                List<ServerConfigData> serverData = manager.GetListOfAzureInstancePublicUrls();
+                remote = serverData.Select(s => s.ServerName).ToList();
+            }
             
             List<ServerConfigData> remoteServer = null;
-            int statReturn = ValidateRemoteServerAvailability(remote, out remoteServer, out errorMessages);
+            Protocol p = (cmd.RemoteServers.ToLower() == "azure") ? Protocol.AzureHttp : Protocol.Tcp;
+            int statReturn = ValidateRemoteServerAvailability(remote,p, out remoteServer, out errorMessages);
             if(statReturn != 0)
             {
                  for (int i = 0; i < errorMessages.Length; i++)
@@ -254,7 +290,7 @@ namespace SqlBuildManager.Console
             setting.TimeoutRetryCount = cmd.AllowableTimeoutRetries;
             setting.AlternateLoggingDatabase = cmd.LogToDatabaseName;
             setting.Description = cmd.Description;
-            if (cmd.DistributionType.ToLower() == "equal")
+            if (cmd.DistributionType.ToLower() == "equal" || cmd.RemoteServers.ToLower() == "azure")
                 setting.DistributionType = DistributionType.EqualSplit;
             else
                 setting.DistributionType = DistributionType.OwnMachineName;
@@ -271,6 +307,9 @@ namespace SqlBuildManager.Console
 
             //setting.SqlBuildManagerProjectContents = File.ReadAllBytes(cmd.BuildFileName);
             setting.SqlBuildManagerProjectContents = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(cmd.BuildFileName);
+
+            setting.DbUserName = cmd.UserName;
+            setting.DbPassword = cmd.Password;
             return 0;
         }
 
@@ -385,7 +424,7 @@ namespace SqlBuildManager.Console
         /// <param name="remoteServerData">Output list of ServerConfigData objects</param>
         /// <param name="errorMessages">Output array or error messages (if any)</param>
         /// <returns>Zero (0) if validated, otherwise an error code</returns>
-        private static int ValidateRemoteServerAvailability(List<string> remoteServers, out List<ServerConfigData> remoteServerData, out string[] errorMessages)
+        private static int ValidateRemoteServerAvailability(List<string> remoteServers, Protocol protocol, out List<ServerConfigData> remoteServerData, out string[] errorMessages)
         {
 
             List<string> errors = new List<string>();
@@ -402,15 +441,18 @@ namespace SqlBuildManager.Console
 
             try
             {
-                BuildServiceManager buildManager = new BuildServiceManager(remoteServers);
+                BuildServiceManager buildManager = new BuildServiceManager(remoteServers, protocol);
                 remoteServerData = buildManager.GetServiceStatus().ToList();
 
                 foreach (ServerConfigData cd in remoteServerData)
                 {
                     if (cd.ServiceReadiness != ServiceReadiness.ReadyToAccept)
                     {
-                        errors.Add("Remote service status for " + cd.ServerName + " is " + Enum.GetName(typeof(ServiceReadiness), cd.ServiceReadiness));
-                        returnVal = -750;
+                        if (!buildManager.SubmitServiceResetRequest(cd))
+                        {
+                            errors.Add("Remote service status for " + cd.ServerName + " is " + Enum.GetName(typeof(ServiceReadiness), cd.ServiceReadiness));
+                            returnVal = -750;
+                        }
                     }
                 }
             }
@@ -430,7 +472,7 @@ namespace SqlBuildManager.Console
             List<string> remoteServers = (from s in settings.RemoteExecutionServers select s.ServerName).ToList(); ;
             List<ServerConfigData> remoteServerData;
 
-            int returnVal = ValidateRemoteServerAvailability(remoteServers, out remoteServerData, out errorMessages);
+            int returnVal = ValidateRemoteServerAvailability(remoteServers, Protocol.Tcp, out remoteServerData, out errorMessages);
             settings.RemoteExecutionServers = remoteServerData;
 
             return returnVal;

@@ -7,6 +7,8 @@
       <xs:element minOccurs="0" name="AlternateLoggingDatabase" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="BuildRequestFrom" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="BuildRunGuid" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="DbPassword" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="DbUserName" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Description" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="IsTransactional" type="xs:boolean" />
       <xs:element minOccurs="0" name="IsTrialBuild" type="xs:boolean" />

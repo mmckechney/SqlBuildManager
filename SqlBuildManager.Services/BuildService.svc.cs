@@ -20,6 +20,7 @@ using Microsoft.WindowsAzure.Diagnostics.Management;
 using Microsoft.WindowsAzure.Diagnostics;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
+using SqlSync.SqlBuild;
 namespace SqlBuildManager.Services
 {
     // NOTE: If you change the class name "BuildService" here, you must also update the reference to "BuildService" in Web.config.
@@ -102,6 +103,8 @@ namespace SqlBuildManager.Services
 
             try
             {
+                
+
                 string expandedLoggingPath = System.Environment.ExpandEnvironmentVariables(settings.LocalRootLoggingPath);
 
                 if (!Directory.Exists(expandedLoggingPath))
@@ -125,6 +128,10 @@ namespace SqlBuildManager.Services
                 multiDb.RunAsTrial = settings.IsTrialBuild;
                 multiDb.MultiRunId = Guid.NewGuid().ToString();
                 multiDb.AllowableTimeoutRetries = settings.TimeoutRetryCount;
+
+                string pw = (settings.SqlBuildManagerProjectFileName + String.Join("|",settings.MultiDbTextConfig) + settings.BuildRunGuid).Sha256Hash();
+                multiDb.UserName = Cryptography.DecryptText(settings.DbUserName, pw);
+                multiDb.Password = Cryptography.DecryptText(settings.DbPassword, pw);
 
 
                 BuildRecord record = new BuildRecord()
@@ -305,6 +312,18 @@ namespace SqlBuildManager.Services
         {
             IList<BuildRecord> history = ReadBuildHistoryFile();
             return history;
+        }
+        public bool ResetServerStatus()
+        {
+            if(myReadiness != ServiceReadiness.Processing)
+            {
+                myReadiness = ServiceReadiness.ReadyToAccept;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         /// <summary>
         /// Retrieves the zip of all of the log files for databases that had errors in their execution for the specified request

@@ -7,6 +7,7 @@ using System.ServiceModel;
 using SqlBuildManager.ServiceClient.CustomExtensionMethods;
 using SqlBuildManager.ServiceClient.Sbm.BuildService;
 using SqlSync.Connection;
+using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using System.ServiceModel.Configuration;
 using System.Threading.Tasks;
@@ -17,8 +18,10 @@ namespace SqlBuildManager.ServiceClient
     {
      
         private static log4net.ILog logger = log4net.LogManager.GetLogger(typeof(BuildServiceManager));
-        public BuildServiceManager(List<string> serverNames) : this()
+        public BuildServiceManager(List<string> serverNames, ServiceClient.Protocol protocol)
+            : this()
         {
+            this.protocol = protocol;
             SetServerNames(serverNames);
         }
         public BuildServiceManager(ServiceClient.Protocol protocol)
@@ -177,7 +180,10 @@ namespace SqlBuildManager.ServiceClient
             foreach(KeyValuePair<ServerConfigData, BuildSettings> set in distibutedLoad)
             {
                 set.Value.BuildRequestFrom = System.Environment.UserDomainName + "\\" + System.Environment.UserName;
-                SubmitRequestToServer(set.Key, set.Value);
+                if (set.Value.MultiDbTextConfig.Length > 0)
+                {
+                    SubmitRequestToServer(set.Key, set.Value);
+                }
             }
         }
 
@@ -205,6 +211,25 @@ namespace SqlBuildManager.ServiceClient
             {
                 logger.Error("Unable to submit build package.", exe);
                 remoteServer.ServiceReadiness = ServiceReadiness.Error;
+            }
+        }
+        public bool SubmitServiceResetRequest(ServerConfigData remoteServer)
+        {
+            try
+            {
+                bool resetSuccessful = false;
+                BuildServiceManager.Using<BuildServiceClient>(client =>
+                {
+                    client.Endpoint.Address = new System.ServiceModel.EndpointAddress(remoteServer.ActiveServiceEndpoint);
+                    resetSuccessful = client.ResetServerStatus();
+                }, GetEndpointConfigName(remoteServer.ActiveServiceEndpoint));
+                return resetSuccessful;
+
+            }
+            catch (Exception exe)
+            {
+                logger.Error("Unable to submit reset request.", exe);
+                return false;
             }
         }
 
@@ -510,10 +535,22 @@ namespace SqlBuildManager.ServiceClient
         }
         public IDictionary<ServerConfigData, BuildSettings> DistributeBuildLoad(BuildSettings unifiedSettings, DistributionType loadDistributionType, List<ServerConfigData> executionServers)
         {
+            IDictionary<ServerConfigData, BuildSettings> distributed;
             if (loadDistributionType == DistributionType.OwnMachineName)
-                return SplitLoadToOwningServers(unifiedSettings, executionServers);
+                distributed =  SplitLoadToOwningServers(unifiedSettings, executionServers);
             else
-                return SplitLoadEvenly(unifiedSettings, executionServers);
+                distributed =  SplitLoadEvenly(unifiedSettings, executionServers);
+
+            foreach(var d in distributed)
+            {
+                var setting = d.Value;
+                string pw = (setting.SqlBuildManagerProjectFileName + String.Join("|",setting.MultiDbTextConfig) + setting.BuildRunGuid).Sha256Hash();
+            
+                d.Value.DbUserName = Cryptography.EncryptText(d.Value.DbUserName,pw);
+                d.Value.DbPassword = Cryptography.EncryptText(d.Value.DbPassword,pw);
+            }
+
+            return distributed;
         }
 
         internal IDictionary<ServerConfigData, BuildSettings> SplitLoadToOwningServers(BuildSettings unifiedSettings, IList<ServerConfigData> executionServers)
@@ -537,8 +574,9 @@ namespace SqlBuildManager.ServiceClient
             IEnumerable<string> allDbTargets = unifiedSettings.MultiDbTextConfig.AsEnumerable();
             IEnumerable<IEnumerable<string>> dividedDbTargets = allDbTargets.SplitIntoChunks(executionServers.Count);
 
-            if (dividedDbTargets.Count() == executionServers.Count)
-            { int i=0;
+            if (dividedDbTargets.Count() <= executionServers.Count)
+            {
+                int i = 0;
                 foreach (IEnumerable<string> targetList in dividedDbTargets)
                 {
                     BuildSettings tmpSetting = unifiedSettings.DeepClone<BuildSettings>();

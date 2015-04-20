@@ -95,6 +95,12 @@
   <wsdl:message name="IBuildService_GetLastFailuresDatabaseConfig_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetLastFailuresDatabaseConfigResponse" />
   </wsdl:message>
+  <wsdl:message name="IBuildService_ResetServerStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:ResetServerStatus" />
+  </wsdl:message>
+  <wsdl:message name="IBuildService_ResetServerStatus_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ResetServerStatusResponse" />
+  </wsdl:message>
   <wsdl:message name="IBuildService_GetListOfAzureInstancePublicUrls_InputMessage">
     <wsdl:part name="parameters" element="tns:GetListOfAzureInstancePublicUrls" />
   </wsdl:message>
@@ -157,6 +163,10 @@
     <wsdl:operation name="GetLastFailuresDatabaseConfig">
       <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetLastFailuresDatabaseConfig" message="tns:IBuildService_GetLastFailuresDatabaseConfig_InputMessage" />
       <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetLastFailuresDatabaseConfigResponse" message="tns:IBuildService_GetLastFailuresDatabaseConfig_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ResetServerStatus">
+      <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/ResetServerStatus" message="tns:IBuildService_ResetServerStatus_InputMessage" />
+      <wsdl:output wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/ResetServerStatusResponse" message="tns:IBuildService_ResetServerStatus_OutputMessage" />
     </wsdl:operation>
     <wsdl:operation name="GetListOfAzureInstancePublicUrls">
       <wsdl:input wsaw:Action="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetListOfAzureInstancePublicUrls" message="tns:IBuildService_GetListOfAzureInstancePublicUrls_InputMessage" />

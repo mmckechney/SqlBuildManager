@@ -130,6 +130,15 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="ResetServerStatus">
+      <soap:operation soapAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/ResetServerStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="GetListOfAzureInstancePublicUrls">
       <soap:operation soapAction="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService/IBuildService/GetListOfAzureInstancePublicUrls" style="document" />
       <wsdl:input>
