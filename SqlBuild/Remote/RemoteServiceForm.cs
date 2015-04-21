@@ -14,6 +14,8 @@ using System.Runtime.Serialization;
 using SqlSync.Connection;
 using SqlSync.DbInformation;
 using System.Xml.Serialization;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace SqlSync.SqlBuild.Remote
 {
@@ -215,8 +217,8 @@ namespace SqlSync.SqlBuild.Remote
             bg.ReportProgress(0, "Connecting to remote services. Checking Status...");
 
             buildManager.SetServerNames(servers);
-            e.Result = buildManager.GetServiceStatus();
 
+            e.Result = buildManager.GetServiceStatus();
         }
         private void bgStatusCheck_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
@@ -242,17 +244,20 @@ namespace SqlSync.SqlBuild.Remote
                                                              s.ServiceReadiness == ServiceReadiness.ProcessingCompletedSuccessfully || s.ServiceReadiness == ServiceReadiness.Unknown
                                                          select s;
 
+                
+                
+
                 if (complete.Count<ServerConfigData>() == this.serverData.Count)
                 {
-                    this.statProgBar.Style = ProgressBarStyle.Blocks;
-                    this.Cursor = Cursors.Default;
-                    this.statGeneral.Text = "Ready.";
                     this.packageSubmitted = false;
                     btnSubmitPackage.Enabled = true;
                 }
                 this.dgvServerStatus.Invalidate();
             }
 
+            this.Cursor = Cursors.Default;
+            this.statProgBar.Style = ProgressBarStyle.Blocks;
+            this.statGeneral.Text = "Ready.";
         }
         
         private void bgSubmit_DoWork(object sender, DoWorkEventArgs e)
@@ -606,6 +611,12 @@ namespace SqlSync.SqlBuild.Remote
                 int.TryParse(txtTimeoutRetryCount.Text, out retryCnt);
                 settings.TimeoutRetryCount = retryCnt;
 
+                if (!chkUseWindowsAuth.Checked)
+                {
+                    settings.DbUserName = txtUserName.Text;
+                    settings.DbPassword = txtPassword.Text;
+                }
+
                 return settings;
             }
             catch (Exception)
@@ -946,11 +957,13 @@ namespace SqlSync.SqlBuild.Remote
             {
                 buildManager.SetProtocol(Protocol.Tcp);
                 ddDistribution.Enabled = true;
+                chkUseOverrideAsExeList.Enabled = true;
             }
             else if (protocolComboBox.SelectedItem.ToString() == "Http")
             {
                 buildManager.SetProtocol(Protocol.Http);
                 ddDistribution.Enabled = true;
+                chkUseOverrideAsExeList.Enabled = true;
             }
             else if (protocolComboBox.SelectedItem.ToString() == "Azure-Http")
             {
@@ -958,6 +971,9 @@ namespace SqlSync.SqlBuild.Remote
 
                 ddDistribution.SelectedIndex = 0;
                 ddDistribution.Enabled = false;
+
+                chkUseOverrideAsExeList.Enabled = false;
+                chkUseOverrideAsExeList.Checked = false;
                 
 
                 List<ServerConfigData> serverData = buildManager.GetListOfAzureInstancePublicUrls();
@@ -970,6 +986,44 @@ namespace SqlSync.SqlBuild.Remote
                     dgvRemoteServers.Rows.Add(s.ServerName);
 
                 dgvRemoteServers.Invalidate();
+            }
+        }
+
+        private void chkUseWindowsAuth_CheckedChanged(object sender, EventArgs e)
+        {
+            if(chkUseWindowsAuth.Checked)
+            {
+                txtUserName.Enabled = false;
+                txtPassword.Enabled = false;
+            }
+            else
+            {
+                txtUserName.Enabled = true;
+                txtPassword.Enabled = true;
+            }
+        }
+
+        private void btnCheckServiceStatus_MouseClick(object sender, MouseEventArgs e)
+        {
+            if(e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                List<string> servers = GetExecutionServerListFromGrid();
+                buildManager.SetServerNames(servers);
+
+                var stat = buildManager.GetServiceStatus();
+                var validationError = stat.Where(s => s.ServiceReadiness == ServiceReadiness.PackageValidationError);
+                if (validationError.Count() > 0)
+                {
+                    foreach (var v in validationError)
+                    {
+                        buildManager.SubmitServiceResetRequest(v);
+                    }
+                }
+               
+            }
+            else
+            {
+                btnCheckServiceStatus_Click(this, new EventArgs());
             }
         }
 

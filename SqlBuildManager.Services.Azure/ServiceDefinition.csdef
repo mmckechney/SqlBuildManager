@@ -26,5 +26,8 @@
     <ConfigurationSettings>
       <Setting name="StorageConnectionString" />
     </ConfigurationSettings>
+    <LocalResources>
+      <LocalStorage name="RunLogFiles" cleanOnRoleRecycle="false" sizeInMB="200" />
+    </LocalResources>
   </WebRole>
 </ServiceDefinition>

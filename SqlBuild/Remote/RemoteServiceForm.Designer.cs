@@ -257,6 +257,8 @@
             this.btnCheckServiceStatus.Text = "Check Service Status";
             this.btnCheckServiceStatus.UseVisualStyleBackColor = true;
             this.btnCheckServiceStatus.Click += new System.EventHandler(this.btnCheckServiceStatus_Click);
+            this.btnCheckServiceStatus.MouseClick += new System.Windows.Forms.MouseEventHandler(this.btnCheckServiceStatus_MouseClick);
+            this.btnCheckServiceStatus.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnCheckServiceStatus_MouseClick);
             // 
             // splitContainer1
             // 
@@ -444,8 +446,10 @@
             this.txtPassword.Enabled = false;
             this.txtPassword.Location = new System.Drawing.Point(428, 18);
             this.txtPassword.Name = "txtPassword";
+            this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(100, 20);
             this.txtPassword.TabIndex = 1;
+            this.txtPassword.UseSystemPasswordChar = true;
             // 
             // label8
             // 
@@ -475,6 +479,7 @@
             this.chkUseWindowsAuth.TabIndex = 0;
             this.chkUseWindowsAuth.Text = "Use Windows Authentication";
             this.chkUseWindowsAuth.UseVisualStyleBackColor = true;
+            this.chkUseWindowsAuth.CheckedChanged += new System.EventHandler(this.chkUseWindowsAuth_CheckedChanged);
             // 
             // groupBox5
             // 

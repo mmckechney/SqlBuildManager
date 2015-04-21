@@ -27,7 +27,25 @@ namespace SqlBuildManager.Services
     public class BuildService : IBuildService
     {
         private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static string buildHistoryFile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\SqlBuildManager.BuildHistory.xml";
+        private static string buildHistoryFile
+        {
+            get
+            {
+                if (RoleEnvironment.IsAvailable)
+                {
+                    LocalResource azureStorage = RoleEnvironment.GetLocalResource("RunLogFiles");
+                    return azureStorage.RootPath + @"SqlBuildManager.BuildHistory.xml";
+                }
+
+
+                else
+                {
+                    return Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\SqlBuildManager.BuildHistory.xml";
+                }
+
+            }
+        }
+        
         public BuildService()
         {
 
@@ -40,9 +58,45 @@ namespace SqlBuildManager.Services
                 BuildService.currentVersion = new Version(0, 0, 0, 0);
             }
 
-            if (!log.Logger.Repository.Configured)
-                log4net.Config.BasicConfigurator.Configure();
 
+            log4net.Config.XmlConfigurator.Configure();
+
+            if (!log.Logger.Repository.Configured)
+            {
+                log4net.Config.BasicConfigurator.Configure();
+            }
+            SetAppLogFileLocation();
+        }
+        private bool SetAppLogFileLocation()
+        {
+            if (!log.Logger.Repository.Configured)
+            {
+                log4net.Config.BasicConfigurator.Configure();
+            }
+
+            if (RoleEnvironment.IsAvailable)
+            {
+                try
+                {
+                    var fileAppender = (from appender in log4net.LogManager.GetRepository().GetAppenders()
+                                        where appender is FileAppender
+                                        select appender).First();
+
+                    string fileName = ((FileAppender)fileAppender).File;
+                    string azurePath = RoleEnvironment.GetLocalResource("RunLogFiles").RootPath;
+                    if (Path.GetDirectoryName(fileName) != azurePath)
+                    {
+                        ((FileAppender)fileAppender).File = azurePath + Path.GetFileName(fileName);
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+                
+            return true;
+            
         }
         BackgroundWorker bgBuild = new BackgroundWorker();
         private static ServiceReadiness myReadiness = ServiceReadiness.ReadyToAccept;
@@ -50,6 +104,7 @@ namespace SqlBuildManager.Services
         private bool initialized;
         private WorkArgs arguments = null;
         private static Version currentVersion;
+        
         private void Initialize()
         {
             if (this.initialized)
@@ -57,6 +112,10 @@ namespace SqlBuildManager.Services
 
             if (!log.Logger.Repository.Configured)
                 log4net.Config.BasicConfigurator.Configure();
+             else
+            {
+                SetAppLogFileLocation();
+            }
 
             bgBuild.WorkerReportsProgress = true;
             bgBuild.WorkerSupportsCancellation = true;
@@ -77,6 +136,9 @@ namespace SqlBuildManager.Services
                 log.Error("Unable to retrieve current service version", exe);
             }
 
+
+             
+
         }
 
         #region IBuildService Members
@@ -88,6 +150,7 @@ namespace SqlBuildManager.Services
 
             if (!log.Logger.Repository.Configured)
                 log4net.Config.BasicConfigurator.Configure();
+           
 
 
             if (myReadiness != ServiceReadiness.ReadyToAccept)
@@ -103,9 +166,18 @@ namespace SqlBuildManager.Services
 
             try
             {
-                
+                string expandedLoggingPath = string.Empty;
+                if(RoleEnvironment.IsAvailable)
+                {
+                    string azurePath = RoleEnvironment.GetLocalResource("RunLogFiles").RootPath;
+                    string last = settings.LocalRootLoggingPath.Split(new char[]{'\\', '/' }).Last();
+                    expandedLoggingPath = azurePath + last;
 
-                string expandedLoggingPath = System.Environment.ExpandEnvironmentVariables(settings.LocalRootLoggingPath);
+                }
+                else
+                {
+                    expandedLoggingPath = System.Environment.ExpandEnvironmentVariables(settings.LocalRootLoggingPath);
+                }
 
                 if (!Directory.Exists(expandedLoggingPath))
                 {
