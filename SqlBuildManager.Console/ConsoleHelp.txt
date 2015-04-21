@@ -22,8 +22,8 @@ Remote Execution..
 	                                           or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
 
 Other settings..
-    /UserName="<username>"            The username to authenticate against the database if not using integrate auth
-    /Password="<password>"            The password to authenticate against the database if not using integrate auth
+    /UserName="<username>"            The username to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
+    /Password="<password>"            The password to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
     /Database="<database name>"       Name of a single database to run against
     /Server="<server name>"           Name of a server for single database run
     /ScriptSrcDir="<directory>"       Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)
