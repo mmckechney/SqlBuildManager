@@ -685,7 +685,7 @@ namespace SqlBuildManager.ServiceClient
                {
                    return endpointElement.Name;
                }
-               if (endpointElement.Address.ToString().StartsWith("tcp") && endpointUrl.StartsWith("tcp"))
+               if (endpointElement.Address.ToString().StartsWith("net.tcp") && endpointUrl.StartsWith("net.tcp"))
                {
                    return endpointElement.Name;
                }
