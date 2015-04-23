@@ -853,6 +853,10 @@ namespace SqlSync.SqlBuild.Remote
                 string remoteExeString;
                 if (chkUseOverrideAsExeList.Checked)
                     remoteExeString = "derive";
+                else if (protocolComboBox.SelectedItem.ToString() == "Azure-Http")
+                {
+                    remoteExeString = "azure";
+                }
                 else
                 {
                     if (DialogResult.OK == saveFileDialog2.ShowDialog())
@@ -868,6 +872,7 @@ namespace SqlSync.SqlBuild.Remote
                 }
                 int retryCnt;
                 Int32.TryParse(txtTimeoutRetryCount.Text,out retryCnt);
+
                 string commandLine = SqlSync.SqlBuild.Remote.RemoteHelper.BuildRemoteExecutionCommandline(txtSbmFile.Text,
                     txtOverride.Text,
                     remoteExeString,
@@ -876,7 +881,9 @@ namespace SqlSync.SqlBuild.Remote
                     chkRunTrial.Checked,
                     !chkNotTransactional.Checked,
                     txtDescription.Text,
-                    retryCnt);
+                    retryCnt, 
+                    (!chkUseWindowsAuth.Checked) ? txtUserName.Text : "",
+                    (!chkUseWindowsAuth.Checked) ? txtPassword.Text : "");
 
                 ScriptDisplayForm frmDisp = new ScriptDisplayForm(commandLine, "", "");
                 frmDisp.ShowDialog();

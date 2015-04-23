@@ -9,7 +9,7 @@ namespace SqlSync.SqlBuild.Remote
     public class RemoteHelper
     {
         public static string BuildRemoteExecutionCommandline(string sbmFileName, string overrideSettingFile, string remoteExeServersFile, string rootLoggingPath, 
-            string distributionType, bool isTrial, bool isTransactional, string buildDescription, int allowedRetryCount)
+            string distributionType, bool isTrial, bool isTransactional, string buildDescription, int allowedRetryCount, string username, string password)
         {
 
             if (sbmFileName == null || sbmFileName.Length == 0)
@@ -60,7 +60,20 @@ namespace SqlSync.SqlBuild.Remote
             sb.Append("/Description=\"" + buildDescription + "\" ");
             sb.Append("/transactional=" + isTransactional +  " ");
             sb.Append("/trial=" + isTrial + " ");
-            sb.Append("/TimeoutRetryCount=" + allowedRetryCount.ToString());
+            sb.Append("/TimeoutRetryCount=" + allowedRetryCount.ToString() + " ");
+            if(!string.IsNullOrWhiteSpace(username))
+            {
+                sb.Append("/username=\""+username +"\" ");
+
+            }
+
+            if (!string.IsNullOrWhiteSpace(password))
+            {
+                sb.Append("/password=\"" + password + "\"");
+
+            }
+
+
 
            return sb.ToString();
         }
