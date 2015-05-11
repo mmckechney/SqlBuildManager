@@ -555,7 +555,6 @@
 		<row><td>C__DD65406CCE0449D19ACE9BCBD37F53F8</td><td>{C1AAF69E-C620-4FFC-AFA8-90237B4133F3}</td><td>INSTALLDIR</td><td>2</td><td/><td>_DD65406CCE0449D19ACE9BCBD37F53F8</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__DE9A9221F979444587778A837F78F513</td><td>{39167F0F-E0DE-4691-A27D-C5620068F1D3}</td><td>INSTALLDIR</td><td>2</td><td/><td>_DE9A9221F979444587778A837F78F513</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__DEA2875F782C487A8B0D791604CC0E70</td><td>{9641CED5-43C5-4121-AA1E-616428CE8291}</td><td>_6DBDB568607E48868CBFBA4BA18BA292</td><td>2</td><td/><td>_DEA2875F782C487A8B0D791604CC0E70</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>C__E01E3408A09645BAA1153B961950FADE</td><td>{B307A976-4A4F-4D86-8CD4-3C02009C5DB6}</td><td>_BF4FCE285E954DFF9A904FAC3F309F00</td><td>2</td><td/><td>_E01E3408A09645BAA1153B961950FADE</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__E021FD527DE24BC9B8DB6454AF0985D8</td><td>{04C1EFE1-DCB7-40D5-B07F-0D684B1D4DDE}</td><td>_6DBDB568607E48868CBFBA4BA18BA292</td><td>2</td><td/><td>_E021FD527DE24BC9B8DB6454AF0985D8</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__E13A84CE0BB5486F8085AEF2DC584BEC</td><td>{ED822051-A254-4CFF-92D3-ED41AE2F7C88}</td><td>_6DBDB568607E48868CBFBA4BA18BA292</td><td>2</td><td/><td>_E13A84CE0BB5486F8085AEF2DC584BEC</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__E174AD01335F4E2C8A3A3E935A5A4267</td><td>{4E7CACDD-32CF-4AAF-9451-B866C86331AD}</td><td>INSTALLDIR</td><td>2</td><td/><td>_E174AD01335F4E2C8A3A3E935A5A4267</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -563,7 +562,6 @@
 		<row><td>C__E359AD655E8D4B42AE03BE992289FA0A</td><td>{5CE02157-3E6D-4E60-9066-627522496073}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_E359AD655E8D4B42AE03BE992289FA0A</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__E386B584B96A43B09C92B209E72DB93D</td><td>{AF23F435-1F22-401F-942A-623052320F78}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_E386B584B96A43B09C92B209E72DB93D</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__E53CF772D90042DAB8DD0B053D77D575</td><td>{6B69EA24-886B-4FF1-A8EA-86C69A8E4024}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_E53CF772D90042DAB8DD0B053D77D575</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>C__E7230C18BDAE4450A8C642D1FE843553</td><td>{43417F35-9334-43D6-8938-C148B9922642}</td><td>_BF4FCE285E954DFF9A904FAC3F309F00</td><td>2</td><td/><td>_E7230C18BDAE4450A8C642D1FE843553</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__E851F629E9004EF8A0404A183219BC10</td><td>{2A00AE2D-8F7E-44C3-8086-47FF066F2968}</td><td>INSTALLDIR</td><td>2</td><td/><td>_E851F629E9004EF8A0404A183219BC10</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__E9E50644322846A8B83EA97ED279FD1D</td><td>{3DE74A28-4186-4375-AF22-E6A5E32E9000}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_E9E50644322846A8B83EA97ED279FD1D</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__E9E6434763CF46FEA81406AF79A832C7</td><td>{3D1D3452-7CD6-4F84-A74E-AD6866C94354}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_E9E6434763CF46FEA81406AF79A832C7</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -2357,7 +2355,6 @@
 		<row><td>AlwaysInstall</td><td>C__DD65406CCE0449D19ACE9BCBD37F53F8</td></row>
 		<row><td>AlwaysInstall</td><td>C__DE9A9221F979444587778A837F78F513</td></row>
 		<row><td>AlwaysInstall</td><td>C__DEA2875F782C487A8B0D791604CC0E70</td></row>
-		<row><td>AlwaysInstall</td><td>C__E01E3408A09645BAA1153B961950FADE</td></row>
 		<row><td>AlwaysInstall</td><td>C__E021FD527DE24BC9B8DB6454AF0985D8</td></row>
 		<row><td>AlwaysInstall</td><td>C__E13A84CE0BB5486F8085AEF2DC584BEC</td></row>
 		<row><td>AlwaysInstall</td><td>C__E174AD01335F4E2C8A3A3E935A5A4267</td></row>
@@ -2365,7 +2362,6 @@
 		<row><td>AlwaysInstall</td><td>C__E359AD655E8D4B42AE03BE992289FA0A</td></row>
 		<row><td>AlwaysInstall</td><td>C__E386B584B96A43B09C92B209E72DB93D</td></row>
 		<row><td>AlwaysInstall</td><td>C__E53CF772D90042DAB8DD0B053D77D575</td></row>
-		<row><td>AlwaysInstall</td><td>C__E7230C18BDAE4450A8C642D1FE843553</td></row>
 		<row><td>AlwaysInstall</td><td>C__E851F629E9004EF8A0404A183219BC10</td></row>
 		<row><td>AlwaysInstall</td><td>C__E9E50644322846A8B83EA97ED279FD1D</td></row>
 		<row><td>AlwaysInstall</td><td>C__E9E6434763CF46FEA81406AF79A832C7</td></row>
@@ -2633,7 +2629,6 @@
 		<row><td>_DD65406CCE0449D19ACE9BCBD37F53F8</td><td>C__DD65406CCE0449D19ACE9BCBD37F53F8</td><td>TABLES~1.ICO|tablescript.ico</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\tablescript.ico</td><td>5</td><td/></row>
 		<row><td>_DE9A9221F979444587778A837F78F513</td><td>C__DE9A9221F979444587778A837F78F513</td><td>DATABA~1.ICO|Database-serverspackage.ico</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\Images\Database-serverspackage.ico</td><td>5</td><td/></row>
 		<row><td>_DEA2875F782C487A8B0D791604CC0E70</td><td>C__DEA2875F782C487A8B0D791604CC0E70</td><td>WITHNO~1.TXT|WITH NOLOCK.txt</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuild\Utility\WITH NOLOCK.txt</td><td>5</td><td/></row>
-		<row><td>_E01E3408A09645BAA1153B961950FADE</td><td>C__E01E3408A09645BAA1153B961950FADE</td><td>log4net.dll</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\lib\log4net\log4net.dll</td><td>5</td><td/></row>
 		<row><td>_E021FD527DE24BC9B8DB6454AF0985D8</td><td>C__E021FD527DE24BC9B8DB6454AF0985D8</td><td>WRAPAD~1.SQL|Wrap Add Primary Key.sql</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuild\Utility\Wrap Add Primary Key.sql</td><td>5</td><td/></row>
 		<row><td>_E13A84CE0BB5486F8085AEF2DC584BEC</td><td>C__E13A84CE0BB5486F8085AEF2DC584BEC</td><td>IFNOTE~1.SQL|If Not Exists Column.sql</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuild\Utility\If Not Exists Column.sql</td><td>5</td><td/></row>
 		<row><td>_E174AD01335F4E2C8A3A3E935A5A4267</td><td>C__E174AD01335F4E2C8A3A3E935A5A4267</td><td>SqlBuildManager.Console.Primary output</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;SqlBuildManager.Console&gt;|Built</td><td>7</td><td/></row>
@@ -2641,7 +2636,6 @@
 		<row><td>_E359AD655E8D4B42AE03BE992289FA0A</td><td>C__E359AD655E8D4B42AE03BE992289FA0A</td><td>image122.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image122.jpg</td><td>5</td><td/></row>
 		<row><td>_E386B584B96A43B09C92B209E72DB93D</td><td>C__E386B584B96A43B09C92B209E72DB93D</td><td>image096.png</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image096.png</td><td>5</td><td/></row>
 		<row><td>_E53CF772D90042DAB8DD0B053D77D575</td><td>C__E53CF772D90042DAB8DD0B053D77D575</td><td>image092.png</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image092.png</td><td>5</td><td/></row>
-		<row><td>_E7230C18BDAE4450A8C642D1FE843553</td><td>C__E7230C18BDAE4450A8C642D1FE843553</td><td>ICSHAR~1.DLL|ICSharpCode.SharpZipLib.dll</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\ICSharpCode.SharpZipLib.dll</td><td>5</td><td/></row>
 		<row><td>_E851F629E9004EF8A0404A183219BC10</td><td>C__E851F629E9004EF8A0404A183219BC10</td><td>MICROS~1.DLL|Microsoft.SqlServer.SmoExtended.dll</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\lib\SqlServer\Microsoft.SqlServer.SmoExtended.dll</td><td>5</td><td/></row>
 		<row><td>_E9E50644322846A8B83EA97ED279FD1D</td><td>C__E9E50644322846A8B83EA97ED279FD1D</td><td>image109.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image109.jpg</td><td>5</td><td/></row>
 		<row><td>_E9E6434763CF46FEA81406AF79A832C7</td><td>C__E9E6434763CF46FEA81406AF79A832C7</td><td>image080.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image080.jpg</td><td>5</td><td/></row>
@@ -3037,7 +3031,6 @@
 		<row><td>C__DD65406CCE0449D19ACE9BCBD37F53F8</td><td/><td/><td>_D5750618_2577_4936_BAEE_3F334E9747B0_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__DE9A9221F979444587778A837F78F513</td><td/><td/><td>_F13BDE5B_48E4_41BC_A45B_0FFC8A85F2C7_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__DEA2875F782C487A8B0D791604CC0E70</td><td/><td/><td>_FC12CA94_CDBC_4955_B488_282A0254E303_FILTER</td><td/><td/><td/><td/></row>
-		<row><td>C__E01E3408A09645BAA1153B961950FADE</td><td/><td/><td>_6B0270E9_48ED_4D1D_A83A_88F876E0E8D8_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__E021FD527DE24BC9B8DB6454AF0985D8</td><td/><td/><td>_EFB3D293_468A_425C_AE0C_1C5E51AF33EC_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__E13A84CE0BB5486F8085AEF2DC584BEC</td><td/><td/><td>_8549EB2B_5DE5_4258_9330_786BDF581743_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__E174AD01335F4E2C8A3A3E935A5A4267</td><td/><td/><td>_CFD6594D_8D75_41EE_B786_E2A08FD21DC7_FILTER</td><td/><td/><td/><td/></row>
@@ -3045,7 +3038,6 @@
 		<row><td>C__E359AD655E8D4B42AE03BE992289FA0A</td><td/><td/><td>_BF038C31_EA50_44A6_B08C_83EDB9C0AF58_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__E386B584B96A43B09C92B209E72DB93D</td><td/><td/><td>_F8519126_B640_4D46_9D7A_28AC4FBB32EA_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__E53CF772D90042DAB8DD0B053D77D575</td><td/><td/><td>_56A11DB8_448D_4AD2_9D52_1314D2B7B939_FILTER</td><td/><td/><td/><td/></row>
-		<row><td>C__E7230C18BDAE4450A8C642D1FE843553</td><td/><td/><td>_4A74E147_4B78_40BD_9E81_A6AAFA66BA40_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__E851F629E9004EF8A0404A183219BC10</td><td/><td/><td>_65659DEF_83AA_4CD4_8F9B_09898E17E749_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__E9E50644322846A8B83EA97ED279FD1D</td><td/><td/><td>_917FBBBA_8DD2_46F0_9BD5_4E1C4FD64FBD_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__E9E6434763CF46FEA81406AF79A832C7</td><td/><td/><td>_64E1918B_27EC_4943_9C93_1D5464578431_FILTER</td><td/><td/><td/><td/></row>
