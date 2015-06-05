@@ -1441,6 +1441,12 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+   <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
+      <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="bin\Debug\Manual\" />
     <Folder Include="bin\Debug\Utility\" />
   </ItemGroup>
