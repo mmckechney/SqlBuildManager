@@ -99,12 +99,14 @@
     <Compile Include="SqlBuildHelperTest_MultiDb.cs" />
     <Compile Include="SqlBuildHelperTest_ProcessBuild.cs" />
     <Compile Include="StatusReportingTest.cs" />
+    <Compile Include="DacPacHelperTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="AuthoringTests.txt" />
     <EmbeddedResource Include="Resources\LoggingTable.sql" />
     <EmbeddedResource Include="Resources\LoggingTableCommitCheckIndex.sql" />
     <Content Include="Resources\MultiDb_WithQueryRowData.xml" />
+    <Content Include="Resources\SyncScriptRaw.sql" />
     <Content Include="Resources\TableLockingScript.sql" />
     <Content Include="Resources\XmlWithNoNamespace.txt" />
     <Content Include="Resources\XmlWithInvalidNamespace.txt" />
@@ -113,6 +115,9 @@
     <Content Include="Resources\CreateDatabaseScript.sql" />
     <Content Include="Resources\remote_server_list.txt" />
     <None Include="packages.config" />
+    <None Include="Resources\PlatunumSchema.dacpac">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Resources\remote_server_list_with_spaces_and_blank_lines.txt" />
     <None Include="Resources\remote_server_list_with_spaces.txt" />
   </ItemGroup>
@@ -151,6 +156,9 @@
     <None Include="Resources\NoTrans_MultiDb.multiDb" />
     <None Include="Resources\NoTrans_MultiDb.sbm" />
     <None Include="Resources\sbx_package_tester.sbx" />
+    <None Include="Resources\TarnishedSchema.dacpac">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="SqlBuildHelper_ScriptRun.OrderedTest" />
     <Shadow Include="Test References\SqlSync.SqlBuild1.accessor" />
   </ItemGroup>
@@ -181,6 +189,12 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
+      <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

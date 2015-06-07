@@ -17,6 +17,7 @@ using SqlSync.Connection;
 using SqlSync.MRU;
 using SqlSync.Constants;
 using SqlSync.DbInformation;
+using System.Linq;
 namespace SqlSync
 {
 	/// <summary>
@@ -1522,44 +1523,14 @@ namespace SqlSync
 			}
 			else
 			{
-				SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-				string projFileName = directory+@"\"+XmlFileNames.MainProjectFile;
-				for(int i=0;i<files.Length;i++)
-				{
-					string shortFileName = Path.GetFileName(files[i]);
-					if(shortFileName == XmlFileNames.MainProjectFile ||
-						shortFileName == XmlFileNames.ExportFile)
-						continue;
 
-					//statStatus.Text = "Adding "+ shortFileName + " to Build File";
-
-					SqlBuildFileHelper.AddScriptFileToBuild(
-						ref buildData,
-						projFileName,
-						shortFileName,
-						i+1,
-						"Code Table Populate Script",
-						true,
-						true,
-						this.data.DatabaseName,
-						false,
-						buildFileName,
-						false,
-						true,
-						System.Environment.UserName,
-						20,"");
-
-				}
-
-				//statStatus.Text = "Saving to Build File "+Path.GetFileName(buildFileName);
-				SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData,projFileName,buildFileName);
-				//Delete the temp directory
-
+                SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildFileName, files.ToList(), this.data.DatabaseName);
+				
 				files = Directory.GetFiles(directory);
 				for(int i=0;i<files.Length;i++)
 					File.Delete(files[i]);
 				Directory.Delete(directory,true);
-				//statStatus.Text = "Build file "+ Path.GetFileName(buildFileName) +" saved.";
+				
 			}
 		}
 		private void SaveToNewBuildFile()

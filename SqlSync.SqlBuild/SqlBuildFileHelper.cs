@@ -350,6 +350,59 @@ namespace SqlSync.SqlBuild
 			PackageProjectFileIntoZip(buildData,Path.GetDirectoryName(projFileName)+@"\", buildZipFileName);
 		}
 
+        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName)
+        {
+            if (File.Exists(buildFileName))
+            {
+                return false;
+            }
+            string directory = Path.GetDirectoryName(buildFileName);
+            try
+            {
+                SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+                string projFileName = directory + @"\" + XmlFileNames.MainProjectFile;
+                int i = 0;
+                foreach (string file in fileNames)
+                {
+                    string shortFileName = Path.GetFileName(file);
+                    if (shortFileName == XmlFileNames.MainProjectFile ||
+                        shortFileName == XmlFileNames.ExportFile)
+                        continue;
+
+                    i++;
+                    SqlBuildFileHelper.AddScriptFileToBuild(
+                        ref buildData,
+                        projFileName,
+                        shortFileName,
+                        i + 1,
+                        "Code Table Populate Script",
+                        true,
+                        true,
+                        targetDatabaseName,
+                        false,
+                        buildFileName,
+                        false,
+                        true,
+                        System.Environment.UserName,
+                        20, "");
+
+                }
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildFileName);
+                return true;
+            }
+            catch(Exception exe)
+            {
+                log.Error("Unable to package scripts", exe);
+                return false;
+            }
+
+        }
+        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, string directory, string targetDatabaseName)
+        {
+            string[] files = Directory.GetFiles(directory);
+            return SaveSqlFilesToNewBuildFile(buildFileName, files.ToList(), targetDatabaseName);
+        }
+
         #region .: Packaging SBX into SBM :.
         public static List<string> PackageSbxFilesIntoSbmFiles(string directoryName, out string message)
         {
