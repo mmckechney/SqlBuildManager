@@ -20,6 +20,12 @@ namespace SqlSync.SqlBuild
         public virtual string GoldServer { get; set; }
 
         [System.Runtime.Serialization.DataMember()]
+        public virtual string PlatinumDacpac { get; set; }
+
+        [System.Runtime.Serialization.DataMember()]
+        public virtual string TargetDacpac { get; set; }
+
+        [System.Runtime.Serialization.DataMember()]
         public bool ContinueOnFailure { get; set; }
     }
 }

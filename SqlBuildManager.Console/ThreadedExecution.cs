@@ -47,12 +47,17 @@ namespace SqlBuildManager.Console
         private string buildRequestedBy = string.Empty;
 
         private static string buildZipFileName = string.Empty;
+        private static string platinumDacPacFileName = string.Empty;
         /// <summary>
         /// The name of the zippedbuild file (.sbm)
         /// </summary>
         internal static string BuildZipFileName
         {
             get { return ThreadedExecution.buildZipFileName; }
+        }
+        internal static string PlatinumDacPacFileName
+        {
+            get { return ThreadedExecution.platinumDacPacFileName; }
         }
 
         private static string rootLoggingPath = string.Empty;
@@ -172,14 +177,16 @@ namespace SqlBuildManager.Console
                 return tmpReturn;
             }
 
+            //Check for the platinum dacpac and configure it if necessary
+            tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref multiData);
+
             //Set the number of allowed retries...
             multiData.AllowableTimeoutRetries = cmdLine.AllowableTimeoutRetries;
             //Set Trial
             multiData.RunAsTrial = cmdLine.Trial;
 
-            return Execute(ThreadedExecution.buildZipFileName, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName);
+            return Execute(ThreadedExecution.buildZipFileName, cmdLine.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName);
         }
-
 
         /// <summary>
         /// Execute method that is used inherently from the Execute() and also from the RemoteExecution service.
@@ -190,7 +197,7 @@ namespace SqlBuildManager.Console
         /// <param name="description"></param>
         /// <param name="buildRequestedBy"></param>
         /// <returns></returns>
-        public int Execute(string buildZipFileName, MultiDbData multiData, string rootLoggingPath, string description, string buildRequestedBy)
+        public int Execute(string buildZipFileName, string platinumDacPacFileName, MultiDbData multiData, string rootLoggingPath, string description, string buildRequestedBy)
         {
             ThreadedExecution.buildZipFileName = buildZipFileName;
             
@@ -212,6 +219,8 @@ namespace SqlBuildManager.Console
                     this.cmdLine.UserName = multiData.UserName;
                 if (!string.IsNullOrWhiteSpace(multiData.Password))
                     this.cmdLine.Password = multiData.Password;
+
+                this.cmdLine.PlatinumDacpac = platinumDacPacFileName;
             }
 
                

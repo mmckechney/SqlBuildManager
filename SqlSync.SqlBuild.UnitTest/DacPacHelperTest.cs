@@ -29,9 +29,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllBytes(workingDir + @"\TarnishedSchema.dacpac", Properties.Resources.TarnishedSchema);
             string buildFileName = Path.GetTempFileName();
 
-            bool result = DacPacHelper.CreateSbmFromDacPacDifferences(workingDir + @"\PlatunumSchema.dacpac", workingDir + @"\TarnishedSchema.dacpac", buildFileName);
-
-
+            bool result = DacPacHelper.CreateSbmFromDacPacDifferences(workingDir + @"\PlatunumSchema.dacpac", workingDir + @"\TarnishedSchema.dacpac", out buildFileName);
 
             Assert.IsTrue(result);
             Assert.IsTrue(File.ReadAllBytes(buildFileName).Length > 0);

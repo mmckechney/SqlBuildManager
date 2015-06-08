@@ -20,12 +20,19 @@ Remote Execution..
     /TimeoutRetryCount=(integer)               Number of times to retry os a script timeout is encountered (default is 0)
     /DistributionType=(equal|local)            Sets whether to split execution evenly across all execution servers 
 	                                           or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
+Dacpac Execution...
+    /PlatinumDacpac="<filename>"      Name of the dacpac containing the platinum schema
+    /TargetDacpac="<filename>"        Name of the dacpac containing the schema of the database to be updated
+	     Note: Authentication settings (below) can also be used to extract a target dacpac
+         Note: Remote execution settings can be used for a multi-database deploy
 
-Other settings..
+Authentication settings..
     /UserName="<username>"            The username to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
     /Password="<password>"            The password to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
     /Database="<database name>"       Name of a single database to run against
     /Server="<server name>"           Name of a server for single database run
+
+Other settings...
     /ScriptSrcDir="<directory>"       Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)
     /LogToDatabaseName="<db name>"    Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target)
     /ScriptLogFile="<filename>"       Alternate name for the file containing the script run log

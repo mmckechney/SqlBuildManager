@@ -90,6 +90,13 @@ namespace SqlSync.SqlBuild
             get { return isTransactional; }
             set { isTransactional = value; }
         }
+
+        string platinumDacPacFileName = string.Empty;
+        public string PlatinumDacPacFileName
+        {
+            get { return platinumDacPacFileName; }
+            set { platinumDacPacFileName = value; }
+        }
         
         List<DatabaseOverride> targetDatabaseOverrides;
 

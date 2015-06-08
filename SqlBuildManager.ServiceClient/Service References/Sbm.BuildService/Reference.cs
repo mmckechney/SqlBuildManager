@@ -53,6 +53,12 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         private string[] MultiDbTextConfigField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private byte[] PlatinumDacpacContentsField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string PlatinumDacpacFileNameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private byte[] SqlBuildManagerProjectContentsField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -200,6 +206,32 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
                 if ((object.ReferenceEquals(this.MultiDbTextConfigField, value) != true)) {
                     this.MultiDbTextConfigField = value;
                     this.RaisePropertyChanged("MultiDbTextConfig");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public byte[] PlatinumDacpacContents {
+            get {
+                return this.PlatinumDacpacContentsField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.PlatinumDacpacContentsField, value) != true)) {
+                    this.PlatinumDacpacContentsField = value;
+                    this.RaisePropertyChanged("PlatinumDacpacContents");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string PlatinumDacpacFileName {
+            get {
+                return this.PlatinumDacpacFileNameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.PlatinumDacpacFileNameField, value) != true)) {
+                    this.PlatinumDacpacFileNameField = value;
+                    this.RaisePropertyChanged("PlatinumDacpacFileName");
                 }
             }
         }

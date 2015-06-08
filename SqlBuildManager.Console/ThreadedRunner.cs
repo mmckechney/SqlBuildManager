@@ -153,6 +153,8 @@ namespace SqlBuildManager.Console
                 if (this.cmdArgs.LogToDatabaseName.Length > 0)
                     runData.LogToDatabaseName = this.cmdArgs.LogToDatabaseName;
 
+                runData.PlatinumDacPacFileName = cmdArgs.PlatinumDacpac;
+
                 //Create a connection object.. all we need is the server here, the DB will be filled in at execution time
                 connData = new ConnectionData(server, "");
                 if (this.cmdArgs.UserName.Length > 0 && this.cmdArgs.Password.Length > 0)

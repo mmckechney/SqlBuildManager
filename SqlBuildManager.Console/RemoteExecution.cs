@@ -179,6 +179,8 @@ namespace SqlBuildManager.Console
             CommandLineArgs cmd = CommandLine.ParseCommandLineArg(args);
             string[] errorMessages;
             setting = null;
+
+            #region .: Simple Validation or settings :.
             int tmpReturn = Validation.ValidateCommonCommandLineArgs(cmd,out errorMessages);
             if(tmpReturn != 0)
             {
@@ -245,8 +247,9 @@ namespace SqlBuildManager.Console
                     return -707;
              }
 
+            #endregion
 
-            MultiDbData multiDb;
+             MultiDbData multiDb;
             int valRet = Validation.ValidateAndLoadMultiDbData(cmd.MultiDbRunConfigFileName, out multiDb, out errorMessages);
             if (valRet != 0)
             {
@@ -258,6 +261,9 @@ namespace SqlBuildManager.Console
                 return valRet;
             }
 
+            //If there is a platinum dacpac specified...
+            Validation.ValidateAndLoadPlatinumDacpac(ref cmd, ref multiDb);
+            
             List<string> remote = null;
             if (cmd.RemoteServers.ToLower() != "azure")
             {
@@ -269,7 +275,9 @@ namespace SqlBuildManager.Console
                 List<ServerConfigData> serverData = manager.GetListOfAzureInstancePublicUrls();
                 remote = serverData.Select(s => s.ServerName).ToList();
             }
-            
+
+
+            //Validate that all of the Azure servers are accepting commands
             List<ServerConfigData> remoteServer = null;
             Protocol p = (cmd.RemoteServers.ToLower() == "azure") ? Protocol.AzureHttp : Protocol.Tcp;
             int statReturn = ValidateRemoteServerAvailability(remote,p, out remoteServer, out errorMessages);
@@ -283,6 +291,7 @@ namespace SqlBuildManager.Console
                 return statReturn;
             }
 
+          
 
             //Now that all of the validation is complete... create the settings object to return
             setting = new BuildSettings();
@@ -305,13 +314,20 @@ namespace SqlBuildManager.Console
             setting.RemoteExecutionServers = remoteServer;
             setting.SqlBuildManagerProjectFileName = Path.GetFileName(cmd.BuildFileName);
 
-            //setting.SqlBuildManagerProjectContents = File.ReadAllBytes(cmd.BuildFileName);
             setting.SqlBuildManagerProjectContents = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(cmd.BuildFileName);
 
             setting.DbUserName = cmd.UserName;
             setting.DbPassword = cmd.Password;
+
+            if (!string.IsNullOrEmpty(cmd.PlatinumDacpac))
+            {
+                setting.PlatinumDacpacContents = File.ReadAllBytes(cmd.PlatinumDacpac);
+                setting.PlatinumDacpacFileName = Path.GetFileName(cmd.PlatinumDacpac);
+            }
             return 0;
         }
+
+       
 
         private int ValidateAll(string[] cmdArgs, ref BuildServiceManager manager, out BuildSettings bldSettings)
         {

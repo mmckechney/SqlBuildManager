@@ -78,10 +78,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-   <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
+    <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
       <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Service References\Sbm.BuildService\BuildService1.disco" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs">
@@ -112,29 +113,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\DataSources\SqlSync.Connection.ConnectionTestResult.datasource" />
-    <None Include="Service References\Sbm.BuildService\BuildService.wsdl" />
-    <None Include="Service References\Sbm.BuildService\BuildService.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService1.wsdl" />
-    <None Include="Service References\Sbm.BuildService\BuildService1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService2.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService3.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService4.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService5.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\Sbm.BuildService\BuildService6.xsd">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\SqlSync.Connection.ConnectionTestResult1.datasource" />
@@ -173,9 +151,29 @@
     <WCFMetadataStorage Include="Service References\Sbm.BuildService\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\Sbm.BuildService\BuildService.disco" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Include="Service References\Sbm.BuildService\BuildService2.wsdl" />
+    <None Include="Service References\Sbm.BuildService\BuildService21.wsdl" />
+    <None Include="Service References\Sbm.BuildService\BuildService7.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService71.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService72.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService73.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService74.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService75.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\Sbm.BuildService\BuildService76.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Service References\Sbm.BuildService\configuration91.svcinfo" />
   </ItemGroup>
   <ItemGroup>

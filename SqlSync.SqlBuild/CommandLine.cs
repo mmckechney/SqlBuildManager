@@ -138,6 +138,12 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("continueonfailure") && Boolean.TryParse(dict["continueonfailure"], out cont))
                 cmdLine.ContinueOnFailure = cont;
 
+            if (dict.ContainsKey("platinumdacpac"))
+                cmdLine.PlatinumDacpac = dict["platinumdacpac"];
+
+            if (dict.ContainsKey("targetdacpac"))
+                cmdLine.TargetDacpac = dict["targetdacpac"];
+
 
             return cmdLine;
         }

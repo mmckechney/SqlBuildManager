@@ -119,6 +119,22 @@ namespace SqlBuildManager.Services
             set { dbPassword = value; }
         }
 
+        private byte[] platinumDacpacContents = null;
+        [DataMember(IsRequired = false)]
+        public byte[] PlatinumDacpacContents
+        {
+            get { return platinumDacpacContents; }
+            set { platinumDacpacContents = value; }
+        }
+
+        private string platinumDacpacFileName = null;
+        [DataMember(IsRequired = false)]
+        public string PlatinumDacpacFileName 
+        {
+            get { return platinumDacpacFileName; }
+            set { platinumDacpacFileName = value; }
+        }
+
         public override string ToString()
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();

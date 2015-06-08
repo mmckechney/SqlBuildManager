@@ -266,6 +266,7 @@ namespace SqlSync.SqlBuild
 
                 }
                 buildResults = RunBuildScripts(filteredScripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, ref e);
+
                 if (buildRetries > 0 && buildResults.FinalStatus == BuildItemStatus.Committed)
                     buildResults.FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries;
 
@@ -275,6 +276,21 @@ namespace SqlSync.SqlBuild
                     log.WarnFormat("Timeout encountered. Incrementing retries to {0}", buildRetries);
                 }
             }
+
+            //Do we need to try to update the target using the Platinum Dacpac?
+            if (buildResults.FinalStatus != BuildItemStatus.Committed && buildResults.FinalStatus != BuildItemStatus.TrialRolledBack &&
+                !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName))
+            {
+                var database = (from SqlSyncBuildData.ScriptRow x in filteredScripts select x.Database).First();
+                string targetDatabase = GetTargetDatabase(database);
+                if (DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, this.connData.UserId, this.connData.Password))
+                {
+                    runData.PlatinumDacPacFileName = string.Empty; //Keep this from becoming an infinite loop by taking out the dacpac name
+                    return ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                }
+            }
+
+
 
             //If a timeout gets here.. need to decide how to label the rollback
             if (buildResults.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout && buildRetries > 1) //will always be at least 1..

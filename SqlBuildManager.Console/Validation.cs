@@ -159,5 +159,94 @@ namespace SqlBuildManager.Console
             }
             return 0;
         }
+
+        public static int ValidateAndLoadPlatinumDacpac(ref CommandLineArgs cmdLine, ref MultiDbData multiDb)
+        {
+            //DacPac settings validation
+            if (!String.IsNullOrEmpty(cmdLine.PlatinumDacpac))
+            {
+                if (!File.Exists(cmdLine.PlatinumDacpac))
+                {
+                    string err = String.Format("A Platinum Dacpac file was specified but could not be located at '{0}'", cmdLine.PlatinumDacpac);
+                    log.Error(err);
+                    System.Console.Error.WriteLine(err);
+                    return -729;
+                }
+
+                if (!String.IsNullOrEmpty(cmdLine.TargetDacpac) && !File.Exists(cmdLine.TargetDacpac))
+                {
+                    string err = String.Format("A Target Dacpac file was specified but could not be located at '{0}'", cmdLine.TargetDacpac);
+                    log.Error(err);
+                    System.Console.Error.WriteLine(err);
+                    return -728;
+                }
+            }
+
+
+            //If there are Dacpac settings... we will need to create the SBM automatically..
+            if (!string.IsNullOrEmpty(cmdLine.PlatinumDacpac) && string.IsNullOrEmpty(cmdLine.BuildFileName))
+            {
+                string sbmName = GetSbmFromDacPac(cmdLine, multiDb);
+                if (string.IsNullOrEmpty(sbmName))
+                {
+                    log.Error("Error creating SBM package from Platinum dacpac");
+                    System.Console.Error.WriteLine("Error creating SBM package from Platinum dacpac");
+                    return -5120;
+                }
+                else
+                {
+                    cmdLine.BuildFileName = sbmName;
+                }
+            }
+
+            return 0;
+        }
+
+        private static string GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb)
+        {
+            string targetDacPac;
+            if (String.IsNullOrEmpty(cmd.TargetDacpac))
+            {
+                //Create SBM from Platinum dacpac and target database
+                string database, server;
+                if (string.IsNullOrEmpty(cmd.Database) || string.IsNullOrEmpty(cmd.Server))
+                {
+                    //No specific target identified, so pick the first from the MultiDb config
+                    server = multiDb.First().ServerName;
+                    database = multiDb.First().Databases.First().DatabaseName;
+                }
+                else
+                {
+                    server = cmd.Database;
+                    database = cmd.Server;
+                }
+
+                targetDacPac = Path.GetTempFileName();
+                if (!DacPacHelper.ExtractDacPac(database, server, cmd.UserName, cmd.Password, targetDacPac))
+                {
+                    System.Console.Error.WriteLine(string.Format("Error extracting dacpac from {0}.{1}", server, database));
+                    return string.Empty;
+                }
+            }
+            else
+            {
+                targetDacPac = cmd.TargetDacpac;
+            }
+
+
+            //Create SBM from the two dacpacs
+            string sbmName;
+            if (DacPacHelper.CreateSbmFromDacPacDifferences(cmd.PlatinumDacpac, targetDacPac, out sbmName))
+            {
+                return sbmName;
+            }
+            else
+            {
+                System.Console.Error.WriteLine("Error creating build package from supplied Platinum and Target dacpac files");
+                return string.Empty;
+            }
+
+
+        }
     }
 }

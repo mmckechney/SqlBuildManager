@@ -63,20 +63,22 @@ namespace SqlSync.SqlBuild
 
         }
         
-        public static bool CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string tarnishedDacPacFileName, string buildPackageName)
+        public static bool CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, out string buildPackageName)
         {
-            string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, tarnishedDacPacFileName);
+            string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName);
             if(!string.IsNullOrEmpty(rawScript))
             {
                 string cleaned = CleanDacPacScript(rawScript);
-                string fileName = Path.GetTempPath() + string.Format("{0} to {1}.sql", Path.GetFileNameWithoutExtension(tarnishedDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
-                File.WriteAllText(fileName, cleaned);
-
-                return SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildPackageName, new List<string>() { fileName }, "PLACEHOLDER");
+                string fileName = Path.GetTempPath() + string.Format("{0} to {1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
+                File.WriteAllText(fileName + ".sql", cleaned);
+                buildPackageName = fileName + ".sbm";
+                return SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildPackageName, new List<string>() { fileName }, "client");
             }
+
+            buildPackageName = string.Empty;
             return false;
         }
-        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string tarnishedDacPacFileName)
+        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName)
         {
             string tmpFile = Path.GetTempFileName();
 
@@ -84,7 +86,7 @@ namespace SqlSync.SqlBuild
             pHelper.AddArgument("/Action", "Script");
 
             pHelper.AddArgument("/SourceFile", platinumDacPacFileName);
-            pHelper.AddArgument("/TargetFile", tarnishedDacPacFileName);
+            pHelper.AddArgument("/TargetFile", targetDacPacFileName);
             pHelper.AddArgument("/TargetDatabaseName", "PLACEHOLDER");
 
             //Output
@@ -123,6 +125,41 @@ namespace SqlSync.SqlBuild
             return cleaned;
 
         }
-        
+
+
+        internal static bool UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password)
+        {
+            string tmpDacPacName = Path.GetTempFileName();
+            if(!ExtractDacPac(targetDatabase, targetServerName, userName, password, tmpDacPacName))
+            {
+                return false;
+            }
+
+            string sbmFileName;
+            if(!CreateSbmFromDacPacDifferences(runData.PlatinumDacPacFileName,tmpDacPacName,out sbmFileName))
+            {
+                return false;
+            }
+
+            string workingDirectory = Path.GetTempPath() + Guid.NewGuid().ToString();
+            string projectFilePath = Path.GetTempPath() + Guid.NewGuid().ToString();
+            string projectFileName = null;
+            string result;
+            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, out result))
+            {
+                return false;
+            }
+
+            SqlSyncBuildData buildData;
+            if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projectFileName, false))
+            {
+                return false;
+            }
+
+            runData.BuildData = buildData;
+            runData.BuildFileName = sbmFileName;
+
+            return true;
+        }
     }
 }

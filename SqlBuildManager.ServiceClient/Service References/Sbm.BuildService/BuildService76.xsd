@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/SqlBuildManager.Services.History" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Services.History" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:import schemaLocation="http://localhost/SqlBuildManager.Services/BuildService.svc?xsd=xsd5" namespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Interfaces.Console" />
+  <xs:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd5" namespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Interfaces.Console" />
   <xs:complexType name="ArrayOfBuildRecord">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" name="BuildRecord" nillable="true" type="tns:BuildRecord" />

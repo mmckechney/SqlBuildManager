@@ -38,6 +38,13 @@ namespace SqlBuildManager.Services.History
             set { buildPackageName = value; }
         }
 
+        private string platinumDacPacName = string.Empty;
+        public string PlatinumDacPacName
+        {
+            get { return platinumDacPacName; }
+            set { platinumDacPacName = value; }
+        }
+
         private DateTime submissionDate = DateTime.MinValue;
 
         public DateTime SubmissionDate

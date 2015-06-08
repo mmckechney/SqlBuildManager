@@ -19,7 +19,6 @@ using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.Diagnostics.Management;
 using Microsoft.WindowsAzure.Diagnostics;
 using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.ServiceRuntime;
 using SqlSync.SqlBuild;
 namespace SqlBuildManager.Services
 {
@@ -195,6 +194,14 @@ namespace SqlBuildManager.Services
                 string buildZipFileName = expandedLoggingPath + @"\" + settings.SqlBuildManagerProjectFileName;
                 File.WriteAllBytes(buildZipFileName, settings.SqlBuildManagerProjectContents);
 
+                string platinumDacPacFileName = string.Empty;
+                if (!string.IsNullOrEmpty(settings.PlatinumDacpacFileName) && settings.PlatinumDacpacContents != null)
+                {
+                    log.InfoFormat("Processing platinum dacpac contents. Saving {0} bytes to {1}", settings.PlatinumDacpacContents.Length.ToString(), expandedLoggingPath);
+                    platinumDacPacFileName = expandedLoggingPath + @"\" + settings.PlatinumDacpacFileName;
+                    File.WriteAllBytes(platinumDacPacFileName, settings.PlatinumDacpacContents);
+                }
+
                 MultiDbData multiDb = MultiDbHelper.ImportMultiDbTextConfig(settings.MultiDbTextConfig);
                 multiDb.IsTransactional = settings.IsTransactional;
                 multiDb.RunAsTrial = settings.IsTrialBuild;
@@ -211,10 +218,11 @@ namespace SqlBuildManager.Services
                     RequestedBy = settings.BuildRequestFrom,
                     BuildPackageName = Path.GetFileName(buildZipFileName),
                     SubmissionDate = DateTime.Now,
-                    RootLogPath = expandedLoggingPath
+                    RootLogPath = expandedLoggingPath,
+                    PlatinumDacPacName = Path.GetFileName(platinumDacPacFileName)
                 };
 
-                this.arguments = new WorkArgs(buildZipFileName, multiDb, expandedLoggingPath, settings.Description, record);
+                this.arguments = new WorkArgs(buildZipFileName, platinumDacPacFileName, multiDb, expandedLoggingPath, settings.Description, record);
                 log.DebugFormat("Starting Async execution of {0}", buildZipFileName);
                 bgBuild.RunWorkerAsync();
                 return true;
@@ -453,7 +461,7 @@ namespace SqlBuildManager.Services
             log.DebugFormat("Creating Threaded execution console object. Processing for {0}", record.BuildPackageName);
             SqlBuildManager.Console.ThreadedExecution threaded = new SqlBuildManager.Console.ThreadedExecution();
             
-            int result = threaded.Execute(args.BuildZipFileName, args.MultiDbData, args.RootLoggingPath, args.Description, record.RequestedBy);
+            int result = threaded.Execute(args.BuildZipFileName, args.PlatinumDacPacFileName, args.MultiDbData, args.RootLoggingPath, args.Description, record.RequestedBy);
             log.Info("Threaded execution console complete with result '" + result.ToString() + "'");
             
             record.ReturnValue = (ExecutionReturn)Enum.Parse(typeof(ExecutionReturn), result.ToString());
