@@ -23,6 +23,7 @@ using SqlBuildManager.Enterprise.Feature;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.ScriptHandling.Tags;
 using SqlBuildManager.Interfaces.SourceControl;
+using SqlBuildManager.Interfaces.Console;
 using SqlBuildManager.ScriptHandling;
 using SqlSync.BuildHistory;
 using SqlSync.Compare;
@@ -7392,7 +7393,7 @@ namespace SqlSync.SqlBuild
         {
             SqlBuildRunData runData = (SqlBuildRunData)e.Argument;
             SqlBuildHelper helper = new SqlBuildHelper(this.connData, this.createSqlRunLogFile, this.externalScriptLogFileName, runData.IsTransactional);
-            helper.BuildCommittedEvent += new EventHandler(helper_BuildCommittedEvent);
+            helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
             helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
             helper.ProcessBuild(runData, 0, sender as BackgroundWorker, e);
 
@@ -7417,7 +7418,7 @@ namespace SqlSync.SqlBuild
             id = id.Substring(0, 1) + id.Substring(7, 1) + id.Substring(10, 1) + id.Substring(26, 1) + id.Substring(30, 1);
             multiRunData.MultiRunId = id;
             SqlBuildHelper helper = new SqlBuildHelper(this.connData, this.createSqlRunLogFile, this.externalScriptLogFileName, multiRunData.IsTransactional);
-            helper.BuildCommittedEvent += new EventHandler(helper_BuildCommittedEvent);
+            helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
             helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
             helper.ProcessMultiDbBuild(multiRunData, sender as BackgroundWorker, e);
 
@@ -7619,7 +7620,7 @@ namespace SqlSync.SqlBuild
 
         #region ## Build Helper Event Handlers ##
 
-        private void helper_BuildCommittedEvent(object sender, EventArgs e)
+        private void helper_BuildCommittedEvent(object sender, RunnerReturn rr)
         {
             this.returnCode = 0;
         }

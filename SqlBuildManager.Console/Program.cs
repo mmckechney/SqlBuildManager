@@ -7,6 +7,7 @@ using log4net;
 using System.Reflection;
 using SqlSync.SqlBuild;
 using SqlBuildManager.Enterprise.Policy;
+using SqlBuildManager.Interfaces.Console;
 namespace SqlBuildManager.Console
 {
     class Program
@@ -23,7 +24,7 @@ namespace SqlBuildManager.Console
 
             if (args.Length == 0 || joinedArgs.Contains("/?") || joinedArgs.Contains("/help"))
             {
-                System.Console.WriteLine(Properties.Resources.ConsoleHelp);
+                log.Info(Properties.Resources.ConsoleHelp);
                 Environment.Exit(0);
             }
 
@@ -83,20 +84,19 @@ namespace SqlBuildManager.Console
                 else
                 {
                     log.Info("Entering Remote Server Execution - command flag option");
-                    System.Console.WriteLine("Running remote execution...");
+                    log.Info("Running remote execution...");
                     RemoteExecution remote = new RemoteExecution(args);
 
                     int retVal = remote.Execute();
                     if (retVal != 0)
-                        System.Console.WriteLine("Completed with Errors - check log. Exiting with code: " + retVal.ToString());
+                        log.Warn("Completed with Errors - check log. Exiting with code: " + retVal.ToString());
                     else
-                        System.Console.WriteLine("Completed Successfully. Exiting with code: " + retVal.ToString());
+                        log.Info("Completed Successfully. Exiting with code: " + retVal.ToString());
 
                     TimeSpan span = DateTime.Now - start;
                     string msg = "Total Run time: " + span.ToString();
-                    System.Console.WriteLine(msg);
-                    log.Debug(msg);
-
+                    log.Info(msg);
+                  
                     log.Info("Exiting Remote Execution");
                     System.Environment.Exit(retVal);
 
@@ -106,41 +106,49 @@ namespace SqlBuildManager.Console
             {
                 log.Warn("Exiting Remote Execution with 603: " + exe.ToString());
 
-                System.Console.WriteLine("Execution error - check logs");
+                log.Error("Execution error - check logs");
                 System.Environment.Exit(603);
             }
         }
         private static void RemoteExecutionTestConnectivity(string[] args)
         {
             log.Info("Entering Remote Server Connectivity Testing: agent and database connectivity");
-            System.Console.WriteLine("Entering Remote Server Connectivity Testing...");
+            log.Info("Entering Remote Server Connectivity Testing...");
             RemoteExecution remote = new RemoteExecution(args);
 
             int retVal = remote.TestConnectivity();
             if (retVal != 0)
-                System.Console.WriteLine(
+                log.Error(
                     string.Format("Test Connectivity Failed for {0} server/databases. - check log.",
                                   retVal.ToString()));
             else
-                System.Console.WriteLine("Test Connectivity Completed Successfully. Exiting with code: " + retVal.ToString());
+                log.Info("Test Connectivity Completed Successfully. Exiting with code: " + retVal.ToString());
         }
 
         private static void RunThreadedExecution(string[] args, DateTime start)
         {
             log.Debug("Entering Threaded Execution");
-            System.Console.WriteLine("Running...");
+            log.Info("Running...");
             ThreadedExecution runner = new ThreadedExecution(args);
             int retVal = runner.Execute();
-            if (retVal != 0)
-                System.Console.WriteLine("Completed with Errors - check log");
+            if (retVal == (int)ExecutionReturn.Successful)
+            {
+                log.Info("Completed Successfully");
+            }
+            else if (retVal == (int)ExecutionReturn.DacpacDatabasesInSync)
+            {
+                log.Info("Datbases already in sync");
+                retVal = (int)ExecutionReturn.Successful;
+            }
             else
-                System.Console.WriteLine("Completed Successfully");
+            {
+                log.Warn("Completed with Errors - check log");
+            }     
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
-            System.Console.WriteLine(msg);
-            log.Debug(msg);
-
+            log.Info(msg);
+          
             log.Debug("Exiting Threaded Execution");
 
             System.Environment.Exit(retVal);
@@ -171,14 +179,11 @@ namespace SqlBuildManager.Console
 
             //Send the error output to the error stream
             if (prcHelper.Error.Length > 0)
-                System.Console.Error.WriteLine(prcHelper.Output);
+                log.Error(prcHelper.Output);
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
-            System.Console.WriteLine(msg);
-            log.Debug(msg);
-
-
+            log.Info(msg);
 
             log.Debug("Exiting Standard Execution");
             log4net.LogManager.Shutdown();
@@ -193,13 +198,13 @@ namespace SqlBuildManager.Console
             if (sbmFiles.Count > 0)
             {
                 foreach (string sbm in sbmFiles)
-                    System.Console.WriteLine(sbm);
+                    log.Info(sbm);
 
                 System.Environment.Exit(0);
             }
             else if (message.Length > 0)
             {
-                System.Console.WriteLine(message);
+                log.Warn (message);
                 System.Environment.Exit(604);
             }
             else
@@ -213,21 +218,19 @@ namespace SqlBuildManager.Console
              log.Info("Entering Remote Server Execution - single config file option.");
                 try
                 {
-                    System.Console.WriteLine("Starting Remote Execution...");
+                    log.Info("Starting Remote Execution...");
 
                     RemoteExecution remote = new RemoteExecution(args[0]);
                     int retVal = remote.Execute();
                     if (retVal != 0)
-                        System.Console.WriteLine("Completed with Errors - check logs");
+                        log.Warn("Completed with Errors - check logs");
                     else
-                        System.Console.WriteLine("Completed Successfully");
+                        log.Info("Completed Successfully");
 
 
                     TimeSpan span = DateTime.Now - start;
                     string msg = "Total Run time: " + span.ToString();
-                    System.Console.WriteLine(msg);
-                    log.Debug(msg);
-
+                    log.Info(msg);
 
                     log.Debug("Exiting Remote Execution with " + retVal.ToString());
 
@@ -237,7 +240,7 @@ namespace SqlBuildManager.Console
                 {
                     log.Debug("Exiting Remote Execution with 602: " + exe.ToString());
 
-                    System.Console.WriteLine("Execution error - check logs");
+                    log.Error("Execution error - check logs");
                     System.Environment.Exit(602);
                 }
         }
@@ -256,7 +259,7 @@ namespace SqlBuildManager.Console
         private static void GetDifferences(string[] args)
         {
             string history = Synchronize.GetDatabaseRunHistoryDifference(args);
-            System.Console.WriteLine(history);
+            log.Info(history);
             System.Environment.Exit(0);
         }
 
@@ -265,7 +268,7 @@ namespace SqlBuildManager.Console
             string packageName = BackoutCommandLine.CreateBackoutPackage(args);
             if (!String.IsNullOrEmpty(packageName))
             {
-                System.Console.WriteLine(packageName);
+                log.Info(packageName);
                 System.Environment.Exit(0);
             }
             else
@@ -280,7 +283,7 @@ namespace SqlBuildManager.Console
             string hash = SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
             if (!String.IsNullOrEmpty(hash))
             {
-                System.Console.WriteLine(hash);
+                log.Info(hash);
                 System.Environment.Exit(0);
             }
             else
@@ -297,10 +300,10 @@ namespace SqlBuildManager.Console
             List<string> policyMessages = helper.CommandLinePolicyCheck(packageName, out passed);
             if (policyMessages.Count > 0)
             {
-                System.Console.WriteLine("Script Policy Messages:");
+                log.Info("Script Policy Messages:");
                 foreach (var policyMessage in policyMessages)
                 {
-                    System.Console.WriteLine(policyMessage);
+                    log.Info(policyMessage);
                 }
             }
 

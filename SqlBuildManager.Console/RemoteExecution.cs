@@ -80,7 +80,7 @@ namespace SqlBuildManager.Console
                 if (!success)
                     log.Error("Unable to retrieve the failure database configuration data");
 
-                System.Console.WriteLine("One or more remote execution servers encountered an execution error. Check the \"SqlBuildManager.Console.log\" file for details");
+                log.Warn("One or more remote execution servers encountered an execution error. Check the \"SqlBuildManager.Console.log\" file for details");
                 return (int)con.ExecutionReturn.OneOrMoreRemoteServersHadError;
             }
             else
@@ -104,12 +104,12 @@ namespace SqlBuildManager.Console
 
             if (err.Any())
             {
-                System.Console.Error.WriteLine(
+                log.Error(
                     String.Format("Connectivity Errors to the following {0} Server/Databases:", err.Count()));
           
                 var errorList =
                     err.Select(combined => combined.Server +": "+ combined.Database).Aggregate((start, add) => start + "\r\n" + add);
-                System.Console.Error.WriteLine(errorList);
+                log.Error(errorList);
                 return err.Count();
             }
 
@@ -187,7 +187,7 @@ namespace SqlBuildManager.Console
                 for(int i=0;i<errorMessages.Length;i++)
                 {
                     log.Error(errorMessages[i]);
-                    System.Console.Error.WriteLine(errorMessages[i]);
+                    log.Error(errorMessages[i]);
                 }
                 return tmpReturn;
             }
@@ -196,7 +196,7 @@ namespace SqlBuildManager.Console
             {
                 string err = "The command line arguments is missing a value for \"RemoteServers\". This is required for a remote server execution";
                 log.Error(err);
-                System.Console.Error.WriteLine(err);
+                log.Error(err);
                 return -700;
             }
 
@@ -204,7 +204,7 @@ namespace SqlBuildManager.Console
             {
                 string err = "The command line arguments value for \"RemoteServers\" is not a valid file name, nor is the value set to \"derive\" or \"azure\"";
                 log.Error(err);
-                System.Console.Error.WriteLine(err);
+                log.Error(err);
                 return -701;
             }
 
@@ -212,7 +212,7 @@ namespace SqlBuildManager.Console
             {
                 string err = "The command line arguments is missing a value for \"DistributionType\". This is required for non-Azure remote server execution";
                 log.Error(err);
-                System.Console.Error.WriteLine(err);
+                log.Error(err);
                 return -702;
             }
 
@@ -220,7 +220,7 @@ namespace SqlBuildManager.Console
             {
                 string err = "The command line combination of  DistributionType=local and RemoteServers=azure is not allowed.";
                 log.Error(err);
-                System.Console.Error.WriteLine(err);
+                log.Error(err);
                 return -704;
             }
 
@@ -230,7 +230,7 @@ namespace SqlBuildManager.Console
                 {
                     string err = "The command line argument \"DistributionType\" has an invalid value. Allowed values are \"equal\" or \"local\"";
                     log.Error(err);
-                    System.Console.Error.WriteLine(err);
+                    log.Error(err);
                     return -703;
                 }
             }
@@ -243,7 +243,7 @@ namespace SqlBuildManager.Console
              {
                   string err = "When running a remote execution on Azure, a username and password are required";
                     log.Error(err);
-                    System.Console.Error.WriteLine(err);
+                    log.Error(err);
                     return -707;
              }
 
@@ -256,13 +256,18 @@ namespace SqlBuildManager.Console
                 for (int i = 0; i < errorMessages.Length; i++)
                 {
                     log.Error(errorMessages[i]);
-                    System.Console.Error.WriteLine(errorMessages[i]);
+                    log.Error(errorMessages[i]);
                 }
                 return valRet;
             }
 
             //If there is a platinum dacpac specified...
-            Validation.ValidateAndLoadPlatinumDacpac(ref cmd, ref multiDb);
+            var dacPacReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmd, ref multiDb);
+            if(dacPacReturn == (int)con.ExecutionReturn.DacpacDatabasesInSync)
+            {
+                log.Error("The dacpac databases are already in sync.");
+                return (int)con.ExecutionReturn.DacpacDatabasesInSync;
+            }
             
             List<string> remote = null;
             if (cmd.RemoteServers.ToLower() != "azure")
@@ -286,7 +291,7 @@ namespace SqlBuildManager.Console
                  for (int i = 0; i < errorMessages.Length; i++)
                 {
                     log.Error(errorMessages[i]);
-                    System.Console.Error.WriteLine(errorMessages[i]);
+                    log.Error(errorMessages[i]);
                 }
                 return statReturn;
             }
@@ -374,7 +379,7 @@ namespace SqlBuildManager.Console
                         for (int i = 0; i < errorMessages.Length; i++)
                         {
                             log.Error(errorMessages[i]);
-                            System.Console.Error.WriteLine(errorMessages[i]);
+                            log.Error(errorMessages[i]);
                         }
                         return tmp;
                     }
@@ -411,7 +416,7 @@ namespace SqlBuildManager.Console
             {
                 string message = String.Format("The following database servers will not be updated with the current distribution type and remote execution server settings:\r\n{0}", String.Join("\r\n", unassignedDbServers.ToArray()));
                 log.Error(message);
-                System.Console.Error.WriteLine("Some databases will not get updated with the current settings. See \"SqlBuildManager.Console.log\" for details");
+                log.Error("Some databases will not get updated with the current settings. See \"SqlBuildManager.Console.log\" for details");
 
                 return (int)con.ExecutionReturn.UnassignedDatabaseServers;
             }

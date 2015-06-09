@@ -32,6 +32,7 @@ namespace SqlSync.SqlBuild
         }
         public static bool ExtractDacPac(string sourceDatabase, string sourceServer, string userName, string password, string dacPacFileName)
         {
+            log.InfoFormat("Extracting dacpac from {0} : {1}", sourceServer, sourceDatabase);
             ProcessHelper pHelper = new ProcessHelper();
 
             //Extract Action
@@ -63,26 +64,38 @@ namespace SqlSync.SqlBuild
 
         }
         
-        public static bool CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, out string buildPackageName)
+        public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, out string buildPackageName)
         {
+            log.InfoFormat("Generating SBM build from dacpac differences: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
+            buildPackageName = string.Empty;
             string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName);
-            if(!string.IsNullOrEmpty(rawScript))
+            if (!string.IsNullOrEmpty(rawScript))
             {
                 string path = Path.GetTempPath() + "dacpac-" + Guid.NewGuid().ToString() + @"\";
                 Directory.CreateDirectory(path);
 
                 string cleaned = CleanDacPacScript(rawScript);
+                if (string.IsNullOrEmpty(cleaned))
+                {
+                    return DacpacDeltasStatus.InSync;
+                }
+
                 string fileName = path + string.Format("{0} to {1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
                 File.WriteAllText(fileName + ".sql", cleaned);
                 buildPackageName = fileName + ".sbm";
-                return SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildPackageName, new List<string>() { fileName + ".sql" }, "client",true);
-            }
+                if (SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildPackageName, new List<string>() { fileName + ".sql" }, "client", true))
+                {
+                    return DacpacDeltasStatus.Success;
+                }
 
-            buildPackageName = string.Empty;
-            return false;
+            }
+           
+            return DacpacDeltasStatus.Failure;
         }
         internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName)
         {
+            log.InfoFormat("Generating scripts: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
+
             string tmpFile = Path.GetTempFileName();
 
             ProcessHelper pHelper = new ProcessHelper();
@@ -120,6 +133,10 @@ namespace SqlSync.SqlBuild
             string cutLine = @"PRINT N'The following operation was generated from a refactoring log file";
 
             int startOfLine = dacPacGeneratedScript.IndexOf(cutLine);
+            if(startOfLine == -1) //Means that these databases are already in sync!
+            {
+                return string.Empty;
+            }
             int crAfter = dacPacGeneratedScript.IndexOf("\r\n", startOfLine);
 
 
@@ -130,39 +147,46 @@ namespace SqlSync.SqlBuild
         }
 
 
-        internal static bool UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password, string workingDirectory)
+        internal static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password, string workingDirectory)
         {
-            string tmpDacPacName = Path.GetTempPath() + targetDatabase + ".dacpac";
+            string tmpDacPacName = workingDirectory + targetDatabase + ".dacpac";
             if(!ExtractDacPac(targetDatabase, targetServerName, userName, password, tmpDacPacName))
             {
-                return false;
+                return DacpacDeltasStatus.ExtractionFailure;
             }
 
             string sbmFileName;
-            if(!CreateSbmFromDacPacDifferences(runData.PlatinumDacPacFileName,tmpDacPacName,out sbmFileName))
+
+            var stat = CreateSbmFromDacPacDifferences(runData.PlatinumDacPacFileName, tmpDacPacName, out sbmFileName);
+            if(stat != DacpacDeltasStatus.Success)
             {
-                return false;
+                return stat;
             }
 
           
             string projectFilePath = Path.GetTempPath() + Guid.NewGuid().ToString();
             string projectFileName = null;
             string result;
+
+            log.InfoFormat("Preparing build package for processing");
             if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, out result))
             {
-                return false;
+                return DacpacDeltasStatus.SbmProcessingFailure;
             }
 
             SqlSyncBuildData buildData;
             if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projectFileName, false))
             {
-                return false;
+                return DacpacDeltasStatus.SbmProcessingFailure;
             }
 
             runData.BuildData = buildData;
             runData.BuildFileName = sbmFileName;
 
-            return true;
+            log.InfoFormat("Build package ready");
+            return DacpacDeltasStatus.Success;
         }
     }
+
+
 }

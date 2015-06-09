@@ -7,6 +7,7 @@ using System.Text;
 using SqlSync.Connection;
 using System.Data;
 using log4net;
+using SqlBuildManager.Interfaces.Console;
 namespace SqlSync.SqlBuild.Syncronizer
 {
     public class DatabaseSyncer
@@ -144,7 +145,7 @@ namespace SqlSync.SqlBuild.Syncronizer
 
                 //Execute the package
                 SqlBuildHelper helper = new SqlBuildHelper(toUpdate, false, string.Empty, runData.IsTransactional);
-                helper.BuildCommittedEvent += new EventHandler(helper_BuildCommittedEvent);
+                helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
                 helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
                 BackgroundWorker bg = new BackgroundWorker()
                     {
@@ -198,7 +199,7 @@ namespace SqlSync.SqlBuild.Syncronizer
         public delegate void SyncronizationInfoEventHandler(string message);
         public event SyncronizationInfoEventHandler SyncronizationInfoEvent;
 
-        private void helper_BuildCommittedEvent(object sender, EventArgs e)
+        private void helper_BuildCommittedEvent(object sender,RunnerReturn rr )
         {
             lastBuildSuccessful = true;
         }

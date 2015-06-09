@@ -15,6 +15,7 @@ using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.SqlLogging;
 using SqlSync.Constants;
 using System.Linq;
+using SqlBuildManager.Interfaces.Console;
 namespace SqlSync.SqlBuild
 {
 	/// <summary>
@@ -282,12 +283,28 @@ namespace SqlSync.SqlBuild
                 !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName))
             {
                 var database = ((SqlSyncBuildData.ScriptRow)filteredScripts[0].Row).Database;
-                string targetDatabase = GetTargetDatabase(database); 
-                if (DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, this.connData.UserId, this.connData.Password, projectFilePath))
+                string targetDatabase = GetTargetDatabase(database);
+                log.WarnFormat("Custom dacpac required for {0} : {1}. Generating file.", serverName, targetDatabase);
+                var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, this.connData.UserId, this.connData.Password, projectFilePath);
+
+                if(stat == DacpacDeltasStatus.Success)
                 {
                     runData.PlatinumDacPacFileName = string.Empty; //Keep this from becoming an infinite loop by taking out the dacpac name
-                    return ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                    var dacStat =  ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                    if(dacStat.FinalStatus ==  BuildItemStatus.Committed || dacStat.FinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
+                    {
+                        dacStat.FinalStatus = BuildItemStatus.CommittedWithCustomDacpac;
+                        if (this.BuildCommittedEvent != null)
+                            this.BuildCommittedEvent(this, RunnerReturn.CommittedWithCustomDacpac);
+                    }
                 }
+                else if(stat == DacpacDeltasStatus.InSync) 
+                {
+                    buildResults.FinalStatus = BuildItemStatus.AlreadyInSync;
+                    if (this.BuildCommittedEvent != null)
+                        this.BuildCommittedEvent(this, RunnerReturn.DacpacDatabasesInSync);
+                }
+
             }
 
 
@@ -929,7 +946,7 @@ namespace SqlSync.SqlBuild
 
 
                     if (this.BuildCommittedEvent != null)
-                        this.BuildCommittedEvent(this, EventArgs.Empty);
+                        this.BuildCommittedEvent(this, RunnerReturn.BuildCommitted);
                 }
                 else
                 {
@@ -2089,7 +2106,7 @@ namespace SqlSync.SqlBuild
         //public event CommitFailureEventHandler CommitFailureEvent;
         public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
         //public event ScriptingErrorEventHandler ScriptingErrorEvent;
-        public event EventHandler BuildCommittedEvent;
+        public event BuildCommittedEventHandler BuildCommittedEvent;
         public event EventHandler BuildSuccessTrialRolledBackEvent;
         public event EventHandler BuildErrorRollBackEvent;
         //public event EventHandler BuildProcessingComplete;

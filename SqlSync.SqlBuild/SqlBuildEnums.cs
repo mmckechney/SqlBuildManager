@@ -121,6 +121,14 @@ namespace SqlSync.SqlBuild
         /// A build that was committed, but required at least one retry due to a timeout
         /// </summary>
         public const string RolledBackAfterRetries = "RolledBackAfterRetries";
+        /// <summary>
+        /// The databases were compared via dacpac and are already in sync
+        /// </summary>
+        public const string AlreadyInSync = "AlreadyInSync";
+        /// <summary>
+        /// Database was updated but required the creation and use of a custom dacpac
+        /// </summary>
+        public const string CommittedWithCustomDacpac = "CommittedWithCustomDacpac";
 	}
 	public class BatchParsing
 	{

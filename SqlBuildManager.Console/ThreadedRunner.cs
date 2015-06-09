@@ -186,7 +186,7 @@ namespace SqlBuildManager.Console
             {
                 //Initilize the run helper object and kick it off.
                 SqlBuildHelper helper = new SqlBuildHelper(connData, true, string.Empty,cmdArgs.Transactional); //don't need an "external" log for this, it's all external!
-                helper.BuildCommittedEvent += new EventHandler(helper_BuildCommittedEvent);
+                helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
                 helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
                 helper.BuildSuccessTrialRolledBackEvent += new EventHandler(helper_BuildSuccessTrialRolledBackEvent);
                 helper.ProcessBuild(runData, bg, e, ThreadedExecution.BatchColl, this.buildRequestedBy,cmdArgs.AllowableTimeoutRetries);
@@ -222,10 +222,10 @@ namespace SqlBuildManager.Console
             }
         }
 
-        void helper_BuildCommittedEvent(object sender, EventArgs e)
+        void helper_BuildCommittedEvent(object sender,RunnerReturn returnValue)
         {
-            log.Debug(this.TargetTag + " BuildCommittedEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.BuildCommitted));
-            this.returnValue = (int)RunnerReturn.BuildCommitted;
+            log.Debug(this.TargetTag + " BuildCommittedEvent status: " + Enum.GetName(typeof(RunnerReturn), returnValue));
+            this.returnValue = (int)returnValue;
         }
 
         private void WriteErrorLog(string loggingDirectory, string message)

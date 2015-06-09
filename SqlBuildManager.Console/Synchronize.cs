@@ -5,10 +5,12 @@ using System.Text;
 using SqlSync.SqlBuild;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.Syncronizer;
+using log4net;
 namespace SqlBuildManager.Console
 {
     public class Synchronize
     {
+        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static string GetDatabaseRunHistoryDifference(string[] args)
         {
             CommandLineArgs cmdLine = ParseAndValidateFlags(args);
@@ -53,7 +55,7 @@ namespace SqlBuildManager.Console
 
         static void dbSync_SyncronizationInfoEvent(string message)
         {
-            System.Console.WriteLine(message);
+            log.Info(message);
         }
 
         private static CommandLineArgs ParseAndValidateFlags(string[] args)
@@ -62,25 +64,25 @@ namespace SqlBuildManager.Console
 
             if (string.IsNullOrEmpty(cmdLine.GoldDatabase))
             {
-                System.Console.WriteLine("Missing /GoldDatabase=\"<database>\" flag");
+                log.Error("Missing /GoldDatabase=\"<database>\" flag");
                 return null;
             }
 
             if (string.IsNullOrEmpty(cmdLine.GoldServer))
             {
-                System.Console.WriteLine("Missing /GoldServer=\"<server>\" flag");
+                log.Error("Missing /GoldServer=\"<server>\" flag");
                 return null;
             }
 
             if (string.IsNullOrEmpty(cmdLine.Database))
             {
-                System.Console.WriteLine("Missing /Database=\"<database>\" flag");
+                log.Error("Missing /Database=\"<database>\" flag");
                 return null;
             }
 
             if (string.IsNullOrEmpty(cmdLine.Server))
             {
-                System.Console.WriteLine("Missing /Server=\"<server>\" flag");
+                log.Error("Missing /Server=\"<server>\" flag");
                 return null;
             }
             return cmdLine;

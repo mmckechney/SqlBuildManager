@@ -148,7 +148,7 @@ namespace SqlBuildManager.Console
 
             SetLoggingPaths(cmdLine.RootLoggingPath);
 
-
+            log.Info("Validating command parameters");
             int tmpReturn = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
@@ -167,12 +167,16 @@ namespace SqlBuildManager.Console
             else if(cmdLine.BuildFileName.Length > 0 )
             {
                 ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
-                WriteToLog("/build setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source", LogType.Message);
+                string msg = "/build setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source";
+                WriteToLog(msg, LogType.Message);
+                log.Info(msg);
             }
             else if(cmdLine.PlatinumDacpac.Length > 0)
             {
                 ThreadedExecution.platinumDacPacFileName = cmdLine.PlatinumDacpac;
-                WriteToLog("/PlatinumDacpac setting found. Using '" + ThreadedExecution.platinumDacPacFileName + "' as build source", LogType.Message);
+                string msg = "/PlatinumDacpac setting found. Using '" + ThreadedExecution.platinumDacPacFileName + "' as build source";
+                WriteToLog(msg, LogType.Message);
+                log.Info(msg);
 
             }
             
@@ -192,6 +196,10 @@ namespace SqlBuildManager.Console
             if (tmpValReturn == 0 && string.IsNullOrEmpty(ThreadedExecution.buildZipFileName))
             {
                 ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
+            }
+            else if(tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
+            {
+                return (int)ExecutionReturn.DacpacDatabasesInSync;
             }
 
             //Set the number of allowed retries...
@@ -248,9 +256,8 @@ namespace SqlBuildManager.Console
             if (buildData == null)
             {
                 error = "Unable to procees. SqlSyncBuild data object is null";
-                log.Error(error);
                 WriteToLog(new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullBuildData }, LogType.Error);
-                System.Console.Error.WriteLine(error);
+                log.Error(error);
                 return (int)ExecutionReturn.NullBuildData;
             }
 
@@ -322,10 +329,9 @@ namespace SqlBuildManager.Console
                 string cfgString = String.Format("{0}:{1},{2}", runner.Server, runner.DefaultDatabaseName, runner.TargetDatabases);
             
                 string msg = "Starting up thread for " + runner.Server + ": " + runner.TargetDatabases;
-                log.Debug(msg);
+                log.Info(msg);
                 WriteToLog(msg, LogType.Message);
                 runner.RunDatabaseBuild();
-
                 switch (runner.ReturnValue)
                 {
                     case (int)RunnerReturn.BuildCommitted:
@@ -334,6 +340,21 @@ namespace SqlBuildManager.Console
                             WriteToLog(runner.Server + "." + runner.TargetDatabases + " : Build Committed", LogType.Commit);
                         else
                             WriteToLog("<a href=\"" + runner.Server + "/" + runner.TargetDatabases + "/\">" + runner.Server + "/" + runner.TargetDatabases + "</a> : Build Committed", LogType.Commit);
+                        break;
+                    case (int)RunnerReturn.DacpacDatabasesInSync:
+                        sbSuccessDatabasesCfg.AppendLine(cfgString);
+                        if (logAsText)
+                            WriteToLog(runner.Server + "." + runner.TargetDatabases + " : Already in Sync", LogType.Commit);
+                        else
+                            WriteToLog("<a href=\"" + runner.Server + "/" + runner.TargetDatabases + "/\">" + runner.Server + "/" + runner.TargetDatabases + "</a> : Already in Sync", LogType.Commit);
+                        break;
+
+                    case (int)RunnerReturn.CommittedWithCustomDacpac:
+                        sbSuccessDatabasesCfg.AppendLine(cfgString);
+                        if (logAsText)
+                            WriteToLog(runner.Server + "." + runner.TargetDatabases + " : Committed with custom dacpac", LogType.Commit);
+                        else
+                            WriteToLog("<a href=\"" + runner.Server + "/" + runner.TargetDatabases + "/\">" + runner.Server + "/" + runner.TargetDatabases + "</a> : Committed with custom dacpac", LogType.Commit);
                         break;
 
                     case (int)RunnerReturn.SuccessWithTrialRolledBack:
@@ -446,7 +467,6 @@ namespace SqlBuildManager.Console
                 string error = "Unable to Extract Sql Build file at '"+sqlBuildProjectFileName+"'. You you need to specify a full directory path? " + result;
                 log.ErrorFormat("Zip extraction error. {0}", error);
                 WriteToLog(new string[] { error, "Returning error code: " + (int)ExecutionReturn.BuildFileExtractionError }, LogType.Error);
-                System.Console.Error.WriteLine(error);
                 return (int)ExecutionReturn.BuildFileExtractionError;
             }
 
@@ -455,7 +475,6 @@ namespace SqlBuildManager.Console
                 string error = "Unable to load project file.";
                 log.ErrorFormat("Build project load error. {0}", error);
                 WriteToLog(new string[] { error, "Returning error code: " + (int)ExecutionReturn.LoadProjectFileError }, LogType.Error);
-                System.Console.Error.WriteLine(error);
                 return (int)ExecutionReturn.LoadProjectFileError;
             }
 
@@ -464,6 +483,7 @@ namespace SqlBuildManager.Console
        
         private void ConstructBuildFileFromScriptDirectory(string directoryName)
         {
+            log.Info("Constructing build file from script directory");
             string shortFileName = string.Empty;
             ThreadedExecution.buildZipFileName = ThreadedExecution.rootLoggingPath +"\\"+ ThreadedExecution.RunID +".sbm";
             string projFileName = this.workingDirectory + @"\"+SqlSync.SqlBuild.XmlFileNames.MainProjectFile;

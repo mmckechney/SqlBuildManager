@@ -10,7 +10,9 @@ namespace SqlBuildManager.Interfaces.Console
         BuildCommitted = 0,
         SuccessWithTrialRolledBack = 5,
         BuildResultInconclusive = 10,
-        BuildErrorNonTransactional = 20
+        BuildErrorNonTransactional = 20,
+        DacpacDatabasesInSync = 87598,
+        CommittedWithCustomDacpac = 87599
     }
 
     [DataContract()]
@@ -61,7 +63,9 @@ namespace SqlBuildManager.Interfaces.Console
         [EnumMember]
         Running = 6000,
         [EnumMember]
-        CheckingConnections = 7000
+        CheckingConnections = 7000,
+        [EnumMember]
+        DacpacDatabasesInSync = 87598
 
     }
 

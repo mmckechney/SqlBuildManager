@@ -62,6 +62,7 @@ namespace SqlSync.SqlBuild
 			this.ErrorMessage = errorMessage;
 		}
 	}
+    public delegate void BuildCommittedEventHandler(object sender, SqlBuildManager.Interfaces.Console.RunnerReturn rr);
 
 	public delegate void ScriptLogWriteEventHandler(object sender, ScriptLogEventArgs e);
 	public class ScriptLogEventArgs: EventArgs

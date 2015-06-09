@@ -29,7 +29,6 @@ namespace SqlBuildManager.Console
             {
                 string msg = "Invalid command line set. Missing /RootLoggingPath setting.";
                 log.Error(msg);
-                System.Console.Error.WriteLine(msg);
                 return -99;
             }
 
@@ -37,9 +36,8 @@ namespace SqlBuildManager.Console
             if (cmdLine.Transactional == false && cmdLine.Trial == true)
             {
                 error = "Invalid command line combination. You cannot have /Transaction=\"false\" and /Trial=\"true\".";
-                log.Error(error);
                 errorMessages = new string[] { error, "Returning error code:" + (int)ExecutionReturn.InvalidTransactionAndTrialCombo };
-                System.Console.Error.WriteLine(error);
+                log.Error(error);
                 return (int)ExecutionReturn.InvalidTransactionAndTrialCombo;
             }
 
@@ -47,9 +45,8 @@ namespace SqlBuildManager.Console
             if (cmdLine.MultiDbRunConfigFileName.Length == 0)
             {
                 error = "Invalid command line set. Missing /override setting.";
-                log.Error(error);
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingOverrideFlag };
-                System.Console.Error.WriteLine(error);
+                log.Error(error);
                 return (int)ExecutionReturn.MissingOverrideFlag;
             }
 
@@ -57,9 +54,8 @@ namespace SqlBuildManager.Console
             if (cmdLine.BuildFileName.Length == 0 && cmdLine.ScriptSrcDir.Length == 0 && cmdLine.PlatinumDacpac.Length == 0)
             {
                 error = "Invalid command line set. Missing /build or /ScriptSrcDir setting.";
-                log.Error(error);
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
-                System.Console.Error.WriteLine(error);
+                log.Error(error);
                 return (int)ExecutionReturn.MissingBuildFlag;
             }
 
@@ -67,9 +63,8 @@ namespace SqlBuildManager.Console
             if (cmdLine.BuildFileName.Length != 0 && !File.Exists(cmdLine.BuildFileName))
             {
                 error = "Missing Build file. The build file specified: "+ cmdLine.BuildFileName +" could not be found";
-                log.Error(error);
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
-                System.Console.Error.WriteLine(error);
+                log.Error(error);
                 return (int)ExecutionReturn.InvalidBuildFileNameValue;
             }
 
@@ -78,9 +73,8 @@ namespace SqlBuildManager.Console
                 if (!Directory.Exists(cmdLine.ScriptSrcDir))
                 {
                     error = "Invalid /ScriptSrcDir setting. The directory '" + cmdLine.ScriptSrcDir + "' does not exist.";
-                    log.Error(error);
                     errorMessages =  new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidScriptSourceDirectory };
-                    System.Console.Error.WriteLine(error);
+                    log.Error(error);
                     return (int)ExecutionReturn.InvalidScriptSourceDirectory;
                 }
             }
@@ -89,9 +83,8 @@ namespace SqlBuildManager.Console
             {
               
                     error = "The /TimeoutRetryCount setting is a negative number. This value needs to be a positive integer.";
-                    log.Error(error);
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.NegativeTimeoutRetryCount };
-                    System.Console.Error.WriteLine(error);
+                    log.Error(error);
                     return (int)ExecutionReturn.NegativeTimeoutRetryCount;
              }
 
@@ -99,9 +92,8 @@ namespace SqlBuildManager.Console
             {
 
                 error = "The /TimeoutRetryCount setting is not allowed when /Transactional=false";
-                log.Error(error);
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.BadRetryCountAndTransactionalCombo };
-                System.Console.Error.WriteLine(error);
+                log.Error(error);
                 return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
             }
 
@@ -111,9 +103,8 @@ namespace SqlBuildManager.Console
             {
 
                 error = "Invalid command line set. The '/override' setting file value must be .multiDb, .multiDbQ or .cfg file.";
-                log.Error(error);
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
-                System.Console.Error.WriteLine(error);
+                log.Error(error);
                 return (int)ExecutionReturn.InvalidOverrideFlag;
             }
 
@@ -128,6 +119,7 @@ namespace SqlBuildManager.Console
         /// <returns>Zero (0) if no errors, otherwise an error code</returns>
         public static int ValidateAndLoadMultiDbData(string multiDbOverrideSettingFileName, out MultiDbData multiData, out string[] errorMessages)
         {
+            log.Info("Validating target database settings");
             string message = string.Empty;
             string error;
             errorMessages = new string[0];
@@ -143,18 +135,16 @@ namespace SqlBuildManager.Console
             if (multiData == null)
             {
                 error = "Unable to read in configuration file " + multiDbOverrideSettingFileName + ((message.Length > 0) ? " :: " + message : "");
-                log.Error(error);
                 errorMessages =  new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullMultiDbConfig };
-                System.Console.Error.WriteLine(error);
+                log.Error(error);
                 return (int)ExecutionReturn.NullMultiDbConfig;
             }
 
             if (!MultiDbHelper.ValidateMultiDatabaseData(multiData))
             {
                 error = "One or more scripts is missing a default or target override database setting. Run has been halted. Please correct the error and try again";
-                log.Error(error);
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingTargetDbOverrideSetting };
-                System.Console.Error.WriteLine(error);
+                log.Error(error);
                 return (int)ExecutionReturn.MissingTargetDbOverrideSetting;
             }
             return 0;
@@ -169,7 +159,6 @@ namespace SqlBuildManager.Console
                 {
                     string err = String.Format("A Platinum Dacpac file was specified but could not be located at '{0}'", cmdLine.PlatinumDacpac);
                     log.Error(err);
-                    System.Console.Error.WriteLine(err);
                     return -729;
                 }
 
@@ -177,7 +166,6 @@ namespace SqlBuildManager.Console
                 {
                     string err = String.Format("A Target Dacpac file was specified but could not be located at '{0}'", cmdLine.TargetDacpac);
                     log.Error(err);
-                    System.Console.Error.WriteLine(err);
                     return -728;
                 }
             }
@@ -186,25 +174,33 @@ namespace SqlBuildManager.Console
             //If there are Dacpac settings... we will need to create the SBM automatically..
             if (!string.IsNullOrEmpty(cmdLine.PlatinumDacpac) && string.IsNullOrEmpty(cmdLine.BuildFileName))
             {
-                string sbmName = GetSbmFromDacPac(cmdLine, multiDb);
-                if (string.IsNullOrEmpty(sbmName))
+                string sbmName;
+                 var stat = GetSbmFromDacPac(cmdLine, multiDb, out sbmName);
+                if (stat == DacpacDeltasStatus.Success)
                 {
-                    log.Error("Error creating SBM package from Platinum dacpac");
-                    System.Console.Error.WriteLine("Error creating SBM package from Platinum dacpac");
-                    return -5120;
+                     cmdLine.BuildFileName = sbmName;
+                    return (int)ExecutionReturn.Successful;
+                }
+                else if(stat ==DacpacDeltasStatus.InSync)
+                {
+                    return (int)ExecutionReturn.DacpacDatabasesInSync;
                 }
                 else
                 {
-                    cmdLine.BuildFileName = sbmName;
+                    log.Error("Error creating SBM package from Platinum dacpac");
+                    return -5120;
                 }
+               
             }
 
             return 0;
         }
-
-        private static string GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb)
+       
+        private static DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName)
         {
+            log.Info("Starting process: create SBM build file from dacpac settings");
             string targetDacPac;
+            sbmName = string.Empty;
             if (String.IsNullOrEmpty(cmd.TargetDacpac))
             {
                 //Create SBM from Platinum dacpac and target database
@@ -213,7 +209,7 @@ namespace SqlBuildManager.Console
                 {
                     //No specific target identified, so pick the first from the MultiDb config
                     server = multiDb.First().ServerName;
-                    database = multiDb.First().Databases.First().DatabaseName;
+                    database = multiDb.First().OverrideSequence.First().Value.First().OverrideDbTarget;
                 }
                 else
                 {
@@ -224,8 +220,8 @@ namespace SqlBuildManager.Console
                 targetDacPac = Path.GetTempPath() + database + ".dacpac";
                 if (!DacPacHelper.ExtractDacPac(database, server, cmd.UserName, cmd.Password, targetDacPac))
                 {
-                    System.Console.Error.WriteLine(string.Format("Error extracting dacpac from {0}.{1}", server, database));
-                    return string.Empty;
+                    log.Error(string.Format("Error extracting dacpac from {0}.{1}", server, database));
+                    return DacpacDeltasStatus.ExtractionFailure;
                 }
             }
             else
@@ -235,18 +231,24 @@ namespace SqlBuildManager.Console
 
 
             //Create SBM from the two dacpacs
-            string sbmName;
-            if (DacPacHelper.CreateSbmFromDacPacDifferences(cmd.PlatinumDacpac, targetDacPac, out sbmName))
+            var stat = DacPacHelper.CreateSbmFromDacPacDifferences(cmd.PlatinumDacpac, targetDacPac, out sbmName);
+            switch(stat)
             {
-                return sbmName;
+                case DacpacDeltasStatus.Success:
+                    log.Info("Successfully created SBM from two dacpacs");
+                    break;
+                case DacpacDeltasStatus.InSync:
+                    log.Info("The two dacpac databases are already in sync");
+                    break;
+                default:
+                    log.Error("Error creating build package from supplied Platinum and Target dacpac files");
+                    break;
+                    
             }
-            else
-            {
-                System.Console.Error.WriteLine("Error creating build package from supplied Platinum and Target dacpac files");
-                return string.Empty;
-            }
+            return stat;
 
 
         }
+
     }
 }
