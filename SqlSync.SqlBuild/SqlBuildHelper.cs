@@ -1896,7 +1896,7 @@ namespace SqlSync.SqlBuild
             {
 				try
 				{
-                    log.InfoFormat("Committings transaction for {0}", key);
+                    log.InfoFormat("Committing transaction for {0}", key);
                     ((BuildConnectData)this.connectDictionary[key]).Transaction.Commit();
 				}
 				catch(Exception e)

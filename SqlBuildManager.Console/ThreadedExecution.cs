@@ -327,11 +327,12 @@ namespace SqlBuildManager.Console
                 ThreadedRunner runner = (ThreadedRunner)state;
                 //SERVER:defaultDb,override
                 string cfgString = String.Format("{0}:{1},{2}", runner.Server, runner.DefaultDatabaseName, runner.TargetDatabases);
-            
+
                 string msg = "Starting up thread for " + runner.Server + ": " + runner.TargetDatabases;
                 log.Info(msg);
                 WriteToLog(msg, LogType.Message);
                 runner.RunDatabaseBuild();
+                log.InfoFormat("{0} : {1} -- {2}", runner.Server, runner.TargetDatabases, runner.ReturnValue.ToString());
                 switch (runner.ReturnValue)
                 {
                     case (int)RunnerReturn.BuildCommitted:
