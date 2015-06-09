@@ -281,9 +281,9 @@ namespace SqlSync.SqlBuild
             if (buildResults.FinalStatus != BuildItemStatus.Committed && buildResults.FinalStatus != BuildItemStatus.TrialRolledBack &&
                 !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName))
             {
-                var database = (from SqlSyncBuildData.ScriptRow x in filteredScripts select x.Database).First();
-                string targetDatabase = GetTargetDatabase(database);
-                if (DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, this.connData.UserId, this.connData.Password))
+                var database = ((SqlSyncBuildData.ScriptRow)filteredScripts[0].Row).Database;
+                string targetDatabase = GetTargetDatabase(database); 
+                if (DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, this.connData.UserId, this.connData.Password, projectFilePath))
                 {
                     runData.PlatinumDacPacFileName = string.Empty; //Keep this from becoming an infinite loop by taking out the dacpac name
                     return ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);

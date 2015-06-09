@@ -242,7 +242,10 @@ namespace SqlSync.SqlBuild
             if (includeHistoryAndLogs)
             {
                 //Add the history file
-                alFiles.Add(XmlFileNames.HistoryFile);
+                if (File.Exists(projFilePath + XmlFileNames.HistoryFile))
+                {
+                    alFiles.Add(XmlFileNames.HistoryFile);
+                }
 
                 //Add any log files
                 string[] logFiles = Directory.GetFiles(projFilePath, "*.log");
@@ -352,7 +355,12 @@ namespace SqlSync.SqlBuild
 
         public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName)
         {
-            if (File.Exists(buildFileName))
+            return SaveSqlFilesToNewBuildFile(buildFileName, fileNames, targetDatabaseName, false);
+        }
+
+        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, bool overwritePreExistingFile)
+        {
+            if (File.Exists(buildFileName) && !overwritePreExistingFile)
             {
                 return false;
             }
@@ -375,7 +383,7 @@ namespace SqlSync.SqlBuild
                         projFileName,
                         shortFileName,
                         i + 1,
-                        "Code Table Populate Script",
+                        "",
                         true,
                         true,
                         targetDatabaseName,

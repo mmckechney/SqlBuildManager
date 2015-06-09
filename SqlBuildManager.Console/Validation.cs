@@ -54,7 +54,7 @@ namespace SqlBuildManager.Console
             }
 
             //Validate and set the value for the build file name
-            if (cmdLine.BuildFileName.Length == 0 && cmdLine.ScriptSrcDir.Length == 0)
+            if (cmdLine.BuildFileName.Length == 0 && cmdLine.ScriptSrcDir.Length == 0 && cmdLine.PlatinumDacpac.Length == 0)
             {
                 error = "Invalid command line set. Missing /build or /ScriptSrcDir setting.";
                 log.Error(error);
@@ -221,7 +221,7 @@ namespace SqlBuildManager.Console
                     database = cmd.Server;
                 }
 
-                targetDacPac = Path.GetTempFileName();
+                targetDacPac = Path.GetTempPath() + database + ".dacpac";
                 if (!DacPacHelper.ExtractDacPac(database, server, cmd.UserName, cmd.Password, targetDacPac))
                 {
                     System.Console.Error.WriteLine(string.Format("Error extracting dacpac from {0}.{1}", server, database));

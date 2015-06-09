@@ -47,7 +47,7 @@ namespace SqlSync.SqlBuild
             pHelper.AddArgument("/TargetFile", dacPacFileName);
             
             //Extraction settings
-            pHelper.AddArgument("/p:IgnoreUserLoginMapping", "True", "=");
+            pHelper.AddArgument("/p:IgnoreUserLoginMappings", "True", "=");
             pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
 
             int result =  pHelper.ExecuteProcess(sqlPackageExe);
@@ -68,11 +68,14 @@ namespace SqlSync.SqlBuild
             string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName);
             if(!string.IsNullOrEmpty(rawScript))
             {
+                string path = Path.GetTempPath() + "dacpac-" + Guid.NewGuid().ToString() + @"\";
+                Directory.CreateDirectory(path);
+
                 string cleaned = CleanDacPacScript(rawScript);
-                string fileName = Path.GetTempPath() + string.Format("{0} to {1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
+                string fileName = path + string.Format("{0} to {1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
                 File.WriteAllText(fileName + ".sql", cleaned);
                 buildPackageName = fileName + ".sbm";
-                return SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildPackageName, new List<string>() { fileName }, "client");
+                return SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildPackageName, new List<string>() { fileName + ".sql" }, "client",true);
             }
 
             buildPackageName = string.Empty;
@@ -127,9 +130,9 @@ namespace SqlSync.SqlBuild
         }
 
 
-        internal static bool UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password)
+        internal static bool UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password, string workingDirectory)
         {
-            string tmpDacPacName = Path.GetTempFileName();
+            string tmpDacPacName = Path.GetTempPath() + targetDatabase + ".dacpac";
             if(!ExtractDacPac(targetDatabase, targetServerName, userName, password, tmpDacPacName))
             {
                 return false;
@@ -141,7 +144,7 @@ namespace SqlSync.SqlBuild
                 return false;
             }
 
-            string workingDirectory = Path.GetTempPath() + Guid.NewGuid().ToString();
+          
             string projectFilePath = Path.GetTempPath() + Guid.NewGuid().ToString();
             string projectFileName = null;
             string result;

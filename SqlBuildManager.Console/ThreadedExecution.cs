@@ -141,6 +141,11 @@ namespace SqlBuildManager.Console
             //Set the logging type
             logAsText = cmdLine.LogAsText;
 
+            if(string.IsNullOrEmpty(cmdLine.RootLoggingPath))
+            {
+                cmdLine.RootLoggingPath = @"C:\tmp-sqlbuildlogging";
+            }
+
             SetLoggingPaths(cmdLine.RootLoggingPath);
 
 
@@ -159,13 +164,18 @@ namespace SqlBuildManager.Console
             {
                 ConstructBuildFileFromScriptDirectory(cmdLine.ScriptSrcDir);
             }
-            else
+            else if(cmdLine.BuildFileName.Length > 0 )
             {
                 ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
+                WriteToLog("/build setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source", LogType.Message);
             }
-            WriteToLog("/build setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source", LogType.Message);
+            else if(cmdLine.PlatinumDacpac.Length > 0)
+            {
+                ThreadedExecution.platinumDacPacFileName = cmdLine.PlatinumDacpac;
+                WriteToLog("/PlatinumDacpac setting found. Using '" + ThreadedExecution.platinumDacPacFileName + "' as build source", LogType.Message);
 
-
+            }
+            
 
             //Load the multi database configuration data from XML or flat file...
             string message = string.Empty;
@@ -179,6 +189,10 @@ namespace SqlBuildManager.Console
 
             //Check for the platinum dacpac and configure it if necessary
             tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref multiData);
+            if (tmpValReturn == 0 && string.IsNullOrEmpty(ThreadedExecution.buildZipFileName))
+            {
+                ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
+            }
 
             //Set the number of allowed retries...
             multiData.AllowableTimeoutRetries = cmdLine.AllowableTimeoutRetries;
