@@ -198,40 +198,69 @@ namespace SqlBuildManager.Console
        
         private static DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName)
         {
-            log.Info("Starting process: create SBM build file from dacpac settings");
-            string targetDacPac;
-            sbmName = string.Empty;
-            if (String.IsNullOrEmpty(cmd.TargetDacpac))
-            {
-                //Create SBM from Platinum dacpac and target database
-                string database, server;
-                if (string.IsNullOrEmpty(cmd.Database) || string.IsNullOrEmpty(cmd.Server))
-                {
-                    //No specific target identified, so pick the first from the MultiDb config
-                    server = multiDb.First().ServerName;
-                    database = multiDb.First().OverrideSequence.First().Value.First().OverrideDbTarget;
-                }
-                else
-                {
-                    server = cmd.Database;
-                    database = cmd.Server;
-                }
+            string workingFolder = (!string.IsNullOrEmpty(cmd.RootLoggingPath) ? cmd.RootLoggingPath : Path.GetTempPath());
+            if (!workingFolder.EndsWith("\\"))
+                workingFolder = workingFolder + "\\";
 
-                targetDacPac = Path.GetTempPath() + database + ".dacpac";
-                if (!DacPacHelper.ExtractDacPac(database, server, cmd.UserName, cmd.Password, targetDacPac))
+            workingFolder = workingFolder + "Dacpac\\";
+            if(!Directory.Exists(workingFolder))
+            {
+                Directory.CreateDirectory(workingFolder);
+            }
+
+            log.Info("Starting process: create SBM build file from dacpac settings");
+            DacpacDeltasStatus stat = DacpacDeltasStatus.Processing;
+            sbmName = string.Empty;
+
+            if (!String.IsNullOrEmpty(cmd.TargetDacpac))
+            {
+                stat = DacPacHelper.CreateSbmFromDacPacDifferences(cmd.PlatinumDacpac, cmd.TargetDacpac, out sbmName);
+            }
+            else if(!string.IsNullOrEmpty(cmd.Database) && !string.IsNullOrEmpty(cmd.Server))
+            {
+                string targetDacPac = workingFolder + cmd.Database + ".dacpac";
+                if (!DacPacHelper.ExtractDacPac(cmd.Database, cmd.Server, cmd.UserName, cmd.Password, targetDacPac))
                 {
-                    log.Error(string.Format("Error extracting dacpac from {0}.{1}", server, database));
+                    log.Error(string.Format("Error extracting dacpac from {0} : {1}", cmd.Database, cmd.Server));
                     return DacpacDeltasStatus.ExtractionFailure;
                 }
+                stat = DacPacHelper.CreateSbmFromDacPacDifferences(cmd.PlatinumDacpac, targetDacPac, out sbmName);
             }
-            else
+
+            if (stat == DacpacDeltasStatus.Processing)
             {
-                targetDacPac = cmd.TargetDacpac;
+                string database, server;
+                foreach (var serv in multiDb)
+                {
+                    server = serv.ServerName;
+                    for (int i = 0; i < serv.OverrideSequence.Count; i++)
+                    {
+                        database = serv.OverrideSequence.ElementAt(i).Value[0].OverrideDbTarget;
+
+                        string targetDacPac = workingFolder + database + ".dacpac"; ;
+                        if (!DacPacHelper.ExtractDacPac(database, server, cmd.UserName, cmd.Password, targetDacPac))
+                        {
+                            log.Error(string.Format("Error extracting dacpac from {0} : {1}", server, database));
+                            return DacpacDeltasStatus.ExtractionFailure;
+                        }
+                        stat = DacPacHelper.CreateSbmFromDacPacDifferences(cmd.PlatinumDacpac, targetDacPac, out sbmName);
+
+                        if (stat == DacpacDeltasStatus.InSync)
+                        {
+                            log.InfoFormat("{0} and {1} are already in  sync. Looping to next database.", Path.GetFileName(cmd.PlatinumDacpac), Path.GetFileName(targetDacPac));
+                            stat = DacpacDeltasStatus.Processing;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (stat != DacpacDeltasStatus.Processing)
+                        break;
+                }
             }
 
-
-            //Create SBM from the two dacpacs
-            var stat = DacPacHelper.CreateSbmFromDacPacDifferences(cmd.PlatinumDacpac, targetDacPac, out sbmName);
             switch(stat)
             {
                 case DacpacDeltasStatus.Success:

@@ -290,6 +290,7 @@ namespace SqlSync.SqlBuild
                 if(stat == DacpacDeltasStatus.Success)
                 {
                     runData.PlatinumDacPacFileName = string.Empty; //Keep this from becoming an infinite loop by taking out the dacpac name
+                    log.InfoFormat("Executing custom dacpac on {0}", targetDatabase);
                     var dacStat =  ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                     if(dacStat.FinalStatus ==  BuildItemStatus.Committed || dacStat.FinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
                     {

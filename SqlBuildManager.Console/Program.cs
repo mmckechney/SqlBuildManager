@@ -8,6 +8,7 @@ using System.Reflection;
 using SqlSync.SqlBuild;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
+using System.Linq;
 namespace SqlBuildManager.Console
 {
     class Program
@@ -17,6 +18,8 @@ namespace SqlBuildManager.Console
         static void Main(string[] args)
         {
             log4net.Config.XmlConfigurator.Configure();
+
+
             log.Info("Received Command: " + String.Join(" | ", args));
             DateTime start = DateTime.Now;
 
@@ -127,6 +130,7 @@ namespace SqlBuildManager.Console
 
         private static void RunThreadedExecution(string[] args, DateTime start)
         {
+            SetWorkingDirectoryLogger(args);
             log.Debug("Entering Threaded Execution");
             log.Info("Running...");
             ThreadedExecution runner = new ThreadedExecution(args);
@@ -152,6 +156,32 @@ namespace SqlBuildManager.Console
             log.Debug("Exiting Threaded Execution");
 
             System.Environment.Exit(retVal);
+        }
+
+        private static void SetWorkingDirectoryLogger(string[] args)
+        {
+            var cmdLine = CommandLine.ParseCommandLineArg(args);
+            if(!string.IsNullOrEmpty(cmdLine.RootLoggingPath))
+            {
+                if(!cmdLine.RootLoggingPath.EndsWith("\\"))
+                {
+                    cmdLine.RootLoggingPath = cmdLine.RootLoggingPath + "\\";
+                }
+                if(!Directory.Exists(cmdLine.RootLoggingPath))
+                {
+                    Directory.CreateDirectory(cmdLine.RootLoggingPath);
+                }
+
+                var appender = LogManager.GetRepository().GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender").FirstOrDefault();
+                if(appender != null)
+                {
+                    var thr = appender as log4net.Appender.FileAppender;
+                    thr.File = cmdLine.RootLoggingPath + Path.GetFileName(thr.File);
+                    thr.ActivateOptions();
+                }
+            }
+
+            
         }
 
         private static void StandardExecution(string[] args, DateTime start)

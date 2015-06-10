@@ -67,11 +67,12 @@ namespace SqlSync.SqlBuild
         public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, out string buildPackageName)
         {
             log.InfoFormat("Generating SBM build from dacpac differences: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
+            string path = Path.GetDirectoryName(targetDacPacFileName) + @"\";
             buildPackageName = string.Empty;
-            string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName);
+            string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path);
             if (!string.IsNullOrEmpty(rawScript))
             {
-                string path = Path.GetTempPath() + "dacpac-" + Guid.NewGuid().ToString() + @"\";
+                
                 Directory.CreateDirectory(path);
 
                 string cleaned = CleanDacPacScript(rawScript);
@@ -92,18 +93,18 @@ namespace SqlSync.SqlBuild
            
             return DacpacDeltasStatus.Failure;
         }
-        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName)
+        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName, string path)
         {
             log.InfoFormat("Generating scripts: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
 
-            string tmpFile = Path.GetTempFileName();
+            string tmpFile = path + Path.GetFileName(targetDacPacFileName) + ".sql";
 
             ProcessHelper pHelper = new ProcessHelper();
             pHelper.AddArgument("/Action", "Script");
 
             pHelper.AddArgument("/SourceFile", platinumDacPacFileName);
             pHelper.AddArgument("/TargetFile", targetDacPacFileName);
-            pHelper.AddArgument("/TargetDatabaseName", "PLACEHOLDER");
+            pHelper.AddArgument("/TargetDatabaseName", Path.GetFileNameWithoutExtension(targetDacPacFileName));
 
             //Output
             pHelper.AddArgument("/OutputPath", tmpFile);
@@ -119,7 +120,7 @@ namespace SqlSync.SqlBuild
             if(result == 0)
             {
                 string script = File.ReadAllText(tmpFile);
-                File.Delete(tmpFile);
+                //File.Delete(tmpFile);
                 return script;
             }
             else
