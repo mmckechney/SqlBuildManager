@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 namespace SqlSync.SqlBuild
 {
     public class DacPacHelper
@@ -75,12 +76,15 @@ namespace SqlSync.SqlBuild
                 
                 Directory.CreateDirectory(path);
 
-                string cleaned = CleanDacPacScript(rawScript);
-                if (string.IsNullOrEmpty(cleaned))
+                string cleaned;
+                var cleanStatus = CleanDacPacScript(rawScript, out cleaned);
+                switch(cleanStatus)
                 {
-                    return DacpacDeltasStatus.InSync;
+                    case DacpacDeltasStatus.InSync:
+                    case DacpacDeltasStatus.OnlyPostDeployment:
+                        return cleanStatus;
                 }
-
+               
                 string fileName = path + string.Format("{0} to {1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
                 File.WriteAllText(fileName + ".sql", cleaned);
                 buildPackageName = fileName + ".sbm";
@@ -129,21 +133,38 @@ namespace SqlSync.SqlBuild
                 return string.Empty;
             }
         }
-        internal static string CleanDacPacScript(string dacPacGeneratedScript)
+        internal static DacpacDeltasStatus CleanDacPacScript(string dacPacGeneratedScript, out string cleanedScript)
         {
-            string cutLine = @"PRINT N'The following operation was generated from a refactoring log file";
+            cleanedScript = string.Empty;
 
-            int startOfLine = dacPacGeneratedScript.IndexOf(cutLine);
-            if(startOfLine == -1) //Means that these databases are already in sync!
+            string matchString = Regex.Escape(@"USE [$(DatabaseName)];");
+            var lastMatch = Regex.Matches(dacPacGeneratedScript, matchString).Cast<Match>().Select(m => m.Index).LastOrDefault();
+
+
+            if(lastMatch == -1) //Odd, there should be something, but oh well...
             {
-                return string.Empty;
+                return DacpacDeltasStatus.InSync;
             }
-            int crAfter = dacPacGeneratedScript.IndexOf("\r\n", startOfLine);
+
+            //Get rid of the SQLCMD header scripts
+            int crAfter = dacPacGeneratedScript.IndexOf("GO", lastMatch);
+            cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
+
+            //Look for the "Post-Deployment Script Template"
+            matchString = Regex.Escape(@"Post-Deployment Script Template");
+            var postDeploy = Regex.Match(cleanedScript,matchString);
+            if(postDeploy.Success)
+            {
+                var lineNumber = cleanedScript.Take(postDeploy.Index).Count(c => c == '\n') + 1;
+                if(lineNumber < 25)
+                {
+                    return DacpacDeltasStatus.OnlyPostDeployment;
+                }
+            }
 
 
-            string cleaned = dacPacGeneratedScript.Substring(crAfter + 2);
 
-            return cleaned;
+            return DacpacDeltasStatus.Success;
 
         }
 

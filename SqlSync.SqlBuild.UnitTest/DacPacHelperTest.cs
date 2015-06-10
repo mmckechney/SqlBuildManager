@@ -15,7 +15,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllBytes(workingDir + @"\PlatunumSchema.dacpac", Properties.Resources.PlatunumSchema);
             File.WriteAllBytes(workingDir + @"\TarnishedSchema.dacpac", Properties.Resources.TarnishedSchema);
 
-            string result = DacPacHelper.ScriptDacPacDeltas(workingDir + @"\PlatunumSchema.dacpac", workingDir + @"\TarnishedSchema.dacpac");
+            string result = DacPacHelper.ScriptDacPacDeltas(workingDir + @"\PlatunumSchema.dacpac", workingDir + @"\TarnishedSchema.dacpac", workingDir);
             Assert.IsNotNull(result);
             Assert.IsFalse(string.IsNullOrEmpty(result));
         }

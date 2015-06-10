@@ -200,6 +200,9 @@ namespace SqlBuildManager.Console
             else if(tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
             {
                 return (int)ExecutionReturn.DacpacDatabasesInSync;
+            }else if(tmpReturn != 0)
+            {
+                return tmpValReturn;
             }
 
             //Set the number of allowed retries...

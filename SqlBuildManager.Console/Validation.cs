@@ -250,6 +250,11 @@ namespace SqlBuildManager.Console
                             log.InfoFormat("{0} and {1} are already in  sync. Looping to next database.", Path.GetFileName(cmd.PlatinumDacpac), Path.GetFileName(targetDacPac));
                             stat = DacpacDeltasStatus.Processing;
                         }
+                        else if(stat == DacpacDeltasStatus.OnlyPostDeployment)
+                        {
+                            log.InfoFormat("{0} to {1} appears to have only Post-Deployment steps. Will not be used as a source - looping to next database.", Path.GetFileName(cmd.PlatinumDacpac), Path.GetFileName(targetDacPac));
+                            stat = DacpacDeltasStatus.Processing;
+                        }
                         else
                         {
                             break;
@@ -267,7 +272,12 @@ namespace SqlBuildManager.Console
                     log.Info("Successfully created SBM from two dacpacs");
                     break;
                 case DacpacDeltasStatus.InSync:
-                    log.Info("The two dacpac databases are already in sync");
+                case DacpacDeltasStatus.OnlyPostDeployment:
+                    log.Info("The database is already in sync with platinum dacpac");
+                    break;
+                case DacpacDeltasStatus.Processing: //we've looped through them all and they are in sync!
+                    stat = DacpacDeltasStatus.InSync;
+                    log.Info("All databases are already in sync with platinum dacpac");
                     break;
                 default:
                     log.Error("Error creating build package from supplied Platinum and Target dacpac files");

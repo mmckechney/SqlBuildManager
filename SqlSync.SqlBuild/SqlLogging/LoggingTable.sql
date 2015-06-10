@@ -136,6 +136,18 @@ ELSE
 		PRINT '[Description] column already exists in SqlBuild_Logging table'
 END
 
+-- Append to table if needed
+IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.Columns WHERE TABLE_NAME = 'SqlBuild_Logging' AND COLUMN_NAME = 'Description' AND CHARACTER_MAXIMUM_LENGTH < 150 )
+BEGIN
+	ALTER TABLE SqlBuild_Logging ALTER COLUMN [Description] varchar(150) NULL
+		PRINT 'Updated [Description] column size to 150 in SqlBuild_Logging table'
+	END
+ELSE
+	BEGIN
+		PRINT '[Description] column already at varchar(150) in SqlBuild_Logging table'
+END
+
+
 -- Rename the default constraint to clean up the table
 BEGIN TRY
 	DECLARE @Constraint varchar(50)

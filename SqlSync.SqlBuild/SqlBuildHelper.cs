@@ -299,7 +299,7 @@ namespace SqlSync.SqlBuild
                             this.BuildCommittedEvent(this, RunnerReturn.CommittedWithCustomDacpac);
                     }
                 }
-                else if(stat == DacpacDeltasStatus.InSync) 
+                else if(stat == DacpacDeltasStatus.InSync || stat == DacpacDeltasStatus.OnlyPostDeployment) 
                 {
                     buildResults.FinalStatus = BuildItemStatus.AlreadyInSync;
                     if (this.BuildCommittedEvent != null)
