@@ -1326,6 +1326,7 @@
 		<row><td>ISSelfRegisterCosting</td><td>1</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterCosting</td><td/><td/></row>
 		<row><td>ISSelfRegisterFiles</td><td>3073</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterFiles</td><td/><td/></row>
 		<row><td>ISSelfRegisterFinalize</td><td>1</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterFinalize</td><td/><td/></row>
+		<row><td>ISSetAllUsers</td><td>257</td><td>SetAllUsers.dll</td><td>SetAllUsers</td><td/><td/></row>
 		<row><td>ISUnSelfRegisterFiles</td><td>3073</td><td>ISSELFREG.DLL</td><td>ISUnSelfRegisterFiles</td><td/><td/></row>
 		<row><td>LaunchProgramFileFromSetupCompleteSuccess</td><td>1</td><td>NewBinary19</td><td>LaunchProgram</td><td/><td/></row>
 		<row><td>SetARPINSTALLLOCATION</td><td>51</td><td>ARPINSTALLLOCATION</td><td>[INSTALLDIR]</td><td/><td/></row>
@@ -2108,18 +2109,19 @@
 		<col def="S255">ProgId_</col>
 		<col def="S64">MIME_</col>
 		<col def="s38">Feature_</col>
-		<row><td>.SbmCmd</td><td>C__E174AD01335F4E2C8A3A3E935A5A4267</td><td>Sql Build Manager CommandLine Arguments File</td><td/><td>AlwaysInstall</td></row>
-		<row><td>.audit;.adt</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Sync Auditing</td><td/><td>AlwaysInstall</td></row>
-		<row><td>.resp</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Remote Execution Server Package</td><td/><td>AlwaysInstall</td></row>
-		<row><td>.sbe</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Export File</td><td/><td>AlwaysInstall</td></row>
-		<row><td>.sbm</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Project File</td><td/><td>AlwaysInstall</td></row>
-		<row><td>.sbx</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Control File</td><td/><td>AlwaysInstall</td></row>
-		<row><td>.sptest</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Stored Procedure Testing Configuration</td><td/><td>AlwaysInstall</td></row>
-		<row><td>.sqlauto</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Sync Auto Scripting Configuration</td><td/><td>AlwaysInstall</td></row>
-		<row><td>.sqlres</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Remote Execution Server Config</td><td/><td>AlwaysInstall</td></row>
-		<row><td>.sts</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Table Scripting</td><td/><td>AlwaysInstall</td></row>
+		<row><td>SbmCmd</td><td>C__E174AD01335F4E2C8A3A3E935A5A4267</td><td>Sql Build Manager CommandLine Arguments File</td><td/><td>AlwaysInstall</td></row>
+		<row><td>audit;adt</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Sync Auditing</td><td/><td>AlwaysInstall</td></row>
+		<row><td>ext1</td><td>ISX_DEFAULTCOMPONENT1</td><td>ext1.File</td><td/><td>AlwaysInstall</td></row>
 		<row><td>multiDb</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Multi Database Config</td><td/><td>AlwaysInstall</td></row>
 		<row><td>multiDbQ</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager MultiDb Config Query</td><td/><td>AlwaysInstall</td></row>
+		<row><td>resp</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Remote Execution Server Package</td><td/><td>AlwaysInstall</td></row>
+		<row><td>sbe</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Export File</td><td/><td>AlwaysInstall</td></row>
+		<row><td>sbm</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Project File</td><td/><td>AlwaysInstall</td></row>
+		<row><td>sbx</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Control File</td><td/><td>AlwaysInstall</td></row>
+		<row><td>sptest</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Stored Procedure Testing Configuration</td><td/><td>AlwaysInstall</td></row>
+		<row><td>sqlauto</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Sync Auto Scripting Configuration</td><td/><td>AlwaysInstall</td></row>
+		<row><td>sqlres</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Build Manager Remote Execution Server Config</td><td/><td>AlwaysInstall</td></row>
+		<row><td>sts</td><td>C__50257C2FECBB451ABD0C12C2F7C42745</td><td>Sql Table Scripting</td><td/><td>AlwaysInstall</td></row>
 	</table>
 
 	<table name="Feature">
@@ -4806,6 +4808,16 @@
 		<row><td>ID_STRING4</td><td>1033</td><td>http://www.mckechney.com</td><td>0</td><td/><td>-106748979</td></row>
 		<row><td>ID_STRING5</td><td>1033</td><td>Sql Build Manager database utlity</td><td>0</td><td/><td>-106748979</td></row>
 		<row><td>IIDS_UITEXT_FeatureUninstalled</td><td>1033</td><td>This feature will remain uninstalled.</td><td>0</td><td/><td>-106753139</td></row>
+		<row><td>NEW_STRING1</td><td>1033</td><td>audit;adt</td><td>0</td><td/><td>1529074376</td></row>
+		<row><td>NEW_STRING10</td><td>1033</td><td>SbmCmd</td><td>0</td><td/><td>1529041640</td></row>
+		<row><td>NEW_STRING2</td><td>1033</td><td>resp</td><td>0</td><td/><td>1529078472</td></row>
+		<row><td>NEW_STRING3</td><td>1033</td><td>sbe</td><td>0</td><td/><td>1529080520</td></row>
+		<row><td>NEW_STRING4</td><td>1033</td><td>sbm</td><td>0</td><td/><td>1529023208</td></row>
+		<row><td>NEW_STRING5</td><td>1033</td><td>sbx</td><td>0</td><td/><td>1529025256</td></row>
+		<row><td>NEW_STRING6</td><td>1033</td><td>sptest</td><td>0</td><td/><td>1529029352</td></row>
+		<row><td>NEW_STRING7</td><td>1033</td><td>sqlauto</td><td>0</td><td/><td>1529031400</td></row>
+		<row><td>NEW_STRING8</td><td>1033</td><td>sqlres</td><td>0</td><td/><td>1529035496</td></row>
+		<row><td>NEW_STRING9</td><td>1033</td><td>sts</td><td>0</td><td/><td>1529037544</td></row>
 	</table>
 
 	<table name="ISSwidtagProperty">
@@ -4972,6 +4984,7 @@
 		<row><td>ISSelfRegisterCosting</td><td/><td>2201</td><td/><td/></row>
 		<row><td>ISSelfRegisterFiles</td><td/><td>5601</td><td/><td/></row>
 		<row><td>ISSelfRegisterFinalize</td><td/><td>6601</td><td/><td/></row>
+		<row><td>ISSetAllUsers</td><td>Not Installed</td><td>10</td><td/><td/></row>
 		<row><td>ISUnSelfRegisterFiles</td><td/><td>2202</td><td/><td/></row>
 		<row><td>InstallFiles</td><td/><td>4000</td><td>InstallFiles</td><td/></row>
 		<row><td>InstallFinalize</td><td/><td>6600</td><td>InstallFinalize</td><td/></row>
@@ -5059,7 +5072,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
 		<row><td>ISUSLock</td><td>{E7D5F05B-4A6B-445E-9355-A78B6110878A}</td></row>
 		<row><td>ISUSSignature</td><td>{6E362A20-B1CE-4F07-91DB-A578D6C67F85}</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewUI,viewShortcuts,viewRegistry,viewFileExtensions,viewAppFiles,viewDependencies,viewFeatureFiles,viewEnvironmentVariables,viewBillboards,viewTextMessages,viewIniFiles,viewProject,viewRealSetupDesign,viewAppV,viewObjects,viewSetupDesign,viewRelease,viewSetupTypes,viewUpgradePaths,viewDesignPatches,viewUpdateService</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewUI,viewShortcuts,viewRegistry,viewFileExtensions,viewAppFiles,viewDependencies,viewFeatureFiles,viewEnvironmentVariables,viewBillboards,viewTextMessages,viewIniFiles,viewProject,viewRealSetupDesign,viewAppV,viewObjects,viewSetupDesign,viewRelease,viewSetupTypes,viewUpgradePaths,viewDesignPatches,viewUpdateService,viewSystemSearch,viewInstallScriptStd,viewCustomActions,viewSupportFiles</td></row>
 		<row><td>Limited</td><td>1</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
@@ -5089,6 +5102,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>FileCost</td><td/><td>900</td><td>FileCost</td><td/></row>
 		<row><td>FindRelatedProducts</td><td/><td>430</td><td>FindRelatedProducts</td><td/></row>
 		<row><td>ISPreventDowngrade</td><td>ISFOUNDNEWERPRODUCTVERSION</td><td>450</td><td>ISPreventDowngrade</td><td/></row>
+		<row><td>ISSetAllUsers</td><td>Not Installed</td><td>10</td><td/><td/></row>
 		<row><td>InstallWelcome</td><td>Not Installed</td><td>1210</td><td>InstallWelcome</td><td/></row>
 		<row><td>IsolateComponents</td><td/><td>950</td><td>IsolateComponents</td><td/></row>
 		<row><td>LaunchConditions</td><td>Not Installed</td><td>410</td><td>LaunchConditions</td><td/></row>
@@ -5147,18 +5161,18 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col key="yes" def="s64">ContentType</col>
 		<col def="s255">Extension_</col>
 		<col def="S38">CLSID</col>
-		<row><td>MIME Type1</td><td>.audit;.adt</td><td/></row>
-		<row><td>MIME Type10</td><td>.resp</td><td/></row>
+		<row><td>MIME Type1</td><td>audit;adt</td><td/></row>
+		<row><td>MIME Type10</td><td>resp</td><td/></row>
 		<row><td>MIME Type11</td><td>multiDbQ</td><td/></row>
-		<row><td>MIME Type12</td><td>.sqlres</td><td/></row>
-		<row><td>MIME Type2</td><td>.SbmCmd</td><td/></row>
-		<row><td>MIME Type3</td><td>.sbe</td><td/></row>
-		<row><td>MIME Type4</td><td>.sptest</td><td/></row>
-		<row><td>MIME Type5</td><td>.sqlauto</td><td/></row>
-		<row><td>MIME Type6</td><td>.sts</td><td/></row>
-		<row><td>MIME Type7</td><td>.sbm</td><td/></row>
+		<row><td>MIME Type12</td><td>sqlres</td><td/></row>
+		<row><td>MIME Type2</td><td>SbmCmd</td><td/></row>
+		<row><td>MIME Type3</td><td>sbe</td><td/></row>
+		<row><td>MIME Type4</td><td>sptest</td><td/></row>
+		<row><td>MIME Type5</td><td>sqlauto</td><td/></row>
+		<row><td>MIME Type6</td><td>sts</td><td/></row>
+		<row><td>MIME Type7</td><td>sbm</td><td/></row>
 		<row><td>MIME Type8</td><td>multiDb</td><td/></row>
-		<row><td>MIME Type9</td><td>.sbx</td><td/></row>
+		<row><td>MIME Type9</td><td>sbx</td><td/></row>
 	</table>
 
 	<table name="Media">
@@ -5382,6 +5396,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>Sql Sync Auto Scripting Configuration</td><td/><td/><td>Sql Sync Auto Scripting Configuration</td><td>_5D9DE090_0952_4D42_83E9_EB4F2A051306</td><td>0</td><td/></row>
 		<row><td>Sql Table Scripting</td><td/><td/><td>Sqll Table Scripting</td><td>_00845D33_2C67_4288_83FA_5BBCBC5E314E</td><td>0</td><td/></row>
 		<row><td>Stored Procedure Testing Configuration</td><td/><td/><td>Stored Procedure Testing Configuration</td><td>_A319D2D6_E785_40FC_AD49_4A54EFA6B950</td><td>0</td><td/></row>
+		<row><td>ext1.File</td><td/><td/><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="Property">
@@ -5433,6 +5448,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>LAUNCHPROGRAMCOMPCODE</td><td>{59324BFA-BB93-452B-9242-FED529A1728D}</td><td/></row>
 		<row><td>LAUNCHPROGRAMFILEKEY</td><td>_50257C2FECBB451ABD0C12C2F7C42745</td><td/></row>
 		<row><td>Manufacturer</td><td>##COMPANY_NAME##</td><td/></row>
+		<row><td>MsiLogging</td><td>voicewarmupx</td><td/></row>
 		<row><td>PIDKEY</td><td/><td/></row>
 		<row><td>PIDTemplate</td><td>12345&lt;###-%%%%%%%&gt;@@@@@</td><td/></row>
 		<row><td>PROGMSG_IIS_CREATEAPPPOOL</td><td>##IDS_PROGMSG_IIS_CREATEAPPPOOL##</td><td/></row>
@@ -5461,7 +5477,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]SQLSync.Primary output</td><td/></row>
 		<row><td>ProductCode</td><td>{6109B0BC-BDBB-4DE5-9829-BE314AF50C90}</td><td/></row>
 		<row><td>ProductName</td><td>Sql Build Manager</td><td/></row>
-		<row><td>ProductVersion</td><td>10.0.0</td><td/></row>
+		<row><td>ProductVersion</td><td>10.1.0</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
@@ -5475,10 +5491,10 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>SERIALNUMVALSUCCESSRETVAL</td><td>1</td><td/></row>
 		<row><td>SHOWLAUNCHPROGRAM</td><td>0</td><td/></row>
 		<row><td>SHOWLAUNCHREADME</td><td>0</td><td/></row>
-		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;DOTNETVERSION45FULL</td><td/></row>
+		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;DOTNETVERSION45FULL;ISACTIONPROP1</td><td/></row>
 		<row><td>SelectedSetupType</td><td>##IDS__DisplayName_Typical##</td><td/></row>
 		<row><td>SetupType</td><td>Typical</td><td/></row>
-		<row><td>UpgradeCode</td><td>{BC5877D3-35BE-43E8-A25F-44D0068B3EA9}</td><td/></row>
+		<row><td>UpgradeCode</td><td>{E8E836E0-A7D4-47C9-BB64-EBED98BA99B5}</td><td/></row>
 		<row><td>_IsMaintenance</td><td>Change</td><td/></row>
 		<row><td>_IsSetupTypeMin</td><td>Typical</td><td/></row>
 	</table>
@@ -5753,6 +5769,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="s72">ActionProperty</col>
 		<col def="S72">ISDisplayName</col>
 		<row><td>{00000000-0000-0000-0000-000000000000}</td><td>***ALL_VERSIONS***</td><td></td><td></td><td>2</td><td/><td>ISFOUNDNEWERPRODUCTVERSION</td><td>ISPreventDowngrade</td></row>
+		<row><td>{E8E836E0-A7D4-47C9-BB64-EBED98BA99B5}</td><td></td><td>20.0.0</td><td></td><td>768</td><td/><td>ISACTIONPROP1</td><td>Max20</td></row>
 	</table>
 
 	<table name="Verb">
@@ -5761,18 +5778,19 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="I2">Sequence</col>
 		<col def="L255">Command</col>
 		<col def="L255">Argument</col>
-		<row><td>.SbmCmd</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
-		<row><td>.audit;.adt</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
-		<row><td>.resp</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
-		<row><td>.sbe</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
-		<row><td>.sbm</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
-		<row><td>.sbx</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
-		<row><td>.sptest</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
-		<row><td>.sqlauto</td><td>open</td><td>0</td><td>&amp;Open</td><td>/auto "%1"</td></row>
-		<row><td>.sqlres</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
-		<row><td>.sts</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
+		<row><td>SbmCmd</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
+		<row><td>audit;adt</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
+		<row><td>ext1</td><td>open</td><td/><td/><td/></row>
 		<row><td>multiDb</td><td>open</td><td>0</td><td>&amp;Open</td><td/></row>
 		<row><td>multiDbQ</td><td>open</td><td>0</td><td>&amp;Open</td><td/></row>
+		<row><td>resp</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
+		<row><td>sbe</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
+		<row><td>sbm</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
+		<row><td>sbx</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
+		<row><td>sptest</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
+		<row><td>sqlauto</td><td>open</td><td>0</td><td>&amp;Open</td><td>/auto "%1"</td></row>
+		<row><td>sqlres</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
+		<row><td>sts</td><td>open</td><td>0</td><td>&amp;Open</td><td>"%1"</td></row>
 	</table>
 
 	<table name="_Validation">
