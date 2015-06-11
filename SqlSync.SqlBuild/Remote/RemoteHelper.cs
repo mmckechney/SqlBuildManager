@@ -9,22 +9,22 @@ namespace SqlSync.SqlBuild.Remote
     public class RemoteHelper
     {
         public static string BuildRemoteExecutionCommandline(string sbmFileName, string overrideSettingFile, string remoteExeServersFile, string rootLoggingPath, 
-            string distributionType, bool isTrial, bool isTransactional, string buildDescription, int allowedRetryCount, string username, string password)
+            string distributionType, bool isTrial, bool isTransactional, string buildDescription, int allowedRetryCount, string username, string password, string platinumDacpacFile)
         {
 
-            if (sbmFileName == null || sbmFileName.Length == 0)
-            {
-                throw new ArgumentException("The Sql Build Manager file must be specified", "sbmFileName");
-            }
-            if (rootLoggingPath == null || rootLoggingPath.Length == 0)
+            //if (sbmFileName == null || sbmFileName.Length == 0)
+            //{
+            //    throw new ArgumentException("The Sql Build Manager file must be specified", "sbmFileName");
+            //}
+            if (string.IsNullOrWhiteSpace(rootLoggingPath))
             {
                 throw new ArgumentException("The Root logging path must be specified", "rootLoggingPath");
             }
-            if (overrideSettingFile == null || overrideSettingFile.Length == 0)
+            if (string.IsNullOrWhiteSpace(overrideSettingFile))
             {
                 throw new ArgumentException("The Override Target Settings file must be specified", "overrideSettingFile");
             }
-            if (distributionType == null || distributionType.Length == 0)
+            if (string.IsNullOrWhiteSpace(distributionType))
             {
                 throw new ArgumentException("The Distribution type setting must be specified", "distributionType");
             }
@@ -32,11 +32,11 @@ namespace SqlSync.SqlBuild.Remote
             {
                 throw new ArgumentException("The Distribution type setting allowed values are \"equal\" or \"local\"", "distributionType");
             }
-            if (remoteExeServersFile == null || remoteExeServersFile.Length == 0)
+            if (string.IsNullOrWhiteSpace(remoteExeServersFile))
             {
                 throw new ArgumentException("The Remote Servers file must be specified or be set to \"derive\" to get from the override target server list", "remoteExeServersFile");
             }
-            if (buildDescription == null || buildDescription.Length == 0)
+            if (string.IsNullOrWhiteSpace(buildDescription))
             {
                 throw new ArgumentException("A Build Description is required.", "buildDescription");
             }
@@ -45,14 +45,22 @@ namespace SqlSync.SqlBuild.Remote
                 throw new ArgumentException("Invalid combination of Trial and Transactional settings. Can not run a Trial when transactions are disabled", "isTransactional");
             }
 
+            if (string.IsNullOrWhiteSpace(sbmFileName) && string.IsNullOrWhiteSpace(platinumDacpacFile))
+            {
+                throw new ArgumentException("A value is needed for either the build package file or the platinum dacpac", "sbmFileName");
+            }
 
             string exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\SqlBuildManager.Console.exe";
             StringBuilder sb = new StringBuilder();
 
             sb.Append("\"" + exePath + "\" ");
             sb.Append("/remote=true ");
+            if (!string.IsNullOrWhiteSpace(sbmFileName))
+                sb.Append("/build=\"" + sbmFileName + "\" ");
 
-            sb.Append("/build=\"" + sbmFileName + "\" ");
+            if (!string.IsNullOrWhiteSpace(platinumDacpacFile))
+                sb.Append("/PlatinumDacpac=\"" + platinumDacpacFile + "\" ");
+
             sb.Append("/RemoteServers=\"" + remoteExeServersFile + "\" ");
             sb.Append("/override=\"" + overrideSettingFile +"\" ");
             sb.Append("/RootLoggingPath=\""+ rootLoggingPath +"\" ");

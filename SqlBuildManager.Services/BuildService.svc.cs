@@ -189,16 +189,17 @@ namespace SqlBuildManager.Services
                 }
 
                 //BuildService.lastExecutionRootLoggingPath = expandedLoggingPath;
-
-                log.InfoFormat("Processing project contents. Saving {0} bytes to {1}", settings.SqlBuildManagerProjectContents.Length.ToString(), expandedLoggingPath);
-                string buildZipFileName = expandedLoggingPath + @"\" + settings.SqlBuildManagerProjectFileName;
+                string buildZipFileName = Path.Combine(expandedLoggingPath, Path.GetFileName(settings.SqlBuildManagerProjectFileName));
+                log.InfoFormat("Processing project contents. Saving {0} bytes to {1}", settings.SqlBuildManagerProjectContents.Length.ToString(), buildZipFileName);
+                
                 File.WriteAllBytes(buildZipFileName, settings.SqlBuildManagerProjectContents);
 
                 string platinumDacPacFileName = string.Empty;
                 if (!string.IsNullOrEmpty(settings.PlatinumDacpacFileName) && settings.PlatinumDacpacContents != null)
                 {
-                    log.InfoFormat("Processing platinum dacpac contents. Saving {0} bytes to {1}", settings.PlatinumDacpacContents.Length.ToString(), expandedLoggingPath);
-                    platinumDacPacFileName = expandedLoggingPath + @"\" + settings.PlatinumDacpacFileName;
+                    platinumDacPacFileName = Path.Combine(expandedLoggingPath, Path.GetFileName(settings.PlatinumDacpacFileName));
+                    log.InfoFormat("Processing platinum dacpac contents. Saving {0} bytes to {1}", settings.PlatinumDacpacContents.Length.ToString(), platinumDacPacFileName);
+                    
                     File.WriteAllBytes(platinumDacPacFileName, settings.PlatinumDacpacContents);
                 }
 

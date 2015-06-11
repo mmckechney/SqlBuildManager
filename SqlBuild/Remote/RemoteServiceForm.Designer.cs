@@ -71,6 +71,9 @@
             this.txtOverride = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.btnOpenDacpac = new System.Windows.Forms.Button();
+            this.txtPlatinumDacpac = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.lnkViewSbmPackage = new System.Windows.Forms.LinkLabel();
             this.btnOpenSbm = new System.Windows.Forms.Button();
             this.txtSbmFile = new System.Windows.Forms.TextBox();
@@ -107,6 +110,7 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog2 = new System.Windows.Forms.SaveFileDialog();
             this.bgConnectionTest = new System.ComponentModel.BackgroundWorker();
+            this.fileDacPac = new System.Windows.Forms.OpenFileDialog();
             btnMultDbCfg = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRemoteServers)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -156,7 +160,7 @@
             this.dgvRemoteServers.Location = new System.Drawing.Point(6, 19);
             this.dgvRemoteServers.Name = "dgvRemoteServers";
             this.dgvRemoteServers.RowHeadersVisible = false;
-            this.dgvRemoteServers.Size = new System.Drawing.Size(251, 293);
+            this.dgvRemoteServers.Size = new System.Drawing.Size(251, 318);
             this.dgvRemoteServers.TabIndex = 0;
             // 
             // ServerColumn
@@ -276,7 +280,7 @@
             this.splitContainer1.Panel2.Controls.Add(this.groupBox8);
             this.splitContainer1.Panel2.Controls.Add(this.groupBox3);
             this.splitContainer1.Panel2.Controls.Add(this.btnSubmitPackage);
-            this.splitContainer1.Size = new System.Drawing.Size(1084, 390);
+            this.splitContainer1.Size = new System.Drawing.Size(1084, 415);
             this.splitContainer1.SplitterDistance = 279;
             this.splitContainer1.TabIndex = 3;
             // 
@@ -289,7 +293,7 @@
             this.groupBox2.Controls.Add(this.dgvRemoteServers);
             this.groupBox2.Location = new System.Drawing.Point(8, 7);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(263, 379);
+            this.groupBox2.Size = new System.Drawing.Size(263, 404);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Remote Servers";
@@ -299,7 +303,7 @@
             this.groupBox9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox9.Controls.Add(this.btnTestConnections);
             this.groupBox9.Controls.Add(this.btnCheckServiceStatus);
-            this.groupBox9.Location = new System.Drawing.Point(6, 318);
+            this.groupBox9.Location = new System.Drawing.Point(6, 343);
             this.groupBox9.Name = "groupBox9";
             this.groupBox9.Size = new System.Drawing.Size(251, 55);
             this.groupBox9.TabIndex = 4;
@@ -320,7 +324,7 @@
             // btnCommandLine
             // 
             this.btnCommandLine.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnCommandLine.Location = new System.Drawing.Point(650, 363);
+            this.btnCommandLine.Location = new System.Drawing.Point(632, 387);
             this.btnCommandLine.Name = "btnCommandLine";
             this.btnCommandLine.Size = new System.Drawing.Size(136, 23);
             this.btnCommandLine.TabIndex = 1;
@@ -332,7 +336,7 @@
             // 
             this.groupBox8.Controls.Add(this.btnPreview);
             this.groupBox8.Controls.Add(this.ddDistribution);
-            this.groupBox8.Location = new System.Drawing.Point(3, 308);
+            this.groupBox8.Location = new System.Drawing.Point(3, 336);
             this.groupBox8.Name = "groupBox8";
             this.groupBox8.Size = new System.Drawing.Size(783, 45);
             this.groupBox8.TabIndex = 5;
@@ -379,7 +383,7 @@
             this.groupBox3.Controls.Add(this.txtDescription);
             this.groupBox3.Location = new System.Drawing.Point(3, 7);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(783, 295);
+            this.groupBox3.Size = new System.Drawing.Size(783, 326);
             this.groupBox3.TabIndex = 4;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Execution Settings";
@@ -404,7 +408,7 @@
             // groupBox6
             // 
             this.groupBox6.Controls.Add(this.txtLoggingDatabase);
-            this.groupBox6.Location = new System.Drawing.Point(592, 238);
+            this.groupBox6.Location = new System.Drawing.Point(592, 268);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Size = new System.Drawing.Size(180, 48);
             this.groupBox6.TabIndex = 24;
@@ -425,7 +429,7 @@
             this.groupBox7.Controls.Add(this.label8);
             this.groupBox7.Controls.Add(this.txtUserName);
             this.groupBox7.Controls.Add(this.chkUseWindowsAuth);
-            this.groupBox7.Location = new System.Drawing.Point(10, 237);
+            this.groupBox7.Location = new System.Drawing.Point(10, 267);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Size = new System.Drawing.Size(576, 50);
             this.groupBox7.TabIndex = 5;
@@ -491,7 +495,7 @@
             this.groupBox5.Controls.Add(btnMultDbCfg);
             this.groupBox5.Controls.Add(this.txtOverride);
             this.groupBox5.Controls.Add(this.label6);
-            this.groupBox5.Location = new System.Drawing.Point(10, 157);
+            this.groupBox5.Location = new System.Drawing.Point(10, 187);
             this.groupBox5.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(762, 74);
@@ -566,16 +570,49 @@
             // 
             this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Controls.Add(this.btnOpenDacpac);
+            this.groupBox4.Controls.Add(this.txtPlatinumDacpac);
+            this.groupBox4.Controls.Add(this.label4);
             this.groupBox4.Controls.Add(this.lnkViewSbmPackage);
             this.groupBox4.Controls.Add(this.btnOpenSbm);
             this.groupBox4.Controls.Add(this.txtSbmFile);
             this.groupBox4.Controls.Add(this.label3);
             this.groupBox4.Location = new System.Drawing.Point(10, 87);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(762, 67);
+            this.groupBox4.Size = new System.Drawing.Size(762, 95);
             this.groupBox4.TabIndex = 12;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Script Source";
+            // 
+            // btnOpenDacpac
+            // 
+            this.btnOpenDacpac.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOpenDacpac.AutoSize = true;
+            this.btnOpenDacpac.Image = global::SqlSync.Properties.Resources.Open;
+            this.btnOpenDacpac.Location = new System.Drawing.Point(727, 67);
+            this.btnOpenDacpac.Name = "btnOpenDacpac";
+            this.btnOpenDacpac.Size = new System.Drawing.Size(28, 22);
+            this.btnOpenDacpac.TabIndex = 14;
+            this.btnOpenDacpac.UseVisualStyleBackColor = true;
+            this.btnOpenDacpac.Click += new System.EventHandler(this.btnOpenDacpac_Click);
+            // 
+            // txtPlatinumDacpac
+            // 
+            this.txtPlatinumDacpac.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtPlatinumDacpac.Location = new System.Drawing.Point(180, 67);
+            this.txtPlatinumDacpac.Name = "txtPlatinumDacpac";
+            this.txtPlatinumDacpac.Size = new System.Drawing.Size(540, 20);
+            this.txtPlatinumDacpac.TabIndex = 12;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(8, 71);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(151, 13);
+            this.label4.TabIndex = 13;
+            this.label4.Text = "Platinum dacpac (if applicable)";
             // 
             // lnkViewSbmPackage
             // 
@@ -682,7 +719,7 @@
             // btnSubmitPackage
             // 
             this.btnSubmitPackage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnSubmitPackage.Location = new System.Drawing.Point(332, 363);
+            this.btnSubmitPackage.Location = new System.Drawing.Point(332, 388);
             this.btnSubmitPackage.Name = "btnSubmitPackage";
             this.btnSubmitPackage.Size = new System.Drawing.Size(136, 23);
             this.btnSubmitPackage.TabIndex = 0;
@@ -698,7 +735,7 @@
             this.groupBox1.Controls.Add(this.dgvServerStatus);
             this.groupBox1.Location = new System.Drawing.Point(7, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(1065, 271);
+            this.groupBox1.Size = new System.Drawing.Size(1065, 246);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Remove Service Status Dashboard";
@@ -729,7 +766,7 @@
             this.dgvServerStatus.ReadOnly = true;
             this.dgvServerStatus.RowHeadersVisible = false;
             this.dgvServerStatus.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.dgvServerStatus.Size = new System.Drawing.Size(1044, 246);
+            this.dgvServerStatus.Size = new System.Drawing.Size(1044, 221);
             this.dgvServerStatus.TabIndex = 0;
             this.dgvServerStatus.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvServerStatus_CellFormatting);
             // 
@@ -828,7 +865,7 @@
             this.splitContainer2.Panel2.Controls.Add(this.groupBox1);
             this.splitContainer2.Panel2.Controls.Add(this.statusStrip1);
             this.splitContainer2.Size = new System.Drawing.Size(1084, 696);
-            this.splitContainer2.SplitterDistance = 390;
+            this.splitContainer2.SplitterDistance = 415;
             this.splitContainer2.TabIndex = 4;
             // 
             // statusStrip1
@@ -836,7 +873,7 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statGeneral,
             this.statProgBar});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 280);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 255);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(1084, 22);
             this.statusStrip1.TabIndex = 5;
@@ -858,11 +895,13 @@
             // 
             this.fileSbm.Filter = "Sql Build Manager *.sbm|*.sbm|Sql Build Control File *.sbx|*.sbx|All Files *.*|*." +
     "*";
+            this.fileSbm.Title = "Select build package";
             // 
             // fileOverride
             // 
             this.fileOverride.Filter = "MultiDb Config Query file *.multiDbQ|*.multiDbQ|MultiDb Config file *.multidb|*.m" +
     "ultidb|Config file *.cfg|*.cfg|All Files *.*|*.*";
+            this.fileOverride.Title = "Select override configuration file";
             // 
             // bgStatusCheck
             // 
@@ -908,6 +947,11 @@
             this.bgConnectionTest.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgConnectionTest_DoWork);
             this.bgConnectionTest.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgConnectionTest_ProgressChanged);
             this.bgConnectionTest.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgConnectionTest_RunWorkerCompleted);
+            // 
+            // fileDacPac
+            // 
+            this.fileDacPac.Filter = "Data-tier application  *.dacpac|*.dacpac";
+            this.fileDacPac.Title = "Select Platinum dacpac file";
             // 
             // RemoteServiceForm
             // 
@@ -1035,5 +1079,9 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn executionReturnDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn ServiceVersion;
         private System.Windows.Forms.DataGridViewTextBoxColumn TcpServiceEndpoint;
+        private System.Windows.Forms.Button btnOpenDacpac;
+        private System.Windows.Forms.TextBox txtPlatinumDacpac;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.OpenFileDialog fileDacPac;
     }
 }

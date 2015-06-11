@@ -61,21 +61,33 @@ namespace SqlSync.SqlBuild.Remote
         }
         private bool ValidateRequest()
         {
-            if (txtRootLoggingPath.Text.Length == 0 || txtSbmFile.Text.Length == 0 || txtOverride.Text.Length == 0 || txtDescription.Text.Length == 0)
+            if (string.IsNullOrWhiteSpace(txtRootLoggingPath.Text) || string.IsNullOrWhiteSpace(txtOverride.Text) || string.IsNullOrWhiteSpace(txtDescription.Text))
             {
-                MessageBox.Show("Valid entries are required for:\r\n\r\n\tRoot Logging Path\r\n\tBuild Description\r\n\tSql Build Manager Package\r\n\tTarget Override Settings\r\n\r\nPlease make sure you have entries for each and try again.", "Missing Values", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                MessageBox.Show("Valid entries are required for:\r\n\r\n\tRoot Logging Path\r\n\tBuild Description\r\n\tTarget Override Settings\r\n\r\nPlease make sure you have entries for each and try again.", "Missing Values", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return false;
             }
+            if(string.IsNullOrWhiteSpace(txtSbmFile.Text) && string.IsNullOrWhiteSpace(txtPlatinumDacpac.Text))
+            {
+                MessageBox.Show("Either a value for Sql Build Manager Package or Platinum dacpac file is required", "Missing Values", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                return false;
 
-            if (!File.Exists(txtSbmFile.Text))
+            }
+
+            if (!string.IsNullOrWhiteSpace(txtSbmFile.Text) && !File.Exists(txtSbmFile.Text))
             {
                 MessageBox.Show("The \"Sql Build Manager Package\" value must point to a valid, accessable build package.\r\nPlease confirm your value and try again.", "Invalid sbm path", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return false;
             }
 
-            if (!File.Exists(txtSbmFile.Text))
+            if (!File.Exists(txtOverride.Text))
             {
                 MessageBox.Show("The \"Target Override Settings\" value must point to a valid, accessable configuration file.\r\nPlease confirm your value and try again.", "Invalid target override file path", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(txtPlatinumDacpac.Text) && !File.Exists(txtPlatinumDacpac.Text))
+            {
+                MessageBox.Show("The \"Platinum Data-tier application file (.dacpac)\" value must point to a valid, accessable file.\r\nPlease confirm your value and try again.", "Invalid Platinum dacpac file path", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return false;
             }
 
@@ -92,6 +104,12 @@ namespace SqlSync.SqlBuild.Remote
                     MessageBox.Show("One or more Remote Execution Servers last reported a status other than \"ReadyToAccept\".\r\nPlease remove this server from the list or correct the issue with the service.", "Not ready!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
+            }
+
+            if(chkUseWindowsAuth.Checked == false && (string.IsNullOrWhiteSpace(txtUserName.Text) || string.IsNullOrWhiteSpace(txtPassword.Text)))
+            {
+                MessageBox.Show("Missing username/password combination", "Missing authentication", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                return false;
             }
             return true;
         }
@@ -167,12 +185,7 @@ namespace SqlSync.SqlBuild.Remote
             if (!AcceptLoadDistribution(lstUntaskedExecutionServers, lstUnassignedDatabaseServers))
                 return;
 
-
-            this.packageSubmitted = true;
             bgSubmit.RunWorkerAsync(settings);
-            //System.Threading.Thread.Sleep(1500); // Sleep for 1.5 seconds for the packages to get sent...
-            tmrCheckStatus.Start();
-            btnSubmitPackage.Enabled = false;
 
             if (txtOverride.Text.Length > 0 && !SqlSync.Properties.Settings.Default.RemoteTargetOverrideSettings.Contains(txtOverride.Text))
                 SqlSync.Properties.Settings.Default.RemoteTargetOverrideSettings.Add(txtOverride.Text);
@@ -264,15 +277,53 @@ namespace SqlSync.SqlBuild.Remote
         {
             try
             {
+                this.packageSubmitted = false;
                 BackgroundWorker bg = (BackgroundWorker)sender;
+                bg.ReportProgress(0);
                 BuildSettings settings = (BuildSettings)e.Argument;
-                bg.ReportProgress(0, "Submitting build package for execution...");
+
+                //Do we need to create an SBM from the Platinum dacpac
+                if(string.IsNullOrEmpty(settings.SqlBuildManagerProjectFileName) && !string.IsNullOrEmpty(settings.PlatinumDacpacFileName))
+                {
+                    MultiDbData tmp = MultiDbHelper.ImportMultiDbTextConfig(settings.MultiDbTextConfig);
+                    //build the SBM.
+                    string sbmName;
+                    bg.ReportProgress(2, "Generating Sql Build Package from platinum dacpac...");
+                    var stat = DacPacHelper.GetSbmFromDacPac(settings.LocalRootLoggingPath,
+                        settings.PlatinumDacpacFileName,
+                        string.Empty,
+                        string.Empty,
+                        settings.DbUserName,
+                        settings.DbPassword,
+                        tmp,
+                        out sbmName);
+                    if (stat == DacpacDeltasStatus.Success)
+                    {
+                        settings.SqlBuildManagerProjectFileName = Path.GetFileName(sbmName);
+                        settings.SqlBuildManagerProjectContents = File.ReadAllBytes(sbmName);
+
+                        settings.PlatinumDacpacFileName = Path.GetFileName(settings.PlatinumDacpacFileName);
+                    }
+                    else
+                    {
+                        bg.ReportProgress(6, "Problem creating platinum dacpac. See log file.");
+                        e.Result = false;
+                        return;
+                    }
+
+
+
+                }
                 this.packageSubmitted = true;
+                bg.ReportProgress(10, "Submitting build package for execution...");
+                
                 buildManager.SubmitBuildRequest(settings, this.loadDistributionType);
+                e.Result = true;
             }
             catch
             {
                 this.packageSubmitted = false;
+                e.Result = false;
             }
         }
         private void bgSubmit_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -284,21 +335,26 @@ namespace SqlSync.SqlBuild.Remote
                 this.Cursor = Cursors.AppStarting;
             }
 
+            if(this.packageSubmitted && !tmrCheckStatus.Enabled)
+            {
+                tmrCheckStatus.Start();
+            }
+
             if (e.UserState is string)
                 this.statGeneral.Text = e.UserState.ToString();
         }
         private void bgSubmit_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            //this.statProgBar.Style = ProgressBarStyle.Blocks;
-            //this.Cursor = Cursors.Default;
-            this.statGeneral.Text = "Execution Submitted.";
+            if (e.Result is Boolean && ((bool)e.Result) == true)
+            {
+                this.statGeneral.Text = "Execution Complete! Ready.";
+            }
+            else
+            {
+                MessageBox.Show("Problem with submission. Please see the log file for details", "Error");
+            }
 
-            // tmrCheckStatus.Stop();
-
-            // if (!bgWorker.IsBusy)
-            //     btnCheckServiceStatus_Click(null, EventArgs.Empty);
-
-            //btnSubmitPackage.Enabled = true;
+            tmrCheckStatus.Stop();
         }
 
         private void bgConnectionTest_DoWork(object sender, DoWorkEventArgs e)
@@ -603,8 +659,12 @@ namespace SqlSync.SqlBuild.Remote
                 settings.IsTransactional = !chkNotTransactional.Checked;
                 settings.IsTrialBuild = chkRunTrial.Checked;
                 settings.LocalRootLoggingPath = txtRootLoggingPath.Text;
-                settings.SqlBuildManagerProjectContents = System.IO.File.ReadAllBytes(txtSbmFile.Text);
-                settings.SqlBuildManagerProjectFileName = Path.GetFileName(txtSbmFile.Text);
+
+                if (!string.IsNullOrEmpty(txtSbmFile.Text))
+                {
+                    settings.SqlBuildManagerProjectContents = System.IO.File.ReadAllBytes(txtSbmFile.Text);
+                    settings.SqlBuildManagerProjectFileName = Path.GetFileName(txtSbmFile.Text);
+                }
                 settings.Description = txtDescription.Text;
                 settings.AlternateLoggingDatabase = txtLoggingDatabase.Text;
                 int retryCnt;
@@ -615,6 +675,12 @@ namespace SqlSync.SqlBuild.Remote
                 {
                     settings.DbUserName = txtUserName.Text;
                     settings.DbPassword = txtPassword.Text;
+                }
+
+                if(!string.IsNullOrEmpty(txtPlatinumDacpac.Text))
+                {
+                    settings.PlatinumDacpacFileName = txtPlatinumDacpac.Text;
+                    settings.PlatinumDacpacContents = System.IO.File.ReadAllBytes(txtPlatinumDacpac.Text);
                 }
 
                 return settings;
@@ -883,7 +949,8 @@ namespace SqlSync.SqlBuild.Remote
                     txtDescription.Text,
                     retryCnt, 
                     (!chkUseWindowsAuth.Checked) ? txtUserName.Text : "",
-                    (!chkUseWindowsAuth.Checked) ? txtPassword.Text : "");
+                    (!chkUseWindowsAuth.Checked) ? txtPassword.Text : "",
+                    txtPlatinumDacpac.Text);
 
                 ScriptDisplayForm frmDisp = new ScriptDisplayForm(commandLine, "", "");
                 frmDisp.ShowDialog();
@@ -981,6 +1048,9 @@ namespace SqlSync.SqlBuild.Remote
 
                 chkUseOverrideAsExeList.Enabled = false;
                 chkUseOverrideAsExeList.Checked = false;
+
+                chkUseWindowsAuth.Enabled = false;
+                chkUseWindowsAuth.Checked = false;
                 
 
                 List<ServerConfigData> serverData = buildManager.GetListOfAzureInstancePublicUrls();
@@ -993,6 +1063,8 @@ namespace SqlSync.SqlBuild.Remote
                     dgvRemoteServers.Rows.Add(s.ServerName);
 
                 dgvRemoteServers.Invalidate();
+
+                btnCheckServiceStatus_Click(null, EventArgs.Empty);
             }
         }
 
@@ -1033,6 +1105,17 @@ namespace SqlSync.SqlBuild.Remote
                 btnCheckServiceStatus_Click(this, new EventArgs());
             }
         }
+
+        private void btnOpenDacpac_Click(object sender, EventArgs e)
+        {
+            if (DialogResult.OK == this.fileDacPac.ShowDialog())
+            {
+                this.txtPlatinumDacpac.Text = this.fileDacPac.FileName;
+            }
+            this.fileDacPac.Dispose();
+        }
+
+      
 
 
 

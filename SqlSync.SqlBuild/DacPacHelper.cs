@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using SqlSync.SqlBuild.MultiDb;
 namespace SqlSync.SqlBuild
 {
     public class DacPacHelper
@@ -208,6 +209,114 @@ namespace SqlSync.SqlBuild
             log.InfoFormat("Build package ready");
             return DacpacDeltasStatus.Success;
         }
+
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, string username, string password,  MultiDbData multiDb, out string sbmName)
+        {
+            string workingFolder = (!string.IsNullOrEmpty(rootLoggingPath) ? rootLoggingPath : Path.GetTempPath());
+            if (!workingFolder.EndsWith("\\"))
+                workingFolder = workingFolder + "\\";
+
+            workingFolder = workingFolder + "Dacpac\\";
+            if (!Directory.Exists(workingFolder))
+            {
+                Directory.CreateDirectory(workingFolder);
+            }
+
+            log.Info("Starting process: create SBM build file from dacpac settings");
+            DacpacDeltasStatus stat = DacpacDeltasStatus.Processing;
+            sbmName = string.Empty;
+
+            if (!String.IsNullOrEmpty(targetDacpac))
+            {
+                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacpac, out sbmName);
+            }
+            else if (!string.IsNullOrEmpty(database) && !string.IsNullOrEmpty(server))
+            {
+                string targetDacPac = workingFolder + database + ".dacpac";
+                if (!DacPacHelper.ExtractDacPac(database, server, username, password, targetDacPac))
+                {
+                    log.Error(string.Format("Error extracting dacpac from {0} : {1}", database, server));
+                    return DacpacDeltasStatus.ExtractionFailure;
+                }
+                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, out sbmName);
+            }
+
+            if (stat == DacpacDeltasStatus.Processing)
+            {
+                foreach (var serv in multiDb)
+                {
+                    server = serv.ServerName;
+                    for (int i = 0; i < serv.OverrideSequence.Count; i++)
+                    {
+                        database = serv.OverrideSequence.ElementAt(i).Value[0].OverrideDbTarget;
+
+                        string targetDacPac = workingFolder + database + ".dacpac"; ;
+                        if (!DacPacHelper.ExtractDacPac(database, server, username, password, targetDacPac))
+                        {
+                            log.Error(string.Format("Error extracting dacpac from {0} : {1}", server, database));
+                            return DacpacDeltasStatus.ExtractionFailure;
+                        }
+                        stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, out sbmName);
+
+                        if (stat == DacpacDeltasStatus.InSync)
+                        {
+                            log.InfoFormat("{0} and {1} are already in  sync. Looping to next database.", Path.GetFileName(platinumDacPac), Path.GetFileName(targetDacPac));
+                            stat = DacpacDeltasStatus.Processing;
+                        }
+                        else if (stat == DacpacDeltasStatus.OnlyPostDeployment)
+                        {
+                            log.InfoFormat("{0} to {1} appears to have only Post-Deployment steps. Will not be used as a source - looping to next database.", Path.GetFileName(platinumDacPac), Path.GetFileName(targetDacPac));
+                            stat = DacpacDeltasStatus.Processing;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (stat != DacpacDeltasStatus.Processing)
+                        break;
+                }
+            }
+
+            switch (stat)
+            {
+                case DacpacDeltasStatus.Success:
+                    log.Info("Successfully created SBM from two dacpacs");
+                    break;
+                case DacpacDeltasStatus.InSync:
+                case DacpacDeltasStatus.OnlyPostDeployment:
+                    log.Info("The database is already in sync with platinum dacpac");
+                    break;
+                case DacpacDeltasStatus.Processing: //we've looped through them all and they are in sync!
+                    stat = DacpacDeltasStatus.InSync;
+                    log.Info("All databases are already in sync with platinum dacpac");
+                    break;
+                default:
+                    log.Error("Error creating build package from supplied Platinum and Target dacpac files");
+                    break;
+
+            }
+            return stat;
+        }
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, string server, string username, string password, MultiDbData multiDb, out string sbmName)
+        {
+            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, username, password, multiDb, out sbmName);
+        }
+        public static DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName)
+        {
+
+            return GetSbmFromDacPac(cmd.RootLoggingPath,
+                cmd.PlatinumDacpac,
+                cmd.TargetDacpac,
+                cmd.Database,
+                cmd.Server,
+                cmd.UserName,
+                cmd.Password,
+                multiDb, out sbmName);
+
+        }
+
     }
 
 
