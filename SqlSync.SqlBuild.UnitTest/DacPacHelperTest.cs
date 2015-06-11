@@ -39,9 +39,11 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CleanDacPacScript_Test()
         {
             string raw = Properties.Resources.SyncScriptRaw;
-            string cleaned = DacPacHelper.CleanDacPacScript(raw);
+            string cleaned;
+            var stat = DacPacHelper.CleanDacPacScript(raw, out cleaned);
 
-            Assert.IsTrue(raw != cleaned);
+            Assert.AreEqual(DacpacDeltasStatus.Success, stat);
+            Assert.AreNotEqual(raw,cleaned);
             Assert.IsTrue(raw.Length > cleaned.Length);
         }
     }
