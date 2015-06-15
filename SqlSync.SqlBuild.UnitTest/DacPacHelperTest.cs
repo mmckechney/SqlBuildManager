@@ -29,7 +29,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllBytes(workingDir + @"\TarnishedSchema.dacpac", Properties.Resources.TarnishedSchema);
             string buildFileName = Path.GetTempFileName();
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(workingDir + @"\PlatunumSchema.dacpac", workingDir + @"\TarnishedSchema.dacpac", out buildFileName);
+            var result = DacPacHelper.CreateSbmFromDacPacDifferences(workingDir + @"\PlatunumSchema.dacpac", workingDir + @"\TarnishedSchema.dacpac", false,out buildFileName);
 
             Assert.IsTrue(result == DacpacDeltasStatus.Success);
             Assert.IsTrue(File.ReadAllBytes(buildFileName).Length > 0);
