@@ -445,7 +445,7 @@ namespace SqlBuildManager.Console
         /// <param name="remoteServerData">Output list of ServerConfigData objects</param>
         /// <param name="errorMessages">Output array or error messages (if any)</param>
         /// <returns>Zero (0) if validated, otherwise an error code</returns>
-        private static int ValidateRemoteServerAvailability(List<string> remoteServers, Protocol protocol, out List<ServerConfigData> remoteServerData, out string[] errorMessages)
+        internal static int ValidateRemoteServerAvailability(List<string> remoteServers, Protocol protocol, out List<ServerConfigData> remoteServerData, out string[] errorMessages)
         {
 
             List<string> errors = new List<string>();

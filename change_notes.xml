@@ -1,5 +1,9 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="1" Revision="1">
+    <added>Added console argument /AzureRemoteStatus=true to list Azure remote execution machines and their readiness status</added>
+    <fixed>Various remote/ threaded bug fixes</fixed>
+  </Version>
   <Version Major="10" Minor="1" Revision="0">
     <added>Ability to use a "platinum" Data-tier application file (dacpac) to syncronize database schemas</added>
   </Version>

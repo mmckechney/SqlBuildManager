@@ -9,6 +9,7 @@ using SqlSync.SqlBuild;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
 using System.Linq;
+using SqlBuildManager.ServiceClient;
 namespace SqlBuildManager.Console
 {
     class Program
@@ -84,6 +85,10 @@ namespace SqlBuildManager.Console
                 {
                     RemoteExecutionTestConnectivity(args);
                 }
+                else if(joinedArgs.Contains("/azureremotestatus=true"))
+                {
+                    GetAzureRemoteStatus(args);
+                }
                 else
                 {
                     log.Info("Entering Remote Server Execution - command flag option");
@@ -126,6 +131,37 @@ namespace SqlBuildManager.Console
                                   retVal.ToString()));
             else
                 log.Info("Test Connectivity Completed Successfully. Exiting with code: " + retVal.ToString());
+        }
+        private static void GetAzureRemoteStatus(string[] args)
+        {
+            try
+            {
+                string format = "{0}\t\t{1}\t\t{2}";
+                string format2 = "{0}\t\t\t\t\t{1}\t\t\t{2}";
+                log.Info("Getting list of Azure instances...");
+                BuildServiceManager manager = new BuildServiceManager();
+                List<ServerConfigData> serverData = manager.GetListOfAzureInstancePublicUrls();
+                var remote = serverData.Select(s => s.ServerName).ToList();
+
+                List<ServerConfigData> remoteServer = null;
+                string[] errorMessages;
+                log.Info("Retrieving instance status...");
+                int statReturn = RemoteExecution.ValidateRemoteServerAvailability(remote, Protocol.AzureHttp, out remoteServer, out errorMessages);
+                log.InfoFormat(format2, "Service", "Status", "Version");
+                log.InfoFormat(format,"----------------------------------","-------------","------------");
+                remoteServer.ForEach(s =>
+                    log.InfoFormat(format, s.ServerName, s.ServiceReadiness, s.ServiceVersion));
+
+                if(errorMessages.Length > 0)
+                {
+                    errorMessages.ToList().ForEach(e => log.Error(e));
+                }
+
+            }
+            catch (Exception exe)
+            {
+                log.Error("Unable to get list of Azure instances", exe);
+            }
         }
 
         private static void RunThreadedExecution(string[] args, DateTime start)
