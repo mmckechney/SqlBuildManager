@@ -14,21 +14,29 @@ namespace SqlSync.SqlBuild
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string sqlPack = null;
+        private static List<string> appRoots = new List<string> (new string[] { @"E:\approot", @"F:\approot", @"G:\approot" }); //This really should be dynamic, but we can see it now. 
         private static string sqlPackageExe
         {
             get
             {
-                if(sqlPack == null)
+                if(string.IsNullOrWhiteSpace(sqlPack))
                 {
-                    sqlPack = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\Microsoft_SqlDB_DAC\sqlpackage.exe";
-                    if(!File.Exists(sqlPack))
+                    appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                    appRoots.Add(@"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\Microsoft");
+                    foreach(var dir in appRoots)
                     {
-                        sqlPack = @"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\120\sqlpackage.exe";
-                        if(!File.Exists(sqlPack))
+                        if(Directory.Exists(dir))
                         {
-                            throw new ArgumentException("Can not file sqlpackage.exe");
+                            var files = Directory.GetFiles(dir, "sqlpackage.exe",SearchOption.AllDirectories);
+                            if(files.Any())
+                            {
+                                sqlPack = files.First();
+                                return sqlPack;
+                            }
                         }
                     }
+                    log.ErrorFormat("Unable to find sqlpackage.exe in directories: {0}", string.Join(" | ", appRoots.ToArray()));
+                    throw new ArgumentException("Can not file sqlpackage.exe");
                 }
                 return sqlPack;
             }
