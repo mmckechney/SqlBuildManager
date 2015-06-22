@@ -73,7 +73,8 @@ namespace SqlBuildManager.Console.UnitTest
                 };
             string expected = string.Empty; 
             string actual;
-            actual = Synchronize.GetDatabaseRunHistoryDifference(args);
+            var cmdLine = CommandLine.ParseCommandLineArg(args);
+            actual = Synchronize.GetDatabaseRunHistoryTextDifference(cmdLine);
             Assert.AreEqual(3, actual.Split(new string[]{"\r\n"},StringSplitOptions.None).Length);
         }
 
@@ -101,7 +102,8 @@ namespace SqlBuildManager.Console.UnitTest
             string[] args = null; // TODO: Initialize to an appropriate value
             CommandLineArgs expected = null; // TODO: Initialize to an appropriate value
             CommandLineArgs actual;
-            actual = Synchronize_Accessor.ParseAndValidateFlags(args);
+            var cmdLine = CommandLine.ParseCommandLineArg(args);
+            actual = Synchronize_Accessor.ValidateFlags(cmdLine);
             Assert.AreEqual(expected, actual);
             Assert.Inconclusive("Verify the correctness of this test method.");
         }

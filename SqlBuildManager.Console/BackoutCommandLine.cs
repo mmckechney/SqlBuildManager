@@ -12,11 +12,14 @@ namespace SqlBuildManager.Console
     class BackoutCommandLine
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        internal static string CreateBackoutPackage(string[] args)
+        internal static string CreateBackoutPackage(CommandLineArgs cmdLine)
         {
-            string sourcePackageName = args[1];
-            var cmdLine = CommandLine.ParseCommandLineArg(args);
-
+            
+            if(string.IsNullOrWhiteSpace(cmdLine.PackageName))
+            {
+                log.Error("/PackageName argument is required when creating a backout package");
+            }
+            string sourcePackageName = cmdLine.PackageName;
             if (cmdLine.Server.Length == 0 || cmdLine.Database.Length == 0)
             {
                 log.Error("/server and /database arguments are required when creating a backout package");

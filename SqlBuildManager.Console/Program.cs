@@ -25,53 +25,90 @@ namespace SqlBuildManager.Console
             DateTime start = DateTime.Now;
 
             string joinedArgs = string.Join(",", args).ToLower();
+            var cmdLine = CommandLine.ParseCommandLineArg(args);
 
             if (args.Length == 0 || joinedArgs.Contains("/?") || joinedArgs.Contains("/help"))
             {
-                log.Info(Properties.Resources.ConsoleHelp);
+                log.Info(Properties.Resources.ConsoleHelp2);
                 Environment.Exit(0);
             }
 
-            if (joinedArgs.Contains("/remote=true") || joinedArgs.Contains("/remote,")) //Remote execution with all flags
+            switch(cmdLine.Action)
             {
-                RunRemoteExecution(args, start);
+                case "remote":
+                    RunRemoteExecution(args, start);
+                    break;
+                case "threaded":
+                    RunThreadedExecution(args, start);
+                    break;
+                case "package":
+                    PackageSbxFilesIntoSbmFiles(cmdLine);
+                    break;
+                case "policycheck":
+                    ExecutePolicyCheck(cmdLine);
+                    break;
+                case "gethash":
+                    GetPackageHash(cmdLine);
+                    break;
+                case "createbackout":
+                    CreateBackout(cmdLine);
+                    break;
+                case "getdifference":
+                    GetDifferences(cmdLine);
+                    break;
+                case "synchronize":
+                    SyncronizeDatabase(cmdLine);
+                    break;
+                case "build":
+                    StandardExecution(args, start);
+                    break;
+                default:
+                    log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
+                    System.Environment.Exit(8675309);
+                    break;
+
             }
-            else if (args.Length == 1 && args[0].Trim().ToLower().EndsWith(".resp")) //remote execution with single file
-            {
-                RemoteExecutionWithRespFile(args, start);
-            }
-            else if (joinedArgs.Contains("/threaded=true") || joinedArgs.Contains("/threaded=\"true\""))
-            {
-                RunThreadedExecution(args, start);
-            }
-            else if (args.Length == 2 && args[0].ToLower().Contains("/package"))
-            {
-                PackageSbxFilesIntoSbmFiles(args);
-            }
-            else if (args.Length == 2 && args[0].ToLower() == "/policycheck")
-            {
-                ExecutePolicyCheck(args);
-            }
-            else if (args.Length == 2 && args[0].ToLower() == "/gethash")
-            {
-                GetPackageHash(args);
-            }
-            else if (args.Length > 1 && args[0].ToLower() == "/createbackout")
-            {
-                CreateBackout(args);
-            }
-            else if (joinedArgs.Contains("/getdifference"))
-            {
-                GetDifferences(args);
-            }
-            else if (joinedArgs.Contains("/synchronize"))
-            {
-                SyncronizeDatabase(args);
-            }
-            else
-            {
-                StandardExecution(args, start);
-            }
+
+            //if (joinedArgs.Contains("/remote=true") || joinedArgs.Contains("/remote,")) //Remote execution with all flags
+            //{
+            //   RunRemoteExecution(args, start);
+            //}
+            //else if (args.Length == 1 && args[0].Trim().ToLower().EndsWith(".resp")) //remote execution with single file
+            //{
+            //    RemoteExecutionWithRespFile(args, start);
+            //}
+            //else if (joinedArgs.Contains("/threaded=true") || joinedArgs.Contains("/threaded=\"true\""))
+            //{
+            //    RunThreadedExecution(args, start);
+            //}
+            //else if (args.Length == 2 && args[0].ToLower().Contains("/package"))
+            //{
+            //    PackageSbxFilesIntoSbmFiles(args);
+            //}
+            //else if (args.Length == 2 && args[0].ToLower() == "/policycheck")
+            //{
+            //    ExecutePolicyCheck(args);
+            //}
+            //else if (args.Length == 2 && args[0].ToLower() == "/gethash")
+            //{
+            //    GetPackageHash(args);
+            //}
+            //else if (args.Length > 1 && args[0].ToLower() == "/createbackout")
+            //{
+            //    CreateBackout(args);
+            //}
+            //else if (joinedArgs.Contains("/getdifference"))
+            //{
+            //    GetDifferences(args);
+            //}
+            //else if (joinedArgs.Contains("/synchronize"))
+            //{
+            //    SyncronizeDatabase(args);
+            //}
+            //else
+            //{
+            //    StandardExecution(args, start);
+            //}
 
         }
       
@@ -256,9 +293,14 @@ namespace SqlBuildManager.Console
             System.Environment.Exit(exitCode);
         }
 
-        private static void PackageSbxFilesIntoSbmFiles(string[] args)
+        private static void PackageSbxFilesIntoSbmFiles(CommandLineArgs cmdLine)
         {
-            string directory = args[1];
+            if(string.IsNullOrWhiteSpace(cmdLine.Directory))
+            {
+                log.Error("The /Directory argument is required for /Action=Package");
+                System.Environment.Exit(9835);
+            }
+            string directory = cmdLine.Directory;
             string message;
             List<string> sbmFiles = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directory, out message);
             if (sbmFiles.Count > 0)
@@ -313,25 +355,25 @@ namespace SqlBuildManager.Console
 
 
         #region .: Helper Processes :.
-        private static void SyncronizeDatabase(string[] args)
+        private static void SyncronizeDatabase(CommandLineArgs cmdLine)
         {
-            bool success = Synchronize.SyncDatabases(args);
+            bool success = Synchronize.SyncDatabases(cmdLine);
             if (success)
                 System.Environment.Exit(0);
             else
                 System.Environment.Exit(954);
         }
 
-        private static void GetDifferences(string[] args)
+        private static void GetDifferences(CommandLineArgs cmdLine)
         {
-            string history = Synchronize.GetDatabaseRunHistoryDifference(args);
+            string history = Synchronize.GetDatabaseRunHistoryTextDifference(cmdLine);
             log.Info(history);
             System.Environment.Exit(0);
         }
 
-        private static void CreateBackout(string[] args)
+        private static void CreateBackout(CommandLineArgs cmdLine)
         {
-            string packageName = BackoutCommandLine.CreateBackoutPackage(args);
+            string packageName = BackoutCommandLine.CreateBackoutPackage(cmdLine);
             if (!String.IsNullOrEmpty(packageName))
             {
                 log.Info(packageName);
@@ -343,9 +385,15 @@ namespace SqlBuildManager.Console
             }
         }
 
-        private static void GetPackageHash(string[] args)
+        private static void GetPackageHash(CommandLineArgs cmdLine)
         {
-            string packageName = args[1].Trim();
+            if(string.IsNullOrWhiteSpace(cmdLine.PackageName))
+            {
+                log.Error("No /PackageName was specified. This is required for /Action=GetHash");
+                System.Environment.Exit(626);
+
+            }
+            string packageName = cmdLine.PackageName;
             string hash = SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
             if (!String.IsNullOrEmpty(hash))
             {
@@ -358,9 +406,15 @@ namespace SqlBuildManager.Console
             }
         }
 
-        private static void ExecutePolicyCheck(string[] args)
+        private static void ExecutePolicyCheck(CommandLineArgs cmdLine)
         {
-            string packageName = args[1].Trim();
+            if (string.IsNullOrWhiteSpace(cmdLine.PackageName))
+            {
+                log.Error("No /PackageName was specified. This is required for /Action=PolicyCheck");
+                System.Environment.Exit(34536);
+
+            }
+            string packageName = cmdLine.PackageName;
             PolicyHelper helper = new PolicyHelper();
             bool passed;
             List<string> policyMessages = helper.CommandLinePolicyCheck(packageName, out passed);

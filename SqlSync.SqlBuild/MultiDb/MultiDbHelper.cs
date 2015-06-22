@@ -100,11 +100,17 @@ namespace SqlSync.SqlBuild.MultiDb
                 List<DatabaseOverride> tmpDb = new List<DatabaseOverride>();
                 for (int j = 0; j < arrDb.Length; j++)
                 {
-                    if (arrDb[j].IndexOf(',') == -1)
-                        throw new MultiDbConfigurationException("Error in configuration file line #" + i + 1 + ". Missing \",\" separator. This is needed to separate default and override database targets.");
+                    //Changing so that a default setting is not required...
+                    //if (arrDb[j].IndexOf(',') == -1)
+                    //    throw new MultiDbConfigurationException("Error in configuration file line #" + i + 1 + ". Missing \",\" separator. This is needed to separate default and override database targets.");
 
                     string[] over = arrDb[j].Split(',');
-                    DatabaseOverride ovr = new DatabaseOverride(over[0].Trim(), over[1].Trim());
+                    DatabaseOverride ovr;
+                    if(over.Length > 1)
+                        ovr= new DatabaseOverride(over[0].Trim(), over[1].Trim());
+                    else
+                        ovr = new DatabaseOverride("", over[0].Trim());
+
                     tmpDb.Add(ovr);
                 }
                 if (tmpDb.Count > 0)

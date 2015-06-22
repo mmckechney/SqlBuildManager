@@ -30,5 +30,12 @@ namespace SqlSync.SqlBuild
 
         [System.Runtime.Serialization.DataMember()]
         public bool ForceCustomDacPac { get; set; }
+        [System.Runtime.Serialization.DataMember()]
+        public string Action { get; set; }
+        [System.Runtime.Serialization.DataMember()]
+        public string PackageName
+        { get; set; }
+        [System.Runtime.Serialization.DataMember()]
+        public string Directory { get; set; }
     }
 }

@@ -54,7 +54,7 @@ namespace SqlSync.SqlBuild.Remote
             StringBuilder sb = new StringBuilder();
 
             sb.Append("\"" + exePath + "\" ");
-            sb.Append("/remote=true ");
+            sb.Append("/Action=Remote ");
             if (!string.IsNullOrWhiteSpace(sbmFileName))
                 sb.Append("/build=\"" + sbmFileName + "\" ");
 

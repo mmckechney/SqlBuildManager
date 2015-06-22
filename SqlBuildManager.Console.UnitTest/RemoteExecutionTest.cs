@@ -78,7 +78,7 @@ namespace SqlBuildManager.Console.UnitTest
 
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/transactional=false";
             args[2] = "/trial=true";
             args[3] = "/override=\"C\\temp\\multicfg.cfg\"";
@@ -107,7 +107,7 @@ namespace SqlBuildManager.Console.UnitTest
             File.WriteAllBytes(sbmFileName, Properties.Resources.NoTrans_MultiDb_sbm);
 
             string[] args = new string[7];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -136,7 +136,7 @@ namespace SqlBuildManager.Console.UnitTest
             File.WriteAllBytes(sbmFileName, Properties.Resources.NoTrans_MultiDb_sbm);
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -173,7 +173,7 @@ localhost:def,ovr";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -213,7 +213,7 @@ localhost:def,ovr";
             File.WriteAllBytes(sbmFileName, Properties.Resources.NoTrans_MultiDb_sbm);
 
             string[] args = new string[7];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -247,7 +247,7 @@ localhost:def,ovr";
 
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -282,7 +282,7 @@ localhost:def,ovr";
 
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -320,7 +320,7 @@ localhost:def,ovr";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -360,7 +360,7 @@ localhost:def,ovr";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -405,7 +405,7 @@ localhost:def,ovr";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -562,7 +562,7 @@ localhost:def,ovr";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\""+ loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -610,7 +610,7 @@ localhost:def,ovr";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -658,7 +658,7 @@ localhost:def,ovr";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[7];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
@@ -705,7 +705,7 @@ localhost:def,ovr";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[7];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
@@ -752,7 +752,7 @@ localhost:def,ovr";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[7];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
@@ -799,7 +799,7 @@ localhost:def,ovr";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[7];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
@@ -847,7 +847,7 @@ anotherhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[7];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
@@ -895,7 +895,7 @@ anotherhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[8];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -944,7 +944,7 @@ anotherhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[6];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -1025,7 +1025,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[9];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=false";
@@ -1119,7 +1119,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[9];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -1169,7 +1169,7 @@ localhost\SQLEXPRESS:DoesntExist,DoesntExist";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[9];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
@@ -1220,7 +1220,7 @@ localhost\SQLEXPRESS:DoesntExist2,DoesntExist2";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[9];
-            args[0] = "/remote=true";
+            args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";

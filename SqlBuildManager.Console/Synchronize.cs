@@ -11,15 +11,17 @@ namespace SqlBuildManager.Console
     public class Synchronize
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public static string GetDatabaseRunHistoryDifference(string[] args)
+        public static string GetDatabaseRunHistoryTextDifference(CommandLineArgs cmdLine)
         {
-            CommandLineArgs cmdLine = ParseAndValidateFlags(args);
+            cmdLine = ValidateFlags(cmdLine);
             if (cmdLine == null)
             {
                 return null;
             }
 
-            var history = GetDatabaseRunHistoryDifference(cmdLine);
+            DatabaseDiffer differ = new DatabaseDiffer();
+            var history = differ.GetDatabaseHistoryDifference(cmdLine.GoldServer, cmdLine.GoldDatabase, cmdLine.Server, cmdLine.Database);
+             //= GetDatabaseRunHistoryDifference(cmdLine);
             string header = String.Format("{0} Package differences found between Gold:[{1}].[{2}] and Target:[{3}].[{4}]\r\n", history.BuildFileHistory.Count(),cmdLine.GoldServer,cmdLine.GoldDatabase,cmdLine.Server,cmdLine.Database);
             if(history.BuildFileHistory.Any())
                 return header + history.ToString();
@@ -37,9 +39,9 @@ namespace SqlBuildManager.Console
         }
 
 
-        public static bool SyncDatabases(string[] args)
+        public static bool SyncDatabases(CommandLineArgs cmdLine)
         {
-            CommandLineArgs cmdLine = ParseAndValidateFlags(args);
+            cmdLine = ValidateFlags(cmdLine);
             if (cmdLine == null)
             {
                 return false;
@@ -58,9 +60,8 @@ namespace SqlBuildManager.Console
             log.Info(message);
         }
 
-        private static CommandLineArgs ParseAndValidateFlags(string[] args)
+        private static CommandLineArgs ValidateFlags(CommandLineArgs cmdLine)
         {
-            CommandLineArgs cmdLine = CommandLine.ParseCommandLineArg(args);
 
             if (string.IsNullOrEmpty(cmdLine.GoldDatabase))
             {

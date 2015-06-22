@@ -1,0 +1,72 @@
+﻿
+Usage: SqlBuildManager.Console /Action=<action> | args below
+
+    /? or /help                      Show this help 
+
+Action value options (/Action=<value>)
+    Build                    Performs a standard,local SBM execution via command line
+    Threaded                 For updating multiple databases simultaneously from the current machine
+    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing 
+    Package                  Creates an SBM package from an SBX configuraiton file and scripts
+    PolicyCheck              Performs a script policy check on the specified SBM package
+    GetHash                  Calculates the SHA-1 hash fingerprint value for the SBM package (scripts + run order)
+    CreateBackout            Generates a backout package (reversing stored procedure and scripted object changes)
+    GetDifference            Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between /Database and /GoldDatabase
+    Syncronize               Performs a database syncronization between between /Database and /GoldDatabase
+
+
+General Authentication settings (/Action={Build|Threaded|Remote|GetDifference|Syncronize})
+    /UserName="<username>"            The username to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
+    /Password="<password>"            The password to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
+    /Database="<database name>"       1) Name of a single database to run against or 2) source database for scripting or runtime configuration
+    /Server="<server name>"           1) Name of a server for single database run or 2) source server for scripting or runtime configuration
+
+General Runtime settings (/Action={Build|Threaded|Remote})
+    /PackageName="<filename>"        Name of the .sbm or .sbx file to execute
+    /RootLoggingPath="<directory>"   Directory to save execution logs (for threaded and remote executions)
+    /Trial=(true|false)              Whether or not to run in trial mode (default is false)
+    /Transaction=(true|false)        Whether or not to run with a wrapping transaction (default is true)
+    /Override=("<filename>"|list)    File containing the target database settings (usually a formatted .cfg file)
+    /Description="<description>"     A free form description for the execution run
+    /LogAsText=(true|false)          Whether to log as text or HTML. Default is true
+    /LogToDatabaseName="<db name>"   [Not recommended] Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target). 
+    /ScriptSrcDir="<directory>"      [Not recommended] Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)
+    /ScriptLogFile="<filename>"      [Not recommended] Alternate name for the file containing the script run log
+
+Remote Execution settings (/Action=Remote)
+    /RemoteServers=("<filename>"|derive|azure) Pointer to file that contains the list of remote execution servers,
+	                                           "derive" to parse servers from DB list, azure to use Azure PaaS instances
+    /TimeoutRetryCount=(integer)               Number of times to retry os a script timeout is encountered (default is 0)
+    /DistributionType=(equal|local)            Sets whether to split execution evenly across all execution servers 
+	                                           or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
+    /TestConnectivity=(true|false)             True value will test connection to remote agent and databases but will not execute SQL scripts
+    /AzureRemoteStatus=true                    Return a status of the Azure remote execution services. Will not execute SQL 
+
+Dacpac Execution (/Action={Threaded|Remote})
+    /PlatinumDacpac="<filename>"      Name of the dacpac containing the platinum schema
+    /TargetDacpac="<filename>"        Name of the dacpac containing the schema of the database to be updated
+   
+    /ForceCustomDacPac=(true|false)   *USE WITH CAUTION! (/Action={hreaded)This will force the dacpac extraction and creation of custom scripts for EVERY target database! 
+	                                  Your execution will take much longer
+
+Database Synchronization (/Action={Synchronize|GetDifference})
+    /GoldDatabase="<database name>"   The "gold copy" database that will serve as the model for what the /Database should look like
+    /GoldServer="<server name>"       The server that the "gold copy" database can be found
+    /ContinueOnFailure=(true|false)   Whether or not to continue on the failure of a package. Default is false. 
+
+SBX to SBM packaging (/Action=Package)
+    /Directory="<directory>"          Directory containing 1 or more SBX files to package into SBM zip files
+   
+Policy checking (/Action=PolicyCheck)
+    /PackageName="<filename>"        Name of the SBM package to check policies on
+
+Calculate hash/fingerprint (/Action=GetHash)
+    /PackageName="<filename>"        Name of the SBM package to calculate SHA-1 hash value
+   
+Creating backout packages (/Action=CreateBackout)
+    /PackageName="<filename>"        Name of the SBM package to calculate a backout package for
+	/Server=<servername>             Name of the server that contains the desired state schema to "backout to"
+	/Database=<databasename>         Name of the database that contains the desired state schema to "backout to"
+
+ 
+	

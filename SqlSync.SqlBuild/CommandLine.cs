@@ -19,17 +19,65 @@ namespace SqlSync.SqlBuild
 
             StringDictionary dict = Arguments.ParseArguments(args);
             cmdLine.ArgumentCollection = dict;
+            if(dict.ContainsKey("action"))
+            {
+                cmdLine.Action = dict["action"].ToLowerInvariant();
+            }
 
-            if (dict.ContainsKey("b"))
+            switch (cmdLine.Action)
             {
-                cmdLine.BuildDesignated = true;
-                cmdLine.BuildFileName = dict["b"];
+                case "remote":
+                    if (dict.ContainsKey("remoteservers"))
+                    {
+                        cmdLine.RemoteServers = dict["remoteservers"];
+                    }
+                    if (dict.ContainsKey("distributiontype"))
+                    {
+                        cmdLine.DistributionType = dict["distributiontype"];
+                    }
+                    break;
+                case "threaded":
+                    
+                    break;
+                case "package":
+                    
+                    break;
+                case "policycheck":
+                    
+                    break;
+                case "gethash":
+                    
+                    break;
+                case "createbackout":
+                    
+                    break;
+                case "getdifference":
+                    cmdLine.GetDifference = true;
+                    break;
+                case "synchronize":
+                    cmdLine.Synchronize = true;
+                    break;
+                case "build":
+                    cmdLine.BuildDesignated = true;
+                    cmdLine.BuildFileName = dict["packagename"];
+                    break;
+                default:
+                  
+                    break;
+
             }
-            if (dict.ContainsKey("build"))
-            {
-                cmdLine.BuildDesignated = true;
-                cmdLine.BuildFileName = dict["build"];
-            }
+
+
+            //if (dict.ContainsKey("b"))
+            //{
+            //    cmdLine.BuildDesignated = true;
+            //    cmdLine.BuildFileName = dict["b"];
+            //}
+            //if (dict.ContainsKey("build"))
+            //{
+            //    cmdLine.BuildDesignated = true;
+            //    cmdLine.BuildFileName = dict["build"];
+            //}
 
             if (dict.ContainsKey("override"))
             {
@@ -94,23 +142,29 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("description"))
                 cmdLine.Description = dict["description"];
 
+            if (dict.ContainsKey("packagename"))
+                cmdLine.PackageName = dict["packagename"];
+
+            if (dict.ContainsKey("directory"))
+                cmdLine.Directory = dict["directory"];
+
             bool isTrans;
             if (dict.ContainsKey("transactional") && Boolean.TryParse(dict["transactional"], out isTrans))
             {
                 cmdLine.Transactional = isTrans;
             }
 
-            if (dict.ContainsKey("remote"))
-            {
-                if (dict.ContainsKey("remoteservers"))
-                {
-                    cmdLine.RemoteServers = dict["remoteservers"];
-                }
-                if (dict.ContainsKey("distributiontype"))
-                {
-                    cmdLine.DistributionType = dict["distributiontype"];
-                }
-            }
+            //if (dict.ContainsKey("remote"))
+            //{
+            //    if (dict.ContainsKey("remoteservers"))
+            //    {
+            //        cmdLine.RemoteServers = dict["remoteservers"];
+            //    }
+            //    if (dict.ContainsKey("distributiontype"))
+            //    {
+            //        cmdLine.DistributionType = dict["distributiontype"];
+            //    }
+            //}
 
             int allowableTimeoutRetries = 0;
             if(dict.ContainsKey("timeoutretrycount"))
@@ -119,13 +173,13 @@ namespace SqlSync.SqlBuild
                     cmdLine.AllowableTimeoutRetries = allowableTimeoutRetries;
             }
 
-            bool sync;
-            if (dict.ContainsKey("synchronize") && Boolean.TryParse(dict["synchronize"], out sync))
-                cmdLine.Synchronize = sync;
+            //bool sync;
+            //if (dict.ContainsKey("synchronize") && Boolean.TryParse(dict["synchronize"], out sync))
+            //    cmdLine.Synchronize = sync;
 
-            bool diff;
-            if (dict.ContainsKey("getdifference") && Boolean.TryParse(dict["getdifference"], out diff))
-                cmdLine.GetDifference = diff;
+            //bool diff;
+            //if (dict.ContainsKey("getdifference") && Boolean.TryParse(dict["getdifference"], out diff))
+            //    cmdLine.GetDifference = diff;
 
             if (dict.ContainsKey("golddatabase"))
                 cmdLine.GoldDatabase = dict["golddatabase"];
