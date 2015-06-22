@@ -280,7 +280,7 @@ namespace SqlSync.SqlBuild
 
             //Do we need to try to update the target using the Platinum Dacpac?
             if (buildResults.FinalStatus != BuildItemStatus.Committed && buildResults.FinalStatus != BuildItemStatus.TrialRolledBack &&
-                !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName))
+                !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName) && !runData.ForceCustomDacpac)
             {
                 var database = ((SqlSyncBuildData.ScriptRow)filteredScripts[0].Row).Database;
                 string targetDatabase = GetTargetDatabase(database);

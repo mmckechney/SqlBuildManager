@@ -156,6 +156,7 @@ namespace SqlBuildManager.Console
 
                 if (forceCustomDacpac)
                 {
+                    runData.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
                     var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.username, this.password, loggingDirectory);
                     switch(status)
@@ -178,7 +179,7 @@ namespace SqlBuildManager.Console
                 }
                 else
                 {
- 
+                    runData.ForceCustomDacpac = false;
                     //Get a full copy of the build data to work with (avoid threading sync issues)
                     SqlSyncBuildData buildData = new SqlSyncBuildData();
 

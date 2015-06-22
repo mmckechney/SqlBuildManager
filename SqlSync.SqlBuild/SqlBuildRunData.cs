@@ -105,5 +105,11 @@ namespace SqlSync.SqlBuild
             get { return targetDatabaseOverrides; }
             set { targetDatabaseOverrides = value; }
         }
+
+        public bool ForceCustomDacpac
+        {
+            get;
+            set;
+        }
     }
 }

@@ -462,7 +462,7 @@ namespace SqlBuildManager.Services
             log.DebugFormat("Creating Threaded execution console object. Processing for {0}", record.BuildPackageName);
             SqlBuildManager.Console.ThreadedExecution threaded = new SqlBuildManager.Console.ThreadedExecution();
             
-            int result = threaded.Execute(args.BuildZipFileName, args.PlatinumDacPacFileName, args.MultiDbData, args.RootLoggingPath, args.Description, record.RequestedBy);
+            int result = threaded.Execute(args.BuildZipFileName, args.PlatinumDacPacFileName, args.MultiDbData, args.RootLoggingPath, args.Description, record.RequestedBy,false);
             log.Info("Threaded execution console complete with result '" + result.ToString() + "'");
             
             record.ReturnValue = (ExecutionReturn)Enum.Parse(typeof(ExecutionReturn), result.ToString());
