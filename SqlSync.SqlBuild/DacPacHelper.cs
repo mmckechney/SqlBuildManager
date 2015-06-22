@@ -225,7 +225,7 @@ namespace SqlSync.SqlBuild
         }
 
 
-        internal static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password, string workingDirectory)
+        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password, string workingDirectory)
         {
             string tmpDacPacName = workingDirectory + targetDatabase + ".dacpac";
             if(!ExtractDacPac(targetDatabase, targetServerName, userName, password, tmpDacPacName))
@@ -260,6 +260,7 @@ namespace SqlSync.SqlBuild
 
             runData.BuildData = buildData;
             runData.BuildFileName = sbmFileName;
+            runData.ProjectFileName = projectFileName;
 
             log.InfoFormat("Build package ready");
             return DacpacDeltasStatus.Success;

@@ -26,6 +26,8 @@ Dacpac Execution...
     /TargetDacpac="<filename>"        Name of the dacpac containing the schema of the database to be updated
 	     Note: Authentication settings (below) can also be used to extract a target dacpac
          Note: Remote execution settings can be used for a multi-database deploy
+    /ForceCustomDacPac=(true|false)   *USE WITH CAUTION! This will force the dacpac extraction and creation of custom scripts for EVERY target database! 
+	                                  Your execution will take much longer and this can only be used with the /Threaded=true option.
 
 Authentication settings..
     /UserName="<username>"            The username to authenticate against the database if not using integrate auth (required when RemoteServers="azure")

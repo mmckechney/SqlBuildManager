@@ -77,15 +77,29 @@ namespace SqlBuildManager.Console
             get { return isTransactional; }
             set { isTransactional = value; }
         }
+
+        bool forceCustomDacpac = false;
+        public bool ForceCustomDacpac
+        {
+            get { return forceCustomDacpac; }
+            set { forceCustomDacpac = value; }
+        }
+
+        private string username = string.Empty;
+        private string password = string.Empty;
+
         private string buildRequestedBy = string.Empty;
 
-        public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy)
+        public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac)
         {
             this.server = serverName;
             this.overrides = overrides;
             this.isTrial = cmdArgs.Trial;
             this.cmdArgs = cmdArgs;
             this.buildRequestedBy = buildRequestedBy;
+            this.forceCustomDacpac = forceCustomDacpac;
+            this.username = cmdArgs.UserName;
+            this.password = cmdArgs.Password;
 
             try
             {
@@ -111,42 +125,22 @@ namespace SqlBuildManager.Console
             this.returnValue = (int)RunnerReturn.BuildResultInconclusive;
 
             ConnectionData connData = null;
-            SqlSync.SqlBuild.SqlBuildRunData runData = null;
             BackgroundWorker bg = null;
             DoWorkEventArgs e = null;
-            string loggingDirectory = ThreadedExecution.RootLoggingPath + @"\" + server + @"\" + overrides[0].OverrideDbTarget + @"\";
+            SqlBuildRunData runData = new SqlBuildRunData();
+            string targetDatabase = overrides[0].OverrideDbTarget;
+            string loggingDirectory = ThreadedExecution.RootLoggingPath + @"\" + server + @"\" + targetDatabase + @"\";
             try
             {
-                //Initilize the logging directory for this run
-                if (!Directory.Exists(loggingDirectory))
-                    Directory.CreateDirectory(loggingDirectory);
-
-                this.IsTransactional = cmdArgs.Transactional;
-
-                //Get a full copy of the build data to work with (avoid threading sync issues)
-                SqlSyncBuildData buildData = new SqlSyncBuildData();
-
-                string xml = "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n" + ThreadedExecution.BuildData.GetXml();
-                using (StringReader sr = new StringReader(xml))
-                {
-                    buildData.ReadXml(sr);
-                }
-                //Clear out any existing ComittedScript data.. just log what is relevent to this run.
-                buildData.CommittedScript.Clear();
-                   
-
-                //Create the BuildRunData object that contains the run configuration data.
-                runData = new SqlBuildRunData();
-                runData.BuildData = buildData;
+                 //Start setting properties on the object that contains the run configuration data.
                 runData.BuildType = "Other";
                 if (!string.IsNullOrEmpty(cmdArgs.Description))
                     runData.BuildDescription = cmdArgs.Description;
                 else
                     runData.BuildDescription = "Threaded Multi-Database. Run ID:" + ThreadedExecution.RunID;
-                runData.ProjectFileName = loggingDirectory + Path.GetFileName(ThreadedExecution.ProjectFileName);
+                
                 runData.IsTrial = this.isTrial;
                 runData.RunScriptOnly = false;
-                runData.BuildFileName = ThreadedExecution.BuildZipFileName;
                 runData.TargetDatabaseOverrides = overrides;
                 runData.Server = this.server;
                 runData.IsTransactional = cmdArgs.Transactional;
@@ -154,6 +148,55 @@ namespace SqlBuildManager.Console
                     runData.LogToDatabaseName = this.cmdArgs.LogToDatabaseName;
 
                 runData.PlatinumDacPacFileName = cmdArgs.PlatinumDacpac;
+
+
+                //Initilize the logging directory for this run
+                if (!Directory.Exists(loggingDirectory))
+                    Directory.CreateDirectory(loggingDirectory);
+
+                if (forceCustomDacpac)
+                {
+                    //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
+                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.username, this.password, loggingDirectory);
+                    switch(status)
+                    {
+                        case DacpacDeltasStatus.Success:
+                            //nothing to do
+                            break;
+                        case DacpacDeltasStatus.InSync:
+                        case DacpacDeltasStatus.OnlyPostDeployment:
+                            log.InfoFormat("Target database {0} is already in sync with {1}. Nothing to do!", targetDatabase, cmdArgs.PlatinumDacpac);
+                            this.returnValue = (int)RunnerReturn.DacpacDatabasesInSync;
+                            break;
+                        default:
+                            log.ErrorFormat("Error creating custom dacpac and scripts for{0}. No update was performed", targetDatabase);
+                            this.returnValue = (int)RunnerReturn.PackageCreationError;
+                            return;
+                            
+                    }
+
+                }
+                else
+                {
+ 
+                    //Get a full copy of the build data to work with (avoid threading sync issues)
+                    SqlSyncBuildData buildData = new SqlSyncBuildData();
+
+                    string xml = "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n" + ThreadedExecution.BuildData.GetXml();
+                    using (StringReader sr = new StringReader(xml))
+                    {
+                        buildData.ReadXml(sr);
+                    }
+                    //Clear out any existing ComittedScript data.. just log what is relevent to this run.
+                    buildData.CommittedScript.Clear();
+                    
+                    
+                    runData.BuildData = buildData;
+                    runData.ProjectFileName = loggingDirectory + Path.GetFileName(ThreadedExecution.ProjectFileName);
+                    runData.BuildFileName = ThreadedExecution.BuildZipFileName;
+                }
+
+               
 
                 //Create a connection object.. all we need is the server here, the DB will be filled in at execution time
                 connData = new ConnectionData(server, "");

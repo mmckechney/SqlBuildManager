@@ -144,6 +144,10 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("targetdacpac"))
                 cmdLine.TargetDacpac = dict["targetdacpac"];
 
+            bool forceCustom;
+            if (dict.ContainsKey("forcecustomdacpac") && Boolean.TryParse(dict["forcecustomdacpac"], out forceCustom))
+                cmdLine.ForceCustomDacPac = forceCustom;
+
 
             return cmdLine;
         }

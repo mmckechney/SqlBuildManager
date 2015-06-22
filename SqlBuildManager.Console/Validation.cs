@@ -174,23 +174,29 @@ namespace SqlBuildManager.Console
             //If there are Dacpac settings... we will need to create the SBM automatically..
             if (!string.IsNullOrEmpty(cmdLine.PlatinumDacpac) && string.IsNullOrEmpty(cmdLine.BuildFileName))
             {
-                string sbmName;
-                 var stat = DacPacHelper.GetSbmFromDacPac(cmdLine, multiDb, out sbmName);
-                if (stat == DacpacDeltasStatus.Success)
+                if (cmdLine.ForceCustomDacPac == false)
                 {
-                     cmdLine.BuildFileName = sbmName;
-                    return (int)ExecutionReturn.Successful;
-                }
-                else if(stat ==DacpacDeltasStatus.InSync)
-                {
-                    return (int)ExecutionReturn.DacpacDatabasesInSync;
+                    string sbmName;
+                    var stat = DacPacHelper.GetSbmFromDacPac(cmdLine, multiDb, out sbmName);
+                    if (stat == DacpacDeltasStatus.Success)
+                    {
+                        cmdLine.BuildFileName = sbmName;
+                        return (int)ExecutionReturn.Successful;
+                    }
+                    else if (stat == DacpacDeltasStatus.InSync)
+                    {
+                        return (int)ExecutionReturn.DacpacDatabasesInSync;
+                    }
+                    else
+                    {
+                        log.Error("Error creating SBM package from Platinum dacpac");
+                        return -5120;
+                    }
                 }
                 else
                 {
-                    log.Error("Error creating SBM package from Platinum dacpac");
-                    return -5120;
+                    log.Info("Found ForceCustomDacPac setting. Skipping the creation of the single platinum SBM package. Individual dacpacs and SBMs will be created");
                 }
-               
             }
 
             return 0;

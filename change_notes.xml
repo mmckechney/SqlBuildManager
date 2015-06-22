@@ -2,6 +2,7 @@
 <SqlBuildManagerChangeNotes>
   <Version Major="10" Minor="1" Revision="1">
     <added>Added console argument /AzureRemoteStatus=true to list Azure remote execution machines and their readiness status</added>
+    <added>Added console argument /ForceCustomDacPac=true to force teh creation of a custom dacpac and build script for each target database. USE WITH CAUTION this will exponentially increase the deployment time  and processing needs. Use only as a last scenario to ensure full database synchronicity</added>
     <fixed>Various remote/ threaded bug fixes</fixed>
   </Version>
   <Version Major="10" Minor="1" Revision="0">

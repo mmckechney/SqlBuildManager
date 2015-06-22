@@ -12,7 +12,8 @@ namespace SqlBuildManager.Interfaces.Console
         BuildResultInconclusive = 10,
         BuildErrorNonTransactional = 20,
         DacpacDatabasesInSync = 87598,
-        CommittedWithCustomDacpac = 87599
+        CommittedWithCustomDacpac = 87599,
+        PackageCreationError = 87600
     }
 
     [DataContract()]

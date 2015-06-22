@@ -210,7 +210,7 @@ namespace SqlBuildManager.Console
             //Set Trial
             multiData.RunAsTrial = cmdLine.Trial;
 
-            return Execute(ThreadedExecution.buildZipFileName, cmdLine.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName);
+            return Execute(ThreadedExecution.buildZipFileName, cmdLine.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName, cmdLine.ForceCustomDacPac);
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace SqlBuildManager.Console
         /// <param name="description"></param>
         /// <param name="buildRequestedBy"></param>
         /// <returns></returns>
-        public int Execute(string buildZipFileName, string platinumDacPacFileName, MultiDbData multiData, string rootLoggingPath, string description, string buildRequestedBy)
+        public int Execute(string buildZipFileName, string platinumDacPacFileName, MultiDbData multiData, string rootLoggingPath, string description, string buildRequestedBy, bool forceCustomDacpac)
         {
             ThreadedExecution.buildZipFileName = buildZipFileName;
             
@@ -255,13 +255,17 @@ namespace SqlBuildManager.Console
 
             string error;
             //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
-            ExtractAndLoadBuildFile(ThreadedExecution.buildZipFileName, out ThreadedExecution.buildData);
-            if (buildData == null)
+
+            if (forceCustomDacpac == false)
             {
-                error = "Unable to procees. SqlSyncBuild data object is null";
-                WriteToLog(new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullBuildData }, LogType.Error);
-                log.Error(error);
-                return (int)ExecutionReturn.NullBuildData;
+                ExtractAndLoadBuildFile(ThreadedExecution.buildZipFileName, out ThreadedExecution.buildData);
+                if (buildData == null)
+                {
+                    error = "Unable to procees. SqlSyncBuild data object is null";
+                    WriteToLog(new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullBuildData }, LogType.Error);
+                    log.Error(error);
+                    return (int)ExecutionReturn.NullBuildData;
+                }
             }
 
             int threadTotal = 0;
@@ -272,7 +276,11 @@ namespace SqlBuildManager.Console
                 //Increase the number of threads in the threadpool...
                 System.Threading.ThreadPool.SetMaxThreads(200, 200);
                 //Load up the batched scripts into a shared object so that we can conserve memory
-                ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, this.projectFilePath);
+
+                if (!forceCustomDacpac)
+                {
+                    ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, this.projectFilePath);
+                }
                 foreach (ServerData srv in multiData)
                 {
                     foreach (List<DatabaseOverride> ovr in srv.OverrideSequence.Values)
@@ -283,7 +291,7 @@ namespace SqlBuildManager.Console
                             ThreadedExecution.SyncObj.WorkingRunners++;
                         }
 
-                        ThreadedRunner runner = new ThreadedRunner(srv.ServerName, ovr, cmdLine, buildRequestedBy);
+                        ThreadedRunner runner = new ThreadedRunner(srv.ServerName, ovr, cmdLine, buildRequestedBy, forceCustomDacpac);
                         string msg = "Queuing up thread for " + runner.Server + "." + runner.TargetDatabases;
                         log.Debug(msg);
                         WriteToLog(msg, LogType.Message);
@@ -334,6 +342,7 @@ namespace SqlBuildManager.Console
                 string msg = "Starting up thread for " + runner.Server + ": " + runner.TargetDatabases;
                 log.Info(msg);
                 WriteToLog(msg, LogType.Message);
+
                 runner.RunDatabaseBuild();
                 log.InfoFormat("{0} : {1} -- {2}", runner.Server, runner.TargetDatabases, runner.ReturnValue.ToString());
                 switch (runner.ReturnValue)

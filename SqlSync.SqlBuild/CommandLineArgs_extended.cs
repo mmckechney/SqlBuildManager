@@ -27,5 +27,8 @@ namespace SqlSync.SqlBuild
 
         [System.Runtime.Serialization.DataMember()]
         public bool ContinueOnFailure { get; set; }
+
+        [System.Runtime.Serialization.DataMember()]
+        public bool ForceCustomDacPac { get; set; }
     }
 }
