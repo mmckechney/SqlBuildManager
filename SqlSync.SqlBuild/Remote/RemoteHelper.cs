@@ -114,7 +114,7 @@ namespace SqlSync.SqlBuild.Remote
                 else if (fileName.ToLower().EndsWith(".multidbq"))
                 {
                     string message;
-                    MultiDbData dbData = MultiDbHelper.CreateMultiDbConfigFromQuery(fileName, out message);
+                    MultiDbData dbData = MultiDbHelper.CreateMultiDbConfigFromQueryFile(fileName, out message);
                     if (dbData == null)
                     {
                         throw new MultiDbConfigurationException("Error creating configuration.\r\n" + message);

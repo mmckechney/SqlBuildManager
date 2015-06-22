@@ -179,17 +179,18 @@ namespace SqlBuildManager.Console
                 log.Info(msg);
 
             }
-            
 
-            //Load the multi database configuration data from XML or flat file...
+           
+            //Load the multi database configuration data from XML or flat file or SQL...
             string message = string.Empty;
 
-            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, out  multiData, out errorMessages);
+            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out  multiData, out errorMessages);
             if (tmpValReturn != 0)
             {
                 WriteToLog(errorMessages, LogType.Error);
                 return tmpReturn;
             }
+            
 
             //Check for the platinum dacpac and configure it if necessary
             tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref multiData);

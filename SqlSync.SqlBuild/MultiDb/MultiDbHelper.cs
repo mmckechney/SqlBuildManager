@@ -8,10 +8,13 @@ using SqlSync.Connection;
 using System.Data;
 using System.Data.SqlClient;
 using System.Xml;
+using log4net;
+using System.Linq;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public class MultiDbHelper
     {
+        private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static MultiDbData DeserializeMultiDbConfiguration(string fileName)
         {
             MultiDbData data = null;
@@ -123,7 +126,7 @@ namespace SqlSync.SqlBuild.MultiDb
             return cfg;
         }
 
-        public static MultiDbData CreateMultiDbConfigFromQuery(string fileName, out string message)
+        public static MultiDbData CreateMultiDbConfigFromQueryFile(string fileName, out string message)
         {
             try
             {
@@ -141,6 +144,9 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             try
             {
+                log.InfoFormat("Generating database override configuation from {0} : {1}", connData.SQLServerName, connData.DatabaseName);
+                log.DebugFormat("Override generation script: {0}", query);
+
                 SqlConnection conn = ConnectionHelper.GetConnection(connData);
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.CommandType = CommandType.Text;
@@ -153,22 +159,31 @@ namespace SqlSync.SqlBuild.MultiDb
                 int counter = 0;
                 foreach (DataRow row in tbl.Rows)
                 {
-                    
                     ServerData ser = multi[row[0].ToString().Trim()];
-                    if(ser == null)
+                    if (ser == null)
                     {
                         ser = new ServerData();
                         ser.ServerName = row[0].ToString().Trim();
                     }
-                    DatabaseOverride ovr = new DatabaseOverride(row[1].ToString().Trim(), row[2].ToString().Trim());
-                    ovr.AppendedQueryRowData(row.ItemArray, 3, tbl.Columns);
+
+                    DatabaseOverride ovr;
+                    if (tbl.Columns.Count == 2)
+                    {
+                        ovr = new DatabaseOverride("", row[1].ToString().Trim());
+                    }
+                    else
+                    {
+                        ovr = new DatabaseOverride(row[1].ToString().Trim(), row[2].ToString().Trim());
+                        ovr.AppendedQueryRowData(row.ItemArray, 3, tbl.Columns);
+                    }
                     ser.OverrideSequence.Add(counter.ToString(), ovr);
                     counter++;
                     multi[ser.ServerName] = ser;
-                   // multi[0].OverrideSequence.
                 }
 
                 message = string.Empty;
+                var dbs = multi.Sum(m => m.OverrideSequence.Count());
+                log.InfoFormat("Found {0} target databases across {1} target servers", dbs, multi.Count());
                 return multi;
             }
             catch(Exception exe)

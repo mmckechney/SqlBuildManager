@@ -6,6 +6,7 @@ using System.Text;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.Connection;
 
 namespace SqlBuildManager.Console
 {
@@ -97,7 +98,31 @@ namespace SqlBuildManager.Console
                 return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
             }
 
-            if (!cmdLine.MultiDbRunConfigFileName.EndsWith(".multidb", StringComparison.InvariantCultureIgnoreCase)
+            if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName))
+            {
+                 if (!File.Exists(cmdLine.MultiDbRunConfigFileName))
+                 {
+                     error = string.Format("Specified /Override file does not exist at path: {0}", cmdLine.MultiDbRunConfigFileName);
+                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
+                     log.Error(error);
+                     return (int)ExecutionReturn.InvalidOverrideFlag;
+                 }
+            }
+           
+            if(cmdLine.MultiDbRunConfigFileName.EndsWith(".sql", StringComparison.InvariantCultureIgnoreCase))
+            {
+   
+                if(string.IsNullOrWhiteSpace(cmdLine.Database) || string.IsNullOrWhiteSpace(cmdLine.Server) || 
+                    string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+                {
+                    error = "Invalid command line set. When the /Override setting specifies a SQL file, the following are also required:\r\n /Database, /Server - will be used as source to run scripts \r\n /Username, /Password - provide authentication to that database";
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
+                    log.Error(error);
+                    return (int)ExecutionReturn.InvalidOverrideFlag;
+                }
+
+            }
+            else if (!cmdLine.MultiDbRunConfigFileName.EndsWith(".multidb", StringComparison.InvariantCultureIgnoreCase)
                 && !cmdLine.MultiDbRunConfigFileName.EndsWith(".multidbq", StringComparison.InvariantCultureIgnoreCase)
                 && !cmdLine.MultiDbRunConfigFileName.EndsWith(".cfg", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -110,6 +135,10 @@ namespace SqlBuildManager.Console
 
             return 0;
         }
+        //public static int ValidateAndLoadMultiDbData(string multiDbOverrideSettingFileName, out MultiDbData multiData, out string[] errorMessages)
+        //{
+        //    return ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, null, out multiData, out errorMessages);
+        //}
         /// <summary>
         /// Accepts a Multi-Database configuration file, processes it and outputs a populated MultiDbData object
         /// </summary>
@@ -117,20 +146,49 @@ namespace SqlBuildManager.Console
         /// <param name="multiData">Out parameter of populated MultiDbData object</param>
         /// <param name="errorMessages">Out parameter or error messages (if any)</param>
         /// <returns>Zero (0) if no errors, otherwise an error code</returns>
-        public static int ValidateAndLoadMultiDbData(string multiDbOverrideSettingFileName, out MultiDbData multiData, out string[] errorMessages)
+        public static int ValidateAndLoadMultiDbData(string multiDbOverrideSettingFileName, CommandLineArgs cmdLine, out MultiDbData multiData, out string[] errorMessages)
         {
             log.Info("Validating target database settings");
             string message = string.Empty;
             string error;
             errorMessages = new string[0];
             multiData = null;
+            string extension = Path.GetExtension(multiDbOverrideSettingFileName).ToLowerInvariant();
 
-            if (multiDbOverrideSettingFileName.EndsWith(".multidb", StringComparison.InvariantCultureIgnoreCase))
-                multiData = MultiDbHelper.DeserializeMultiDbConfiguration(multiDbOverrideSettingFileName);
-            else if (multiDbOverrideSettingFileName.EndsWith(".multidbq", StringComparison.InvariantCultureIgnoreCase))
-                multiData = MultiDbHelper.CreateMultiDbConfigFromQuery(multiDbOverrideSettingFileName, out message);
-            else if (multiDbOverrideSettingFileName.EndsWith(".cfg", StringComparison.InvariantCultureIgnoreCase))
-                multiData = MultiDbHelper.ImportMultiDbTextConfig(multiDbOverrideSettingFileName);
+            switch(extension)
+            {
+                case ".multidb":
+                    multiData = MultiDbHelper.DeserializeMultiDbConfiguration(multiDbOverrideSettingFileName);
+                    break;
+                case ".multidbq":
+                    multiData = MultiDbHelper.CreateMultiDbConfigFromQueryFile(multiDbOverrideSettingFileName, out message);
+                    break;
+                case ".cfg":
+                    multiData = MultiDbHelper.ImportMultiDbTextConfig(multiDbOverrideSettingFileName);
+                    break;
+                case ".sql":
+                    if(cmdLine != null)
+                    {
+                        ConnectionData connData = new ConnectionData()
+                        {
+                            DatabaseName = cmdLine.Database,
+                            SQLServerName = cmdLine.Server,
+                            UserId = cmdLine.UserName,
+                            Password = cmdLine.Password
+                        };
+                        multiData = MultiDbHelper.CreateMultiDbConfigFromQuery(connData, File.ReadAllText(cmdLine.MultiDbRunConfigFileName), out message);
+                    }
+                    break;
+
+
+            }
+            //if (multiDbOverrideSettingFileName.EndsWith(".multidb", StringComparison.InvariantCultureIgnoreCase))
+            //    multiData = MultiDbHelper.DeserializeMultiDbConfiguration(multiDbOverrideSettingFileName);
+            //else if (multiDbOverrideSettingFileName.EndsWith(".multidbq", StringComparison.InvariantCultureIgnoreCase))
+            //    multiData = MultiDbHelper.CreateMultiDbConfigFromQueryFile(multiDbOverrideSettingFileName, out message);
+            //else if (multiDbOverrideSettingFileName.EndsWith(".cfg", StringComparison.InvariantCultureIgnoreCase))
+            //    multiData = MultiDbHelper.ImportMultiDbTextConfig(multiDbOverrideSettingFileName);
+           
 
             if (multiData == null)
             {

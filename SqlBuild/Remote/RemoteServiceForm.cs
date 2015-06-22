@@ -159,7 +159,7 @@ namespace SqlSync.SqlBuild.Remote
             else if (txtOverride.Text.ToLower().EndsWith(".multidbq"))
             {
                 string message;
-                MultiDbData dbData = MultiDbHelper.CreateMultiDbConfigFromQuery(txtOverride.Text, out message);
+                MultiDbData dbData = MultiDbHelper.CreateMultiDbConfigFromQueryFile(txtOverride.Text, out message);
                 if (dbData == null)
                 {
                     MessageBox.Show(message, "Error creating configuration", MessageBoxButtons.OK, MessageBoxIcon.Error);

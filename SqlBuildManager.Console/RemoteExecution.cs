@@ -250,7 +250,7 @@ namespace SqlBuildManager.Console
             #endregion
 
              MultiDbData multiDb;
-            int valRet = Validation.ValidateAndLoadMultiDbData(cmd.MultiDbRunConfigFileName, out multiDb, out errorMessages);
+            int valRet = Validation.ValidateAndLoadMultiDbData(cmd.MultiDbRunConfigFileName,cmd, out multiDb, out errorMessages);
             if (valRet != 0)
             {
                 for (int i = 0; i < errorMessages.Length; i++)

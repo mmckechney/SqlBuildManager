@@ -82,7 +82,7 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("override"))
             {
                 cmdLine.OverrideDesignated = true;
-                if (dict["override"].ToLower().Trim().EndsWith(".multidb") || dict["override"].ToLower().Trim().EndsWith(".cfg") || dict["override"].ToLower().EndsWith("multidbq"))
+                if (dict["override"].ToLower().Trim().EndsWith(".multidb") || dict["override"].ToLower().Trim().EndsWith(".cfg") || dict["override"].ToLower().EndsWith("multidbq") || dict["override"].ToLower().EndsWith(".sql"))
                     cmdLine.MultiDbRunConfigFileName = dict["override"];
                 else
                     cmdLine.ManualOverRideSets = dict["override"];

@@ -239,7 +239,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.NullMultiDbConfig;
             int actual;
-            actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, out multiData, out errorMessages);
+            actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, null, out multiData, out errorMessages);
             Assert.IsNull(multiData);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].IndexOf("Unable to read in configuration file") > -1);
@@ -258,7 +258,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.NullMultiDbConfig;
             int actual;
-            actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, out multiData, out errorMessages);
+            actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, null, out multiData, out errorMessages);
             Assert.IsNull(multiData);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].IndexOf("Unable to read in configuration file") > -1);
@@ -277,7 +277,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.NullMultiDbConfig;
             int actual;
-            actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, out multiData, out errorMessages);
+            actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, null, out multiData, out errorMessages);
             Assert.IsNull(multiData);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].IndexOf("Unable to read in configuration file") > -1);
@@ -298,7 +298,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = 0;
             int actual;
-            actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, out multiData, out errorMessages);
+            actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, null, out multiData, out errorMessages);
             File.Delete(multiDbOverrideSettingFileName);
 
             Assert.IsNotNull(multiData);
