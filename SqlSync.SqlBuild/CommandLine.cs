@@ -202,6 +202,11 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("forcecustomdacpac") && Boolean.TryParse(dict["forcecustomdacpac"], out forceCustom))
                 cmdLine.ForceCustomDacPac = forceCustom;
 
+            if (dict.ContainsKey("platinumdbsource"))
+                cmdLine.PlatinumDbSource = dict["platinumdbsource"];
+
+            if (dict.ContainsKey("platinumserversource"))
+                cmdLine.PlatinumServerSource = dict["platinumserversource"];
 
             return cmdLine;
         }

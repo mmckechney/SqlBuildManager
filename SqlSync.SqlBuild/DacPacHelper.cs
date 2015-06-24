@@ -218,7 +218,14 @@ namespace SqlSync.SqlBuild
                 }
             }
 
-
+            //Look for no real scripts...
+            var realLines = cleanedScript.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(x => !x.StartsWith("PRINT", StringComparison.InvariantCultureIgnoreCase))
+                .Where(x => !x.StartsWith("GO", StringComparison.InvariantCultureIgnoreCase));
+            if(!realLines.Any())
+            {
+                return DacpacDeltasStatus.InSync;
+            }
 
             return DacpacDeltasStatus.Success;
 

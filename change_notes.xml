@@ -1,7 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
-  <Version Major="10" Minor="2" Revision="0">
+  <Version Major="10" Minor="2" Revision="1">
     <added>Ability to use a SQL file as the source for a multi-database configuration source. The query must return 2 columns: 1)server name 2) database name</added>
+    <added>Ability to specify a /PlatinumDbSource and /PlatinumServerSource as sources to generate the Platinum dacpac at runtime, vs using a pre-composed dacpac file</added>
     <updated>Reworked commandline to use a single "/Action" argument that designates the basic functionality of the runtime instance</updated>
   </Version>
   <Version Major="10" Minor="1" Revision="1">

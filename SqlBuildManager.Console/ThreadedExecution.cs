@@ -160,23 +160,35 @@ namespace SqlBuildManager.Console
             WriteToLog("**** Starting log for Run ID: " + ThreadedExecution.RunID + " ****", LogType.Message);
 
             //If we don't have a pre-constructed build file, but rather a script source directory, we'll build one from there...
-            if (cmdLine.ScriptSrcDir.Length > 0)
+            if (!string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir))
             {
                 ConstructBuildFileFromScriptDirectory(cmdLine.ScriptSrcDir);
             }
-            else if(cmdLine.BuildFileName.Length > 0 )
+            else if(!string.IsNullOrWhiteSpace(cmdLine.BuildFileName)) //using SBM as a source
             {
                 ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
                 string msg = "/build setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source";
                 WriteToLog(msg, LogType.Message);
                 log.Info(msg);
             }
-            else if(cmdLine.PlatinumDacpac.Length > 0)
+            else if(!string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac)) //using a platinum dacpac as a source
             {
                 ThreadedExecution.platinumDacPacFileName = cmdLine.PlatinumDacpac;
                 string msg = "/PlatinumDacpac setting found. Using '" + ThreadedExecution.platinumDacPacFileName + "' as build source";
                 WriteToLog(msg, LogType.Message);
                 log.Info(msg);
+
+            }
+            else if(!string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource)) //using a platinum database as the source
+            {
+                log.InfoFormat("Extracting Platinum Dacpac from {0} : {1}", cmdLine.PlatinumServerSource, cmdLine.PlatinumDbSource);
+                string dacpacName = Path.Combine(ThreadedExecution.rootLoggingPath, cmdLine.PlatinumDbSource + ".dacpac");
+
+                if(!DacPacHelper.ExtractDacPac(cmdLine.PlatinumDbSource, cmdLine.PlatinumServerSource, cmdLine.UserName, cmdLine.Password, dacpacName))
+                {
+                    log.ErrorFormat("Error creating the Platinum dacpac from {0} : {1}", cmdLine.PlatinumServerSource, cmdLine.PlatinumDbSource);
+                }
+                cmdLine.PlatinumDacpac = dacpacName;
 
             }
 

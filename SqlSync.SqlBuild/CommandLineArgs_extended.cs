@@ -37,5 +37,9 @@ namespace SqlSync.SqlBuild
         { get; set; }
         [System.Runtime.Serialization.DataMember()]
         public string Directory { get; set; }
+        [System.Runtime.Serialization.DataMember()]
+        public string PlatinumDbSource { get; set; }
+        [System.Runtime.Serialization.DataMember()]
+        public string PlatinumServerSource { get; set; }
     }
 }

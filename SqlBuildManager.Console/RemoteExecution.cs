@@ -261,6 +261,18 @@ namespace SqlBuildManager.Console
                 return valRet;
             }
 
+            if (string.IsNullOrWhiteSpace(cmd.PlatinumDacpac) && !string.IsNullOrWhiteSpace(cmd.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmd.PlatinumServerSource))
+            {
+                log.InfoFormat("Extracting Platinum Dacpac from {0} : {1}", cmd.PlatinumServerSource, cmd.PlatinumDbSource);
+                string dacpacName = Path.Combine(cmd.RootLoggingPath, cmd.PlatinumDbSource + ".dacpac");
+
+                if (!DacPacHelper.ExtractDacPac(cmd.PlatinumDbSource, cmd.PlatinumServerSource, cmd.UserName, cmd.Password, dacpacName))
+                {
+                    log.ErrorFormat("Error creating the Platinum dacpac from {0} : {1}", cmd.PlatinumServerSource, cmd.PlatinumDbSource);
+                }
+                cmd.PlatinumDacpac = dacpacName;
+            }
+
             //If there is a platinum dacpac specified...
             var dacPacReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmd, ref multiDb);
             if(dacPacReturn == (int)con.ExecutionReturn.DacpacDatabasesInSync)
