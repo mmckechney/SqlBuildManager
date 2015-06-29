@@ -10,6 +10,7 @@
   <xs:complexType name="BuildRecord">
     <xs:sequence>
       <xs:element name="buildPackageName" nillable="true" type="xs:string" />
+      <xs:element name="platinumDacPacName" nillable="true" type="xs:string" />
       <xs:element name="requestedBy" nillable="true" type="xs:string" />
       <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/SqlBuildManager.Interfaces.Console" name="returnValue" type="q1:ExecutionReturn" />
       <xs:element name="rootLogPath" nillable="true" type="xs:string" />

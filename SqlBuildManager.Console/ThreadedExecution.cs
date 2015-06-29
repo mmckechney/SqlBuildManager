@@ -222,6 +222,7 @@ namespace SqlBuildManager.Console
             multiData.AllowableTimeoutRetries = cmdLine.AllowableTimeoutRetries;
             //Set Trial
             multiData.RunAsTrial = cmdLine.Trial;
+            multiData.BuildRevision = cmdLine.BuildRevision;
 
             return Execute(ThreadedExecution.buildZipFileName, cmdLine.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName, cmdLine.ForceCustomDacPac);
         }
@@ -259,6 +260,7 @@ namespace SqlBuildManager.Console
                     this.cmdLine.Password = multiData.Password;
 
                 this.cmdLine.PlatinumDacpac = platinumDacPacFileName;
+                this.cmdLine.BuildRevision = multiData.BuildRevision;
             }
 
                

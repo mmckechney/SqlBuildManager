@@ -341,6 +341,8 @@ namespace SqlBuildManager.Console
                 setting.PlatinumDacpacContents = File.ReadAllBytes(cmd.PlatinumDacpac);
                 setting.PlatinumDacpacFileName = Path.GetFileName(cmd.PlatinumDacpac);
             }
+
+            setting.BuildRevision = cmd.BuildRevision;
             return 0;
         }
 

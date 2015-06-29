@@ -1,0 +1,1 @@
+﻿INSERT INTO dbo.Versions (VersionNumber) VALUES ('{{BuildRevision}}')

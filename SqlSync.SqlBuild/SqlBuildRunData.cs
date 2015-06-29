@@ -111,5 +111,11 @@ namespace SqlSync.SqlBuild
             get;
             set;
         }
+
+        public string BuildRevision
+        {
+            get;
+            set;
+        }
     }
 }

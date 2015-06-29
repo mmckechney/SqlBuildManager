@@ -75,7 +75,7 @@ namespace SqlSync.SqlBuild
 
         }
         
-        public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, out string buildPackageName)
+        public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, out string buildPackageName)
         {
             log.InfoFormat("Generating SBM build from dacpac differences: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
             string path = Path.GetDirectoryName(targetDacPacFileName) + @"\";
@@ -108,6 +108,14 @@ namespace SqlSync.SqlBuild
                     files.Add(baseFileName + ".sql");
                 }
                 
+                if(!string.IsNullOrWhiteSpace(buildRevision))
+                {
+                    var versionIns = Properties.Resources.VersionsInsert.Replace("{{BuildRevision}}", buildRevision);
+                    string verName = Path.Combine(path, "Versions Insert.sql");
+                    File.WriteAllText(verName, versionIns);
+                    files.Add(verName);
+                }
+
                 buildPackageName = baseFileName + ".sbm";
                 if (SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildPackageName, files, "client", true))
                 {
@@ -232,7 +240,7 @@ namespace SqlSync.SqlBuild
         }
 
 
-        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password, string workingDirectory)
+        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password, string workingDirectory, string buildRevision)
         {
             string tmpDacPacName = workingDirectory + targetDatabase + ".dacpac";
             if(!ExtractDacPac(targetDatabase, targetServerName, userName, password, tmpDacPacName))
@@ -242,7 +250,7 @@ namespace SqlSync.SqlBuild
 
             string sbmFileName;
 
-            var stat = CreateSbmFromDacPacDifferences(runData.PlatinumDacPacFileName, tmpDacPacName, false, out sbmFileName);
+            var stat = CreateSbmFromDacPacDifferences(runData.PlatinumDacPacFileName, tmpDacPacName, false, buildRevision, out sbmFileName);
             if(stat != DacpacDeltasStatus.Success)
             {
                 return stat;
@@ -273,7 +281,7 @@ namespace SqlSync.SqlBuild
             return DacpacDeltasStatus.Success;
         }
 
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, string username, string password,  MultiDbData multiDb, out string sbmName)
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, string username, string password, string buildRevision,  MultiDbData multiDb, out string sbmName)
         {
             string workingFolder = (!string.IsNullOrEmpty(rootLoggingPath) ? rootLoggingPath : Path.GetTempPath());
             if (!workingFolder.EndsWith("\\"))
@@ -291,7 +299,7 @@ namespace SqlSync.SqlBuild
 
             if (!String.IsNullOrEmpty(targetDacpac))
             {
-                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacpac, false, out sbmName);
+                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacpac, false, buildRevision, out sbmName);
             }
             else if (!string.IsNullOrEmpty(database) && !string.IsNullOrEmpty(server))
             {
@@ -301,7 +309,7 @@ namespace SqlSync.SqlBuild
                     log.Error(string.Format("Error extracting dacpac from {0} : {1}", database, server));
                     return DacpacDeltasStatus.ExtractionFailure;
                 }
-                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac,false, out sbmName);
+                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, false, buildRevision, out sbmName);
             }
 
             if (stat == DacpacDeltasStatus.Processing)
@@ -319,7 +327,7 @@ namespace SqlSync.SqlBuild
                             log.Error(string.Format("Error extracting dacpac from {0} : {1}", server, database));
                             return DacpacDeltasStatus.ExtractionFailure;
                         }
-                        stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, false, out sbmName);
+                        stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, false, buildRevision, out sbmName);
 
                         if (stat == DacpacDeltasStatus.InSync)
                         {
@@ -362,9 +370,9 @@ namespace SqlSync.SqlBuild
             }
             return stat;
         }
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, string server, string username, string password, MultiDbData multiDb, out string sbmName)
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, string server, string username, string password, string buildRevision, MultiDbData multiDb, out string sbmName)
         {
-            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, username, password, multiDb, out sbmName);
+            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, username, password, buildRevision, multiDb, out sbmName);
         }
         public static DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName)
         {
@@ -376,6 +384,7 @@ namespace SqlSync.SqlBuild
                 cmd.Server,
                 cmd.UserName,
                 cmd.Password,
+                cmd.BuildRevision,
                 multiDb, out sbmName);
 
         }

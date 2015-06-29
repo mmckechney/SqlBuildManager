@@ -320,6 +320,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="SqlLogging\LoggingTableCommitCheckIndex.sql" />
+    <Content Include="SqlLogging\VersionsInsert.sql" />
     <Content Include="SQLSyncBuildProject.xml" />
     <Content Include="SQLSyncBuildProject.xsd">
       <Generator>MSDataSetGenerator</Generator>

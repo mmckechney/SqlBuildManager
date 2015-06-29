@@ -148,6 +148,7 @@ namespace SqlBuildManager.Console
                     runData.LogToDatabaseName = this.cmdArgs.LogToDatabaseName;
 
                 runData.PlatinumDacPacFileName = cmdArgs.PlatinumDacpac;
+                runData.BuildRevision = cmdArgs.BuildRevision;
 
 
                 //Initilize the logging directory for this run
@@ -158,7 +159,7 @@ namespace SqlBuildManager.Console
                 {
                     runData.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
-                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.username, this.password, loggingDirectory);
+                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.username, this.password, loggingDirectory, cmdArgs.BuildRevision);
                     switch(status)
                     {
                         case DacpacDeltasStatus.Success:

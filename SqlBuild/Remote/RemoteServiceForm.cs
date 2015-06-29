@@ -295,6 +295,7 @@ namespace SqlSync.SqlBuild.Remote
                         string.Empty,
                         settings.DbUserName,
                         settings.DbPassword,
+                        "Just testing",
                         tmp,
                         out sbmName);
                     if (stat == DacpacDeltasStatus.Success)

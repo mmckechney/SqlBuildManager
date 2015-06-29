@@ -135,6 +135,14 @@ namespace SqlBuildManager.Services
             set { platinumDacpacFileName = value; }
         }
 
+        private string buildRevision = null;
+        [DataMember(IsRequired = false)]
+        public string BuildRevision
+        {
+            get { return buildRevision; }
+            set { buildRevision = value; }
+        }
+
         public override string ToString()
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();

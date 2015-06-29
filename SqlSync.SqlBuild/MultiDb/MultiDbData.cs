@@ -124,7 +124,12 @@ namespace SqlSync.SqlBuild.MultiDb
                 password = value;
             }
         }
-
+        [XmlIgnore()]
+        public string BuildRevision
+        {
+            get;
+            set;
+        }
     }
     public class ServerData 
     {

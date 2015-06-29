@@ -29,6 +29,9 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         private string BuildRequestFromField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string BuildRevisionField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string BuildRunGuidField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -102,6 +105,19 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
                 if ((object.ReferenceEquals(this.BuildRequestFromField, value) != true)) {
                     this.BuildRequestFromField = value;
                     this.RaisePropertyChanged("BuildRequestFrom");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string BuildRevision {
+            get {
+                return this.BuildRevisionField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.BuildRevisionField, value) != true)) {
+                    this.BuildRevisionField = value;
+                    this.RaisePropertyChanged("BuildRevision");
                 }
             }
         }
@@ -492,6 +508,9 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
         CheckingConnections = 7000,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        DacpacDatabasesInSync = 87598,
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
@@ -534,6 +553,8 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
         
         private string buildPackageNameField;
         
+        private string platinumDacPacNameField;
+        
         private string requestedByField;
         
         private SqlBuildManager.ServiceClient.Sbm.BuildService.ExecutionReturn returnValueField;
@@ -561,6 +582,19 @@ namespace SqlBuildManager.ServiceClient.Sbm.BuildService {
                 if ((object.ReferenceEquals(this.buildPackageNameField, value) != true)) {
                     this.buildPackageNameField = value;
                     this.RaisePropertyChanged("buildPackageName");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true)]
+        public string platinumDacPacName {
+            get {
+                return this.platinumDacPacNameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.platinumDacPacNameField, value) != true)) {
+                    this.platinumDacPacNameField = value;
+                    this.RaisePropertyChanged("platinumDacPacName");
                 }
             }
         }

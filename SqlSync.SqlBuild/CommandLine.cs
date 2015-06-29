@@ -208,6 +208,9 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("platinumserversource"))
                 cmdLine.PlatinumServerSource = dict["platinumserversource"];
 
+            if (dict.ContainsKey("buildrevision"))
+                cmdLine.BuildRevision = dict["buildrevision"];
+
             return cmdLine;
         }
 

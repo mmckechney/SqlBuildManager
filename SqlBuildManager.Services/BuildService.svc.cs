@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -212,6 +213,7 @@ namespace SqlBuildManager.Services
                 string pw = (settings.SqlBuildManagerProjectFileName + String.Join("|",settings.MultiDbTextConfig) + settings.BuildRunGuid).Sha256Hash();
                 multiDb.UserName = Cryptography.DecryptText(settings.DbUserName, pw);
                 multiDb.Password = Cryptography.DecryptText(settings.DbPassword, pw);
+                multiDb.BuildRevision = settings.BuildRevision;
 
 
                 BuildRecord record = new BuildRecord()
