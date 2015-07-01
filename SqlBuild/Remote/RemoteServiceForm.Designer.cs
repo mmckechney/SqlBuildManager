@@ -30,8 +30,8 @@
         {
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.Button btnMultDbCfg;
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RemoteServiceForm));
             this.dgvRemoteServers = new System.Windows.Forms.DataGridView();
             this.ServerColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -181,6 +181,7 @@
             this.menuStrip1.Size = new System.Drawing.Size(1084, 27);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
+            this.menuStrip1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuStrip1_ItemClicked);
             // 
             // actionToolStripMenuItem
             // 
@@ -745,8 +746,8 @@
             this.dgvServerStatus.AllowUserToAddRows = false;
             this.dgvServerStatus.AllowUserToDeleteRows = false;
             this.dgvServerStatus.AllowUserToOrderColumns = true;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.dgvServerStatus.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.dgvServerStatus.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle3;
             this.dgvServerStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -789,8 +790,8 @@
             // lastStatusCheckDataGridViewTextBoxColumn
             // 
             this.lastStatusCheckDataGridViewTextBoxColumn.DataPropertyName = "LastStatusCheck";
-            dataGridViewCellStyle2.Format = "MM/dd/yyyy hh:mm:ss.fff";
-            this.lastStatusCheckDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Format = "MM/dd/yyyy hh:mm:ss.fff";
+            this.lastStatusCheckDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle4;
             this.lastStatusCheckDataGridViewTextBoxColumn.HeaderText = "Last Status Check";
             this.lastStatusCheckDataGridViewTextBoxColumn.Name = "lastStatusCheckDataGridViewTextBoxColumn";
             this.lastStatusCheckDataGridViewTextBoxColumn.ReadOnly = true;
@@ -828,7 +829,7 @@
             this.toolStripSeparator1,
             this.toolStripMenuItem1});
             this.remoteExecutionLogsContextMenuStrip1.Name = "remoteExecutionLogsContextMenuStrip1";
-            this.remoteExecutionLogsContextMenuStrip1.Size = new System.Drawing.Size(441, 201);
+            this.remoteExecutionLogsContextMenuStrip1.Size = new System.Drawing.Size(441, 223);
             // 
             // toolStripSeparator1
             // 

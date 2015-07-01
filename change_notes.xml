@@ -1,7 +1,10 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
- <Version Major="10" Minor="2" Revision="2">
-    <added>New argument /BuildRevision that will be used as the valu to insert into a Versions table 'VersionNumber' column</added>
+  <Version Major="10" Minor="2" Revision="2">
+    <added>New argument /BuildRevision that will be used as the value to insert into a Versions table 'VersionNumber' column</added>
+    <added>New argument /RemoteDbErrorList=&lt;remote name=&gt;|all. Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers </added>
+    <added>New argument /RemoteErrorDetail=&lt;server:db&gt;|&lt;instance&gt;|all.  Retrieves the error detail for each instance in error. Is "server:db" is provided, full log detail is returned</added>
+    <added>"Last Status" to values returned with /AzureRemoteStatus=true</added>
   </Version>
   <Version Major="10" Minor="2" Revision="1">
     <added>Ability to use a SQL file as the source for a multi-database configuration source. The query must return 2 columns: 1)server name 2) database name</added>

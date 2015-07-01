@@ -1116,6 +1116,11 @@ namespace SqlSync.SqlBuild.Remote
             this.fileDacPac.Dispose();
         }
 
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
       
 
 

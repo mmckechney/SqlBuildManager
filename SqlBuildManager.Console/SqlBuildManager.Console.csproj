@@ -87,6 +87,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RemoteExecution.cs" />
+    <Compile Include="RemoteAzureHealth.cs" />
     <Compile Include="Synchronize.cs" />
     <Compile Include="ThreadedExecution.cs" />
     <Compile Include="ThreadedRunner.cs" />

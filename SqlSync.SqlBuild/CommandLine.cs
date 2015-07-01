@@ -211,6 +211,12 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("buildrevision"))
                 cmdLine.BuildRevision = dict["buildrevision"];
 
+            if (dict.ContainsKey("remotedberrorlist"))
+                cmdLine.RemoteDbErrorList = dict["remotedberrorlist"];
+
+            if (dict.ContainsKey("remoteerrordetail"))
+                cmdLine.RemoteErrorDetail = dict["remoteerrordetail"];
+            
             return cmdLine;
         }
 

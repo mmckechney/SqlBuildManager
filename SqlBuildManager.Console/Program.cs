@@ -21,7 +21,7 @@ namespace SqlBuildManager.Console
             log4net.Config.XmlConfigurator.Configure();
 
 
-            log.Info("Received Command: " + String.Join(" | ", args));
+            log.Debug("Received Command: " + String.Join(" | ", args));
             DateTime start = DateTime.Now;
 
             string joinedArgs = string.Join(",", args).ToLower();
@@ -36,7 +36,7 @@ namespace SqlBuildManager.Console
             switch(cmdLine.Action)
             {
                 case "remote":
-                    RunRemoteExecution(args, start);
+                    RunRemoteExecution(args, cmdLine, start);
                     break;
                 case "threaded":
                     RunThreadedExecution(args, start);
@@ -112,7 +112,7 @@ namespace SqlBuildManager.Console
 
         }
       
-        private static void RunRemoteExecution(string[] args, DateTime start)
+        private static void RunRemoteExecution(string[] args, CommandLineArgs cmdLine, DateTime start)
         {
             try
             {
@@ -125,6 +125,20 @@ namespace SqlBuildManager.Console
                 else if(joinedArgs.Contains("/azureremotestatus=true"))
                 {
                     GetAzureRemoteStatus(args);
+                }
+                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteDbErrorList))
+                {
+                    var dbsInError = RemoteAzureHealth.GetDatabaseErrorList(cmdLine.RemoteDbErrorList);
+                   if (dbsInError != null)
+                   {
+                       log.Info("\r\n" + string.Join("\r\n", dbsInError.ToArray()));
+                   }
+                }
+                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteErrorDetail))
+                {
+                    var errorMessages = RemoteAzureHealth.GetErrorDetail(cmdLine.RemoteErrorDetail);
+                    log.Info("Returned error messages:");
+                    log.Info("\r\n" + errorMessages);
                 }
                 else
                 {
@@ -155,6 +169,8 @@ namespace SqlBuildManager.Console
                 System.Environment.Exit(603);
             }
         }
+
+        #region .: Remote Health Check :.
         private static void RemoteExecutionTestConnectivity(string[] args)
         {
             log.Info("Entering Remote Server Connectivity Testing: agent and database connectivity");
@@ -173,8 +189,7 @@ namespace SqlBuildManager.Console
         {
             try
             {
-                string format = "{0}\t\t{1}\t\t{2}";
-                string format2 = "{0}\t\t\t\t\t{1}\t\t\t{2}";
+                string format = "{0}{1}{2}{3}";
                 log.Info("Getting list of Azure instances...");
                 BuildServiceManager manager = new BuildServiceManager();
                 List<ServerConfigData> serverData = manager.GetListOfAzureInstancePublicUrls();
@@ -184,10 +199,10 @@ namespace SqlBuildManager.Console
                 string[] errorMessages;
                 log.Info("Retrieving instance status...");
                 int statReturn = RemoteExecution.ValidateRemoteServerAvailability(remote, Protocol.AzureHttp, out remoteServer, out errorMessages);
-                log.InfoFormat(format2, "Service", "Status", "Version");
-                log.InfoFormat(format,"----------------------------------","-------------","------------");
+                log.InfoFormat(format, "Service".PadRight(40, ' '), "Status".PadRight(21, ' '), "Last Status".PadRight(15,' '), "Version".PadRight(18, ' '));
+                log.InfoFormat(format, "----------------------------------".PadRight(40, ' '), "-------------".PadRight(21, ' '), "-----------".PadRight(15, ' '), "------------".PadRight(18, ' '));
                 remoteServer.ForEach(s =>
-                    log.InfoFormat(format, s.ServerName, s.ServiceReadiness, s.ServiceVersion));
+                    log.InfoFormat(format, s.ServerName.PadRight(40, ' '), s.ServiceReadiness.ToString().PadRight(21, ' '),s.ExecutionReturn.ToString().PadRight(15,' '), s.ServiceVersion.PadRight(18, ' ')));
 
                 if(errorMessages.Length > 0)
                 {
@@ -200,6 +215,8 @@ namespace SqlBuildManager.Console
                 log.Error("Unable to get list of Azure instances", exe);
             }
         }
+
+        #endregion
 
         private static void RunThreadedExecution(string[] args, DateTime start)
         {

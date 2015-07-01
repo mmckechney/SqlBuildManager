@@ -22,6 +22,6 @@ using System;
 //
 // You can specify all the values or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
-
+//NOTE: when incrementing the build number and creating an installer, create a new "Product Code" in SqlBuildManager.Setup -> Organize Your Setup -> General Information
 [assembly: AssemblyVersion("10.2.2.*")]
 [assembly: AssemblyFileVersion("10.2.2.*")]

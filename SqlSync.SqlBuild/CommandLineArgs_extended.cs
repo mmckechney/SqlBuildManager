@@ -43,5 +43,10 @@ namespace SqlSync.SqlBuild
         public string PlatinumServerSource { get; set; }
         [System.Runtime.Serialization.DataMember()]
         public string BuildRevision { get; set; }
+        [System.Runtime.Serialization.DataMember()]
+        public string RemoteDbErrorList { get; set; }
+           [System.Runtime.Serialization.DataMember()]
+        public string RemoteErrorDetail { get; set; }
+
     }
 }
