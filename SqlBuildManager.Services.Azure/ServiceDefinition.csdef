@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ServiceDefinition name="SqlBuildManager.Services.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2014-06.2.4">
+<ServiceDefinition name="SqlBuildManager.Services.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2015-04.2.6">
   <WebRole name="SqlBuildManager.Services" vmsize="Small">
     <Startup>
       <!--<Task commandLine="Azure\Startup.cmd" executionContext="elevated" taskType="simple" />-->
@@ -25,6 +25,7 @@
     </Imports>
     <ConfigurationSettings>
       <Setting name="StorageConnectionString" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
     </ConfigurationSettings>
     <LocalResources>
       <LocalStorage name="RunLogFiles" cleanOnRoleRecycle="false" sizeInMB="200" />

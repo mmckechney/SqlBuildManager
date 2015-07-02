@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ServiceConfiguration serviceName="SqlBuildManager.Services.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="4" osVersion="*" schemaVersion="2014-06.2.4">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ServiceConfiguration serviceName="SqlBuildManager.Services.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="4" osVersion="*" schemaVersion="2015-04.2.6">
   <Role name="SqlBuildManager.Services" vmName="SqlBuild">
     <Instances count="2" />
     <ConfigurationSettings>
@@ -8,7 +8,8 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEDiHfRVL35+xT/aci3PDYBEwDQYJKoZIhvcNAQEBBQAEggEARmAStpq1cm4ZBNFoAO0lanOThM+Sprg2M99iqaOTskB8I4gX/8Eqn1Krq5CG1paqDXYTFNOwGNCJdhUQpPXqnM21EAXSeWm8PXVX9wJX9QGIyV+O6mMpeaqphAwF00rs0oZKEIqcIOLP3twi6a/hmtJ0bmZi94/ouBn9U2RM2ubGLdRyqFE2uYRpIKMdW/c+886yTQ9kgOAPNUCK3REy/NBsGsH58zzu2IrR0VTL8o+uDhbhCAFR8qXMXTzVOu7BLrT9wfrt7H+lIXVE4icGx4FqQo61xqpy6ZHJaFC7YCqJxuePUBY4ItSNcK/afFWhb18zIMhGZtuK8oaCS717WzAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECNglXTynHbiYgBBCNCZ6R0d381Q2NbBtj6DK" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2016-04-07T23:59:59.0000000-04:00" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
-      <Setting name="StorageConnectionString" value="DefaultEndpointsProtocol=https;AccountName=sqlbuildstorage;AccountKey=CCVL3xzOyVdK1vGg5OsA/lQByBJGPvfzit8yOkz4L3hHI/mtEu+3LdRvjYopVe3qxeTGTi2pRvbvAjfoNE6tjA=="/>
+      <Setting name="StorageConnectionString" value="DefaultEndpointsProtocol=https;AccountName=sqlbuildstorage;AccountKey=CCVL3xzOyVdK1vGg5OsA/lQByBJGPvfzit8yOkz4L3hHI/mtEu+3LdRvjYopVe3qxeTGTi2pRvbvAjfoNE6tjA==" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=sqlbuildlogs;AccountKey=/SUv2vOfmvRAM1j6nCHVfxe6wipmUOvxgBgP889QviF0Y9FsrPNXOED8NhP+biSLPaVLOIIQHsC/rxbV7YqpDw==" />
     </ConfigurationSettings>
     <Certificates>
       <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="F5D272E44B1EEDCF5FCB4772E48C4B97A493FFE0" thumbprintAlgorithm="sha1" />

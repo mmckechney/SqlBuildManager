@@ -251,24 +251,32 @@ namespace SqlBuildManager.Console
         private static void SetWorkingDirectoryLogger(string[] args)
         {
             var cmdLine = CommandLine.ParseCommandLineArg(args);
-            if(!string.IsNullOrEmpty(cmdLine.RootLoggingPath))
+            try
             {
-                if(!cmdLine.RootLoggingPath.EndsWith("\\"))
-                {
-                    cmdLine.RootLoggingPath = cmdLine.RootLoggingPath + "\\";
-                }
-                if(!Directory.Exists(cmdLine.RootLoggingPath))
-                {
-                    Directory.CreateDirectory(cmdLine.RootLoggingPath);
-                }
 
-                var appender = LogManager.GetRepository().GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender").FirstOrDefault();
-                if(appender != null)
+                if (!string.IsNullOrEmpty(cmdLine.RootLoggingPath))
                 {
-                    var thr = appender as log4net.Appender.FileAppender;
-                    thr.File = cmdLine.RootLoggingPath + Path.GetFileName(thr.File);
-                    thr.ActivateOptions();
+                    cmdLine.RootLoggingPath = cmdLine.RootLoggingPath.Trim();
+                    //if (!cmdLine.RootLoggingPath.EndsWith("\\"))
+                    //{
+                    //    cmdLine.RootLoggingPath = cmdLine.RootLoggingPath + "\\";
+                    //}
+                    if (!Directory.Exists(cmdLine.RootLoggingPath))
+                    {
+                        Directory.CreateDirectory(cmdLine.RootLoggingPath);
+                    }
+
+                    var appender = LogManager.GetRepository().GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender").FirstOrDefault();
+                    if (appender != null)
+                    {
+                        var thr = appender as log4net.Appender.FileAppender;
+                        thr.File = Path.Combine(cmdLine.RootLoggingPath, Path.GetFileName(thr.File));
+                        thr.ActivateOptions();
+                    }
                 }
+            }catch(Exception exe)
+            {
+                log.Error(string.Format("Unable to set local root logging path to {0}", cmdLine.RootLoggingPath), exe);
             }
 
             
