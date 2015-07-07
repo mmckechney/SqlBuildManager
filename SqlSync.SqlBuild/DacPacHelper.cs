@@ -59,8 +59,8 @@ namespace SqlSync.SqlBuild
             pHelper.AddArgument("/TargetFile", dacPacFileName);
             
             //Extraction settings
-            pHelper.AddArgument("/p:IgnoreUserLoginMappings", "True", "=");
-            pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
+            //pHelper.AddArgument("/p:IgnoreUserLoginMappings", "True", "=");
+            //pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
 
             int result =  pHelper.ExecuteProcess(sqlPackageExe);
 
@@ -178,10 +178,10 @@ namespace SqlSync.SqlBuild
             pHelper.AddArgument("/OutputPath", tmpFile);
 
             //Scripting properties
-            pHelper.AddArgument("/p:BlockOnPossibleDataLoss", "False","=");
-            pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
-            pHelper.AddArgument("/p:IgnoreRoleMembership", "True", "=");
-            pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
+            //pHelper.AddArgument("/p:BlockOnPossibleDataLoss", "False","=");
+            //pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
+            //pHelper.AddArgument("/p:IgnoreRoleMembership", "True", "=");
+            //pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
 
             int result = pHelper.ExecuteProcess(sqlPackageExe);
             log.Info(pHelper.Output);

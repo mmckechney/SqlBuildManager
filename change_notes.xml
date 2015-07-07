@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="2" Revision="3">
+    <added>Changed dacpac scripting, removed custom scripting settings. These was preventing the drops of column defaults that then resulted in runtme build errors</added>
+  </Version>
   <Version Major="10" Minor="2" Revision="2">
     <added>New argument /BuildRevision that will be used as the value to insert into a Versions table 'VersionNumber' column</added>
     <added>New argument /RemoteDbErrorList=&lt;remote name=&gt;|all. Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers </added>
