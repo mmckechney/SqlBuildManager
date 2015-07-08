@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using SqlSync.ObjectScript.Hash;
 using SqlSync.SqlBuild.Status;
+using SqlSync.Connection;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class ObjectComparisonReportForm : SqlSync.SqlBuild.MultiDb.StatusReportForm
@@ -14,7 +15,8 @@ namespace SqlSync.SqlBuild.MultiDb
         bool scriptThreaded = true;
         HashCollector collector = null;
         ObjectScriptHashReportData rawReportData = null;
-        public ObjectComparisonReportForm(MultiDb.MultiDbData multiDbData) : base(multiDbData)
+        public ObjectComparisonReportForm(MultiDb.MultiDbData multiDbData, ConnectionData connData)
+            : base(multiDbData, connData)
         {
             InitializeComponent();
 

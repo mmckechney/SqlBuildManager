@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using SqlSync.ObjectScript.Hash;
 using SqlSync.SqlBuild.AdHocQuery;
 using SqlSync.SqlBuild.Status;
+using SqlSync.Connection;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class StatusReportForm : Form
@@ -20,16 +21,18 @@ namespace SqlSync.SqlBuild.MultiDb
         private string buildZipFileName;
         protected int dbTotal = 0;
         protected string fileName;
+        protected ConnectionData connData = null;
         private StatusReportForm()
         {
             InitializeComponent();
         }
-        protected StatusReportForm(MultiDb.MultiDbData multiDbData) : this()
+        protected StatusReportForm(MultiDb.MultiDbData multiDbData, ConnectionData connData) : this()
         {
             this.multiDbData = multiDbData;
+            this.connData = connData;
         }
-        public StatusReportForm(SqlSyncBuildData buildData, MultiDb.MultiDbData multiDbData, string projectFilePath, string buildZipFileName)
-            : this(multiDbData)
+        public StatusReportForm(SqlSyncBuildData buildData, MultiDb.MultiDbData multiDbData, string projectFilePath, string buildZipFileName, ConnectionData connData)
+            : this(multiDbData, connData)
         {
             
             this.buildData = buildData;

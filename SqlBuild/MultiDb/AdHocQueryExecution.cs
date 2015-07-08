@@ -11,6 +11,7 @@ using SqlSync.MRU;
 using System.IO;
 using SqlSync.Controls;
 using System.Text.RegularExpressions;
+using SqlSync.Connection;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class AdHocQueryExecution : SqlSync.SqlBuild.MultiDb.StatusReportForm, IMRUClient
@@ -21,7 +22,9 @@ namespace SqlSync.SqlBuild.MultiDb
         string query = string.Empty;
         //List<QueryResultData> rawReportData;
         int timeOut = 20;
-        public AdHocQueryExecution(MultiDb.MultiDbData multiDbData) : base(multiDbData)
+  
+        public AdHocQueryExecution(MultiDb.MultiDbData multiDbData, ConnectionData connData)
+            : base(multiDbData, connData)
         {
             InitializeComponent();
 
@@ -41,7 +44,7 @@ namespace SqlSync.SqlBuild.MultiDb
         protected override void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             KeyValuePair<ReportType, string> args = (KeyValuePair<ReportType, string>)e.Argument;
-            this.collector = new QueryCollector(this.multiDbData);
+            this.collector = new QueryCollector(this.multiDbData, this.connData);
             //this.rawReportData = 
             try
             {

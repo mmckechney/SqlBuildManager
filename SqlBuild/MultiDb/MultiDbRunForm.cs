@@ -19,6 +19,7 @@ namespace SqlSync.SqlBuild.MultiDb
         string projectFilePath;
         bool valuesChanged = false;
         bool runAsTrial = true;
+        ConnectionData connData = null;
         public bool ValuesChanged
         {
             get { return valuesChanged; }
@@ -58,7 +59,7 @@ namespace SqlSync.SqlBuild.MultiDb
         DatabaseList databaseList;
         private string buildZipFileName = string.Empty;
 
-        public MultiDbRunForm(string server, List<string> defaultDatabases, DatabaseList databaseList, string buildZipFileName, string projectFilePath,ref SqlSyncBuildData buildData)
+        public MultiDbRunForm(ConnectionData connData, List<string> defaultDatabases, DatabaseList databaseList, string buildZipFileName, string projectFilePath,ref SqlSyncBuildData buildData)
             : this()
         {
             //perform real copy to prevent data slipping back into main form
@@ -66,11 +67,12 @@ namespace SqlSync.SqlBuild.MultiDb
             defaultDatabases.CopyTo(tmp);
             this.defaultDatabases = new List<string>(tmp);
             this.databaseList = databaseList;
-            this.server = server;
+            this.server = connData.SQLServerName;
             this.DialogResult = DialogResult.Cancel;
             this.buildZipFileName = buildZipFileName;
             this.buildData = buildData;
             this.projectFilePath = projectFilePath;
+            this.connData = connData;
         }
 
         private MultiDbData runConfiguration = null;
@@ -346,7 +348,11 @@ namespace SqlSync.SqlBuild.MultiDb
                     if (srv.ServerName != this.server)
                     {
                         bg.ReportProgress(10, "Retrieving database list from " + srv.ServerName);
-                        srv.Databases = InfoHelper.GetDatabaseList(new ConnectionData(srv.ServerName, "master"));
+                        ConnectionData tmpC = new ConnectionData();
+                        tmpC.Fill(this.connData);
+                        tmpC.SQLServerName = srv.ServerName;
+                        tmpC.DatabaseName = "master";
+                        srv.Databases = InfoHelper.GetDatabaseList(tmpC);
                     }
                     else
                     {
@@ -456,7 +462,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 MessageBox.Show("You do not have a Sql Build Project loaded. There's nothing to get status for.\r\nGo back and load an SBM or SBX file and try again.", "Nothing to Check", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return;
             }
-            StatusReportForm frmStat = new StatusReportForm(this.buildData, multiDbData, this.projectFilePath,this.buildZipFileName);
+            StatusReportForm frmStat = new StatusReportForm(this.buildData, multiDbData, this.projectFilePath,this.buildZipFileName,this.connData);
             frmStat.ShowDialog();
 
         }
@@ -465,7 +471,7 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             MultiDbData multiDbData = GetServerDataCollection();
 
-            ObjectComparisonReportForm frmStat = new ObjectComparisonReportForm(multiDbData);
+            ObjectComparisonReportForm frmStat = new ObjectComparisonReportForm(multiDbData,this.connData);
             frmStat.ShowDialog();
 
         }
@@ -473,7 +479,7 @@ namespace SqlSync.SqlBuild.MultiDb
         private void adHocQueryExecutionToolStripMenuItem_Click(object sender, EventArgs e)
         {
               MultiDbData multiDbData = GetServerDataCollection();
-              AdHocQueryExecution frmAdHoc = new AdHocQueryExecution(multiDbData);
+              AdHocQueryExecution frmAdHoc = new AdHocQueryExecution(multiDbData, this.connData);
               frmAdHoc.ShowDialog();
         }
 
@@ -481,8 +487,7 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             try
             {
-                ConnectionData connData = new ConnectionData(this.server, "");
-                ConfigurationViaQueryForm frmQuery = new ConfigurationViaQueryForm(connData, this.databaseList);
+                ConfigurationViaQueryForm frmQuery = new ConfigurationViaQueryForm(this.connData, this.databaseList);
                 if (DialogResult.OK == frmQuery.ShowDialog())
                 {
                     if (frmQuery.MultiDbConfig != null)
@@ -570,7 +575,7 @@ namespace SqlSync.SqlBuild.MultiDb
         private void buildValidationReportToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MultiDbData multiDbData = GetServerDataCollection();
-            BuildValidationForm fbmBldValid = new BuildValidationForm(multiDbData);
+            BuildValidationForm fbmBldValid = new BuildValidationForm(multiDbData,this.connData);
             fbmBldValid.ShowDialog();
         }
 

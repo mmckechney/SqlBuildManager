@@ -8519,7 +8519,7 @@ namespace SqlSync.SqlBuild
 
         private void startConfigureMultiServerDatabaseRunToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MultiDbRunForm frm = new MultiDbRunForm(this.connData.SQLServerName, this.databasesUsed, this.databaseList,this.buildZipFileName,this.projectFilePath,ref this.buildData);
+            MultiDbRunForm frm = new MultiDbRunForm(this.connData, this.databasesUsed, this.databaseList,this.buildZipFileName,this.projectFilePath,ref this.buildData);
             if(DialogResult.OK == frm.ShowDialog())
             {
                 MultiDbData runData = frm.RunConfiguration;

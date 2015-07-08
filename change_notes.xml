@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="2" Revision="5">
+    <added>Can now execute ad hoc queries using SQL Authentication. Querying will use the same credentials (AD or SQL) used when opening SQL Build Manager</added>
+  </Version>
   <Version Major="10" Minor="2" Revision="4">
     <added>Changed dacpac scripting, removed custom scripting settings. These was preventing the drops of column defaults that then resulted in runtme build errors</added>
     <added>Stripping out login and user scripts</added>

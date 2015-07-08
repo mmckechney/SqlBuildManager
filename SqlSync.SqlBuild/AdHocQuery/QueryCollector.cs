@@ -21,6 +21,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         private static SyncObject SyncObj = new SyncObject();
         private List<QueryCollectionRunner> runners = new List<QueryCollectionRunner>();
         private BackgroundWorker bgWorker;
+        private ConnectionData connData = null;
         /// <summary>
         /// The directory where the ultimate results file will be created. Will be used as the root for the temp files
         /// </summary>
@@ -30,9 +31,10 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// </summary>
         /// <param name="multiDbData">MultiDbData containing the target databases</param>
         /// <param name="resultsFilePath">The directory where the ultimate results file will be created. Will be used as the root for the temp files</param>
-        public QueryCollector(MultiDbData multiDbData)
+        public QueryCollector(MultiDbData multiDbData, ConnectionData connData)
         {
             this.multiDbData = multiDbData;
+            this.connData = connData;
             
         }
         private QueryCollector()
@@ -84,7 +86,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                         {
                             QueryCollector.SyncObj.WorkingRunners++;
                         }
-                        QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, this.resultsFilePath, scriptTimeout);
+                        QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, this.resultsFilePath, scriptTimeout, this.connData);
                         runner.QueryCollectionRunnerUpdate += new QueryCollectionRunner.QueryCollectionRunnerUpdateEventHandler(runner_HashCollectionRunnerUpdate);
                         runners.Add(runner);
                         System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedHashCollection, runner);

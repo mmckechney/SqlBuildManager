@@ -15,6 +15,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
 {
     public class QueryCollectionRunner : IDisposable
     {
+        private ConnectionData masterConnData = null;
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private string serverName;
         private string databaseName;
@@ -44,7 +45,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         private ReportType reportType;
         private string tempWorkingDirectory;
         private int scriptTimeout;
-        public QueryCollectionRunner(string serverName, string databaseName, string query, IList<QueryRowItem> appendData, ReportType reportType, string tempWorkingDirectory, int scriptTimeout)
+        public QueryCollectionRunner(string serverName, string databaseName, string query, IList<QueryRowItem> appendData, ReportType reportType, string tempWorkingDirectory, int scriptTimeout, ConnectionData masterConnData)
         {
             this.databaseName = databaseName;
             this.serverName = serverName;
@@ -53,6 +54,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             this.reportType = reportType;
             this.tempWorkingDirectory = tempWorkingDirectory;
             this.scriptTimeout = scriptTimeout;
+            this.masterConnData = masterConnData;
          }
 
         public void CollectQueryData()
@@ -62,6 +64,12 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 QueryCollectionRunnerUpdate(this, new QueryCollectionRunnerUpdateEventArgs(this.serverName, this.databaseName, "Starting"));
 
             ConnectionData connData = new ConnectionData(serverName, databaseName);
+            if(!this.masterConnData.UseWindowAuthentication)
+            {
+                connData.UserId = this.masterConnData.UserId;
+                connData.Password = this.masterConnData.Password;
+                connData.UseWindowAuthentication = false;
+            }
             connData.ScriptTimeout = this.scriptTimeout;
             SqlConnection conn = ConnectionHelper.GetConnection(connData);
             SqlCommand cmd = new SqlCommand(query, conn);

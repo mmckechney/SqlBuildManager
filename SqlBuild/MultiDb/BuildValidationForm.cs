@@ -10,6 +10,7 @@ using SqlSync.SqlBuild.Status;
 using SqlSync.MRU;
 using System.IO;
 using SqlSync.Controls;
+using SqlSync.Connection;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class BuildValidationForm : SqlSync.SqlBuild.MultiDb.StatusReportForm
@@ -22,8 +23,8 @@ namespace SqlSync.SqlBuild.MultiDb
         BuildValidationType buildValidation = BuildValidationType.BuildFileHash;
         //List<QueryResultData> rawReportData;
         int timeOut = 20;
-        public BuildValidationForm(MultiDb.MultiDbData multiDbData)
-            : base(multiDbData)
+        public BuildValidationForm(MultiDb.MultiDbData multiDbData, ConnectionData connData)
+            : base(multiDbData, connData)
         {
             InitializeComponent();
 
@@ -43,7 +44,7 @@ namespace SqlSync.SqlBuild.MultiDb
         protected override void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             KeyValuePair<ReportType, string> args = (KeyValuePair<ReportType, string>)e.Argument;
-            this.collector = new QueryCollector(this.multiDbData);
+            this.collector = new QueryCollector(this.multiDbData, this.connData);
             //this.rawReportData = 
             try
             {
