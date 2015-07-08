@@ -524,7 +524,7 @@ namespace SqlSync
             }
             catch (Exception exe)
             {
-                System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error updating Recent Server List\r\n" + exe.ToString(), System.Diagnostics.EventLogEntryType.Error, 432);
+                //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error updating Recent Server List\r\n" + exe.ToString(), System.Diagnostics.EventLogEntryType.Error, 432);
             }
 
 

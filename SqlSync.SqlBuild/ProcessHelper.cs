@@ -84,6 +84,7 @@ namespace SqlSync.SqlBuild
         }
         public int ExecuteProcess(string processName, string arguments)
         {
+            log.InfoFormat("Executing process {0} with arguments {1}", processName, arguments);
             this.startTime = DateTime.Now;
             this.prc = new System.Diagnostics.Process();
             this.prc.StartInfo.FileName = processName;

@@ -59,7 +59,9 @@ namespace SqlSync.SqlBuild
             pHelper.AddArgument("/TargetFile", dacPacFileName);
             
             //Extraction settings
-            //pHelper.AddArgument("/p:IgnoreUserLoginMappings", "True", "=");
+            pHelper.AddArgument("/p:IgnoreExtendedProperties", "True", "=");
+            pHelper.AddArgument("/p:IgnoreUserLoginMappings", "True", "=");
+            
             //pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
 
             int result =  pHelper.ExecuteProcess(sqlPackageExe);
@@ -178,7 +180,12 @@ namespace SqlSync.SqlBuild
             pHelper.AddArgument("/OutputPath", tmpFile);
 
             //Scripting properties
-            //pHelper.AddArgument("/p:BlockOnPossibleDataLoss", "False","=");
+
+            pHelper.AddArgument("/p:IgnoreExtendedProperties", "True","=");
+            pHelper.AddArgument("/p:BlockOnPossibleDataLoss", "False","=");
+            pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
+            
+            
             //pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
             //pHelper.AddArgument("/p:IgnoreRoleMembership", "True", "=");
             //pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
@@ -202,7 +209,8 @@ namespace SqlSync.SqlBuild
             cleanedScript = string.Empty;
 
             string matchString = Regex.Escape(@"USE [$(DatabaseName)];");
-            var lastMatch = Regex.Matches(dacPacGeneratedScript, matchString).Cast<Match>().Select(m => m.Index).LastOrDefault();
+            MatchCollection useMatches = Regex.Matches(dacPacGeneratedScript, matchString);
+            var lastMatch = useMatches.Cast<Match>().Select(m => m.Index).LastOrDefault();
 
 
             if(lastMatch == -1) //Odd, there should be something, but oh well...
@@ -211,9 +219,25 @@ namespace SqlSync.SqlBuild
             }
 
             //Get rid of the SQLCMD header scripts
-            int crAfter = dacPacGeneratedScript.IndexOf("GO", lastMatch);
-            cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
+            if (useMatches.Count < 3)
+            {
+                int crAfter = dacPacGeneratedScript.IndexOf("GO", lastMatch);
+                cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
+            }else
+            {
+                int crAfter = dacPacGeneratedScript.IndexOf("GO", useMatches[1].Index);
+                cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
+                cleanedScript = cleanedScript.Replace("USE [$(DatabaseName)];", "--USE [$(DatabaseName)];");
+            }
 
+            string loginString = @"(CREATE USER)|(CREATE LOGIN)|(REVOKE CONNECT)|(EXECUTE sp_addrolemember)";
+            while(Regex.Match(cleanedScript,loginString).Success)
+            {
+                var mLogin = Regex.Matches(cleanedScript, loginString).Cast<Match>().Select(m => m.Index).FirstOrDefault();
+                int crAfter = cleanedScript.IndexOf("GO", mLogin);
+                cleanedScript = cleanedScript.Substring(0, mLogin) + cleanedScript.Substring(crAfter + 2);
+            }
+          
             //Look for the "Post-Deployment Script Template"
             matchString = Regex.Escape(@"Post-Deployment Script Template");
             var postDeploy = Regex.Match(cleanedScript,matchString);

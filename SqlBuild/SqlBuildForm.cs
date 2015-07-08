@@ -3773,7 +3773,7 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    EventLog.WriteEntry("SqlSync", "Build File Load Error.", EventLogEntryType.Error, 867);
+                    //EventLog.WriteEntry("SqlSync", "Build File Load Error.", EventLogEntryType.Error, 867);
                     Program.WriteLog("Build File Load Error");
                     if (this.UnattendedProcessingCompleteEvent != null)
                         this.UnattendedProcessingCompleteEvent(867);
@@ -4376,7 +4376,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                System.Diagnostics.EventLog.WriteEntry("SQLSync", "List Refesh Error:\r\n" + exe.ToString(), EventLogEntryType.Error, 545);
+                //System.Diagnostics.EventLog.WriteEntry("SQLSync", "List Refesh Error:\r\n" + exe.ToString(), EventLogEntryType.Error, 545);
             }
 
         }
@@ -7972,7 +7972,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                System.Diagnostics.EventLog.WriteEntry("SqlSync", "Unable to Script object from database.\r\n" + exe.ToString(), System.Diagnostics.EventLogEntryType.Error, 522);
+                //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Unable to Script object from database.\r\n" + exe.ToString(), System.Diagnostics.EventLogEntryType.Error, 522);
                 MessageBox.Show("Unable to Script object from database.\r\nCheck Event Log for details", "Error Scripting from Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -8255,7 +8255,7 @@ namespace SqlSync.SqlBuild
                         if(!contacted)
                         {
                             verData.UpdateFileReadError = true;
-                            System.Diagnostics.EventLog.WriteEntry("SqlSync", "Unable to read update file.\r\n" + errorMessage, EventLogEntryType.Error, 901);
+                            //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Unable to read update file.\r\n" + errorMessage, EventLogEntryType.Error, 901);
                         }
 
                         if (config.LastProgramUpdateCheck.Count == 0)
@@ -8278,7 +8278,7 @@ namespace SqlSync.SqlBuild
             {
                 verData.UpdateFileReadError = true;
                 verData.CheckIntervalElapsed = true;
-                System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error Checking for updates.\r\n" + exe.ToString(), EventLogEntryType.Error, 901);
+                //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error Checking for updates.\r\n" + exe.ToString(), EventLogEntryType.Error, 901);
 
             }
             finally
@@ -8309,7 +8309,7 @@ namespace SqlSync.SqlBuild
                 }
                 catch (Exception exe)
                 {
-                    System.Diagnostics.EventLog.WriteEntry("SqlSync", "Unable to display New Version alert window.\r\n" + exe.ToString(), EventLogEntryType.Error, 901);
+                    //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Unable to display New Version alert window.\r\n" + exe.ToString(), EventLogEntryType.Error, 901);
 
                 }
             }

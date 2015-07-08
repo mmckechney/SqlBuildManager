@@ -26,5 +26,5 @@ using System;
 //   1) create a new "Product Code" 
 //   2) Update the installer version to match the AssemblyVersion below.
 //   These can be found in SqlBuildManager.Setup -> Organize Your Setup -> General Information
-[assembly: AssemblyVersion("10.2.3.*")]
-[assembly: AssemblyFileVersion("10.2.3.*")]
+[assembly: AssemblyVersion("10.2.4.*")]
+[assembly: AssemblyFileVersion("10.2.4.*")]
