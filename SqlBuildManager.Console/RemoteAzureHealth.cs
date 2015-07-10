@@ -53,7 +53,7 @@ namespace SqlBuildManager.Console
                     }
                     else
                     {
-                        string parsed = text.Replace("client,", "");
+                        string parsed = text.Replace("client,", "").Replace(",","");
                         sb.AppendLine(parsed);
                     }
                 });

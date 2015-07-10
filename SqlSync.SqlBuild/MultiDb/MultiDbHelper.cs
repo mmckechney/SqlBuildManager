@@ -169,7 +169,7 @@ namespace SqlSync.SqlBuild.MultiDb
                     DatabaseOverride ovr;
                     if (tbl.Columns.Count == 2)
                     {
-                        ovr = new DatabaseOverride("", row[1].ToString().Trim());
+                        ovr = new DatabaseOverride("client", row[1].ToString().Trim());
                     }
                     else
                     {
