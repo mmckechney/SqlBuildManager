@@ -1,5 +1,9 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="2" Revision="6">
+    <fixed>Fixed installer to include the SQLPackage.exe in all instances</fixed>
+    <updated>Removed restriction for the remote execution command option</updated>
+  </Version>
   <Version Major="10" Minor="2" Revision="5">
     <added>Can now execute ad hoc queries using SQL Authentication. Querying will use the same credentials (AD or SQL) used when opening SQL Build Manager</added>
   </Version>

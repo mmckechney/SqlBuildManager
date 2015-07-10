@@ -149,6 +149,13 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+    <ItemGroup>
+    <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
+      <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="Service References\Sbm.BuildService\BuildService1.disco" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

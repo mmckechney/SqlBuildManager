@@ -603,7 +603,7 @@ namespace SqlSync.SqlBuild
                 List<bool> x = (List<bool>)e.Result;
                 scriptTagsRequiredToolStripMenuItem.Enabled = x[0];
                 maintainDefaultScriptRegistryToolStripMenuItem.Enabled = x[1];
-                remoteExecutionServiceToolStripMenuItem.Enabled = x[2];
+                //remoteExecutionServiceToolStripMenuItem.Enabled = x[2];
                 runPolicyCheckingonloadtoolStripMenuItem.Enabled = x[3];
                 if (!x[4])
                 {
@@ -2912,7 +2912,7 @@ namespace SqlSync.SqlBuild
             // 
             // remoteExecutionServiceToolStripMenuItem
             // 
-            this.remoteExecutionServiceToolStripMenuItem.Enabled = false;
+            this.remoteExecutionServiceToolStripMenuItem.Enabled = true;
             this.remoteExecutionServiceToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Server_Internet;
             this.remoteExecutionServiceToolStripMenuItem.Name = "remoteExecutionServiceToolStripMenuItem";
             this.remoteExecutionServiceToolStripMenuItem.Size = new System.Drawing.Size(344, 22);

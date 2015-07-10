@@ -600,7 +600,21 @@
 		<row><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td><td>{2619DBDF-5D4B-4A80-A1C2-5C38CD15B4C9}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FE1DD0604AD44BDE9FC190BA73D6419A</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__FED5073454C14A13B6AA66BAFCF5A600</td><td>{72705A47-07F1-4194-AA52-5433AACB38F4}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FED5073454C14A13B6AA66BAFCF5A600</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>C__FED78720B45A4F1BA165B06258BAD2BD</td><td>{6D0C1B32-B24C-4A11-AA8A-7FEB46635579}</td><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>2</td><td/><td>_FED78720B45A4F1BA165B06258BAD2BD</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>DacUnpackResources.dll</td><td>{A5E59839-D4F2-4193-96D8-55FBCEE952C4}</td><td>_033</td><td>2</td><td/><td>dacunpackresources.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISX_DEFAULTCOMPONENT</td><td>{4D7A71FD-DF78-43A0-B4B0-7068BD16488A}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>ISX_DEFAULTCOMPONENT1</td><td>{5252A630-2399-4CA3-AC4B-10E0D7320367}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISX_DEFAULTCOMPONENT2</td><td>{E6202DEF-8CE5-4471-AE63-5505238CB189}</td><td>_033</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISX_DEFAULTCOMPONENT3</td><td>{DB89DD09-36C8-4E1C-A74F-C93FDCEE21F1}</td><td>EXTENSIONS</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Microsoft.Data.Tools.Contracts.dll</td><td>{F7F52876-EE83-4035-9869-16844C5B30F9}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.data.tools.contrac</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Microsoft.Data.Tools.Schema.Sql.dll</td><td>{D3D80155-4D25-4776-9F84-DA4E1A7D9541}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.data.tools.schema.</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Microsoft.Data.Tools.Schema.Tasks.Sql.dll</td><td>{712AF96B-408F-4007-96ED-F4FE655F0755}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.data.tools.schema.1</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Microsoft.Data.Tools.Schema.Utilities.Sql.dll</td><td>{F9E78DC1-E4E9-4D73-82D8-2E4453BD6D39}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.data.tools.schema.2</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Microsoft.Data.Tools.Utilities.dll</td><td>{B1A56FDB-6FA2-4932-B8F2-AD1B51E601C7}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.data.tools.utiliti</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Microsoft.SqlServer.Dac.Extensions.dll</td><td>{94D20CDC-312E-4B08-A165-3FA6925641AD}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.sqlserver.dac.exte</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Microsoft.SqlServer.Dac.dll</td><td>{D66F9E27-A4F8-4BEC-A708-497C364E39E4}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.sqlserver.dac.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td>{A38DFE6E-AB2E-40F3-9F0B-BF7AB49C60DB}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.sqlserver.transact</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>dacunpack.exe</td><td>{A63477A6-C82D-4A37-BF15-50E842977B6E}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>dacunpack.exe</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>sqlpackage.exe</td><td>{813CDBA0-D284-47DD-8B4B-1FDA7A7C65D6}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>sqlpackage.exe</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
 	<table name="Condition">
@@ -1311,6 +1325,7 @@
 		<col key="yes" def="s72">Directory_</col>
 		<col key="yes" def="s72">Component_</col>
 		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT1</td></row>
+		<row><td>_033</td><td>ISX_DEFAULTCOMPONENT2</td></row>
 	</table>
 
 	<table name="CustomAction">
@@ -1399,6 +1414,7 @@
 		<row><td>CommonFilesFolder</td><td>TARGETDIR</td><td>.:Common</td><td/><td>0</td><td/></row>
 		<row><td>DATABASEDIR</td><td>ISYourDataBaseDir</td><td>.</td><td/><td>0</td><td/></row>
 		<row><td>DesktopFolder</td><td>TARGETDIR</td><td>.:Desktop</td><td/><td>3</td><td/></row>
+		<row><td>EXTENSIONS</td><td>MICROSOFT_SQLDB_DAC</td><td>EXTENS~1|Extensions</td><td/><td>0</td><td/></row>
 		<row><td>FavoritesFolder</td><td>TARGETDIR</td><td>.:FAVORI~1|Favorites</td><td/><td>0</td><td/></row>
 		<row><td>FontsFolder</td><td>TARGETDIR</td><td>.:Fonts</td><td/><td>0</td><td/></row>
 		<row><td>GlobalAssemblyCache</td><td>TARGETDIR</td><td>.:Global~1|GlobalAssemblyCache</td><td/><td>0</td><td/></row>
@@ -1409,6 +1425,7 @@
 		<row><td>ISYourDataBaseDir</td><td>INSTALLDIR</td><td>Database</td><td/><td>0</td><td/></row>
 		<row><td>LocalAppDataFolder</td><td>TARGETDIR</td><td>.:LocalA~1|LocalAppData</td><td/><td>0</td><td/></row>
 		<row><td>MCKECHNEY.COM</td><td>ProgramFilesFolder</td><td>MCKECH~1|McKechney.com</td><td/><td>0</td><td/></row>
+		<row><td>MICROSOFT_SQLDB_DAC</td><td>INSTALLDIR</td><td>MICROS~1|Microsoft_SqlDB_DAC</td><td/><td>0</td><td/></row>
 		<row><td>MyPicturesFolder</td><td>TARGETDIR</td><td>.:MyPict~1|MyPictures</td><td/><td>0</td><td/></row>
 		<row><td>NetHoodFolder</td><td>TARGETDIR</td><td>.:NetHood</td><td/><td>0</td><td/></row>
 		<row><td>PersonalFolder</td><td>TARGETDIR</td><td>.:Personal</td><td/><td>0</td><td/></row>
@@ -1431,6 +1448,7 @@
 		<row><td>USERPROFILE</td><td>TARGETDIR</td><td>.:USERPR~1|UserProfile</td><td/><td>0</td><td/></row>
 		<row><td>WindowsFolder</td><td>TARGETDIR</td><td>.:Windows</td><td/><td>0</td><td/></row>
 		<row><td>WindowsVolume</td><td>TARGETDIR</td><td>.:WinRoot</td><td/><td>0</td><td/></row>
+		<row><td>_033</td><td>MICROSOFT_SQLDB_DAC</td><td>1033</td><td/><td>0</td><td/></row>
 		<row><td>_35E9DD80400540F4AB6255ACC1D4E675</td><td>_8CE20B78D953485BAD1B5314AD9266AD</td><td>SQLBUI~1|SqlBuildManagerManual_files</td><td/><td>0</td><td/></row>
 		<row><td>_390984C3C19140AC87694EFA0F9738C7</td><td>_D6D5795BE8F849EAAEA66F9ED618F828</td><td>SQLBUI~1|Sql Build Manager</td><td/><td>3</td><td/></row>
 		<row><td>_6DBDB568607E48868CBFBA4BA18BA292</td><td>INSTALLDIR</td><td>Utility</td><td/><td>0</td><td/></row>
@@ -2402,7 +2420,21 @@
 		<row><td>AlwaysInstall</td><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td></row>
 		<row><td>AlwaysInstall</td><td>C__FED5073454C14A13B6AA66BAFCF5A600</td></row>
 		<row><td>AlwaysInstall</td><td>C__FED78720B45A4F1BA165B06258BAD2BD</td></row>
+		<row><td>AlwaysInstall</td><td>DacUnpackResources.dll</td></row>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT</td></row>
 		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT1</td></row>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT2</td></row>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT3</td></row>
+		<row><td>AlwaysInstall</td><td>Microsoft.Data.Tools.Contracts.dll</td></row>
+		<row><td>AlwaysInstall</td><td>Microsoft.Data.Tools.Schema.Sql.dll</td></row>
+		<row><td>AlwaysInstall</td><td>Microsoft.Data.Tools.Schema.Tasks.Sql.dll</td></row>
+		<row><td>AlwaysInstall</td><td>Microsoft.Data.Tools.Schema.Utilities.Sql.dll</td></row>
+		<row><td>AlwaysInstall</td><td>Microsoft.Data.Tools.Utilities.dll</td></row>
+		<row><td>AlwaysInstall</td><td>Microsoft.SqlServer.Dac.Extensions.dll</td></row>
+		<row><td>AlwaysInstall</td><td>Microsoft.SqlServer.Dac.dll</td></row>
+		<row><td>AlwaysInstall</td><td>Microsoft.SqlServer.TransactSql.ScriptDom.dll</td></row>
+		<row><td>AlwaysInstall</td><td>dacunpack.exe</td></row>
+		<row><td>AlwaysInstall</td><td>sqlpackage.exe</td></row>
 	</table>
 
 	<table name="File">
@@ -2676,6 +2708,21 @@
 		<row><td>_FE1DD0604AD44BDE9FC190BA73D6419A</td><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td><td>image111.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image111.jpg</td><td>5</td><td/></row>
 		<row><td>_FED5073454C14A13B6AA66BAFCF5A600</td><td>C__FED5073454C14A13B6AA66BAFCF5A600</td><td>image101.jpg</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image101.jpg</td><td>5</td><td/></row>
 		<row><td>_FED78720B45A4F1BA165B06258BAD2BD</td><td>C__FED78720B45A4F1BA165B06258BAD2BD</td><td>image038.png</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image038.png</td><td>5</td><td/></row>
+		<row><td>dacunpack.exe</td><td>dacunpack.exe</td><td>DACUNP~1.EXE|dacunpack.exe</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\dacunpack.exe</td><td>1</td><td/></row>
+		<row><td>dacunpackresources.dll</td><td>DacUnpackResources.dll</td><td>DACUNP~1.DLL|DacUnpackResources.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\1033\DacUnpackResources.dll</td><td>1</td><td/></row>
+		<row><td>microsoft.data.tools.contrac</td><td>Microsoft.Data.Tools.Contracts.dll</td><td>MICROS~1.DLL|Microsoft.Data.Tools.Contracts.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.Data.Tools.Contracts.dll</td><td>1</td><td/></row>
+		<row><td>microsoft.data.tools.schema.</td><td>Microsoft.Data.Tools.Schema.Sql.dll</td><td>MICROS~1.DLL|Microsoft.Data.Tools.Schema.Sql.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.Data.Tools.Schema.Sql.dll</td><td>1</td><td/></row>
+		<row><td>microsoft.data.tools.schema.1</td><td>Microsoft.Data.Tools.Schema.Tasks.Sql.dll</td><td>MICROS~1.DLL|Microsoft.Data.Tools.Schema.Tasks.Sql.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.Data.Tools.Schema.Tasks.Sql.dll</td><td>1</td><td/></row>
+		<row><td>microsoft.data.tools.schema.2</td><td>Microsoft.Data.Tools.Schema.Utilities.Sql.dll</td><td>MICROS~1.DLL|Microsoft.Data.Tools.Schema.Utilities.Sql.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.Data.Tools.Schema.Utilities.Sql.dll</td><td>1</td><td/></row>
+		<row><td>microsoft.data.tools.utiliti</td><td>Microsoft.Data.Tools.Utilities.dll</td><td>MICROS~1.DLL|Microsoft.Data.Tools.Utilities.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.Data.Tools.Utilities.dll</td><td>1</td><td/></row>
+		<row><td>microsoft.sqlserver.dac.dll</td><td>Microsoft.SqlServer.Dac.dll</td><td>MICROS~1.DLL|Microsoft.SqlServer.Dac.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.SqlServer.Dac.dll</td><td>1</td><td/></row>
+		<row><td>microsoft.sqlserver.dac.exte</td><td>Microsoft.SqlServer.Dac.Extensions.dll</td><td>MICROS~1.DLL|Microsoft.SqlServer.Dac.Extensions.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.SqlServer.Dac.Extensions.dll</td><td>1</td><td/></row>
+		<row><td>microsoft.sqlserver.dac.exte1</td><td>ISX_DEFAULTCOMPONENT</td><td>MICROS~1.XML|Microsoft.SqlServer.Dac.Extensions.xml</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.SqlServer.Dac.Extensions.xml</td><td>1</td><td/></row>
+		<row><td>microsoft.sqlserver.dac.xml</td><td>ISX_DEFAULTCOMPONENT</td><td>MICROS~1.XML|Microsoft.SqlServer.Dac.xml</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.SqlServer.Dac.xml</td><td>1</td><td/></row>
+		<row><td>microsoft.sqlserver.transact</td><td>Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td>MICROS~1.DLL|Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td>1</td><td/></row>
+		<row><td>readme.txt</td><td>ISX_DEFAULTCOMPONENT3</td><td>Readme.txt</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\Extensions\Readme.txt</td><td>1</td><td/></row>
+		<row><td>sqlpackage.exe</td><td>sqlpackage.exe</td><td>SQLPAC~1.EXE|sqlpackage.exe</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\sqlpackage.exe</td><td>1</td><td/></row>
+		<row><td>sqlpackage.exe.config</td><td>ISX_DEFAULTCOMPONENT</td><td>SQLPAC~1.CON|sqlpackage.exe.config</td><td>0</td><td/><td/><td/><td>1</td><td>F:\Git\SqlBuildManager\Microsoft_SqlDB_DAC\sqlpackage.exe.config</td><td>1</td><td/></row>
 	</table>
 
 	<table name="FileSFPCatalog">
@@ -3078,7 +3125,21 @@
 		<row><td>C__FE1DD0604AD44BDE9FC190BA73D6419A</td><td/><td/><td>_EA2DC6B3_5B47_4C58_A430_C71460459A49_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__FED5073454C14A13B6AA66BAFCF5A600</td><td/><td/><td>_92BCCECA_40A0_402F_B674_CDD434D88BB7_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>C__FED78720B45A4F1BA165B06258BAD2BD</td><td/><td/><td>_61605EF1_6AA6_488D_BAA0_6C6301DB9FEB_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>DacUnpackResources.dll</td><td/><td/><td>_EC117B2E_D692_439B_936F_7E44E92F4042_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISX_DEFAULTCOMPONENT</td><td/><td/><td>_E45783CD_8499_4D3F_817A_CDA4CA8D2BAD_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>ISX_DEFAULTCOMPONENT1</td><td/><td/><td>_F34B2314_D475_4236_AE8F_66F68573E783_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISX_DEFAULTCOMPONENT2</td><td/><td/><td>_AAC7413A_F6C9_40E8_9324_FDD18A9319FE_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISX_DEFAULTCOMPONENT3</td><td/><td/><td>_2878C40C_2B89_4D90_A0FB_919B25EA35BE_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Microsoft.Data.Tools.Contracts.dll</td><td/><td/><td>_95D4A228_8E3F_4285_8A32_09D86FD2ECDB_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Microsoft.Data.Tools.Schema.Sql.dll</td><td/><td/><td>_6FF6C558_7AA0_48D7_BE4E_09B6C3E28E99_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Microsoft.Data.Tools.Schema.Tasks.Sql.dll</td><td/><td/><td>_9CD7864D_E194_45F9_8D94_120DC5641FA3_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Microsoft.Data.Tools.Schema.Utilities.Sql.dll</td><td/><td/><td>_A2CD254D_7E1C_4678_9756_41EF7937533E_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Microsoft.Data.Tools.Utilities.dll</td><td/><td/><td>_ED4F26F9_0831_4E18_891E_3B56E56EB9F9_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Microsoft.SqlServer.Dac.Extensions.dll</td><td/><td/><td>_264B11CC_A12E_42E0_9C4C_7F37616B1989_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Microsoft.SqlServer.Dac.dll</td><td/><td/><td>_E321FF80_256A_47D5_8F9D_A359326CACD1_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td/><td/><td>_E19377ED_2139_4FEA_B443_EDC1E6051D5D_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>dacunpack.exe</td><td/><td/><td>_EBF2DFFA_D6E7_406A_A6E6_CE88734D26A0_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>sqlpackage.exe</td><td/><td/><td>_D83C0009_8F57_4316_8F67_DC23A69C99FB_FILTER</td><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="ISCustomActionReference">
@@ -5475,9 +5536,9 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGMSG_IIS_ROLLBACKVROOTS</td><td>##IDS_PROGMSG_IIS_ROLLBACKVROOTS##</td><td/></row>
 		<row><td>PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS</td><td>##IDS_PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS##</td><td/></row>
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]SQLSync.Primary output</td><td/></row>
-		<row><td>ProductCode</td><td>{EA9DFEE5-3843-4FA0-8100-FDD3C199C380}</td><td/></row>
+		<row><td>ProductCode</td><td>{B8E02646-D711-4BEA-9470-B4AE3FCB779C}</td><td/></row>
 		<row><td>ProductName</td><td>Sql Build Manager</td><td/></row>
-		<row><td>ProductVersion</td><td>10.2.5</td><td/></row>
+		<row><td>ProductVersion</td><td>10.2.6</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
