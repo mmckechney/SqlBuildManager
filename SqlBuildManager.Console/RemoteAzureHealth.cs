@@ -111,8 +111,8 @@ namespace SqlBuildManager.Console
                             var errorDbs = text.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList();
                             Parallel.ForEach(errorDbs, db =>
                             {
-                                string svcDb = db.Replace(":client,", "."); //service is expecting server.db not server:client,db
-                                string logDb = db.Replace(":client,", ":"); //want to consistently log server:db
+                                string svcDb = db.Replace(":client,", ".").Replace(":,","."); //service is expecting server.db not server:client,db or server:,client
+                                string logDb = db.Replace(":client,", ":").Replace(":,", ":"); //want to consistently log server:db or server:,client
                                 var errLog = manager.GetDetailedDatabaseLog(singleEndPoint, svcDb);
                                 if (!string.IsNullOrWhiteSpace(errLog))
                                 {

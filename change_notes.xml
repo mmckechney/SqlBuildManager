@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="2" Revision="7">
+    <fixed>Fixed parsing of error logs from the remote servers</fixed>
+  </Version>
   <Version Major="10" Minor="2" Revision="6">
     <fixed>Fixed installer to include the SQLPackage.exe in all instances</fixed>
     <updated>Removed restriction for the remote execution command option</updated>
