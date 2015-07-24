@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="2" Revision="9">
+    <fixed>Corrected issue of creating dacpac change scripts from incorrect source</fixed>
+  </Version>
   <Version Major="10" Minor="2" Revision="8">
     <fixed>Corrected issue with retrieving client list from SQL statement</fixed>
   </Version>

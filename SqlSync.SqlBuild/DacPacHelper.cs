@@ -401,15 +401,31 @@ namespace SqlSync.SqlBuild
         public static DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName)
         {
 
-            return GetSbmFromDacPac(cmd.RootLoggingPath,
-                cmd.PlatinumDacpac,
-                cmd.TargetDacpac,
-                cmd.Database,
-                cmd.Server,
-                cmd.UserName,
-                cmd.Password,
-                cmd.BuildRevision,
-                multiDb, out sbmName);
+            if (cmd.MultiDbRunConfigFileName.Trim().ToLower().EndsWith("sql"))
+            {
+                //if we are getting the list from a SQL statement, then the database and server settings mean something different! Dont pass them in.
+                 return GetSbmFromDacPac(cmd.RootLoggingPath,
+                    cmd.PlatinumDacpac,
+                    cmd.TargetDacpac,
+                    string.Empty,
+                    string.Empty,
+                    cmd.UserName,
+                    cmd.Password,
+                    cmd.BuildRevision,
+                    multiDb, out sbmName);
+            }
+            else
+            {
+                return GetSbmFromDacPac(cmd.RootLoggingPath,
+                    cmd.PlatinumDacpac,
+                    cmd.TargetDacpac,
+                    cmd.Database,
+                    cmd.Server,
+                    cmd.UserName,
+                    cmd.Password,
+                    cmd.BuildRevision,
+                    multiDb, out sbmName);
+            }
 
         }
 
