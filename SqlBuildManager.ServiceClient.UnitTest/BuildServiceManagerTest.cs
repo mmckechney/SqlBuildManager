@@ -219,6 +219,38 @@ namespace SqlBuildManager.ServiceClient.UnitTest
 
         }
 
+        /// <summary>
+        ///A test for SplitLoadEvenly
+        ///</summary>
+        [TestMethod()]
+        [DeploymentItem("SqlBuildManager.ServiceClient.dll")]
+        public void SplitLoadEvenlyTest_TwobTargets_FourExeServers()
+        {
+            string[] twoDbConfig = new string[]{"SERVER1:default,target;default1,target1","SERVER2:default,target;default2,target2"};
+            BuildServiceManager target = new BuildServiceManager(); // TODO: Initialize to an appropriate value
+            BuildSettings unifiedSettings = new BuildSettings();
+            unifiedSettings.MultiDbTextConfig = twoDbConfig;
+
+            IList<ServerConfigData> executionServers = new List<ServerConfigData>();
+            ServerConfigData exeServer1 = new ServerConfigData("ExeServer1", "http://sqlbuildmanager.cloudapp.net:10000/BuildService.svc", "tcp://nothome.com", Protocol.AzureHttp);
+            ServerConfigData exeServer2 = new ServerConfigData("ExeServer2", "http://sqlbuildmanager.cloudapp.net:10001/BuildService.svc", "tcp://nothome.com", Protocol.AzureHttp);
+            ServerConfigData exeServer3 = new ServerConfigData("ExeServer3", "http://sqlbuildmanager.cloudapp.net:10002/BuildService.svc", "tcp://nothome.com", Protocol.AzureHttp);
+            ServerConfigData exeServer4 = new ServerConfigData("ExeServer4", "http://sqlbuildmanager.cloudapp.net:10003/BuildService.svc", "tcp://nothome.com", Protocol.AzureHttp);
+            executionServers.Add(exeServer1);
+            executionServers.Add(exeServer2);
+            executionServers.Add(exeServer3);
+            executionServers.Add(exeServer4);
+
+            IDictionary<ServerConfigData, BuildSettings> actual;
+            actual = target.SplitLoadEvenly(unifiedSettings, executionServers);
+            Assert.AreEqual(1, actual.Count);
+            //Assert the values of 1
+            Assert.AreEqual(5, actual[exeServer1].MultiDbTextConfig.Length);
+            Assert.IsTrue(actual[exeServer1].MultiDbTextConfig[0].IndexOf("SERVER1") > -1);
+            Assert.IsTrue(actual[exeServer1].MultiDbTextConfig[4].IndexOf("SERVER5") > -1);
+
+        }
+
         #endregion
 
         #region SplitLoadToOwningServers

@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console
             }
             else
             {
-                endPoints = remotes.Where(s => s.ServerName.ToLower() == setting.ToLower()).Select(x => x.ActiveServiceEndpoint); //Specific endpoint
+                endPoints = remotes.Where(r => r.ActiveServiceEndpoint.ToLower() == setting.ToLower()).Select(x => x.ActiveServiceEndpoint); //Specific endpoint
             }
 
             if (endPoints.Any())
@@ -123,7 +123,7 @@ namespace SqlBuildManager.Console
                                     //}
                                     lock(dbLog)
                                     {
-                                        dbLog.Add(logDb, errorMessage);
+                                        dbLog.Add(singleEndPoint + "  "+ logDb, errorMessage);
                                     }
                                 }
 
@@ -137,7 +137,7 @@ namespace SqlBuildManager.Console
                 StringBuilder sortSb = new StringBuilder();
                 foreach(var item in sorted)
                 {
-                    sortSb.AppendFormat("{0}{1}\r\n", item.Key.PadRight(55, ' '), item.Value);
+                    sortSb.AppendFormat("{0}{1}\r\n", item.Key.PadRight(115, ' '), item.Value);
                 }
 
                 return sortSb.ToString();

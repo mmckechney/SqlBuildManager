@@ -37,22 +37,22 @@ namespace SqlBuildManager.Console
                 return valid;
 
         
-            manager.SubmitBuildRequest(this.settings, this.settings.DistributionType);
+            List<string> taskedEndpoints = manager.SubmitBuildRequest(this.settings, this.settings.DistributionType);
             System.Threading.Thread.Sleep(2000);
             bool recheckStatus = true;
-            List<ServerConfigData> stat = null;
+            List<ServiceStatus> stat = null;
             while (recheckStatus)
             {
+                
+               stat = manager.GetServiceStatus(taskedEndpoints).ToList();
+               var complete = from s in stat
+                                where
+                                    s.Readiness == ServiceReadiness.Error || s.Readiness == ServiceReadiness.ReadyToAccept ||
+                                    s.Readiness == ServiceReadiness.ProcessingCompletedSuccessfully || s.Readiness == ServiceReadiness.Unknown ||
+                                    s.Readiness == ServiceReadiness.PackageValidationError
+                                select s;
 
-               stat =  manager.GetServiceStatus().ToList();
-               IEnumerable<ServerConfigData> complete = from s in stat
-                                                        where
-                                                            s.ServiceReadiness == ServiceReadiness.Error || s.ServiceReadiness == ServiceReadiness.ReadyToAccept ||
-                                                            s.ServiceReadiness == ServiceReadiness.ProcessingCompletedSuccessfully || s.ServiceReadiness == ServiceReadiness.Unknown ||
-                                                            s.ServiceReadiness == ServiceReadiness.PackageValidationError
-                                                        select s;
-
-                if(complete.Count() != this.settings.RemoteExecutionServers.Count())
+                if (complete.Count() != taskedEndpoints.Count())
                 {
                     System.Threading.Thread.Sleep(500);
                 }
@@ -63,28 +63,51 @@ namespace SqlBuildManager.Console
             }
 
 
-            foreach (ServerConfigData data in stat)
+            foreach (var data in stat)
             {
-                log.InfoFormat("{0} returned with Execution Return = {1}, Service Readiness = {2}" , data.ServerName, Enum.GetName(typeof(ExecutionReturn), data.ExecutionReturn), Enum.GetName(typeof(ServiceReadiness), data.ServiceReadiness));
+                log.InfoFormat("{0} returned with Execution Return = {1}, Service Readiness = {2}" , 
+                    data.ServerName, Enum.GetName(typeof(ExecutionReturn), data.ExecutionStatus), Enum.GetName(typeof(ServiceReadiness), data.Readiness));
             }
 
 
-            IEnumerable<ServerConfigData> hadError = from s in stat
-                                                     where
-                                                         s.ServiceReadiness == ServiceReadiness.Error || s.ExecutionReturn !=  ExecutionReturn.Successful
-                                                     select s;
+            var hadError = from s in stat
+                            where
+                                s.Readiness == ServiceReadiness.Error || s.ExecutionStatus != ExecutionReturn.Successful
+                            select s;
 
             if (hadError.Any())
             {
                 bool success = BuildFailureDatabaseConfig(settings.SqlBuildManagerProjectFileName, hadError, ref manager);
                 if (!success)
+                {
                     log.Error("Unable to retrieve the failure database configuration data");
+                }
 
-                log.Warn("One or more remote execution servers encountered an execution error. Check the \"SqlBuildManager.Console.log\" file for details");
+
+                //pull the detailed logs
+                
+                foreach(var item in hadError)
+                {
+                    try
+                    {
+                        string error = RemoteAzureHealth.GetErrorDetail(item.Endpoint);
+                        log.Warn("Returned error messages:");
+                        log.Warn("\r\n"+error);
+                    }
+                    catch(Exception exe)
+                    {
+                        log.Error(string.Format("Unable to get error detail from {0}", item.Endpoint), exe);
+                    }
+                }
+
+                
+                //log.Warn("One or more remote execution servers encountered an execution error. Check the \"SqlBuildManager.Console.log\" file for details");
                 return (int)con.ExecutionReturn.OneOrMoreRemoteServersHadError;
             }
             else
+            {
                 return (int)con.ExecutionReturn.Successful;
+            }
 
         }
         public int TestConnectivity()
@@ -117,14 +140,14 @@ namespace SqlBuildManager.Console
             return 0;
 
         }
-        private static bool BuildFailureDatabaseConfig(string sqlBuildFileName, IEnumerable<ServerConfigData> hadErrorServers, ref BuildServiceManager manager)
+        private static bool BuildFailureDatabaseConfig(string sqlBuildFileName, IEnumerable<ServiceStatus> hadErrorEndpoints, ref BuildServiceManager manager)
         {
             try
             {
                 StringBuilder sb = new StringBuilder();
-                foreach (ServerConfigData cfg in hadErrorServers)
+                foreach (ServiceStatus cfg in hadErrorEndpoints)
                 {
-                    sb.AppendLine(manager.GetFailureDatabasesConfig(cfg.ActiveServiceEndpoint));
+                    sb.AppendLine(manager.GetFailureDatabasesConfig(cfg.Endpoint));
                 }
                 string fileFormat = @"{0}\{1}-{2}.cfg";
                 string fileName = String.Format(fileFormat, Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),

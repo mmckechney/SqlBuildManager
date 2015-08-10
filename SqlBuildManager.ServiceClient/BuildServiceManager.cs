@@ -12,11 +12,13 @@ using SqlSync.SqlBuild.MultiDb;
 using System.ServiceModel.Configuration;
 using System.Threading.Tasks;
 using System.Threading;
+using Polly;
 namespace SqlBuildManager.ServiceClient
 {
     public class BuildServiceManager
     {
-     
+
+        private Policy azureServiceCallPolicy = null;
         private static log4net.ILog logger = log4net.LogManager.GetLogger(typeof(BuildServiceManager));
         public BuildServiceManager(List<string> serverNames, ServiceClient.Protocol protocol)
             : this()
@@ -24,7 +26,7 @@ namespace SqlBuildManager.ServiceClient
             this.protocol = protocol;
             SetServerNames(serverNames);
         }
-        public BuildServiceManager(ServiceClient.Protocol protocol)
+        public BuildServiceManager(ServiceClient.Protocol protocol) :this()
         {
             this.protocol = protocol;
         }
@@ -32,6 +34,15 @@ namespace SqlBuildManager.ServiceClient
         {
             if (!logger.Logger.Repository.Configured)
                 log4net.Config.BasicConfigurator.Configure();
+
+            ConfigurePollyRetryPolicies();
+        }
+
+        private void ConfigurePollyRetryPolicies()
+        {
+            azureServiceCallPolicy = Policy.Handle<Exception>().WaitAndRetry(
+                                                        5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+                                                        
         }
         public void SetServerNames(List<string> serverNames)
         {
@@ -124,6 +135,25 @@ namespace SqlBuildManager.ServiceClient
             return new BindingList<ServerConfigData>(this.endPoints);
 
         }
+
+        public IList<ServiceStatus> GetServiceStatus(IList<string> taskedEndpoints)
+        {
+            List<ServiceStatus> lstStat = new List<ServiceStatus>();
+            Parallel.ForEach(taskedEndpoints, endPoint =>
+            {
+                ServiceStatus stat = GetServiceStatus(endPoint);
+                stat.ServerName = endPoint;
+                stat.Endpoint = endPoint;
+                lock(lstStat)
+                {
+                    lstStat.Add(stat);
+                }
+            });
+
+            //avoid returning endpoints directly as it will cause a thread issue
+            return lstStat;
+
+        }
         private ServiceStatus GetServiceStatus(string endpointAddress)
         {
             try
@@ -147,8 +177,9 @@ namespace SqlBuildManager.ServiceClient
             }
         }
 
-        public void SubmitBuildRequest(BuildSettings settings, DistributionType loadDistributionType)
+        public List<string> SubmitBuildRequest(BuildSettings settings, DistributionType loadDistributionType)
         {
+            List<string> taskedEndpoints = new List<string>();
             logger.Info("Accepted BuildRequest with distribution type of '" + Enum.GetName(typeof(DistributionType), loadDistributionType)+ "'");
             
             if( (this.endPoints == null || this.endPoints.Count == 0) && 
@@ -158,18 +189,31 @@ namespace SqlBuildManager.ServiceClient
                     this.endPoints.Add(cfg);
             }
             IDictionary<ServerConfigData, BuildSettings> distibutedLoad = this.DistributeBuildLoad(settings, loadDistributionType,this.endPoints.ToList());
-            logger.Info("Load distributed to " + distibutedLoad.Count().ToString() + " execution servers");
+            var exeServerCount = distibutedLoad.Count(x => x.Value.MultiDbTextConfig.Length > 0);
+            logger.Info("Load distributed to " + exeServerCount.ToString() + " execution servers");
 
             try
             {
                 List<string> untaskedExeServers;
                 List<string> unassignedDbServers;
-                ValidateLoadDistribution(loadDistributionType, settings.RemoteExecutionServers, settings.MultiDbTextConfig, out untaskedExeServers, out unassignedDbServers);
-                if (untaskedExeServers.Count > 0)
-                    logger.Warn("The following Execution Servers are not tasked: " + String.Join(", ", untaskedExeServers.ToArray()));
+                if (loadDistributionType == DistributionType.OwnMachineName)
+                {
+                    ValidateLoadDistribution(loadDistributionType, settings.RemoteExecutionServers, settings.MultiDbTextConfig, out untaskedExeServers, out unassignedDbServers);
+                    if (untaskedExeServers.Count > 0)
+                        logger.Warn("The following Execution Servers are not tasked: " + String.Join(", ", untaskedExeServers.ToArray()));
 
-                if (unassignedDbServers.Count > 0)
-                    logger.Warn("The following Database Servers will not have their databases updated: " + String.Join(", ", unassignedDbServers.ToArray()));
+                    if (unassignedDbServers.Count > 0)
+                        logger.Warn("The following Database Servers will not have their databases updated: " + String.Join(", ", unassignedDbServers.ToArray()));
+                }
+                else
+                {
+                    var untasked = distibutedLoad.Where(x => x.Value.MultiDbTextConfig.Length == 0);
+                    if(untasked.Any())
+                    {
+                        var lst = untasked.Select(x => x.Key.ActiveServiceEndpoint);
+                        logger.Warn("The following Execution Endpoints are not tasked:\r\n" + String.Join("\r\n", lst.ToArray()));
+                    }
+                }
             }
             catch (Exception exe)
             {
@@ -183,8 +227,11 @@ namespace SqlBuildManager.ServiceClient
                 if (set.Value.MultiDbTextConfig.Length > 0)
                 {
                     SubmitRequestToServer(set.Key, set.Value);
+                    taskedEndpoints.Add(set.Key.ActiveServiceEndpoint);
                 }
             }
+
+            return taskedEndpoints;
         }
 
         private void SubmitRequestToServer(ServerConfigData remoteServer, BuildSettings setting)
@@ -636,6 +683,8 @@ namespace SqlBuildManager.ServiceClient
 
         public List<ServerConfigData> GetListOfAzureInstancePublicUrls()
         {
+            Polly.Policy.Handle<CommunicationException>();
+
             string dynamicAzureTemplate = ConfigurationManager.AppSettings["DynamicAzureHttpEndpointTemplate"];
             List<ServerConfigData> srvData = new List<ServerConfigData>();
             string dns = ConfigurationManager.AppSettings["AzureDnsName"];
@@ -648,18 +697,23 @@ namespace SqlBuildManager.ServiceClient
             try
             {
                 string address = string.Format("http://{0}/BuildService.svc", dns);
+                azureServiceCallPolicy.Execute(() =>
+                        {
 
-                BuildServiceManager.Using<BuildServiceClient>(client => 
-                {
-                    client.Endpoint.Address = new System.ServiceModel.EndpointAddress(new Uri(address));
-                    instanceUrls = client.GetListOfAzureInstancePublicUrls().ToList();
-                   
-                },"http_BuildServiceEndpoint");
+                            BuildServiceManager.Using<BuildServiceClient>(client =>
+                            {
+                                client.Endpoint.Address = new System.ServiceModel.EndpointAddress(new Uri(address));
+                                instanceUrls = client.GetListOfAzureInstancePublicUrls().ToList();
 
-                foreach(var url in instanceUrls)
-                {
-                    srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace(serverReplaceKey, url)));
-                }
+                            }, "http_BuildServiceEndpoint");
+
+                            foreach (var url in instanceUrls)
+                            {
+                                srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace(serverReplaceKey, url)));
+                            }
+
+                        });
+                        
             }
             catch (Exception exe)
             {
