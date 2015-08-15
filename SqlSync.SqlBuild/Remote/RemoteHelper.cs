@@ -56,28 +56,28 @@ namespace SqlSync.SqlBuild.Remote
             sb.Append("\"" + exePath + "\" ");
             sb.Append("/Action=Remote ");
             if (!string.IsNullOrWhiteSpace(sbmFileName))
-                sb.Append("/build=\"" + sbmFileName + "\" ");
+                sb.Append("/PackageName=\"" + sbmFileName + "\" ");
 
             if (!string.IsNullOrWhiteSpace(platinumDacpacFile))
                 sb.Append("/PlatinumDacpac=\"" + platinumDacpacFile + "\" ");
 
             sb.Append("/RemoteServers=\"" + remoteExeServersFile + "\" ");
-            sb.Append("/override=\"" + overrideSettingFile +"\" ");
+            sb.Append("/Override=\"" + overrideSettingFile +"\" ");
             sb.Append("/RootLoggingPath=\""+ rootLoggingPath +"\" ");
             sb.Append("/DistributionType=\""+ distributionType +"\" ");
             sb.Append("/Description=\"" + buildDescription + "\" ");
-            sb.Append("/transactional=" + isTransactional +  " ");
-            sb.Append("/trial=" + isTrial + " ");
+            sb.Append("/Transactional=" + isTransactional +  " ");
+            sb.Append("/Trial=" + isTrial + " ");
             sb.Append("/TimeoutRetryCount=" + allowedRetryCount.ToString() + " ");
             if(!string.IsNullOrWhiteSpace(username))
             {
-                sb.Append("/username=\""+username +"\" ");
+                sb.Append("/UserName=\""+username +"\" ");
 
             }
 
             if (!string.IsNullOrWhiteSpace(password))
             {
-                sb.Append("/password=\"" + password + "\"");
+                sb.Append("/Password=\"" + password + "\"");
 
             }
 
