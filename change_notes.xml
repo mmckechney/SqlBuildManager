@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+   <Version Major="10" Minor="2" Revision="11">
+    <updated>Changed the default script timeout for a dacpac generated script from 20 seconds to 500 seconds</updated>
+  </Version>
   <Version Major="10" Minor="2" Revision="10">
     <fixed>For a remote execution build console service check now only looks at the endpoints that were tasked with work during the session.</fixed>
   </Version>

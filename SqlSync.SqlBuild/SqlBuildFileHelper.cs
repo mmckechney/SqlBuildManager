@@ -392,7 +392,7 @@ namespace SqlSync.SqlBuild
                         false,
                         true,
                         System.Environment.UserName,
-                        20, "");
+                        500, "");
 
                 }
                 SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildFileName);

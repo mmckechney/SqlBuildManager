@@ -5536,7 +5536,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGMSG_IIS_ROLLBACKVROOTS</td><td>##IDS_PROGMSG_IIS_ROLLBACKVROOTS##</td><td/></row>
 		<row><td>PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS</td><td>##IDS_PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS##</td><td/></row>
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]SQLSync.Primary output</td><td/></row>
-		<row><td>ProductCode</td><td>{88CA9EDA-F6E6-45FA-9A98-E7E6B1169B76}</td><td/></row>
+		<row><td>ProductCode</td><td>{D14DFF70-3284-4763-AB2B-E7F934E5851B}</td><td/></row>
 		<row><td>ProductName</td><td>Sql Build Manager</td><td/></row>
 		<row><td>ProductVersion</td><td>10.2.10</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
