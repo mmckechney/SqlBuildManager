@@ -13,6 +13,7 @@ Action value options (/Action=<value>)
     CreateBackout            Generates a backout package (reversing stored procedure and scripted object changes)
     GetDifference            Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between /Database and /GoldDatabase
     Syncronize               Performs a database syncronization between between /Database and /GoldDatabase
+    ScriptExtract            Extract a SBM package from a source /PlatinumDacPac
 
 
 General Authentication settings (/Action={Build|Threaded|Remote|GetDifference|Syncronize})
@@ -52,6 +53,9 @@ Dacpac Execution (/Action={Threaded|Remote})
     /PlatinumDbSource="<database name>"     Instead of a formally built Platinum Dacpac, target this database as having the desired state schema
     /PlatinumServerSource="<server name>"   Instead of a formally built Platinum Dacpac, target a database on this server as having the desired state schema
 
+Script Extraction from Dacpac (/Action=ScriptExtract)
+    /PlatinumDacpac="<filename>"            Name of the dacpac containing the platinum schema
+    /OutputSbm="<filename>"                 Name (and path) of the SBM package to create
 
 Database Synchronization (/Action={Synchronize|GetDifference})
     /GoldDatabase="<database name>"   The "gold copy" database that will serve as the model for what the /Database should look like

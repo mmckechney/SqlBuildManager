@@ -216,6 +216,9 @@ namespace SqlSync.SqlBuild
 
             if (dict.ContainsKey("remoteerrordetail"))
                 cmdLine.RemoteErrorDetail = dict["remoteerrordetail"];
+
+            if (dict.ContainsKey("outputsbm"))
+                cmdLine.OutputSbm = dict["outputsbm"];
             
             return cmdLine;
         }

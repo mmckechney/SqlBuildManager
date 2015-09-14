@@ -62,6 +62,9 @@ namespace SqlBuildManager.Console
                 case "build":
                     StandardExecution(args, start);
                     break;
+                case "scriptextract":
+                    ScriptExtraction(cmdLine);
+                    break;
                 default:
                     log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
                     System.Environment.Exit(8675309);
@@ -69,47 +72,56 @@ namespace SqlBuildManager.Console
 
             }
 
-            //if (joinedArgs.Contains("/remote=true") || joinedArgs.Contains("/remote,")) //Remote execution with all flags
-            //{
-            //   RunRemoteExecution(args, start);
-            //}
-            //else if (args.Length == 1 && args[0].Trim().ToLower().EndsWith(".resp")) //remote execution with single file
-            //{
-            //    RemoteExecutionWithRespFile(args, start);
-            //}
-            //else if (joinedArgs.Contains("/threaded=true") || joinedArgs.Contains("/threaded=\"true\""))
-            //{
-            //    RunThreadedExecution(args, start);
-            //}
-            //else if (args.Length == 2 && args[0].ToLower().Contains("/package"))
-            //{
-            //    PackageSbxFilesIntoSbmFiles(args);
-            //}
-            //else if (args.Length == 2 && args[0].ToLower() == "/policycheck")
-            //{
-            //    ExecutePolicyCheck(args);
-            //}
-            //else if (args.Length == 2 && args[0].ToLower() == "/gethash")
-            //{
-            //    GetPackageHash(args);
-            //}
-            //else if (args.Length > 1 && args[0].ToLower() == "/createbackout")
-            //{
-            //    CreateBackout(args);
-            //}
-            //else if (joinedArgs.Contains("/getdifference"))
-            //{
-            //    GetDifferences(args);
-            //}
-            //else if (joinedArgs.Contains("/synchronize"))
-            //{
-            //    SyncronizeDatabase(args);
-            //}
-            //else
-            //{
-            //    StandardExecution(args, start);
-            //}
+        }
 
+        private static void ScriptExtraction(CommandLineArgs cmdLine)
+        {
+            #region Validate flags
+            if (string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac))
+            {
+                log.Error("/PlatinumDacpac flag is required");
+                System.Environment.Exit(-1);
+            }
+            if (string.IsNullOrWhiteSpace(cmdLine.Database))
+            {
+                log.Error("/Database flag is required");
+                System.Environment.Exit(-1);
+            }
+            if (string.IsNullOrWhiteSpace(cmdLine.Server))
+            {
+                log.Error("/Server flag is required");
+                System.Environment.Exit(-1);
+            }
+            if (string.IsNullOrWhiteSpace(cmdLine.UserName))
+            {
+                log.Error("/UserName flag is required");
+                System.Environment.Exit(-1);
+            }
+            if (string.IsNullOrWhiteSpace(cmdLine.Password))
+            {
+                log.Error("/Password flag is required");
+                System.Environment.Exit(-1);
+            }
+            if (string.IsNullOrWhiteSpace(cmdLine.OutputSbm))
+            {
+                log.Error("/OutputSbm flag is required");
+                System.Environment.Exit(-1);
+            }
+            #endregion
+
+            string name;
+            cmdLine.RootLoggingPath = Path.GetDirectoryName(cmdLine.OutputSbm);
+
+            var status = DacPacHelper.GetSbmFromDacPac(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), out name);
+            if(status == DacpacDeltasStatus.Success)
+            {
+                File.Move(name, cmdLine.OutputSbm);
+                log.InfoFormat("SBM package successfully created at {0}", cmdLine.OutputSbm);
+            }
+            else
+            {
+                log.ErrorFormat("Error creating SBM package: {0}", status.ToString());
+            }
         }
       
         private static void RunRemoteExecution(string[] args, CommandLineArgs cmdLine, DateTime start)

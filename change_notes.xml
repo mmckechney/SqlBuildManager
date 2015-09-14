@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+   <Version Major="10" Minor="2" Revision="12">
+    <added>Added commandline to create an SBM package from a Platinum Dacpac and target database. New action /Action=ScriptExtract and /OutputSbm="&lt;filename&gt;"</added>
+  </Version>
    <Version Major="10" Minor="2" Revision="11">
     <updated>Changed the default script timeout for a dacpac generated script from 20 seconds to 500 seconds</updated>
   </Version>
