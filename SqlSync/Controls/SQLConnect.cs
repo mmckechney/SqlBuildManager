@@ -107,7 +107,7 @@ namespace SqlSync
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Registered Servers");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Registered Servers");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SQLConnect));
             this.lblDatabases = new System.Windows.Forms.Label();
             this.ddDatabase = new System.Windows.Forms.ComboBox();
@@ -154,8 +154,11 @@ namespace SqlSync
             this.txtPassword.Enabled = false;
             this.txtPassword.Location = new System.Drawing.Point(12, 104);
             this.txtPassword.Name = "txtPassword";
+            this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(240, 20);
             this.txtPassword.TabIndex = 23;
+            this.txtPassword.MouseEnter += new System.EventHandler(this.txtPassword_MouseEnter);
+            this.txtPassword.MouseLeave += new System.EventHandler(this.txtPassword_MouseLeave);
             // 
             // txtUser
             // 
@@ -226,8 +229,8 @@ namespace SqlSync
             // 
             // treeView1
             // 
-            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.treeView1.ContextMenuStrip = this.contextMenuStrip1;
@@ -236,11 +239,11 @@ namespace SqlSync
             this.treeView1.Indent = 19;
             this.treeView1.Location = new System.Drawing.Point(12, 187);
             this.treeView1.Name = "treeView1";
-            treeNode1.ImageIndex = 3;
-            treeNode1.Name = "Node0";
-            treeNode1.Text = "Registered Servers";
+            treeNode2.ImageIndex = 3;
+            treeNode2.Name = "Node0";
+            treeNode2.Text = "Registered Servers";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode1});
+            treeNode2});
             this.treeView1.SelectedImageIndex = 3;
             this.treeView1.ShowRootLines = false;
             this.treeView1.Size = new System.Drawing.Size(240, 327);
@@ -761,7 +764,7 @@ namespace SqlSync
         private void ddServers_SelectionChangeCommitted(object sender, EventArgs e)
         {
             string username, password;
-            Utility.GetServerCredentials(this.serverConfigTbl, this.ddServers.Text, out username, out password);
+            Utility.GetServerCredentials(this.serverConfigTbl, this.ddServers.SelectedItem.ToString(), out username, out password);
 
             if (!string.IsNullOrWhiteSpace(username) || !string.IsNullOrWhiteSpace(password))
             {
@@ -773,6 +776,20 @@ namespace SqlSync
 
 
         }
+
+        private void txtPassword_MouseEnter(object sender, EventArgs e)
+        {
+            this.txtPassword.PasswordChar = '\0';
+            this.txtPassword.Invalidate();
+        }
+
+        private void txtPassword_MouseLeave(object sender, EventArgs e)
+        {
+            this.txtPassword.PasswordChar = '*';
+            this.txtPassword.Invalidate();
+        }
+
+
     }
 
 	#region ## ServerConnected Event Declaration ##
