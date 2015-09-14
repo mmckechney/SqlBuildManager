@@ -13,6 +13,7 @@ using Microsoft.SqlServer.Management.Smo;
 using System.Collections.Generic;
 using SqlBuildManager.Enterprise;
 using System.Linq;
+using SqlSync.SqlBuild;
 namespace SqlSync
 {
 	/// <summary>
@@ -46,9 +47,10 @@ namespace SqlSync
         private ToolStripMenuItem importFromMasterListMenuStripItem;
         private ImageList imageList1;
         private ToolStripMenuItem testToolStripMenuItem;
+        private string key = "ewrwecwt9-3467u435bgQ{0}@#Q1569[';./?#%4witg9uv-$#!@&)(_(#!@$30r0fasdap;{0}aw56-049q3";
         //private ToolStripMenuItem toolStripMenuItem1;
         private IContainer components;
-
+        private SqlSyncConfig.RecentDatabaseDataTable recentDbs = null;
 		[Category("Appearance")]
 		public bool DisplayDatabaseDropDown
 		{
@@ -82,6 +84,7 @@ namespace SqlSync
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
+            this.key = string.Format(key, System.Environment.UserName);
 
 		}
 
@@ -197,6 +200,7 @@ namespace SqlSync
             this.ddServers.Name = "ddServers";
             this.ddServers.Size = new System.Drawing.Size(240, 21);
             this.ddServers.TabIndex = 18;
+            this.ddServers.SelectionChangeCommitted += new System.EventHandler(this.ddServers_SelectionChangeCommitted);
             // 
             // chkWindowsAuthentication
             // 
@@ -226,9 +230,9 @@ namespace SqlSync
             // 
             // treeView1
             // 
-            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.treeView1.ContextMenuStrip = this.contextMenuStrip1;
             this.treeView1.ImageIndex = 2;
@@ -258,14 +262,14 @@ namespace SqlSync
             this.toolStripSeparator3,
             this.importFromMasterListMenuStripItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(312, 126);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(325, 104);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // newServerRegistrationToolStripMenuItem
             // 
             this.newServerRegistrationToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Server1;
             this.newServerRegistrationToolStripMenuItem.Name = "newServerRegistrationToolStripMenuItem";
-            this.newServerRegistrationToolStripMenuItem.Size = new System.Drawing.Size(311, 22);
+            this.newServerRegistrationToolStripMenuItem.Size = new System.Drawing.Size(324, 22);
             this.newServerRegistrationToolStripMenuItem.Text = "Add SQL Server listed above to this group";
             this.newServerRegistrationToolStripMenuItem.Click += new System.EventHandler(this.newServerRegistrationToolStripMenuItem_Click);
             // 
@@ -273,27 +277,27 @@ namespace SqlSync
             // 
             this.newServerGroupToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Folder_Closed;
             this.newServerGroupToolStripMenuItem.Name = "newServerGroupToolStripMenuItem";
-            this.newServerGroupToolStripMenuItem.Size = new System.Drawing.Size(311, 22);
+            this.newServerGroupToolStripMenuItem.Size = new System.Drawing.Size(324, 22);
             this.newServerGroupToolStripMenuItem.Text = "New Server Group";
             this.newServerGroupToolStripMenuItem.Click += new System.EventHandler(this.newServerGroupToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(308, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(321, 6);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Delete1;
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(311, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(324, 22);
             this.deleteToolStripMenuItem.Text = "Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(308, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(321, 6);
             // 
             // importFromMasterListMenuStripItem
             // 
@@ -301,14 +305,14 @@ namespace SqlSync
             this.testToolStripMenuItem});
             this.importFromMasterListMenuStripItem.Image = global::SqlSync.Properties.Resources.Import;
             this.importFromMasterListMenuStripItem.Name = "importFromMasterListMenuStripItem";
-            this.importFromMasterListMenuStripItem.Size = new System.Drawing.Size(311, 22);
+            this.importFromMasterListMenuStripItem.Size = new System.Drawing.Size(324, 22);
             this.importFromMasterListMenuStripItem.Text = "Import from pre-defined master registration list";
             this.importFromMasterListMenuStripItem.Visible = false;
             // 
             // testToolStripMenuItem
             // 
             this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(93, 22);
             this.testToolStripMenuItem.Text = "test";
             this.testToolStripMenuItem.Click += new System.EventHandler(this.importRegisteredServerList_Click);
             // 
@@ -451,7 +455,7 @@ namespace SqlSync
 
                 if (this.ServerConnected != null)
                 {
-                    this.UpdateRecentServerList(this.ddServers.Text);
+                    this.UpdateRecentServerList(this.ddServers.Text, this.txtUser.Text,this.txtPassword.Text);
                     this.ServerConnected(this, new ServerConnectedEventArgs(true, chkWindowsAuthentication.Checked));
                 }
 
@@ -486,6 +490,7 @@ namespace SqlSync
 					SqlSyncConfig config = new SqlSyncConfig();
 					config.ReadXml(homePath+"SqlSync.cfg");
 					string[] recentDbs = new string[config.RecentDatabase.Count];
+                    this.recentDbs = config.RecentDatabase;
 					DataView view = config.RecentDatabase.DefaultView;
 					view.Sort = config.RecentDatabase.LastAccessedColumn.ColumnName +" DESC";
 					for(int i=0;i<view.Count;i++)
@@ -502,10 +507,12 @@ namespace SqlSync
 			}
 			return new string[0];
 		}
-		private void UpdateRecentServerList(string databaseName)
+		private void UpdateRecentServerList(string databaseName, string userName, string password)
 		{
             try
             {
+                userName = Cryptography.EncryptText(userName, key);
+                password = Cryptography.EncryptText(password, key);
                 string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
                 SqlSyncConfig config = new SqlSyncConfig();
                 if (File.Exists(homePath + ConfigFileName))
@@ -514,7 +521,7 @@ namespace SqlSync
                 DataRow[] row = config.RecentDatabase.Select(config.RecentDatabase.NameColumn.ColumnName + " ='" + databaseName + "'");
                 if (row.Length == 0)
                 {
-                    config.RecentDatabase.AddRecentDatabaseRow(databaseName, DateTime.Now);
+                    config.RecentDatabase.AddRecentDatabaseRow(databaseName, DateTime.Now, userName, password);
                 }
                 else
                 {
@@ -806,6 +813,28 @@ namespace SqlSync
                         MessageBox.Show("Unable to load the registered server list \"" + tmp.Description + "\" from " + tmp.Path + "\\" + tmp.FileName, "Can't load the file", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     else
                         PopulateRegisteredServerTree();
+                }
+            }
+        }
+
+        private void ddServers_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if(this.recentDbs == null)
+            {
+                this.txtPassword.Text = string.Empty;
+                this.txtUser.Text = string.Empty;
+                return;
+            }
+
+            var row = this.recentDbs.Where(r => r.Name.Trim().ToLower() == this.ddServers.Text.Trim().ToLower());
+            if(row.Any())
+            {
+                var r = row.First();
+                if (!string.IsNullOrWhiteSpace(r.UserName) || !string.IsNullOrWhiteSpace(r.Password))
+                {
+                    chkWindowsAuthentication.Checked = false;
+                    this.txtPassword.Text = Cryptography.DecryptText(r.Password, key);
+                    this.txtUser.Text = Cryptography.DecryptText(r.UserName, key);
                 }
             }
         }

@@ -84,7 +84,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
@@ -675,6 +675,10 @@
     </Compile>
     <Compile Include="Controls\SQLConnect.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SqlSync.cs">
+      <DependentUpon>SqlSync.xsd</DependentUpon>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="SqlSync.Designer.cs">
       <AutoGen>True</AutoGen>
