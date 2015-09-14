@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Linq;
+using System.Text.RegularExpressions;
 namespace SqlSync.SqlBuild
 {
     public class ProcessHelper
@@ -82,9 +83,9 @@ namespace SqlSync.SqlBuild
                 return this.ExecuteProcess(processName, string.Empty);
             }
         }
-        public int ExecuteProcess(string processName, string arguments)
+        private int ExecuteProcess(string processName, string arguments)
         {
-            log.InfoFormat("Executing process {0} with arguments {1}", processName, arguments);
+            log.InfoFormat("Executing process {0} with arguments {1}", processName, ProtectPassword(arguments));
             this.startTime = DateTime.Now;
             this.prc = new System.Diagnostics.Process();
             this.prc.StartInfo.FileName = processName;
@@ -112,7 +113,29 @@ namespace SqlSync.SqlBuild
             return this.prc.ExitCode;
 
         }
+        private string ProtectPassword(string args)
+        {
 
+            Regex pw = new Regex("(password[:=])", RegexOptions.IgnoreCase);
+
+            Match match = pw.Match(args);
+            if (match.Success)
+            {
+                int position = match.Index + match.Length;
+                int space = args.IndexOf(" ", position);
+                string toRemove;
+                if (space == -1)
+                {
+                    toRemove = args.Substring(position);
+                }
+                else
+                {
+                    toRemove = args.Substring(position, space - position);
+                }
+                args = args.Replace(toRemove, "*".PadRight(toRemove.Length,'*'));
+            }
+            return args;
+        }
 
         private void StdOutReader()
         {

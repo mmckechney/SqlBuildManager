@@ -10,6 +10,14 @@ namespace SqlSync.Connection
 	/// </summary>
     public class ConnectionHelper
     {
+        public static string ConnectCryptoKey
+        {
+            get
+            {
+                return String.Format("ewrwecwt9-3467u435bgQ{0}@#Q1569[';./?#%4witg9uv-$#!@&)(_(#!@$30r0fasdap;{0}aw56-049q3", System.Environment.UserName);
+            }
+        }
+      
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string appName = "Application Name=Sql Build Manager v{0} [{1}];";
         static ConnectionHelper()

@@ -610,9 +610,20 @@ namespace SqlSync.Test
             return null;
         }
 
-        private void settingsControl1_ServerChanged(object sender, string serverName)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
         {
-            this.connData.SQLServerName = settingsControl1.Server;
+            this.connData.SQLServerName = serverName;
+            if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
+            {
+                this.connData.UserId = username;
+                this.connData.Password = password;
+                this.connData.UseWindowAuthentication = false;
+            }
+            else
+            {
+                this.connData.UseWindowAuthentication = true;
+            }
+
             if(!bgSprocList.IsBusy)
                 bgSprocList.RunWorkerAsync();
         }

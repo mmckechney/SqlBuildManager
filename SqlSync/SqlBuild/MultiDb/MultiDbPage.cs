@@ -120,7 +120,9 @@ namespace SqlSync.SqlBuild.MultiDb
         private void btmRemove_Click(object sender, EventArgs e)
         {
             if (this.ServerRemoved != null)
-                this.ServerRemoved(this, this.serverName);
+            {
+                this.ServerRemoved(this, this.serverName,"","");
+            }
         }
 
         internal ServerData GetServerData()

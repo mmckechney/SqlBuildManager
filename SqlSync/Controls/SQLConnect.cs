@@ -20,22 +20,21 @@ namespace SqlSync
 	/// User Control to Encapsulate the selection of a SQL Server, 
 	/// Connecting to it and selecting a database.
 	/// </summary>
-	public class SQLConnect : System.Windows.Forms.UserControl
-	{
+    public class SQLConnect : System.Windows.Forms.UserControl
+    {
 
-		private const string ConfigFileName = "SqlSync.cfg";
-		private System.Windows.Forms.ComboBox ddDatabase;
-		private System.Windows.Forms.TextBox txtPassword;
-		private System.Windows.Forms.TextBox txtUser;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.ComboBox ddServers;
-		private System.Windows.Forms.CheckBox chkWindowsAuthentication;
-		private bool displayDatabaseDropDown = true;
-		private System.Windows.Forms.Label lblDatabases;
+        private System.Windows.Forms.ComboBox ddDatabase;
+        private System.Windows.Forms.TextBox txtPassword;
+        private System.Windows.Forms.TextBox txtUser;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox ddServers;
+        private System.Windows.Forms.CheckBox chkWindowsAuthentication;
+        private bool displayDatabaseDropDown = true;
+        private System.Windows.Forms.Label lblDatabases;
         private DatabaseList databaseList = new DatabaseList();
-		private System.Windows.Forms.Button btnConnect;
+        private System.Windows.Forms.Button btnConnect;
         private BackgroundWorker bgWorker;
         private TreeView treeView1;
         private ContextMenuStrip contextMenuStrip1;
@@ -47,69 +46,66 @@ namespace SqlSync
         private ToolStripMenuItem importFromMasterListMenuStripItem;
         private ImageList imageList1;
         private ToolStripMenuItem testToolStripMenuItem;
-        private string key = "ewrwecwt9-3467u435bgQ{0}@#Q1569[';./?#%4witg9uv-$#!@&)(_(#!@$30r0fasdap;{0}aw56-049q3";
         //private ToolStripMenuItem toolStripMenuItem1;
         private IContainer components;
-        private SqlSyncConfig.RecentDatabaseDataTable recentDbs = null;
-		[Category("Appearance")]
-		public bool DisplayDatabaseDropDown
-		{
-			get
-			{
-				if(ddDatabase != null)
-				{
-					return ddDatabase.Visible;
-				}
-				else
-				{
-					return displayDatabaseDropDown;
-				}
-			}
-			set
-			{
-				if(ddDatabase != null)
-				{
-					ddDatabase.Visible = value;
-					lblDatabases.Visible = value;
-					this.displayDatabaseDropDown = value;
-				}
-				else
-				{
-					this.displayDatabaseDropDown = value;
-				}
-			}
-		}
+        private ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl = null;
+        [Category("Appearance")]
+        public bool DisplayDatabaseDropDown
+        {
+            get
+            {
+                if (ddDatabase != null)
+                {
+                    return ddDatabase.Visible;
+                }
+                else
+                {
+                    return displayDatabaseDropDown;
+                }
+            }
+            set
+            {
+                if (ddDatabase != null)
+                {
+                    ddDatabase.Visible = value;
+                    lblDatabases.Visible = value;
+                    this.displayDatabaseDropDown = value;
+                }
+                else
+                {
+                    this.displayDatabaseDropDown = value;
+                }
+            }
+        }
 
-		public SQLConnect()
-		{
-			// This call is required by the Windows.Forms Form Designer.
-			InitializeComponent();
-            this.key = string.Format(key, System.Environment.UserName);
+        public SQLConnect()
+        {
+            // This call is required by the Windows.Forms Form Designer.
+            InitializeComponent();
+        }
 
-		}
+        /// <summary> 
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
-
-		#region Component Designer generated code
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Component Designer generated code
+        /// <summary> 
+        /// Required method for Designer support - do not modify 
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Registered Servers");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SQLConnect));
@@ -230,8 +226,8 @@ namespace SqlSync
             // 
             // treeView1
             // 
-            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.treeView1.ContextMenuStrip = this.contextMenuStrip1;
@@ -345,77 +341,77 @@ namespace SqlSync
             this.ResumeLayout(false);
             this.PerformLayout();
 
-		}
-		#endregion
+        }
+        #endregion
 
-		#region ## Public Properties ##
-		public string SQLServer
-		{
-			get
-			{
-				if(this.ddServers.Items.Count > 0)
-				{
-					return this.ddServers.Text.ToString();
-				}
-				else
-				{
-					return string.Empty;
-				}
-			}
-		}
-		public string Database
-		{
-			get
-			{
-				if(this.ddDatabase.Items.Count > 0 && this.ddDatabase.SelectedItem != null)
-				{
-					return this.ddDatabase.SelectedItem.ToString();
-				}
-				else
-				{
-					return string.Empty;
-				}
-			}		
+        #region ## Public Properties ##
+        public string SQLServer
+        {
+            get
+            {
+                if (this.ddServers.Items.Count > 0)
+                {
+                    return this.ddServers.Text.ToString();
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+        }
+        public string Database
+        {
+            get
+            {
+                if (this.ddDatabase.Items.Count > 0 && this.ddDatabase.SelectedItem != null)
+                {
+                    return this.ddDatabase.SelectedItem.ToString();
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
 
-		}
-		public string Password
-		{
-			get
-			{
-				return this.txtPassword.Text;
-			}
-		}
-		public string UserId
-		{
-			get
-			{
-				return this.txtUser.Text;
-			}
-		}
-		public bool UseWindowsAuthentication
-		{
-			get
-			{
-				return this.chkWindowsAuthentication.Checked;
-			}
-		}
-		public DatabaseList DatabaseList
-		{
-			get
-			{
-				return this.databaseList;
-			}							 
-		
-		}
-		#endregion
+        }
+        public string Password
+        {
+            get
+            {
+                return this.txtPassword.Text;
+            }
+        }
+        public string UserId
+        {
+            get
+            {
+                return this.txtUser.Text;
+            }
+        }
+        public bool UseWindowsAuthentication
+        {
+            get
+            {
+                return this.chkWindowsAuthentication.Checked;
+            }
+        }
+        public DatabaseList DatabaseList
+        {
+            get
+            {
+                return this.databaseList;
+            }
+
+        }
+        #endregion
 
 
 
-		internal void SetConnection()
-		{
+        internal void SetConnection()
+        {
             try
             {
-                
+
                 this.ddDatabase.Items.Clear();
                 ConnectionData connData = new ConnectionData();
                 connData.SQLServerName = this.ddServers.Text;
@@ -425,7 +421,7 @@ namespace SqlSync
                 connData.ScriptTimeout = 10;
 
                 bool hasError;
-                this.databaseList = InfoHelper.GetDatabaseList(connData,out hasError);
+                this.databaseList = InfoHelper.GetDatabaseList(connData, out hasError);
                 if (hasError)
                 {
                     MessageBox.Show("Unable to connect to specified SQL Server.\r\nPlease select another server.", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -438,7 +434,7 @@ namespace SqlSync
 
                 for (int i = 0; i < databaseList.Count; i++)
                     this.ddDatabase.Items.Add(databaseList[i].DatabaseName);
-               if (ddDatabase.Visible)
+                if (ddDatabase.Visible)
                 {
                     this.ddDatabase.Sorted = true;
                     if (this.ddDatabase.Items.Count > 0)
@@ -455,7 +451,7 @@ namespace SqlSync
 
                 if (this.ServerConnected != null)
                 {
-                    this.UpdateRecentServerList(this.ddServers.Text, this.txtUser.Text,this.txtPassword.Text);
+                    Utility.UpdateRecentServerList(this.ddServers.Text, this.txtUser.Text, this.txtPassword.Text);
                     this.ServerConnected(this, new ServerConnectedEventArgs(true, chkWindowsAuthentication.Checked));
                 }
 
@@ -467,120 +463,65 @@ namespace SqlSync
                 this.Cursor = Cursors.Default;
                 MessageBox.Show(err.Message, "Error");
             }
-		}
-		/// <summary>
-		/// Initilized the network scan for SQL Servers
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void SQLConnect_Load(object sender, System.EventArgs e)
-		{
-			this.ddDatabase.Visible = this.displayDatabaseDropDown;
-			this.lblDatabases.Visible = this.displayDatabaseDropDown;
+        }
+        /// <summary>
+        /// Initilized the network scan for SQL Servers
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SQLConnect_Load(object sender, System.EventArgs e)
+        {
+            this.ddDatabase.Visible = this.displayDatabaseDropDown;
+            this.lblDatabases.Visible = this.displayDatabaseDropDown;
             PopulateRegisteredServerTree();
             InitializeSqlEnumeration();
-		}
-		private string[] GetRecentDatabases()
-		{
-			string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) +@"\";
-			if(File.Exists(homePath+ConfigFileName))
-			{
-				try
-				{
-					SqlSyncConfig config = new SqlSyncConfig();
-					config.ReadXml(homePath+"SqlSync.cfg");
-					string[] recentDbs = new string[config.RecentDatabase.Count];
-                    this.recentDbs = config.RecentDatabase;
-					DataView view = config.RecentDatabase.DefaultView;
-					view.Sort = config.RecentDatabase.LastAccessedColumn.ColumnName +" DESC";
-					for(int i=0;i<view.Count;i++)
-					{
-						recentDbs[i] = ((SqlSyncConfig.RecentDatabaseRow) view[i].Row).Name;
-					}
-					return recentDbs;
-				}
-				catch
-				{
-					
-				}
+        }
 
-			}
-			return new string[0];
-		}
-		private void UpdateRecentServerList(string databaseName, string userName, string password)
-		{
+        public void InitializeSqlEnumeration()
+        {
             try
             {
-                userName = Cryptography.EncryptText(userName, key);
-                password = Cryptography.EncryptText(password, key);
-                string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
-                SqlSyncConfig config = new SqlSyncConfig();
-                if (File.Exists(homePath + ConfigFileName))
-                    config.ReadXml(homePath + ConfigFileName);
-
-                DataRow[] row = config.RecentDatabase.Select(config.RecentDatabase.NameColumn.ColumnName + " ='" + databaseName + "'");
-                if (row.Length == 0)
+                string[] recentDbs = Utility.GetRecentServers(out serverConfigTbl).ToArray();
+                if (recentDbs.Length > 0)
                 {
-                    config.RecentDatabase.AddRecentDatabaseRow(databaseName, DateTime.Now, userName, password);
+                    this.ddServers.Items.AddRange(recentDbs);
+                    this.ddServers.SelectedIndex = 0;
+                    this.Enabled = true;
                 }
-                else
-                {
-                    ((SqlSyncConfig.RecentDatabaseRow)row[0]).LastAccessed = DateTime.Now;
-                }
-                config.WriteXml(homePath + ConfigFileName);
-            }
-            catch (Exception exe)
-            {
-                //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error updating Recent Server List\r\n" + exe.ToString(), System.Diagnostics.EventLogEntryType.Error, 432);
-            }
-
-
-		}
-		public void InitializeSqlEnumeration()
-		{
-			try
-			{
-				string[] recentDbs = GetRecentDatabases();
-				if(recentDbs.Length >0)
-				{
-					this.ddServers.Items.AddRange(recentDbs);
-					this.ddServers.SelectedIndex = 0;
-					this.Enabled = true;
-				}
                 bgWorker.RunWorkerAsync();
-			}
-			catch
-			{
-				//MessageBox.Show(err.Message,"Error");
-			}
-		}
+            }
+            catch
+            {
+                //MessageBox.Show(err.Message,"Error");
+            }
+        }
 
         private void chkWindowsAuthentication_CheckedChanged(object sender, System.EventArgs e)
-		{
-			if(chkWindowsAuthentication.Checked)
-			{
-				txtPassword.Enabled = false;
-				txtUser.Enabled = false;
-			}
-			else
-			{
-				txtPassword.Enabled = true;
-				txtUser.Enabled = true;
-			}
-		}
+        {
+            if (chkWindowsAuthentication.Checked)
+            {
+                txtPassword.Enabled = false;
+                txtUser.Enabled = false;
+            }
+            else
+            {
+                txtPassword.Enabled = true;
+                txtUser.Enabled = true;
+            }
+        }
 
-		private void btnConnect_Click(object sender, System.EventArgs e)
-		{
+        private void btnConnect_Click(object sender, System.EventArgs e)
+        {
             if (this.ServersEnumerated != null)
                 this.ServersEnumerated(this, new ServersEnumeratedEventArgs(new string[0], "Connecting to Specified Server..."));
 
-			SetConnection();
-		}
+            SetConnection();
+        }
 
-		[Category("Action")]
-		public event ServerConnectedEventHandler ServerConnected;
-		[Category("Action")]
-		public event ServersEnumeratedEventHandler ServersEnumerated;
+        [Category("Action")]
+        public event ServerConnectedEventHandler ServerConnected;
+        [Category("Action")]
+        public event ServersEnumeratedEventHandler ServersEnumerated;
 
         private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -659,7 +600,7 @@ namespace SqlSync
             catch
             {
             }
-            
+
 
         }
         private void UpdateRegisteredServersList()
@@ -717,7 +658,7 @@ namespace SqlSync
                 ddServers.Items.Insert(0, serverName);
                 ddServers.SelectedIndex = 0;
 
-               
+
             }
         }
 
@@ -740,7 +681,7 @@ namespace SqlSync
             }
             UpdateRegisteredServersList();
         }
-        
+
         #endregion
 
         private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
@@ -766,7 +707,7 @@ namespace SqlSync
                 newServerRegistrationToolStripMenuItem.Enabled = false;
                 deleteToolStripMenuItem.Enabled = true;
             }
-            else if(treeView1.SelectedNode.Tag is ServerGroup)
+            else if (treeView1.SelectedNode.Tag is ServerGroup)
             {
                 newServerGroupToolStripMenuItem.Enabled = false;
                 newServerRegistrationToolStripMenuItem.Enabled = true;
@@ -819,24 +760,18 @@ namespace SqlSync
 
         private void ddServers_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            if(this.recentDbs == null)
+            string username, password;
+            Utility.GetServerCredentials(this.serverConfigTbl, this.ddServers.Text, out username, out password);
+
+            if (!string.IsNullOrWhiteSpace(username) || !string.IsNullOrWhiteSpace(password))
             {
-                this.txtPassword.Text = string.Empty;
-                this.txtUser.Text = string.Empty;
-                return;
+                chkWindowsAuthentication.Checked = false;
+                this.txtPassword.Text = password;
+                this.txtUser.Text = username;
+
             }
 
-            var row = this.recentDbs.Where(r => r.Name.Trim().ToLower() == this.ddServers.Text.Trim().ToLower());
-            if(row.Any())
-            {
-                var r = row.First();
-                if (!string.IsNullOrWhiteSpace(r.UserName) || !string.IsNullOrWhiteSpace(r.Password))
-                {
-                    chkWindowsAuthentication.Checked = false;
-                    this.txtPassword.Text = Cryptography.DecryptText(r.Password, key);
-                    this.txtUser.Text = Cryptography.DecryptText(r.UserName, key);
-                }
-            }
+
         }
     }
 

@@ -121,7 +121,7 @@ namespace SqlSync.SqlBuild.MultiDb
             this.ValuesChanged = true;
         }
 
-        void pg_ServerRemoved(object sender, string newServerName)
+        void pg_ServerRemoved(object sender, string newServerName,string username, string password)
         {
             foreach (ListViewItem item in lstServers.Items)
             {

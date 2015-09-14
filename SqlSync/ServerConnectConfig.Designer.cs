@@ -20,11 +20,11 @@ namespace SqlSync {
     [global::System.ComponentModel.DesignerCategoryAttribute("code")]
     [global::System.ComponentModel.ToolboxItem(true)]
     [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedDataSetSchema")]
-    [global::System.Xml.Serialization.XmlRootAttribute("SqlSyncConfig")]
+    [global::System.Xml.Serialization.XmlRootAttribute("ServerConnectConfig")]
     [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.DataSet")]
-    public partial class SqlSyncConfig : global::System.Data.DataSet {
+    public partial class ServerConnectConfig : global::System.Data.DataSet {
         
-        private RecentDatabaseDataTable tableRecentDatabase;
+        private ServerConfigurationDataTable tableServerConfiguration;
         
         private LastProgramUpdateCheckDataTable tableLastProgramUpdateCheck;
         
@@ -34,7 +34,7 @@ namespace SqlSync {
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-        public SqlSyncConfig() {
+        public ServerConnectConfig() {
             this.BeginInit();
             this.InitClass();
             global::System.ComponentModel.CollectionChangeEventHandler schemaChangedHandler = new global::System.ComponentModel.CollectionChangeEventHandler(this.SchemaChanged);
@@ -45,7 +45,7 @@ namespace SqlSync {
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-        protected SqlSyncConfig(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
+        protected ServerConnectConfig(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
                 base(info, context, false) {
             if ((this.IsBinarySerialized(info, context) == true)) {
                 this.InitVars(false);
@@ -58,8 +58,8 @@ namespace SqlSync {
             if ((this.DetermineSchemaSerializationMode(info, context) == global::System.Data.SchemaSerializationMode.IncludeSchema)) {
                 global::System.Data.DataSet ds = new global::System.Data.DataSet();
                 ds.ReadXmlSchema(new global::System.Xml.XmlTextReader(new global::System.IO.StringReader(strSchema)));
-                if ((ds.Tables["RecentDatabase"] != null)) {
-                    base.Tables.Add(new RecentDatabaseDataTable(ds.Tables["RecentDatabase"]));
+                if ((ds.Tables["ServerConfiguration"] != null)) {
+                    base.Tables.Add(new ServerConfigurationDataTable(ds.Tables["ServerConfiguration"]));
                 }
                 if ((ds.Tables["LastProgramUpdateCheck"] != null)) {
                     base.Tables.Add(new LastProgramUpdateCheckDataTable(ds.Tables["LastProgramUpdateCheck"]));
@@ -89,9 +89,9 @@ namespace SqlSync {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
         [global::System.ComponentModel.Browsable(false)]
         [global::System.ComponentModel.DesignerSerializationVisibility(global::System.ComponentModel.DesignerSerializationVisibility.Content)]
-        public RecentDatabaseDataTable RecentDatabase {
+        public ServerConfigurationDataTable ServerConfiguration {
             get {
-                return this.tableRecentDatabase;
+                return this.tableServerConfiguration;
             }
         }
         
@@ -157,7 +157,7 @@ namespace SqlSync {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
         public override global::System.Data.DataSet Clone() {
-            SqlSyncConfig cln = ((SqlSyncConfig)(base.Clone()));
+            ServerConnectConfig cln = ((ServerConnectConfig)(base.Clone()));
             cln.InitVars();
             cln.SchemaSerializationMode = this.SchemaSerializationMode;
             return cln;
@@ -182,8 +182,8 @@ namespace SqlSync {
                 this.Reset();
                 global::System.Data.DataSet ds = new global::System.Data.DataSet();
                 ds.ReadXml(reader);
-                if ((ds.Tables["RecentDatabase"] != null)) {
-                    base.Tables.Add(new RecentDatabaseDataTable(ds.Tables["RecentDatabase"]));
+                if ((ds.Tables["ServerConfiguration"] != null)) {
+                    base.Tables.Add(new ServerConfigurationDataTable(ds.Tables["ServerConfiguration"]));
                 }
                 if ((ds.Tables["LastProgramUpdateCheck"] != null)) {
                     base.Tables.Add(new LastProgramUpdateCheckDataTable(ds.Tables["LastProgramUpdateCheck"]));
@@ -224,10 +224,10 @@ namespace SqlSync {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
         internal void InitVars(bool initTable) {
-            this.tableRecentDatabase = ((RecentDatabaseDataTable)(base.Tables["RecentDatabase"]));
+            this.tableServerConfiguration = ((ServerConfigurationDataTable)(base.Tables["ServerConfiguration"]));
             if ((initTable == true)) {
-                if ((this.tableRecentDatabase != null)) {
-                    this.tableRecentDatabase.InitVars();
+                if ((this.tableServerConfiguration != null)) {
+                    this.tableServerConfiguration.InitVars();
                 }
             }
             this.tableLastProgramUpdateCheck = ((LastProgramUpdateCheckDataTable)(base.Tables["LastProgramUpdateCheck"]));
@@ -247,13 +247,13 @@ namespace SqlSync {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
         private void InitClass() {
-            this.DataSetName = "SqlSyncConfig";
+            this.DataSetName = "ServerConnectConfig";
             this.Prefix = "";
             this.Namespace = "http://schemas.mckechney.com/SqlSyncConfiguration.xsd";
             this.EnforceConstraints = false;
             this.SchemaSerializationMode = global::System.Data.SchemaSerializationMode.IncludeSchema;
-            this.tableRecentDatabase = new RecentDatabaseDataTable();
-            base.Tables.Add(this.tableRecentDatabase);
+            this.tableServerConfiguration = new ServerConfigurationDataTable();
+            base.Tables.Add(this.tableServerConfiguration);
             this.tableLastProgramUpdateCheck = new LastProgramUpdateCheckDataTable();
             base.Tables.Add(this.tableLastProgramUpdateCheck);
             this.tableLastDirectory = new LastDirectoryDataTable();
@@ -262,7 +262,7 @@ namespace SqlSync {
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-        private bool ShouldSerializeRecentDatabase() {
+        private bool ShouldSerializeServerConfiguration() {
             return false;
         }
         
@@ -289,7 +289,7 @@ namespace SqlSync {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
         public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedDataSetSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
-            SqlSyncConfig ds = new SqlSyncConfig();
+            ServerConnectConfig ds = new ServerConnectConfig();
             global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
             global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
             global::System.Xml.Schema.XmlSchemaAny any = new global::System.Xml.Schema.XmlSchemaAny();
@@ -334,7 +334,7 @@ namespace SqlSync {
         }
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-        public delegate void RecentDatabaseRowChangeEventHandler(object sender, RecentDatabaseRowChangeEvent e);
+        public delegate void ServerConfigurationRowChangeEventHandler(object sender, ServerConfigurationRowChangeEvent e);
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
         public delegate void LastProgramUpdateCheckRowChangeEventHandler(object sender, LastProgramUpdateCheckRowChangeEvent e);
@@ -347,7 +347,7 @@ namespace SqlSync {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class RecentDatabaseDataTable : global::System.Data.TypedTableBase<RecentDatabaseRow> {
+        public partial class ServerConfigurationDataTable : global::System.Data.TypedTableBase<ServerConfigurationRow> {
             
             private global::System.Data.DataColumn columnName;
             
@@ -359,8 +359,8 @@ namespace SqlSync {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public RecentDatabaseDataTable() {
-                this.TableName = "RecentDatabase";
+            public ServerConfigurationDataTable() {
+                this.TableName = "ServerConfiguration";
                 this.BeginInit();
                 this.InitClass();
                 this.EndInit();
@@ -368,7 +368,7 @@ namespace SqlSync {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            internal RecentDatabaseDataTable(global::System.Data.DataTable table) {
+            internal ServerConfigurationDataTable(global::System.Data.DataTable table) {
                 this.TableName = table.TableName;
                 if ((table.CaseSensitive != table.DataSet.CaseSensitive)) {
                     this.CaseSensitive = table.CaseSensitive;
@@ -385,7 +385,7 @@ namespace SqlSync {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            protected RecentDatabaseDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
+            protected ServerConfigurationDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
                     base(info, context) {
                 this.InitVars();
             }
@@ -433,48 +433,48 @@ namespace SqlSync {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public RecentDatabaseRow this[int index] {
+            public ServerConfigurationRow this[int index] {
                 get {
-                    return ((RecentDatabaseRow)(this.Rows[index]));
+                    return ((ServerConfigurationRow)(this.Rows[index]));
                 }
             }
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public event RecentDatabaseRowChangeEventHandler RecentDatabaseRowChanging;
+            public event ServerConfigurationRowChangeEventHandler ServerConfigurationRowChanging;
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public event RecentDatabaseRowChangeEventHandler RecentDatabaseRowChanged;
+            public event ServerConfigurationRowChangeEventHandler ServerConfigurationRowChanged;
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public event RecentDatabaseRowChangeEventHandler RecentDatabaseRowDeleting;
+            public event ServerConfigurationRowChangeEventHandler ServerConfigurationRowDeleting;
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public event RecentDatabaseRowChangeEventHandler RecentDatabaseRowDeleted;
+            public event ServerConfigurationRowChangeEventHandler ServerConfigurationRowDeleted;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public void AddRecentDatabaseRow(RecentDatabaseRow row) {
+            public void AddServerConfigurationRow(ServerConfigurationRow row) {
                 this.Rows.Add(row);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public RecentDatabaseRow AddRecentDatabaseRow(string Name, System.DateTime LastAccessed, string UserName, string Password) {
-                RecentDatabaseRow rowRecentDatabaseRow = ((RecentDatabaseRow)(this.NewRow()));
+            public ServerConfigurationRow AddServerConfigurationRow(string Name, System.DateTime LastAccessed, string UserName, string Password) {
+                ServerConfigurationRow rowServerConfigurationRow = ((ServerConfigurationRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         Name,
                         LastAccessed,
                         UserName,
                         Password};
-                rowRecentDatabaseRow.ItemArray = columnValuesArray;
-                this.Rows.Add(rowRecentDatabaseRow);
-                return rowRecentDatabaseRow;
+                rowServerConfigurationRow.ItemArray = columnValuesArray;
+                this.Rows.Add(rowServerConfigurationRow);
+                return rowServerConfigurationRow;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public override global::System.Data.DataTable Clone() {
-                RecentDatabaseDataTable cln = ((RecentDatabaseDataTable)(base.Clone()));
+                ServerConfigurationDataTable cln = ((ServerConfigurationDataTable)(base.Clone()));
                 cln.InitVars();
                 return cln;
             }
@@ -482,7 +482,7 @@ namespace SqlSync {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             protected override global::System.Data.DataTable CreateInstance() {
-                return new RecentDatabaseDataTable();
+                return new ServerConfigurationDataTable();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -511,28 +511,28 @@ namespace SqlSync {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public RecentDatabaseRow NewRecentDatabaseRow() {
-                return ((RecentDatabaseRow)(this.NewRow()));
+            public ServerConfigurationRow NewServerConfigurationRow() {
+                return ((ServerConfigurationRow)(this.NewRow()));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             protected override global::System.Data.DataRow NewRowFromBuilder(global::System.Data.DataRowBuilder builder) {
-                return new RecentDatabaseRow(builder);
+                return new ServerConfigurationRow(builder);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             protected override global::System.Type GetRowType() {
-                return typeof(RecentDatabaseRow);
+                return typeof(ServerConfigurationRow);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             protected override void OnRowChanged(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowChanged(e);
-                if ((this.RecentDatabaseRowChanged != null)) {
-                    this.RecentDatabaseRowChanged(this, new RecentDatabaseRowChangeEvent(((RecentDatabaseRow)(e.Row)), e.Action));
+                if ((this.ServerConfigurationRowChanged != null)) {
+                    this.ServerConfigurationRowChanged(this, new ServerConfigurationRowChangeEvent(((ServerConfigurationRow)(e.Row)), e.Action));
                 }
             }
             
@@ -540,8 +540,8 @@ namespace SqlSync {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             protected override void OnRowChanging(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowChanging(e);
-                if ((this.RecentDatabaseRowChanging != null)) {
-                    this.RecentDatabaseRowChanging(this, new RecentDatabaseRowChangeEvent(((RecentDatabaseRow)(e.Row)), e.Action));
+                if ((this.ServerConfigurationRowChanging != null)) {
+                    this.ServerConfigurationRowChanging(this, new ServerConfigurationRowChangeEvent(((ServerConfigurationRow)(e.Row)), e.Action));
                 }
             }
             
@@ -549,8 +549,8 @@ namespace SqlSync {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             protected override void OnRowDeleted(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowDeleted(e);
-                if ((this.RecentDatabaseRowDeleted != null)) {
-                    this.RecentDatabaseRowDeleted(this, new RecentDatabaseRowChangeEvent(((RecentDatabaseRow)(e.Row)), e.Action));
+                if ((this.ServerConfigurationRowDeleted != null)) {
+                    this.ServerConfigurationRowDeleted(this, new ServerConfigurationRowChangeEvent(((ServerConfigurationRow)(e.Row)), e.Action));
                 }
             }
             
@@ -558,14 +558,14 @@ namespace SqlSync {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             protected override void OnRowDeleting(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowDeleting(e);
-                if ((this.RecentDatabaseRowDeleting != null)) {
-                    this.RecentDatabaseRowDeleting(this, new RecentDatabaseRowChangeEvent(((RecentDatabaseRow)(e.Row)), e.Action));
+                if ((this.ServerConfigurationRowDeleting != null)) {
+                    this.ServerConfigurationRowDeleting(this, new ServerConfigurationRowChangeEvent(((ServerConfigurationRow)(e.Row)), e.Action));
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public void RemoveRecentDatabaseRow(RecentDatabaseRow row) {
+            public void RemoveServerConfigurationRow(ServerConfigurationRow row) {
                 this.Rows.Remove(row);
             }
             
@@ -574,7 +574,7 @@ namespace SqlSync {
             public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedTableSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
                 global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
                 global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
-                SqlSyncConfig ds = new SqlSyncConfig();
+                ServerConnectConfig ds = new ServerConnectConfig();
                 global::System.Xml.Schema.XmlSchemaAny any1 = new global::System.Xml.Schema.XmlSchemaAny();
                 any1.Namespace = "http://www.w3.org/2001/XMLSchema";
                 any1.MinOccurs = new decimal(0);
@@ -592,7 +592,7 @@ namespace SqlSync {
                 type.Attributes.Add(attribute1);
                 global::System.Xml.Schema.XmlSchemaAttribute attribute2 = new global::System.Xml.Schema.XmlSchemaAttribute();
                 attribute2.Name = "tableTypeName";
-                attribute2.FixedValue = "RecentDatabaseDataTable";
+                attribute2.FixedValue = "ServerConfigurationDataTable";
                 type.Attributes.Add(attribute2);
                 type.Particle = sequence;
                 global::System.Xml.Schema.XmlSchema dsSchema = ds.GetSchemaSerializable();
@@ -822,7 +822,7 @@ namespace SqlSync {
             public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedTableSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
                 global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
                 global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
-                SqlSyncConfig ds = new SqlSyncConfig();
+                ServerConnectConfig ds = new ServerConnectConfig();
                 global::System.Xml.Schema.XmlSchemaAny any1 = new global::System.Xml.Schema.XmlSchemaAny();
                 any1.Namespace = "http://www.w3.org/2001/XMLSchema";
                 any1.MinOccurs = new decimal(0);
@@ -1085,7 +1085,7 @@ namespace SqlSync {
             public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedTableSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
                 global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
                 global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
-                SqlSyncConfig ds = new SqlSyncConfig();
+                ServerConnectConfig ds = new ServerConnectConfig();
                 global::System.Xml.Schema.XmlSchemaAny any1 = new global::System.Xml.Schema.XmlSchemaAny();
                 any1.Namespace = "http://www.w3.org/2001/XMLSchema";
                 any1.MinOccurs = new decimal(0);
@@ -1147,15 +1147,15 @@ namespace SqlSync {
         /// <summary>
         ///Represents strongly named DataRow class.
         ///</summary>
-        public partial class RecentDatabaseRow : global::System.Data.DataRow {
+        public partial class ServerConfigurationRow : global::System.Data.DataRow {
             
-            private RecentDatabaseDataTable tableRecentDatabase;
+            private ServerConfigurationDataTable tableServerConfiguration;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            internal RecentDatabaseRow(global::System.Data.DataRowBuilder rb) : 
+            internal ServerConfigurationRow(global::System.Data.DataRowBuilder rb) : 
                     base(rb) {
-                this.tableRecentDatabase = ((RecentDatabaseDataTable)(this.Table));
+                this.tableServerConfiguration = ((ServerConfigurationDataTable)(this.Table));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1166,11 +1166,11 @@ namespace SqlSync {
                         return string.Empty;
                     }
                     else {
-                        return ((string)(this[this.tableRecentDatabase.NameColumn]));
+                        return ((string)(this[this.tableServerConfiguration.NameColumn]));
                     }
                 }
                 set {
-                    this[this.tableRecentDatabase.NameColumn] = value;
+                    this[this.tableServerConfiguration.NameColumn] = value;
                 }
             }
             
@@ -1179,14 +1179,14 @@ namespace SqlSync {
             public System.DateTime LastAccessed {
                 get {
                     try {
-                        return ((global::System.DateTime)(this[this.tableRecentDatabase.LastAccessedColumn]));
+                        return ((global::System.DateTime)(this[this.tableServerConfiguration.LastAccessedColumn]));
                     }
                     catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'LastAccessed\' in table \'RecentDatabase\' is DBNull.", e);
+                        throw new global::System.Data.StrongTypingException("The value for column \'LastAccessed\' in table \'ServerConfiguration\' is DBNull.", e);
                     }
                 }
                 set {
-                    this[this.tableRecentDatabase.LastAccessedColumn] = value;
+                    this[this.tableServerConfiguration.LastAccessedColumn] = value;
                 }
             }
             
@@ -1198,11 +1198,11 @@ namespace SqlSync {
                         return string.Empty;
                     }
                     else {
-                        return ((string)(this[this.tableRecentDatabase.UserNameColumn]));
+                        return ((string)(this[this.tableServerConfiguration.UserNameColumn]));
                     }
                 }
                 set {
-                    this[this.tableRecentDatabase.UserNameColumn] = value;
+                    this[this.tableServerConfiguration.UserNameColumn] = value;
                 }
             }
             
@@ -1214,60 +1214,60 @@ namespace SqlSync {
                         return string.Empty;
                     }
                     else {
-                        return ((string)(this[this.tableRecentDatabase.PasswordColumn]));
+                        return ((string)(this[this.tableServerConfiguration.PasswordColumn]));
                     }
                 }
                 set {
-                    this[this.tableRecentDatabase.PasswordColumn] = value;
+                    this[this.tableServerConfiguration.PasswordColumn] = value;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public bool IsNameNull() {
-                return this.IsNull(this.tableRecentDatabase.NameColumn);
+                return this.IsNull(this.tableServerConfiguration.NameColumn);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public void SetNameNull() {
-                this[this.tableRecentDatabase.NameColumn] = global::System.Convert.DBNull;
+                this[this.tableServerConfiguration.NameColumn] = global::System.Convert.DBNull;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public bool IsLastAccessedNull() {
-                return this.IsNull(this.tableRecentDatabase.LastAccessedColumn);
+                return this.IsNull(this.tableServerConfiguration.LastAccessedColumn);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public void SetLastAccessedNull() {
-                this[this.tableRecentDatabase.LastAccessedColumn] = global::System.Convert.DBNull;
+                this[this.tableServerConfiguration.LastAccessedColumn] = global::System.Convert.DBNull;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public bool IsUserNameNull() {
-                return this.IsNull(this.tableRecentDatabase.UserNameColumn);
+                return this.IsNull(this.tableServerConfiguration.UserNameColumn);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public void SetUserNameNull() {
-                this[this.tableRecentDatabase.UserNameColumn] = global::System.Convert.DBNull;
+                this[this.tableServerConfiguration.UserNameColumn] = global::System.Convert.DBNull;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public bool IsPasswordNull() {
-                return this.IsNull(this.tableRecentDatabase.PasswordColumn);
+                return this.IsNull(this.tableServerConfiguration.PasswordColumn);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public void SetPasswordNull() {
-                this[this.tableRecentDatabase.PasswordColumn] = global::System.Convert.DBNull;
+                this[this.tableServerConfiguration.PasswordColumn] = global::System.Convert.DBNull;
             }
         }
         
@@ -1389,22 +1389,22 @@ namespace SqlSync {
         ///Row event argument class
         ///</summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-        public class RecentDatabaseRowChangeEvent : global::System.EventArgs {
+        public class ServerConfigurationRowChangeEvent : global::System.EventArgs {
             
-            private RecentDatabaseRow eventRow;
+            private ServerConfigurationRow eventRow;
             
             private global::System.Data.DataRowAction eventAction;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public RecentDatabaseRowChangeEvent(RecentDatabaseRow row, global::System.Data.DataRowAction action) {
+            public ServerConfigurationRowChangeEvent(ServerConfigurationRow row, global::System.Data.DataRowAction action) {
                 this.eventRow = row;
                 this.eventAction = action;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public RecentDatabaseRow Row {
+            public ServerConfigurationRow Row {
                 get {
                     return this.eventRow;
                 }

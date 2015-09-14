@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ServerConnectConfig" targetNamespace="http://schemas.mckechney.com/SqlSyncConfiguration.xsd" xmlns:mstns="http://schemas.mckechney.com/SqlSyncConfiguration.xsd" xmlns="http://schemas.mckechney.com/SqlSyncConfiguration.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ServerConnectConfig" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msdata:EnforceConstraints="False" msprop:Generator_DataSetName="ServerConnectConfig" msprop:Generator_UserDSName="ServerConnectConfig">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="ServerConfiguration" msprop:Generator_TableClassName="ServerConfigurationDataTable" msprop:Generator_TableVarName="tableServerConfiguration" msprop:Generator_RowChangedName="ServerConfigurationRowChanged" msprop:Generator_TablePropName="ServerConfiguration" msprop:Generator_RowDeletingName="ServerConfigurationRowDeleting" msprop:Generator_RowChangingName="ServerConfigurationRowChanging" msprop:Generator_RowEvHandlerName="ServerConfigurationRowChangeEventHandler" msprop:Generator_RowDeletedName="ServerConfigurationRowDeleted" msprop:Generator_RowClassName="ServerConfigurationRow" msprop:Generator_UserTableName="ServerConfiguration" msprop:Generator_RowEvArgName="ServerConfigurationRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="UserName" msprop:nullValue="_empty" msprop:Generator_ColumnPropNameInRow="UserName" msprop:Generator_ColumnVarNameInTable="columnUserName" msprop:Generator_ColumnPropNameInTable="UserNameColumn" msprop:Generator_UserColumnName="UserName" type="xs:string" minOccurs="0" msdata:Ordinal="2" />
+              <xs:element name="Password" msprop:nullValue="_empty" msprop:Generator_ColumnPropNameInRow="Password" msprop:Generator_ColumnVarNameInTable="columnPassword" msprop:Generator_ColumnPropNameInTable="PasswordColumn" msprop:Generator_UserColumnName="Password" type="xs:string" minOccurs="0" msdata:Ordinal="3" />
+            </xs:sequence>
+            <xs:attribute name="Name" form="unqualified" msprop:nullValue="_empty" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" />
+            <xs:attribute name="LastAccessed" form="unqualified" msprop:nullValue="_throw" msprop:Generator_ColumnPropNameInRow="LastAccessed" msprop:Generator_ColumnVarNameInTable="columnLastAccessed" msprop:Generator_ColumnPropNameInTable="LastAccessedColumn" msprop:Generator_UserColumnName="LastAccessed" type="xs:dateTime" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="LastProgramUpdateCheck" msprop:Generator_TableClassName="LastProgramUpdateCheckDataTable" msprop:Generator_TableVarName="tableLastProgramUpdateCheck" msprop:Generator_RowChangedName="LastProgramUpdateCheckRowChanged" msprop:Generator_TablePropName="LastProgramUpdateCheck" msprop:Generator_RowDeletingName="LastProgramUpdateCheckRowDeleting" msprop:Generator_RowChangingName="LastProgramUpdateCheckRowChanging" msprop:Generator_RowEvHandlerName="LastProgramUpdateCheckRowChangeEventHandler" msprop:Generator_RowDeletedName="LastProgramUpdateCheckRowDeleted" msprop:Generator_RowClassName="LastProgramUpdateCheckRow" msprop:Generator_UserTableName="LastProgramUpdateCheck" msprop:Generator_RowEvArgName="LastProgramUpdateCheckRowChangeEvent">
+          <xs:complexType>
+            <xs:attribute name="CheckTime" form="unqualified" msprop:Generator_ColumnVarNameInTable="columnCheckTime" msprop:Generator_ColumnPropNameInRow="CheckTime" msprop:Generator_ColumnPropNameInTable="CheckTimeColumn" msprop:Generator_UserColumnName="CheckTime" type="xs:dateTime" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="LastDirectory" msprop:Generator_TableClassName="LastDirectoryDataTable" msprop:Generator_TableVarName="tableLastDirectory" msprop:Generator_RowChangedName="LastDirectoryRowChanged" msprop:Generator_TablePropName="LastDirectory" msprop:Generator_RowDeletingName="LastDirectoryRowDeleting" msprop:Generator_RowChangingName="LastDirectoryRowChanging" msprop:Generator_RowEvHandlerName="LastDirectoryRowChangeEventHandler" msprop:Generator_RowDeletedName="LastDirectoryRowDeleted" msprop:Generator_RowClassName="LastDirectoryRow" msprop:Generator_UserTableName="LastDirectory" msprop:Generator_RowEvArgName="LastDirectoryRowChangeEvent" minOccurs="0" maxOccurs="79228162514264337593543950335">
+          <xs:complexType>
+            <xs:attribute name="ComponentName" form="unqualified" msprop:nullValue="_empty" msprop:Generator_ColumnPropNameInRow="ComponentName" msprop:Generator_ColumnVarNameInTable="columnComponentName" msprop:Generator_ColumnPropNameInTable="ComponentNameColumn" msprop:Generator_UserColumnName="ComponentName" type="xs:string" />
+            <xs:attribute name="Directory" form="unqualified" msprop:nullValue="_empty" msprop:Generator_ColumnPropNameInRow="Directory" msprop:Generator_ColumnVarNameInTable="columnDirectory" msprop:Generator_ColumnPropNameInTable="DirectoryColumn" msprop:Generator_UserColumnName="Directory" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -10,6 +10,7 @@ using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
 using System.Linq;
 using SqlBuildManager.ServiceClient;
+using SqlSync.Connection;
 namespace SqlBuildManager.Console
 {
     class Program
@@ -65,6 +66,9 @@ namespace SqlBuildManager.Console
                 case "scriptextract":
                     ScriptExtraction(cmdLine);
                     break;
+                case "encrypt":
+                    EncryptCreds(cmdLine);
+                    break;
                 default:
                     log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
                     System.Environment.Exit(8675309);
@@ -72,6 +76,35 @@ namespace SqlBuildManager.Console
 
             }
 
+        }
+
+        private static void EncryptCreds(CommandLineArgs cmdLine)
+        {
+            string username = string.Empty;
+            string password = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.UserName))
+            {
+                //System.Console.WriteLine(string.Format("<UserName>{0}</UserName>",
+                username = Cryptography.EncryptText(cmdLine.UserName, ConnectionHelper.ConnectCryptoKey);
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.Password))
+            {
+                //System.Console.WriteLine(string.Format("<Password>{0}</Password>", 
+
+                password = Cryptography.EncryptText(cmdLine.Password, ConnectionHelper.ConnectCryptoKey);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.Server))
+            {
+                System.Console.WriteLine(
+                    string.Format("<ServerConfiguration Name=\"{0}\" LastAccessed=\"2000-01-01T00:00:00.0000-04:00\">\r\n    <UserName>{1}</UserName>\r\n    <Password>{2}</Password>\r\n</ServerConfiguration>", cmdLine.Server, username, password));
+            }
+            else
+            {
+                System.Console.WriteLine(string.Format("<UserName>{0}</UserName>", username));
+                System.Console.WriteLine(string.Format("<Password>{0}</Password>", password));
+            }
         }
 
         private static void ScriptExtraction(CommandLineArgs cmdLine)

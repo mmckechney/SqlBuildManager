@@ -42,10 +42,20 @@ namespace SqlSync.Analysis
 			}
 		}
 
-        private void settingsControl1_ServerChanged(object sender, string serverName)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
         {
             string oldServer = this.connData.SQLServerName;
             this.connData.SQLServerName = this.settingsControl1.Server;
+            if(!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
+            {
+                this.connData.UserId = username;
+                this.connData.Password = password;
+                this.connData.UseWindowAuthentication = false;
+            }
+            else
+            {
+                this.connData.UseWindowAuthentication = true;
+            }
             GetDatabaseSummary();
         }
 

@@ -26,6 +26,7 @@ namespace SqlSync
         private Label lblRecentServers;
         private ToolTip toolTip1;
         private IContainer components;
+        private ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl = null;
 
 		public string ProjectLabelText
 		{
@@ -265,7 +266,8 @@ namespace SqlSync
             
             ddRecentServers.Items.Clear();
 
-            List<string> recentDbs = Utility.GetRecentServers();
+           
+            List<string> recentDbs = Utility.GetRecentServers(out serverConfigTbl);
             this.ddRecentServers.Items.AddRange(recentDbs.ToArray());
             this.fireServerChangeEvent = true;
         }
@@ -280,7 +282,11 @@ namespace SqlSync
                 if (this.ddRecentServers.SelectedItem != null && this.fireServerChangeEvent)
                 {
                     this.lblServer.Text = this.ddRecentServers.SelectedItem.ToString();
-                    this.ServerChanged(this,this.ddRecentServers.SelectedItem.ToString());
+                    
+                    string username, password;
+                    Utility.GetServerCredentials(this.serverConfigTbl, this.ddRecentServers.SelectedItem.ToString(), out username, out password);
+
+                    this.ServerChanged(this,this.ddRecentServers.SelectedItem.ToString(),username,password);
                 }
             }
             else
@@ -309,5 +315,5 @@ namespace SqlSync
         }
 
     }
-    public delegate void ServerChangedEventHandler(object sender, string serverName);
+    public delegate void ServerChangedEventHandler(object sender, string serverName, string username, string password);
 }

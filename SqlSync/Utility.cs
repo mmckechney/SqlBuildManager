@@ -6,13 +6,17 @@ using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.IO;
+using SqlSync.Connection;
+using SqlSync.SqlBuild;
+using System.Linq;
 namespace SqlSync
 {
     class Utility
     {
         public const string ConfigFileName = "SqlSync.cfg";
-        internal static List<string> GetRecentServers()
+        internal static List<string> GetRecentServers(out ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl)
         {
+            serverConfigTbl = null;
             string homePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
             List<string> recentDbs = new List<string>();
 
@@ -20,12 +24,13 @@ namespace SqlSync
             {
                 try
                 {
-                    SqlSyncConfig config = new SqlSyncConfig();
+                    ServerConnectConfig config = new ServerConnectConfig();
                     config.ReadXml(homePath + ConfigFileName);
-                    DataView view = config.RecentDatabase.DefaultView;
-                    view.Sort = config.RecentDatabase.LastAccessedColumn.ColumnName + " DESC";
+                    serverConfigTbl = config.ServerConfiguration;
+                    DataView view = config.ServerConfiguration.DefaultView;
+                    view.Sort = config.ServerConfiguration.LastAccessedColumn.ColumnName + " DESC";
                     for (int i = 0; i < view.Count; i++)
-                        recentDbs.Add(((SqlSyncConfig.RecentDatabaseRow)view[i].Row).Name);
+                        recentDbs.Add(((ServerConnectConfig.ServerConfigurationRow)view[i].Row).Name);
                 }
                 catch
                 {
@@ -33,6 +38,69 @@ namespace SqlSync
                 }
             }
             return recentDbs;
+        }
+        internal static void UpdateRecentServerList(string databaseName, string userName, string password)
+        {
+            try
+            {
+                userName = Cryptography.EncryptText(userName, ConnectionHelper.ConnectCryptoKey);
+                password = Cryptography.EncryptText(password, ConnectionHelper.ConnectCryptoKey);
+                string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
+                ServerConnectConfig config = new ServerConnectConfig();
+                if (File.Exists(homePath + ConfigFileName))
+                    config.ReadXml(homePath + ConfigFileName);
+
+                DataRow[] row = config.ServerConfiguration.Select(config.ServerConfiguration.NameColumn.ColumnName + " ='" + databaseName + "'");
+                if (row.Length == 0)
+                {
+                    config.ServerConfiguration.AddServerConfigurationRow(databaseName, DateTime.Now, userName, password);
+                }
+                else
+                {
+                    ((ServerConnectConfig.ServerConfigurationRow)row[0]).LastAccessed = DateTime.Now;
+                }
+                config.WriteXml(homePath + ConfigFileName);
+            }
+            catch (Exception exe)
+            {
+                //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error updating Recent Server List\r\n" + exe.ToString(), System.Diagnostics.EventLogEntryType.Error, 432);
+            }
+
+
+        }
+        internal static void GetServerCredentials(ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl, string serverName, out string username, out string password)
+        {
+            if (serverConfigTbl != null)
+            {
+                var row = serverConfigTbl.Where(r => r.Name.Trim().ToLower() == serverName.Trim().ToLower());
+                if (row.Any())
+                {
+                    var r = row.First();
+                    if (!string.IsNullOrWhiteSpace(r.UserName))
+                    {
+                     
+                        username = Cryptography.DecryptText(r.UserName, ConnectionHelper.ConnectCryptoKey);
+                    }
+                    else
+                    {
+                        username = string.Empty;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(r.Password))
+                    {
+                        password = Cryptography.DecryptText(r.Password, ConnectionHelper.ConnectCryptoKey);
+                    }
+                    else
+                    {
+                        password = string.Empty;
+                    }
+                    return;
+                }
+            }
+
+            password = string.Empty;
+            username = string.Empty;
+            return;
         }
 
         private static string defaultBrowser = string.Empty;

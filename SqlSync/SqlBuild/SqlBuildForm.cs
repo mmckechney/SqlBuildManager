@@ -5719,7 +5719,7 @@ namespace SqlSync.SqlBuild
                 this.databaseList = frmConnect.DatabaseList;
                 this.settingsControl1.InitServers(true);
 
-                settingsControl1_ServerChanged(sender, this.connData.SQLServerName);
+                settingsControl1_ServerChanged(sender, this.connData.SQLServerName, this.connData.UserId,this.connData.Password);
                 //this.SqlBuildForm_Load(null, EventArgs.Empty);
             }
         }
@@ -7756,12 +7756,26 @@ namespace SqlSync.SqlBuild
             //}
         }
 
-        private void settingsControl1_ServerChanged(object sender, string serverName)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
         {
             this.Cursor = Cursors.WaitCursor;
-            string oldServer = this.connData.SQLServerName;
-            this.connData.SQLServerName = this.settingsControl1.Server;
+            Connection.ConnectionData oldConnData = new Connection.ConnectionData();
+            this.connData.Fill(oldConnData);
+            this.Cursor = Cursors.WaitCursor;
+
+            this.connData.SQLServerName = serverName;
+            if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
+            {
+                this.connData.UserId = username;
+                this.connData.Password = password;
+                this.connData.UseWindowAuthentication = false;
+            }
+            else
+            {
+                this.connData.UseWindowAuthentication = true;
+            }
             this.connData.ScriptTimeout = 5;
+
             try
             {
                 this.databaseList = SqlSync.DbInformation.InfoHelper.GetDatabaseList(this.connData);
@@ -7773,8 +7787,8 @@ namespace SqlSync.SqlBuild
             catch
             {
                 MessageBox.Show("Error retrieving database list. Is the server running?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                this.connData.SQLServerName = oldServer;
-                this.settingsControl1.Server = oldServer;
+                this.connData = oldConnData;
+                this.settingsControl1.Server = oldConnData.SQLServerName;
             }
 
 
@@ -8159,7 +8173,7 @@ namespace SqlSync.SqlBuild
                 verData.YourVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
                 string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
-                SqlSyncConfig config = new SqlSyncConfig();
+                ServerConnectConfig config = new ServerConnectConfig();
                 if (File.Exists(homePath + SqlSync.Utility.ConfigFileName))
                     config.ReadXml(homePath + SqlSync.Utility.ConfigFileName);
 

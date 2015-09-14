@@ -1749,11 +1749,23 @@ namespace SqlSync
 		}
         #endregion
 
-        private void settingsControl1_ServerChanged(object sender, string serverName)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
         {
+            Connection.ConnectionData oldConnData = new Connection.ConnectionData();
+            this.data.Fill(oldConnData);
             this.Cursor = Cursors.WaitCursor;
-            string oldServer = this.data.SQLServerName;
-            this.data.SQLServerName = this.settingsControl1.Server;
+
+            this.data.SQLServerName = serverName;
+            if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
+            {
+                this.data.UserId = username;
+                this.data.Password = password;
+                this.data.UseWindowAuthentication = false;
+            }
+            else
+            {
+                this.data.UseWindowAuthentication = true;
+            }
             this.data.ScriptTimeout = 5;
             try
             {
@@ -1762,8 +1774,8 @@ namespace SqlSync
             catch
             {
                 MessageBox.Show("Error retrieving database list. Is the server running?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                this.data.SQLServerName = oldServer;
-                this.settingsControl1.Server = oldServer;
+                this.data = oldConnData;
+                this.settingsControl1.Server = oldConnData.SQLServerName;
             }
 
 

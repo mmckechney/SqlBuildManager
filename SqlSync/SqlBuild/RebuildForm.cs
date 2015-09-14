@@ -52,12 +52,25 @@ namespace SqlSync.SqlBuild
 			}
         }
 
-        private void settingsControl1_ServerChanged(object sender, string serverName)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
         {
+            Connection.ConnectionData oldConnData = new Connection.ConnectionData();
+            this.connData.Fill(oldConnData);
             this.Cursor = Cursors.WaitCursor;
-            string oldServer = this.connData.SQLServerName;
-            this.connData.SQLServerName = this.settingsControl1.Server;
+
+            this.connData.SQLServerName = serverName;
+            if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
+            {
+                this.connData.UserId = username;
+                this.connData.Password = password;
+                this.connData.UseWindowAuthentication = false;
+            }
+            else
+            {
+                this.connData.UseWindowAuthentication = true;
+            }
             this.connData.ScriptTimeout = 5;
+
             try
             {
                 dbList = SqlSync.DbInformation.InfoHelper.GetDatabaseList(this.connData);
@@ -70,8 +83,8 @@ namespace SqlSync.SqlBuild
             catch
             {
                 MessageBox.Show("Error retrieving database list. Is the server running?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                this.connData.SQLServerName = oldServer;
-                this.settingsControl1.Server = oldServer;
+                this.connData = oldConnData;
+                this.settingsControl1.Server = oldConnData.SQLServerName;
             }
             this.Cursor = Cursors.Default;
         }

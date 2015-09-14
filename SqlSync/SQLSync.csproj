@@ -676,14 +676,14 @@
     <Compile Include="Controls\SQLConnect.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="SqlSync.cs">
-      <DependentUpon>SqlSync.xsd</DependentUpon>
+    <Compile Include="ServerConnectConfig.cs">
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="SqlSync.Designer.cs">
+    <Compile Include="ServerConnectConfig.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>SqlSync.xsd</DependentUpon>
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
     </Compile>
     <Compile Include="SyncConstants.cs">
       <SubType>Code</SubType>
@@ -1226,14 +1226,14 @@
     <None Include="SqlBuild\Utility\UtilityRegistry.xsx">
       <DependentUpon>UtilityRegistry.xsd</DependentUpon>
     </None>
-    <None Include="SqlSync.xsc">
-      <DependentUpon>SqlSync.xsd</DependentUpon>
+    <None Include="ServerConnectConfig.xsc">
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
     </None>
-    <None Include="SqlSync.xss">
-      <DependentUpon>SqlSync.xsd</DependentUpon>
+    <None Include="ServerConnectConfig.xss">
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
     </None>
-    <None Include="SqlSync.xsx">
-      <DependentUpon>SqlSync.xsd</DependentUpon>
+    <None Include="ServerConnectConfig.xsx">
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
     </None>
     <Content Include="App.ico" />
     <Content Include="autoscript.ico" />
@@ -1399,10 +1399,10 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="SqlBuild\Utility\WITH NOCHECK.txt" />
-    <Content Include="SqlSync.xsd">
+    <Content Include="ServerConnectConfig.xsd">
       <Generator>MSDataSetGenerator</Generator>
       <SubType>Designer</SubType>
-      <LastGenOutput>SqlSync.Designer.cs</LastGenOutput>
+      <LastGenOutput>ServerConnectConfig.Designer.cs</LastGenOutput>
     </Content>
     <Content Include="SwapViews.ico" />
     <Content Include="SyntaxColor.ico" />
