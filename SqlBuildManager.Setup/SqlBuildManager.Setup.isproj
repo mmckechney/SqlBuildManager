@@ -29,7 +29,7 @@
 	</ItemGroup>
 	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2013Limited\InstallShield.targets"/>
 	<ItemGroup>
-		<ProjectReference Include="..\SQLSync.csproj">
+		<ProjectReference Include="..\SqlSync\SQLSync.csproj">
 			<Name>SQLSync</Name>
 			<Project>{F54DD837-AD98-4A45-A709-1AA9E38E1A24}</Project>
 		</ProjectReference>

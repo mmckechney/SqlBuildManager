@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6B399EB5-5A92-4122-9480-64A4945AEF6A}"
 	ProjectSection(SolutionItems) = preProject
@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SQLSync.vsmdi = SQLSync.vsmdi
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLSync", "SQLSync.csproj", "{F54DD837-AD98-4A45-A709-1AA9E38E1A24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLSync", "SqlSync\SQLSync.csproj", "{F54DD837-AD98-4A45-A709-1AA9E38E1A24}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild", "SqlSync.SqlBuild\SqlSync.SqlBuild.csproj", "{9B495B5F-1578-482B-8CF7-615B04D3AE2A}"
 EndProject
@@ -70,6 +70,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tfs.Utility", "Tfs.Utility\Tfs.Utility.csproj", "{CA980B42-69F5-4A66-A327-4977E18A6018}"
 EndProject
 Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "SqlBuildManager.Setup", "SqlBuildManager.Setup\SqlBuildManager.Setup.isproj", "{1DCB01BF-B0CE-41F0-9783-0E3BAD613AE6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24} = {F54DD837-AD98-4A45-A709-1AA9E38E1A24}
+	EndProjectSection
 EndProject
 Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "SqlBuildManager.Services.Azure", "SqlBuildManager.Services.Azure\SqlBuildManager.Services.Azure.ccproj", "{B5B35B38-9C09-4430-90E7-0A319F36BF0B}"
 EndProject

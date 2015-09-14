@@ -60,7 +60,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
@@ -126,45 +126,44 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj">
+    <ProjectReference Include="..\SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj">
       <Project>{14dfbf75-98b1-4fbd-9b48-191d8aa55a6f}</Project>
       <Name>SqlSync.ScrollBarSync</Name>
     </ProjectReference>
-    <ProjectReference Include="Tfs.Utility\Tfs.Utility.csproj">
+    <ProjectReference Include="..\Tfs.Utility\Tfs.Utility.csproj">
       <Project>{CA980B42-69F5-4A66-A327-4977E18A6018}</Project>
       <Name>Tfs.Utility</Name>
     </ProjectReference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.SqlServer.ConnectionInfo, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\SqlServer\Microsoft.SqlServer.ConnectionInfo.dll</HintPath>
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.ServiceBrokerEnum, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\SqlServer\Microsoft.SqlServer.ServiceBrokerEnum.dll</HintPath>
+    <Reference Include="Microsoft.SqlServer.ConnectionInfo, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Smo.12.0\lib\Microsoft.SqlServer.ConnectionInfo.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.Smo, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\SqlServer\Microsoft.SqlServer.Smo.dll</HintPath>
+    <Reference Include="Microsoft.SqlServer.Management.Sdk.Sfc, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Smo.12.0\lib\Microsoft.SqlServer.Management.Sdk.Sfc.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.SmoExtended, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\SqlServer\Microsoft.SqlServer.SmoExtended.dll</HintPath>
+    <Reference Include="Microsoft.SqlServer.ServiceBrokerEnum, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Smo.12.0\lib\Microsoft.SqlServer.ServiceBrokerEnum.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.SqlEnum, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\SqlServer\Microsoft.SqlServer.SqlEnum.dll</HintPath>
+    <Reference Include="Microsoft.SqlServer.Smo, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Smo.12.0\lib\Microsoft.SqlServer.Smo.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SmoExtended, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Smo.12.0\lib\Microsoft.SqlServer.SmoExtended.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SqlEnum, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Smo.12.0\lib\Microsoft.SqlServer.SqlEnum.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.TeamFoundation, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -218,67 +217,70 @@
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
-    <ProjectReference Include="SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj">
+    <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj">
       <Project>{15497702-FB61-4316-949B-A8ED2EEC694A}</Project>
       <Name>SqlBuildManager.Enterprise</Name>
     </ProjectReference>
-    <ProjectReference Include="SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj">
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj">
       <Project>{FDC576E6-ACC8-41D4-8A56-8E6E00221306}</Project>
       <Name>SqlBuildManager.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj">
+    <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj">
       <Project>{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}</Project>
       <Name>SqlBuildManager.ScriptHandling</Name>
     </ProjectReference>
-    <ProjectReference Include="SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
+    <ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
       <Project>{641F4F7D-7730-4760-9454-7B9FCE0AA32C}</Project>
       <Name>SqlBuildManager.ServiceClient</Name>
     </ProjectReference>
-    <ProjectReference Include="SqlSync.Compare\SqlSync.Compare.csproj">
+    <ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj">
       <Name>SqlSync.Compare</Name>
       <Project>{053B2B2A-51CF-48CD-BD22-8DED7D292690}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
     </ProjectReference>
-    <ProjectReference Include="SqlSync.Connection\SqlSync.Connection.csproj">
+    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj">
       <Name>SqlSync.Connection</Name>
       <Project>{F3F1EFFF-265E-4995-958B-9763F947E5C8}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
     </ProjectReference>
-    <ProjectReference Include="SqlSync.Constants\SqlSync.Constants.csproj">
+    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj">
       <Name>SqlSync.Constants</Name>
       <Project>{D68699E6-B97C-4BC4-AD52-5F3C63DB24A7}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
     </ProjectReference>
-    <ProjectReference Include="SqlSync.DbInformation\SqlSync.DbInformation.csproj">
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj">
       <Project>{37A22666-195A-4CBB-A541-CFFBFB9D7905}</Project>
       <Name>SqlSync.DbInformation</Name>
     </ProjectReference>
-    <ProjectReference Include="SqlSync.ObjectScript\SqlSync.ObjectScript.csproj">
+    <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj">
       <Name>SqlSync.ObjectScript</Name>
       <Project>{CD09B7DB-851B-4321-9E21-16948DA7FA07}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
     </ProjectReference>
-    <ProjectReference Include="SqlSync.SprocTest\SqlSync.SprocTest.csproj">
+    <ProjectReference Include="..\SqlSync.SprocTest\SqlSync.SprocTest.csproj">
       <Project>{0959BC04-AEFF-42F4-918B-0636D0239830}</Project>
       <Name>SqlSync.SprocTest</Name>
     </ProjectReference>
-    <ProjectReference Include="SqlSync.SqlBuild\SqlSync.SqlBuild.csproj">
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj">
       <Name>SqlSync.SqlBuild</Name>
       <Project>{9B495B5F-1578-482B-8CF7-615B04D3AE2A}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
     </ProjectReference>
-    <ProjectReference Include="SqlSync.TableScript\SqlSync.TableScript.csproj">
+    <ProjectReference Include="..\SqlSync.TableScript\SqlSync.TableScript.csproj">
       <Name>SqlSync.TableScript</Name>
       <Project>{7902D9B0-FC03-42C7-9615-A2072D546EBD}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
     </ProjectReference>
-    <ProjectReference Include="SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj">
+    <ProjectReference Include="..\SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj">
       <Name>SyntaxHighlightingTextBox</Name>
       <Project>{93EC5C55-84BB-4FA4-8599-A6C85841E982}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AssemblyVersioning.cs">
+      <Link>Properties\AssemblyVersioning.cs</Link>
+    </Compile>
     <Compile Include="AddNameForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -315,7 +317,6 @@
     <Compile Include="Analysis\SimpleDiffForm.Designer.cs">
       <DependentUpon>SimpleDiffForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="AssemblyVersioning.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1455,6 +1456,6 @@
     <PreBuildEvent>%25SystemRoot%25\system32\xcopy "$(ProjectDir)SqlBuild\Utility" "$(TargetDir)Utility" /I /Y /D
 %25SystemRoot%25\system32\xcopy "$(ProjectDir)SqlBuild\Default Scripts" "$(TargetDir)Default Scripts" /I /Y /D
 </PreBuildEvent>
-    <PostBuildEvent>%25SystemRoot%25\system32\xcopy "$(ProjectDir)SqlBuildManager Manual\HTML" "$(TargetDir)Manual" /I /Y /D /S</PostBuildEvent>
+    <PostBuildEvent>%25SystemRoot%25\system32\xcopy "$(SolutionDir)SqlBuildManager Manual\HTML" "$(TargetDir)Manual" /I /Y /D /S</PostBuildEvent>
   </PropertyGroup>
 </Project>
