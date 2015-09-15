@@ -143,6 +143,12 @@ namespace SqlBuildManager.Console
                 log.Error("/OutputSbm flag is required");
                 System.Environment.Exit(-1);
             }
+
+            if(File.Exists(cmdLine.OutputSbm))
+            {
+                log.ErrorFormat("The /OutputSbm file already exists at {0}. Please choose another name or delete the existing file.",cmdLine.OutputSbm);
+                System.Environment.Exit(-1);
+            }
             #endregion
 
             string name;
