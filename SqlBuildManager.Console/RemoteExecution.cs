@@ -204,7 +204,7 @@ namespace SqlBuildManager.Console
             setting = null;
 
             #region .: Simple Validation or settings :.
-            int tmpReturn = Validation.ValidateCommonCommandLineArgs(cmd,out errorMessages);
+            int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmd,out errorMessages);
             if(tmpReturn != 0)
             {
                 for(int i=0;i<errorMessages.Length;i++)

@@ -79,7 +79,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = -99; 
             int actual;
-            actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
+            actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(0, errorMessages.Length);
             Assert.AreEqual(expected, actual);
         }
@@ -97,7 +97,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.InvalidTransactionAndTrialCombo;
             int actual;
-            actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
+            actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].StartsWith("Invalid command line combination"));
             Assert.AreEqual(expected, actual);
@@ -116,7 +116,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.MissingOverrideFlag;
             int actual;
-            actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
+            actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].LastIndexOf("Missing /override setting.") > -1);
             Assert.AreEqual(expected, actual);
@@ -136,7 +136,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.MissingBuildFlag;
             int actual;
-            actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
+            actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].LastIndexOf("Missing /build or /ScriptSrcDir setting.") > -1);
             Assert.AreEqual(expected, actual);
@@ -157,7 +157,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.InvalidBuildFileNameValue;
             int actual;
-            actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
+            actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].LastIndexOf("Missing Build file. The build file specified:") > -1);
 
@@ -179,7 +179,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.InvalidOverrideFlag;
             int actual;
-            actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
+            actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].LastIndexOf("The '/override' setting file value must be") > -1);
             Assert.AreEqual(expected, actual);
@@ -200,7 +200,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.InvalidScriptSourceDirectory;
             int actual;
-            actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
+            actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].LastIndexOf("Invalid /ScriptSrcDir setting.") > -1);
             Assert.AreEqual(expected, actual);
@@ -221,7 +221,7 @@ namespace SqlBuildManager.Console.UnitTest
             string[] errorMessages = null;
             int expected = 0;
             int actual;
-            actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
+            actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(0, errorMessages.Length);
             Assert.AreEqual(expected, actual);
         }

@@ -13,17 +13,74 @@ namespace SqlBuildManager.Console
     class Validation
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        public static int ValidateUserNameAndPassword(ref CommandLineArgs cmdLine, out string[] errorMessages)
+        {
+            string error = string.Empty;
+            errorMessages = new string[0];
+            //Validate that if username or password is specified, then both are
+            if(!string.IsNullOrWhiteSpace(cmdLine.UserName) || !string.IsNullOrWhiteSpace(cmdLine.Password))
+            {
+                if(string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+                {
+                    error = "The /UserName and /Password arguments must be used together.";
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
+                    log.Error(error);
+                    return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
+                }
+            }
 
+            if(cmdLine.SavedCreds)
+            {
+                if(string.IsNullOrWhiteSpace(cmdLine.Server))
+                {
+                    error = "The /Server argument is required when /SavedCreds is used";
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors};
+                    log.Error(error);
+                    return (int)ExecutionReturn.FinishingWithErrors;
+                }
+
+                ServerConnectConfig.ServerConfigurationDataTable tmpTbl;
+                bool found = false;
+                UtilityHelper.GetRecentServers(out tmpTbl);
+                if(tmpTbl != null)
+                {
+                    string server = cmdLine.Server.Trim().ToLowerInvariant();
+                    var row = tmpTbl.Where(r => r.Name.Trim().ToLowerInvariant() == server);
+                    if (row.Any())
+                    {
+                        cmdLine.UserName = Cryptography.DecryptText(row.First().UserName, ConnectionHelper.ConnectCryptoKey);
+                        cmdLine.Password = Cryptography.DecryptText(row.First().Password, ConnectionHelper.ConnectCryptoKey);
+                        found = true;
+                        log.InfoFormat("Saved credentials found. Server={2}: UserName={0} and Password={1}", cmdLine.UserName, "*".PadRight(cmdLine.Password.Length, '*'),server);
+                    }
+                }
+                if(!found)
+                {
+                    error = string.Format("The /SavedCreds could not be retrieved for /Server={0}", cmdLine.Server);
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
+                    log.Error(error);
+                    return (int)ExecutionReturn.FinishingWithErrors;
+                }
+        
+                
+            }
+
+            return 0;
+        }
         /// <summary>
         /// Validates that the basic command line arguments are correct with no conflicts or missing elements
         /// </summary>
         /// <param name="cmdLine">Incomming CommandLineArgs object</param>
         /// <param name="errorMessages">Any errors that are generated</param>
         /// <returns>Zero (0) if valid, otherwise an error code</returns>
-        public static int ValidateCommonCommandLineArgs(CommandLineArgs cmdLine, out string[] errorMessages)
+        public static int ValidateCommonCommandLineArgs(ref CommandLineArgs cmdLine, out string[] errorMessages)
         {
+            int pwVal = ValidateUserNameAndPassword(ref cmdLine, out errorMessages);
+            if(pwVal != 0)
+            {
+                 return pwVal;
+            }
             string error = string.Empty;
-            errorMessages = new string[0];
 
             //Validate and set the value for the root logging path
             if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
@@ -133,52 +190,7 @@ namespace SqlBuildManager.Console
                 return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
             }
 
-            //Validate that if username or password is specified, then both are
-            if(!string.IsNullOrWhiteSpace(cmdLine.UserName) || !string.IsNullOrWhiteSpace(cmdLine.Password))
-            {
-                if(string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
-                {
-                    error = "The /UserName and /Password arguments must be used together.";
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
-                    log.Error(error);
-                    return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
-                }
-            }
-
-            if(cmdLine.SavedCreds)
-            {
-                if(string.IsNullOrWhiteSpace(cmdLine.Server))
-                {
-                    error = "The /Server argument is required when /SavedCreds is used";
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors};
-                    log.Error(error);
-                    return (int)ExecutionReturn.FinishingWithErrors;
-                }
-
-                ServerConnectConfig.ServerConfigurationDataTable tmpTbl;
-                bool found = false;
-                UtilityHelper.GetRecentServers(out tmpTbl);
-                if(tmpTbl != null)
-                {
-                    var row = tmpTbl.Where(r => r.UserName.Trim().ToLowerInvariant() == cmdLine.Server.Trim().ToLowerInvariant());
-                    if (row.Any())
-                    {
-                        cmdLine.UserName = Cryptography.DecryptText(row.First().UserName, ConnectionHelper.ConnectCryptoKey);
-                        cmdLine.Password = Cryptography.DecryptText(row.First().Password, ConnectionHelper.ConnectCryptoKey);
-                        found = true;
-                    }
-                }
-                if(!found)
-                {
-                    error = string.Format("The /SavedCreds could not be retrieved for /Server={0}", cmdLine.Server);
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
-                    log.Error(error);
-                    return (int)ExecutionReturn.FinishingWithErrors;
-                }
-
-               
-                
-            }
+            
             if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName))
             {
                  if (!File.Exists(cmdLine.MultiDbRunConfigFileName))

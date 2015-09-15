@@ -149,7 +149,7 @@ namespace SqlBuildManager.Console
             SetLoggingPaths(cmdLine.RootLoggingPath);
 
             log.Info("Validating command parameters");
-            int tmpReturn = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
+            int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
                 WriteToLog(errorMessages, LogType.Error);

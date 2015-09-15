@@ -125,16 +125,19 @@ namespace SqlBuildManager.Console
                 log.Error("/Server flag is required");
                 System.Environment.Exit(-1);
             }
-            if (string.IsNullOrWhiteSpace(cmdLine.UserName))
+            string[] errorMessages;
+            int pwVal = Validation.ValidateUserNameAndPassword(ref cmdLine,out errorMessages);
+            if(pwVal != 0)
             {
-                log.Error("/UserName flag is required");
+                log.Error(errorMessages.Aggregate((a, b) => a + "; " + b));
+            }
+
+            if (string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+            {
+                log.Error("/Username and /Password flags are required");
                 System.Environment.Exit(-1);
             }
-            if (string.IsNullOrWhiteSpace(cmdLine.Password))
-            {
-                log.Error("/Password flag is required");
-                System.Environment.Exit(-1);
-            }
+
             if (string.IsNullOrWhiteSpace(cmdLine.OutputSbm))
             {
                 log.Error("/OutputSbm flag is required");
