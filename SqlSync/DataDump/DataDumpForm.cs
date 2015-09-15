@@ -571,7 +571,7 @@ namespace SqlSync.DataDump
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("DataExtractionandInsertion");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("DataExtractionandInsertion");
         }
 	}
 }

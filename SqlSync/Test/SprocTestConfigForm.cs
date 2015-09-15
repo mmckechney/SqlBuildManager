@@ -872,7 +872,7 @@ namespace SqlSync.Test
 
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("StoredProcedureTesting");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("StoredProcedureTesting");
         }
 
 

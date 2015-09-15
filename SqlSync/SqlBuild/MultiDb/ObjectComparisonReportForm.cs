@@ -80,7 +80,7 @@ namespace SqlSync.SqlBuild.MultiDb
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("ObjectComparisonReport");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("ObjectComparisonReport");
         }
 
       

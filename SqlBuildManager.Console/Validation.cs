@@ -144,6 +144,41 @@ namespace SqlBuildManager.Console
                     return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
                 }
             }
+
+            if(cmdLine.SavedCreds)
+            {
+                if(string.IsNullOrWhiteSpace(cmdLine.Server))
+                {
+                    error = "The /Server argument is required when /SavedCreds is used";
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors};
+                    log.Error(error);
+                    return (int)ExecutionReturn.FinishingWithErrors;
+                }
+
+                ServerConnectConfig.ServerConfigurationDataTable tmpTbl;
+                bool found = false;
+                UtilityHelper.GetRecentServers(out tmpTbl);
+                if(tmpTbl != null)
+                {
+                    var row = tmpTbl.Where(r => r.UserName.Trim().ToLowerInvariant() == cmdLine.Server.Trim().ToLowerInvariant());
+                    if (row.Any())
+                    {
+                        cmdLine.UserName = Cryptography.DecryptText(row.First().UserName, ConnectionHelper.ConnectCryptoKey);
+                        cmdLine.Password = Cryptography.DecryptText(row.First().Password, ConnectionHelper.ConnectCryptoKey);
+                        found = true;
+                    }
+                }
+                if(!found)
+                {
+                    error = string.Format("The /SavedCreds could not be retrieved for /Server={0}", cmdLine.Server);
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
+                    log.Error(error);
+                    return (int)ExecutionReturn.FinishingWithErrors;
+                }
+
+               
+                
+            }
             if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName))
             {
                  if (!File.Exists(cmdLine.MultiDbRunConfigFileName))

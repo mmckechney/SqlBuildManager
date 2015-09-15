@@ -176,7 +176,7 @@ namespace SqlSync.SqlBuild
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("RebuildingPreviouslyCommittedBuild");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("RebuildingPreviouslyCommittedBuild");
         }
 
         private void btnGetList_Click(object sender, EventArgs e)

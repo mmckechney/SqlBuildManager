@@ -506,7 +506,7 @@ namespace SqlSync.SqlBuild.MultiDb
 
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("TargetingMultipleServersandDatabases");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("TargetingMultipleServersandDatabases");
         }
 
         private void lstServers_SelectedIndexChanged(object sender, EventArgs e)

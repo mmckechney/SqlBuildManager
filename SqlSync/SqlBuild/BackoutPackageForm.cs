@@ -336,7 +336,7 @@ namespace SqlSync.SqlBuild
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("CreatingBackoutPackage");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("CreatingBackoutPackage");
         }
 
         private void lstObjectsToUpdate_SelectedIndexChanged(object sender, EventArgs e)

@@ -57,7 +57,7 @@ namespace SqlSync.SqlBuild.Notification
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("ScriptChangeSettings");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("ScriptChangeSettings");
         }
 
     }

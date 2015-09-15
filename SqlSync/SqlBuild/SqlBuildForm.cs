@@ -8174,8 +8174,8 @@ namespace SqlSync.SqlBuild
 
                 string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
                 ServerConnectConfig config = new ServerConnectConfig();
-                if (File.Exists(homePath + SqlSync.Utility.ConfigFileName))
-                    config.ReadXml(homePath + SqlSync.Utility.ConfigFileName);
+                if (File.Exists(homePath + SqlSync.SqlBuild.UtilityHelper.ConfigFileName))
+                    config.ReadXml(homePath + SqlSync.SqlBuild.UtilityHelper.ConfigFileName);
 
                 if (config.LastProgramUpdateCheck != null)
                 {
@@ -8278,7 +8278,7 @@ namespace SqlSync.SqlBuild
                             config.LastProgramUpdateCheck[0].CheckTime = DateTime.Now;
 
                         config.AcceptChanges();
-                        config.WriteXml(homePath + SqlSync.Utility.ConfigFileName);
+                        config.WriteXml(homePath + SqlSync.SqlBuild.UtilityHelper.ConfigFileName);
                     }
                     else
                     {
@@ -8787,13 +8787,13 @@ namespace SqlSync.SqlBuild
 
         private void howToToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual(string.Empty);
+            SqlSync.SqlBuild.UtilityHelper.OpenManual(string.Empty);
 
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("RunTimeBuildSettings");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("RunTimeBuildSettings");
         }
 
         private void remoteExecutionServiceToolStripMenuItem_Click(object sender, EventArgs e)

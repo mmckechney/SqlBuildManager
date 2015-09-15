@@ -595,7 +595,7 @@ namespace SqlSync.Validate
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("DatabaseObjectValidation");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("DatabaseObjectValidation");
         }
 
     }

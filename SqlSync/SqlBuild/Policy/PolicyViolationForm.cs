@@ -93,7 +93,7 @@ namespace SqlSync.SqlBuild.Policy
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("ScriptPolicyChecking");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("ScriptPolicyChecking");
         }
 
         private void btnClose_Click(object sender, EventArgs e)

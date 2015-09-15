@@ -143,7 +143,7 @@ namespace SqlSync.SqlBuild.MultiDb
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("ScriptStatusReporting");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("ScriptStatusReporting");
         }
 
         protected int buildDuration = 0;

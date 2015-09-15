@@ -454,7 +454,7 @@ namespace SqlSync
 
                 if (this.ServerConnected != null)
                 {
-                    Utility.UpdateRecentServerList(this.ddServers.Text, this.txtUser.Text, this.txtPassword.Text);
+                    UtilityHelper.UpdateRecentServerList(this.ddServers.Text, this.txtUser.Text, this.txtPassword.Text);
                     this.ServerConnected(this, new ServerConnectedEventArgs(true, chkWindowsAuthentication.Checked));
                 }
 
@@ -484,7 +484,7 @@ namespace SqlSync
         {
             try
             {
-                string[] recentDbs = Utility.GetRecentServers(out serverConfigTbl).ToArray();
+                string[] recentDbs = UtilityHelper.GetRecentServers(out serverConfigTbl).ToArray();
                 if (recentDbs.Length > 0)
                 {
                     this.ddServers.Items.AddRange(recentDbs);
@@ -764,7 +764,7 @@ namespace SqlSync
         private void ddServers_SelectionChangeCommitted(object sender, EventArgs e)
         {
             string username, password;
-            Utility.GetServerCredentials(this.serverConfigTbl, this.ddServers.SelectedItem.ToString(), out username, out password);
+            UtilityHelper.GetServerCredentials(this.serverConfigTbl, this.ddServers.SelectedItem.ToString(), out username, out password);
 
             if (!string.IsNullOrWhiteSpace(username) || !string.IsNullOrWhiteSpace(password))
             {

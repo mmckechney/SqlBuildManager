@@ -9,12 +9,12 @@ using System.IO;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
 using System.Linq;
-namespace SqlSync
+namespace SqlSync.SqlBuild
 {
-    class Utility
+    public class UtilityHelper
     {
         public const string ConfigFileName = "SqlSync.cfg";
-        internal static List<string> GetRecentServers(out ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl)
+        public static List<string> GetRecentServers(out ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl)
         {
             serverConfigTbl = null;
             string homePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
@@ -39,7 +39,7 @@ namespace SqlSync
             }
             return recentDbs;
         }
-        internal static void UpdateRecentServerList(string databaseName, string userName, string password)
+        public static void UpdateRecentServerList(string databaseName, string userName, string password)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace SqlSync
 
 
         }
-        internal static void GetServerCredentials(ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl, string serverName, out string username, out string password)
+        public static void GetServerCredentials(ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl, string serverName, out string username, out string password)
         {
             if (serverConfigTbl != null)
             {

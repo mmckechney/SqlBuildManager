@@ -154,32 +154,12 @@ namespace SqlSync.SqlBuild
                 cmdLine.Transactional = isTrans;
             }
 
-            //if (dict.ContainsKey("remote"))
-            //{
-            //    if (dict.ContainsKey("remoteservers"))
-            //    {
-            //        cmdLine.RemoteServers = dict["remoteservers"];
-            //    }
-            //    if (dict.ContainsKey("distributiontype"))
-            //    {
-            //        cmdLine.DistributionType = dict["distributiontype"];
-            //    }
-            //}
-
             int allowableTimeoutRetries = 0;
             if(dict.ContainsKey("timeoutretrycount"))
             {
                 if(int.TryParse(dict["timeoutretrycount"],out allowableTimeoutRetries))
                     cmdLine.AllowableTimeoutRetries = allowableTimeoutRetries;
             }
-
-            //bool sync;
-            //if (dict.ContainsKey("synchronize") && Boolean.TryParse(dict["synchronize"], out sync))
-            //    cmdLine.Synchronize = sync;
-
-            //bool diff;
-            //if (dict.ContainsKey("getdifference") && Boolean.TryParse(dict["getdifference"], out diff))
-            //    cmdLine.GetDifference = diff;
 
             if (dict.ContainsKey("golddatabase"))
                 cmdLine.GoldDatabase = dict["golddatabase"];
@@ -219,6 +199,9 @@ namespace SqlSync.SqlBuild
 
             if (dict.ContainsKey("outputsbm"))
                 cmdLine.OutputSbm = dict["outputsbm"];
+
+            if (dict.ContainsKey("savedcreds"))
+                cmdLine.SavedCreds = true;
             
             return cmdLine;
         }

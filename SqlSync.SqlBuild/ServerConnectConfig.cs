@@ -1,4 +1,5 @@
-﻿namespace SqlSync {
+﻿namespace SqlSync.SqlBuild
+{
 
 
     public partial class ServerConnectConfig

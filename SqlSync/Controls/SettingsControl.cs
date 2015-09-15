@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
-
+using SqlSync.SqlBuild;
 namespace SqlSync
 {
 	/// <summary>
@@ -267,7 +267,7 @@ namespace SqlSync
             ddRecentServers.Items.Clear();
 
            
-            List<string> recentDbs = Utility.GetRecentServers(out serverConfigTbl);
+            List<string> recentDbs = UtilityHelper.GetRecentServers(out serverConfigTbl);
             this.ddRecentServers.Items.AddRange(recentDbs.ToArray());
             this.fireServerChangeEvent = true;
         }
@@ -284,7 +284,7 @@ namespace SqlSync
                     this.lblServer.Text = this.ddRecentServers.SelectedItem.ToString();
                     
                     string username, password;
-                    Utility.GetServerCredentials(this.serverConfigTbl, this.ddRecentServers.SelectedItem.ToString(), out username, out password);
+                    UtilityHelper.GetServerCredentials(this.serverConfigTbl, this.ddRecentServers.SelectedItem.ToString(), out username, out password);
 
                     this.ServerChanged(this,this.ddRecentServers.SelectedItem.ToString(),username,password);
                 }

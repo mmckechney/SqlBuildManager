@@ -64,7 +64,7 @@ namespace SqlSync.DataDump
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("DataInsertionScriptCreation");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("DataInsertionScriptCreation");
         }
 
         private void copyToClipboardToolStripMenuItem_Click(object sender, EventArgs e)

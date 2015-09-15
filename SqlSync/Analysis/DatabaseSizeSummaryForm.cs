@@ -100,7 +100,7 @@ namespace SqlSync.Analysis
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("DatabaseAnalysis");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("DatabaseAnalysis");
         }
 
         private void btnCopy_Click(object sender, EventArgs e)

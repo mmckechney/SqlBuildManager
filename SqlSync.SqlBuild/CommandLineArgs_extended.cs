@@ -47,8 +47,10 @@ namespace SqlSync.SqlBuild
         public string RemoteDbErrorList { get; set; }
            [System.Runtime.Serialization.DataMember()]
         public string RemoteErrorDetail { get; set; }
-           [System.Runtime.Serialization.DataMember()]
-           public string OutputSbm { get; set; }
+        [System.Runtime.Serialization.DataMember()]
+        public string OutputSbm { get; set; }
+        [System.Runtime.Serialization.DataMember()]
+        public bool SavedCreds { get; set; }
 
     }
 }

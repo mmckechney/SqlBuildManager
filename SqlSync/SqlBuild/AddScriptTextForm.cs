@@ -1421,7 +1421,7 @@ namespace SqlSync.SqlBuild
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("AdvancedScriptHandling");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("AdvancedScriptHandling");
         }
 
         private void lnkRunPolicyChecks_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

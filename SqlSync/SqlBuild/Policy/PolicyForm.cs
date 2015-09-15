@@ -162,7 +162,7 @@ namespace SqlSync.SqlBuild.Policy
 
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("ManualPolicyCheckingofBuildPackage");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("ManualPolicyCheckingofBuildPackage");
         }
     }
     public class ScriptSelectedEventArgs : EventArgs

@@ -100,7 +100,7 @@ namespace SqlSync.SqlBuild.MultiDb
      
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("RunningAdhocQueriesagainstmultiple");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("RunningAdhocQueriesagainstmultiple");
         }
 
         private void ddOutputType_SelectedIndexChanged(object sender, EventArgs e)

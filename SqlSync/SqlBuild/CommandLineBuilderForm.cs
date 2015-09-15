@@ -282,7 +282,7 @@ namespace SqlSync.SqlBuild
 
         private void helptoolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("AutoCreationofCommandLineStatements");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("AutoCreationofCommandLineStatements");
         }
 
    

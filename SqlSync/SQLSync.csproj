@@ -676,15 +676,6 @@
     <Compile Include="Controls\SQLConnect.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ServerConnectConfig.cs">
-      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ServerConnectConfig.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
-    </Compile>
     <Compile Include="SyncConstants.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -766,7 +757,6 @@
     <Compile Include="Controls\CutCopyPasteContextMenuStrip.Designer.cs">
       <DependentUpon>CutCopyPasteContextMenuStrip.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utility.cs" />
     <Compile Include="Validate\ObjectValidation.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -1226,17 +1216,8 @@
     <None Include="SqlBuild\Utility\UtilityRegistry.xsx">
       <DependentUpon>UtilityRegistry.xsd</DependentUpon>
     </None>
-    <None Include="ServerConnectConfig.xsc">
-      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
-    </None>
-    <None Include="ServerConnectConfig.xss">
-      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
-    </None>
-    <None Include="ServerConnectConfig.xsx">
-      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
-    </None>
     <Content Include="App.ico" />
-    <Content Include="autoscript.ico" />
+    <Content Include="Validate\autoscript.ico" />
     <Content Include="buildmanager.ico" />
     <Content Include="button_ok.ico" />
     <Content Include="caution.ico" />
@@ -1399,11 +1380,6 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="SqlBuild\Utility\WITH NOCHECK.txt" />
-    <Content Include="ServerConnectConfig.xsd">
-      <Generator>MSDataSetGenerator</Generator>
-      <SubType>Designer</SubType>
-      <LastGenOutput>ServerConnectConfig.Designer.cs</LastGenOutput>
-    </Content>
     <Content Include="SwapViews.ico" />
     <Content Include="SyntaxColor.ico" />
     <Content Include="tablescript.ico" />

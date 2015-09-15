@@ -630,7 +630,7 @@ namespace SqlSync.SqlBuild.Remote
 
         private void helptoolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("RemoteServicsExecutionandDeployment");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("RemoteServicsExecutionandDeployment");
         }
 
         private BuildSettings CompileBuildSettings(out List<string> untaskedExecutionServers, out List<string> unassignedDatabaseServers)

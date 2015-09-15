@@ -228,6 +228,15 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="SerializableSortedDictionary.cs" />
+    <Compile Include="ServerConnectConfig.cs">
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ServerConnectConfig.Designer.cs">
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="SqlBuildEnums.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -269,6 +278,7 @@
     <Compile Include="Syncronizer\DatabaseDiffer.cs" />
     <Compile Include="Syncronizer\DatabaseRunHistory.cs" />
     <Compile Include="Syncronizer\DatabaseSyncer.cs" />
+    <Compile Include="Utility.cs" />
     <Compile Include="Validator\SchemaEnums.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -342,6 +352,20 @@
       <DependentUpon>ObjectUpdates.xsd</DependentUpon>
     </None>
     <None Include="packages.config" />
+    <Content Include="ServerConnectConfig.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ServerConnectConfig.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Include="ServerConnectConfig.xsc">
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
+    </None>
+    <None Include="ServerConnectConfig.xss">
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
+    </None>
+    <None Include="ServerConnectConfig.xsx">
+      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
+    </None>
     <None Include="SQLSyncBuildProject.xsc">
       <DependentUpon>SQLSyncBuildProject.xsd</DependentUpon>
     </None>

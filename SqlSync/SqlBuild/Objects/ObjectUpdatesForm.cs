@@ -295,7 +295,7 @@ namespace SqlSync.SqlBuild.Objects
 
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SqlSync.Utility.OpenManual("UpdatingScriptedObjects");
+            SqlSync.SqlBuild.UtilityHelper.OpenManual("UpdatingScriptedObjects");
         }
     }
 }
