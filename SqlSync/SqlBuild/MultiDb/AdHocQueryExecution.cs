@@ -12,6 +12,7 @@ using System.IO;
 using SqlSync.Controls;
 using System.Text.RegularExpressions;
 using SqlSync.Connection;
+
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class AdHocQueryExecution : SqlSync.SqlBuild.MultiDb.StatusReportForm, IMRUClient

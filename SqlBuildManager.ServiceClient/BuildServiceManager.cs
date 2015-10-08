@@ -11,7 +11,6 @@ using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using System.ServiceModel.Configuration;
 using System.Threading.Tasks;
-using System.Threading;
 using Polly;
 namespace SqlBuildManager.ServiceClient
 {
