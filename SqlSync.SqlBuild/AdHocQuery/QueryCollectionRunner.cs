@@ -11,6 +11,7 @@ using System.Xml.Serialization;
 using SqlSync.SqlBuild.Status;
 using log4net;
 using System.Reflection;
+using Polly;
 namespace SqlSync.SqlBuild.AdHocQuery
 {
     public class QueryCollectionRunner : IDisposable
@@ -19,6 +20,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private string serverName;
         private string databaseName;
+        private Policy pollyRetryPolicy = null;
 
         private string query;
 
@@ -45,6 +47,12 @@ namespace SqlSync.SqlBuild.AdHocQuery
         private ReportType reportType;
         private string tempWorkingDirectory;
         private int scriptTimeout;
+        private void ConfigurePollyRetryPolicies()
+        {
+            pollyRetryPolicy = Policy.Handle<Exception>().WaitAndRetry(
+                                                        5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+        }
         public QueryCollectionRunner(string serverName, string databaseName, string query, IList<QueryRowItem> appendData, ReportType reportType, string tempWorkingDirectory, int scriptTimeout, ConnectionData masterConnData)
         {
             this.databaseName = databaseName;
@@ -78,53 +86,57 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
             results = new QueryResultData(this.serverName, this.databaseName);
             results.QueryAppendData = (List<QueryRowItem>)this.AppendData;
-
+            int rowCount = 0;
             try
             {
-                if (conn.State == ConnectionState.Closed)
-                    conn.Open();
-
-                int rowCount = 0;
-                string columnName = string.Empty;
-                using (DbDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
-                {
-                    
-                    int fieldCount = 0;
-                    //Add column definitions...
-                    DataTable tbl = reader.GetSchemaTable();
-                    int columnCount = tbl.Rows.Count;
-                    for (int i = 0; i < columnCount; i++)
+                pollyRetryPolicy.Execute(() =>
                     {
-                        columnName = tbl.Rows[i]["ColumnName"].ToString();
-                        if(columnName.Length == 0)
-                            columnName = "Column "+(i+1).ToString();
-                        else if (results.ColumnDefinition.ContainsKey(columnName))
-                            columnName = columnName + (i + 1).ToString();
+                        if (conn.State == ConnectionState.Closed)
+                            conn.Open();
+                        
+                        rowCount = 0;
 
-                        results.ColumnDefinition.Add(columnName, i.ToString());
-                    }
-
-
-                    while (reader.Read())
-                    {
-                        fieldCount = reader.FieldCount;
-                        Result tmp = new Result();
-                        for (int i = 0; i < fieldCount; i++)
+                        string columnName = string.Empty;
+                        using (DbDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                         {
-                            if (reader[i] == DBNull.Value)
-                                tmp.Add(i.ToString(), "NULL");
-                            else
-                                tmp.Add(i.ToString(), reader[i].ToString());
-                        }
-                        results.Results.Add(tmp);
-                        rowCount++;
 
-                        if (rowCount % 10000 == 0)
-                            this.DumpResults();
-                    }
-                    reader.Close();
-                    reader.Dispose();
-                }
+                            int fieldCount = 0;
+                            //Add column definitions...
+                            DataTable tbl = reader.GetSchemaTable();
+                            int columnCount = tbl.Rows.Count;
+                            for (int i = 0; i < columnCount; i++)
+                            {
+                                columnName = tbl.Rows[i]["ColumnName"].ToString();
+                                if (columnName.Length == 0)
+                                    columnName = "Column " + (i + 1).ToString();
+                                else if (results.ColumnDefinition.ContainsKey(columnName))
+                                    columnName = columnName + (i + 1).ToString();
+
+                                results.ColumnDefinition.Add(columnName, i.ToString());
+                            }
+
+
+                            while (reader.Read())
+                            {
+                                fieldCount = reader.FieldCount;
+                                Result tmp = new Result();
+                                for (int i = 0; i < fieldCount; i++)
+                                {
+                                    if (reader[i] == DBNull.Value)
+                                        tmp.Add(i.ToString(), "NULL");
+                                    else
+                                        tmp.Add(i.ToString(), reader[i].ToString());
+                                }
+                                results.Results.Add(tmp);
+                                rowCount++;
+
+                                if (rowCount % 10000 == 0)
+                                    this.DumpResults();
+                            }
+                            reader.Close();
+                            reader.Dispose();
+                        }
+                    });
 
                 results.RowCount = rowCount;
             }
