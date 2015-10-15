@@ -7,25 +7,13 @@ using log4net.Appender;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using System.Threading;
-using SqlBuildManager.AzureStorage;
 using System.Net.NetworkInformation;
 namespace SqlBuildManager.Services.Azure
 {
     class AzureEntryPoint : RoleEntryPoint 
     {
         private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static RoleManager storageRoleManager = null;
-        public static RoleManager StorageRoleManager
-        {
-            get
-            {
-                if(storageRoleManager == null)
-                {
-                    storageRoleManager = new SqlBuildManager.AzureStorage.RoleManager();
-                }
-                return storageRoleManager;
-            }
-        }
+        
         public override void Run()  /* Worker Role entry point */
         {
             while (true)
@@ -38,43 +26,12 @@ namespace SqlBuildManager.Services.Azure
         {
             bool success = false;
             InitializeLogging();
-            try
-            {
-                success = AzureEntryPoint.StorageRoleManager.InsertCloudRoleEntity(Environment.MachineName, GetIpAddress());
-            }
-            catch(Exception exe)
-            {
-                log.Error("Error registering service role with Table Storage", exe);
-            }
-            
-            if(!success)
-            {
-                log.Warn("Unable to register service.");
-            }
+           
             return base.OnStart();
         }
 
         public override void OnStop()
         {
-            bool success = false;
-            try
-            {
-                if (AzureEntryPoint.storageRoleManager == null)
-                {
-                    storageRoleManager = new RoleManager();
-                }
-                success = AzureEntryPoint.StorageRoleManager.DeleteCloudRoleEntity(Environment.MachineName);
-            }
-            catch (Exception exe)
-            {
-                log.Error("Error unregistering service role with Table Storage", exe);
-            }
-
-            if (!success)
-            {
-                log.Warn("Unable to unregister service.");
-            }
-
             var appenders =log.Logger.Repository.GetAppenders();
             foreach(var appender in appenders)
             {
@@ -120,6 +77,8 @@ namespace SqlBuildManager.Services.Azure
             {
                 System.IO.File.WriteAllText("C:\\Errorlog.txt", string.Format("Unable to configure Log4Net: {0}", exe.ToString()));
             }
+
+            BuildService.SetAppLogFileLocation();
 
         }
 

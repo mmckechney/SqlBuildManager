@@ -125,10 +125,6 @@
     <Compile Include="WorkArgs.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.AzureStorage\SqlBuildManager.AzureStorage.csproj">
-      <Project>{c31f1ff6-846c-4ae6-8ae3-90da9f8564f5}</Project>
-      <Name>SqlBuildManager.AzureStorage</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SqlBuildManager.Console\SqlBuildManager.Console.csproj">
       <Project>{E4496045-D324-4297-BE19-EBE664129C71}</Project>
       <Name>SqlBuildManager.Console</Name>

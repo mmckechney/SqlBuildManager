@@ -15,7 +15,6 @@ using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using System.Xml.Serialization;
 using System.Xml;
-using SqlBuildManager.AzureStorage;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.Diagnostics.Management;
 using Microsoft.WindowsAzure.Diagnostics;
@@ -67,7 +66,7 @@ namespace SqlBuildManager.Services
             }
             SetAppLogFileLocation();
         }
-        private bool SetAppLogFileLocation()
+        internal static bool SetAppLogFileLocation()
         {
             if (!log.Logger.Repository.Configured)
             {
