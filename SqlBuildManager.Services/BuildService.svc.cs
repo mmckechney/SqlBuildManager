@@ -169,8 +169,8 @@ namespace SqlBuildManager.Services
                 if(RoleEnvironment.IsAvailable)
                 {
                     string azurePath = RoleEnvironment.GetLocalResource("RunLogFiles").RootPath;
-                    string last = settings.LocalRootLoggingPath.Split(new char[]{'\\', '/' }).Last();
-                    expandedLoggingPath = azurePath + last;
+                    string last = settings.LocalRootLoggingPath.Split(new char[]{':'}).Last();
+                    expandedLoggingPath = Path.Combine(azurePath, last);
 
                 }
                 else
