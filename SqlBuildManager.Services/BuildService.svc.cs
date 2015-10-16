@@ -170,8 +170,7 @@ namespace SqlBuildManager.Services
                 {
                     string azurePath = RoleEnvironment.GetLocalResource("RunLogFiles").RootPath;
                     string last = settings.LocalRootLoggingPath.Split(new char[]{':'}).Last();
-                    expandedLoggingPath = Path.Combine(azurePath, last);
-
+                    expandedLoggingPath = (azurePath + last).Replace(@"\\", @"\");
                 }
                 else
                 {
