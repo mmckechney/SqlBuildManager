@@ -252,11 +252,22 @@ namespace SqlBuildManager.Console
                 List<ServerConfigData> remoteServer = null;
                 string[] errorMessages;
                 log.Info("Retrieving instance status...");
+
+ 
+
                 int statReturn = RemoteExecution.ValidateRemoteServerAvailability(remote, Protocol.AzureHttp, out remoteServer, out errorMessages);
-                log.InfoFormat(format, "Service".PadRight(40, ' '), "Status".PadRight(21, ' '), "Last Status".PadRight(15,' '), "Version".PadRight(18, ' '));
-                log.InfoFormat(format, "----------------------------------".PadRight(40, ' '), "-------------".PadRight(21, ' '), "-----------".PadRight(15, ' '), "------------".PadRight(18, ' '));
+
+                int serverPad = remoteServer.Max(s => s.ServerName.Length) + 2;
+                int statusPad = remoteServer.Max(s => s.ServiceReadiness.ToString().Length) + 2;
+                int exePad = remoteServer.Max(s => s.ExecutionReturn.ToString().Length) + 2;
+                if (exePad < "Last Status".Length + 2)
+                    exePad = "Last Status".Length + 2;
+                int versionPad = remoteServer.Max(s => s.ServiceVersion.ToString().Length) + 2;
+
+                log.InfoFormat(format, "Service".PadRight(serverPad, ' '), "Status".PadRight(statusPad, ' '), "Last Status".PadRight(exePad, ' '), "Version".PadRight(versionPad, ' '));
+                log.InfoFormat(format, "-".PadRight(serverPad-2, '-'), "-".PadRight(statusPad-2, '-'), "-".PadRight(exePad-2, '-'), "--".PadRight(versionPad-2, '-'));
                 remoteServer.ForEach(s =>
-                    log.InfoFormat(format, s.ServerName.PadRight(40, ' '), s.ServiceReadiness.ToString().PadRight(21, ' '),s.ExecutionReturn.ToString().PadRight(15,' '), s.ServiceVersion.PadRight(18, ' ')));
+                    log.InfoFormat(format, s.ServerName.PadRight(serverPad, ' '), s.ServiceReadiness.ToString().PadRight(statusPad, ' '), s.ExecutionReturn.ToString().PadRight(exePad, ' '), s.ServiceVersion.PadRight(versionPad, ' ')));
 
                 if(errorMessages.Length > 0)
                 {

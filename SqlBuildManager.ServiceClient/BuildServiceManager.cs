@@ -172,6 +172,9 @@ namespace SqlBuildManager.ServiceClient
                 ServiceStatus stat = new ServiceStatus();
                 stat.Readiness = ServiceReadiness.Unknown;
                 stat.ExecutionStatus = ExecutionReturn.Waiting;
+                stat.CurrentVersion = "Unknown";
+                stat.Endpoint = endpointAddress;
+                stat.CurrentVersion = "Unknown";
                 return stat;
             }
         }
@@ -708,8 +711,8 @@ namespace SqlBuildManager.ServiceClient
 
                             foreach (var url in instanceUrls)
                             {
-                                srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace(serverReplaceKey, url)));
-                            }
+                                srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace(serverReplaceKey, dns + ":" + url.Split(':')[1])));
+                            } 
 
                         });
                         
