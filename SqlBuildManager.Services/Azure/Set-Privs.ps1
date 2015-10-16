@@ -1,17 +1,25 @@
+Write-Output "Starting configuration of privs"
 Add-PSSnapin Microsoft.WindowsAzure.ServiceRuntime
-
-while (!$?)
+$counter = -1
+while (!$? -and $counter -lt 5)
 {
-    echo "Failed, retrying after five seconds..."
+	$counter = $counter + 1
+    Write-Output "Failed, retrying after five seconds..."
     sleep 5
 
     Add-PSSnapin Microsoft.WindowsAzure.ServiceRuntime
 }
 
-echo "Added WA snapin."
-
-$localresource = Get-LocalResource "RunLogFiles"
-$folder = $localresource.RootPath
+if($counter -lt 5)
+{
+	Write-Output "Added WA snapin."
+	$localresource = Get-LocalResource "RunLogFiles"
+	$folder = $localresource.RootPath
+}
+else
+{
+	$folder = "C:\Resources\Directory"
+}
 
 $acl = Get-Acl $folder
 
@@ -27,4 +35,4 @@ $acl.AddAccessRule($rule2)
 
 Set-Acl $folder $acl
 
-echo "Done changing ACLs."
+Write-Output "Done changing ACLs."
