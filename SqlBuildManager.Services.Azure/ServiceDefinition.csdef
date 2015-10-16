@@ -2,7 +2,7 @@
 <ServiceDefinition name="SqlBuildManager.Services.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2015-04.2.6">
   <WebRole name="SqlBuildManager.Services" vmsize="Small">
     <Startup>
-      <!--<Task commandLine="Azure\Startup.cmd" executionContext="elevated" taskType="simple" />-->
+      <Task commandLine="Azure\Startup.cmd" executionContext="elevated" taskType="simple" />
     </Startup>
     <Sites>
       <Site name="Web">
@@ -28,7 +28,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
     </ConfigurationSettings>
     <LocalResources>
-      <LocalStorage name="RunLogFiles" cleanOnRoleRecycle="false" sizeInMB="200" />
+      <LocalStorage name="RunLogFiles" cleanOnRoleRecycle="true" sizeInMB="500" />
     </LocalResources>
   </WebRole>
 </ServiceDefinition>

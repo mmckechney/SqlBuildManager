@@ -3,7 +3,7 @@ SET LOCAL_APP_ROOT=%ROLEROOT%\AppRoot
 
 cd %LOCAL_APP_ROOT%\Azure
 
-ECHO Setting DNS server addresses  >> %STARTUP_LOG%
-powershell .\Set-DNS.ps1 >> %STARTUP_LOG%
+ECHO Setting privilidges to the local resource folder  >> %STARTUP_LOG%
+powershell .\Set-Privs.ps1 >> %STARTUP_LOG%
 
 EXIT /B 0
