@@ -1,5 +1,5 @@
 Write-Output "Starting configuration of privs"
-Add-PSSnapin Microsoft.WindowsAzure.ServiceRuntime
+Add-PSSnapin Microsoft.WindowsAzure.ServiceRuntime 
 $counter = -1
 while (!$? -and $counter -lt 5)
 {
@@ -16,7 +16,8 @@ if($counter -lt 5)
 	$localresource = Get-LocalResource "RunLogFiles"
 	$folder = $localresource.RootPath
 }
-else
+
+if($folder -eq $null -or $folder.length -eq 0)
 {
 	$folder = "C:\Resources\Directory"
 }
