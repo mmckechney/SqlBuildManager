@@ -1,7 +1,7 @@
 ﻿<#
 
-Production West environment:
-.\Push-DiagnosticsToCloudService.ps1 -subscription_name "stratustime DEV Environment" -deployment_slot Production -config_path "F:\Git\SqlBuildManager\Diagnostics\diagnostics.wadcfgx" -service_name sqlbuildmanager -storage_name stratusdevstorage -remove_existing $false
+Sql Build Manager (in DEV environment):
+.\Push-DiagnosticsToCloudService.ps1 -subscription_name "stratustime DEV Environment" -deployment_slot Production -config_path "F:\Git\SqlBuildManager\Diagnostics\diagnostics.wadcfgx" -service_name sqlbuildmanager -storage_name sqlbuildlogs -remove_existing $false
 #>
 param(
 

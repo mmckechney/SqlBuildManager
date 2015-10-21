@@ -689,7 +689,7 @@ namespace SqlBuildManager.ServiceClient
 
             string dynamicAzureTemplate = ConfigurationManager.AppSettings["DynamicAzureHttpEndpointTemplate"];
             List<ServerConfigData> srvData = new List<ServerConfigData>();
-            string dns = ConfigurationManager.AppSettings["AzureDnsName"];
+            string dns = ConfigurationManager.AppSettings["AzureDnsName"].TrimEnd('/');
             if(string.IsNullOrEmpty(dns))
             {
                 logger.Error("Unable to find \"AzureDnsName\" app setting. Can not connect to Azure");
