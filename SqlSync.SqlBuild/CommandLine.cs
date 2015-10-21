@@ -143,7 +143,10 @@ namespace SqlSync.SqlBuild
                 cmdLine.Description = dict["description"];
 
             if (dict.ContainsKey("packagename"))
+            {
                 cmdLine.PackageName = dict["packagename"];
+                cmdLine.BuildFileName = dict["packagename"];
+            }
 
             if (dict.ContainsKey("directory"))
                 cmdLine.Directory = dict["directory"];
