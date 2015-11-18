@@ -4755,7 +4755,7 @@ namespace SqlSync.SqlBuild
 
             //Find any codereview rows that fail their validation key (i.e.someone changed it in the database or in the file)
             var fail = from c in this.buildData.CodeReview
-                       where c.ValidationKey != CodeReviewManager.GetValidationKey(ref c)
+                       where c.ValidationKey != CodeReviewManager.GetValidationKey(c)
                        select c;
 
             if (fail.Any())

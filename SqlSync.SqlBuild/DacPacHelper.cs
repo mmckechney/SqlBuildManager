@@ -21,8 +21,11 @@ namespace SqlSync.SqlBuild
             {
                 if(string.IsNullOrWhiteSpace(sqlPack))
                 {
-                    appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                    appRoots.Add(@"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\Microsoft");
+                    lock (appRoots)
+                    {
+                        appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                        appRoots.Add(@"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\Microsoft");
+                    }
                     foreach(var dir in appRoots)
                     {
                         if(Directory.Exists(dir))

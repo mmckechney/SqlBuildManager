@@ -242,7 +242,7 @@ test";
 
             string expected = "CFFF19EF9E5D504D2F519AE168C6CCB8769E033C";
             string actual;
-            actual = CodeReviewManager.GetValidationKey(ref codeReviewRow);
+            actual = CodeReviewManager.GetValidationKey(codeReviewRow);
             Assert.AreEqual(expected, actual);
      
         }
@@ -260,10 +260,10 @@ test";
             codeReviewRow.CheckSum = "MY_CHECK_SUM_IS_HERE";
 
             string actual1, actual2;
-            actual1 = CodeReviewManager.GetValidationKey(ref codeReviewRow);
+            actual1 = CodeReviewManager.GetValidationKey(codeReviewRow);
 
             codeReviewRow.CheckSum = "MY_CHECK_SUM_IS_DONE";
-            actual2 = CodeReviewManager.GetValidationKey(ref codeReviewRow);
+            actual2 = CodeReviewManager.GetValidationKey(codeReviewRow);
 
             Assert.AreNotEqual(actual1, actual2);
 
@@ -282,10 +282,10 @@ test";
             codeReviewRow.CheckSum = "MY_CHECK_SUM_IS_HERE";
 
             string actual1, actual2;
-            actual1 = CodeReviewManager.GetValidationKey(ref codeReviewRow);
+            actual1 = CodeReviewManager.GetValidationKey(codeReviewRow);
 
             codeReviewRow.ReviewStatus = (short) CodeReviewStatus.Accepted;
-            actual2 = CodeReviewManager.GetValidationKey(ref codeReviewRow);
+            actual2 = CodeReviewManager.GetValidationKey(codeReviewRow);
 
             Assert.AreNotEqual(actual1, actual2);
 
@@ -312,7 +312,7 @@ test";
             string checkSum = "MY_CHECK_SUM_IS_HERE";
             codeReviewRow.CheckSum = checkSum;
 
-            string validation = CodeReviewManager.GetValidationKey(ref codeReviewRow);
+            string validation = CodeReviewManager.GetValidationKey(codeReviewRow);
             Assert.IsTrue(codeReviewRow.ValidationKey == string.Empty);
 
             CodeReviewManager.SetValidationKey(ref codeReviewRow);

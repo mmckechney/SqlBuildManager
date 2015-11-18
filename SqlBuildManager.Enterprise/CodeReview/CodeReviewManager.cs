@@ -81,7 +81,7 @@ namespace SqlBuildManager.Enterprise.CodeReview
             codeReviewRow.ValidationKey = ValidationKey(codeReviewRow);
         }
 
-        public static string GetValidationKey(ref SqlSyncBuildData.CodeReviewRow codeReviewRow)
+        public static string GetValidationKey(SqlSyncBuildData.CodeReviewRow codeReviewRow)
         {
             return ValidationKey(codeReviewRow);
 

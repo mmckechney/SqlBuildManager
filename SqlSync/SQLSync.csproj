@@ -107,7 +107,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup>
+  <!-- <PropertyGroup>
     <ManifestCertificateThumbprint>E418B168635B15DC86ED517A1679881352C9F0EC</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
@@ -118,7 +118,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>true</SignManifests>
-  </PropertyGroup>
+  </PropertyGroup> -->
   <ItemGroup>
     <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
       <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
