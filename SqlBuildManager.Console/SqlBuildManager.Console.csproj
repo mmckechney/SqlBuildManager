@@ -55,6 +55,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Internal|AnyCPU'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
@@ -149,7 +150,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-    <ItemGroup>
+  <ItemGroup>
     <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
       <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
