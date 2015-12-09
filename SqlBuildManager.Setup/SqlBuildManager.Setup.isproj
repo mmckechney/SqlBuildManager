@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<!-- Select a Product Configuration -->
 		<InstallShieldProductConfiguration>Express</InstallShieldProductConfiguration>
@@ -37,6 +37,22 @@
 			<Name>SqlBuildManager.Console</Name>
 			<Project>{E4496045-D324-4297-BE19-EBE664129C71}</Project>
 		</ProjectReference>
+		<ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj">
+			<Name>SqlBuildManager.Enterprise</Name>
+			<Project>{15497702-FB61-4316-949B-A8ED2EEC694A}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj">
+			<Name>SqlBuildManager.Interfaces</Name>
+			<Project>{FDC576E6-ACC8-41D4-8A56-8E6E00221306}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj">
+			<Name>SqlBuildManager.ScriptHandling</Name>
+			<Project>{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
+			<Name>SqlBuildManager.ServiceClient</Name>
+			<Project>{641F4F7D-7730-4760-9454-7B9FCE0AA32C}</Project>
+		</ProjectReference>
 		<ProjectReference Include="..\SqlBuildManager.Services\SqlBuildManager.Services.csproj">
 			<Name>SqlBuildManager.Services</Name>
 			<Project>{A4814E5E-BD38-4658-9D56-CA41DC44ABE0}</Project>
@@ -44,6 +60,54 @@
 		<ProjectReference Include="..\SqlBuildManager.Services.Host\SqlBuildManager.Services.Host.csproj">
 			<Name>SqlBuildManager.Services.Host</Name>
 			<Project>{186E33E4-D5A7-4543-9405-A46B8236F6CF}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.BasicCompare\SqlSync.BasicCompare.csproj">
+			<Name>SqlSync.BasicCompare</Name>
+			<Project>{ABC20CD6-C24A-4B58-8D0F-71FBDB64EBDE}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj">
+			<Name>SqlSync.Compare</Name>
+			<Project>{053B2B2A-51CF-48CD-BD22-8DED7D292690}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj">
+			<Name>SqlSync.Connection</Name>
+			<Project>{F3F1EFFF-265E-4995-958B-9763F947E5C8}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj">
+			<Name>SqlSync.Constants</Name>
+			<Project>{D68699E6-B97C-4BC4-AD52-5F3C63DB24A7}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj">
+			<Name>SqlSync.DbInformation</Name>
+			<Project>{37A22666-195A-4CBB-A541-CFFBFB9D7905}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj">
+			<Name>SqlSync.ObjectScript</Name>
+			<Project>{CD09B7DB-851B-4321-9E21-16948DA7FA07}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj">
+			<Name>SqlSync.ScrollBarSync</Name>
+			<Project>{14DFBF75-98B1-4FBD-9B48-191D8AA55A6F}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.SprocTest\SqlSync.SprocTest.csproj">
+			<Name>SqlSync.SprocTest</Name>
+			<Project>{0959BC04-AEFF-42F4-918B-0636D0239830}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj">
+			<Name>SqlSync.SqlBuild</Name>
+			<Project>{9B495B5F-1578-482B-8CF7-615B04D3AE2A}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SqlSync.TableScript\SqlSync.TableScript.csproj">
+			<Name>SqlSync.TableScript</Name>
+			<Project>{7902D9B0-FC03-42C7-9615-A2072D546EBD}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj">
+			<Name>SyntaxHighlightingTextBox</Name>
+			<Project>{93EC5C55-84BB-4FA4-8599-A6C85841E982}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\Tfs.Utility\Tfs.Utility.csproj">
+			<Name>Tfs.Utility</Name>
+			<Project>{CA980B42-69F5-4A66-A327-4977E18A6018}</Project>
 		</ProjectReference>
 	</ItemGroup>
 </Project>
