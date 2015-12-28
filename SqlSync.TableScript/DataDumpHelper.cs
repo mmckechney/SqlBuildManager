@@ -104,7 +104,7 @@ namespace SqlSync.TableScript
 				sb.Length = sb.Length -1;
 			}
 			
-			SqlConnection conn =  SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName,connData.SQLServerName,connData.UserId,connData.Password,connData.UseWindowAuthentication,connData.ScriptTimeout);
+			SqlConnection conn =  SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName,connData.SQLServerName,connData.UserId,connData.Password,connData.AuthenticationType,connData.ScriptTimeout);
 			SqlCommand cmd = new SqlCommand(sb.ToString(),conn);
 			return cmd;			
 		}

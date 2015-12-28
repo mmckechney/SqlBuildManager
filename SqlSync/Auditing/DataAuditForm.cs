@@ -1749,7 +1749,7 @@ namespace SqlSync
 		}
         #endregion
 
-        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
             Connection.ConnectionData oldConnData = new Connection.ConnectionData();
             this.data.Fill(oldConnData);
@@ -1760,12 +1760,8 @@ namespace SqlSync
             {
                 this.data.UserId = username;
                 this.data.Password = password;
-                this.data.UseWindowAuthentication = false;
             }
-            else
-            {
-                this.data.UseWindowAuthentication = true;
-            }
+            this.data.AuthenticationType = authType;
             this.data.ScriptTimeout = 5;
             try
             {

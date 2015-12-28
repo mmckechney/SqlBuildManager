@@ -175,7 +175,7 @@ namespace SqlSync.TableScript
 		public void  GenerateUpdatedPopulateScript(SqlBuild.CodeTable.ScriptUpdates updateRule,out string updatedScript)
 		{
 			//Get the connection
-			this.dbConn = SqlSync.Connection.ConnectionHelper.GetConnection(this.data.DatabaseName,this.data.SQLServerName,this.data.UserId,this.data.Password,this.data.UseWindowAuthentication,this.data.ScriptTimeout);
+			this.dbConn = SqlSync.Connection.ConnectionHelper.GetConnection(this.data.DatabaseName,this.data.SQLServerName,this.data.UserId,this.data.Password,this.data.AuthenticationType,this.data.ScriptTimeout);
 			
 			//get the data
 			DataTable table = new DataTable();
@@ -211,7 +211,7 @@ namespace SqlSync.TableScript
 				ArrayList dataList = new ArrayList();
 				string selectSql;
 				StringBuilder sb = new StringBuilder();
-				this.dbConn = SqlSync.Connection.ConnectionHelper.GetConnection(this.data.DatabaseName,this.data.SQLServerName,this.data.UserId,this.data.Password, this.data.UseWindowAuthentication,this.data.ScriptTimeout);
+				this.dbConn = SqlSync.Connection.ConnectionHelper.GetConnection(this.data.DatabaseName,this.data.SQLServerName,this.data.UserId,this.data.Password, this.data.AuthenticationType,this.data.ScriptTimeout);
 				for(int i=0;i<this.tableScriptRules.Length;i++)
 				{
 					DataTable table = GetTableValues(this.tableScriptRules[i].TableName, this.selectByUpdateDate, out selectSql);
@@ -844,7 +844,7 @@ namespace SqlSync.TableScript
 		{
             string schema;
             InfoHelper.ExtractNameAndSchema(tableName, out tableName, out schema);
-			SqlConnection conn =  SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName,connData.SQLServerName,connData.UserId,connData.Password,connData.UseWindowAuthentication,connData.ScriptTimeout);
+			SqlConnection conn =  SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName,connData.SQLServerName,connData.UserId,connData.Password,connData.AuthenticationType, connData.ScriptTimeout);
 			string command = @"
                 select cc.column_Name,c.data_type +
 	                CASE WHEN CHARACTER_MAXIMUM_LENGTH IS NULL THEN '' 
@@ -958,7 +958,7 @@ namespace SqlSync.TableScript
             {
                 if (this.smoServer == null)
                 {
-                    if (this.data.UseWindowAuthentication)
+                    if (this.data.AuthenticationType == Connection.AuthenticationType.WindowsAuthentication || this.data.AuthenticationType == Connection.AuthenticationType.AzureActiveDirectory)
                         this.smoServer = new Microsoft.SqlServer.Management.Smo.Server(this.data.SQLServerName);
                     else
                         this.smoServer = new Server(new ServerConnection(this.data.SQLServerName, this.data.UserId, this.data.Password));

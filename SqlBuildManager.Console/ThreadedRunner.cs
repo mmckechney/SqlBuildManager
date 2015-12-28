@@ -206,8 +206,8 @@ namespace SqlBuildManager.Console
                 {
                     connData.UserId = cmdArgs.UserName;
                     connData.Password = cmdArgs.Password;
-                    connData.UseWindowAuthentication = false;
                 }
+                connData.AuthenticationType = this.cmdArgs.AuthenticationType;
 
                 //Set the log file name
                 string logFile = loggingDirectory + @"\ExecutionLog.log";

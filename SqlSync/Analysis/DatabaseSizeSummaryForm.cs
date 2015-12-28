@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using SqlSync.DbInformation;
+using SqlSync.Connection;
 
 namespace SqlSync.Analysis
 {
@@ -42,20 +43,17 @@ namespace SqlSync.Analysis
 			}
 		}
 
-        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
             string oldServer = this.connData.SQLServerName;
             this.connData.SQLServerName = this.settingsControl1.Server;
-            if(!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
+            if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
             {
                 this.connData.UserId = username;
                 this.connData.Password = password;
-                this.connData.UseWindowAuthentication = false;
             }
-            else
-            {
-                this.connData.UseWindowAuthentication = true;
-            }
+
+            this.connData.AuthenticationType = authType;
             GetDatabaseSummary();
         }
 

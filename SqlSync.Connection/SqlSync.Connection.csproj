@@ -127,15 +127,8 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ConnectionData.cs">
-      <DependentUpon>ConnectionData.xml</DependentUpon>
-      <SubType>Component</SubType>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Include="ConnectionData_partial.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="AuthenticationType.cs" />
+    <Compile Include="ConnectionData.cs" />
     <Compile Include="ConnectionHelper.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -146,10 +139,6 @@
       <DependentUpon>RegisteredServers.xsd</DependentUpon>
     </Compile>
     <Compile Include="ThreadedConnectionTester.cs" />
-    <Content Include="ConnectionData.xml">
-      <Generator>SimpleDataClassGenerator</Generator>
-      <LastGenOutput>ConnectionData.cs</LastGenOutput>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

@@ -17,6 +17,8 @@
             <xs:sequence>
               <xs:element name="UserName" msprop:nullValue="_empty" msprop:Generator_ColumnPropNameInRow="UserName" msprop:Generator_ColumnVarNameInTable="columnUserName" msprop:Generator_ColumnPropNameInTable="UserNameColumn" msprop:Generator_UserColumnName="UserName" type="xs:string" minOccurs="0" msdata:Ordinal="2" />
               <xs:element name="Password" msprop:nullValue="_empty" msprop:Generator_ColumnPropNameInRow="Password" msprop:Generator_ColumnVarNameInTable="columnPassword" msprop:Generator_ColumnPropNameInTable="PasswordColumn" msprop:Generator_UserColumnName="Password" type="xs:string" minOccurs="0" msdata:Ordinal="3" />
+              <xs:element name="AuthenticationType" msprop:nullValue="WindowsAuthentication3" msprop:Generator_ColumnPropNameInRow="AuthenticationType" msprop:Generator_ColumnVarNameInTable="columnAuthenticationType" msprop:Generator_ColumnPropNameInTable="AuthenticationTypeColumn" msprop:Generator_UserColumnName="AuthenticationType" type="AuthType" minOccurs="0" msdata:Ordinal="4" />
+
             </xs:sequence>
             <xs:attribute name="Name" form="unqualified" msprop:nullValue="_empty" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" />
             <xs:attribute name="LastAccessed" form="unqualified" msprop:nullValue="_throw" msprop:Generator_ColumnPropNameInRow="LastAccessed" msprop:Generator_ColumnVarNameInTable="columnLastAccessed" msprop:Generator_ColumnPropNameInTable="LastAccessedColumn" msprop:Generator_UserColumnName="LastAccessed" type="xs:dateTime" />
@@ -36,4 +38,12 @@
       </xs:choice>
     </xs:complexType>
   </xs:element>
+  <xs:simpleType name="AuthType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration id="WindowsAuthentication" value="WindowsAuthentication"/>
+      <xs:enumeration id="AzureActiveDirectory" value="AzureActiveDirectory"/>
+      <xs:enumeration id="AzureUserNamePassword" value="AzureUserNamePassword"/>
+      <xs:enumeration id="UserNamePassword" value="UserNamePassword"/>
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

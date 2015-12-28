@@ -29,7 +29,7 @@ namespace SqlSync.SprocTest
             this.fileName = fileName;
             this.connData = new ConnectionData();
             this.connData.SQLServerName = server;
-            this.connData.UseWindowAuthentication = true;
+            this.connData.AuthenticationType = AuthenticationType.WindowsAuthentication;
             this.connData.ScriptTimeout = 100;
         }
 

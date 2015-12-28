@@ -435,7 +435,7 @@ namespace SqlSync.SqlBuild
             this.buildZipFileName = buildZipFileName;
             this.connData = new ConnectionData();
             this.connData.SQLServerName = serverName;
-            this.connData.UseWindowAuthentication = true;
+            this.connData.AuthenticationType = AuthenticationType.WindowsAuthentication;
 
             if (scriptLogFileName.Length > 0)
             {
@@ -468,7 +468,7 @@ namespace SqlSync.SqlBuild
             
             this.runningUnattended = true;
             this.connData = new ConnectionData(); //initialize, but don't need to populate it...
-            this.connData.UseWindowAuthentication = true;
+            this.connData.AuthenticationType = AuthenticationType.WindowsAuthentication;
         }
         private void SqlBuildForm_Load(object sender, System.EventArgs e)
         {
@@ -5719,7 +5719,7 @@ namespace SqlSync.SqlBuild
                 this.databaseList = frmConnect.DatabaseList;
                 this.settingsControl1.InitServers(true);
 
-                settingsControl1_ServerChanged(sender, this.connData.SQLServerName, this.connData.UserId,this.connData.Password);
+                settingsControl1_ServerChanged(sender, this.connData.SQLServerName, this.connData.UserId,this.connData.Password, this.connData.AuthenticationType);
                 //this.SqlBuildForm_Load(null, EventArgs.Empty);
             }
         }
@@ -7124,7 +7124,7 @@ namespace SqlSync.SqlBuild
                     tmpData.SQLServerName = selectedUpdates[i].SourceServer;
                     tmpData.Password = this.connData.Password;
                     tmpData.UserId = this.connData.UserId;
-                    tmpData.UseWindowAuthentication = this.connData.UseWindowAuthentication;
+                    tmpData.AuthenticationType = this.connData.AuthenticationType;
                     PopulateHelper helper = new PopulateHelper(tmpData);
                     string updatedScript;
                     helper.GenerateUpdatedPopulateScript(selectedUpdates[i], out updatedScript);
@@ -7756,7 +7756,7 @@ namespace SqlSync.SqlBuild
             //}
         }
 
-        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
             this.Cursor = Cursors.WaitCursor;
             Connection.ConnectionData oldConnData = new Connection.ConnectionData();
@@ -7768,12 +7768,8 @@ namespace SqlSync.SqlBuild
             {
                 this.connData.UserId = username;
                 this.connData.Password = password;
-                this.connData.UseWindowAuthentication = false;
             }
-            else
-            {
-                this.connData.UseWindowAuthentication = true;
-            }
+            this.connData.AuthenticationType = authType;
             this.connData.ScriptTimeout = 5;
 
             try

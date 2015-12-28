@@ -95,7 +95,7 @@ namespace SqlSync
 			this.connData.SQLServerName = server;
 			this.connData.Password = password;
 			this.connData.UserId = userid;
-			this.connData.UseWindowAuthentication = false;
+            this.connData.AuthenticationType = AuthenticationType.UserNamePassword;
 			this.connData.StartingDirectory = destinationDirectory;
 
 			//Set the messagebox
@@ -772,7 +772,7 @@ namespace SqlSync
 					this.connData.DatabaseName,
 					this.connData.UserId,
 					this.connData.Password,
-					this.connData.UseWindowAuthentication,
+					this.connData.AuthenticationType.ToString(),
 					this.settingsControl1.Project,
 					parent);
 
@@ -922,7 +922,7 @@ namespace SqlSync
             this.Cursor = Cursors.Default;
         }
 
-        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
             Connection.ConnectionData oldConnData = new Connection.ConnectionData();
             this.connData.Fill(oldConnData);
@@ -933,12 +933,8 @@ namespace SqlSync
             {
                 this.connData.UserId = username;
                 this.connData.Password = password;
-                this.connData.UseWindowAuthentication = false;
             }
-            else
-            {
-                this.connData.UseWindowAuthentication = true;
-            }
+            this.connData.AuthenticationType = authType;
             this.connData.ScriptTimeout = 5;
 
             try

@@ -13,6 +13,7 @@ namespace SqlSync.SqlBuild
 {
     public class UtilityHelper
     {
+        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public const string ConfigFileName = "SqlSync.cfg";
         public static List<string> GetRecentServers(out ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl)
         {
@@ -39,7 +40,7 @@ namespace SqlSync.SqlBuild
             }
             return recentDbs;
         }
-        public static void UpdateRecentServerList(string databaseName, string userName, string password)
+        public static void UpdateRecentServerList(string databaseName, string userName, string password, AuthenticationType authType)
         {
             try
             {
@@ -53,7 +54,7 @@ namespace SqlSync.SqlBuild
                 DataRow[] row = config.ServerConfiguration.Select(config.ServerConfiguration.NameColumn.ColumnName + " ='" + databaseName + "'");
                 if (row.Length == 0)
                 {
-                    config.ServerConfiguration.AddServerConfigurationRow(databaseName, DateTime.Now, userName, password);
+                    config.ServerConfiguration.AddServerConfigurationRow(databaseName, DateTime.Now, userName, password, authType.ToString());
                 }
                 else
                 {
@@ -63,12 +64,12 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error updating Recent Server List\r\n" + exe.ToString(), System.Diagnostics.EventLogEntryType.Error, 432);
+                log.Error("Error updating Recent Server List", exe);
             }
 
 
         }
-        public static void GetServerCredentials(ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl, string serverName, out string username, out string password)
+        public static AuthenticationType GetServerCredentials(ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl, string serverName, out string username, out string password)
         {
             if (serverConfigTbl != null)
             {
@@ -78,7 +79,7 @@ namespace SqlSync.SqlBuild
                     var r = row.First();
                     if (!string.IsNullOrWhiteSpace(r.UserName))
                     {
-                     
+
                         username = Cryptography.DecryptText(r.UserName, ConnectionHelper.ConnectCryptoKey);
                     }
                     else
@@ -94,13 +95,24 @@ namespace SqlSync.SqlBuild
                     {
                         password = string.Empty;
                     }
-                    return;
+
+
+                    AuthenticationType authType;
+                    if (Enum.TryParse<AuthenticationType>(r.AuthenticationType, out authType))
+                    {
+                        return authType;
+                    }
+                    else
+                    {
+                        return AuthenticationType.UserNamePassword;
+                    }
+
                 }
             }
 
             password = string.Empty;
             username = string.Empty;
-            return;
+            return AuthenticationType.UserNamePassword;
         }
 
         private static string defaultBrowser = string.Empty;

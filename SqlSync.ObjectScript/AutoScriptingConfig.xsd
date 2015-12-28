@@ -26,7 +26,7 @@
 		<xs:attribute name="DatabaseName" type="xs:string" msprop:nullValue="_empty" />
 		<xs:attribute name="UserName" type="xs:string" msprop:nullValue="_empty" />
 		<xs:attribute name="Password" type="xs:string" msprop:nullValue="_empty" />
-		<xs:attribute name="UseWindowsAuthentication" type="xs:boolean" default="true" />
+		<xs:attribute name="AuthenticationType" type="AuthType" default="WindowsAuthentication" />
 	</xs:complexType>
 	<xs:complexType name="PostScriptingAction">
 		<xs:sequence></xs:sequence>
@@ -34,4 +34,12 @@
 		<xs:attribute name="Command" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
 		<xs:attribute name="Arguments" type="xs:string" form="unqualified" msprop:nullValue="_empty" />
 	</xs:complexType>
+  <xs:simpleType name="AuthType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration id="WindowsAuthentication" value="WindowsAuthentication"/>
+      <xs:enumeration id="AzureActiveDirectory" value="AzureActiveDirectory"/>
+      <xs:enumeration id="AzureUserNamePassword" value="AzureUserNamePassword"/>
+      <xs:enumeration id="UserNamePassword" value="UserNamePassword"/>
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

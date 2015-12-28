@@ -30,9 +30,9 @@ namespace SqlSync.Connection
 
             appName = string.Format("Application Name=Sql Build Manager v{0} [{1}];", version, System.Environment.UserName);
         }
-        public static SqlConnection GetConnection(string dbName, string serverName, string uid, string pw, bool useWindowsAuth, int scriptTimeOut)
+        public static SqlConnection GetConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut)
         {
-            String conn = GetConnectionString(dbName, serverName, uid, pw, useWindowsAuth, scriptTimeOut);
+            String conn = GetConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut);
             SqlConnection dbConn = new SqlConnection(conn);
 
             return dbConn;
@@ -46,7 +46,7 @@ namespace SqlSync.Connection
                 connData.SQLServerName,
                 connData.UserId,
                 connData.Password,
-                connData.UseWindowAuthentication,
+                connData.AuthenticationType,
                 connData.ScriptTimeout);
         }
         public static string GetConnectionString(ConnectionData connData)
@@ -58,19 +58,27 @@ namespace SqlSync.Connection
                 connData.SQLServerName,
                 connData.UserId,
                 connData.Password,
-                connData.UseWindowAuthentication,
+                connData.AuthenticationType,
                 connData.ScriptTimeout);
         }
-        public static string GetConnectionString(string dbName, string serverName, string uid, string pw, bool useWindowsAuth, int scriptTimeOut)
+        public static string GetConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut)
         {
             string conn;
-            if (useWindowsAuth == false)
+            switch(authType)
             {
-                conn = "User ID=" + uid + ";Initial Catalog=" + dbName + ";Data Source=" + serverName + ";Password=" + pw + ";CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;"+ appName;
-            }
-            else
-            {
-                conn = "Data Source=" + serverName + ";Initial Catalog=" + dbName + "; Trusted_Connection=Yes;CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;" + appName;
+                case AuthenticationType.WindowsAuthentication:
+                    conn = "Data Source=" + serverName + ";Initial Catalog=" + dbName + ";Trusted_Connection=Yes;CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;" + appName;
+                    break;
+                case AuthenticationType.AzureActiveDirectory:
+                    conn = "Data Source=" + serverName + ";Initial Catalog=" + dbName + ";Authentication=Active Directory Integrated;CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;" + appName;
+                    break;
+                case AuthenticationType.AzureUserNamePassword:
+                    conn = "Data Source=" + serverName + ";Initial Catalog=" + dbName + ";Authentication=Active Directory Password;UID=" + uid + ";PWD=" + pw + ";CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;" + appName;
+                    break;
+                case AuthenticationType.UserNamePassword:
+                default:
+                    conn = "Data Source=" + serverName + ";Initial Catalog=" + dbName + ";User ID=" + uid + ";Password=" + pw + ";CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;" + appName;
+                    break;
             }
             return conn;
         }
@@ -109,7 +117,7 @@ namespace SqlSync.Connection
 
         public static bool TestDatabaseConnection(string dbName, string serverName, int scriptTimeOut)
         {
-            return TestDatabaseConnection(new ConnectionData() { DatabaseName = dbName, ScriptTimeout = scriptTimeOut, SQLServerName = serverName , UseWindowAuthentication= true});
+            return TestDatabaseConnection(new ConnectionData() { DatabaseName = dbName, ScriptTimeout = scriptTimeOut, SQLServerName = serverName , AuthenticationType = AuthenticationType.UserNamePassword});
         }
         public static bool TestDatabaseConnection(ConnectionData connData)
         {

@@ -67,18 +67,6 @@ namespace SqlSync.SqlBuild
 
             }
 
-
-            //if (dict.ContainsKey("b"))
-            //{
-            //    cmdLine.BuildDesignated = true;
-            //    cmdLine.BuildFileName = dict["b"];
-            //}
-            //if (dict.ContainsKey("build"))
-            //{
-            //    cmdLine.BuildDesignated = true;
-            //    cmdLine.BuildFileName = dict["build"];
-            //}
-
             if (dict.ContainsKey("override"))
             {
                 cmdLine.OverrideDesignated = true;
@@ -205,6 +193,38 @@ namespace SqlSync.SqlBuild
 
             if (dict.ContainsKey("savedcreds"))
                 cmdLine.SavedCreds = true;
+
+
+            if(dict.ContainsKey("authtype"))
+            {
+                switch(dict["authtype"].ToLower())
+                {
+                    case "windows":
+                        cmdLine.AuthenticationType = Connection.AuthenticationType.WindowsAuthentication;
+                        break;
+                    case "azuread":
+                        cmdLine.AuthenticationType = Connection.AuthenticationType.AzureActiveDirectory;
+                        break;
+                    case "azurepassword":
+                        cmdLine.AuthenticationType = Connection.AuthenticationType.AzureUserNamePassword;
+                        break;
+                    case "password":
+                    default:
+                        cmdLine.AuthenticationType = Connection.AuthenticationType.UserNamePassword;
+                        break;
+                }
+            }
+            else
+            {
+                if(!string.IsNullOrWhiteSpace(cmdLine.Password) && !string.IsNullOrWhiteSpace(cmdLine.UserName))
+                {
+                    cmdLine.AuthenticationType = Connection.AuthenticationType.UserNamePassword;
+                }
+                else
+                {
+                    cmdLine.AuthenticationType = Connection.AuthenticationType.WindowsAuthentication;
+                }
+            }
             
             return cmdLine;
         }

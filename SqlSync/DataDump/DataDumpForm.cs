@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using SqlSync.TableScript;
 using SqlSync.DbInformation;
+using SqlSync.Connection;
+
 namespace SqlSync.DataDump
 {
 	/// <summary>
@@ -534,7 +536,7 @@ namespace SqlSync.DataDump
 			lstResults.Sort();
 		}
 
-        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
             Connection.ConnectionData oldConnData = new Connection.ConnectionData();
             this.connData.Fill(oldConnData);
@@ -545,12 +547,8 @@ namespace SqlSync.DataDump
             {
                 this.connData.UserId = username;
                 this.connData.Password = password;
-                this.connData.UseWindowAuthentication = false;
             }
-            else
-            {
-                this.connData.UseWindowAuthentication = true;
-            }
+            this.connData.AuthenticationType = authType;
             this.connData.ScriptTimeout = 5;
             try
             {

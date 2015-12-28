@@ -103,7 +103,7 @@ namespace SqlSync.Connection.UnitTest
         public void GetConnectionStringTest_FromConnectionDataObj_WithPassword()
         {
             ConnectionData connData = new ConnectionData("myserver", "mydatabase");
-            connData.UseWindowAuthentication = false;
+            connData.AuthenticationType = AuthenticationType.UserNamePassword;
             connData.UserId = "User";
             connData.Password = "Password";
             string expected = String.Format("User ID=User;Initial Catalog=mydatabase;Data Source=myserver;Password=Password;CONNECTION TIMEOUT=20;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
@@ -118,7 +118,7 @@ namespace SqlSync.Connection.UnitTest
         public void GetConnectionStringTest_FromConnectionDataObj_WithPassordAndTimeout()
         {
             ConnectionData connData = new ConnectionData("myserver", "mydatabase");
-            connData.UseWindowAuthentication = false;
+            connData.AuthenticationType = AuthenticationType.UserNamePassword;
             connData.UserId = "User";
             connData.Password = "Password";
             connData.ScriptTimeout = 30;
@@ -138,11 +138,10 @@ namespace SqlSync.Connection.UnitTest
             string serverName = "myserver";
             string uid = "userid";
             string pw = "password";
-            bool useWindowsAuth = false; 
             int scriptTimeOut = 100;
             string expected = string.Format("User ID=userid;Initial Catalog=mydatabase;Data Source=myserver;Password=password;CONNECTION TIMEOUT=100;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
             string actual;
-            actual = ConnectionHelper.GetConnectionString(dbName, serverName, uid, pw, useWindowsAuth, scriptTimeOut);
+            actual = ConnectionHelper.GetConnectionString(dbName, serverName, uid, pw, AuthenticationType.UserNamePassword, scriptTimeOut);
             Assert.AreEqual(expected, actual);
         }
 
@@ -156,11 +155,10 @@ namespace SqlSync.Connection.UnitTest
             string serverName = "myserver";
             string uid = "userid";
             string pw = "password";
-            bool useWindowsAuth = false;
             int scriptTimeOut = 100;
             string expected = string.Format("User ID=userid;Initial Catalog=mydatabase;Data Source=myserver;Password=password;CONNECTION TIMEOUT=100;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
             SqlConnection actual;
-            actual = ConnectionHelper.GetConnection(dbName, serverName, uid, pw, useWindowsAuth, scriptTimeOut);
+            actual = ConnectionHelper.GetConnection(dbName, serverName, uid, pw, AuthenticationType.UserNamePassword, scriptTimeOut);
             Assert.IsNotNull(actual);
             Assert.AreEqual(expected, actual.ConnectionString);
             Assert.AreEqual(System.Data.ConnectionState.Closed, actual.State);
@@ -377,7 +375,7 @@ namespace SqlSync.Connection.UnitTest
                 DatabaseName = "SqlBuildTest",
                 ScriptTimeout = 20,
                 SQLServerName = "localhost\\SQLEXPRESS",
-                UseWindowAuthentication = true
+                AuthenticationType = AuthenticationType.WindowsAuthentication
             };
             bool expected = true;
             bool actual;
@@ -395,7 +393,7 @@ namespace SqlSync.Connection.UnitTest
                 DatabaseName = "BadDatabaseNAme",
                 ScriptTimeout = 20,
                 SQLServerName = "localhost\\SQLEXPRESS",
-                UseWindowAuthentication = true
+                AuthenticationType = AuthenticationType.WindowsAuthentication
             };
             bool expected = false;
             bool actual;

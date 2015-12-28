@@ -222,9 +222,7 @@
     </Compile>
     <Compile Include="Remote\RemoteHelper.cs" />
     <Compile Include="ScriptBatchCollection.cs" />
-    <Compile Include="ScriptRowPartial.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ScriptRowPartial.cs" />
     <Compile Include="ScriptRunLog.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -234,7 +232,6 @@
     <Compile Include="SerializableSortedDictionary.cs" />
     <Compile Include="ServerConnectConfig.cs">
       <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="ServerConnectConfig.Designer.cs">
       <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
@@ -259,7 +256,6 @@
     </Compile>
     <Compile Include="SQLSyncBuildProject.cs">
       <DependentUpon>SQLSyncBuildProject.xsd</DependentUpon>
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="ScriptStatusType.cs" />
     <Compile Include="SQLSyncBuildProject.Designer.cs">

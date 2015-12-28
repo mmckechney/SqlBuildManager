@@ -237,7 +237,7 @@ namespace SqlSync.ObjectScript
                 tmpData.SQLServerName = objUpdate.SourceServer;
                 tmpData.Password = basicConnData.Password;
                 tmpData.UserId = basicConnData.UserId;
-                tmpData.UseWindowAuthentication = basicConnData.UseWindowAuthentication;
+                tmpData.AuthenticationType = basicConnData.AuthenticationType;
                 helper.ConnData = tmpData;
                 helper.ScriptAsAlter = objUpdate.ScriptAsAlter;
                 helper.IncludePermissions = objUpdate.IncludePermissions;
@@ -1049,7 +1049,7 @@ namespace SqlSync.ObjectScript
             {
                 if (this.smoServer == null)
                 {
-                    if (this.data.UseWindowAuthentication)
+                    if (this.data.AuthenticationType == Connection.AuthenticationType.WindowsAuthentication)
                         this.smoServer = new Microsoft.SqlServer.Management.Smo.Server(this.ConnData.SQLServerName);
                     else
                         this.smoServer = new Server(new ServerConnection(this.ConnData.SQLServerName, this.ConnData.UserId, this.ConnData.Password));

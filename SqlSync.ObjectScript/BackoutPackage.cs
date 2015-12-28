@@ -73,7 +73,7 @@ namespace SqlSync.ObjectScript
             tmpData.SQLServerName = sourceServer;
             tmpData.Password = connData.Password;
             tmpData.UserId = connData.UserId;
-            tmpData.UseWindowAuthentication = connData.UseWindowAuthentication;
+            tmpData.AuthenticationType = connData.AuthenticationType;
             ObjectScriptHelper helper = new ObjectScriptHelper(tmpData);
 
 

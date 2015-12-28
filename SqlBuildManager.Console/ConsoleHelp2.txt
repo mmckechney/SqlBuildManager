@@ -17,6 +17,7 @@ Action value options (/Action=<value>)
 
 
 General Authentication settings (/Action={Build|Threaded|Remote|GetDifference|Syncronize})
+    /AuthType="<type>"                Values: "Windows" (default if no Username/Password set), "AzureAD", "AzurePassword", "Password" (default if Username/Password set)
     /UserName="<username>"            The username to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
     /Password="<password>"            The password to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
     /Database="<database name>"       1) Name of a single database to run against or 2) source database for scripting or runtime configuration

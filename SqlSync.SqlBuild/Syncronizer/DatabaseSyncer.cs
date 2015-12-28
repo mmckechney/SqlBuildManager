@@ -21,13 +21,13 @@ namespace SqlSync.SqlBuild.Syncronizer
             {
                 DatabaseName = goldDatabase,
                 SQLServerName = goldServer,
-                UseWindowAuthentication = true
+                AuthenticationType = AuthenticationType.WindowsAuthentication
             };
             ConnectionData toUpdate = new ConnectionData()
             {
                 DatabaseName = toUpdateDatabase,
                 SQLServerName = toUpdateServer,
-                UseWindowAuthentication = true
+                AuthenticationType = AuthenticationType.WindowsAuthentication
             };
 
             return SyncronizeDatabases(gold, toUpdate,continueOnFailure);

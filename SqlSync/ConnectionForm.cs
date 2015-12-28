@@ -167,7 +167,7 @@ namespace SqlSync
 				this.connData.Password = sqlConnect1.Password;  
 				this.connData.SQLServerName = sqlConnect1.SQLServer;
 				this.connData.UserId = sqlConnect1.UserId;
-				this.connData.UseWindowAuthentication = sqlConnect1.UseWindowsAuthentication;
+				this.connData.AuthenticationType = sqlConnect1.AuthenticationType;
 
 				this.databaseList = sqlConnect1.DatabaseList;
 				this.DialogResult = DialogResult.OK;

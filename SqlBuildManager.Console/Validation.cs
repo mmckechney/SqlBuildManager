@@ -17,8 +17,20 @@ namespace SqlBuildManager.Console
         {
             string error = string.Empty;
             errorMessages = new string[0];
+
+            if (cmdLine.AuthenticationType == AuthenticationType.AzureUserNamePassword || cmdLine.AuthenticationType == AuthenticationType.UserNamePassword)
+            {
+                if (string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+                {
+                    error = "The /UserName and /Password arguments are required when authentication type is set to Password or AzurePassword.";
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
+                    log.Error(error);
+                    return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
+                }
+            }
+
             //Validate that if username or password is specified, then both are
-            if(!string.IsNullOrWhiteSpace(cmdLine.UserName) || !string.IsNullOrWhiteSpace(cmdLine.Password))
+            if (!string.IsNullOrWhiteSpace(cmdLine.UserName) || !string.IsNullOrWhiteSpace(cmdLine.Password))
             {
                 if(string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
                 {

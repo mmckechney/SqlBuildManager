@@ -51,6 +51,8 @@ namespace SqlSync.SqlBuild
         public string OutputSbm { get; set; }
         [System.Runtime.Serialization.DataMember()]
         public bool SavedCreds { get; set; }
+        [System.Runtime.Serialization.DataMember()]
+        public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; }
 
     }
 }

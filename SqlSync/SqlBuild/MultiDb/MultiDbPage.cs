@@ -121,7 +121,7 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             if (this.ServerRemoved != null)
             {
-                this.ServerRemoved(this, this.serverName,"","");
+                this.ServerRemoved(this, this.serverName,"","", AuthenticationType.WindowsAuthentication);
             }
         }
 

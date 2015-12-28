@@ -72,11 +72,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 QueryCollectionRunnerUpdate(this, new QueryCollectionRunnerUpdateEventArgs(this.serverName, this.databaseName, "Starting"));
 
             ConnectionData connData = new ConnectionData(serverName, databaseName);
-            if(!this.masterConnData.UseWindowAuthentication)
+            if(this.masterConnData.AuthenticationType == AuthenticationType.AzureUserNamePassword || this.masterConnData.AuthenticationType == AuthenticationType.UserNamePassword)
             {
                 connData.UserId = this.masterConnData.UserId;
                 connData.Password = this.masterConnData.Password;
-                connData.UseWindowAuthentication = false;
+                connData.AuthenticationType = this.masterConnData.AuthenticationType;
             }
             connData.ScriptTimeout = this.scriptTimeout;
             SqlConnection conn = ConnectionHelper.GetConnection(connData);

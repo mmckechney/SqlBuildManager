@@ -9,6 +9,8 @@ using SqlSync.SprocTest.Configuration;
 using SqlSync.SprocTest;
 using System.IO;
 using SqlSync.DbInformation;
+using SqlSync.Connection;
+
 namespace SqlSync.Test
 {
     public partial class SprocTestConfigForm : Form, SqlSync.MRU.IMRUClient 
@@ -610,19 +612,15 @@ namespace SqlSync.Test
             return null;
         }
 
-        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
             this.connData.SQLServerName = serverName;
             if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
             {
                 this.connData.UserId = username;
                 this.connData.Password = password;
-                this.connData.UseWindowAuthentication = false;
             }
-            else
-            {
-                this.connData.UseWindowAuthentication = true;
-            }
+            this.connData.AuthenticationType = authType;
 
             if(!bgSprocList.IsBusy)
                 bgSprocList.RunWorkerAsync();

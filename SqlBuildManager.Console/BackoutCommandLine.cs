@@ -34,11 +34,11 @@ namespace SqlBuildManager.Console
 
             if (connectionData.UserId.Length > 0 && connectionData.Password.Length > 0)
             {
-                connectionData.UseWindowAuthentication = false;
+                connectionData.AuthenticationType = AuthenticationType.UserNamePassword;
             }
             else
             {
-                connectionData.UseWindowAuthentication = true;
+                connectionData.AuthenticationType = AuthenticationType.WindowsAuthentication;
             }
 
             return SqlSync.ObjectScript.BackoutPackage.CreateDefaultBackoutPackage(connectionData, sourcePackageName, cmdLine.Server, cmdLine.Database);

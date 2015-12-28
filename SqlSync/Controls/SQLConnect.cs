@@ -30,7 +30,6 @@ namespace SqlSync
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox ddServers;
-        private System.Windows.Forms.CheckBox chkWindowsAuthentication;
         private bool displayDatabaseDropDown = true;
         private System.Windows.Forms.Label lblDatabases;
         private DatabaseList databaseList = new DatabaseList();
@@ -48,6 +47,8 @@ namespace SqlSync
         private ToolStripMenuItem testToolStripMenuItem;
         //private ToolStripMenuItem toolStripMenuItem1;
         private IContainer components;
+        private Label label4;
+        private ComboBox ddAuthentication;
         private ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl = null;
         [Category("Appearance")]
         public bool DisplayDatabaseDropDown
@@ -117,7 +118,6 @@ namespace SqlSync
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.ddServers = new System.Windows.Forms.ComboBox();
-            this.chkWindowsAuthentication = new System.Windows.Forms.CheckBox();
             this.btnConnect = new System.Windows.Forms.Button();
             this.bgWorker = new System.ComponentModel.BackgroundWorker();
             this.treeView1 = new System.Windows.Forms.TreeView();
@@ -130,21 +130,24 @@ namespace SqlSync
             this.importFromMasterListMenuStripItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.label4 = new System.Windows.Forms.Label();
+            this.ddAuthentication = new System.Windows.Forms.ComboBox();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblDatabases
             // 
-            this.lblDatabases.Location = new System.Drawing.Point(8, 144);
+            this.lblDatabases.Location = new System.Drawing.Point(9, 179);
             this.lblDatabases.Name = "lblDatabases";
             this.lblDatabases.Size = new System.Drawing.Size(88, 16);
             this.lblDatabases.TabIndex = 25;
             this.lblDatabases.Text = "Databases";
+            this.lblDatabases.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
             // 
             // ddDatabase
             // 
             this.ddDatabase.Enabled = false;
-            this.ddDatabase.Location = new System.Drawing.Point(12, 160);
+            this.ddDatabase.Location = new System.Drawing.Point(12, 198);
             this.ddDatabase.Name = "ddDatabase";
             this.ddDatabase.Size = new System.Drawing.Size(240, 21);
             this.ddDatabase.TabIndex = 24;
@@ -152,7 +155,7 @@ namespace SqlSync
             // txtPassword
             // 
             this.txtPassword.Enabled = false;
-            this.txtPassword.Location = new System.Drawing.Point(12, 104);
+            this.txtPassword.Location = new System.Drawing.Point(12, 139);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(240, 20);
@@ -163,59 +166,53 @@ namespace SqlSync
             // txtUser
             // 
             this.txtUser.Enabled = false;
-            this.txtUser.Location = new System.Drawing.Point(12, 64);
+            this.txtUser.Location = new System.Drawing.Point(12, 101);
             this.txtUser.Name = "txtUser";
             this.txtUser.Size = new System.Drawing.Size(240, 20);
             this.txtUser.TabIndex = 21;
-            this.txtUser.Text = "sa";
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(12, 88);
+            this.label3.Location = new System.Drawing.Point(8, 121);
+            this.label3.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(88, 16);
+            this.label3.Size = new System.Drawing.Size(180, 18);
             this.label3.TabIndex = 22;
             this.label3.Text = "Password";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(12, 48);
+            this.label2.Location = new System.Drawing.Point(8, 83);
+            this.label2.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(120, 16);
+            this.label2.Size = new System.Drawing.Size(180, 18);
             this.label2.TabIndex = 20;
             this.label2.Text = "User Name";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(12, 8);
+            this.label1.Location = new System.Drawing.Point(9, 5);
+            this.label1.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(240, 16);
+            this.label1.Size = new System.Drawing.Size(180, 18);
             this.label1.TabIndex = 19;
             this.label1.Text = "SQL Servers";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
             // 
             // ddServers
             // 
-            this.ddServers.Location = new System.Drawing.Point(12, 24);
+            this.ddServers.Location = new System.Drawing.Point(12, 23);
             this.ddServers.Name = "ddServers";
             this.ddServers.Size = new System.Drawing.Size(240, 21);
             this.ddServers.TabIndex = 18;
             this.ddServers.SelectionChangeCommitted += new System.EventHandler(this.ddServers_SelectionChangeCommitted);
             // 
-            // chkWindowsAuthentication
-            // 
-            this.chkWindowsAuthentication.Checked = true;
-            this.chkWindowsAuthentication.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkWindowsAuthentication.Location = new System.Drawing.Point(12, 128);
-            this.chkWindowsAuthentication.Name = "chkWindowsAuthentication";
-            this.chkWindowsAuthentication.Size = new System.Drawing.Size(168, 16);
-            this.chkWindowsAuthentication.TabIndex = 27;
-            this.chkWindowsAuthentication.Text = "Use Windows Authentication";
-            this.chkWindowsAuthentication.CheckedChanged += new System.EventHandler(this.chkWindowsAuthentication_CheckedChanged);
-            // 
             // btnConnect
             // 
             this.btnConnect.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnConnect.Location = new System.Drawing.Point(188, 128);
+            this.btnConnect.Location = new System.Drawing.Point(188, 169);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(64, 23);
             this.btnConnect.TabIndex = 28;
@@ -237,7 +234,7 @@ namespace SqlSync
             this.treeView1.ImageIndex = 2;
             this.treeView1.ImageList = this.imageList1;
             this.treeView1.Indent = 19;
-            this.treeView1.Location = new System.Drawing.Point(12, 187);
+            this.treeView1.Location = new System.Drawing.Point(12, 227);
             this.treeView1.Name = "treeView1";
             treeNode2.ImageIndex = 3;
             treeNode2.Name = "Node0";
@@ -246,7 +243,7 @@ namespace SqlSync
             treeNode2});
             this.treeView1.SelectedImageIndex = 3;
             this.treeView1.ShowRootLines = false;
-            this.treeView1.Size = new System.Drawing.Size(240, 327);
+            this.treeView1.Size = new System.Drawing.Size(240, 287);
             this.treeView1.TabIndex = 29;
             this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
             this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
@@ -324,11 +321,37 @@ namespace SqlSync
             this.imageList1.Images.SetKeyName(2, "Server1.png");
             this.imageList1.Images.SetKeyName(3, "data_server.ico");
             // 
+            // label4
+            // 
+            this.label4.Location = new System.Drawing.Point(9, 44);
+            this.label4.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(180, 18);
+            this.label4.TabIndex = 33;
+            this.label4.Text = "Authentication type";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+            // 
+            // ddAuthentication
+            // 
+            this.ddAuthentication.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ddAuthentication.FormattingEnabled = true;
+            this.ddAuthentication.Items.AddRange(new object[] {
+            "Windows Authentication",
+            "Username/Password",
+            "Azure AD Windows Authentication",
+            "Azure Username/Password"});
+            this.ddAuthentication.Location = new System.Drawing.Point(12, 62);
+            this.ddAuthentication.Name = "ddAuthentication";
+            this.ddAuthentication.Size = new System.Drawing.Size(240, 21);
+            this.ddAuthentication.TabIndex = 32;
+            this.ddAuthentication.SelectionChangeCommitted += new System.EventHandler(this.ddAuthentication_SelectionChangeCommitted);
+            // 
             // SQLConnect
             // 
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.ddAuthentication);
             this.Controls.Add(this.treeView1);
             this.Controls.Add(this.btnConnect);
-            this.Controls.Add(this.chkWindowsAuthentication);
             this.Controls.Add(this.lblDatabases);
             this.Controls.Add(this.ddDatabase);
             this.Controls.Add(this.txtPassword);
@@ -391,13 +414,26 @@ namespace SqlSync
                 return this.txtUser.Text;
             }
         }
-        public bool UseWindowsAuthentication
+        public SqlSync.Connection.AuthenticationType AuthenticationType
         {
             get
-            {
-                return this.chkWindowsAuthentication.Checked;
+            { 
+                switch(ddAuthentication.SelectedText)
+                {
+                   
+                    case "Username/Password":
+                        return SqlSync.Connection.AuthenticationType.UserNamePassword;
+                    case "Azure AD Windows Authentication":
+                        return SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
+                    case "Azure Username/Password":
+                        return SqlSync.Connection.AuthenticationType.AzureUserNamePassword;
+                    case "Windows Authentication":
+                    default:
+                        return SqlSync.Connection.AuthenticationType.WindowsAuthentication;
+                }
             }
         }
+
         public DatabaseList DatabaseList
         {
             get
@@ -420,7 +456,7 @@ namespace SqlSync
                 connData.SQLServerName = this.ddServers.Text;
                 connData.UserId = this.txtUser.Text;
                 connData.Password = this.txtPassword.Text;
-                connData.UseWindowAuthentication = chkWindowsAuthentication.Checked;
+                connData.AuthenticationType = this.AuthenticationType;
                 connData.ScriptTimeout = 10;
 
                 bool hasError;
@@ -454,8 +490,8 @@ namespace SqlSync
 
                 if (this.ServerConnected != null)
                 {
-                    UtilityHelper.UpdateRecentServerList(this.ddServers.Text, this.txtUser.Text, this.txtPassword.Text);
-                    this.ServerConnected(this, new ServerConnectedEventArgs(true, chkWindowsAuthentication.Checked));
+                    UtilityHelper.UpdateRecentServerList(this.ddServers.Text, this.txtUser.Text, this.txtPassword.Text, this.AuthenticationType);
+                    this.ServerConnected(this, new ServerConnectedEventArgs(true, this.AuthenticationType));
                 }
 
 
@@ -498,20 +534,25 @@ namespace SqlSync
                 //MessageBox.Show(err.Message,"Error");
             }
         }
-
-        private void chkWindowsAuthentication_CheckedChanged(object sender, System.EventArgs e)
+        private void ddAuthentication_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            if (chkWindowsAuthentication.Checked)
+            switch (ddAuthentication.SelectedItem.ToString())
             {
-                txtPassword.Enabled = false;
-                txtUser.Enabled = false;
-            }
-            else
-            {
-                txtPassword.Enabled = true;
-                txtUser.Enabled = true;
+
+                case "Username/Password":
+                case "Azure Username/Password":
+                    txtPassword.Enabled = true;
+                    txtUser.Enabled = true;
+                    break;
+                case "Azure AD Windows Authentication":
+                case "Windows Authentication":
+                default:
+                    txtPassword.Enabled = false;
+                    txtUser.Enabled = false;
+                    break;
             }
         }
+      
 
         private void btnConnect_Click(object sender, System.EventArgs e)
         {
@@ -764,17 +805,29 @@ namespace SqlSync
         private void ddServers_SelectionChangeCommitted(object sender, EventArgs e)
         {
             string username, password;
-            UtilityHelper.GetServerCredentials(this.serverConfigTbl, this.ddServers.SelectedItem.ToString(), out username, out password);
+            Connection.AuthenticationType authType = UtilityHelper.GetServerCredentials(this.serverConfigTbl, this.ddServers.SelectedItem.ToString(), out username, out password);
 
             if (!string.IsNullOrWhiteSpace(username) || !string.IsNullOrWhiteSpace(password))
             {
-                chkWindowsAuthentication.Checked = false;
                 this.txtPassword.Text = password;
                 this.txtUser.Text = username;
-
             }
 
-
+            switch (authType)
+            {
+                case Connection.AuthenticationType.UserNamePassword:
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Username/Password");
+                    break;
+                case Connection.AuthenticationType.WindowsAuthentication:
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Windows Authentication");
+                    break;
+                case Connection.AuthenticationType.AzureActiveDirectory:
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Azure AD Windows Authentication");
+                    break;
+                case Connection.AuthenticationType.AzureUserNamePassword:
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Azure Username/Password");
+                    break;
+            }
         }
 
         private void txtPassword_MouseEnter(object sender, EventArgs e)
@@ -789,20 +842,20 @@ namespace SqlSync
             this.txtPassword.Invalidate();
         }
 
-
+       
     }
 
-	#region ## ServerConnected Event Declaration ##
-	public delegate void ServerConnectedEventHandler(object sender, ServerConnectedEventArgs e);
+    #region ## ServerConnected Event Declaration ##
+    public delegate void ServerConnectedEventHandler(object sender, ServerConnectedEventArgs e);
 	public class ServerConnectedEventArgs : EventArgs
 	{
 		public readonly bool Connected;
-		public readonly bool UseWindowsAuthentication;
+		public readonly SqlSync.Connection.AuthenticationType AuthenticationType;
 
-		public ServerConnectedEventArgs(bool connected, bool useWindowsAuthentication)
+		public ServerConnectedEventArgs(bool connected, SqlSync.Connection.AuthenticationType authenticationType)
 		{
 			this.Connected = connected;
-			this.UseWindowsAuthentication = useWindowsAuthentication;
+			this.AuthenticationType = authenticationType;
 		}
 	}
 	#endregion

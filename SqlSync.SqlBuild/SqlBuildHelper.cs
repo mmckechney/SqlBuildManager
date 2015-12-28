@@ -1405,7 +1405,7 @@ namespace SqlSync.SqlBuild
             commitDate = DateTime.MinValue;
             SqlCommand cmd = new SqlCommand("SELECT AllowScriptBlock,ScriptFileHash,CommitDate,ScriptText FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC");
 			cmd.Parameters.AddWithValue("@ScriptId",scriptId);
-			cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName,cData.SQLServerName,cData.UserId,cData.Password,cData.UseWindowAuthentication,2);
+			cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName,cData.SQLServerName,cData.UserId,cData.Password,cData.AuthenticationType,2);
             try
             {
                 cmd.Connection.Open();
@@ -1868,7 +1868,7 @@ namespace SqlSync.SqlBuild
             if (this.connectDictionary.ContainsKey(databaseKey) == false)
 			{
 				BuildConnectData cData = new BuildConnectData();
-                cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName, this.connData.UserId, this.connData.Password, connData.UseWindowAuthentication, this.connData.ScriptTimeout);
+                cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName, this.connData.UserId, this.connData.Password, connData.AuthenticationType, this.connData.ScriptTimeout);
 				cData.Connection.Open();
 				cData.HasLoggingTable = LogTableExists(cData.Connection);
 				cData.Connection.InfoMessage +=new SqlInfoMessageEventHandler(Connection_InfoMessage);

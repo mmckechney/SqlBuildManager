@@ -319,7 +319,7 @@ namespace SqlSync
             data.UserId = row.UserName;
             data.Password = row.Password;
             data.SQLServerName = row.ServerName;
-            data.UseWindowAuthentication = row.UseWindowsAuthentication;
+            data.AuthenticationType = (AuthenticationType)Enum.Parse(typeof(AuthenticationType), row.AuthenticationType);
             data.StartingDirectory = row.ScriptToPath;
             this.Text = "Scripting " + row.DatabaseName + " on " + row.ServerName+" :: ";
 

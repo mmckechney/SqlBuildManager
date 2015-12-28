@@ -17,17 +17,17 @@ namespace SqlSync.SqlBuild.Syncronizer
                                                                string toUpdateServer, string toUpdateDatabase)
         {
             ConnectionData goldenCopy = new ConnectionData()
-                {
-                    DatabaseName = goldDatabase,
-                    SQLServerName = goldServer,
-                    UseWindowAuthentication = true
-                };
+            {
+                DatabaseName = goldDatabase,
+                SQLServerName = goldServer,
+                AuthenticationType = AuthenticationType.WindowsAuthentication
+            };
             ConnectionData toBeUpdated = new ConnectionData()
-                {
-                    DatabaseName = toUpdateDatabase,
-                    SQLServerName = toUpdateServer,
-                    UseWindowAuthentication = true
-                };
+            {
+                DatabaseName = toUpdateDatabase,
+                SQLServerName = toUpdateServer,
+                AuthenticationType = AuthenticationType.WindowsAuthentication
+            };
 
             return GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
         }

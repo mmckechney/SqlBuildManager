@@ -208,9 +208,9 @@
     </Compile>
     <Content Include="AutoScriptingConfig.xsd">
       <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>AutoScriptingConfig.Designer.cs</LastGenOutput>
       <SubType>
       </SubType>
+      <LastGenOutput>AutoScriptingConfig.Designer.cs</LastGenOutput>
     </Content>
     <Content Include="AutoScriptList.xsd">
       <SubType>Designer</SubType>

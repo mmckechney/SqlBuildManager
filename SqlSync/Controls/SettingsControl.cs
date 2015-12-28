@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
 using SqlSync.SqlBuild;
+using SqlSync.Connection;
+
 namespace SqlSync
 {
 	/// <summary>
@@ -284,9 +286,9 @@ namespace SqlSync
                     this.lblServer.Text = this.ddRecentServers.SelectedItem.ToString();
                     
                     string username, password;
-                    UtilityHelper.GetServerCredentials(this.serverConfigTbl, this.ddRecentServers.SelectedItem.ToString(), out username, out password);
+                    AuthenticationType authType = UtilityHelper.GetServerCredentials(this.serverConfigTbl, this.ddRecentServers.SelectedItem.ToString(), out username, out password);
 
-                    this.ServerChanged(this,this.ddRecentServers.SelectedItem.ToString(),username,password);
+                    this.ServerChanged(this,this.ddRecentServers.SelectedItem.ToString(),username,password, authType);
                 }
             }
             else
@@ -315,5 +317,5 @@ namespace SqlSync
         }
 
     }
-    public delegate void ServerChangedEventHandler(object sender, string serverName, string username, string password);
+    public delegate void ServerChangedEventHandler(object sender, string serverName, string username, string password, AuthenticationType authType);
 }
