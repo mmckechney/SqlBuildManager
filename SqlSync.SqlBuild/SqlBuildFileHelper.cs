@@ -202,14 +202,28 @@ namespace SqlSync.SqlBuild
         #region .: Tfs Source Control integration :.
         public static IFileStatus CheckoutFilesFromSourceControl(string sourceControlURL, List<string> files)
         {
-            ISourceControl sc = new SourceControl(sourceControlURL);
-            return sc.UpdateSourceControl(files);
+            try
+            {
+                ISourceControl sc = new SourceControl(sourceControlURL);
+                return sc.UpdateSourceControl(files);
+            }
+            catch
+            {
+                return null;
+            }
 
          }
         public static SourceControlStatus CheckoutFileFromSourceControl(string sourceControlURL, string fileName)
         {
-            ISourceControl sc = new SourceControl(sourceControlURL);
-            return sc.UpdateSourceControl(fileName);
+            try
+            {
+                ISourceControl sc = new SourceControl(sourceControlURL);
+                return sc.UpdateSourceControl(fileName);
+            }
+            catch
+            {
+                return SourceControlStatus.Unknown;
+            }
         }
 
         #endregion

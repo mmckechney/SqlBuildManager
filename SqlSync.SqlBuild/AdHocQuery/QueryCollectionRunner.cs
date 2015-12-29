@@ -67,6 +67,8 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
         public void CollectQueryData()
         {
+
+            this.ConfigurePollyRetryPolicies();
             string errorMessage = string.Empty;
             if (this.QueryCollectionRunnerUpdate != null)
                 QueryCollectionRunnerUpdate(this, new QueryCollectionRunnerUpdateEventArgs(this.serverName, this.databaseName, "Starting"));

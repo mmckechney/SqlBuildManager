@@ -442,8 +442,9 @@ namespace SqlSync.DbInformation
                     reader.Close();
                 }
             }
-            catch(Exception)
+            catch (Exception exe)
             {
+                log.Error("Error getting database list", exe);
                 hasError = true;
             }
 

@@ -104,7 +104,7 @@ namespace SqlSync.Controls
                             CodeReviewManager.UpdateCodeReview(ref buildData, ref existingRow, scriptText);
                             this.HasChanges = true;
                         }
-                        else if (this.startingScriptText != scriptText)
+                        else if (existingRow != null && this.startingScriptText != scriptText)
                         {
                             CodeReviewManager.MarkCodeReviewOutOfDate(ref buildData, ref existingRow);
                             this.HasChanges = true;

@@ -150,7 +150,7 @@ namespace SqlSync
             this.ddDatabase.Location = new System.Drawing.Point(12, 198);
             this.ddDatabase.Name = "ddDatabase";
             this.ddDatabase.Size = new System.Drawing.Size(240, 21);
-            this.ddDatabase.TabIndex = 24;
+            this.ddDatabase.TabIndex = 5;
             // 
             // txtPassword
             // 
@@ -159,7 +159,7 @@ namespace SqlSync
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(240, 20);
-            this.txtPassword.TabIndex = 23;
+            this.txtPassword.TabIndex = 3;
             this.txtPassword.MouseEnter += new System.EventHandler(this.txtPassword_MouseEnter);
             this.txtPassword.MouseLeave += new System.EventHandler(this.txtPassword_MouseLeave);
             // 
@@ -169,7 +169,7 @@ namespace SqlSync
             this.txtUser.Location = new System.Drawing.Point(12, 101);
             this.txtUser.Name = "txtUser";
             this.txtUser.Size = new System.Drawing.Size(240, 20);
-            this.txtUser.TabIndex = 21;
+            this.txtUser.TabIndex = 2;
             // 
             // label3
             // 
@@ -206,7 +206,7 @@ namespace SqlSync
             this.ddServers.Location = new System.Drawing.Point(12, 23);
             this.ddServers.Name = "ddServers";
             this.ddServers.Size = new System.Drawing.Size(240, 21);
-            this.ddServers.TabIndex = 18;
+            this.ddServers.TabIndex = 0;
             this.ddServers.SelectionChangeCommitted += new System.EventHandler(this.ddServers_SelectionChangeCommitted);
             // 
             // btnConnect
@@ -215,7 +215,7 @@ namespace SqlSync
             this.btnConnect.Location = new System.Drawing.Point(188, 169);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(64, 23);
-            this.btnConnect.TabIndex = 28;
+            this.btnConnect.TabIndex = 4;
             this.btnConnect.Text = "Connect";
             this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
             // 
@@ -244,7 +244,7 @@ namespace SqlSync
             this.treeView1.SelectedImageIndex = 3;
             this.treeView1.ShowRootLines = false;
             this.treeView1.Size = new System.Drawing.Size(240, 287);
-            this.treeView1.TabIndex = 29;
+            this.treeView1.TabIndex = 6;
             this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
             this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
             // 
@@ -333,8 +333,8 @@ namespace SqlSync
             // 
             // ddAuthentication
             // 
+            this.ddAuthentication.BackColor = System.Drawing.Color.Snow;
             this.ddAuthentication.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ddAuthentication.FormattingEnabled = true;
             this.ddAuthentication.Items.AddRange(new object[] {
             "Windows Authentication",
             "Username/Password",
@@ -343,7 +343,7 @@ namespace SqlSync
             this.ddAuthentication.Location = new System.Drawing.Point(12, 62);
             this.ddAuthentication.Name = "ddAuthentication";
             this.ddAuthentication.Size = new System.Drawing.Size(240, 21);
-            this.ddAuthentication.TabIndex = 32;
+            this.ddAuthentication.TabIndex = 1;
             this.ddAuthentication.SelectionChangeCommitted += new System.EventHandler(this.ddAuthentication_SelectionChangeCommitted);
             // 
             // SQLConnect
@@ -418,7 +418,7 @@ namespace SqlSync
         {
             get
             { 
-                switch(ddAuthentication.SelectedText)
+                switch(ddAuthentication.SelectedItem.ToString())
                 {
                    
                     case "Username/Password":
@@ -512,6 +512,7 @@ namespace SqlSync
         {
             this.ddDatabase.Visible = this.displayDatabaseDropDown;
             this.lblDatabases.Visible = this.displayDatabaseDropDown;
+            this.ddAuthentication.SelectedIndex = 0;
             PopulateRegisteredServerTree();
             InitializeSqlEnumeration();
         }
@@ -828,6 +829,7 @@ namespace SqlSync
                     ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Azure Username/Password");
                     break;
             }
+            ddAuthentication_SelectionChangeCommitted(null, null);
         }
 
         private void txtPassword_MouseEnter(object sender, EventArgs e)
