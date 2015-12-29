@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6B399EB5-5A92-4122-9480-64A4945AEF6A}"
 	ProjectSection(SolutionItems) = preProject
@@ -79,6 +79,8 @@ EndProject
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "SqlbuildManager.Services.Fabric", "SqlbuildManager.Services.Fabric\SqlbuildManager.Services.Fabric.sfproj", "{FDE68DB1-91C3-48E1-8FD4-EB5DEEC97ADC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlbuildManager.Services.Fabric.Stateful", "SqlbuildManger.Services.Fabric.Stateful\SqlbuildManager.Services.Fabric.Stateful.csproj", "{030256DA-8E48-4650-A769-62C4BEFB2450}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SQLSyncSetup", "SqlBuildManager.Installer\SqlBuildManager.Installer.vdproj", "{CC74AAB6-527F-4D03-A32C-E29DE9185B97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1514,6 +1516,56 @@ Global
 		{030256DA-8E48-4650-A769-62C4BEFB2450}.SingleImage|x64.Build.0 = Release|x64
 		{030256DA-8E48-4650-A769-62C4BEFB2450}.SingleImage|x86.ActiveCfg = Release|x64
 		{030256DA-8E48-4650-A769-62C4BEFB2450}.SingleImage|x86.Build.0 = Release|x64
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|.NET.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|.NET.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|Any CPU.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|Any CPU.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|Mixed Platforms.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|Mixed Platforms.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|x64.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|x64.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|x86.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.CD_ROM|x86.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|.NET.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|.NET.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|Any CPU.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|Any CPU.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|Mixed Platforms.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|Mixed Platforms.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|x64.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|x64.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|x86.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Debug|x86.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|.NET.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|.NET.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|Any CPU.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|Any CPU.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|Mixed Platforms.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|Mixed Platforms.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|x64.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|x64.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|x86.ActiveCfg = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.DVD-5|x86.Build.0 = Debug
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|.NET.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|.NET.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|Any CPU.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|Any CPU.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|Mixed Platforms.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|Mixed Platforms.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|x64.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|x64.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|x86.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|x86.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|.NET.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|.NET.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|Any CPU.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|Any CPU.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|Mixed Platforms.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|Mixed Platforms.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|x64.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|x64.Build.0 = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|x86.ActiveCfg = Release
+		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.SingleImage|x86.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
