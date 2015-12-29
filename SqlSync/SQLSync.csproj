@@ -126,6 +126,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj">
+      <Project>{c9de9821-ba13-4528-b149-a3e990530aad}</Project>
+      <Name>SqlBuildManager.Logging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj">
       <Project>{14dfbf75-98b1-4fbd-9b48-191d8aa55a6f}</Project>
       <Name>SqlSync.ScrollBarSync</Name>
@@ -138,8 +142,8 @@
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="log4net, Version=1.2.14.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.4\lib\net45-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.ConnectionInfo, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">

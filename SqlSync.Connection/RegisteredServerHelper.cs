@@ -16,7 +16,7 @@ namespace SqlSync.Connection
             {
                 if (RegisteredServerHelper.resisteredServerFileName == string.Empty)
                 {
-                    string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
+                    string homePath = SqlBuildManager.Logging.Configure.AppDataPath + @"\";
                     return homePath + "RegisteredServers.xml";
                 }
                 else
@@ -69,7 +69,7 @@ namespace SqlSync.Connection
         }
         private static RegisteredServers GetRegisteredServers()
         {
-            string localRegisteredServerPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\RegisteredServers.xml";
+            string localRegisteredServerPath = SqlBuildManager.Logging.Configure.AppDataPath + @"\RegisteredServers.xml";
             string serverFileContents = string.Empty;
             try
             {

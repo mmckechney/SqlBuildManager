@@ -20,7 +20,7 @@ namespace SqlBuildManager.Console
         static void Main(string[] args)
         {
             log4net.Config.XmlConfigurator.Configure();
-
+            SqlBuildManager.Logging.Configure.SetLoggingPath();
 
             log.Debug("Received Command: " + String.Join(" | ", args));
             DateTime start = DateTime.Now;

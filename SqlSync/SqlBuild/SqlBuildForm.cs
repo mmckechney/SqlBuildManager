@@ -8168,7 +8168,7 @@ namespace SqlSync.SqlBuild
                 verData.ContactEMail = (string)appReader.GetValue("ProgramUpdateContactEMail", typeof(string));
                 verData.YourVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
-                string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
+                string homePath = SqlBuildManager.Logging.Configure.AppDataPath + @"\";
                 ServerConnectConfig config = new ServerConnectConfig();
                 if (File.Exists(homePath + SqlSync.SqlBuild.UtilityHelper.ConfigFileName))
                     config.ReadXml(homePath + SqlSync.SqlBuild.UtilityHelper.ConfigFileName);

@@ -21,6 +21,8 @@ namespace SqlSync
         static int Main(string[] args)
         {
             log4net.Config.XmlConfigurator.Configure();
+            SqlBuildManager.Logging.Configure.SetLoggingPath();
+
             log.Debug("Sql Build Manager Staring...");
             if(args.Length > 0)
                 log.Info("Received Command: " + String.Join(" | ", args));

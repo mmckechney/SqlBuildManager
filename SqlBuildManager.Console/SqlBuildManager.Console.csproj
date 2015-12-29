@@ -58,8 +58,8 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=1.2.14.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.4\lib\net45-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -102,6 +102,10 @@
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj">
       <Project>{FDC576E6-ACC8-41D4-8A56-8E6E00221306}</Project>
       <Name>SqlBuildManager.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj">
+      <Project>{c9de9821-ba13-4528-b149-a3e990530aad}</Project>
+      <Name>SqlBuildManager.Logging</Name>
     </ProjectReference>
     <ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
       <Project>{641F4F7D-7730-4760-9454-7B9FCE0AA32C}</Project>

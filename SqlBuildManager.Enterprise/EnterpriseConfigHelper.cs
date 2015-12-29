@@ -72,7 +72,7 @@ namespace SqlBuildManager.Enterprise
         }
         public static EnterpriseConfiguration LoadEnterpriseConfiguration(string configPath)
         {
-            string localConfigPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\EnterpriseConfiguration.xml";
+            string localConfigPath = SqlBuildManager.Logging.Configure.AppDataPath + @"\EnterpriseConfiguration.xml";
             string configuration = string.Empty;
             try
             {

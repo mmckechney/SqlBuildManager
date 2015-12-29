@@ -202,10 +202,10 @@ namespace SqlSync.SqlBuild
                     case "windows":
                         cmdLine.AuthenticationType = Connection.AuthenticationType.WindowsAuthentication;
                         break;
-                    case "azuread":
+                    case "azureadintegrated":
                         cmdLine.AuthenticationType = Connection.AuthenticationType.AzureActiveDirectory;
                         break;
-                    case "azurepassword":
+                    case "azureadpassword":
                         cmdLine.AuthenticationType = Connection.AuthenticationType.AzureUserNamePassword;
                         break;
                     case "password":

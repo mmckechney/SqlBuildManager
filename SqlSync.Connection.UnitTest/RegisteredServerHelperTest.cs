@@ -84,7 +84,7 @@ namespace SqlSync.Connection.UnitTest
         [DeploymentItem("SqlSync.Connection.dll")]
         public void GetRegisteredServersTest_GoodFile()
         {
-            string xmlFile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\RegisteredServers.xml";
+            string xmlFile = SqlBuildManager.Logging.Configure.AppDataPath + @"\RegisteredServers.xml";
             if (File.Exists(xmlFile))
                 File.Delete(xmlFile);
 
@@ -107,7 +107,7 @@ namespace SqlSync.Connection.UnitTest
         [DeploymentItem("SqlSync.Connection.dll")]
         public void GetRegisteredServersTest_BadFile()
         {
-            string xmlFile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\RegisteredServers.xml";
+            string xmlFile = SqlBuildManager.Logging.Configure.AppDataPath + @"\RegisteredServers.xml";
             if (File.Exists(xmlFile))
                 File.Delete(xmlFile);
 
@@ -128,7 +128,7 @@ namespace SqlSync.Connection.UnitTest
             string fileName = Path.GetTempFileName();
             File.WriteAllText(fileName, Properties.Resources.RegisteredServers_Good);
 
-            string xmlFile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\RegisteredServers.xml";
+            string xmlFile = SqlBuildManager.Logging.Configure.AppDataPath + @"\RegisteredServers.xml";
             if (File.Exists(xmlFile))
                 File.Delete(xmlFile);
 
@@ -147,7 +147,7 @@ namespace SqlSync.Connection.UnitTest
         {
             string fileName = string.Empty;
 
-            string xmlFile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\RegisteredServers.xml";
+            string xmlFile = SqlBuildManager.Logging.Configure.AppDataPath + @"\RegisteredServers.xml";
             if (File.Exists(xmlFile))
                 File.Delete(xmlFile);
 

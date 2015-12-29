@@ -39,7 +39,7 @@ namespace SqlBuildManager.Services
 
                 else
                 {
-                    return Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\SqlBuildManager.BuildHistory.xml";
+                    return SqlBuildManager.Logging.Configure.AppDataPath + @"\SqlBuildManager.BuildHistory.xml";
                 }
 
             }
@@ -413,7 +413,7 @@ namespace SqlBuildManager.Services
         /// <returns>Zip file byte[] of all the log files</returns>
         public byte[] GetAllErrorLogsForExecution(DateTime submittedDate)
         {
-            string tempLogHoldingPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\temp_" + Guid.NewGuid().ToString() + @"\";
+            string tempLogHoldingPath = SqlBuildManager.Logging.Configure.AppDataPath + @"\temp_" + Guid.NewGuid().ToString() + @"\";
             try
             {
                 string logPath = GetBuildHistoryRootLogPath(submittedDate);

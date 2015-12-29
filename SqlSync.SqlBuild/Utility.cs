@@ -18,7 +18,7 @@ namespace SqlSync.SqlBuild
         public static List<string> GetRecentServers(out ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl)
         {
             serverConfigTbl = null;
-            string homePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
+            string homePath = SqlBuildManager.Logging.Configure.AppDataPath + @"\";
             List<string> recentDbs = new List<string>();
 
             if (System.IO.File.Exists(homePath + ConfigFileName))
@@ -46,7 +46,7 @@ namespace SqlSync.SqlBuild
             {
                 userName = Cryptography.EncryptText(userName, ConnectionHelper.ConnectCryptoKey);
                 password = Cryptography.EncryptText(password, ConnectionHelper.ConnectCryptoKey);
-                string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
+                string homePath = SqlBuildManager.Logging.Configure.AppDataPath + @"\";
                 ServerConnectConfig config = new ServerConnectConfig();
                 if (File.Exists(homePath + ConfigFileName))
                     config.ReadXml(homePath + ConfigFileName);

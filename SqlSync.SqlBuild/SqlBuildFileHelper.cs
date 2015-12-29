@@ -1,23 +1,20 @@
+using log4net;
+using SqlBuildManager.Interfaces.SourceControl;
 using System;
-using System.IO;
-using SqlSync.Validator;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Collections.Generic;
-using System.Linq;
-using log4net;
 using Tfs.Utility;
-using SqlBuildManager.Interfaces.SourceControl;
-using System.Threading;
-using System.Threading.Tasks;
 namespace SqlSync.SqlBuild
 {
-	/// <summary>
-	/// Summary description for SqlBuildFileHelper.
-	/// </summary>
-	public class SqlBuildFileHelper
+    /// <summary>
+    /// Summary description for SqlBuildFileHelper.
+    /// </summary>
+    public class SqlBuildFileHelper
 	{
         private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public const string FileMissing = "File Missing";

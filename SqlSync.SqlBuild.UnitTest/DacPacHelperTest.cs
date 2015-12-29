@@ -10,7 +10,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void ScriptDacPacDelta_Test()
         {
-            string workingDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string workingDir = SqlBuildManager.Logging.Configure.AppDataPath;
 
             File.WriteAllBytes(workingDir + @"\PlatunumSchema.dacpac", Properties.Resources.PlatunumSchema);
             File.WriteAllBytes(workingDir + @"\TarnishedSchema.dacpac", Properties.Resources.TarnishedSchema);
@@ -23,7 +23,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void CreateSbmFromDacPacDifferences_Test()
         {
-            string workingDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string workingDir = SqlBuildManager.Logging.Configure.AppDataPath;
 
             File.WriteAllBytes(workingDir + @"\PlatunumSchema.dacpac", Properties.Resources.PlatunumSchema);
             File.WriteAllBytes(workingDir + @"\TarnishedSchema.dacpac", Properties.Resources.TarnishedSchema);

@@ -53,8 +53,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=1.2.14.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.4\lib\net45-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
@@ -85,6 +85,10 @@
     <Content Include="Resources\RegisteredServers_Good.xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj">
+      <Project>{c9de9821-ba13-4528-b149-a3e990530aad}</Project>
+      <Name>SqlBuildManager.Logging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj">
       <Project>{F3F1EFFF-265E-4995-958B-9763F947E5C8}</Project>
       <Name>SqlSync.Connection</Name>
