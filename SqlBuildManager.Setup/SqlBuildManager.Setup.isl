@@ -227,7 +227,6 @@
 		<col key="yes" def="s72">Signature_</col>
 		<row><td>ADALSQL</td><td>NewSignature11</td></row>
 		<row><td>DOTNETVERSION45FULL</td><td>DotNet45Full</td></row>
-		<row><td>_X6041F</td><td>NewSignature1</td></row>
 	</table>
 
 	<table name="BBControl">
@@ -609,6 +608,7 @@
 		<row><td>Microsoft.SqlServer.Dac.Extensions.dll</td><td>{94D20CDC-312E-4B08-A165-3FA6925641AD}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.sqlserver.dac.exte</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>Microsoft.SqlServer.Dac.dll</td><td>{D66F9E27-A4F8-4BEC-A708-497C364E39E4}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.sqlserver.dac.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td>{A38DFE6E-AB2E-40F3-9F0B-BF7AB49C60DB}</td><td>MICROSOFT_SQLDB_DAC</td><td>2</td><td/><td>microsoft.sqlserver.transact</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>NDP461_KB3102438_Web.exe</td><td>{0648037F-B9D7-4A14-8207-2C3C918A223F}</td><td>INSTALLDIR</td><td>2</td><td/><td>ndp461_kb3102438_web.exe</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>SQLSync.Primary_output</td><td>{93FB6ACA-632A-4AD5-A4F2-8B584515F2A3}</td><td>INSTALLDIR</td><td>2</td><td/><td>sqlsync.primary_output</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>SqlBuildManager.Enterprise.Primary_output</td><td>{6B9FADC6-544E-4815-B409-166E99E5E9F5}</td><td>INSTALLDIR</td><td>2</td><td/><td>sqlbuildmanager.enterprise.p</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>SqlBuildManager.Interfaces.Primary_output</td><td>{55D6A7A9-EB89-470B-95C8-337B047C491A}</td><td>INSTALLDIR</td><td>2</td><td/><td>sqlbuildmanager.interfaces.p</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -1298,10 +1298,12 @@
 		<row><td>SetupCompleteError</td><td>Finish</td><td>DoAction</td><td>CleanUp</td><td>ISSCRIPTRUNNING="1"</td><td>1</td></row>
 		<row><td>SetupCompleteError</td><td>Finish</td><td>DoAction</td><td>ShowMsiLog</td><td>MsiLogFileLocation And (ISSHOWMSILOG="1")</td><td>3</td></row>
 		<row><td>SetupCompleteError</td><td>Finish</td><td>EndDialog</td><td>Exit</td><td>1</td><td>2</td></row>
-		<row><td>SetupCompleteSuccess</td><td>OK</td><td>DoAction</td><td>CleanUp</td><td>ISSCRIPTRUNNING="1"</td><td>1</td></row>
-		<row><td>SetupCompleteSuccess</td><td>OK</td><td>DoAction</td><td>LaunchProgramFileFromSetupCompleteSuccess</td><td>LAUNCHPROGRAM And PROGRAMFILETOLAUNCHATEND &lt;&gt; "" And NOT Installed</td><td>2</td></row>
-		<row><td>SetupCompleteSuccess</td><td>OK</td><td>DoAction</td><td>ShowMsiLog</td><td>MsiLogFileLocation And (ISSHOWMSILOG="1") And NOT ISENABLEDWUSFINISHDIALOG</td><td>7</td></row>
-		<row><td>SetupCompleteSuccess</td><td>OK</td><td>EndDialog</td><td>Exit</td><td>1</td><td>3</td></row>
+		<row><td>SetupCompleteSuccess</td><td>OK</td><td>DoAction</td><td>CleanUp</td><td>ISSCRIPTRUNNING="1"</td><td>3</td></row>
+		<row><td>SetupCompleteSuccess</td><td>OK</td><td>DoAction</td><td>Install4.6.1</td><td>Not Installed</td><td>1</td></row>
+		<row><td>SetupCompleteSuccess</td><td>OK</td><td>DoAction</td><td>LaunchProgramFileFromSetupCompleteSuccess</td><td>LAUNCHPROGRAM And PROGRAMFILETOLAUNCHATEND &lt;&gt; "" And NOT Installed</td><td>4</td></row>
+		<row><td>SetupCompleteSuccess</td><td>OK</td><td>DoAction</td><td>ShowMsiLog</td><td>MsiLogFileLocation And (ISSHOWMSILOG="1") And NOT ISENABLEDWUSFINISHDIALOG</td><td>9</td></row>
+		<row><td>SetupCompleteSuccess</td><td>OK</td><td>EndDialog</td><td>Exit</td><td>1</td><td>5</td></row>
+		<row><td>SetupCompleteSuccess</td><td>OK</td><td>[Install4.6.1]</td><td>Install4.6.1</td><td>Not Installed</td><td>2</td></row>
 		<row><td>SetupError</td><td>A</td><td>EndDialog</td><td>ErrorAbort</td><td>1</td><td>0</td></row>
 		<row><td>SetupError</td><td>C</td><td>EndDialog</td><td>ErrorCancel</td><td>1</td><td>0</td></row>
 		<row><td>SetupError</td><td>I</td><td>EndDialog</td><td>ErrorIgnore</td><td>1</td><td>0</td></row>
@@ -1340,6 +1342,7 @@
 		<col key="yes" def="s72">Directory_</col>
 		<col key="yes" def="s72">Component_</col>
 		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT1</td></row>
+		<row><td>INSTALLDIR</td><td>NDP461_KB3102438_Web.exe</td></row>
 		<row><td>INSTALLDIR</td><td>SqlBuildManager.Enterprise.Primary_output</td></row>
 		<row><td>INSTALLDIR</td><td>SqlBuildManager.Interfaces.Primary_output</td></row>
 		<row><td>INSTALLDIR</td><td>SqlBuildManager.ScriptHandling.Primary_output</td></row>
@@ -1376,6 +1379,7 @@
 		<row><td>ISSelfRegisterFinalize</td><td>1</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterFinalize</td><td/><td/></row>
 		<row><td>ISSetAllUsers</td><td>257</td><td>SetAllUsers.dll</td><td>SetAllUsers</td><td/><td/></row>
 		<row><td>ISUnSelfRegisterFiles</td><td>3073</td><td>ISSELFREG.DLL</td><td>ISUnSelfRegisterFiles</td><td/><td/></row>
+		<row><td>Install4.6.1</td><td>34</td><td>SystemFolder</td><td>[SystemFolder]cmd.exe /c &amp;"[INSTALLDIR]install461.cmd"</td><td/><td/></row>
 		<row><td>LaunchProgramFileFromSetupCompleteSuccess</td><td>1</td><td>NewBinary19</td><td>LaunchProgram</td><td/><td/></row>
 		<row><td>SetARPINSTALLLOCATION</td><td>51</td><td>ARPINSTALLLOCATION</td><td>[INSTALLDIR]</td><td/><td/></row>
 		<row><td>SetAllUsersProfileNT</td><td>51</td><td>ALLUSERSPROFILE</td><td>[%SystemRoot]\Profiles\All Users</td><td/><td/></row>
@@ -1460,6 +1464,7 @@
 		<row><td>MCKECHNEY.COM</td><td>ProgramFilesFolder</td><td>MCKECH~1|McKechney.com</td><td/><td>0</td><td/></row>
 		<row><td>MICROSOFT_SQLDB_DAC</td><td>INSTALLDIR</td><td>MICROS~1|Microsoft_SqlDB_DAC</td><td/><td>0</td><td/></row>
 		<row><td>MyPicturesFolder</td><td>TARGETDIR</td><td>.:MyPict~1|MyPictures</td><td/><td>0</td><td/></row>
+		<row><td>NEW_DIRECTORY1</td><td>TARGETDIR</td><td>NEW_DIRECTORY1</td><td/><td>0</td><td/></row>
 		<row><td>NetHoodFolder</td><td>TARGETDIR</td><td>.:NetHood</td><td/><td>0</td><td/></row>
 		<row><td>PersonalFolder</td><td>TARGETDIR</td><td>.:Personal</td><td/><td>0</td><td/></row>
 		<row><td>PrimaryVolumePath</td><td>TARGETDIR</td><td>.:Primar~1|PrimaryVolumePath</td><td/><td>0</td><td/></row>
@@ -2448,6 +2453,7 @@
 		<row><td>AlwaysInstall</td><td>Microsoft.SqlServer.Dac.Extensions.dll</td></row>
 		<row><td>AlwaysInstall</td><td>Microsoft.SqlServer.Dac.dll</td></row>
 		<row><td>AlwaysInstall</td><td>Microsoft.SqlServer.TransactSql.ScriptDom.dll</td></row>
+		<row><td>AlwaysInstall</td><td>NDP461_KB3102438_Web.exe</td></row>
 		<row><td>AlwaysInstall</td><td>SQLSync.Primary_output</td></row>
 		<row><td>AlwaysInstall</td><td>SqlBuildManager.Enterprise.Primary_output</td></row>
 		<row><td>AlwaysInstall</td><td>SqlBuildManager.Interfaces.Primary_output</td></row>
@@ -2738,6 +2744,7 @@
 		<row><td>_FED78720B45A4F1BA165B06258BAD2BD</td><td>C__FED78720B45A4F1BA165B06258BAD2BD</td><td>image038.png</td><td>0</td><td/><td/><td>512</td><td>1</td><td>&lt;VSSolutionFolder&gt;\SqlBuildManager Manual\HTML\SqlBuildManagerManual_files\image038.png</td><td>5</td><td/></row>
 		<row><td>dacunpack.exe</td><td>dacunpack.exe</td><td>DACUNP~1.EXE|dacunpack.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;VSSolutionFolder&gt;\Microsoft_SqlDB_DAC\dacunpack.exe</td><td>1</td><td/></row>
 		<row><td>dacunpackresources.dll</td><td>DacUnpackResources.dll</td><td>DACUNP~1.DLL|DacUnpackResources.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;VSSolutionFolder&gt;\Microsoft_SqlDB_DAC\1033\DacUnpackResources.dll</td><td>1</td><td/></row>
+		<row><td>install461.cmd</td><td>ISX_DEFAULTCOMPONENT1</td><td>INSTAL~1.CMD|install461.cmd</td><td>0</td><td/><td/><td/><td>1</td><td>C:\git\SqlBuildManager\SqlBuildManager.Setup\install461.cmd</td><td>1</td><td/></row>
 		<row><td>microsoft.data.tools.contrac</td><td>Microsoft.Data.Tools.Contracts.dll</td><td>MICROS~1.DLL|Microsoft.Data.Tools.Contracts.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;VSSolutionFolder&gt;\Microsoft_SqlDB_DAC\Microsoft.Data.Tools.Contracts.dll</td><td>1</td><td/></row>
 		<row><td>microsoft.data.tools.schema.</td><td>Microsoft.Data.Tools.Schema.Sql.dll</td><td>MICROS~1.DLL|Microsoft.Data.Tools.Schema.Sql.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;VSSolutionFolder&gt;\Microsoft_SqlDB_DAC\Microsoft.Data.Tools.Schema.Sql.dll</td><td>1</td><td/></row>
 		<row><td>microsoft.data.tools.schema.1</td><td>Microsoft.Data.Tools.Schema.Tasks.Sql.dll</td><td>MICROS~1.DLL|Microsoft.Data.Tools.Schema.Tasks.Sql.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;VSSolutionFolder&gt;\Microsoft_SqlDB_DAC\Microsoft.Data.Tools.Schema.Tasks.Sql.dll</td><td>1</td><td/></row>
@@ -2748,6 +2755,7 @@
 		<row><td>microsoft.sqlserver.dac.exte1</td><td>ISX_DEFAULTCOMPONENT</td><td>MICROS~1.XML|Microsoft.SqlServer.Dac.Extensions.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;VSSolutionFolder&gt;\Microsoft_SqlDB_DAC\Microsoft.SqlServer.Dac.Extensions.xml</td><td>1</td><td/></row>
 		<row><td>microsoft.sqlserver.dac.xml</td><td>ISX_DEFAULTCOMPONENT</td><td>MICROS~1.XML|Microsoft.SqlServer.Dac.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;VSSolutionFolder&gt;\Microsoft_SqlDB_DAC\Microsoft.SqlServer.Dac.xml</td><td>1</td><td/></row>
 		<row><td>microsoft.sqlserver.transact</td><td>Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td>MICROS~1.DLL|Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;VSSolutionFolder&gt;\Microsoft_SqlDB_DAC\Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td>1</td><td/></row>
+		<row><td>ndp461_kb3102438_web.exe</td><td>NDP461_KB3102438_Web.exe</td><td>NDP461~1.EXE|NDP461-KB3102438-Web.exe</td><td>0</td><td/><td/><td/><td>1</td><td>C:\git\SqlBuildManager\SqlBuildManager.Services.Azure\SqlBuildManager.ServicesContent\bin\NDP461-KB3102438-Web.exe</td><td>1</td><td/></row>
 		<row><td>readme.txt</td><td>ISX_DEFAULTCOMPONENT3</td><td>Readme.txt</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;VSSolutionFolder&gt;\Microsoft_SqlDB_DAC\Extensions\Readme.txt</td><td>1</td><td/></row>
 		<row><td>sqlbuildmanager.enterprise.p</td><td>SqlBuildManager.Enterprise.Primary_output</td><td>SqlBuildManager.Enterprise.Primary output</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SqlBuildManager.Enterprise&gt;|Built</td><td>3</td><td/></row>
 		<row><td>sqlbuildmanager.interfaces.p</td><td>SqlBuildManager.Interfaces.Primary_output</td><td>SqlBuildManager.Interfaces.Primary output</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SqlBuildManager.Interfaces&gt;|Built</td><td>3</td><td/></row>
@@ -3179,6 +3187,7 @@
 		<row><td>Microsoft.SqlServer.Dac.Extensions.dll</td><td/><td/><td>_264B11CC_A12E_42E0_9C4C_7F37616B1989_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>Microsoft.SqlServer.Dac.dll</td><td/><td/><td>_E321FF80_256A_47D5_8F9D_A359326CACD1_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>Microsoft.SqlServer.TransactSql.ScriptDom.dll</td><td/><td/><td>_E19377ED_2139_4FEA_B443_EDC1E6051D5D_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>NDP461_KB3102438_Web.exe</td><td/><td/><td>_32E44069_491B_4F56_84B0_2091CAEC0F92_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>SQLSync.Primary_output</td><td/><td/><td>_86A604A8_22CD_43FF_A661_A9B398E6803C_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>SqlBuildManager.Enterprise.Primary_output</td><td/><td/><td>_0677AD1E_45DA_4ED8_89DC_79DE94258154_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>SqlBuildManager.Interfaces.Primary_output</td><td/><td/><td>_980E651D_8888_49A6_92DD_A547CC791B50_FILTER</td><td/><td/><td/><td/></row>
@@ -3842,7 +3851,6 @@
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_PROCESSOR</td><td>1033</td><td>The processor is not adequate for running [ProductName].</td><td>0</td><td/><td>-106753139</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_RAM</td><td>1033</td><td>The amount of RAM is not adequate for running [ProductName].</td><td>0</td><td/><td>-106753139</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_SCREEN</td><td>1033</td><td>The screen resolution is not adequate for running [ProductName].</td><td>0</td><td/><td>-106753139</td></row>
-		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION__X6041F</td><td>1033</td><td>Installation requires .NET Framework 4.6.1. Please install the framework first (https://www.microsoft.com/en-us/download/details.aspx?id=48130)</td><td>0</td><td/><td>-299650869</td></row>
 		<row><td>IDPROP_SETUPTYPE_COMPACT</td><td>1033</td><td>Compact</td><td>0</td><td/><td>-106753139</td></row>
 		<row><td>IDPROP_SETUPTYPE_COMPACT_DESC</td><td>1033</td><td>Compact Description</td><td>0</td><td/><td>-106753139</td></row>
 		<row><td>IDPROP_SETUPTYPE_COMPLETE</td><td>1033</td><td>Complete</td><td>0</td><td/><td>-106753139</td></row>
@@ -5273,7 +5281,6 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="l255">Description</col>
 		<row><td>ADALSQL</td><td>##IDPROP_EXPRESS_LAUNCH_CONDITION_ADALSQL##</td></row>
 		<row><td>DOTNETVERSION45FULL&gt;="#1"</td><td>##IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION45FULL##</td></row>
-		<row><td>_X6041F</td><td>##IDPROP_EXPRESS_LAUNCH_CONDITION__X6041F##</td></row>
 	</table>
 
 	<table name="ListBox">
@@ -5622,7 +5629,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>SERIALNUMVALSUCCESSRETVAL</td><td>1</td><td/></row>
 		<row><td>SHOWLAUNCHPROGRAM</td><td>0</td><td/></row>
 		<row><td>SHOWLAUNCHREADME</td><td>0</td><td/></row>
-		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;DOTNETVERSION45FULL;ISACTIONPROP1;_X6041F;ADALSQL</td><td/></row>
+		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;DOTNETVERSION45FULL;ISACTIONPROP1;ADALSQL</td><td/></row>
 		<row><td>SelectedSetupType</td><td>##IDS__DisplayName_Typical##</td><td/></row>
 		<row><td>SetupType</td><td>Typical</td><td/></row>
 		<row><td>UpgradeCode</td><td>{E8E836E0-A7D4-47C9-BB64-EBED98BA99B5}</td><td/></row>
@@ -5668,7 +5675,6 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">Name</col>
 		<col def="I2">Type</col>
 		<row><td>DotNet45Full</td><td>2</td><td>SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full</td><td>Version</td><td>2</td></row>
-		<row><td>NewSignature1</td><td>2</td><td>SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\Release</td><td>0x6041f</td><td>2</td></row>
 	</table>
 
 	<table name="Registry">

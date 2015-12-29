@@ -90,7 +90,7 @@ namespace SqlSync.SqlBuild
 
             if (chkRunThreaded.Checked)
             {
-                sb.Append("/threaded=\"true\" ");
+                sb.Append("/Action=Threaded");
             }
 
             if (chkRunThreaded.Checked)
