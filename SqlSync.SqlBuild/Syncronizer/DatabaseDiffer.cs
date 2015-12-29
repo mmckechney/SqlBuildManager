@@ -80,7 +80,6 @@ namespace SqlSync.SqlBuild.Syncronizer
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                 {
-                    bool filled;
                     while (reader.Read())
                     {
 
@@ -135,7 +134,6 @@ namespace SqlSync.SqlBuild.Syncronizer
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                 {
-                    bool filled;
                     while (reader.Read())
                     {
 
@@ -164,7 +162,6 @@ namespace SqlSync.SqlBuild.Syncronizer
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                 {
-                    bool filled;
                     while (reader.Read())
                     {
 

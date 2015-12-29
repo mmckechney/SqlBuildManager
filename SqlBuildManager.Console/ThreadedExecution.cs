@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.IO;
-using System.Text;
+﻿using log4net;
+using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
-using SqlSync.DbInformation;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
-using SqlBuildManager.Interfaces.Console;
-using log4net;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 namespace SqlBuildManager.Console
 {

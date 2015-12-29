@@ -51,6 +51,7 @@
   <ItemGroup>
     <Folder Include="Profiles" />
     <Folder Include="SqlBuildManager.ServicesContent\" />
+    <Folder Include="SqlBuildManager.ServicesContent\bin" />
   </ItemGroup>
   <ItemGroup>
     <DiagnosticsConfiguration Include="SqlBuildManager.ServicesContent\diagnostics.wadcfgx" />
@@ -58,6 +59,14 @@
   <ItemGroup>
     <PublishProfile Include="Profiles\sqlbuildmanagerProduction.azurePubxml" />
     <PublishProfile Include="Profiles\sqlbuildmanagerProduction2.azurePubxml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SqlBuildManager.ServicesContent\bin\install.cmd">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="SqlBuildManager.ServicesContent\bin\NDP461-KB3102438-Web.exe">
+      <SubType>Content</SubType>
+    </Content>
   </ItemGroup>
   <!-- Import the target files for this project template -->
   <PropertyGroup>

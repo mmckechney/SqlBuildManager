@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using System.Text.RegularExpressions;
-using System.Linq;
+﻿using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Objects;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Serialization;
-using System.Xml.Xsl;
 using System.Xml.XPath;
 using System.Xml.Xsl;
-using System.Xml;
-using SqlSync.SqlBuild;
-
-using System.Data;
+using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
     public class PolicyHelper

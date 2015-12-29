@@ -957,7 +957,6 @@ namespace SqlSync.SqlBuild
 	                break;
 	            default:
 	                return string.Empty;
-	                break;
 	        }
 
 	        if (buildData != null)

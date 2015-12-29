@@ -3,6 +3,13 @@
   <WebRole name="SqlBuildManager.Services" vmsize="Small">
     <Runtime executionContext="elevated" />
     <Startup>
+      <Task commandLine="install.cmd" executionContext="elevated" taskType="simple">
+        <Environment>
+          <Variable name="PathToNETFXInstall">
+            <RoleInstanceValue xpath="/RoleEnvironment/CurrentInstance/LocalResources/LocalResource[@name='NETFXInstall']/@path" />
+          </Variable>
+        </Environment>
+      </Task>
       <Task commandLine="Azure\Startup.cmd" executionContext="elevated" taskType="simple" />
     </Startup>
     <Sites>
@@ -28,6 +35,7 @@
     </ConfigurationSettings>
     <LocalResources>
       <LocalStorage name="RunLogFiles" cleanOnRoleRecycle="true" sizeInMB="500" />
+      <LocalStorage name="NETFXInstall" cleanOnRoleRecycle="false" sizeInMB="1024"  />
     </LocalResources>
   </WebRole>
 </ServiceDefinition>

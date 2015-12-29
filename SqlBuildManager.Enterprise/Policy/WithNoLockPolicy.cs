@@ -1,11 +1,8 @@
-﻿using System;
+﻿using SqlBuildManager.ScriptHandling;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using SqlBuildManager.ScriptHandling;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using System.Linq;
 namespace SqlBuildManager.Enterprise.Policy
 {
     public class WithNoLockPolicy : p.IScriptPolicy

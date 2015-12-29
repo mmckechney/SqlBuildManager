@@ -4376,7 +4376,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                //System.Diagnostics.EventLog.WriteEntry("SQLSync", "List Refesh Error:\r\n" + exe.ToString(), EventLogEntryType.Error, 545);
+                log.Error("List refresh error", exe);
             }
 
         }
@@ -7982,7 +7982,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Unable to Script object from database.\r\n" + exe.ToString(), System.Diagnostics.EventLogEntryType.Error, 522);
+                log.Error("Unable to Script object from database", exe);
                 MessageBox.Show("Unable to Script object from database.\r\nCheck Event Log for details", "Error Scripting from Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -8288,6 +8288,7 @@ namespace SqlSync.SqlBuild
             {
                 verData.UpdateFileReadError = true;
                 verData.CheckIntervalElapsed = true;
+                log.Warn("Error Checking for updates", exe);
                 //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error Checking for updates.\r\n" + exe.ToString(), EventLogEntryType.Error, 901);
 
             }
@@ -8319,8 +8320,7 @@ namespace SqlSync.SqlBuild
                 }
                 catch (Exception exe)
                 {
-                    //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Unable to display New Version alert window.\r\n" + exe.ToString(), EventLogEntryType.Error, 901);
-
+                    log.Warn("Unable to display New Version alert window", exe);
                 }
             }
         }

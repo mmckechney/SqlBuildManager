@@ -24,7 +24,6 @@ namespace SqlBuildManager.Services.Azure
 
         public override bool OnStart()
         {
-            bool success = false;
             InitializeLogging();
            
             return base.OnStart();
