@@ -921,7 +921,7 @@ anotherhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest";
                 Assert.Fail("Unable to complete test. Please make sure you have a Remote Execution Service running on localhost");
 
             Assert.AreEqual(expected, actual, "Ensure that you have your service running on \"localhost\\SQLEXPRESS\"");
-            Assert.IsTrue(Directory.GetFiles(SqlBuildManager.Logging.Configure.AppDataPath), "*.cfg").Length > 0); 
+            Assert.IsTrue(Directory.GetFiles(SqlBuildManager.Logging.Configure.AppDataPath, "*.cfg").Length > 0); 
         }
 
         /// <summary>
