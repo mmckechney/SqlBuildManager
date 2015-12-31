@@ -121,8 +121,8 @@ namespace SqlSync
             this.label1.Size = new System.Drawing.Size(100, 16);
             this.label1.TabIndex = 0;
             this.label1.Text = "Settings";
-            this.label1.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             this.label1.Click += new System.EventHandler(this.panel1_Click);
+            this.label1.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             // 
             // lblProjectLbl
             // 
@@ -133,8 +133,8 @@ namespace SqlSync
             this.lblProjectLbl.Size = new System.Drawing.Size(86, 13);
             this.lblProjectLbl.TabIndex = 1;
             this.lblProjectLbl.Text = "Project File:";
-            this.lblProjectLbl.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             this.lblProjectLbl.Click += new System.EventHandler(this.panel1_Click);
+            this.lblProjectLbl.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             // 
             // label3
             // 
@@ -144,33 +144,33 @@ namespace SqlSync
             this.label3.Size = new System.Drawing.Size(56, 16);
             this.label3.TabIndex = 2;
             this.label3.Text = "Server:";
-            this.label3.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             this.label3.Click += new System.EventHandler(this.panel1_Click);
+            this.label3.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             // 
             // lblServer
             // 
-            this.lblServer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblServer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblServer.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblServer.Location = new System.Drawing.Point(72, 16);
             this.lblServer.Name = "lblServer";
             this.lblServer.Size = new System.Drawing.Size(381, 16);
             this.lblServer.TabIndex = 3;
-            this.lblServer.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
-            this.lblServer.Click += new System.EventHandler(this.panel1_Click);
             this.lblServer.TextChanged += new System.EventHandler(this.lblServer_TextChanged);
+            this.lblServer.Click += new System.EventHandler(this.panel1_Click);
+            this.lblServer.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             // 
             // lblProject
             // 
-            this.lblProject.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblProject.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblProject.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblProject.Location = new System.Drawing.Point(104, 32);
             this.lblProject.Name = "lblProject";
             this.lblProject.Size = new System.Drawing.Size(474, 16);
             this.lblProject.TabIndex = 4;
-            this.lblProject.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             this.lblProject.Click += new System.EventHandler(this.panel1_Click);
+            this.lblProject.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             // 
             // panel1
             // 
@@ -187,14 +187,14 @@ namespace SqlSync
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(584, 56);
             this.panel1.TabIndex = 5;
-            this.panel1.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             this.panel1.Click += new System.EventHandler(this.panel1_Click);
+            this.panel1.DoubleClick += new System.EventHandler(this.panel1_DoubleClick);
             // 
             // lblRecentServers
             // 
             this.lblRecentServers.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblRecentServers.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRecentServers.Location = new System.Drawing.Point(314, 6);
+            this.lblRecentServers.Location = new System.Drawing.Point(259, 6);
             this.lblRecentServers.Name = "lblRecentServers";
             this.lblRecentServers.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.lblRecentServers.Size = new System.Drawing.Size(87, 16);
@@ -210,9 +210,9 @@ namespace SqlSync
             this.ddRecentServers.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.ddRecentServers.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ddRecentServers.FormattingEnabled = true;
-            this.ddRecentServers.Location = new System.Drawing.Point(407, 2);
+            this.ddRecentServers.Location = new System.Drawing.Point(352, 2);
             this.ddRecentServers.Name = "ddRecentServers";
-            this.ddRecentServers.Size = new System.Drawing.Size(172, 20);
+            this.ddRecentServers.Size = new System.Drawing.Size(227, 20);
             this.ddRecentServers.TabIndex = 5;
             this.toolTip1.SetToolTip(this.ddRecentServers, "Quick Change Server Connection");
             this.ddRecentServers.SelectionChangeCommitted += new System.EventHandler(this.ddRecentServers_SelectionChangeCommitted);
