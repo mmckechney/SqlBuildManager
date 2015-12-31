@@ -108,7 +108,7 @@ namespace SqlSync
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Registered Servers");
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Registered Servers");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SQLConnect));
             this.lblDatabases = new System.Windows.Forms.Label();
             this.ddDatabase = new System.Windows.Forms.ComboBox();
@@ -149,7 +149,7 @@ namespace SqlSync
             this.ddDatabase.Enabled = false;
             this.ddDatabase.Location = new System.Drawing.Point(12, 198);
             this.ddDatabase.Name = "ddDatabase";
-            this.ddDatabase.Size = new System.Drawing.Size(240, 21);
+            this.ddDatabase.Size = new System.Drawing.Size(240, 24);
             this.ddDatabase.TabIndex = 5;
             // 
             // txtPassword
@@ -158,7 +158,7 @@ namespace SqlSync
             this.txtPassword.Location = new System.Drawing.Point(12, 139);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
-            this.txtPassword.Size = new System.Drawing.Size(240, 20);
+            this.txtPassword.Size = new System.Drawing.Size(240, 22);
             this.txtPassword.TabIndex = 3;
             this.txtPassword.MouseEnter += new System.EventHandler(this.txtPassword_MouseEnter);
             this.txtPassword.MouseLeave += new System.EventHandler(this.txtPassword_MouseLeave);
@@ -168,7 +168,7 @@ namespace SqlSync
             this.txtUser.Enabled = false;
             this.txtUser.Location = new System.Drawing.Point(12, 101);
             this.txtUser.Name = "txtUser";
-            this.txtUser.Size = new System.Drawing.Size(240, 20);
+            this.txtUser.Size = new System.Drawing.Size(240, 22);
             this.txtUser.TabIndex = 2;
             // 
             // label3
@@ -205,7 +205,7 @@ namespace SqlSync
             // 
             this.ddServers.Location = new System.Drawing.Point(12, 23);
             this.ddServers.Name = "ddServers";
-            this.ddServers.Size = new System.Drawing.Size(240, 21);
+            this.ddServers.Size = new System.Drawing.Size(240, 24);
             this.ddServers.TabIndex = 0;
             this.ddServers.SelectionChangeCommitted += new System.EventHandler(this.ddServers_SelectionChangeCommitted);
             // 
@@ -236,11 +236,11 @@ namespace SqlSync
             this.treeView1.Indent = 19;
             this.treeView1.Location = new System.Drawing.Point(12, 227);
             this.treeView1.Name = "treeView1";
-            treeNode2.ImageIndex = 3;
-            treeNode2.Name = "Node0";
-            treeNode2.Text = "Registered Servers";
+            treeNode1.ImageIndex = 3;
+            treeNode1.Name = "Node0";
+            treeNode1.Text = "Registered Servers";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode2});
+            treeNode1});
             this.treeView1.SelectedImageIndex = 3;
             this.treeView1.ShowRootLines = false;
             this.treeView1.Size = new System.Drawing.Size(240, 287);
@@ -338,11 +338,11 @@ namespace SqlSync
             this.ddAuthentication.Items.AddRange(new object[] {
             "Windows Authentication",
             "Username/Password",
-            "Azure AD Windows Authentication",
-            "Azure Username/Password"});
+            "Azure AD Integrated Authentication",
+            "Azure AD Password Authentication"});
             this.ddAuthentication.Location = new System.Drawing.Point(12, 62);
             this.ddAuthentication.Name = "ddAuthentication";
-            this.ddAuthentication.Size = new System.Drawing.Size(240, 21);
+            this.ddAuthentication.Size = new System.Drawing.Size(240, 24);
             this.ddAuthentication.TabIndex = 1;
             this.ddAuthentication.SelectionChangeCommitted += new System.EventHandler(this.ddAuthentication_SelectionChangeCommitted);
             // 
@@ -423,9 +423,9 @@ namespace SqlSync
                    
                     case "Username/Password":
                         return SqlSync.Connection.AuthenticationType.UserNamePassword;
-                    case "Azure AD Windows Authentication":
+                    case "Azure AD Integrated Authentication":
                         return SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
-                    case "Azure Username/Password":
+                    case "Azure AD Password Authentication":
                         return SqlSync.Connection.AuthenticationType.AzureUserNamePassword;
                     case "Windows Authentication":
                     default:
@@ -541,11 +541,11 @@ namespace SqlSync
             {
 
                 case "Username/Password":
-                case "Azure Username/Password":
+                case "Azure AD Password Authentication":
                     txtPassword.Enabled = true;
                     txtUser.Enabled = true;
                     break;
-                case "Azure AD Windows Authentication":
+                case "Azure AD Integrated Authentication":
                 case "Windows Authentication":
                 default:
                     txtPassword.Enabled = false;
@@ -823,10 +823,10 @@ namespace SqlSync
                     ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Windows Authentication");
                     break;
                 case Connection.AuthenticationType.AzureActiveDirectory:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Azure AD Windows Authentication");
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Azure AD Integrated Authentication");
                     break;
                 case Connection.AuthenticationType.AzureUserNamePassword:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Azure Username/Password");
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Azure AD Password Authentication");
                     break;
             }
             ddAuthentication_SelectionChangeCommitted(null, null);
