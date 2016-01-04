@@ -124,6 +124,18 @@ namespace SqlSync.SqlBuild.MultiDb
                 password = value;
             }
         }
+        private AuthenticationType authenticationType = AuthenticationType.UserNamePassword;
+        public AuthenticationType AuthenticationType
+        {
+            get
+            {
+                return this.AuthenticationType;
+            }
+            set
+            {
+                this.authenticationType = value;
+            }
+        }
         [XmlIgnore()]
         public string BuildRevision
         {

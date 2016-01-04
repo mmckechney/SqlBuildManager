@@ -194,6 +194,9 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("savedcreds"))
                 cmdLine.SavedCreds = true;
 
+            if (dict.ContainsKey("testconnectivity"))
+                cmdLine.TestConnectivity = true;
+
 
             if(dict.ContainsKey("authtype"))
             {

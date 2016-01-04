@@ -358,6 +358,7 @@ namespace SqlBuildManager.Console
 
             setting.DbUserName = cmd.UserName;
             setting.DbPassword = cmd.Password;
+            setting.AuthenticationType = cmd.AuthenticationType;
 
             if (!string.IsNullOrEmpty(cmd.PlatinumDacpac))
             {

@@ -87,7 +87,7 @@ namespace SqlBuildManager.Console
 
         private string username = string.Empty;
         private string password = string.Empty;
-
+        private AuthenticationType authType = AuthenticationType.UserNamePassword;
         private string buildRequestedBy = string.Empty;
 
         public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac)
@@ -100,7 +100,8 @@ namespace SqlBuildManager.Console
             this.forceCustomDacpac = forceCustomDacpac;
             this.username = cmdArgs.UserName;
             this.password = cmdArgs.Password;
-
+            this.authType = cmdArgs.AuthenticationType;
+            
             try
             {
                 this.DefaultDatabaseName = overrides[0].DefaultDbTarget; //Set the default for reference

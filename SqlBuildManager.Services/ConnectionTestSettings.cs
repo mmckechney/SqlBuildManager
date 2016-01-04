@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Runtime.Serialization;
+using SqlSync.Connection;
+
 namespace SqlBuildManager.Services
 {
     [DataContract]
@@ -16,6 +18,30 @@ namespace SqlBuildManager.Services
         {
             get;
             set;
+        }
+
+        private AuthenticationType authenticationType = SqlSync.Connection.AuthenticationType.UserNamePassword;
+        [DataMember(IsRequired = false)]
+        public AuthenticationType AuthenticationType
+        {
+            get { return authenticationType; }
+            set { authenticationType = value; }
+        }
+
+        private string dbUserName = string.Empty;
+        [DataMember(IsRequired = false)]
+        public string DbUserName
+        {
+            get { return dbUserName; }
+            set { dbUserName = value; }
+        }
+
+        private string dbPassword = string.Empty;
+        [DataMember(IsRequired = false)]
+        public string DbPassword
+        {
+            get { return dbPassword; }
+            set { dbPassword = value; }
         }
 
 

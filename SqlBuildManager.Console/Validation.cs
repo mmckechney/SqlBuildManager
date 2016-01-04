@@ -120,59 +120,61 @@ namespace SqlBuildManager.Console
                 return (int)ExecutionReturn.MissingOverrideFlag;
             }
 
-            //Validate and set the value for the build file name
-            if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName) && string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir) 
-                && string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac)
-                && string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) && string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource))
+            if (!cmdLine.TestConnectivity)
             {
-                error = "Invalid command line set. Missing /PackageName or /PlatinumDacpac or /ScriptSrcDir setting.";
-                errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
-                log.Error(error);
-                return (int)ExecutionReturn.MissingBuildFlag;
-            }
-
-            //If using Platinum DB source, make sure we have both DB and Server arguments
-            if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) || !string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource))
-            {
-                if (string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) || string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource))
+                //Validate and set the value for the build file name
+                if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName) && string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir)
+                    && string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac)
+                    && string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) && string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource))
                 {
-                    error = "The /PlatinumDbSource and /PlatinumServerSource arguments must be used together";
+                    error = "Invalid command line set. Missing /PackageName or /PlatinumDacpac or /ScriptSrcDir setting.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
                     log.Error(error);
                     return (int)ExecutionReturn.MissingBuildFlag;
                 }
-            }
 
-            //If using Platinum DB source, make sure we have a username and password as well
-            if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource))
-            {
-                if (string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+                //If using Platinum DB source, make sure we have both DB and Server arguments
+                if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) || !string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource))
                 {
-                    error = "The /UserName and /Password arguments are required when using /PlatinumDbSource";
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
+                    if (string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) || string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource))
+                    {
+                        error = "The /PlatinumDbSource and /PlatinumServerSource arguments must be used together";
+                        errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
+                        log.Error(error);
+                        return (int)ExecutionReturn.MissingBuildFlag;
+                    }
+                }
+
+                //If using Platinum DB source, make sure we have a username and password as well
+                if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource))
+                {
+                    if (string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+                    {
+                        error = "The /UserName and /Password arguments are required when using /PlatinumDbSource";
+                        errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
+                        log.Error(error);
+                        return (int)ExecutionReturn.MissingBuildFlag;
+                    }
+                }
+
+                //Validate that the build file exists if specified
+                if (cmdLine.BuildFileName.Length != 0 && !File.Exists(cmdLine.BuildFileName))
+                {
+                    error = "Missing Build file. The build file specified: " + cmdLine.BuildFileName + " could not be found";
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
                     log.Error(error);
-                    return (int)ExecutionReturn.MissingBuildFlag;
+                    return (int)ExecutionReturn.InvalidBuildFileNameValue;
+                }
+
+                //Validate that the Platinum dacpac file exists if specified
+                if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac) && !File.Exists(cmdLine.PlatinumDacpac))
+                {
+                    error = "Missing Platinum dacpac file. The  Platinum dacpa specified: " + cmdLine.PlatinumDacpac + " could not be found";
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
+                    log.Error(error);
+                    return (int)ExecutionReturn.InvalidBuildFileNameValue;
                 }
             }
-
-            //Validate that the build file exists if specified
-            if (cmdLine.BuildFileName.Length != 0 && !File.Exists(cmdLine.BuildFileName))
-            {
-                error = "Missing Build file. The build file specified: "+ cmdLine.BuildFileName +" could not be found";
-                errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
-                log.Error(error);
-                return (int)ExecutionReturn.InvalidBuildFileNameValue;
-            }
-
-            //Validate that the Platinum dacpac file exists if specified
-            if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac) && !File.Exists(cmdLine.PlatinumDacpac))
-            {
-                error = "Missing Platinum dacpac file. The  Platinum dacpa specified: " + cmdLine.PlatinumDacpac + " could not be found";
-                errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
-                log.Error(error);
-                return (int)ExecutionReturn.InvalidBuildFileNameValue;
-            }
-
             if (cmdLine.ScriptSrcDir.Length > 0)
             {
                 if (!Directory.Exists(cmdLine.ScriptSrcDir))
@@ -279,7 +281,8 @@ namespace SqlBuildManager.Console
                             DatabaseName = cmdLine.Database,
                             SQLServerName = cmdLine.Server,
                             UserId = cmdLine.UserName,
-                            Password = cmdLine.Password
+                            Password = cmdLine.Password,
+                            AuthenticationType = cmdLine.AuthenticationType
                         };
                         multiData = MultiDbHelper.CreateMultiDbConfigFromQuery(connData, File.ReadAllText(cmdLine.MultiDbRunConfigFileName), out message);
                     }

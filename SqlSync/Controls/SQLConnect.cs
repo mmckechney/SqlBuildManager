@@ -149,7 +149,7 @@ namespace SqlSync
             this.ddDatabase.Enabled = false;
             this.ddDatabase.Location = new System.Drawing.Point(12, 198);
             this.ddDatabase.Name = "ddDatabase";
-            this.ddDatabase.Size = new System.Drawing.Size(240, 24);
+            this.ddDatabase.Size = new System.Drawing.Size(240, 21);
             this.ddDatabase.TabIndex = 5;
             // 
             // txtPassword
@@ -158,7 +158,7 @@ namespace SqlSync
             this.txtPassword.Location = new System.Drawing.Point(12, 139);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
-            this.txtPassword.Size = new System.Drawing.Size(240, 22);
+            this.txtPassword.Size = new System.Drawing.Size(240, 20);
             this.txtPassword.TabIndex = 3;
             this.txtPassword.MouseEnter += new System.EventHandler(this.txtPassword_MouseEnter);
             this.txtPassword.MouseLeave += new System.EventHandler(this.txtPassword_MouseLeave);
@@ -168,7 +168,7 @@ namespace SqlSync
             this.txtUser.Enabled = false;
             this.txtUser.Location = new System.Drawing.Point(12, 101);
             this.txtUser.Name = "txtUser";
-            this.txtUser.Size = new System.Drawing.Size(240, 22);
+            this.txtUser.Size = new System.Drawing.Size(240, 20);
             this.txtUser.TabIndex = 2;
             // 
             // label3
@@ -205,7 +205,7 @@ namespace SqlSync
             // 
             this.ddServers.Location = new System.Drawing.Point(12, 23);
             this.ddServers.Name = "ddServers";
-            this.ddServers.Size = new System.Drawing.Size(240, 24);
+            this.ddServers.Size = new System.Drawing.Size(240, 21);
             this.ddServers.TabIndex = 0;
             this.ddServers.SelectionChangeCommitted += new System.EventHandler(this.ddServers_SelectionChangeCommitted);
             // 
@@ -335,14 +335,9 @@ namespace SqlSync
             // 
             this.ddAuthentication.BackColor = System.Drawing.Color.Snow;
             this.ddAuthentication.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ddAuthentication.Items.AddRange(new object[] {
-            "Windows Authentication",
-            "Username/Password",
-            "Azure AD Integrated Authentication",
-            "Azure AD Password Authentication"});
             this.ddAuthentication.Location = new System.Drawing.Point(12, 62);
             this.ddAuthentication.Name = "ddAuthentication";
-            this.ddAuthentication.Size = new System.Drawing.Size(240, 24);
+            this.ddAuthentication.Size = new System.Drawing.Size(240, 21);
             this.ddAuthentication.TabIndex = 1;
             this.ddAuthentication.SelectionChangeCommitted += new System.EventHandler(this.ddAuthentication_SelectionChangeCommitted);
             // 
@@ -417,20 +412,8 @@ namespace SqlSync
         public SqlSync.Connection.AuthenticationType AuthenticationType
         {
             get
-            { 
-                switch(ddAuthentication.SelectedItem.ToString())
-                {
-                   
-                    case "Username/Password":
-                        return SqlSync.Connection.AuthenticationType.UserNamePassword;
-                    case "Azure AD Integrated Authentication":
-                        return SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
-                    case "Azure AD Password Authentication":
-                        return SqlSync.Connection.AuthenticationType.AzureUserNamePassword;
-                    case "Windows Authentication":
-                    default:
-                        return SqlSync.Connection.AuthenticationType.WindowsAuthentication;
-                }
+            {
+                return (SqlSync.Connection.AuthenticationType)SqlSync.Connection.Extensions.GetValueFromDescription<Connection.AuthenticationType>(ddAuthentication.SelectedItem.ToString());
             }
         }
 
@@ -512,9 +495,17 @@ namespace SqlSync
         {
             this.ddDatabase.Visible = this.displayDatabaseDropDown;
             this.lblDatabases.Visible = this.displayDatabaseDropDown;
-            this.ddAuthentication.SelectedIndex = 0;
+            
             PopulateRegisteredServerTree();
             InitializeSqlEnumeration();
+
+            var vals = Enum.GetValues(typeof(Connection.AuthenticationType));
+            foreach(Connection.AuthenticationType item in Enum.GetValues(typeof(Connection.AuthenticationType)))
+            {
+                ddAuthentication.Items.Add(item.GetDescription());
+            }
+            this.ddAuthentication.SelectedIndex = 0;
+            ddAuthentication_SelectionChangeCommitted(null, null);
         }
 
         public void InitializeSqlEnumeration()
@@ -537,20 +528,18 @@ namespace SqlSync
         }
         private void ddAuthentication_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            switch (ddAuthentication.SelectedItem.ToString())
+            if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureUserNamePassword.GetDescription()
+                || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.UserNamePassword.GetDescription())
             {
 
-                case "Username/Password":
-                case "Azure AD Password Authentication":
-                    txtPassword.Enabled = true;
-                    txtUser.Enabled = true;
-                    break;
-                case "Azure AD Integrated Authentication":
-                case "Windows Authentication":
-                default:
-                    txtPassword.Enabled = false;
-                    txtUser.Enabled = false;
-                    break;
+                txtPassword.Enabled = true;
+                txtUser.Enabled = true;
+            }
+            else if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureActiveDirectory.GetDescription()
+                 || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.WindowsAuthentication.GetDescription())
+            {
+                txtPassword.Enabled = false;
+                txtUser.Enabled = false;
             }
         }
       
@@ -817,16 +806,16 @@ namespace SqlSync
             switch (authType)
             {
                 case Connection.AuthenticationType.UserNamePassword:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Username/Password");
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.UserNamePassword.GetDescription());
                     break;
                 case Connection.AuthenticationType.WindowsAuthentication:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Windows Authentication");
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.WindowsAuthentication.GetDescription());
                     break;
                 case Connection.AuthenticationType.AzureActiveDirectory:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Azure AD Integrated Authentication");
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.AzureActiveDirectory.GetDescription());
                     break;
                 case Connection.AuthenticationType.AzureUserNamePassword:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact("Azure AD Password Authentication");
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.AzureUserNamePassword.GetDescription());
                     break;
             }
             ddAuthentication_SelectionChangeCommitted(null, null);

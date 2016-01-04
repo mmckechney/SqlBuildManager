@@ -32,6 +32,8 @@
             System.Windows.Forms.Button btnMultDbCfg;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CommandLineBuilderForm));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.txtAllowedTimeoutRetries = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.chkNotTransactional = new System.Windows.Forms.CheckBox();
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
@@ -68,15 +70,13 @@
             this.btnOpenFolder = new System.Windows.Forms.Button();
             this.pnlOutput = new System.Windows.Forms.Panel();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.ddAuthentication = new System.Windows.Forms.ComboBox();
             this.txtPassword = new System.Windows.Forms.TextBox();
             this.txtUserName = new System.Windows.Forms.TextBox();
-            this.chkUseWindowsAuth = new System.Windows.Forms.CheckBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.txtLoggingDatabase = new System.Windows.Forms.TextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.helptoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.txtAllowedTimeoutRetries = new System.Windows.Forms.TextBox();
-            this.label11 = new System.Windows.Forms.Label();
             btnMultDbCfg = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.grpLogging.SuspendLayout();
@@ -93,7 +93,7 @@
             btnMultDbCfg.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             btnMultDbCfg.AutoSize = true;
             btnMultDbCfg.Image = global::SqlSync.Properties.Resources.Open;
-            btnMultDbCfg.Location = new System.Drawing.Point(701, 17);
+            btnMultDbCfg.Location = new System.Drawing.Point(759, 17);
             btnMultDbCfg.Name = "btnMultDbCfg";
             btnMultDbCfg.Size = new System.Drawing.Size(28, 22);
             btnMultDbCfg.TabIndex = 9;
@@ -115,6 +115,26 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Run Settings";
+            // 
+            // txtAllowedTimeoutRetries
+            // 
+            this.txtAllowedTimeoutRetries.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txtAllowedTimeoutRetries.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+            this.txtAllowedTimeoutRetries.Location = new System.Drawing.Point(229, 81);
+            this.txtAllowedTimeoutRetries.Name = "txtAllowedTimeoutRetries";
+            this.txtAllowedTimeoutRetries.Size = new System.Drawing.Size(36, 20);
+            this.txtAllowedTimeoutRetries.TabIndex = 25;
+            this.txtAllowedTimeoutRetries.Text = "0";
+            this.txtAllowedTimeoutRetries.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(6, 85);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(177, 13);
+            this.label11.TabIndex = 24;
+            this.label11.Text = "Allowed Script Timeout Retry Count:";
             // 
             // chkNotTransactional
             // 
@@ -193,8 +213,8 @@
             // 
             // grpLogging
             // 
-            this.grpLogging.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpLogging.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpLogging.Controls.Add(this.btnLoggingPath);
             this.grpLogging.Controls.Add(this.txtRootLoggingPath);
             this.grpLogging.Controls.Add(this.label2);
@@ -203,7 +223,7 @@
             this.grpLogging.Enabled = false;
             this.grpLogging.Location = new System.Drawing.Point(287, 28);
             this.grpLogging.Name = "grpLogging";
-            this.grpLogging.Size = new System.Drawing.Size(458, 133);
+            this.grpLogging.Size = new System.Drawing.Size(516, 133);
             this.grpLogging.TabIndex = 1;
             this.grpLogging.TabStop = false;
             this.grpLogging.Text = "Threaded Run Logging";
@@ -213,7 +233,7 @@
             this.btnLoggingPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnLoggingPath.AutoSize = true;
             this.btnLoggingPath.Image = global::SqlSync.Properties.Resources.Open;
-            this.btnLoggingPath.Location = new System.Drawing.Point(424, 46);
+            this.btnLoggingPath.Location = new System.Drawing.Point(482, 46);
             this.btnLoggingPath.Name = "btnLoggingPath";
             this.btnLoggingPath.Size = new System.Drawing.Size(28, 23);
             this.btnLoggingPath.TabIndex = 6;
@@ -222,11 +242,11 @@
             // 
             // txtRootLoggingPath
             // 
-            this.txtRootLoggingPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtRootLoggingPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtRootLoggingPath.Location = new System.Drawing.Point(104, 47);
             this.txtRootLoggingPath.Name = "txtRootLoggingPath";
-            this.txtRootLoggingPath.Size = new System.Drawing.Size(314, 20);
+            this.txtRootLoggingPath.Size = new System.Drawing.Size(372, 20);
             this.txtRootLoggingPath.TabIndex = 5;
             // 
             // label2
@@ -292,7 +312,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(358, 22);
+            this.label9.Location = new System.Drawing.Point(453, 22);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(56, 13);
             this.label9.TabIndex = 4;
@@ -302,7 +322,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(176, 22);
+            this.label8.Location = new System.Drawing.Point(274, 22);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(63, 13);
             this.label8.TabIndex = 2;
@@ -311,8 +331,8 @@
             // 
             // groupBox3
             // 
-            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.btnScriptSrcDir);
             this.groupBox3.Controls.Add(this.txtScriptSrcDir);
             this.groupBox3.Controls.Add(this.label4);
@@ -321,7 +341,7 @@
             this.groupBox3.Controls.Add(this.label3);
             this.groupBox3.Location = new System.Drawing.Point(10, 167);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(735, 80);
+            this.groupBox3.Size = new System.Drawing.Size(793, 80);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Script Source";
@@ -331,7 +351,7 @@
             this.btnScriptSrcDir.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnScriptSrcDir.AutoSize = true;
             this.btnScriptSrcDir.Image = global::SqlSync.Properties.Resources.Open;
-            this.btnScriptSrcDir.Location = new System.Drawing.Point(701, 44);
+            this.btnScriptSrcDir.Location = new System.Drawing.Point(759, 44);
             this.btnScriptSrcDir.Name = "btnScriptSrcDir";
             this.btnScriptSrcDir.Size = new System.Drawing.Size(28, 22);
             this.btnScriptSrcDir.TabIndex = 12;
@@ -340,11 +360,11 @@
             // 
             // txtScriptSrcDir
             // 
-            this.txtScriptSrcDir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtScriptSrcDir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtScriptSrcDir.Location = new System.Drawing.Point(182, 44);
             this.txtScriptSrcDir.Name = "txtScriptSrcDir";
-            this.txtScriptSrcDir.Size = new System.Drawing.Size(513, 20);
+            this.txtScriptSrcDir.Size = new System.Drawing.Size(571, 20);
             this.txtScriptSrcDir.TabIndex = 11;
             // 
             // btnOpenSbm
@@ -352,7 +372,7 @@
             this.btnOpenSbm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOpenSbm.AutoSize = true;
             this.btnOpenSbm.Image = global::SqlSync.Properties.Resources.Open;
-            this.btnOpenSbm.Location = new System.Drawing.Point(701, 17);
+            this.btnOpenSbm.Location = new System.Drawing.Point(759, 17);
             this.btnOpenSbm.Name = "btnOpenSbm";
             this.btnOpenSbm.Size = new System.Drawing.Size(28, 22);
             this.btnOpenSbm.TabIndex = 9;
@@ -361,37 +381,37 @@
             // 
             // txtSbmFile
             // 
-            this.txtSbmFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSbmFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtSbmFile.Location = new System.Drawing.Point(181, 17);
             this.txtSbmFile.Name = "txtSbmFile";
-            this.txtSbmFile.Size = new System.Drawing.Size(513, 20);
+            this.txtSbmFile.Size = new System.Drawing.Size(571, 20);
             this.txtSbmFile.TabIndex = 8;
             this.txtSbmFile.TextChanged += new System.EventHandler(this.txtSbmFile_TextChanged);
             // 
             // groupBox4
             // 
-            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox4.Controls.Add(btnMultDbCfg);
             this.groupBox4.Controls.Add(this.txtOverride);
             this.groupBox4.Controls.Add(this.label6);
             this.groupBox4.Location = new System.Drawing.Point(10, 250);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(735, 50);
+            this.groupBox4.Size = new System.Drawing.Size(793, 50);
             this.groupBox4.TabIndex = 13;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Override Target Settings";
             // 
             // txtOverride
             // 
-            this.txtOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOverride.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.txtOverride.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.txtOverride.Location = new System.Drawing.Point(217, 17);
             this.txtOverride.Name = "txtOverride";
-            this.txtOverride.Size = new System.Drawing.Size(478, 20);
+            this.txtOverride.Size = new System.Drawing.Size(536, 20);
             this.txtOverride.TabIndex = 8;
             // 
             // folderBrowserDialog1
@@ -401,7 +421,7 @@
             // fileSbm
             // 
             this.fileSbm.Filter = "Sql Build Manager *.sbm|*.sbm|Sql Build Control File *.sbx|*.sbx|All Files *.*|*." +
-                "*";
+    "*";
             // 
             // fileOverride
             // 
@@ -419,11 +439,11 @@
             // 
             // rtbCommandLine
             // 
-            this.rtbCommandLine.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.rtbCommandLine.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.rtbCommandLine.Location = new System.Drawing.Point(10, 390);
             this.rtbCommandLine.Name = "rtbCommandLine";
-            this.rtbCommandLine.Size = new System.Drawing.Size(735, 65);
+            this.rtbCommandLine.Size = new System.Drawing.Size(793, 65);
             this.rtbCommandLine.TabIndex = 15;
             this.rtbCommandLine.Text = "";
             this.rtbCommandLine.TextChanged += new System.EventHandler(this.rtbCommandLine_TextChanged);
@@ -441,19 +461,19 @@
             // 
             // rtbOutput
             // 
-            this.rtbOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.rtbOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.rtbOutput.Location = new System.Drawing.Point(14, 26);
             this.rtbOutput.Name = "rtbOutput";
-            this.rtbOutput.Size = new System.Drawing.Size(733, 138);
+            this.rtbOutput.Size = new System.Drawing.Size(791, 138);
             this.rtbOutput.TabIndex = 19;
             this.rtbOutput.Text = "";
             // 
             // btnOpenFolder
             // 
             this.btnOpenFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOpenFolder.Location = new System.Drawing.Point(629, 168);
+            this.btnOpenFolder.Location = new System.Drawing.Point(687, 168);
             this.btnOpenFolder.Name = "btnOpenFolder";
             this.btnOpenFolder.Size = new System.Drawing.Size(118, 23);
             this.btnOpenFolder.TabIndex = 20;
@@ -463,38 +483,48 @@
             // 
             // pnlOutput
             // 
-            this.pnlOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlOutput.Controls.Add(this.rtbOutput);
             this.pnlOutput.Controls.Add(this.btnOpenFolder);
             this.pnlOutput.Controls.Add(this.label7);
             this.pnlOutput.Enabled = false;
             this.pnlOutput.Location = new System.Drawing.Point(-2, 463);
             this.pnlOutput.Name = "pnlOutput";
-            this.pnlOutput.Size = new System.Drawing.Size(758, 200);
+            this.pnlOutput.Size = new System.Drawing.Size(816, 200);
             this.pnlOutput.TabIndex = 21;
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.ddAuthentication);
             this.groupBox2.Controls.Add(this.label9);
             this.groupBox2.Controls.Add(this.txtPassword);
             this.groupBox2.Controls.Add(this.label8);
             this.groupBox2.Controls.Add(this.txtUserName);
-            this.groupBox2.Controls.Add(this.chkUseWindowsAuth);
             this.groupBox2.Location = new System.Drawing.Point(10, 304);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(550, 50);
+            this.groupBox2.Size = new System.Drawing.Size(625, 51);
             this.groupBox2.TabIndex = 14;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Database Authentication Settings";
             // 
+            // ddAuthentication
+            // 
+            this.ddAuthentication.BackColor = System.Drawing.Color.Snow;
+            this.ddAuthentication.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ddAuthentication.Location = new System.Drawing.Point(9, 18);
+            this.ddAuthentication.Name = "ddAuthentication";
+            this.ddAuthentication.Size = new System.Drawing.Size(256, 21);
+            this.ddAuthentication.TabIndex = 5;
+            this.ddAuthentication.SelectionChangeCommitted += new System.EventHandler(this.ddAuthentication_SelectionChangeCommitted);
+            // 
             // txtPassword
             // 
             this.txtPassword.Enabled = false;
-            this.txtPassword.Location = new System.Drawing.Point(428, 18);
+            this.txtPassword.Location = new System.Drawing.Point(517, 18);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.Size = new System.Drawing.Size(100, 20);
             this.txtPassword.TabIndex = 3;
@@ -502,30 +532,17 @@
             // txtUserName
             // 
             this.txtUserName.Enabled = false;
-            this.txtUserName.Location = new System.Drawing.Point(246, 18);
+            this.txtUserName.Location = new System.Drawing.Point(345, 18);
             this.txtUserName.Name = "txtUserName";
             this.txtUserName.Size = new System.Drawing.Size(100, 20);
             this.txtUserName.TabIndex = 1;
             // 
-            // chkUseWindowsAuth
-            // 
-            this.chkUseWindowsAuth.AutoSize = true;
-            this.chkUseWindowsAuth.Checked = true;
-            this.chkUseWindowsAuth.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkUseWindowsAuth.Location = new System.Drawing.Point(12, 20);
-            this.chkUseWindowsAuth.Name = "chkUseWindowsAuth";
-            this.chkUseWindowsAuth.Size = new System.Drawing.Size(163, 17);
-            this.chkUseWindowsAuth.TabIndex = 0;
-            this.chkUseWindowsAuth.Text = "Use Windows Authentication";
-            this.chkUseWindowsAuth.UseVisualStyleBackColor = true;
-            this.chkUseWindowsAuth.CheckedChanged += new System.EventHandler(this.chkUseWindowsAuth_CheckedChanged);
-            // 
             // groupBox5
             // 
             this.groupBox5.Controls.Add(this.txtLoggingDatabase);
-            this.groupBox5.Location = new System.Drawing.Point(567, 307);
+            this.groupBox5.Location = new System.Drawing.Point(641, 304);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(160, 48);
+            this.groupBox5.Size = new System.Drawing.Size(160, 51);
             this.groupBox5.TabIndex = 22;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Alternate Logging Database";
@@ -543,7 +560,7 @@
             this.helptoolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(754, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(812, 24);
             this.menuStrip1.TabIndex = 24;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -557,32 +574,12 @@
             this.helptoolStripMenuItem.Size = new System.Drawing.Size(28, 20);
             this.helptoolStripMenuItem.Click += new System.EventHandler(this.helptoolStripMenuItem_Click);
             // 
-            // txtAllowedTimeoutRetries
-            // 
-            this.txtAllowedTimeoutRetries.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txtAllowedTimeoutRetries.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-            this.txtAllowedTimeoutRetries.Location = new System.Drawing.Point(229, 81);
-            this.txtAllowedTimeoutRetries.Name = "txtAllowedTimeoutRetries";
-            this.txtAllowedTimeoutRetries.Size = new System.Drawing.Size(36, 20);
-            this.txtAllowedTimeoutRetries.TabIndex = 25;
-            this.txtAllowedTimeoutRetries.Text = "0";
-            this.txtAllowedTimeoutRetries.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(6, 85);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(177, 13);
-            this.label11.TabIndex = 24;
-            this.label11.Text = "Allowed Script Timeout Retry Count:";
-            // 
             // CommandLineBuilderForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(754, 663);
+            this.ClientSize = new System.Drawing.Size(812, 663);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.pnlOutput);
@@ -659,7 +656,6 @@
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox txtUserName;
-        private System.Windows.Forms.CheckBox chkUseWindowsAuth;
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.TextBox txtLoggingDatabase;
         private System.Windows.Forms.TextBox txtDescription;
@@ -669,5 +665,6 @@
         private System.Windows.Forms.ToolStripMenuItem helptoolStripMenuItem;
         private System.Windows.Forms.TextBox txtAllowedTimeoutRetries;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.ComboBox ddAuthentication;
     }
 }

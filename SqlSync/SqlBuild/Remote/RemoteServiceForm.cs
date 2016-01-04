@@ -106,7 +106,7 @@ namespace SqlSync.SqlBuild.Remote
                 }
             }
 
-            if(chkUseWindowsAuth.Checked == false && (string.IsNullOrWhiteSpace(txtUserName.Text) || string.IsNullOrWhiteSpace(txtPassword.Text)))
+            if((ddAuthentication.SelectedItem.ToString() == AuthenticationType.UserNamePassword.GetDescription() || ddAuthentication.SelectedItem.ToString() == AuthenticationType.AzureUserNamePassword.GetDescription() ) && (string.IsNullOrWhiteSpace(txtUserName.Text) || string.IsNullOrWhiteSpace(txtPassword.Text)))
             {
                 MessageBox.Show("Missing username/password combination", "Missing authentication", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return false;
@@ -530,6 +530,13 @@ namespace SqlSync.SqlBuild.Remote
             ddDistribution.SelectedIndex = 1;
             protocolComboBox.SelectedIndex = 0;
 
+            var vals = Enum.GetValues(typeof(Connection.AuthenticationType));
+            foreach (Connection.AuthenticationType item in Enum.GetValues(typeof(Connection.AuthenticationType)))
+            {
+                ddAuthentication.Items.Add(item.GetDescription());
+            }
+            ddAuthentication.SelectedIndex = 0;
+            ddAuthentication_SelectionChangeCommitted(null, null);
 
 
         }
@@ -672,9 +679,14 @@ namespace SqlSync.SqlBuild.Remote
                 int.TryParse(txtTimeoutRetryCount.Text, out retryCnt);
                 settings.TimeoutRetryCount = retryCnt;
 
-                if (!chkUseWindowsAuth.Checked)
+                settings.AuthenticationType = (SqlSync.Connection.AuthenticationType)SqlSync.Connection.Extensions.GetValueFromDescription<AuthenticationType>(ddAuthentication.SelectedItem.ToString());
+
+                if (!string.IsNullOrWhiteSpace(txtUserName.Text))
                 {
                     settings.DbUserName = txtUserName.Text;
+                }
+                if(!string.IsNullOrWhiteSpace(txtPassword.Text))
+                { 
                     settings.DbPassword = txtPassword.Text;
                 }
 
@@ -949,9 +961,10 @@ namespace SqlSync.SqlBuild.Remote
                     !chkNotTransactional.Checked,
                     txtDescription.Text,
                     retryCnt, 
-                    (!chkUseWindowsAuth.Checked) ? txtUserName.Text : "",
-                    (!chkUseWindowsAuth.Checked) ? txtPassword.Text : "",
-                    txtPlatinumDacpac.Text);
+                    txtUserName.Text,
+                    txtPassword.Text,
+                    txtPlatinumDacpac.Text,
+                    ddAuthentication.SelectedItem.ToString());
 
                 ScriptDisplayForm frmDisp = new ScriptDisplayForm(commandLine, "", "");
                 frmDisp.ShowDialog();
@@ -1050,10 +1063,6 @@ namespace SqlSync.SqlBuild.Remote
                 chkUseOverrideAsExeList.Enabled = false;
                 chkUseOverrideAsExeList.Checked = false;
 
-                chkUseWindowsAuth.Enabled = false;
-                chkUseWindowsAuth.Checked = false;
-                
-
                 List<ServerConfigData> serverData = buildManager.GetListOfAzureInstancePublicUrls();
                 this.serverData = new BindingList<ServerConfigData>(serverData);
                 this.dgvServerStatus.DataSource = this.serverData;
@@ -1068,21 +1077,6 @@ namespace SqlSync.SqlBuild.Remote
                 btnCheckServiceStatus_Click(null, EventArgs.Empty);
             }
         }
-
-        private void chkUseWindowsAuth_CheckedChanged(object sender, EventArgs e)
-        {
-            if(chkUseWindowsAuth.Checked)
-            {
-                txtUserName.Enabled = false;
-                txtPassword.Enabled = false;
-            }
-            else
-            {
-                txtUserName.Enabled = true;
-                txtPassword.Enabled = true;
-            }
-        }
-
         private void btnCheckServiceStatus_MouseClick(object sender, MouseEventArgs e)
         {
             if(e.Button == System.Windows.Forms.MouseButtons.Right)
@@ -1121,10 +1115,21 @@ namespace SqlSync.SqlBuild.Remote
 
         }
 
-      
+        private void ddAuthentication_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureUserNamePassword.GetDescription()
+               || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.UserNamePassword.GetDescription())
+            {
 
-
-
- 
+                txtPassword.Enabled = true;
+                txtUserName.Enabled = true;
+            }
+            else if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureActiveDirectory.GetDescription()
+                 || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.WindowsAuthentication.GetDescription())
+            {
+                txtPassword.Enabled = false;
+                txtUserName.Enabled = false;
+            }
+        }
     }
 }

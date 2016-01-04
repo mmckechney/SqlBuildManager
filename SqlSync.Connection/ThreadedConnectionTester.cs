@@ -20,7 +20,7 @@ namespace SqlSync.Connection
             }
         }
       
-        public List<ConnectionTestResult> TestDatabaseConnections(Dictionary<string, List<string>> serverDbSets)
+        public List<ConnectionTestResult> TestDatabaseConnections(Dictionary<string, List<string>> serverDbSets, string userName, string password, AuthenticationType authType)
         {
             List<ConnectionTestResult> results = new List<ConnectionTestResult>();
 
@@ -34,7 +34,7 @@ namespace SqlSync.Connection
                         ThreadedConnectionTester.SyncObj.WorkingRunners++;
                     }
 
-                    ConnectionTestResult obj = new ConnectionTestResult() { DatabaseName = db, ServerName = server.Key };
+                    ConnectionTestResult obj = new ConnectionTestResult() { DatabaseName = db, ServerName = server.Key, DbUserName = userName,DbPassword = password, AuthenticationType = authType };
                     results.Add(obj);
                     string msg = "Queuing up thread for " + obj.ServerName + "." + obj.DatabaseName;
                     log.Debug(msg);
@@ -52,7 +52,7 @@ namespace SqlSync.Connection
         private void TestSingleConnection(object data)
         {
             ConnectionTestResult result = (ConnectionTestResult)data;
-            result.Successful = ConnectionHelper.TestDatabaseConnection(result.DatabaseName, result.ServerName, 2);
+            result.Successful = ConnectionHelper.TestDatabaseConnection(result.DatabaseName, result.ServerName,result.DbUserName,result.DbPassword,result.AuthenticationType, 2);
             lock (ThreadedConnectionTester.SyncObj)
             {
                 ThreadedConnectionTester.SyncObj.WorkingRunners--;

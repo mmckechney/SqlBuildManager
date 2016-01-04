@@ -134,6 +134,7 @@
     </Compile>
     <Compile Include="ConnectionTestResult.cs" />
     <Compile Include="DatabaseOverride.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="RegisteredServerHelper.cs" />
     <Compile Include="RegisteredServers.cs">
       <DependentUpon>RegisteredServers.xsd</DependentUpon>

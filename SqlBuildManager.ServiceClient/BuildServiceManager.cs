@@ -304,6 +304,9 @@ namespace SqlBuildManager.ServiceClient
                            client.Endpoint.Address = new System.ServiceModel.EndpointAddress(remoteServer.ActiveServiceEndpoint);
 
                            connTestSet = GetConnectionTestSettings(loadSet.Value.MultiDbTextConfig);
+                           connTestSet.DbUserName = settings.DbUserName;
+                           connTestSet.DbPassword = settings.DbPassword;
+                           connTestSet.AuthenticationType = settings.AuthenticationType;
 
                            ConnectionTestResult[] result = client.TestDatabaseConnectivity(connTestSet);
                            if (result == null || result.Length == 0)
@@ -699,6 +702,7 @@ namespace SqlBuildManager.ServiceClient
             try
             {
                 string address = string.Format("http://{0}/BuildService.svc", dns);
+                logger.InfoFormat("Calling status check at {0}", address);
                 azureServiceCallPolicy.Execute(() =>
                         {
 
@@ -709,10 +713,16 @@ namespace SqlBuildManager.ServiceClient
 
                             }, "http_BuildServiceEndpoint");
 
-                            foreach (var url in instanceUrls)
+                            if (instanceUrls.Count > 1)
                             {
-                                srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace(serverReplaceKey, dns + ":" + url.Split(':')[1])));
-                            } 
+                                foreach (var url in instanceUrls)
+                                {
+                                    srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace(serverReplaceKey, dns + ":" + url.Split(':')[1])));
+                                }
+                            }else
+                            {
+                                srvData.Add(new ServerConfigData(dynamicAzureTemplate.Replace(serverReplaceKey, dns)));
+                            }
 
                         });
                         

@@ -7,6 +7,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using SqlSync;
+using SqlSync.Connection;
+
 namespace SqlSync.SqlBuild
 {
     public partial class CommandLineBuilderForm : Form
@@ -78,7 +80,22 @@ namespace SqlSync.SqlBuild
                 btnScriptSrcDir.Enabled = true;
             }
         }
+        private void ddAuthentication_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureUserNamePassword.GetDescription()
+                || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.UserNamePassword.GetDescription())
+            {
 
+                txtPassword.Enabled = true;
+                txtUserName.Enabled = true;
+            }
+            else if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureActiveDirectory.GetDescription()
+                 || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.WindowsAuthentication.GetDescription())
+            {
+                txtPassword.Enabled = false;
+                txtUserName.Enabled = false;
+            }
+        }
         private void btnConstructCommand_Click(object sender, EventArgs e)
         {
             string exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\SqlBuildManager.Console.exe";
@@ -101,15 +118,37 @@ namespace SqlSync.SqlBuild
                     sb.Append("/LogAsText=\"true\" ");
             }
 
-
-            if (!chkUseWindowsAuth.Checked)
+            if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.UserNamePassword.GetDescription())
             {
-                if (txtUserName.Text.Length == 0 || txtPassword.Text.Length == 0)
-                {
-                    MessageBox.Show("A User Name and Password are required when not using Windows Authentication", "Configuration error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                sb.Append("/AuthType=Password");
+            }
+            else if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.AzureActiveDirectory.GetDescription())
+            {
+                sb.Append("/AuthType=AzureADIntegrated");
+            }
+            else if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.AzureUserNamePassword.GetDescription())
+            {
+                sb.Append("/AuthType=AzureADPassword");
+            }
+            else if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.WindowsAuthentication.GetDescription())
+            {
+                sb.Append("/AuthType=Windows");
+            }
+
+            if ((ddAuthentication.SelectedItem.ToString() == "Username/Password" || ddAuthentication.SelectedItem.ToString() == "Azure AD Password Authentication")
+                &&
+                (txtUserName.Text.Length == 0 || txtPassword.Text.Length == 0))
+            {
+                MessageBox.Show("A User Name and Password are required when not using Windows Authentication", "Configuration error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if(!string.IsNullOrWhiteSpace(txtUserName.Text))
+            {
                 sb.Append("/username=\"" + txtUserName.Text + "\" ");
+            }
+            if (!string.IsNullOrWhiteSpace(txtPassword.Text))
+            {
                 sb.Append("/password=\"" + txtPassword.Text + "\" ");
             }
 
@@ -205,6 +244,13 @@ namespace SqlSync.SqlBuild
             txtDescription.AutoCompleteCustomSource = SqlSync.Properties.Settings.Default.Description;
 
             chkRunThreaded.Checked = true;
+            var vals = Enum.GetValues(typeof(Connection.AuthenticationType));
+            foreach (Connection.AuthenticationType item in Enum.GetValues(typeof(Connection.AuthenticationType)))
+            {
+                ddAuthentication.Items.Add(item.GetDescription());
+            }
+            ddAuthentication.SelectedIndex = 0;
+            ddAuthentication_SelectionChangeCommitted(null, null);
         }
 
         private void btnExecute_Click(object sender, EventArgs e)
@@ -243,22 +289,6 @@ namespace SqlSync.SqlBuild
             prc.Start();
         }
 
-        private void chkUseWindowsAuth_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkUseWindowsAuth.Checked)
-            {
-                txtUserName.Enabled = false;
-                txtUserName.Text = "";
-                txtPassword.Enabled = false;
-                txtPassword.Text = "";
-            }
-            else
-            {
-                txtUserName.Enabled = true;
-                txtPassword.Enabled = true;
-            }
-        }
-
         private void chkNoTransaction_CheckedChanged(object sender, EventArgs e)
         {
             if (this.chkNotTransactional.Checked)
@@ -284,11 +314,6 @@ namespace SqlSync.SqlBuild
         {
             SqlSync.SqlBuild.UtilityHelper.OpenManual("AutoCreationofCommandLineStatements");
         }
-
-   
-
-
-
 
     }
 }

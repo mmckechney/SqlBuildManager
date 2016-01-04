@@ -255,6 +255,8 @@ namespace SqlBuildManager.Console
                 if (!string.IsNullOrWhiteSpace(multiData.Password))
                     this.cmdLine.Password = multiData.Password;
 
+                this.cmdLine.AuthenticationType = multiData.AuthenticationType;
+
                 this.cmdLine.PlatinumDacpac = platinumDacPacFileName;
                 this.cmdLine.BuildRevision = multiData.BuildRevision;
             }

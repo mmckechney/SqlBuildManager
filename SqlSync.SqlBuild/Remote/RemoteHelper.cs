@@ -4,18 +4,16 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.Connection;
+
 namespace SqlSync.SqlBuild.Remote
 {
     public class RemoteHelper
     {
         public static string BuildRemoteExecutionCommandline(string sbmFileName, string overrideSettingFile, string remoteExeServersFile, string rootLoggingPath, 
-            string distributionType, bool isTrial, bool isTransactional, string buildDescription, int allowedRetryCount, string username, string password, string platinumDacpacFile)
+            string distributionType, bool isTrial, bool isTransactional, string buildDescription, int allowedRetryCount, string username, string password, string platinumDacpacFile, string authType)
         {
 
-            //if (sbmFileName == null || sbmFileName.Length == 0)
-            //{
-            //    throw new ArgumentException("The Sql Build Manager file must be specified", "sbmFileName");
-            //}
             if (string.IsNullOrWhiteSpace(rootLoggingPath))
             {
                 throw new ArgumentException("The Root logging path must be specified", "rootLoggingPath");
@@ -82,8 +80,26 @@ namespace SqlSync.SqlBuild.Remote
             }
 
 
+            if (authType == AuthenticationType.UserNamePassword.GetDescription())
+            {
+                sb.Append("/AuthType=Password");
+            }
+            else if (authType == AuthenticationType.AzureActiveDirectory.GetDescription())
+            {
+                sb.Append("/AuthType=AzureADIntegrated");
+            }
+            else if (authType == AuthenticationType.AzureUserNamePassword.GetDescription())
+            {
+                sb.Append("/AuthType=AzureADPassword");
+            }
+            else if (authType == AuthenticationType.WindowsAuthentication.GetDescription())
+            {
+                sb.Append("/AuthType=Windows");
+            }
 
-           return sb.ToString();
+
+
+            return sb.ToString();
         }
 
         /// <summary>

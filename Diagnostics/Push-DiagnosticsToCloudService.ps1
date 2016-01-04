@@ -1,7 +1,14 @@
 ﻿<#
 
+Sql Build Manager (payx):
+.\Push-DiagnosticsToCloudService.ps1 -subscription_name "stratustime DEV Environment" -deployment_slot Production -config_path "C:\Git\SqlBuildManager\Diagnostics\diagnostics.wadcfgx" -service_name sqlbuildmanager -storage_name sqlbuildlogs -remove_existing $false
+
+
+
 Sql Build Manager:
-.\Push-DiagnosticsToCloudService.ps1 -subscription_name "" -deployment_slot Production -config_path "C:\Git\SqlBuildManager\Diagnostics\diagnostics.wadcfgx" -service_name sqlbuildmanager -storage_name sqlbuildlogs -remove_existing $false
+.\Push-DiagnosticsToCloudService.ps1 -subscription_name "Visual Studio Ultimate with MSDN" -deployment_slot Production -config_path "C:\Git\SqlBuildManager\Diagnostics\diagnostics.wadcfgx" -service_name sqlbuildmanagerservice -storage_name sqlbuildmanagerstorage -remove_existing $false
+
+
 #>
 param(
 

@@ -11,6 +11,8 @@ using SqlBuildManager.Interfaces.Console;
 using System.Linq;
 using SqlBuildManager.ServiceClient;
 using SqlSync.Connection;
+using System.Text.RegularExpressions;
+
 namespace SqlBuildManager.Console
 {
     class Program
@@ -248,10 +250,13 @@ namespace SqlBuildManager.Console
                 BuildServiceManager manager = new BuildServiceManager();
                 List<ServerConfigData> serverData = manager.GetListOfAzureInstancePublicUrls();
                 var remote = serverData.Select(s => s.ServerName).ToList();
-
+                if (remote.Count() > 0)
+                {
+                    log.InfoFormat("{0} instances available at {1}", remote.Count(), Regex.Replace(serverData[0].ActiveServiceEndpoint, @":\d{5}", ""));
+                }
                 List<ServerConfigData> remoteServer = null;
                 string[] errorMessages;
-                log.Info("Retrieving instance status...");
+                log.Info("Retrieving status of each instance...");
 
  
 

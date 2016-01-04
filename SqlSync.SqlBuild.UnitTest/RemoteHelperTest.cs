@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using SqlSync.SqlBuild.MultiDb;
 using System.Collections.Generic;
+using SqlSync.Connection;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -44,7 +45,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string buildDescription = "Just testing";
             string expected = string.Empty; 
             string actual;
-            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription,0,"","","");
+            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription,0,"","","", AuthenticationType.WindowsAuthentication.GetDescription());
   
         }
         /// <summary>
@@ -64,7 +65,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string buildDescription = "Just testing";
             string expected = string.Empty;
             string actual;
-            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription,0,"","","");
+            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription,0,"","","", AuthenticationType.WindowsAuthentication.GetDescription());
 
         }
 
@@ -85,7 +86,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string buildDescription = "Just testing";
             string expected = string.Empty;
             string actual;
-            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "");
+            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "", AuthenticationType.WindowsAuthentication.GetDescription());
 
         }
         /// <summary>
@@ -105,7 +106,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string buildDescription = "Just testing";
             string expected = string.Empty;
             string actual;
-            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "");
+            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "", AuthenticationType.WindowsAuthentication.GetDescription());
 
         }
 
@@ -126,7 +127,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string buildDescription = "Just testing";
             string expected = string.Empty;
             string actual;
-            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "");
+            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "", AuthenticationType.WindowsAuthentication.GetDescription());
 
         }
         /// <summary>
@@ -146,7 +147,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string buildDescription = "Just testing";
             string expected = string.Empty;
             string actual;
-            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "");
+            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "", AuthenticationType.WindowsAuthentication.GetDescription());
 
         }
 
@@ -167,7 +168,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string buildDescription = string.Empty;
             string expected = string.Empty;
             string actual;
-            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "");
+            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "", AuthenticationType.WindowsAuthentication.GetDescription());
 
         }
 
@@ -188,7 +189,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string buildDescription = "Just testing";
             string expected = string.Empty;
             string actual;
-            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "");
+            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "", AuthenticationType.WindowsAuthentication.GetDescription());
 
         }
 
@@ -208,7 +209,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string buildDescription = "Just testing";
             string expected = "SqlBuildManager.Console.exe\" /Action=Remote /build=\"C:\\temp\\test.sbm\" /RemoteServers=\"C:\\temp\\test.txt\" /override=\"C:\\temp\\test.cfg\" /RootLoggingPath=\"C:\\temp\" /DistributionType=\"local\" /Description=\"Just testing\" /transactional=False /trial=False /TimeoutRetryCount=0";
             string actual;
-            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "");
+            actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "", AuthenticationType.WindowsAuthentication.GetDescription());
             Assert.IsTrue(actual.IndexOf(expected) > -1);
         }
         #endregion

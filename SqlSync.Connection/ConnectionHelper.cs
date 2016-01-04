@@ -115,9 +115,15 @@ namespace SqlSync.Connection
             return true;
         }
 
-        public static bool TestDatabaseConnection(string dbName, string serverName, int scriptTimeOut)
+        public static bool TestDatabaseConnection(string dbName, string serverName, string username, string password, AuthenticationType authType, int scriptTimeOut)
         {
-            return TestDatabaseConnection(new ConnectionData() { DatabaseName = dbName, ScriptTimeout = scriptTimeOut, SQLServerName = serverName , AuthenticationType = AuthenticationType.UserNamePassword});
+            return TestDatabaseConnection(new ConnectionData() {
+                DatabaseName = dbName,
+                ScriptTimeout = scriptTimeOut,
+                SQLServerName = serverName,
+                UserId = username,
+                Password = password,
+                AuthenticationType = authType});
         }
         public static bool TestDatabaseConnection(ConnectionData connData)
         {

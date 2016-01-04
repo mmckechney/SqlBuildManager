@@ -32,10 +32,11 @@
       <Import moduleName="RemoteForwarder" />
     </Imports>
     <ConfigurationSettings>
+      <Setting name="CloudServiceName" />
     </ConfigurationSettings>
     <LocalResources>
       <LocalStorage name="RunLogFiles" cleanOnRoleRecycle="true" sizeInMB="500" />
-      <LocalStorage name="NETFXInstall" cleanOnRoleRecycle="false" sizeInMB="1024"  />
+      <LocalStorage name="NETFXInstall" cleanOnRoleRecycle="false" sizeInMB="1024" />
     </LocalResources>
   </WebRole>
 </ServiceDefinition>

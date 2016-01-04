@@ -1,5 +1,9 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="3" Revision="0">
+    <added>New authentication types for Azure: Azure AD Password and Azure AD Integrated</added>
+    <note>Install now requires .NET Version 4.6.1 or higher (https://www.microsoft.com/en-us/download/details.aspx?id=49981)</note>
+  </Version>
    <Version Major="10" Minor="2" Revision="12">
     <added>Added commandline to create an SBM package from a Platinum Dacpac and target database. New action /Action=ScriptExtract and /OutputSbm="&lt;filename&gt;"</added>
     <added>Now masking passwords on log messages</added>

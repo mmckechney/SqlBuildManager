@@ -30,8 +30,8 @@
         {
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.Button btnMultDbCfg;
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RemoteServiceForm));
             this.dgvRemoteServers = new System.Windows.Forms.DataGridView();
             this.ServerColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -59,11 +59,11 @@
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.txtLoggingDatabase = new System.Windows.Forms.TextBox();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.ddAuthentication = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.txtPassword = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.txtUserName = new System.Windows.Forms.TextBox();
-            this.chkUseWindowsAuth = new System.Windows.Forms.CheckBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.chkUseOverrideAsExeList = new System.Windows.Forms.CheckBox();
             this.lblOpenConfigForm = new System.Windows.Forms.LinkLabel();
@@ -425,11 +425,11 @@
             // 
             // groupBox7
             // 
-            this.groupBox7.Controls.Add(this.label9);
             this.groupBox7.Controls.Add(this.txtPassword);
-            this.groupBox7.Controls.Add(this.label8);
             this.groupBox7.Controls.Add(this.txtUserName);
-            this.groupBox7.Controls.Add(this.chkUseWindowsAuth);
+            this.groupBox7.Controls.Add(this.ddAuthentication);
+            this.groupBox7.Controls.Add(this.label9);
+            this.groupBox7.Controls.Add(this.label8);
             this.groupBox7.Location = new System.Drawing.Point(10, 267);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Size = new System.Drawing.Size(576, 50);
@@ -437,10 +437,20 @@
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Database Authentication Settings";
             // 
+            // ddAuthentication
+            // 
+            this.ddAuthentication.BackColor = System.Drawing.Color.Snow;
+            this.ddAuthentication.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ddAuthentication.Location = new System.Drawing.Point(6, 20);
+            this.ddAuthentication.Name = "ddAuthentication";
+            this.ddAuthentication.Size = new System.Drawing.Size(240, 21);
+            this.ddAuthentication.TabIndex = 6;
+            this.ddAuthentication.SelectionChangeCommitted += new System.EventHandler(this.ddAuthentication_SelectionChangeCommitted);
+            // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(358, 22);
+            this.label9.Location = new System.Drawing.Point(414, 22);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(56, 13);
             this.label9.TabIndex = 4;
@@ -449,7 +459,7 @@
             // txtPassword
             // 
             this.txtPassword.Enabled = false;
-            this.txtPassword.Location = new System.Drawing.Point(428, 18);
+            this.txtPassword.Location = new System.Drawing.Point(470, 18);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(100, 20);
@@ -459,7 +469,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(176, 22);
+            this.label8.Location = new System.Drawing.Point(248, 22);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(63, 13);
             this.label8.TabIndex = 2;
@@ -468,23 +478,10 @@
             // txtUserName
             // 
             this.txtUserName.Enabled = false;
-            this.txtUserName.Location = new System.Drawing.Point(246, 18);
+            this.txtUserName.Location = new System.Drawing.Point(314, 18);
             this.txtUserName.Name = "txtUserName";
             this.txtUserName.Size = new System.Drawing.Size(100, 20);
             this.txtUserName.TabIndex = 0;
-            // 
-            // chkUseWindowsAuth
-            // 
-            this.chkUseWindowsAuth.AutoSize = true;
-            this.chkUseWindowsAuth.Checked = true;
-            this.chkUseWindowsAuth.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkUseWindowsAuth.Location = new System.Drawing.Point(12, 20);
-            this.chkUseWindowsAuth.Name = "chkUseWindowsAuth";
-            this.chkUseWindowsAuth.Size = new System.Drawing.Size(163, 17);
-            this.chkUseWindowsAuth.TabIndex = 0;
-            this.chkUseWindowsAuth.Text = "Use Windows Authentication";
-            this.chkUseWindowsAuth.UseVisualStyleBackColor = true;
-            this.chkUseWindowsAuth.CheckedChanged += new System.EventHandler(this.chkUseWindowsAuth_CheckedChanged);
             // 
             // groupBox5
             // 
@@ -746,8 +743,8 @@
             this.dgvServerStatus.AllowUserToAddRows = false;
             this.dgvServerStatus.AllowUserToDeleteRows = false;
             this.dgvServerStatus.AllowUserToOrderColumns = true;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.dgvServerStatus.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.dgvServerStatus.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvServerStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -790,8 +787,8 @@
             // lastStatusCheckDataGridViewTextBoxColumn
             // 
             this.lastStatusCheckDataGridViewTextBoxColumn.DataPropertyName = "LastStatusCheck";
-            dataGridViewCellStyle4.Format = "MM/dd/yyyy hh:mm:ss.fff";
-            this.lastStatusCheckDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Format = "MM/dd/yyyy hh:mm:ss.fff";
+            this.lastStatusCheckDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle2;
             this.lastStatusCheckDataGridViewTextBoxColumn.HeaderText = "Last Status Check";
             this.lastStatusCheckDataGridViewTextBoxColumn.Name = "lastStatusCheckDataGridViewTextBoxColumn";
             this.lastStatusCheckDataGridViewTextBoxColumn.ReadOnly = true;
@@ -829,7 +826,7 @@
             this.toolStripSeparator1,
             this.toolStripMenuItem1});
             this.remoteExecutionLogsContextMenuStrip1.Name = "remoteExecutionLogsContextMenuStrip1";
-            this.remoteExecutionLogsContextMenuStrip1.Size = new System.Drawing.Size(441, 223);
+            this.remoteExecutionLogsContextMenuStrip1.Size = new System.Drawing.Size(441, 201);
             // 
             // toolStripSeparator1
             // 
@@ -1036,7 +1033,6 @@
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox txtUserName;
-        private System.Windows.Forms.CheckBox chkUseWindowsAuth;
         private System.Windows.Forms.OpenFileDialog fileSbm;
         private System.Windows.Forms.OpenFileDialog fileOverride;
         private System.Windows.Forms.StatusStrip statusStrip1;
@@ -1084,5 +1080,6 @@
         private System.Windows.Forms.TextBox txtPlatinumDacpac;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.OpenFileDialog fileDacPac;
+        private System.Windows.Forms.ComboBox ddAuthentication;
     }
 }

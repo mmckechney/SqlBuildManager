@@ -5,8 +5,8 @@
       <xsd:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd0" namespace="http://schemas.mckechney.com/SqlBuildManager.Services/BuildService" />
       <xsd:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
       <xsd:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Services" />
-      <xsd:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd3" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
-      <xsd:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd4" namespace="http://schemas.datacontract.org/2004/07/SqlSync.Connection" />
+      <xsd:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/SqlSync.Connection" />
+      <xsd:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd4" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
       <xsd:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd5" namespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Interfaces.Console" />
       <xsd:import schemaLocation="http://localhost:8675/BuildService.svc?xsd=xsd6" namespace="http://schemas.datacontract.org/2004/07/SqlBuildManager.Services.History" />
     </xsd:schema>

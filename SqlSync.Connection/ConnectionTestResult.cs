@@ -20,6 +20,28 @@ namespace SqlSync.Connection
             get;
             set;
         }
+
+
+        private AuthenticationType authenticationType = SqlSync.Connection.AuthenticationType.UserNamePassword;
+        public AuthenticationType AuthenticationType
+        {
+            get { return authenticationType; }
+            set { authenticationType = value; }
+        }
+
+        private string dbUserName = string.Empty;
+        public string DbUserName
+        {
+            get { return dbUserName; }
+            set { dbUserName = value; }
+        }
+
+        private string dbPassword = string.Empty;
+        public string DbPassword
+        {
+            get { return dbPassword; }
+            set { dbPassword = value; }
+        }
         private string successful = string.Empty;
         public bool Successful
         {

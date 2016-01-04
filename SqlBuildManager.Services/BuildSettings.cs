@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Runtime.Serialization;
+using SqlSync.Connection;
+
 namespace SqlBuildManager.Services
 {
     [DataContract]
@@ -141,6 +143,14 @@ namespace SqlBuildManager.Services
         {
             get { return buildRevision; }
             set { buildRevision = value; }
+        }
+
+        private AuthenticationType authenticationType = SqlSync.Connection.AuthenticationType.UserNamePassword;
+        [DataMember(IsRequired = false)]
+        public AuthenticationType AuthenticationType
+        {
+            get { return authenticationType; }
+            set { authenticationType = value; }
         }
 
         public override string ToString()

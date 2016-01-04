@@ -149,7 +149,6 @@ namespace SqlBuildManager.Services
 
             if (!log.Logger.Repository.Configured)
                 log4net.Config.BasicConfigurator.Configure();
-           
 
 
             if (myReadiness != ServiceReadiness.ReadyToAccept)
@@ -211,6 +210,7 @@ namespace SqlBuildManager.Services
                 string pw = (settings.SqlBuildManagerProjectFileName + String.Join("|",settings.MultiDbTextConfig) + settings.BuildRunGuid).Sha256Hash();
                 multiDb.UserName = Cryptography.DecryptText(settings.DbUserName, pw);
                 multiDb.Password = Cryptography.DecryptText(settings.DbPassword, pw);
+                multiDb.AuthenticationType = settings.AuthenticationType;
                 multiDb.BuildRevision = settings.BuildRevision;
 
 
@@ -336,7 +336,7 @@ namespace SqlBuildManager.Services
         public IList<ConnectionTestResult> TestDatabaseConnectivity(ConnectionTestSettings settings)
         {
             this.Initialize();
-            return new ThreadedConnectionTester().TestDatabaseConnections(settings.TargetServers);
+            return new ThreadedConnectionTester().TestDatabaseConnections(settings.TargetServers, settings.DbUserName,settings.DbPassword,settings.AuthenticationType);
         }
         /// <summary>
         /// Retrieves the application log file for the service
@@ -835,15 +835,25 @@ namespace SqlBuildManager.Services
                 throw new ApplicationException("Service is not running in Azure.");
             }
 
-
             var sqlBuildRole = RoleEnvironment.Roles.Where(n => n.Key == "SqlBuildManager.Services").Select(n => n.Value).First();
             int basePort = 10000;
             string baseUrl = "sqlbuildmanager.cloudapp.net:{0}";
-            List<string> urls = new List<string>();
-
-            for (int i = 0; i < sqlBuildRole.Instances.Count;i++ )
+            if (!string.IsNullOrWhiteSpace(RoleEnvironment.GetConfigurationSettingValue("CloudServiceName")))
             {
-                urls.Add(string.Format(baseUrl, basePort + i));
+                baseUrl = RoleEnvironment.GetConfigurationSettingValue("CloudServiceName") + ":{0}";
+            }
+            
+            List<string> urls = new List<string>();
+            if (sqlBuildRole.Instances.Count > 1)
+            {
+                for (int i = 0; i < sqlBuildRole.Instances.Count; i++)
+                {
+                    urls.Add(string.Format(baseUrl, basePort + i));
+                }
+            }
+            else
+            {
+                urls.Add(baseUrl.Split(':')[0]);
             }
 
 
