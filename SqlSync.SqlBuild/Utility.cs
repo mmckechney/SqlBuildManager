@@ -58,7 +58,12 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    ((ServerConnectConfig.ServerConfigurationRow)row[0]).LastAccessed = DateTime.Now;
+                    var r = (ServerConnectConfig.ServerConfigurationRow)row[0];
+                    r.LastAccessed = DateTime.UtcNow;
+                    r.UserName = userName;
+                    r.Password = password;
+                    r.AuthenticationType = authType.ToString();
+                    r.AcceptChanges();
                 }
                 config.WriteXml(homePath + ConfigFileName);
             }
