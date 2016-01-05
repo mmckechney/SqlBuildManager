@@ -7,22 +7,35 @@ if($folder -eq $null -or $folder.length -eq 0)
 	$folder = "C:\Resources\Directory"
 }
 
+Write-Output "Selected folder $folder"
+
 $acl = Get-Acl $folder
 
-
+Write-Output "acl:"
+Write-Output $acl.Access
 
 
 $rule1 = New-Object System.Security.AccessControl.FileSystemAccessRule(
-  "Administrators", "FullControl", "ContainerInherit, ObjectInherit", 
-  "None", "Allow")
+  "Administrators", "FullControl", "ContainerInherit, ObjectInherit", "None", "Allow")
+
 $rule2 = New-Object System.Security.AccessControl.FileSystemAccessRule(
-  "Everyone", "FullControl", "ContainerInherit, ObjectInherit", 
-  "None", "Allow")
+  "Everyone", "FullControl", "ContainerInherit, ObjectInherit", "None", "Allow")
+
+$rule3 = New-Object System.Security.AccessControl.FileSystemAccessRule(
+  "BUILTIN\Users", "FullControl", "ContainerInherit, ObjectInherit", "None", "Allow")
 
 $acl.AddAccessRule($rule1)
 $acl.AddAccessRule($rule2)
+$acl.AddAccessRule($rule3)
+
 
 Set-Acl $folder $acl
+
+$acl = Get-Acl $folder
+
+Write-Output "updated acl"
+Write-Output "-----------------------------------------------"
+Write-Output $acl.Access
 
 Write-Output "Done changing ACLs."
 

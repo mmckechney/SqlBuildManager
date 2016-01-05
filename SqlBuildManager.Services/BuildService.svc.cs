@@ -186,8 +186,14 @@ namespace SqlBuildManager.Services
                     log.InfoFormat("Logging directory already exists at: {0}", expandedLoggingPath);
                 }
 
-                //BuildService.lastExecutionRootLoggingPath = expandedLoggingPath;
                 string buildZipFileName = Path.Combine(expandedLoggingPath, Path.GetFileName(settings.SqlBuildManagerProjectFileName));
+                if (settings.SqlBuildManagerProjectContents.Length == 0)
+                {
+                    log.ErrorFormat("The project file is empty (zero bytes)! Can not continue!", buildZipFileName);
+                    myReadiness = ServiceReadiness.PackageValidationError;
+                    return false;
+                }
+
                 log.InfoFormat("Processing project contents. Saving {0} bytes to {1}", settings.SqlBuildManagerProjectContents.Length.ToString(), buildZipFileName);
                 
                 File.WriteAllBytes(buildZipFileName, settings.SqlBuildManagerProjectContents);

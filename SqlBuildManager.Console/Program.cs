@@ -196,8 +196,15 @@ namespace SqlBuildManager.Console
                     log.Info("Returned error messages:");
                     log.Info("\r\n" + errorMessages);
                 }
+                else if(cmdLine.ForceCustomDacPac == true)
+                {
+                    log.Error("The /ForceCustomDacPac flag is not compatible with the /Action=Remote action");
+                    System.Environment.Exit(681);
+                }
                 else
                 {
+
+
                     log.Info("Entering Remote Server Execution - command flag option");
                     log.Info("Running remote execution...");
                     RemoteExecution remote = new RemoteExecution(args);
