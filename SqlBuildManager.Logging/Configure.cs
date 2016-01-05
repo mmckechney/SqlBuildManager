@@ -25,14 +25,14 @@ namespace SqlBuildManager.Logging
 
                 foreach(var appender in hierarchy.Root.Appenders)
                 {
-                    if(appender is log4net.Appender.RollingFileAppender)
+                    if(appender is log4net.Appender.FileAppender)
                     {
-                        var rollAppender = appender as RollingFileAppender;
-                        string baseFile = Path.GetFileName(rollAppender.File);
+                        var fileAppender = appender as FileAppender;
+                        string baseFile = Path.GetFileName(fileAppender.File);
                         //Set to the appdata folder
                         var newName = Path.Combine(Configure.AppDataPath, baseFile);
-                        rollAppender.File = newName;
-                        rollAppender.ActivateOptions();
+                        fileAppender.File = newName;
+                        fileAppender.ActivateOptions();
                     }
                 }
                 

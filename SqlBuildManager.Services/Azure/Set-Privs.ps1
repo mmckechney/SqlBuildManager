@@ -1,3 +1,33 @@
+
+[void]([System.Reflection.Assembly]::LoadWithPartialName("Microsoft.WindowsAzure.ServiceRuntime"))
+$folder = ([Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]::GetLocalResource("RunLogFiles")).RootPath
+
+if($folder -eq $null -or $folder.length -eq 0)
+{
+	$folder = "C:\Resources\Directory"
+}
+
+$acl = Get-Acl $folder
+
+
+
+
+$rule1 = New-Object System.Security.AccessControl.FileSystemAccessRule(
+  "Administrators", "FullControl", "ContainerInherit, ObjectInherit", 
+  "None", "Allow")
+$rule2 = New-Object System.Security.AccessControl.FileSystemAccessRule(
+  "Everyone", "FullControl", "ContainerInherit, ObjectInherit", 
+  "None", "Allow")
+
+$acl.AddAccessRule($rule1)
+$acl.AddAccessRule($rule2)
+
+Set-Acl $folder $acl
+
+Write-Output "Done changing ACLs."
+
+
+<#
 Write-Output "Starting configuration of privs"
 Add-PSSnapin Microsoft.WindowsAzure.ServiceRuntime 
 $counter = -1
@@ -16,24 +46,4 @@ if($counter -lt 5)
 	$localresource = Get-LocalResource "RunLogFiles"
 	$folder = $localresource.RootPath
 }
-
-if($folder -eq $null -or $folder.length -eq 0)
-{
-	$folder = "C:\Resources\Directory"
-}
-
-$acl = Get-Acl $folder
-
-$rule1 = New-Object System.Security.AccessControl.FileSystemAccessRule(
-  "Administrators", "FullControl", "ContainerInherit, ObjectInherit", 
-  "None", "Allow")
-$rule2 = New-Object System.Security.AccessControl.FileSystemAccessRule(
-  "Everyone", "FullControl", "ContainerInherit, ObjectInherit", 
-  "None", "Allow")
-
-$acl.AddAccessRule($rule1)
-$acl.AddAccessRule($rule2)
-
-Set-Acl $folder $acl
-
-Write-Output "Done changing ACLs."
+#>

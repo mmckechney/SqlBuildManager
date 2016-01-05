@@ -8216,7 +8216,7 @@ namespace SqlSync.SqlBuild
                                         srChangeNotes.Close();
 
                                         //The file contents should be XML, so lets transform them 
-                                        string xsltFilePath = homePath + SqlSync.VersionData.XsltTransformFileName;
+                                        string xsltFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\" + SqlSync.VersionData.XsltTransformFileName;
 
                                         if (File.Exists(xsltFilePath))
                                         {

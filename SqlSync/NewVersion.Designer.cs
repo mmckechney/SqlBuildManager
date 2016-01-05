@@ -41,6 +41,7 @@ namespace SqlSync
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.lblLatestVersionVal = new System.Windows.Forms.Label();
+            this.lblYourVersion = new System.Windows.Forms.Label();
             this.lblYourVersionVal = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.webBrowser1 = new System.Windows.Forms.WebBrowser();
@@ -60,7 +61,6 @@ namespace SqlSync
             this.label6 = new System.Windows.Forms.Label();
             this.lblSqlBuildManager = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.lblYourVersion = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.pnlTop.SuspendLayout();
@@ -73,9 +73,9 @@ namespace SqlSync
             // 
             this.lblLatestVersion.AutoSize = true;
             this.lblLatestVersion.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblLatestVersion.Location = new System.Drawing.Point(300, 7);
+            this.lblLatestVersion.Location = new System.Drawing.Point(426, 8);
             this.lblLatestVersion.Name = "lblLatestVersion";
-            this.lblLatestVersion.Size = new System.Drawing.Size(109, 16);
+            this.lblLatestVersion.Size = new System.Drawing.Size(108, 16);
             this.lblLatestVersion.TabIndex = 6;
             this.lblLatestVersion.Text = "Latest Version:";
             // 
@@ -84,7 +84,7 @@ namespace SqlSync
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(12, 11);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(282, 13);
+            this.label4.Size = new System.Drawing.Size(281, 13);
             this.label4.TabIndex = 7;
             this.label4.Text = "You can download the latest installer from here:";
             // 
@@ -106,7 +106,7 @@ namespace SqlSync
             this.lblChangeType.ForeColor = System.Drawing.Color.Black;
             this.lblChangeType.Location = new System.Drawing.Point(0, 0);
             this.lblChangeType.Name = "lblChangeType";
-            this.lblChangeType.Size = new System.Drawing.Size(569, 39);
+            this.lblChangeType.Size = new System.Drawing.Size(780, 39);
             this.lblChangeType.TabIndex = 9;
             this.lblChangeType.Text = "A newer version of Sql Build Manager is available!!";
             this.lblChangeType.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -141,13 +141,13 @@ namespace SqlSync
             // 
             // rtbReleaseNotes
             // 
-            this.rtbReleaseNotes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.rtbReleaseNotes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.rtbReleaseNotes.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.rtbReleaseNotes.Location = new System.Drawing.Point(7, 84);
             this.rtbReleaseNotes.Name = "rtbReleaseNotes";
-            this.rtbReleaseNotes.Size = new System.Drawing.Size(554, 336);
+            this.rtbReleaseNotes.Size = new System.Drawing.Size(765, 336);
             this.rtbReleaseNotes.TabIndex = 16;
             this.rtbReleaseNotes.Text = "";
             // 
@@ -169,7 +169,7 @@ namespace SqlSync
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 48);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(569, 39);
+            this.panel1.Size = new System.Drawing.Size(780, 39);
             this.panel1.TabIndex = 18;
             // 
             // panel2
@@ -182,24 +182,34 @@ namespace SqlSync
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel2.Location = new System.Drawing.Point(0, 87);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(569, 30);
+            this.panel2.Size = new System.Drawing.Size(780, 30);
             this.panel2.TabIndex = 19;
             // 
             // lblLatestVersionVal
             // 
             this.lblLatestVersionVal.AutoSize = true;
             this.lblLatestVersionVal.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblLatestVersionVal.Location = new System.Drawing.Point(408, 7);
+            this.lblLatestVersionVal.Location = new System.Drawing.Point(534, 8);
             this.lblLatestVersionVal.Name = "lblLatestVersionVal";
             this.lblLatestVersionVal.Size = new System.Drawing.Size(55, 16);
             this.lblLatestVersionVal.TabIndex = 8;
             this.lblLatestVersionVal.Text = "0.0.0.0";
             // 
+            // lblYourVersion
+            // 
+            this.lblYourVersion.AutoSize = true;
+            this.lblYourVersion.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblYourVersion.Location = new System.Drawing.Point(137, 8);
+            this.lblYourVersion.Name = "lblYourVersion";
+            this.lblYourVersion.Size = new System.Drawing.Size(95, 16);
+            this.lblYourVersion.TabIndex = 8;
+            this.lblYourVersion.Text = "Your Version:";
+            // 
             // lblYourVersionVal
             // 
             this.lblYourVersionVal.AutoSize = true;
             this.lblYourVersionVal.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblYourVersionVal.Location = new System.Drawing.Point(209, 7);
+            this.lblYourVersionVal.Location = new System.Drawing.Point(240, 8);
             this.lblYourVersionVal.Name = "lblYourVersionVal";
             this.lblYourVersionVal.Size = new System.Drawing.Size(55, 16);
             this.lblYourVersionVal.TabIndex = 7;
@@ -211,18 +221,18 @@ namespace SqlSync
             this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel3.Location = new System.Drawing.Point(0, 117);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(569, 1);
+            this.panel3.Size = new System.Drawing.Size(780, 1);
             this.panel3.TabIndex = 20;
             // 
             // webBrowser1
             // 
-            this.webBrowser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.webBrowser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.webBrowser1.Location = new System.Drawing.Point(7, 80);
             this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
             this.webBrowser1.Name = "webBrowser1";
-            this.webBrowser1.Size = new System.Drawing.Size(554, 340);
+            this.webBrowser1.Size = new System.Drawing.Size(765, 340);
             this.webBrowser1.TabIndex = 21;
             // 
             // pnlTop
@@ -235,7 +245,7 @@ namespace SqlSync
             this.pnlTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlTop.Location = new System.Drawing.Point(0, 0);
             this.pnlTop.Name = "pnlTop";
-            this.pnlTop.Size = new System.Drawing.Size(569, 48);
+            this.pnlTop.Size = new System.Drawing.Size(780, 48);
             this.pnlTop.TabIndex = 22;
             // 
             // groupBox1
@@ -259,8 +269,8 @@ namespace SqlSync
             // 
             // lblCurrentLogin
             // 
-            this.lblCurrentLogin.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblCurrentLogin.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblCurrentLogin.Location = new System.Drawing.Point(96, 19);
             this.lblCurrentLogin.Name = "lblCurrentLogin";
             this.lblCurrentLogin.Size = new System.Drawing.Size(168, 21);
@@ -349,7 +359,7 @@ namespace SqlSync
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(533, 6);
+            this.pictureBox1.Location = new System.Drawing.Point(736, 3);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(36, 37);
             this.pictureBox1.TabIndex = 10;
@@ -357,7 +367,7 @@ namespace SqlSync
             // 
             // label6
             // 
-            this.label6.Location = new System.Drawing.Point(188, 29);
+            this.label6.Location = new System.Drawing.Point(294, 29);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(192, 16);
             this.label6.TabIndex = 9;
@@ -367,7 +377,7 @@ namespace SqlSync
             // lblSqlBuildManager
             // 
             this.lblSqlBuildManager.Font = new System.Drawing.Font("Verdana", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSqlBuildManager.Location = new System.Drawing.Point(167, 3);
+            this.lblSqlBuildManager.Location = new System.Drawing.Point(273, 3);
             this.lblSqlBuildManager.Name = "lblSqlBuildManager";
             this.lblSqlBuildManager.Size = new System.Drawing.Size(235, 23);
             this.lblSqlBuildManager.TabIndex = 8;
@@ -388,24 +398,14 @@ namespace SqlSync
             this.panel5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel5.Location = new System.Drawing.Point(0, 118);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(569, 432);
+            this.panel5.Size = new System.Drawing.Size(780, 432);
             this.panel5.TabIndex = 23;
-            // 
-            // lblYourVersion
-            // 
-            this.lblYourVersion.AutoSize = true;
-            this.lblYourVersion.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblYourVersion.Location = new System.Drawing.Point(106, 7);
-            this.lblYourVersion.Name = "lblYourVersion";
-            this.lblYourVersion.Size = new System.Drawing.Size(97, 16);
-            this.lblYourVersion.TabIndex = 8;
-            this.lblYourVersion.Text = "Your Version:";
             // 
             // NewVersion
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(569, 550);
+            this.ClientSize = new System.Drawing.Size(780, 550);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel2);
