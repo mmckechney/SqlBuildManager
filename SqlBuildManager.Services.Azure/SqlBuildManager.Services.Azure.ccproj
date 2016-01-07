@@ -61,6 +61,12 @@
     <PublishProfile Include="Profiles\sqlbuildmanagerProduction2.azurePubxml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="SqlBuildManager.ServicesContent\bin\adalsql.msi">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="SqlBuildManager.ServicesContent\bin\install-ad.cmd">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="SqlBuildManager.ServicesContent\bin\install.cmd">
       <SubType>Content</SubType>
     </Content>

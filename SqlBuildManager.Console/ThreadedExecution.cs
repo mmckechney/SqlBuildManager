@@ -270,7 +270,7 @@ namespace SqlBuildManager.Console
                     this.cmdLine.BuildRevision = multiData.BuildRevision;
                 }
 
-                log.DebugFormat("Commandline configuration created:\r\n{0}", cmdLine.ToString());
+               // log.DebugFormat("Commandline configuration created:\r\n{0}", cmdLine.ToString());
 
                 if (!this.loggingPathsInitialized)
                     SetLoggingPaths(rootLoggingPath);

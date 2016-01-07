@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AzureCredentials>{"ServiceManagementEndpoint":"https:\/\/management.core.windows.net\/","SubscriptionId":"59e53936-0bd6-4f30-b3b6-18bd2eae7699"}</AzureCredentials>
     <AzureDeleteDeploymentOnFailure>False</AzureDeleteDeploymentOnFailure>
-    <AzureDeploymentLabel>SqlBuildManager.Services.Azure</AzureDeploymentLabel>
+    <AzureDeploymentLabel>Version 10.3.0 [906f0b3d]</AzureDeploymentLabel>
     <AzureDeploymentReplacementMethod>AutomaticUpgrade</AzureDeploymentReplacementMethod>
     <AzureSlot>Staging</AzureSlot>
     <AzureEnableRemoteDesktop>True</AzureEnableRemoteDesktop>
@@ -18,5 +18,7 @@
     <AzureStorageAccountLabel>sqlbuildmanagerstorage</AzureStorageAccountLabel>
     <AzureStorageAccountName>sqlbuildmanagerstorage</AzureStorageAccountName>
     <AzureAppendTimestampToDeploymentLabel>True</AzureAppendTimestampToDeploymentLabel>
+    <EnableRemoteDebugger>True</EnableRemoteDebugger>
+    <RemoteDebuggerConnectorCertificateThumbprint>F2D42A5B066241DDD3974F7CCF444CC212472B5B</RemoteDebuggerConnectorCertificateThumbprint>
   </PropertyGroup>
 </Project>

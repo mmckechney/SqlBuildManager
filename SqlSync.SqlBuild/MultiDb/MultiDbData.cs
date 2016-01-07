@@ -129,7 +129,7 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             get
             {
-                return this.AuthenticationType;
+                return this.authenticationType;
             }
             set
             {
