@@ -367,7 +367,7 @@
     <updated>Added exclusion for cursors from the Qualified Names policy</updated>
     <added>Checking for valid default and or target override database settings prior to execution of package.</added>
     <updated>Qualified Names Policy to not require schema qualifiers on temp table or table variables</updated>
-    <updated>Modified NOLOCK optimization and NOLOCK policy checker to ignore temp tables (#tablename) and table variables (@tablename)</updated>
+    <updated>Modified NOLOCK optimization and NOLOCK policy checker to ignore temp tables (#tablename) and table variables (tablename)</updated>
     <updated>Modified icon for multi-database query configuration files (.multiDbQ)</updated>
     <updated>Moved policy interface into separate project for future growth of interfaces.</updated>
   </Version>
