@@ -55,6 +55,15 @@ namespace SqlSync.SqlBuild
         public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; }
         [System.Runtime.Serialization.DataMember()]
         public bool TestConnectivity { get; set; }
-        
+
+        public override string ToString()
+        {
+            var props = this.GetType().GetProperties();
+            StringBuilder sb = new StringBuilder();
+            var lst = props.OrderBy(p => p.Name).ToList();
+            lst.ForEach(p => sb.AppendLine(p.Name + "='" + p.GetValue(this, null) + "'"));
+            return sb.ToString();
+        }
+
     }
 }

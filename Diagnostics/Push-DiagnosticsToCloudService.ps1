@@ -5,7 +5,7 @@ Sql Build Manager (payx):
 
 
 
-Sql Build Manager:
+Sql Build Manager: (MSDN)
 .\Push-DiagnosticsToCloudService.ps1 -subscription_name "Visual Studio Ultimate with MSDN" -deployment_slot Production -config_path "C:\Git\SqlBuildManager\Diagnostics\diagnostics.wadcfgx" -service_name sqlbuildmanagerservice -storage_name sqlbuildmanagerstorage -remove_existing $false
 
 

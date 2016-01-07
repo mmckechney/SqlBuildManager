@@ -23,7 +23,8 @@ namespace SqlSync
 		private System.Windows.Forms.StatusBar statusBar1;
 		private System.Windows.Forms.StatusBarPanel pnlStatus;
         private PictureBox pictureBox1;
-		private DatabaseList databaseList = new DatabaseList();
+        private Label lblVersion;
+        private DatabaseList databaseList = new DatabaseList();
 		public ConnectionData SqlConnection
 		{
 			get
@@ -80,6 +81,7 @@ namespace SqlSync
             this.statusBar1 = new System.Windows.Forms.StatusBar();
             this.pnlStatus = new System.Windows.Forms.StatusBarPanel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.lblVersion = new System.Windows.Forms.Label();
             this.sqlConnect1 = new SqlSync.SQLConnect();
             ((System.ComponentModel.ISupportInitialize)(this.pnlStatus)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -98,7 +100,7 @@ namespace SqlSync
             // 
             // statusBar1
             // 
-            this.statusBar1.Location = new System.Drawing.Point(0, 411);
+            this.statusBar1.Location = new System.Drawing.Point(0, 428);
             this.statusBar1.Name = "statusBar1";
             this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
             this.pnlStatus});
@@ -123,16 +125,27 @@ namespace SqlSync
             this.pictureBox1.TabIndex = 3;
             this.pictureBox1.TabStop = false;
             // 
+            // lblVersion
+            // 
+            this.lblVersion.AutoSize = true;
+            this.lblVersion.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblVersion.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.lblVersion.Location = new System.Drawing.Point(3, 410);
+            this.lblVersion.Name = "lblVersion";
+            this.lblVersion.Size = new System.Drawing.Size(42, 12);
+            this.lblVersion.TabIndex = 4;
+            this.lblVersion.Text = "Version: ";
+            // 
             // sqlConnect1
             // 
-            this.sqlConnect1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.sqlConnect1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.sqlConnect1.DisplayDatabaseDropDown = false;
             this.sqlConnect1.Enabled = false;
             this.sqlConnect1.Location = new System.Drawing.Point(9, 35);
             this.sqlConnect1.Name = "sqlConnect1";
-            this.sqlConnect1.Size = new System.Drawing.Size(264, 370);
+            this.sqlConnect1.Size = new System.Drawing.Size(264, 369);
             this.sqlConnect1.TabIndex = 0;
             this.sqlConnect1.ServerConnected += new SqlSync.ServerConnectedEventHandler(this.sqlConnect1_ServerConnected);
             this.sqlConnect1.ServersEnumerated += new SqlSync.ServersEnumeratedEventHandler(this.sqlConnect1_ServersEnumerated);
@@ -140,7 +153,8 @@ namespace SqlSync
             // ConnectionForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(287, 435);
+            this.ClientSize = new System.Drawing.Size(287, 452);
+            this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.statusBar1);
             this.Controls.Add(this.lblTitle);
@@ -155,6 +169,7 @@ namespace SqlSync
             ((System.ComponentModel.ISupportInitialize)(this.pnlStatus)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
 		}
 		#endregion
@@ -204,6 +219,7 @@ namespace SqlSync
 
         private void ConnectionForm_Load(object sender, EventArgs e)
         {
+            this.lblVersion.Text = "Version: " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             this.Show();
         }
 	}

@@ -234,112 +234,127 @@ namespace SqlBuildManager.Console
         /// <returns></returns>
         public int Execute(string buildZipFileName, string platinumDacPacFileName, MultiDbData multiData, string rootLoggingPath, string description, string buildRequestedBy, bool forceCustomDacpac)
         {
-            ThreadedExecution.buildZipFileName = buildZipFileName;
-            
-            this.buildRequestedBy = buildRequestedBy;
+            try {
+                ThreadedExecution.buildZipFileName = buildZipFileName;
 
-            //Build out reused arguments from the CommandLineArgs object.. this will be null if called from the BuildService
-            if (this.cmdLine == null)
-            {
-                log.InfoFormat("Creating CommandLineArgs object for build {0}", buildZipFileName);
-                logAsText = true;
-                this.cmdLine = new CommandLineArgs();
-                this.cmdLine.RootLoggingPath = rootLoggingPath;
-                this.cmdLine.LogAsText = true;
-                this.cmdLine.Transactional = multiData.IsTransactional;
-                this.cmdLine.Trial = multiData.RunAsTrial;
-                this.cmdLine.Description = description;
-                this.cmdLine.AllowableTimeoutRetries = multiData.AllowableTimeoutRetries; //set the retries count...
-                if(!string.IsNullOrWhiteSpace(multiData.UserName))
-                    this.cmdLine.UserName = multiData.UserName;
-                if (!string.IsNullOrWhiteSpace(multiData.Password))
-                    this.cmdLine.Password = multiData.Password;
+                this.buildRequestedBy = buildRequestedBy;
 
-                this.cmdLine.AuthenticationType = multiData.AuthenticationType;
-
-                this.cmdLine.PlatinumDacpac = platinumDacPacFileName;
-                this.cmdLine.BuildRevision = multiData.BuildRevision;
-            }
-
-               
-
-            if (!this.loggingPathsInitialized)
-                SetLoggingPaths(rootLoggingPath);
-
-            string error;
-            //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
-
-            if (forceCustomDacpac == false)
-            {
-                ExtractAndLoadBuildFile(ThreadedExecution.buildZipFileName, out ThreadedExecution.buildData);
-                if (buildData == null)
+                //Build out reused arguments from the CommandLineArgs object.. this will be null if called from the BuildService
+                if (this.cmdLine == null)
                 {
-                    error = "Unable to procees. SqlSyncBuild data object is null";
-                    WriteToLog(new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullBuildData }, LogType.Error);
-                    log.Error(error);
-                    return (int)ExecutionReturn.NullBuildData;
-                }
-            }
+                    log.InfoFormat("Creating CommandLineArgs object for build {0}", buildZipFileName);
+                    logAsText = true;
+                    this.cmdLine = new CommandLineArgs();
+                    this.cmdLine.RootLoggingPath = rootLoggingPath;
+                    this.cmdLine.LogAsText = true;
+                    this.cmdLine.Transactional = multiData.IsTransactional;
+                    this.cmdLine.Trial = multiData.RunAsTrial;
+                    this.cmdLine.Description = description;
+                    this.cmdLine.AllowableTimeoutRetries = multiData.AllowableTimeoutRetries; //set the retries count...
+                    if (!string.IsNullOrWhiteSpace(multiData.UserName))
+                        this.cmdLine.UserName = multiData.UserName;
+                    if (!string.IsNullOrWhiteSpace(multiData.Password))
+                        this.cmdLine.Password = multiData.Password;
 
-            int threadTotal = 0;
-            try
-            {
-                startTime = DateTime.Now;
-                log.InfoFormat("Starting Threaded processing at {0}", startTime.ToString());
-                //Increase the number of threads in the threadpool...
-                System.Threading.ThreadPool.SetMaxThreads(200, 200);
-                //Load up the batched scripts into a shared object so that we can conserve memory
-
-                if (!forceCustomDacpac)
-                {
-                    ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, this.projectFilePath);
-                }
-                foreach (ServerData srv in multiData)
-                {
-                    foreach (List<DatabaseOverride> ovr in srv.OverrideSequence.Values)
+                    try
                     {
-                        threadTotal++;
-                        lock (ThreadedExecution.SyncObj)
-                        {
-                            ThreadedExecution.SyncObj.WorkingRunners++;
-                        }
+                        this.cmdLine.AuthenticationType = multiData.AuthenticationType;
+                    }
+                    catch (Exception exe)
+                    {
+                        log.Warn("Issue setting authentication type. Defaulting to UsernamePassword", exe);
+                        this.cmdLine.AuthenticationType = AuthenticationType.UserNamePassword;
+                    }
 
-                        ThreadedRunner runner = new ThreadedRunner(srv.ServerName, ovr, cmdLine, buildRequestedBy, forceCustomDacpac);
-                        string msg = "Queuing up thread for " + runner.Server + "." + runner.TargetDatabases;
-                        log.Debug(msg);
-                        WriteToLog(msg, LogType.Message);
-                        System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedBuild, runner);
+                    this.cmdLine.PlatinumDacpac = platinumDacPacFileName;
+                    this.cmdLine.BuildRevision = multiData.BuildRevision;
+                }
+
+                log.DebugFormat("Commandline configuration created:\r\n{0}", cmdLine.ToString());
+
+                if (!this.loggingPathsInitialized)
+                    SetLoggingPaths(rootLoggingPath);
+
+                string error;
+                //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
+
+                if (forceCustomDacpac == false)
+                {
+                    ExtractAndLoadBuildFile(ThreadedExecution.buildZipFileName, out ThreadedExecution.buildData);
+                    if (buildData == null)
+                    {
+                        error = "Unable to procees. SqlSyncBuild data object is null";
+                        WriteToLog(new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullBuildData }, LogType.Error);
+                        log.Error(error);
+                        return (int)ExecutionReturn.NullBuildData;
                     }
                 }
-            }
-            catch (Exception exe)
-            {
-                WriteToLog(exe.ToString(), LogType.Error);
-            }
 
-            while (ThreadedExecution.SyncObj.WorkingRunners > 0)
-            {
-                System.Threading.Thread.Sleep(100);
-            }
+                int threadTotal = 0;
+                try
+                {
+                    startTime = DateTime.Now;
+                    log.InfoFormat("Starting Threaded processing at {0}", startTime.ToString());
+                    //Increase the number of threads in the threadpool...
+                    System.Threading.ThreadPool.SetMaxThreads(200, 200);
+                    //Load up the batched scripts into a shared object so that we can conserve memory
 
-            TimeSpan interval = DateTime.Now - startTime;
-            log.InfoFormat("Ending threaded processing at {0}", DateTime.Now.ToString());
-            WriteToLog("Execution Duration: " + interval.ToString(), LogType.Message);
-            WriteToLog("Total number of targets: " + threadTotal.ToString(), LogType.Message);
-            if (this.hasError)
+                    if (!forceCustomDacpac)
+                    {
+                        ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, this.projectFilePath);
+                    }
+                    foreach (ServerData srv in multiData)
+                    {
+                        foreach (List<DatabaseOverride> ovr in srv.OverrideSequence.Values)
+                        {
+                            threadTotal++;
+                            lock (ThreadedExecution.SyncObj)
+                            {
+                                ThreadedExecution.SyncObj.WorkingRunners++;
+                            }
+
+                            ThreadedRunner runner = new ThreadedRunner(srv.ServerName, ovr, cmdLine, buildRequestedBy, forceCustomDacpac);
+                            string msg = "Queuing up thread for " + runner.Server + "." + runner.TargetDatabases;
+                            log.Debug(msg);
+                            WriteToLog(msg, LogType.Message);
+                            System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedBuild, runner);
+                        }
+                    }
+                }
+                catch (Exception exe)
+                {
+                    WriteToLog(exe.ToString(), LogType.Error);
+                }
+
+                while (ThreadedExecution.SyncObj.WorkingRunners > 0)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+
+                TimeSpan interval = DateTime.Now - startTime;
+                log.InfoFormat("Ending threaded processing at {0}", DateTime.Now.ToString());
+                WriteToLog("Execution Duration: " + interval.ToString(), LogType.Message);
+                WriteToLog("Total number of targets: " + threadTotal.ToString(), LogType.Message);
+                if (this.hasError)
+                {
+                    WriteToLog("", LogType.SuccessDatabases);
+                    WriteToLog("", LogType.FailureDatabases);
+                    WriteToLog("Finishing with Errors", LogType.Error);
+                    WriteToLog("Finishing with Errors", LogType.Message);
+                    log.Error("Finishing with Errors");
+                    return (int)ExecutionReturn.FinishingWithErrors;
+                }
+                else
+                {
+                    WriteToLog("", LogType.SuccessDatabases);
+                    log.Info("Successful");
+                    return (int)ExecutionReturn.Successful;
+                }
+            }catch(Exception bigExe)
             {
-                WriteToLog("", LogType.SuccessDatabases);
-                WriteToLog("", LogType.FailureDatabases);
-                WriteToLog("Finishing with Errors", LogType.Error);
-                WriteToLog("Finishing with Errors", LogType.Message);
-                log.Error("Finishing with Errors");
-                return (int)ExecutionReturn.FinishingWithErrors;
-            }
-            else
-            {
-                WriteToLog("", LogType.SuccessDatabases);
-                log.Info("Successful");
-                return (int)ExecutionReturn.Successful;
+                log.FatalFormat("Big problem running the threaded build...", bigExe);
+                return (int)ExecutionReturn.NullBuildData;
+
             }
         }
        
