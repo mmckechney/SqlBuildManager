@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6B399EB5-5A92-4122-9480-64A4945AEF6A}"
 	ProjectSection(SolutionItems) = preProject
@@ -80,7 +80,7 @@ Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "SqlbuildManager.Services.Fa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlbuildManager.Services.Fabric.Stateful", "SqlbuildManger.Services.Fabric.Stateful\SqlbuildManager.Services.Fabric.Stateful.csproj", "{030256DA-8E48-4650-A769-62C4BEFB2450}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SQLSyncSetup", "SqlBuildManager.Installer\SqlBuildManager.Installer.vdproj", "{CC74AAB6-527F-4D03-A32C-E29DE9185B97}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SqlBuildManager.Installer", "SqlBuildManager.Installer\SqlBuildManager.Installer.vdproj", "{CC74AAB6-527F-4D03-A32C-E29DE9185B97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Logging", "SqlBuildManager.Logging\SqlBuildManager.Logging.csproj", "{C9DE9821-BA13-4528-B149-A3E990530AAD}"
 EndProject
