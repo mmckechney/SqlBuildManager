@@ -25,7 +25,28 @@ namespace SqlSync
         private PictureBox pictureBox1;
         private Label lblVersion;
         private DatabaseList databaseList = new DatabaseList();
-		public ConnectionData SqlConnection
+
+        private AuthenticationType? lastAuthenticationType
+        {
+            get
+            {
+                if (Properties.Settings.Default.DBAuthenticationType == -1)
+                {
+                    return null;
+                }
+                else
+                {
+                    return (AuthenticationType)Properties.Settings.Default.DBAuthenticationType;
+                }
+            }
+
+            set
+            {
+                Properties.Settings.Default.DBAuthenticationType = (int)value;
+                Properties.Settings.Default.Save();
+            }
+        }
+        public ConnectionData SqlConnection
 		{
 			get
 			{
@@ -82,7 +103,7 @@ namespace SqlSync
             this.pnlStatus = new System.Windows.Forms.StatusBarPanel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.lblVersion = new System.Windows.Forms.Label();
-            this.sqlConnect1 = new SqlSync.SQLConnect();
+            this.sqlConnect1 = new SqlSync.SQLConnect(lastAuthenticationType);
             ((System.ComponentModel.ISupportInitialize)(this.pnlStatus)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -91,21 +112,21 @@ namespace SqlSync
             // 
             this.lblTitle.Font = new System.Drawing.Font("Arial", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.LightSlateGray;
-            this.lblTitle.Location = new System.Drawing.Point(33, 9);
+            this.lblTitle.Location = new System.Drawing.Point(40, 10);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(217, 23);
+            this.lblTitle.Size = new System.Drawing.Size(260, 27);
             this.lblTitle.TabIndex = 1;
             this.lblTitle.Text = "Sql Build Manager";
             this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // statusBar1
             // 
-            this.statusBar1.Location = new System.Drawing.Point(0, 428);
+            this.statusBar1.Location = new System.Drawing.Point(0, 424);
             this.statusBar1.Name = "statusBar1";
             this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
             this.pnlStatus});
             this.statusBar1.ShowPanels = true;
-            this.statusBar1.Size = new System.Drawing.Size(287, 24);
+            this.statusBar1.Size = new System.Drawing.Size(287, 28);
             this.statusBar1.TabIndex = 2;
             this.statusBar1.Text = "statusBar1";
             // 
@@ -114,14 +135,14 @@ namespace SqlSync
             this.pnlStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
             this.pnlStatus.Name = "pnlStatus";
             this.pnlStatus.Text = "Enumerating Sql Server List...";
-            this.pnlStatus.Width = 270;
+            this.pnlStatus.Width = 266;
             // 
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(248, 3);
+            this.pictureBox1.Location = new System.Drawing.Point(298, 3);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(32, 35);
+            this.pictureBox1.Size = new System.Drawing.Size(38, 41);
             this.pictureBox1.TabIndex = 3;
             this.pictureBox1.TabStop = false;
             // 
@@ -130,9 +151,9 @@ namespace SqlSync
             this.lblVersion.AutoSize = true;
             this.lblVersion.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblVersion.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.lblVersion.Location = new System.Drawing.Point(3, 410);
+            this.lblVersion.Location = new System.Drawing.Point(4, 473);
             this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(42, 12);
+            this.lblVersion.Size = new System.Drawing.Size(54, 15);
             this.lblVersion.TabIndex = 4;
             this.lblVersion.Text = "Version: ";
             // 
@@ -143,16 +164,16 @@ namespace SqlSync
             | System.Windows.Forms.AnchorStyles.Right)));
             this.sqlConnect1.DisplayDatabaseDropDown = false;
             this.sqlConnect1.Enabled = false;
-            this.sqlConnect1.Location = new System.Drawing.Point(9, 35);
+            this.sqlConnect1.Location = new System.Drawing.Point(11, 40);
             this.sqlConnect1.Name = "sqlConnect1";
-            this.sqlConnect1.Size = new System.Drawing.Size(264, 369);
+            this.sqlConnect1.Size = new System.Drawing.Size(260, 356);
             this.sqlConnect1.TabIndex = 0;
             this.sqlConnect1.ServerConnected += new SqlSync.ServerConnectedEventHandler(this.sqlConnect1_ServerConnected);
             this.sqlConnect1.ServersEnumerated += new SqlSync.ServersEnumeratedEventHandler(this.sqlConnect1_ServersEnumerated);
             // 
             // ConnectionForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 15);
             this.ClientSize = new System.Drawing.Size(287, 452);
             this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.pictureBox1);
@@ -183,8 +204,8 @@ namespace SqlSync
 				this.connData.SQLServerName = sqlConnect1.SQLServer;
 				this.connData.UserId = sqlConnect1.UserId;
 				this.connData.AuthenticationType = sqlConnect1.AuthenticationType;
-
-				this.databaseList = sqlConnect1.DatabaseList;
+                this.lastAuthenticationType = sqlConnect1.AuthenticationType;
+                this.databaseList = sqlConnect1.DatabaseList;
 				this.DialogResult = DialogResult.OK;
 				this.Close();
 			}

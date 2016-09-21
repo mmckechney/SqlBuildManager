@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using SqlBuildManager.Enterprise;
 using System.Linq;
 using SqlSync.SqlBuild;
+using Microsoft.WindowsAzure.ServiceRuntime;
+
 namespace SqlSync
 {
 	/// <summary>
@@ -49,6 +51,9 @@ namespace SqlSync
         private IContainer components;
         private Label label4;
         private ComboBox ddAuthentication;
+
+        private SqlSync.Connection.AuthenticationType? initialAuthenticationType; 
+
         private ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl = null;
         [Category("Appearance")]
         public bool DisplayDatabaseDropDown
@@ -81,6 +86,13 @@ namespace SqlSync
 
         public SQLConnect()
         {
+            // This call is required by the Windows.Forms Form Designer.
+            InitializeComponent();
+        }
+
+        public SQLConnect(Connection.AuthenticationType? authenticationType)
+        {
+            initialAuthenticationType = authenticationType;
             // This call is required by the Windows.Forms Form Designer.
             InitializeComponent();
         }
@@ -415,6 +427,7 @@ namespace SqlSync
             {
                 return (SqlSync.Connection.AuthenticationType)SqlSync.Connection.Extensions.GetValueFromDescription<Connection.AuthenticationType>(ddAuthentication.SelectedItem.ToString());
             }
+
         }
 
         public DatabaseList DatabaseList
@@ -505,6 +518,10 @@ namespace SqlSync
                 ddAuthentication.Items.Add(item.GetDescription());
             }
             this.ddAuthentication.SelectedIndex = 0;
+            if (this.initialAuthenticationType.HasValue)
+            {
+                this.ddAuthentication.SelectedIndex = (int)this.initialAuthenticationType.Value;
+            }
             ddAuthentication_SelectionChangeCommitted(null, null);
         }
 
@@ -557,22 +574,43 @@ namespace SqlSync
         [Category("Action")]
         public event ServersEnumeratedEventHandler ServersEnumerated;
 
+        /// <summary>
+        /// Determine if running on an azure instance or not
+        /// </summary>
+        private static bool IsRunningInAzure
+        {
+            get
+            {
+                Guid guidId;
+                if (RoleEnvironment.IsAvailable && Guid.TryParse(RoleEnvironment.DeploymentId, out guidId))
+                    return true;
+                return false;
+            }
+        }
+
         private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            try
+            if (IsRunningInAzure) //SmoApplication.EnumAvailableSqlServers does not work on Azure
             {
-                DataTable tbl = SmoApplication.EnumAvailableSqlServers(false);
-
-                string[] servers = new string[tbl.Rows.Count];
-                for (int i = 0; i < tbl.Rows.Count; i++)
-                {
-                    servers[i] = tbl.Rows[i][0].ToString();
-                }
-                e.Result = servers;
+                e.Result = new string[0]; // Just go with the empty list
             }
-            catch (Exception exe)
+            else
             {
-                MessageBox.Show("Unable to get server list.\r\n" + exe.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                try
+                {
+                    DataTable tbl = SmoApplication.EnumAvailableSqlServers(false);
+
+                    string[] servers = new string[tbl.Rows.Count];
+                    for (int i = 0; i < tbl.Rows.Count; i++)
+                    {
+                        servers[i] = tbl.Rows[i][0].ToString();
+                    }
+                    e.Result = servers;
+                }
+                catch (Exception exe)
+                {
+                    MessageBox.Show("Unable to get server list.\r\n" + exe.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 

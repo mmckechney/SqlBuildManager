@@ -190,6 +190,7 @@
       <HintPath>Tfs.Utility\lib\Version 10\Microsoft.TeamFoundation.VersionControl.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.WindowsAzure.ServiceRuntime, Version=2.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -320,6 +321,12 @@
     </Compile>
     <Compile Include="Analysis\SimpleDiffForm.Designer.cs">
       <DependentUpon>SimpleDiffForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FromDacpacForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FromDacpacForm.Designer.cs">
+      <DependentUpon>FromDacpacForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -842,6 +849,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>FinderCtrl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FromDacpacForm.resx">
+      <DependentUpon>FromDacpacForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="NewVersion.resx">
       <SubType>Designer</SubType>
       <DependentUpon>NewVersion.cs</DependentUpon>
@@ -1176,6 +1186,7 @@
     <None Include="Images\Move To.png" />
     <None Include="Images\MoveTo.png" />
     <None Include="Images\Hand.png" />
+    <Content Include="Images\importDB.png" />
     <Content Include="Images\msi-banner.jpg" />
     <Content Include="Images\multi-dbq.ico" />
     <Content Include="Images\multi-dbQ.jpg" />
@@ -1198,6 +1209,7 @@
     <None Include="Resources\imagesCAFC9RVF.jpg" />
     <None Include="Resources\imagesCAFC9RVF1.jpg" />
     <None Include="Images\Wait.png" />
+    <None Include="Resources\import-a-database-icon-30862.png" />
     <Content Include="SqlBuild\Utility\Add Client Index.sql" />
     <Content Include="SqlBuild\Utility\Add Client Primary Key.sql" />
     <Content Include="SqlBuild\Utility\Add MyVitrix Index.sql" />

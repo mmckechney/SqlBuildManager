@@ -248,6 +248,7 @@ namespace SqlSync.SqlBuild
         private ToolStripSeparator toolStripSeparator3;
         private ToolStripMenuItem rebuildPreviouslyCommitedBuildFileToolStripMenuItem;
         private ToolStripMenuItem mnuCompare;
+        private ToolStripMenuItem mnuDacpacDelta;
         private ToolStripMenuItem mnuMainAddSqlScript;
         private ToolStripMenuItem mnuMainAddNewFile;
         private ToolStripSeparator toolStripSeparator4;
@@ -1118,6 +1119,7 @@ namespace SqlSync.SqlBuild
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuImportScriptFromFile = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuCompare = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuDacpacDelta = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem12 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuExportScriptText = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuIndividualFiles = new System.Windows.Forms.ToolStripMenuItem();
@@ -2604,6 +2606,7 @@ namespace SqlSync.SqlBuild
             this.toolStripSeparator4,
             this.mnuImportScriptFromFile,
             this.mnuCompare,
+            this.mnuDacpacDelta,
             this.menuItem12,
             this.mnuExportScriptText,
             this.menuItem15,
@@ -2832,6 +2835,15 @@ namespace SqlSync.SqlBuild
             this.mnuCompare.Size = new System.Drawing.Size(344, 22);
             this.mnuCompare.Text = "Compare Build File To...";
             this.mnuCompare.Click += new System.EventHandler(this.mnuCompare_Click);
+            //
+            //menu GenerateScripts From DACPAC/DB delta
+            //
+            this.mnuDacpacDelta.Enabled = true;
+            this.mnuDacpacDelta.Image = global::SqlSync.Properties.Resources.importDB;
+            this.mnuDacpacDelta.Name = "mnuDacpacDelta";
+            this.mnuDacpacDelta.Size = new System.Drawing.Size(344, 22);
+            this.mnuDacpacDelta.Text = "Sql Build File from DACPAC/DB Delta";
+            this.mnuDacpacDelta.Click += new System.EventHandler(this.mnuDacpacDelta_Click);
             // 
             // menuItem12
             // 
@@ -7863,6 +7875,14 @@ namespace SqlSync.SqlBuild
                 if (frmCompare.RefreshProjectList)
                     this.RefreshScriptFileList();
             }
+        }
+
+        // mnuDacpacDelta_Click
+
+        private void mnuDacpacDelta_Click(object sender, EventArgs e)
+        {
+            FromDacpacForm form = new FromDacpacForm();
+            form.ShowDialog();
         }
         private void showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem_Click(object sender, EventArgs e)
         {

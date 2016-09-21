@@ -81,5 +81,11 @@
     <Setting Name="ScriptAllowMultipleRuns" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">DarkSalmon</Value>
     </Setting>
+    <Setting Name="DACPACPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DBAuthenticationType" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">-1</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
