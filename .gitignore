@@ -41,7 +41,7 @@ local.properties
 *.user
 *.sln.docstates
 *.ide/
-
+.vs/
 
 # Build results
 
