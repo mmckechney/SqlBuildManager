@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Tfs.Utility;
+//using Tfs.Utility;
 namespace SqlSync.SqlBuild
 {
     /// <summary>
@@ -197,25 +197,29 @@ namespace SqlSync.SqlBuild
 
 
         #region .: Tfs Source Control integration :.
+        [Obsolete("Removing integration with TFS here. Will untangle the rest of the code later!")]
         public static IFileStatus CheckoutFilesFromSourceControl(string sourceControlURL, List<string> files)
         {
             try
             {
-                ISourceControl sc = new SourceControl(sourceControlURL);
-                return sc.UpdateSourceControl(files);
+                //ISourceControl sc = new SourceControl(sourceControlURL);
+                //return sc.UpdateSourceControl(files);
+                return null;
             }
             catch
             {
                 return null;
             }
 
-         }
+        }
+        [Obsolete("Removing integration with TFS here. Will untangle the rest of the code later!")]
         public static SourceControlStatus CheckoutFileFromSourceControl(string sourceControlURL, string fileName)
         {
             try
             {
-                ISourceControl sc = new SourceControl(sourceControlURL);
-                return sc.UpdateSourceControl(fileName);
+                //ISourceControl sc = new SourceControl(sourceControlURL);
+                //return sc.UpdateSourceControl(fileName);
+                return SourceControlStatus.Unknown;
             }
             catch
             {
