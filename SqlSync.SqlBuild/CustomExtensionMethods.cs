@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-namespace SqlBuildManager.ServiceClient.CustomExtensionMethods
+namespace SqlSync.SqlBuild
 {
     public static class Extensions
     {

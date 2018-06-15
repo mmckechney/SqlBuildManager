@@ -173,6 +173,7 @@
       <AutoGen>True</AutoGen>
     </Compile>
     <Compile Include="Cryptography.cs" />
+    <Compile Include="CustomExtensionMethods.cs" />
     <Compile Include="DacPacHelper.cs" />
     <Compile Include="DacpacDeltasStatus.cs" />
     <Compile Include="MultiDb\MultiDbQueryConfig.cs" />

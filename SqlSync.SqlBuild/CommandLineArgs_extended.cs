@@ -58,12 +58,11 @@ namespace SqlSync.SqlBuild
 
         public override string ToString()
         {
-            //var props = this.GetType().GetProperties();
-            //StringBuilder sb = new StringBuilder();
-            //var lst = props.OrderBy(p => p.Name).ToList();
-            //lst.ForEach(p => sb.AppendLine(p.Name + "='" + p.GetValue(this, null) + "'"));
-            //return sb.ToString();
-            return base.ToString();
+            var props = this.GetType().GetProperties();
+            StringBuilder sb = new StringBuilder();
+            var lst = props.OrderBy(p => p.Name).ToList();
+            lst.ForEach(p => sb.AppendLine("/"+ p.Name + "=\"" + p.GetValue(this, null) + "\""));
+            return sb.ToString();
         }
 
     }

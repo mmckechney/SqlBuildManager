@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
 using System.ServiceModel;
-using SqlBuildManager.ServiceClient.CustomExtensionMethods;
 using SqlBuildManager.ServiceClient.Sbm.BuildService;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;

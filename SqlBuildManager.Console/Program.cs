@@ -71,6 +71,9 @@ namespace SqlBuildManager.Console
                 case "encrypt":
                     EncryptCreds(cmdLine);
                     break;
+                case "batch":
+                    RunBatchExecution(cmdLine);
+                    break;
                 default:
                     log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
                     System.Environment.Exit(8675309);
@@ -78,6 +81,12 @@ namespace SqlBuildManager.Console
 
             }
 
+        }
+
+        private static void RunBatchExecution(CommandLineArgs cmdLine)
+        {
+            Batch.Execution bexe = new Batch.Execution();
+            bexe.StartBatch(new string[] { });
         }
 
         private static void EncryptCreds(CommandLineArgs cmdLine)

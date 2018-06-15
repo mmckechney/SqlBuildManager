@@ -94,7 +94,6 @@
     <Compile Include="BuildServiceManager.cs" />
     <Compile Include="BuildSettings_partial.cs" />
     <Compile Include="BuildRecord_partial.cs" />
-    <Compile Include="CustomExtensionMethods.cs" />
     <Compile Include="DistributionType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol.cs" />
