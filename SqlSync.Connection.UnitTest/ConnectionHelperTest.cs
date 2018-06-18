@@ -78,7 +78,7 @@ namespace SqlSync.Connection.UnitTest
         public void GetConnectionStringTest_FromConnectionDataObj()
         {
             ConnectionData connData = new ConnectionData("myserver", "mydatabase");
-            string expected = String.Format("Data Source=myserver;Initial Catalog=mydatabase; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];",version,user);
+            string expected = String.Format("Data Source=myserver;Initial Catalog=mydatabase;Trusted_Connection=Yes;CONNECTION TIMEOUT=20;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];",version,user);
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
             Assert.AreEqual(expected, actual);
@@ -91,7 +91,7 @@ namespace SqlSync.Connection.UnitTest
         {
             ConnectionData connData = new ConnectionData("myserver", "mydatabase");
             connData.ScriptTimeout = 40;
-            string expected = String.Format("Data Source=myserver;Initial Catalog=mydatabase; Trusted_Connection=Yes;CONNECTION TIMEOUT=40;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
+            string expected = String.Format("Data Source=myserver;Initial Catalog=mydatabase;Trusted_Connection=Yes;CONNECTION TIMEOUT=40;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
             Assert.AreEqual(expected, actual);

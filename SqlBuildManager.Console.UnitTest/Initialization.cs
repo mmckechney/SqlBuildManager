@@ -12,15 +12,29 @@ namespace SqlBuildManager.Console.UnitTest
     {
         public static string ConnectionString = @"Data Source=(local)\SQLEXPRESS;Initial Catalog={0}; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;";
 
-        private List<string> tempFiles;
-        public string SqlBuildZipFileName;
-        public string MultiDbFileName;
+        private static List<string> tempFiles;
+        public static string SqlBuildZipFileName;
+        public static string MultiDbFileName;
+        public static string DbConfigFileName;
 
         public Initialization()
         {
             tempFiles = new List<string>();
-            this.SqlBuildZipFileName = this.GetTrulyUniqueFile("sbm");
-            this.MultiDbFileName = this.GetTrulyUniqueFile("multidb");
+            Initialization.SqlBuildZipFileName = this.GetTrulyUniqueFile("sbm");
+            Initialization.MultiDbFileName = this.GetTrulyUniqueFile("multidb");
+            Initialization.DbConfigFileName = this.GetTrulyUniqueFile("cfg");
+        }
+        public static void CleanUp()
+        {
+            foreach(string f in tempFiles)
+            {
+                try
+                {
+                    File.Delete(f);
+                }
+                catch { }
+                   
+            }
         }
 
         public ThreadedExecution GetThreadedExecutionAccessor(string[] args)
@@ -30,11 +44,15 @@ namespace SqlBuildManager.Console.UnitTest
 
         public void CopySbmFileToTestPath()
         {
-            File.WriteAllBytes(this.SqlBuildZipFileName, Properties.Resources.NoTrans_MultiDb_sbm);
+            File.WriteAllBytes(Initialization.SqlBuildZipFileName, Properties.Resources.NoTrans_MultiDb_sbm);
         }
         public void CopyMultiDbFileToTestPath()
         {
-            File.WriteAllBytes(this.MultiDbFileName, Properties.Resources.NoTrans_MultiDb_multidb);
+            File.WriteAllBytes(Initialization.MultiDbFileName, Properties.Resources.NoTrans_MultiDb_multidb);
+        }
+        public void CopyDbConfigFileeToTestPath()
+        {
+            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig);
         }
         public string GetTrulyUniqueFile(string extension)
         {
@@ -43,7 +61,7 @@ namespace SqlBuildManager.Console.UnitTest
             File.Move(tmpName, newName);
 
 
-            this.tempFiles.Add(newName);
+            Initialization.tempFiles.Add(newName);
             return newName;
 
         }
@@ -52,7 +70,7 @@ namespace SqlBuildManager.Console.UnitTest
 
         public void Dispose()
         {
-            foreach (string file in this.tempFiles)
+            foreach (string file in Initialization.tempFiles)
             {
                 try
                 {

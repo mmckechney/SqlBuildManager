@@ -163,10 +163,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Resources\dbconfig.cfg" />
     <None Include="Resources\SimpleSelect_WithCodeReview.sbm" />
     <None Include="Resources\InsertForThreadedTest.sbm" />
     <None Include="Resources\NoTrans_MultiDb.multiDb" />

@@ -19,7 +19,17 @@ namespace SqlBuildManager.Console.UnitTest
     [TestClass()]
     public class RemoteExecutionTest
     {
-
+        
+        [ClassInitialize()]
+        public static void MyClassInitialize(TestContext testContext)
+        {
+            Initialization i =  new Initialization();
+        }
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            Initialization.CleanUp();
+        }
         #region DeserializeBuildSettingsFileTest
 
         /// <summary>
@@ -82,7 +92,7 @@ namespace SqlBuildManager.Console.UnitTest
             args[1] = "/transactional=false";
             args[2] = "/trial=true";
             args[3] = "/override=\"C\\temp\\multicfg.cfg\"";
-            args[4] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/packagename=\"" + sbmFileName + "\"";
             args[5] = "/RemoteServers=\"C:\\temp\remote_servers.txt\"";
             args[6] = "/DistributionType=equal";
             args[7] = "/RootLoggingPath=\"C:\temp\"";
@@ -111,8 +121,8 @@ namespace SqlBuildManager.Console.UnitTest
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
-            args[4] = "/override=\"C\\temp\\multicfg.cfg\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/override=\"" + Initialization.DbConfigFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             //args[6] = "/RemoteServers=\"C:\\temp\remote_servers.txt\"";
             args[6] = "/DistributionType=equal";
 
@@ -140,8 +150,8 @@ namespace SqlBuildManager.Console.UnitTest
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
-            args[4] = "/override=\"C\\temp\\multicfg.cfg\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/override=\"" + Initialization.DbConfigFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"C:\\temp\remote_servers.txt\"";
             args[7] = "/DistributionType=equal";
 
@@ -178,7 +188,7 @@ localhost:def,ovr";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
             args[4] = "/override=\""+ multiDbOverrideSettingFileName+ "\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"derive\"";
             args[7] = "/DistributionType=equal";
 
@@ -217,8 +227,8 @@ localhost:def,ovr";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
-            args[4] = "/override=\"C\\temp\\multicfg.cfg\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/override=\"" + Initialization.DbConfigFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             //args[7] = "/DistributionType=equal";
 
@@ -251,8 +261,8 @@ localhost:def,ovr";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
-            args[4] = "/override=\"C\\temp\\multicfg.cfg\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/override=\"" + Initialization.DbConfigFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             args[7] = "/DistributionType=BadValue";
 
@@ -286,8 +296,8 @@ localhost:def,ovr";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
-            args[4] = "/override=\"C\\temp\\multicfg.cfg\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/override=\"" + Initialization.DbConfigFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             args[7] = "/DistributionType=equal";
 
@@ -325,7 +335,7 @@ localhost:def,ovr";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
             args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             args[7] = "/DistributionType=equal";
 
@@ -365,7 +375,7 @@ localhost:def,ovr";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
             args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             args[7] = "/DistributionType=equal";
 
@@ -410,7 +420,7 @@ localhost:def,ovr";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
             args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             args[7] = "/DistributionType=local";
 
@@ -567,7 +577,7 @@ localhost:def,ovr";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
             args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             args[7] = "/DistributionType=equal";
             RemoteExecution target = new RemoteExecution(args); 
@@ -615,7 +625,7 @@ localhost:def,ovr";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
             args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             args[7] = "/DistributionType=equal";
             RemoteExecution target = new RemoteExecution(args);
@@ -662,7 +672,7 @@ localhost:def,ovr";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[4] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/packagename=\"" + sbmFileName + "\"";
             args[5] = "/RemoteServers=\"" + fileName + "\"";
             args[6] = "/DistributionType=equal";
             RemoteExecution target = new RemoteExecution(args);
@@ -709,7 +719,7 @@ localhost:def,ovr";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[4] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/packagename=\"" + sbmFileName + "\"";
             args[5] = "/RemoteServers=\"" + fileName + "\"";
             args[6] = "/DistributionType=local";
             RemoteExecution target = new RemoteExecution(args);
@@ -756,7 +766,7 @@ localhost:def,ovr";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[4] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/packagename=\"" + sbmFileName + "\"";
             args[5] = "/RemoteServers=\"" + fileName + "\"";
             args[6] = "/DistributionType=local";
             RemoteExecution target = new RemoteExecution(args);
@@ -803,7 +813,7 @@ localhost:def,ovr";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[4] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/packagename=\"" + sbmFileName + "\"";
             args[5] = "/RemoteServers=\"" + fileName + "\"";
             args[6] = "/DistributionType=local";
             RemoteExecution target = new RemoteExecution(args);
@@ -851,7 +861,7 @@ anotherhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest";
             args[1] = "/RootLoggingPath=\"" + loggingPath + "\"";
             args[2] = "/transactional=true";
             args[3] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[4] = "/build=\"" + sbmFileName + "\"";
+            args[4] = "/packagename=\"" + sbmFileName + "\"";
             args[5] = "/RemoteServers=\"" + fileName + "\"";
             args[6] = "/DistributionType=local";
             RemoteExecution target = new RemoteExecution(args);
@@ -900,7 +910,7 @@ anotherhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
             args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             args[7] = "/DistributionType=equal";
             RemoteExecution target = new RemoteExecution(args);
@@ -1030,7 +1040,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             args[2] = "/transactional=true";
             args[3] = "/trial=false";
             args[4] = "/override=\"" + multiDbOverrideSettingFileName + "\"";
-            args[5] = "/build=\"" + sbmFileName + "\"";
+            args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/DistributionType=equal";
             args[7] = "/TimeoutRetryCount=" + retryCount.ToString();
             args[8] = "/RemoteServers=\"" + fileName + "\"";
