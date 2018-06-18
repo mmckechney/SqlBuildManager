@@ -2093,7 +2093,7 @@ namespace SqlSync.ObjectScript
                 sb.AppendLine("\r\n");
             }
         }
-        private void CollateScriptWithSchemaCheck(StringCollection coll, string schema, ref StringBuilder sb)
+        internal void CollateScriptWithSchemaCheck(StringCollection coll, string schema, ref StringBuilder sb)
         {
             Regex regFindGood = new Regex(@"OBJECT_ID\(N'\[.{1,20}\]\.\[.{1,256}\]'\)",RegexOptions.IgnoreCase);
             Regex regFindMissingIndex = new Regex(@"OBJECT_ID\(N'",RegexOptions.IgnoreCase);

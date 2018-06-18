@@ -70,7 +70,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
@@ -105,7 +105,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
@@ -138,7 +138,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
@@ -171,7 +171,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
 
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
@@ -205,7 +205,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
 
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
@@ -239,7 +239,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
 
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
@@ -273,7 +273,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
 
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
@@ -312,7 +312,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
@@ -348,7 +348,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
@@ -382,7 +382,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
@@ -416,7 +416,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
@@ -450,7 +450,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
 
@@ -485,7 +485,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Set the script only flag
@@ -518,7 +518,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
@@ -549,7 +549,7 @@ namespace SqlSync.SqlBuild.UnitTest
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             SqlSyncBuildData.BuildRow actual;
 
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.LogToDatabaseName = init.testDatabaseNames[1];
 
             //Get BuildRow...
@@ -590,7 +590,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
+            SqlBuildHelper target = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(target);
             //Execute the run...
@@ -625,7 +625,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, true);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, true);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
@@ -659,7 +659,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
@@ -694,7 +694,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
@@ -731,7 +731,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
@@ -766,7 +766,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData.BuildRow actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper_Accessor sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
 
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
@@ -795,7 +795,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetTargetDatabaseTest_GetDefaultBack()
         {
             Initialization init = GetInitializationObject();
-            SqlBuildHelper_Accessor helper = init.CreateSqlBuildHelper_Basic();
+            SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
 
             string defaultDatabase = "MyTestDatabase";
             string expected = defaultDatabase;
@@ -812,7 +812,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetTargetDatabaseTest_GetOverrideBack()
         {
             Initialization init = GetInitializationObject();
-            SqlBuildHelper_Accessor helper = init.CreateSqlBuildHelper_Basic();
+            SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
             overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
             helper.targetDatabaseOverrides = overrides;
@@ -831,7 +831,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetTargetDatabaseTest_DefaultSetToEmptyString()
         {
             Initialization init = GetInitializationObject();
-            SqlBuildHelper_Accessor helper = init.CreateSqlBuildHelper_Basic();
+            SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
             overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
             helper.targetDatabaseOverrides = overrides;
@@ -849,7 +849,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetTargetDatabaseTest_DefaultSetToNull()
         {
             Initialization init = GetInitializationObject();
-            SqlBuildHelper_Accessor helper = init.CreateSqlBuildHelper_Basic();
+            SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
             overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
             helper.targetDatabaseOverrides = overrides;
@@ -868,7 +868,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetTargetDatabaseTest_MultipleOverridesSet()
         {
             Initialization init = GetInitializationObject();
-            SqlBuildHelper_Accessor helper = init.CreateSqlBuildHelper_Basic();
+            SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
             overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
             overrides.Add(new DatabaseOverride("MyDefault2", "MyOverride2"));
@@ -888,7 +888,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetTargetDatabaseTest_DoesNotFindDefault()
         {
             Initialization init = GetInitializationObject();
-            SqlBuildHelper_Accessor helper = init.CreateSqlBuildHelper_Basic();
+            SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
             overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
             overrides.Add(new DatabaseOverride("MyDefault2", "MyOverride2"));
@@ -939,7 +939,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddInsertScript(ref buildData, true);
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
@@ -966,7 +966,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddSelectScript(ref buildData);
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
@@ -994,7 +994,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddSelectScript(ref buildData);
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
 
             string serverName = init.serverName;
@@ -1029,7 +1029,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
@@ -1055,7 +1055,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
@@ -1079,7 +1079,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string serverName = init.serverName;
             bool isMultiDbRun = true;
@@ -1168,7 +1168,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             DatabaseOverride override1 = new DatabaseOverride("default1", "override1");
             DatabaseOverride override2 = new DatabaseOverride("default2", "override2");
@@ -1201,7 +1201,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             DatabaseOverride override1 = new DatabaseOverride("default1", "override1");
             DatabaseOverride override2 = new DatabaseOverride("default2", "override2");
@@ -1285,7 +1285,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             //Reset the scriptLogFileName to NULL to get exception
             target.scriptLogFileName = null;
@@ -1302,7 +1302,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             //Delete the file made by the init the scriptLogFileName to NULL to get exception
             if (System.IO.File.Exists(target.scriptLogFileName))
@@ -1337,7 +1337,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             //Delete the file made by the init the scriptLogFileName to NULL to get exception
             if (System.IO.File.Exists(target.scriptLogFileName))
@@ -1369,7 +1369,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
 
             //Delete the file made by the init the scriptLogFileName to NULL to get exception
@@ -1395,7 +1395,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
 
             bool actual = target.CommitBuild();
@@ -1412,7 +1412,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
@@ -1429,7 +1429,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
@@ -1451,7 +1451,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
 
             bool actual = target.RollbackBuild();
@@ -1466,7 +1466,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
@@ -1483,7 +1483,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
@@ -1504,7 +1504,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void PerformScriptTokenReplacementTest()
         {
             Initialization init = GetInitializationObject();
-            SqlBuildHelper_Accessor helper = init.CreateSqlBuildHelper_Basic();
+            SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             string script = @"INSERT INTO dbo.versions 
 			(versionnumber,versiondate,State,Comment) 
 		VALUES
@@ -1532,7 +1532,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void PerformScriptTokenReplacementTest_NullBuildFileName()
         {
             Initialization init = GetInitializationObject();
-            SqlBuildHelper_Accessor helper = init.CreateSqlBuildHelper_Basic();
+            SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             string script = @"INSERT INTO dbo.versions 
 			(versionnumber,versiondate,State,Comment) 
 		VALUES
@@ -1560,7 +1560,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void PerformScriptTokenReplacementTest_NullDescriptionValue()
         {
             Initialization init = GetInitializationObject();
-            SqlBuildHelper_Accessor helper = init.CreateSqlBuildHelper_Basic();
+            SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             string script = @"INSERT INTO dbo.versions 
 			(versionnumber,versiondate,State,Comment) 
 		VALUES
@@ -1626,7 +1626,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             init.AddPreRunScript(ref buildData, false);
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             BuildConnectData connData = new BuildConnectData();
@@ -1724,7 +1724,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             SqlConnection conn = ConnectionHelper.GetConnection(init.connData);
             bool actual = target.LogTableExists(conn);
             Assert.AreEqual(true, actual);
@@ -1758,7 +1758,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             row.AllowScriptBlock = true;
             buildData.CommittedScript.Rows.Add(row);
 
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string[] scripts = new string[]{Guid.NewGuid().ToString(),buildData.Script[0].ScriptId};
             ClearScriptData scrData = new ClearScriptData(scripts, buildData, init.projectFileName, init.projectFileName);
@@ -1785,7 +1785,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             List<CommittedScript> committedScripts = new List<CommittedScript>();
             committedScripts.Add(script);
 
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             bool actual;
             actual = target.RecordCommittedScripts(committedScripts);
             Assert.AreEqual(true, actual);
@@ -1807,7 +1807,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = null;
             target.SaveBuildDataSet(false);
         }
@@ -1822,7 +1822,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = string.Empty;
             target.SaveBuildDataSet(false);
         }
@@ -1837,7 +1837,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = null;
             target.SaveBuildDataSet(false);
         }
@@ -1851,7 +1851,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = this.GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = string.Empty;
             target.SaveBuildDataSet(false);
         }

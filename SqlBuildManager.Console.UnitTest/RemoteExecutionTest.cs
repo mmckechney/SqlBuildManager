@@ -32,7 +32,7 @@ namespace SqlBuildManager.Console.UnitTest
             string fileName = Path.GetTempFileName();
             File.WriteAllText(fileName,SqlBuildManager.Console.UnitTest.Properties.Resources.remote_execution_file);
             BuildSettings actual;
-            actual = RemoteExecution_Accessor.DeserializeBuildSettingsFile(fileName);
+            actual = RemoteExecution.DeserializeBuildSettingsFile(fileName);
             File.Delete(fileName);
             Assert.IsNotNull(actual);
         }
@@ -46,7 +46,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             string fileName = @"C:\I_dont_exist.txt";
             BuildSettings actual;
-            actual = RemoteExecution_Accessor.DeserializeBuildSettingsFile(fileName);
+            actual = RemoteExecution.DeserializeBuildSettingsFile(fileName);
             Assert.IsNull(actual);
         }
 
@@ -59,7 +59,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             string fileName = Path.GetTempFileName();
             BuildSettings actual;
-            actual = RemoteExecution_Accessor.DeserializeBuildSettingsFile(fileName);
+            actual = RemoteExecution.DeserializeBuildSettingsFile(fileName);
             File.Delete(fileName);
             Assert.IsNull(actual);
         }
@@ -90,7 +90,7 @@ namespace SqlBuildManager.Console.UnitTest
             BuildSettings setting = null;
             int expected = (int)ExecutionReturn.InvalidTransactionAndTrialCombo;
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(sbmFileName);
             Assert.IsNull(setting);
             Assert.AreEqual(expected, actual);
@@ -119,7 +119,7 @@ namespace SqlBuildManager.Console.UnitTest
             BuildSettings setting = null;
             int expected = -700;
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(sbmFileName);
             Assert.IsNull(setting);
             Assert.AreEqual(expected, actual);
@@ -148,7 +148,7 @@ namespace SqlBuildManager.Console.UnitTest
             BuildSettings setting = null; 
             int expected = -701; 
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(sbmFileName);
 
             Assert.IsNull(setting);
@@ -185,7 +185,7 @@ localhost:def,ovr";
             BuildSettings setting = null;
             int expected = 0;
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(sbmFileName);
             File.Delete(multiDbOverrideSettingFileName);
             if (actual <= -750 && actual >= -752)
@@ -225,7 +225,7 @@ localhost:def,ovr";
             BuildSettings setting = null;
             int expected = -702;
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(fileName);
             File.Delete(sbmFileName);
             Assert.IsNull(setting);
@@ -259,7 +259,7 @@ localhost:def,ovr";
             BuildSettings setting = null;
             int expected = -703;
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(fileName);
             File.Delete(sbmFileName);
 
@@ -294,7 +294,7 @@ localhost:def,ovr";
             BuildSettings setting = null;
             int expected = (int)ExecutionReturn.NullMultiDbConfig;
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(fileName);
             File.Delete(sbmFileName);
             Assert.IsNull(setting);
@@ -332,7 +332,7 @@ localhost:def,ovr";
             BuildSettings setting = null;
             int expected = -750;
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(fileName);
             File.Delete(sbmFileName);
 
@@ -372,7 +372,7 @@ localhost:def,ovr";
             BuildSettings setting = null;
             int expected = 0;
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(fileName);
             File.Delete(multiDbOverrideSettingFileName);
             File.Delete(sbmFileName);
@@ -417,7 +417,7 @@ localhost:def,ovr";
             BuildSettings setting = null;
             int expected = 0;
             int actual;
-            actual = RemoteExecution_Accessor.DigestAndValidateCommandLineArguments(args, out setting);
+            actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
 
             if(File.Exists(fileName))
                 File.Delete(fileName);
@@ -451,7 +451,7 @@ localhost:def,ovr";
             string[] errorMessages = null; 
             int expected = 0; 
             int actual;
-            actual = RemoteExecution_Accessor.ValidateRemoteServerAvailability(remoteServers, Protocol.Tcp, out remoteServerData, out errorMessages);
+            actual = RemoteExecution.ValidateRemoteServerAvailability(remoteServers, Protocol.Tcp, out remoteServerData, out errorMessages);
             Assert.AreEqual(0, errorMessages.Length, "NOTE: If test is failing, make sure you have a remote execution service running on this machine");
             Assert.AreEqual(expected, actual);
         }
@@ -470,7 +470,7 @@ localhost:def,ovr";
             string[] errorMessages = null;
             int expected = -750;
             int actual;
-            actual = RemoteExecution_Accessor.ValidateRemoteServerAvailability(remoteServers, Protocol.Tcp, out remoteServerData, out errorMessages);
+            actual = RemoteExecution.ValidateRemoteServerAvailability(remoteServers, Protocol.Tcp, out remoteServerData, out errorMessages);
             Assert.AreEqual(1, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].IndexOf("Remote service status for") > -1);
             Assert.AreEqual(expected, actual);
@@ -488,7 +488,7 @@ localhost:def,ovr";
             string[] errorMessages = null;
             int expected = -752;
             int actual;
-            actual = RemoteExecution_Accessor.ValidateRemoteServerAvailability(remoteServers, Protocol.Tcp, out remoteServerData, out errorMessages);
+            actual = RemoteExecution.ValidateRemoteServerAvailability(remoteServers, Protocol.Tcp, out remoteServerData, out errorMessages);
             Assert.AreEqual(1, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].IndexOf("No remote execution servers were specified") > -1);
             Assert.AreEqual(expected, actual);
@@ -506,7 +506,7 @@ localhost:def,ovr";
             string[] errorMessages = null;
             int expected = -752;
             int actual;
-            actual = RemoteExecution_Accessor.ValidateRemoteServerAvailability(remoteServers, Protocol.Tcp, out remoteServerData, out errorMessages);
+            actual = RemoteExecution.ValidateRemoteServerAvailability(remoteServers, Protocol.Tcp, out remoteServerData, out errorMessages);
             Assert.AreEqual(1, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].IndexOf("No remote execution servers were specified") > -1);
             Assert.AreEqual(expected, actual);
@@ -523,7 +523,7 @@ localhost:def,ovr";
         public void RemoteExecutionConstructorTest_WithArgs()
         {
             string[] arguments = new string[] { "test", "test2" };
-            RemoteExecution_Accessor target = new RemoteExecution_Accessor(arguments);
+            RemoteExecution target = new RemoteExecution(arguments);
             Assert.IsNotNull(target.args);
             Assert.AreEqual(2, target.args.Length);
         }
@@ -535,7 +535,7 @@ localhost:def,ovr";
         public void RemoteExecutionConstructorTest_WithSettingsFile()
         {
             string settingsFile = @"C:\myfile.txt";
-            RemoteExecution_Accessor target = new RemoteExecution_Accessor(settingsFile);
+            RemoteExecution target = new RemoteExecution(settingsFile);
             Assert.IsNotNull(target.settingsFile);
             Assert.AreEqual(settingsFile, target.settingsFile);
         }

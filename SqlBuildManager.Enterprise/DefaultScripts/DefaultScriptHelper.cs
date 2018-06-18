@@ -45,7 +45,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             return true;
         }
 
-        private static sb.DefaultScriptRegistry GetEnterpriseRegistrySetting(string filePath)
+        internal static sb.DefaultScriptRegistry GetEnterpriseRegistrySetting(string filePath)
         {
             sb.DefaultScriptRegistry registry = null;
             log.DebugFormat("Deserializing DefaultScriptRegistry file from '{0}'", filePath);
@@ -67,7 +67,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             return registry;
         }
 
-        private static bool ValidateLocalToEnterprise(string localFilePath, string enterpriseFilePath)
+        internal static bool ValidateLocalToEnterprise(string localFilePath, string enterpriseFilePath)
         {
             if (!File.Exists(localFilePath))
             {
@@ -111,7 +111,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             return match;
 
         }
-        private static bool CopyEnterpriseToLocal(string localFilePath, string enterpriseFilePath)
+        internal static bool CopyEnterpriseToLocal(string localFilePath, string enterpriseFilePath)
         {
             if (!File.Exists(enterpriseFilePath))
             {
@@ -146,7 +146,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 return false;
             }
         }
-        private static DefaultScriptRegistryFile GetApplicableDefaultScriptReg(List<DefaultScriptRegistryFile> defaultScriptRegs, List<string> groupMemberships)
+        internal static DefaultScriptRegistryFile GetApplicableDefaultScriptReg(List<DefaultScriptRegistryFile> defaultScriptRegs, List<string> groupMemberships)
         {
             try
             {

@@ -41,7 +41,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddScriptForProcessBuild(ref buildData, true,20);
 
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunData runData = init.GetSqlBuildRunData_TransactionalNotTrial(buildData);
             BackgroundWorker bgWorker = init.GetBackgroundWorker();
             DoWorkEventArgs e = new DoWorkEventArgs(null);
@@ -68,7 +68,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddScriptForProcessBuild(ref buildData, true,20);
 
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunData runData = init.GetSqlBuildRunData_TransactionalNotTrial(buildData);
             BackgroundWorker bgWorker = init.GetBackgroundWorker();
             DoWorkEventArgs e = new DoWorkEventArgs(null);
@@ -93,7 +93,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddScriptForProcessBuild(ref buildData, true,1);
 
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunData runData = init.GetSqlBuildRunData_TransactionalNotTrial(buildData);
            
             BackgroundWorker bgWorker = init.GetBackgroundWorker();
@@ -131,7 +131,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddScriptForProcessBuild(ref buildData, true, 2);
 
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunData runData = init.GetSqlBuildRunData_TransactionalNotTrial(buildData);
 
             BackgroundWorker bgWorker = init.GetBackgroundWorker();
@@ -169,7 +169,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddScriptForProcessBuild(ref buildData, true, 2);
 
-            SqlBuildHelper_Accessor target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunData runData = init.GetSqlBuildRunData_TransactionalNotTrial(buildData);
 
             BackgroundWorker bgWorker = init.GetBackgroundWorker();

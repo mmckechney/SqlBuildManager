@@ -65,7 +65,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void LoadEnterpriseConfigurationTest_NoParameter()
         {
             EnterpriseConfiguration actual;
-            actual = EnterpriseConfigHelper_Accessor.LoadEnterpriseConfiguration();
+            actual = EnterpriseConfigHelper.LoadEnterpriseConfiguration();
             Assert.AreEqual(1, actual.TableWatch.Length);
             Assert.AreEqual(2, actual.TableWatch[0].Notify.Length);
             Assert.AreEqual(2, actual.TableWatch[0].Table.Length);
@@ -80,7 +80,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             string configuration = Properties.Resources.EnterpriseConfig;
             EnterpriseConfiguration actual;
-            actual = EnterpriseConfigHelper_Accessor.DeserializeConfiguration(configuration);
+            actual = EnterpriseConfigHelper.DeserializeConfiguration(configuration);
             Assert.AreEqual(1, actual.TableWatch.Length);
             Assert.AreEqual(2, actual.TableWatch[0].Notify.Length);
             Assert.AreEqual(2, actual.TableWatch[0].Table.Length);
@@ -96,7 +96,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             string configuration = "This is a bad configuration";
             EnterpriseConfiguration actual;
-            actual = EnterpriseConfigHelper_Accessor.DeserializeConfiguration(configuration);
+            actual = EnterpriseConfigHelper.DeserializeConfiguration(configuration);
             Assert.IsNull(actual);
         }
 

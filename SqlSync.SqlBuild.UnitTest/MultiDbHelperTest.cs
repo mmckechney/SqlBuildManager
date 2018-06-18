@@ -410,7 +410,7 @@ ServerB:default7,override7
 ServerB:default5,override5
 ";
             string actual;
-            actual = MultiDbHelper_Accessor.ConvertMultiDbDataToTextConfig(cfg);
+            actual = MultiDbHelper.ConvertMultiDbDataToTextConfig(cfg);
             Assert.AreEqual(expected, actual);
         }
 

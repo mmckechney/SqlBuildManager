@@ -23,9 +23,9 @@ namespace SqlBuildManager.Console.UnitTest
             this.MultiDbFileName = this.GetTrulyUniqueFile("multidb");
         }
 
-        public ThreadedExecution_Accessor GetThreadedExecutionAccessor(string[] args)
+        public ThreadedExecution GetThreadedExecutionAccessor(string[] args)
         {
-            return new ThreadedExecution_Accessor(args);
+            return new ThreadedExecution(args);
         }
 
         public void CopySbmFileToTestPath()

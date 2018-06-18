@@ -88,7 +88,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
 
             return groups;
         }
-        private static string GetDistinguishedName(string userName)
+        internal static string GetDistinguishedName(string userName)
         {
             try
             {
@@ -116,7 +116,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             log.WarnFormat("Unable to find distinguished name for {0}.", userName);
             return string.Empty;
         }
-        private static string GetDistinguishedNameForGroup(string groupName)
+        internal static string GetDistinguishedNameForGroup(string groupName)
         {
             try
             {

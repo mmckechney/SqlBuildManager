@@ -349,7 +349,7 @@ namespace SqlSync.SqlBuild.UnitTest
             scriptBatchColl.Add(batch2);
             string expected = "E00B044F80A5F40EDAFC53BE8B559BD4DB5229A0";
             string actual;
-            actual = SqlBuildFileHelper_Accessor.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
+            actual = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
             Assert.AreEqual(expected, actual);
 
         }
@@ -375,13 +375,13 @@ namespace SqlSync.SqlBuild.UnitTest
             scriptBatchColl.Add(batch1);
             scriptBatchColl.Add(batch2);
 
-            string order12 = SqlBuildFileHelper_Accessor.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
+            string order12 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
 
             scriptBatchColl = new ScriptBatchCollection();
             scriptBatchColl.Add(batch2);
             scriptBatchColl.Add(batch1);
 
-            string order21 = SqlBuildFileHelper_Accessor.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
+            string order21 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
 
             Assert.AreNotEqual(order12, order21);
 
@@ -432,7 +432,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
 
             ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
-            string fromBatch = SqlBuildFileHelper_Accessor.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
+            string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
                 Directory.Delete(projectFileExtractionPath, true);
@@ -490,7 +490,7 @@ needs to be removed");
 
 
             ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
-            string fromBatch = SqlBuildFileHelper_Accessor.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
+            string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
                 Directory.Delete(projectFileExtractionPath, true);
@@ -548,7 +548,7 @@ needs to be removed");
 
 
             ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
-            string fromBatch = SqlBuildFileHelper_Accessor.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
+            string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
                 Directory.Delete(projectFileExtractionPath, true);
@@ -605,7 +605,7 @@ needs to be removed");
             string fromPath123 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
             ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
-            string fromBatch123 = SqlBuildFileHelper_Accessor.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
+            string fromBatch123 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             buildData.Script[0].BuildOrder = 2;
             buildData.Script[1].BuildOrder = 1;
@@ -615,7 +615,7 @@ needs to be removed");
             string fromPath213 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
             batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
-            string fromBatch213 = SqlBuildFileHelper_Accessor.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
+            string fromBatch213 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
 
             if (Directory.Exists(projectFileExtractionPath))

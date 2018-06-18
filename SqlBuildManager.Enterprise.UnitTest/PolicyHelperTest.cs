@@ -19,14 +19,14 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestInitialize()]
         public void ClearPolicyList()
         {
-            PolicyHelper_Accessor.activePolicies = null;
+            PolicyHelper.activePolicies = null;
         }
 
         [TestMethod()]
         public void PolicyHelper_AllPoliciesCollectionTest()
         {
 
-            Dictionary<string, IScriptPolicy> actual = PolicyHelper_Accessor.allPolicies;
+            Dictionary<string, IScriptPolicy> actual = PolicyHelper.allPolicies;
             Assert.IsTrue(actual.Count == 12, "Expected 11 policies and got " + actual.Count.ToString());
             Assert.IsNotNull(actual["GrantExecutePolicy"], "Expected GrantExecutePolicy, got null");
             Assert.IsTrue(actual["GrantExecutePolicy"] is GrantExecutePolicy, "Expected GrantExecutePolicy got " + actual["GrantExecutePolicy"].GetType().ToString());
@@ -187,7 +187,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod]
         public void ValidateScriptAgainstPoliciesTest_WithViolations()
         {
-            PolicyHelper_Accessor.activePolicies = (from p in PolicyHelper_Accessor.allPolicies select p.Value).ToList();
+            PolicyHelper.activePolicies = (from p in PolicyHelper.allPolicies select p.Value).ToList();
 
             string script = Properties.Resources.PolicyHelper_WithViolations;
             Script actual;
@@ -218,7 +218,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod]
         public void ValidateScriptsAgainstPoliciesTest_WithViolations()
         {
-            PolicyHelper_Accessor.activePolicies = (from p in PolicyHelper_Accessor.allPolicies select p.Value).ToList();
+            PolicyHelper.activePolicies = (from p in PolicyHelper.allPolicies select p.Value).ToList();
 
             string script = Properties.Resources.PolicyHelper_WithViolations;
             List<KeyValuePair<string, string>> scripts = new List<KeyValuePair<string, string>>();
@@ -260,7 +260,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod]
         public void ValidateFileAgainstPolicies_WithViolations()
         {
-            PolicyHelper_Accessor.activePolicies = (from p in PolicyHelper_Accessor.allPolicies select p.Value).ToList();
+            PolicyHelper.activePolicies = (from p in PolicyHelper.allPolicies select p.Value).ToList();
 
             string script = Properties.Resources.PolicyHelper_WithViolations;
             string fileName = string.Empty;
@@ -286,7 +286,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod]
         public void ValidateFilesAgainstPolicies_WithViolations()
         {
-            PolicyHelper_Accessor.activePolicies = (from p in PolicyHelper_Accessor.allPolicies select p.Value).ToList();
+            PolicyHelper.activePolicies = (from p in PolicyHelper.allPolicies select p.Value).ToList();
 
             string script = Properties.Resources.PolicyHelper_WithViolations;
             string fileName = string.Empty;

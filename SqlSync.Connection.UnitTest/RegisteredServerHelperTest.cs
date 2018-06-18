@@ -37,7 +37,7 @@ namespace SqlSync.Connection.UnitTest
             string serverFileContents = Properties.Resources.RegisteredServers_Good;
 
             RegisteredServers actual;
-            actual = RegisteredServerHelper_Accessor.DeserializeRegisteredServers(serverFileContents);
+            actual = RegisteredServerHelper.DeserializeRegisteredServers(serverFileContents);
             Assert.IsNotNull(actual);
             Assert.IsInstanceOfType(actual, typeof(RegisteredServers));
             Assert.AreEqual(2, actual.ServerGroup.Length);
@@ -56,7 +56,7 @@ namespace SqlSync.Connection.UnitTest
             string serverFileContents = "This is bad content";
 
             RegisteredServers actual;
-            actual = RegisteredServerHelper_Accessor.DeserializeRegisteredServers(serverFileContents);
+            actual = RegisteredServerHelper.DeserializeRegisteredServers(serverFileContents);
             Assert.IsNull(actual);
             
         }
@@ -70,7 +70,7 @@ namespace SqlSync.Connection.UnitTest
             string serverFileContents = null;
 
             RegisteredServers actual;
-            actual = RegisteredServerHelper_Accessor.DeserializeRegisteredServers(serverFileContents);
+            actual = RegisteredServerHelper.DeserializeRegisteredServers(serverFileContents);
             Assert.IsNull(actual);
 
         }
@@ -91,7 +91,7 @@ namespace SqlSync.Connection.UnitTest
             File.WriteAllText(xmlFile, Properties.Resources.RegisteredServers_Good);
             RegisteredServerHelper.RegisteredServerFileName = string.Empty;
             RegisteredServers actual;
-            actual = RegisteredServerHelper_Accessor.GetRegisteredServers();
+            actual = RegisteredServerHelper.GetRegisteredServers();
             Assert.IsNotNull(actual);
             Assert.IsInstanceOfType(actual, typeof(RegisteredServers));
             Assert.AreEqual(2, actual.ServerGroup.Length);
@@ -114,7 +114,7 @@ namespace SqlSync.Connection.UnitTest
             File.WriteAllText(xmlFile, "Bad File contents");
 
             RegisteredServers actual;
-            actual = RegisteredServerHelper_Accessor.GetRegisteredServers();
+            actual = RegisteredServerHelper.GetRegisteredServers();
             Assert.IsNull(actual);
        }
         #endregion
@@ -219,7 +219,7 @@ namespace SqlSync.Connection.UnitTest
             string fileName = Path.GetTempFileName();
             bool expected = true;
             bool actual;
-            actual = RegisteredServerHelper_Accessor.SerializeRegisteredServers(regServers, fileName);
+            actual = RegisteredServerHelper.SerializeRegisteredServers(regServers, fileName);
             Assert.AreEqual(expected, actual);
             Assert.IsTrue(File.Exists(fileName));
 
@@ -246,7 +246,7 @@ namespace SqlSync.Connection.UnitTest
             File.SetAttributes(fileName, FileAttributes.ReadOnly);
             bool expected = false;
             bool actual;
-            actual = RegisteredServerHelper_Accessor.SerializeRegisteredServers(regServers, fileName);
+            actual = RegisteredServerHelper.SerializeRegisteredServers(regServers, fileName);
             Assert.AreEqual(expected, actual);
 
             File.SetAttributes(fileName, FileAttributes.Normal);
@@ -265,7 +265,7 @@ namespace SqlSync.Connection.UnitTest
             string fileName = Path.GetTempFileName();
             bool expected = false;
             bool actual;
-            actual = RegisteredServerHelper_Accessor.SerializeRegisteredServers(regServers, fileName);
+            actual = RegisteredServerHelper.SerializeRegisteredServers(regServers, fileName);
             Assert.AreEqual(expected, actual);
         }
 
@@ -281,7 +281,7 @@ namespace SqlSync.Connection.UnitTest
             string fileName = string.Empty;
             bool expected = false;
             bool actual;
-            actual = RegisteredServerHelper_Accessor.SerializeRegisteredServers(regServers, fileName);
+            actual = RegisteredServerHelper.SerializeRegisteredServers(regServers, fileName);
             Assert.AreEqual(expected, actual);
         }
         #endregion

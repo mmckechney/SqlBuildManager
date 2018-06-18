@@ -17,8 +17,8 @@ namespace SqlBuildManager.Console
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private BuildSettings settings = null;
-        private string settingsFile = string.Empty;
-        string[] args = new string[0];
+        internal string settingsFile = string.Empty;
+        internal string[] args = new string[0];
         public RemoteExecution(string settingsFile)
         {
             this.settingsFile = settingsFile;
@@ -163,7 +163,7 @@ namespace SqlBuildManager.Console
             }
             
         }
-        private static BuildSettings DeserializeBuildSettingsFile(string fileName)
+        internal static BuildSettings DeserializeBuildSettingsFile(string fileName)
         {
             BuildSettings tmpSettings = null;
             if (File.Exists(fileName))
@@ -197,7 +197,7 @@ namespace SqlBuildManager.Console
         /// <param name="args">Command line arguments array</param>
         /// <param name="setting">Populated build settings object</param>
         /// <returns>Zero (0) if validated, otherwise an error code</returns>
-        private static int DigestAndValidateCommandLineArguments(string[] args, out BuildSettings setting)
+        internal static int DigestAndValidateCommandLineArguments(string[] args, out BuildSettings setting)
         {
             CommandLineArgs cmd = CommandLine.ParseCommandLineArg(args);
             string[] errorMessages;

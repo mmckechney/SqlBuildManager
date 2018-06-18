@@ -77,7 +77,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string enterpriseFilePath = @"C:\thisfileshouldnotexist";
             bool expected = false; 
             bool actual;
-            actual = DefaultScriptHelper_Accessor.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
+            actual = DefaultScriptHelper.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
         }
 
@@ -92,7 +92,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string enterpriseFilePath = this.fileTwo;
             bool expected = true;
             bool actual;
-            actual = DefaultScriptHelper_Accessor.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
+            actual = DefaultScriptHelper.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
         }
 
@@ -107,7 +107,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string enterpriseFilePath = "";
             bool expected = false;
             bool actual;
-            actual = DefaultScriptHelper_Accessor.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
+            actual = DefaultScriptHelper.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
         }
 
@@ -122,7 +122,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string enterpriseFilePath = this.fileTwo;
             bool expected = false;
             bool actual;
-            actual = DefaultScriptHelper_Accessor.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
+            actual = DefaultScriptHelper.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
         }
         #endregion
@@ -153,7 +153,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<string> groupMemberships = new List<string>(new string[] {  "Group1", "Group2", "MyGroup" });
  
             DefaultScriptRegistryFile actual;
-            actual = DefaultScriptHelper_Accessor.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
+            actual = DefaultScriptHelper.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
             Assert.IsNotNull(actual);
             Assert.IsInstanceOfType(actual, typeof(DefaultScriptRegistryFile));
             Assert.AreEqual(Path.GetFileName(this.fileOne), actual.FileName);
@@ -184,7 +184,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<string> groupMemberships = new List<string>(new string[] { "MyGroup", "Group1", "Group2" });
 
             DefaultScriptRegistryFile actual;
-            actual = DefaultScriptHelper_Accessor.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
+            actual = DefaultScriptHelper.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
             Assert.IsNotNull(actual);
             Assert.IsInstanceOfType(actual, typeof(DefaultScriptRegistryFile));
             Assert.AreEqual(Path.GetFileName(this.fileOne), actual.FileName);
@@ -214,7 +214,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<string> groupMemberships = new List<string>(new string[] { "MyGroup", "Group1", "Group2" });
 
             DefaultScriptRegistryFile actual;
-            actual = DefaultScriptHelper_Accessor.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
+            actual = DefaultScriptHelper.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
             Assert.IsNull(actual);
 
         }
@@ -232,7 +232,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<string> groupMemberships = new List<string>(new string[] { "MyGroup", "Group1", "Group2" });
 
             DefaultScriptRegistryFile actual;
-            actual = DefaultScriptHelper_Accessor.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
+            actual = DefaultScriptHelper.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
             Assert.IsNull(actual);
 
         }
@@ -261,7 +261,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<string> groupMemberships = null;
 
             DefaultScriptRegistryFile actual;
-            actual = DefaultScriptHelper_Accessor.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
+            actual = DefaultScriptHelper.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
             Assert.IsNull(actual);
 
         }
@@ -290,7 +290,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<string> groupMemberships = new List<string>();
 
             DefaultScriptRegistryFile actual;
-            actual = DefaultScriptHelper_Accessor.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
+            actual = DefaultScriptHelper.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
             Assert.IsNull(actual);
 
         }
@@ -309,7 +309,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             File.WriteAllText(filePath, Properties.Resources.DefaultScriptRegistry);
  
             DefaultScriptRegistry actual;
-            actual = DefaultScriptHelper_Accessor.GetEnterpriseRegistrySetting(filePath);
+            actual = DefaultScriptHelper.GetEnterpriseRegistrySetting(filePath);
             File.Delete(filePath);
             Assert.IsNotNull(actual);
             Assert.IsInstanceOfType(actual, typeof(SqlSync.SqlBuild.DefaultScripts.DefaultScriptRegistry));
@@ -327,7 +327,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string filePath = @"C:\" + Guid.NewGuid().ToString();
 
             DefaultScriptRegistry actual;
-            actual = DefaultScriptHelper_Accessor.GetEnterpriseRegistrySetting(filePath);
+            actual = DefaultScriptHelper.GetEnterpriseRegistrySetting(filePath);
             Assert.IsNull(actual);
         }
 
@@ -341,7 +341,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string filePath = this.fileOne;
 
             DefaultScriptRegistry actual;
-            actual = DefaultScriptHelper_Accessor.GetEnterpriseRegistrySetting(filePath);
+            actual = DefaultScriptHelper.GetEnterpriseRegistrySetting(filePath);
             Assert.IsNull(actual);
         }
         #endregion
@@ -453,7 +453,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string enterpriseFilePath = this.fileTwo;
             bool expected = false;
             bool actual;
-            actual = DefaultScriptHelper_Accessor.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
+            actual = DefaultScriptHelper.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
    
         }
@@ -469,7 +469,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string enterpriseFilePath = @"C:\thisfileshouldnotexist";
             bool expected = true;
             bool actual;
-            actual = DefaultScriptHelper_Accessor.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
+            actual = DefaultScriptHelper.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
 
         }
@@ -485,7 +485,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string enterpriseFilePath = this.fileOne;
             bool expected = true;
             bool actual;
-            actual = DefaultScriptHelper_Accessor.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
+            actual = DefaultScriptHelper.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
 
         }
@@ -501,7 +501,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string enterpriseFilePath = this.fileTwo;
             bool expected = false;
             bool actual;
-            actual = DefaultScriptHelper_Accessor.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
+            actual = DefaultScriptHelper.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
         }
         #endregion

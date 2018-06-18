@@ -60,7 +60,7 @@ namespace SqlBuildManager.Console
             log.Info(message);
         }
 
-        private static CommandLineArgs ValidateFlags(CommandLineArgs cmdLine)
+        internal static CommandLineArgs ValidateFlags(CommandLineArgs cmdLine)
         {
 
             if (string.IsNullOrEmpty(cmdLine.GoldDatabase))

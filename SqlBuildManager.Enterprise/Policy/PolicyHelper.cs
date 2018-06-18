@@ -18,8 +18,8 @@ namespace SqlBuildManager.Enterprise.Policy
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public const string LineNumberToken = "{lineNumber}";
-        private static Dictionary<string, p.IScriptPolicy> allPolicies;
-        private static List<p.IScriptPolicy> activePolicies = null;
+        internal static Dictionary<string, p.IScriptPolicy> allPolicies;
+        internal static List<p.IScriptPolicy> activePolicies = null;
         static PolicyHelper()
         {
             allPolicies = new Dictionary<string, p.IScriptPolicy>();

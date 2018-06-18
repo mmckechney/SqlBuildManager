@@ -103,7 +103,7 @@ namespace SqlBuildManager.Console.UnitTest
             CommandLineArgs expected = null; // TODO: Initialize to an appropriate value
             CommandLineArgs actual;
             var cmdLine = CommandLine.ParseCommandLineArg(args);
-            actual = Synchronize_Accessor.ValidateFlags(cmdLine);
+            actual = Synchronize.ValidateFlags(cmdLine);
             Assert.AreEqual(expected, actual);
             Assert.Inconclusive("Verify the correctness of this test method.");
         }

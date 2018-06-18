@@ -216,7 +216,7 @@ is the script
 for my 
 test";
             string actual;
-            actual = CodeReviewManager_Accessor.GetConsolidatedBase(codeReviewId, reviewer, reviewDate, comment, reviewNumber, reviewStatus, scriptText);
+            actual = CodeReviewManager.GetConsolidatedBase(codeReviewId, reviewer, reviewDate, comment, reviewNumber, reviewStatus, scriptText);
             Assert.AreEqual(expected, actual);
 
         }
@@ -397,7 +397,7 @@ a script";
 
             string expected = "9CC8C5F6E0A4E17AFE55B5B7CBCB95A018E77CBE";
             string actual;
-            actual = CodeReviewManager_Accessor.ValidationKey(codeReviewRow);
+            actual = CodeReviewManager.ValidationKey(codeReviewRow);
             Assert.AreEqual(expected, actual);
         }
 
@@ -419,7 +419,7 @@ a script";
 
             string expected = "9CC8C5F6E0A4E17AFE55B5B7CBCB95A018E77CBE";
             string actual;
-            actual = CodeReviewManager_Accessor.ValidationKey(codeReviewRow);
+            actual = CodeReviewManager.ValidationKey(codeReviewRow);
             Assert.AreNotEqual(expected, actual);
         }
 
@@ -444,7 +444,7 @@ a script";
             codeReviewRow.ValidationKey = "NOT_REALLY_VALID_BUT_IM_NOT_CHECKING";
             codeReviewRow.ScriptId = "B42B8EE5-6C09-4E53-A6CC-425BD525FF98";
             CodeReview.CodeReview review = new CodeReview.CodeReview();
-            CodeReviewManager_Accessor.SyncXmlReviewDatatoEfReview(codeReviewRow, review);
+            CodeReviewManager.SyncXmlReviewDatatoEfReview(codeReviewRow, review);
 
 
             Assert.AreEqual(codeReviewRow.CodeReviewId,review.CodeReviewId);
@@ -591,7 +591,7 @@ a script";
         //public void ConnectionTest()
         //{
         //    EntityConnection actual;
-        //    actual = CodeReviewManager_Accessor.Connection;
+        //    actual = CodeReviewManager.Connection;
         //    Assert.Inconclusive("Verify the correctness of this test method.");
         //}
 
@@ -604,7 +604,7 @@ a script";
         //{
         //    SqlCodeReviewEntities expected = null; // TODO: Initialize to an appropriate value
         //    SqlCodeReviewEntities actual;
-        //    actual = CodeReviewManager_Accessor.GetNewEntity();
+        //    actual = CodeReviewManager.GetNewEntity();
         //    Assert.AreEqual(expected, actual);
         //    Assert.Inconclusive("Verify the correctness of this test method.");
         //}

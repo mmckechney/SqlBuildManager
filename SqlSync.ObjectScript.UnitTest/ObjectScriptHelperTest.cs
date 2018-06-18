@@ -107,7 +107,7 @@ namespace SqlSync.ObjectScript.UnitTest
         [DeploymentItem("SqlSync.ObjectScript.dll")]
         public void CollateScriptWithSchemaCheckTest_NothingToDo()
         {
-            ObjectScriptHelper_Accessor target = new ObjectScriptHelper_Accessor(new ConnectionData());
+            ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
             StringCollection coll = new StringCollection();
             coll.Add("This does not start with IF NOT EXISTS");
             coll.Add("Neither does this");
@@ -134,7 +134,7 @@ GO
         [DeploymentItem("SqlSync.ObjectScript.dll")]
         public void CollateScriptWithSchemaCheckTest_HasObjectIdButNothingToDo()
         {
-            ObjectScriptHelper_Accessor target = new ObjectScriptHelper_Accessor(new ConnectionData());
+            ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
             StringCollection coll = new StringCollection();
             coll.Add(@"IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MyObject]') AND type in (N'U'))
 BEGIN
@@ -160,7 +160,7 @@ GO
         [DeploymentItem("SqlSync.ObjectScript.dll")]
         public void CollateScriptWithSchemaCheckTest_NeedsSchema()
         {
-            ObjectScriptHelper_Accessor target = new ObjectScriptHelper_Accessor(new ConnectionData());
+            ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
             StringCollection coll = new StringCollection();
             coll.Add(@"IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[MyObject]') AND type in (N'U'))
 BEGIN
@@ -182,7 +182,7 @@ CREATE TABLE [dbo].[MyObject](
         [DeploymentItem("SqlSync.ObjectScript.dll")]
         public void CollateScriptWithSchemaCheckTest_MultipleGoodWithSchema()
         {
-            ObjectScriptHelper_Accessor target = new ObjectScriptHelper_Accessor(new ConnectionData());
+            ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
             StringCollection coll = new StringCollection();
             coll.Add(@"IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MyObject_Fk1]') AND parent_object_id = OBJECT_ID(N'[dbo].[MyObject]'))
 ALTER TABLE [dbo].[MyObject]  WITH CHECK ADD  CONSTRAINT [FK_MyObject_Fk1] FOREIGN KEY([MyObjectType])
@@ -207,7 +207,7 @@ GO
         [DeploymentItem("SqlSync.ObjectScript.dll")]
         public void CollateScriptWithSchemaCheckTest_MultipleNeedingSchema()
         {
-            ObjectScriptHelper_Accessor target = new ObjectScriptHelper_Accessor(new ConnectionData());
+            ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
             StringCollection coll = new StringCollection();
             coll.Add(@"IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[FK_MyObject_Fk1]') AND parent_object_id = OBJECT_ID(N'[MyObject]'))
 ALTER TABLE [dbo].[MyObject]  WITH CHECK ADD  CONSTRAINT [FK_MyObject_Fk1] FOREIGN KEY([MyObjectType])

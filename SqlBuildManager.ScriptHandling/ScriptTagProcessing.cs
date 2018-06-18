@@ -41,7 +41,7 @@ namespace SqlBuildManager.ScriptHandling
             return atLeastOneUpdated;
 
         }
-        private static string InferScriptTagFromFileName(string scriptFileName, List<string> regexFormats)
+        internal static string InferScriptTagFromFileName(string scriptFileName, List<string> regexFormats)
         {
             foreach (string regexFormat in regexFormats)
             {
@@ -67,7 +67,7 @@ namespace SqlBuildManager.ScriptHandling
         /// <param name="scriptContents">The text of the script</param>
         /// <param name="regexFormats">List of regular expression formats</param>
         /// <returns>The tag string found, empty string if not found</returns>
-        private static string InferScriptTagFromFileContents(string scriptContents, List<string> regexFormats)
+        internal static string InferScriptTagFromFileContents(string scriptContents, List<string> regexFormats)
         {
             if (regexFormats == null || regexFormats.Count == 0)
                 return string.Empty;

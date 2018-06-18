@@ -50,7 +50,7 @@ namespace SqlBuildManager.Enterprise
             set { EnterpriseConfigHelper.enterpriseConfig = value; }
         }
 
-        private static EnterpriseConfiguration LoadEnterpriseConfiguration()
+        internal static EnterpriseConfiguration LoadEnterpriseConfiguration()
         {
             if(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"] != null &&
                 System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"].Length > 0)
@@ -116,7 +116,7 @@ namespace SqlBuildManager.Enterprise
 
            
         }
-        private static EnterpriseConfiguration DeserializeConfiguration(string configuration)
+        internal static EnterpriseConfiguration DeserializeConfiguration(string configuration)
         {
             try
             {

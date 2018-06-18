@@ -38,7 +38,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string userName = "mmckechn";
             string expected = string.Empty; // TODO: Initialize to an appropriate value
             string actual;
-            actual = AdHelper_Accessor.GetDistinguishedName(userName);
+            actual = AdHelper.GetDistinguishedName(userName);
             Assert.IsTrue(actual.Length > 0, "Expected a DN back. If this test failed, check the userName value and make sure you are connected to a domain.");
 
         }
@@ -52,7 +52,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string userName = "ThisISJUnk";
             string expected = string.Empty; // TODO: Initialize to an appropriate value
             string actual;
-            actual = AdHelper_Accessor.GetDistinguishedName(userName);
+            actual = AdHelper.GetDistinguishedName(userName);
             Assert.IsTrue(actual.Length == 0, "No DN was expected a back.");
 
         }

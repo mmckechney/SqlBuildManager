@@ -40,7 +40,7 @@ namespace SqlBuildManager.Enterprise.CodeReview
                 codeReviewRow.ReviewStatus,
                 scriptText);
         }
-        private static string GetConsolidatedBase(Guid codeReviewId, string reviewer, DateTime reviewDate, string comment, string reviewNumber, short reviewStatus, string scriptText)
+        internal static string GetConsolidatedBase(Guid codeReviewId, string reviewer, DateTime reviewDate, string comment, string reviewNumber, short reviewStatus, string scriptText)
         {
             string consolidated = String.Format(colsolidatedFormat, codeReviewId.ToString(), reviewer, reviewDate.ToString(), comment, reviewNumber, reviewStatus, scriptText, randomStuff1, randomStuff2);
             return consolidated;
@@ -86,7 +86,7 @@ namespace SqlBuildManager.Enterprise.CodeReview
             return ValidationKey(codeReviewRow);
 
         }
-        private static string ValidationKey(SqlSyncBuildData.CodeReviewRow codeReviewRow)
+        internal static string ValidationKey(SqlSyncBuildData.CodeReviewRow codeReviewRow)
         {
             string x = String.Format(validationFormat, 
                 codeReviewRow.CodeReviewId.ToString(), 
@@ -398,7 +398,7 @@ namespace SqlBuildManager.Enterprise.CodeReview
             return buildData;
         }
 
-        private static void SyncXmlReviewDatatoEfReview(SqlSyncBuildData.CodeReviewRow row, CodeReview review)
+        internal static void SyncXmlReviewDatatoEfReview(SqlSyncBuildData.CodeReviewRow row, CodeReview review)
         {
             //var rows = codeReviewTable.Where(t => t.CodeReviewId == codeReviewId);
             //if (rows.Count() > 0)

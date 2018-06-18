@@ -24,14 +24,14 @@ namespace SqlSync.SqlBuild
 	public class SqlBuildHelper
 	{
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private bool isTransactional = true;
-        private List<DatabaseOverride> targetDatabaseOverrides = null;
+        internal bool isTransactional = true;
+        internal List<DatabaseOverride> targetDatabaseOverrides = null;
         public List<DatabaseOverride> TargetDatabaseOverrides
         {
             get { return targetDatabaseOverrides; }
             set { targetDatabaseOverrides = value; }
         }
-        private BackgroundWorker bgWorker;
+        internal BackgroundWorker bgWorker;
 		/// <summary>
 		/// Indicator for external callers that an error occurred. Can also subscribe to ScriptingErrorEvent
 		/// </summary>
@@ -39,7 +39,7 @@ namespace SqlSync.SqlBuild
 		/// <summary>
 		/// DataSet holding build configuration data
 		/// </summary>
-		private SqlSyncBuildData buildData;
+		internal SqlSyncBuildData buildData;
 		/// <summary>
 		/// Data collection used to pass connection data
 		/// </summary>
@@ -51,7 +51,7 @@ namespace SqlSync.SqlBuild
 		/// <summary>
 		/// User description of the build
 		/// </summary>
-		private string buildDescription;
+		internal string buildDescription;
 		/// <summary>
 		/// Index where the build should start
 		/// </summary>
@@ -63,7 +63,7 @@ namespace SqlSync.SqlBuild
 		/// <summary>
 		/// Name of the Sql Build project (sbm) file
 		/// </summary>
-		private string projectFileName; 
+		internal string projectFileName; 
 		/// <summary>
 		/// Holding string for the last message from Sql server
 		/// </summary>
@@ -79,11 +79,11 @@ namespace SqlSync.SqlBuild
 		/// <summary>
 		/// Flag for determining if this is a trial (rollback)
 		/// </summary>
-		private bool isTrialBuild = false;
+		internal bool isTrialBuild = false;
 		/// <summary>
 		/// Name of the file being used to store scripts
 		/// </summary>
-		private string scriptLogFileName;
+		internal string scriptLogFileName;
 		/// <summary>
 		/// String to hold the Sql event messages
 		/// </summary>
@@ -95,7 +95,7 @@ namespace SqlSync.SqlBuild
 		/// <summary>
 		/// Index of the single script file to run (if single file run)
 		/// </summary>
-		private double[] runItemIndexes = new double[0];
+		internal double[] runItemIndexes = new double[0];
 		/// <summary>
 		/// Id of the current build
 		/// </summary>
@@ -103,11 +103,11 @@ namespace SqlSync.SqlBuild
 		/// <summary>
 		/// Flag use to set "script only" setting
 		/// </summary>
-		private bool runScriptOnly = false;
+		internal bool runScriptOnly = false;
 		/// <summary>
 		/// Name of the build file (.sbm)
 		/// </summary>
-		private string buildFileName = string.Empty;
+		internal string buildFileName = string.Empty;
 		/// <summary>
 		/// Names of scripts selected in the GUI
 		/// </summary>
@@ -125,7 +125,7 @@ namespace SqlSync.SqlBuild
         /// <summary>
         /// The hash signature of the build package scripts
         /// </summary>
-        private string buildPackageHash = string.Empty;
+        internal string buildPackageHash = string.Empty;
         /// <summary>
         /// Database to write commits to if an alternate logging database has been specified
         /// </summary>
@@ -147,9 +147,9 @@ namespace SqlSync.SqlBuild
         /// </summary>
         private string buildRequestedBy = string.Empty;
 
-		private string buildHistoryXmlFile = string.Empty;
-		private SqlSyncBuildData buildHistoryData= null;
-        private string externalScriptLogFileName = string.Empty;
+		internal string buildHistoryXmlFile = string.Empty;
+		internal SqlSyncBuildData buildHistoryData= null;
+        internal string externalScriptLogFileName = string.Empty;
 		public SqlBuildHelper(ConnectionData data) :this(data, true, string.Empty, true)
 		{
 		}
@@ -229,7 +229,7 @@ namespace SqlSync.SqlBuild
         /// <param name="isMultiDbRun">Whether or not this is a UI based multi-database execution run</param>
         /// <param name="scriptBatchColl">Pre-batched script collection. Provided by console based threaded execution</param>
         /// <returns>BuildRow object with the result data.</returns>
-        private SqlSyncBuildData.BuildRow ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
+        internal SqlSyncBuildData.BuildRow ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
         {
             this.bgWorker = bgWorker;
             this.ErrorOccured = false;
@@ -353,7 +353,7 @@ namespace SqlSync.SqlBuild
         /// Sets the parameters for the build run 
         /// </summary>
         /// <param name="workEventArgs"></param>
-        private void PrepareBuildForRun(string serverName, bool isMultiDbRun,ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
+        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun,ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
 		{
 
 			//Make sure the project file is not read-only
@@ -421,7 +421,7 @@ namespace SqlSync.SqlBuild
         /// <param name="myBuild">The build row that has been prepared and is used to contain the build history data</param>
         /// <param name="serverName">The name of the server that will be used for the build</param>
         /// <param name="workEventArgs"></param>
-        private SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun,  ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
+        internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun,  ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
 		{
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Proceeding with Build"));
             log.DebugFormat("Processing with build for build Package hash = {0}", this.buildPackageHash);
@@ -867,7 +867,7 @@ namespace SqlSync.SqlBuild
 
             return myBuild;
 		}
-        private string PerformScriptTokenReplacement(string script)
+        internal string PerformScriptTokenReplacement(string script)
         {
             if (ScriptTokens.regBuildDescription.Match(script).Success)
             {
@@ -893,13 +893,13 @@ namespace SqlSync.SqlBuild
             return script;
 
         }
-        private void PerformRunScriptFinalization(bool buildFailure, SqlSyncBuildData.BuildRow myBuild, ref DoWorkEventArgs workEventArgs)
+        internal void PerformRunScriptFinalization(bool buildFailure, SqlSyncBuildData.BuildRow myBuild, ref DoWorkEventArgs workEventArgs)
         {
             List<SqlSyncBuildData.BuildRow> tmp = new List<SqlSyncBuildData.BuildRow>();
             tmp.Add(myBuild);
             PerformRunScriptFinalization(buildFailure, tmp, null,ref workEventArgs);
         }
-        private void PerformRunScriptFinalization(bool buildFailure, List<SqlSyncBuildData.BuildRow> myBuilds,MultiDbData multiDbRunData, ref DoWorkEventArgs workEventArgs)
+        internal void PerformRunScriptFinalization(bool buildFailure, List<SqlSyncBuildData.BuildRow> myBuilds,MultiDbData multiDbRunData, ref DoWorkEventArgs workEventArgs)
         {
             DateTime end = DateTime.Now;
             for(int i=0;i<myBuilds.Count;i++)
@@ -1049,7 +1049,7 @@ namespace SqlSync.SqlBuild
         /// </summary>
         /// <param name="committedScriptIds"></param>
         /// <returns></returns>
-        private bool RecordCommittedScripts(List<CommittedScript> committedScripts)
+        internal bool RecordCommittedScripts(List<CommittedScript> committedScripts)
 		{
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Scripts to Log"));
 			
@@ -1123,7 +1123,7 @@ namespace SqlSync.SqlBuild
         /// </summary>
         /// <param name="defaultDatabase">The default database set up in the SBM configuration</param>
         /// <returns>Actual database to execute against</returns>coo
-        private string GetTargetDatabase(string defaultDatabase)
+        internal string GetTargetDatabase(string defaultDatabase)
         {
             if (this.targetDatabaseOverrides != null)
             {
@@ -1231,7 +1231,7 @@ namespace SqlSync.SqlBuild
         /// </summary>
         /// <param name="conn">Connection object to the target database</param>
         /// <returns></returns>
-        private bool LogTableExists(SqlConnection conn)
+        internal bool LogTableExists(SqlConnection conn)
         {
             try
             {
@@ -1453,7 +1453,7 @@ namespace SqlSync.SqlBuild
         /// <param name="scriptId">Guid for the script in question</param>
         /// <param name="connData">The BuildConnectData for the target database</param>
 		/// <returns>True if there is a block</returns>
-        private bool GetBlockingSqlLog(System.Guid scriptId ,ref BuildConnectData connData)
+        internal bool GetBlockingSqlLog(System.Guid scriptId ,ref BuildConnectData connData)
 		{
             try
             {
@@ -1861,7 +1861,7 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region ## SQL Connection Helper Methods ##
-        private BuildConnectData GetConnectionDataClass(string serverName, string databaseName)
+        internal BuildConnectData GetConnectionDataClass(string serverName, string databaseName)
 		{
 			//always Upper case the database name
             string databaseKey = serverName.ToUpper() + ":" + databaseName.ToUpper();
@@ -1885,7 +1885,7 @@ namespace SqlSync.SqlBuild
                 return (BuildConnectData)this.connectDictionary[databaseKey];
 			}
 		}
-		private bool CommitBuild()
+		internal bool CommitBuild()
 		{
             //If we're not in a transaction, they've already committed.
             if (!this.isTransactional)
@@ -1921,7 +1921,7 @@ namespace SqlSync.SqlBuild
 
 			return success;
 		}
-		private bool RollbackBuild()
+		internal bool RollbackBuild()
 		{
             //If we're not in a transaction, we can't roll back...
             if (!this.isTransactional)
@@ -2070,7 +2070,7 @@ namespace SqlSync.SqlBuild
             }
 			return null;
 		}
-		private void SaveBuildDataSet(bool fireSavedEvent)
+		internal void SaveBuildDataSet(bool fireSavedEvent)
 		{
 			bgWorker.ReportProgress(0,new GeneralStatusEventArgs("Saving Build File Updates"));
 
@@ -2135,7 +2135,7 @@ namespace SqlSync.SqlBuild
         }
 
 
-		private void SqlBuildHelper_ScriptLogWriteEvent(object sender, ScriptLogEventArgs e)
+		internal void SqlBuildHelper_ScriptLogWriteEvent(object sender, ScriptLogEventArgs e)
 		{
             if (this.scriptLogFileName == null)
                 throw new NullReferenceException("Attempting to write to Script Log File, but \"scriptLogFileName\" field value is null");

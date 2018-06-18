@@ -46,7 +46,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "CR987654";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileContents(scriptContents, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileContents(scriptContents, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }
@@ -61,7 +61,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "P23533";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileContents(scriptContents, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileContents(scriptContents, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }
@@ -77,7 +77,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = null;
             string expected = string.Empty;
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileContents(scriptContents, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileContents(scriptContents, regexFormats);
             Assert.AreEqual(expected, actual);
         }
         #endregion
@@ -93,7 +93,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "CR2123456";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileName(scriptFileName, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
            
         }
@@ -107,7 +107,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "CR2123456";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileName(scriptFileName, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }
@@ -121,7 +121,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "CR2123456";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileName(scriptFileName, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }
@@ -135,7 +135,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "CR2123456";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileName(scriptFileName, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }
@@ -149,7 +149,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "CR2123456";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileName(scriptFileName, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }
@@ -163,7 +163,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "CR2123456";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileName(scriptFileName, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }
@@ -174,7 +174,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileName(scriptFileName, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }
@@ -188,7 +188,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileName(scriptFileName, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }
@@ -202,7 +202,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string expected = "P2123456";
             string actual;
-            actual = ScriptTagProcessing_Accessor.InferScriptTagFromFileName(scriptFileName, regexFormats);
+            actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
 
         }

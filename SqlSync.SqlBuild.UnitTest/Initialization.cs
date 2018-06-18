@@ -324,25 +324,25 @@ namespace SqlSync.SqlBuild.UnitTest
 
         }
 
-        public SqlBuildHelper_Accessor CreateSqlBuildHelper(SqlSyncBuildData buildData)
+        public SqlBuildHelper CreateSqlBuildHelper(SqlSyncBuildData buildData)
         {
-            SqlBuildHelper_Accessor helper = new SqlBuildHelper_Accessor(this.connData);
+            SqlBuildHelper helper = new SqlBuildHelper(this.connData);
             return SetSqlBuildHelperValues(helper,  buildData);
         }
-        public SqlBuildHelper_Accessor CreateSqlBuildHelper_NonTransactional(SqlSyncBuildData buildData, bool withScriptLog)
+        public SqlBuildHelper CreateSqlBuildHelper_NonTransactional(SqlSyncBuildData buildData, bool withScriptLog)
         {
-            SqlBuildHelper_Accessor helper = new SqlBuildHelper_Accessor(this.connData, withScriptLog, string.Empty, false);
+            SqlBuildHelper helper = new SqlBuildHelper(this.connData, withScriptLog, string.Empty, false);
             return SetSqlBuildHelperValues(helper, buildData);
         }
-        public SqlBuildHelper_Accessor CreateSqlBuildHelper_Basic()
+        public SqlBuildHelper CreateSqlBuildHelper_Basic()
         {
-            SqlBuildHelper_Accessor helper = new SqlBuildHelper_Accessor(this.connData);
+            SqlBuildHelper helper = new SqlBuildHelper(this.connData);
             return SetSqlBuildHelperValues(helper, null);
         }
 
-        public SqlBuildHelper_Accessor CreateSqlBuildHelperAccessor(SqlSyncBuildData buildData)
+        public SqlBuildHelper CreateSqlBuildHelperAccessor(SqlSyncBuildData buildData)
         {
-            SqlBuildHelper_Accessor target = new SqlBuildHelper_Accessor(this.connData);
+            SqlBuildHelper target = new SqlBuildHelper(this.connData);
             
 
             //Set fields
@@ -370,7 +370,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             return target;
         }
-        public SqlBuildHelper_Accessor SetSqlBuildHelperValues(SqlBuildHelper_Accessor sbh, SqlSyncBuildData buildData)
+        public SqlBuildHelper SetSqlBuildHelperValues(SqlBuildHelper sbh, SqlSyncBuildData buildData)
         {
             BackgroundWorker bg = new BackgroundWorker();
             bg.WorkerReportsProgress = true;
@@ -392,7 +392,7 @@ namespace SqlSync.SqlBuild.UnitTest
             sbh.buildHistoryXmlFile = buildHistoryXmlFile;
             return sbh;
         }
-        public SqlSyncBuildData.BuildRow GetRunBuildRow(SqlBuildHelper_Accessor sqlBuildHelper)
+        public SqlSyncBuildData.BuildRow GetRunBuildRow(SqlBuildHelper sqlBuildHelper)
         {
             SqlSyncBuildData histData = sqlBuildHelper.buildHistoryData;
             return histData.Build.NewBuildRow();

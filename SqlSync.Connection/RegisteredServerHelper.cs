@@ -67,7 +67,7 @@ namespace SqlSync.Connection
             RegisteredServerHelper.registeredServerData = regServers;
             return SerializeRegisteredServers(regServers, RegisteredServerHelper.RegisteredServerFileName);
         }
-        private static RegisteredServers GetRegisteredServers()
+        internal static RegisteredServers GetRegisteredServers()
         {
             string localRegisteredServerPath = SqlBuildManager.Logging.Configure.AppDataPath + @"\RegisteredServers.xml";
             string serverFileContents = string.Empty;
@@ -106,7 +106,7 @@ namespace SqlSync.Connection
             }
         }
 
-        private static RegisteredServers DeserializeRegisteredServers(string serverFileContents)
+        internal static RegisteredServers DeserializeRegisteredServers(string serverFileContents)
         {
             try
             {
@@ -125,7 +125,7 @@ namespace SqlSync.Connection
 
             return null;
         }
-        private static bool SerializeRegisteredServers(RegisteredServers regServers, string fileName)
+        internal static bool SerializeRegisteredServers(RegisteredServers regServers, string fileName)
         {
             if (fileName == null || fileName.Length == 0)
             {
