@@ -24,7 +24,7 @@ General Authentication settings (/Action={Build|Threaded|Remote|Batch|GetDiffere
     /Database="<database name>"       1) Name of a single database to run against or 2) source database for scripting or runtime configuration
     /Server="<server name>"           1) Name of a server for single database run or 2) source server for scripting or runtime configuration
 
-General Runtime settings (/Action={Build|Threaded|Remote|Batch})
+General Runtime settings (/Action={Build|Threaded|Remote})
     /PackageName="<filename>"         Name of the .sbm or .sbx file to execute
     /RootLoggingPath="<directory>"    Directory to save execution logs (for threaded and remote executions)
     /Trial=(true|false)               Whether or not to run in trial mode (default is false)
@@ -48,12 +48,17 @@ Remote Execution settings (/Action=Remote)
     /RemoteDbErrorList=<remote name>|all           Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers
     /RemoteErrorDetail=<server:db>|<instance>|all  Retrieves the error detail for each instance in error. Is "server:db" is provided, full log detail is returned
 
-Dacpac Execution (/Action={Threaded|Remote|Batch})
+Dacpac Execution (/Action={Threaded|Remote})
     /PlatinumDacpac="<filename>"            Name of the dacpac containing the platinum schema
     /TargetDacpac="<filename>"              Name of the dacpac containing the schema of the database to be updated
     /ForceCustomDacPac=(true|false)         *USE WITH CAUTION! (/Action=Threaded only)This will force the dacpac extraction and creation of custom scripts for EVERY target database! Your execution will take much longer.
     /PlatinumDbSource="<database name>"     Instead of a formally built Platinum Dacpac, target this database as having the desired state schema
     /PlatinumServerSource="<server name>"   Instead of a formally built Platinum Dacpac, target a database on this server as having the desired state schema
+
+Batch Execution (/Action=Batch)
+    /PlatinumDacpac="<filename>"      Name of the dacpac containing the platinum schema
+    /PackageName="<filename>"         Name of the .sbm or .sbx file to execute
+    /RootLoggingPath="<directory>"    Directory to save execution logs (for threaded and remote executions)
 
 Script Extraction from Dacpac (/Action=ScriptExtract)
     /PlatinumDacpac="<filename>"            Name of the dacpac containing the platinum schema

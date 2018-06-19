@@ -9,11 +9,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.MultiDb;
+using System.Text;
+
 namespace SqlBuildManager.Console.Batch
 {
     public class Execution
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private string[] args;
 
 
         // Update the Batch and Storage account credential strings below with the values unique to your accounts.
@@ -34,7 +38,14 @@ namespace SqlBuildManager.Console.Batch
         private const int PoolNodeCount = 2;
         private const string PoolVMSize = "STANDARD_A1_v2";
 
-       public void StartBatch(string[] args)
+        private const string baseTargetFormat = "target_{0}.cfg";
+
+        public Execution(string[] args)
+        {
+            this.args = args;
+        }
+
+        public int StartBatch()
         {
 
             if (String.IsNullOrEmpty(BatchAccountName) ||
@@ -46,6 +57,26 @@ namespace SqlBuildManager.Console.Batch
                 throw new InvalidOperationException("One or more account credential strings have not been populated. Please ensure that your Batch and Storage account credentials have been specified.");
             }
 
+
+            log.Info("Validating command parameters");
+            CommandLineArgs cmdLine = CommandLine.ParseCommandLineArg(args);
+            string[] errorMessages;
+            int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
+            if (tmpReturn != 0)
+            {
+                foreach(var msg in errorMessages)
+                {
+                    log.Error(msg);
+                }
+                return tmpReturn;
+            }
+
+            tmpReturn = BatchCommandValidation.ValidateBatchCommandLine(cmdLine);
+            if (tmpReturn != 0)
+            {
+                return tmpReturn;
+            }
+
             try
             {
 
@@ -54,8 +85,7 @@ namespace SqlBuildManager.Console.Batch
                 timer.Start();
 
                 // Construct the Storage account connection string
-                string storageConnectionString = String.Format("DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}",
-                                                                StorageAccountName, StorageAccountKey);
+                string storageConnectionString = String.Format("DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}", StorageAccountName, StorageAccountKey);
 
                 // Retrieve the storage account
                 CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
@@ -71,12 +101,32 @@ namespace SqlBuildManager.Console.Batch
                 container.CreateIfNotExists();
 
                 // The collection of data files that are to be processed by the tasks
-                List<string> inputFilePaths = new List<string>
+                List<string> inputFilePaths = new List<string>();
+                if(!string.IsNullOrEmpty(cmdLine.PlatinumDacpac))
                 {
-                    @"F:\TempFiles\test1.txt",
-                    @"F:\TempFiles\test2.txt",
-                    @"F:\TempFiles\test3.txt"
-                };
+                    inputFilePaths.Add(cmdLine.PlatinumDacpac);
+                }
+                if (!string.IsNullOrEmpty(cmdLine.PackageName))
+                {
+                    inputFilePaths.Add(cmdLine.PackageName);
+                }
+                if (!string.IsNullOrEmpty(cmdLine.MultiDbRunConfigFileName))
+                {
+                    inputFilePaths.Add(cmdLine.MultiDbRunConfigFileName);
+                }
+
+                //Get the list of DB targets and distribute across batch count
+                var allTargets = GetTargetConfigValues(cmdLine.MultiDbRunConfigFileName);
+                var splitTargets = SplitLoadEvenly(allTargets, Execution.PoolNodeCount);
+
+                //Write out each split file
+                string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
+                for (int i = 0; i < splitTargets.Count; i++)
+                {
+                    var tmpName = rootPath + string.Format(baseTargetFormat, i);
+                    File.WriteAllLines(tmpName, splitTargets[i]);
+                    inputFilePaths.Add(tmpName);
+                }
 
                 // Upload the data files to Azure Storage. This is the data that will be processed by each of the tasks that are
                 // executed on the compute nodes within the pool.
@@ -86,6 +136,9 @@ namespace SqlBuildManager.Console.Batch
                 {
                     inputFiles.Add(UploadFileToContainer(blobClient, inputContainerName, filePath));
                 }
+
+                //Create the individual command lines for each node
+                IList<string> commandLines = CompileCommandLines(args,cmdLine, Execution.PoolNodeCount);
 
                 // Get a Batch client using account creds
 
@@ -99,7 +152,7 @@ namespace SqlBuildManager.Console.Batch
                     ImageReference imageReference = new ImageReference(
                         publisher: "MicrosoftWindowsServer",
                         offer: "WindowsServer",
-                        sku: "2012-R2-datacenter-smalldisk",
+                        sku: "2016-Datacenter-with-containers",
                         version: "latest");
 
                     VirtualMachineConfiguration virtualMachineConfiguration =
@@ -162,14 +215,13 @@ namespace SqlBuildManager.Console.Batch
 
                     // Create each of the tasks to process one of the input files. 
 
-                    for (int i = 0; i < inputFiles.Count; i++)
+                    for (int i = 0; i < commandLines.Count; i++)
                     {
                         string taskId = String.Format("Task{0}", i);
-                        string inputFilename = inputFiles[i].FilePath;
-                        string taskCommandLine = String.Format("cmd /c type {0}", inputFilename);
+                        string taskCommandLine = commandLines[i];
 
                         CloudTask task = new CloudTask(taskId, taskCommandLine);
-                        task.ResourceFiles = new List<ResourceFile> { inputFiles[i] };
+                        task.ResourceFiles = inputFiles;
                         tasks.Add(task);
                     }
 
@@ -227,7 +279,50 @@ namespace SqlBuildManager.Console.Batch
                 log.InfoFormat("Sample complete");
             }
 
+            return 0;
+
         }
+
+        private IList<string> CompileCommandLines(string[] args, CommandLineArgs cmdLine, int poolNodeCount)
+        {
+            List<string> commandLines = new List<string>();
+            //Need to replace the paths to 
+            for (int i=0; i< poolNodeCount; i++)
+            {
+                StringBuilder sb = new StringBuilder("cmd /c SqlBuildManager.Console.exe");
+                foreach(var arg in args)
+                {
+                    if (arg.ToLower().Contains("/action"))
+                    {
+                        sb.Append(" /Action=Threaded");
+                    }
+                    else if (arg.ToLower().Contains("/packagename"))
+                    {
+                        sb.Append(" /PackageName=" + Path.GetFileName(cmdLine.PackageName));
+                    }
+                    else if (arg.ToLower().Contains("/platinumdacpac"))
+                    {
+                        sb.Append(" /PlatinumDacpac=" + Path.GetFileName(cmdLine.PlatinumDacpac));
+                    }
+                    else if (arg.ToLower().Contains("/rootloggingpath"))
+                    {
+                        sb.Append(" /RootLoggingPath=\\");
+                    }
+                    else if (arg.ToLower().Contains("/override"))
+                    {
+                        sb.Append(" /Overide=" + string.Format(baseTargetFormat, i));
+                    }
+                    else
+                    {
+                        sb.Append(" " + arg);
+                    }
+                }
+                commandLines.Add(sb.ToString());
+            }
+
+            return commandLines;
+        }
+
 
 
         /// <summary>
@@ -261,6 +356,14 @@ namespace SqlBuildManager.Console.Batch
 
             return new ResourceFile(blobSasUri, blobName);
         }
+        private static string[] GetTargetConfigValues(string multiDBFileName)
+        {
+            MultiDbData multiDb;
+            string[] errorMessages;
+            int valRet = Validation.ValidateAndLoadMultiDbData(multiDBFileName, null, out multiDb, out errorMessages);
+            string cfg = MultiDbHelper.ConvertMultiDbDataToTextConfig(multiDb);
+            return cfg.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        }
 
         /// <summary>
         /// Divde up the targets amongst the nodes
@@ -268,21 +371,16 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="unifiedSettings"></param>
         /// <param name="batchNodeCount"></param>
         /// <returns></returns>
-        internal IList<BuildSettings> SplitLoadEvenly(BuildSettings unifiedSettings, int batchNodeCount)
+        internal IList<string[]> SplitLoadEvenly(string[] allTargetConfig, int batchNodeCount)
         {
-            IList<BuildSettings> distributedConfig = new List<BuildSettings>();
-            IEnumerable<string> allDbTargets = unifiedSettings.MultiDbTextConfig.AsEnumerable();
+            IEnumerable<string> allDbTargets = allTargetConfig.AsEnumerable();
             IEnumerable<IEnumerable<string>> dividedDbTargets = allDbTargets.SplitIntoChunks(batchNodeCount);
-
+            List<string[]> splitLoad = new List<string[]>();
             if (dividedDbTargets.Count() <= batchNodeCount)
             {
-                int i = 0;
                 foreach (IEnumerable<string> targetList in dividedDbTargets)
                 {
-                    BuildSettings tmpSetting = unifiedSettings.DeepClone<BuildSettings>();
-                    tmpSetting.MultiDbTextConfig = targetList.ToArray();
-                    distributedConfig.Add(tmpSetting);
-                    i++;
+                    splitLoad.Add(targetList.ToArray());
                 }
             }
             else
@@ -290,7 +388,7 @@ namespace SqlBuildManager.Console.Batch
                 log.Error(String.Format("Divided targets and execution server count do not match: {0} and {1} respectively", dividedDbTargets.Count().ToString(), batchNodeCount));
             }
 
-            return distributedConfig;
+            return splitLoad;
         }
 
 

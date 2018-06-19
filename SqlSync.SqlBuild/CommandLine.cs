@@ -101,7 +101,7 @@ namespace SqlSync.SqlBuild
                 cmdLine.ScriptLogFileName = dict["scriptlogfile"];
 
             if (dict.ContainsKey("rootloggingpath"))
-                cmdLine.RootLoggingPath = dict["rootloggingpath"];
+                cmdLine.RootLoggingPath = dict["rootloggingpath"].Trim();
 
             bool val;
             if (dict.ContainsKey("logastext") && Boolean.TryParse(dict["logastext"], out val))

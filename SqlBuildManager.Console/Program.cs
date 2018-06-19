@@ -72,7 +72,7 @@ namespace SqlBuildManager.Console
                     EncryptCreds(cmdLine);
                     break;
                 case "batch":
-                    RunBatchExecution(cmdLine);
+                    RunBatchExecution(args, start);
                     break;
                 default:
                     log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
@@ -83,10 +83,35 @@ namespace SqlBuildManager.Console
 
         }
 
-        private static void RunBatchExecution(CommandLineArgs cmdLine)
+        private static void RunBatchExecution(string[] args, DateTime start)
         {
-            Batch.Execution bexe = new Batch.Execution();
-            bexe.StartBatch(new string[] { });
+            Batch.Execution batchExe = new Batch.Execution(args);
+            CommandLineArgs cmdLine = CommandLine.ParseCommandLineArg(args);
+            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
+            log.Debug("Entering Batch Execution");
+            log.Info("Running...");
+            int retVal =  batchExe.StartBatch();
+            if (retVal == (int)ExecutionReturn.Successful)
+            {
+                log.Info("Completed Successfully");
+            }
+            else if (retVal == (int)ExecutionReturn.DacpacDatabasesInSync)
+            {
+                log.Info("Datbases already in sync");
+                retVal = (int)ExecutionReturn.Successful;
+            }
+            else
+            {
+                log.Warn("Completed with Errors - check log");
+            }
+
+            TimeSpan span = DateTime.Now - start;
+            string msg = "Total Run time: " + span.ToString();
+            log.Info(msg);
+
+            log.Debug("Exiting Threaded Execution");
+
+            System.Environment.Exit(retVal);
         }
 
         private static void EncryptCreds(CommandLineArgs cmdLine)
@@ -306,7 +331,8 @@ namespace SqlBuildManager.Console
 
         private static void RunThreadedExecution(string[] args, DateTime start)
         {
-            SetWorkingDirectoryLogger(args);
+            var cmdLine = CommandLine.ParseCommandLineArg(args);
+            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Threaded Execution");
             log.Info("Running...");
             ThreadedExecution runner = new ThreadedExecution(args);
@@ -334,35 +360,34 @@ namespace SqlBuildManager.Console
             System.Environment.Exit(retVal);
         }
 
-        private static void SetWorkingDirectoryLogger(string[] args)
+        private static void SetWorkingDirectoryLogger(string rootLoggingPath)
         {
-            var cmdLine = CommandLine.ParseCommandLineArg(args);
+   
             try
             {
 
-                if (!string.IsNullOrEmpty(cmdLine.RootLoggingPath))
+                if (!string.IsNullOrEmpty(rootLoggingPath))
                 {
-                    cmdLine.RootLoggingPath = cmdLine.RootLoggingPath.Trim();
                     //if (!cmdLine.RootLoggingPath.EndsWith("\\"))
                     //{
                     //    cmdLine.RootLoggingPath = cmdLine.RootLoggingPath + "\\";
                     //}
-                    if (!Directory.Exists(cmdLine.RootLoggingPath))
+                    if (!Directory.Exists(rootLoggingPath))
                     {
-                        Directory.CreateDirectory(cmdLine.RootLoggingPath);
+                        Directory.CreateDirectory(rootLoggingPath);
                     }
 
                     var appender = LogManager.GetRepository().GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender").FirstOrDefault();
                     if (appender != null)
                     {
                         var thr = appender as log4net.Appender.FileAppender;
-                        thr.File = Path.Combine(cmdLine.RootLoggingPath, Path.GetFileName(thr.File));
+                        thr.File = Path.Combine(rootLoggingPath, Path.GetFileName(thr.File));
                         thr.ActivateOptions();
                     }
                 }
             }catch(Exception exe)
             {
-                log.Error(string.Format("Unable to set local root logging path to {0}", cmdLine.RootLoggingPath), exe);
+                log.Error(string.Format("Unable to set local root logging path to {0}", rootLoggingPath), exe);
             }
 
             

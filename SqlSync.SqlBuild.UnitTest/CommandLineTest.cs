@@ -75,7 +75,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 "/username=\"UserName1\"", 
                 "/password=\"Password1\"", 
                 "/LogToDatabaseName=\"AltLogDb\"", 
-                "/build=\"c:\\Audit.sbm\"", 
+                "/PackageName=\"c:\\Audit.sbm\"", 
                 "/RootLoggingPath=\"C:\\Temp\"", 
                 "/override=\"c:\\test.multiDb\"", 
                 "/description=\"Just Testing\"",

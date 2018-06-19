@@ -267,7 +267,7 @@
             this.label3.Size = new System.Drawing.Size(170, 13);
             this.label3.TabIndex = 7;
             this.label3.Text = "Sql Build Manager Package (.sbm)";
-            this.toolTip1.SetToolTip(this.label3, "/build");
+            this.toolTip1.SetToolTip(this.label3, "/PackageName");
             // 
             // label4
             // 

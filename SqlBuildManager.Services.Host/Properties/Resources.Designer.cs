@@ -59,7 +59,7 @@ namespace SqlBuildManager.Services.Host.Properties {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to 
         ///Usage: SqlBuildManager.Console [SBM file name] or use flags below
@@ -67,7 +67,7 @@ namespace SqlBuildManager.Services.Host.Properties {
         ///    /? or /help                      Show this help 
         ///
         ///General Execution..
-        ///    /Build=&quot;&lt;filename&gt;&quot;              Name of the .sbm or .sbx file to execute                
+        ///    /PackageName=&quot;&lt;filename&gt;&quot;              Name of the .sbm or .sbx file to execute                
         ///    /RootLoggingPath=&quot;&lt;directory&gt;&quot;   Directory to save execution logs
         ///    /Trial=(true|false)              Whether or not to run in trial mode (default is false)
         ///    /Transaction=(true|false)        Whether or not to run with a wrapping transaction (default is true)        /// [rest of string was truncated]&quot;;.

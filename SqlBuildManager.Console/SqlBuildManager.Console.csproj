@@ -96,7 +96,7 @@
       <Link>Properties\AssemblyVersioning.cs</Link>
     </Compile>
     <Compile Include="BackoutCommandLine.cs" />
-    <Compile Include="Batch\BatchBuildSettings.cs" />
+    <Compile Include="Batch\BatchCommandValidation.cs" />
     <Compile Include="Batch\BatchExecution.cs" />
     <Compile Include="ProcessHelper.cs" />
     <Compile Include="Program.cs" />

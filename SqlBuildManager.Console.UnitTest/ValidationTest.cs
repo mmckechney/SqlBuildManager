@@ -138,7 +138,7 @@ namespace SqlBuildManager.Console.UnitTest
             int actual;
             actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].LastIndexOf("Missing /build or /ScriptSrcDir setting.") > -1);
+            Assert.IsTrue(errorMessages[0].LastIndexOf("Missing /PackageName or /ScriptSrcDir setting.") > -1);
             Assert.AreEqual(expected, actual);
         }
 

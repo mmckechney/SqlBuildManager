@@ -162,7 +162,7 @@ namespace SqlSync.SqlBuild
             }
 
             if (txtSbmFile.Text.Length > 0)
-                sb.Append("/build=\"" + txtSbmFile.Text + "\" ");
+                sb.Append("/PackageName=\"" + txtSbmFile.Text + "\" ");
             else
                 sb.Append("/ScriptSrcDir=\"" + txtScriptSrcDir.Text + "\" ");
 
