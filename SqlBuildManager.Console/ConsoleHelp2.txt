@@ -59,6 +59,7 @@ Batch Execution (/Action=Batch)
     /PlatinumDacpac="<filename>"      Name of the dacpac containing the platinum schema
     /PackageName="<filename>"         Name of the .sbm or .sbx file to execute
     /RootLoggingPath="<directory>"    Directory to save execution logs (for threaded and remote executions)
+    /DeleteBatchPool=(true|false)     Whether or not to delete the batch pool servers (default is true)
 
 Script Extraction from Dacpac (/Action=ScriptExtract)
     /PlatinumDacpac="<filename>"            Name of the dacpac containing the platinum schema

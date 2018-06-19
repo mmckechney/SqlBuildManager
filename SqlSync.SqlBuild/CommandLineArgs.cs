@@ -48,7 +48,7 @@ namespace SqlSync.SqlBuild {
         
         private string _RootLoggingPath = string.Empty;
         
-        private bool _LogAsText = false;
+        private bool _LogAsText = true;
         
         private bool _Trial = false;
         

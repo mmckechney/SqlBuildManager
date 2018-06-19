@@ -200,6 +200,12 @@ namespace SqlSync.SqlBuild
             if(dict.ContainsKey("outputcontainersasurl"))
                 cmdLine.OutputContainerSasUrl = dict["outputcontainersasurl"];
 
+            bool del;
+            if (dict.ContainsKey("deletebatchpool") && Boolean.TryParse(dict["deletebatchpool"], out del))
+            {
+                cmdLine.DeleteBatchPool = del;
+            }
+
             if (dict.ContainsKey("authtype"))
             {
                 switch(dict["authtype"].ToLower())

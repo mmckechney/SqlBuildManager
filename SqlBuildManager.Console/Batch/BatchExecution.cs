@@ -206,10 +206,7 @@ namespace SqlBuildManager.Console.Batch
 
                     List<CloudTask> tasks = new List<CloudTask>();
 
-                    // Create each of the tasks to process one of the input files. 
-
-
-                    
+                    // Create each of the tasks to process on each node 
                     for (int i = 0; i < commandLines.Count; i++)
                     {
                         string taskId = String.Format("Task{0}", i);
@@ -246,9 +243,7 @@ namespace SqlBuildManager.Console.Batch
                     // Add all tasks to the job.
                     batchClient.JobOperations.AddTask(JobId, tasks);
 
-
                     // Monitor task success/failure, specifying a maximum amount of time to wait for the tasks to complete.
-
                     TimeSpan timeout = TimeSpan.FromMinutes(30);
                     log.InfoFormat("Monitoring all tasks for 'Completed' state, timeout in {0}...", timeout);
 
@@ -277,19 +272,13 @@ namespace SqlBuildManager.Console.Batch
                     log.InfoFormat("Sample end: {0}", DateTime.Now);
                     log.InfoFormat("Elapsed time: {0}", timer.Elapsed);
 
-                    //// Clean up Storage resources
-                    //if (container.DeleteIfExists())
-                    //{
-                    //    log.InfoFormat("Container [{0}] deleted.", inputContainerName);
-                    //}
-                    //else
-                    //{
-                    //    log.InfoFormat("Container [{0}] does not exist, skipping deletion.", inputContainerName);
-                    //}
-
                     // Clean up Batch resources
                     batchClient.JobOperations.DeleteJob(JobId);
-                    //batchClient.PoolOperations.DeletePool(PoolId);
+                    if (cmdLine.DeleteBatchPool)
+                    {
+                        batchClient.PoolOperations.DeletePool(PoolId);
+                    }
+
                 }
             }
             finally

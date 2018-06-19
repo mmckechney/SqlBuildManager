@@ -57,6 +57,8 @@ namespace SqlSync.SqlBuild
         public bool TestConnectivity { get; set; }
         public string OutputContainerSasUrl { get; set; }
 
+        public bool DeleteBatchPool { get; set; } = true;
+
         public override string ToString()
         {
             var props = this.GetType().GetProperties();
