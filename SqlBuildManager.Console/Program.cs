@@ -12,6 +12,8 @@ using System.Linq;
 using SqlBuildManager.ServiceClient;
 using SqlSync.Connection;
 using System.Text.RegularExpressions;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace SqlBuildManager.Console
 {
@@ -354,10 +356,44 @@ namespace SqlBuildManager.Console
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
             log.Info(msg);
+
+            if(!String.IsNullOrEmpty(cmdLine.OutputContainerSasUrl))
+            {
+                log.Info("Writing log files to storage...");
+                WriteLogsToBlobContainer(cmdLine.OutputContainerSasUrl, cmdLine.RootLoggingPath);
+            }
           
             log.Debug("Exiting Threaded Execution");
 
             System.Environment.Exit(retVal);
+        }
+
+        private static void WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
+        {
+            try
+            {
+                CloudBlobContainer container = new CloudBlobContainer(new Uri(outputContainerSasUrl));
+                var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
+                string machine = Environment.MachineName;
+                fileList.ToList().ForEach(f =>
+                {
+                    var tmp = machine + f.Replace(rootLoggingPath, "");
+                    log.InfoFormat("Saving File '{0}' as '{1}'", f, tmp);
+                    var b = container.GetBlockBlobReference(tmp);
+                    try
+                    {
+                        b.UploadFromFile(f);
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error("Unable to upload log file '" + f + "' to blob storage", e);
+                    }
+                });
+            }
+            catch (Exception exe)
+            {
+                log.Error("Unable to upload log files to blob storage", exe);
+            }
         }
 
         private static void SetWorkingDirectoryLogger(string rootLoggingPath)

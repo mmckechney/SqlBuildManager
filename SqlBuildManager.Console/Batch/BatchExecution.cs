@@ -33,8 +33,8 @@ namespace SqlBuildManager.Console.Batch
         private const string StorageAccountKey = "H966woP+Uf7AYxCrDyGlJ27OzOedvWpgLWaAaV/gdOXHIi5qp0UQIReiRK44VzzsU4cvtvKTAwkIU6ldkebChg==";
 
         // Batch resource settings
-        private const string PoolId = "DotNetQuickstartPool";
-        private const string JobId = "DotNetQuickstartJob";
+        private const string PoolIdFormat = "SqlBuildManagerPool";
+        private const string JobIdFormat = "SqlBuildManagerJob_{0}";
         private const int PoolNodeCount = 2;
         private const string PoolVMSize = "STANDARD_A1_v2";
 
@@ -56,7 +56,11 @@ namespace SqlBuildManager.Console.Batch
             {
                 throw new InvalidOperationException("One or more account credential strings have not been populated. Please ensure that your Batch and Storage account credentials have been specified.");
             }
-
+            string jobToken = DateTime.Now.ToString("yyyyMMddhhmm");
+            string JobId = string.Format(JobIdFormat, jobToken);
+            string PoolId = PoolIdFormat;
+            string inputContainerName = jobToken + "-input";
+            string outputContainerName = jobToken + "-output";
 
             log.Info("Validating command parameters");
             CommandLineArgs cmdLine = CommandLine.ParseCommandLineArg(args);
@@ -93,12 +97,11 @@ namespace SqlBuildManager.Console.Batch
                 // Create the blob client, for use in obtaining references to blob storage containers
                 CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
 
-                // Use the blob client to create the input container in Azure Storage 
-                const string inputContainerName = "input";
-
                 CloudBlobContainer container = blobClient.GetContainerReference(inputContainerName);
 
                 container.CreateIfNotExists();
+
+                string containerSasToken = GetOutputContainerSasUrl(blobClient, outputContainerName);
 
                 // The collection of data files that are to be processed by the tasks
                 List<string> inputFilePaths = new List<string>();
@@ -138,7 +141,7 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(args,cmdLine, Execution.PoolNodeCount);
+                IList<string> commandLines = CompileCommandLines(args,cmdLine, inputFiles, containerSasToken, Execution.PoolNodeCount);
 
                 // Get a Batch client using account creds
 
@@ -149,25 +152,17 @@ namespace SqlBuildManager.Console.Batch
                     // Create a Batch pool, VM configuration, Windows Server image
                     log.InfoFormat("Creating pool [{0}]...", PoolId);
 
-                    ImageReference imageReference = new ImageReference(
-                        publisher: "MicrosoftWindowsServer",
-                        offer: "WindowsServer",
-                        sku: "2016-Datacenter-with-containers",
-                        version: "latest");
+                    ImageReference imageReference = new ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer",
+                        sku: "2016-Datacenter-with-containers", version: "latest");
 
-                    VirtualMachineConfiguration virtualMachineConfiguration =
-                    new VirtualMachineConfiguration(
-                        imageReference: imageReference,
-                        nodeAgentSkuId: "batch.node.windows amd64");
+                    VirtualMachineConfiguration virtualMachineConfiguration = new VirtualMachineConfiguration(
+                        imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
 
                     try
                     {
                         CloudPool pool = batchClient.PoolOperations.CreatePool(
-                            poolId: PoolId,
-                            targetDedicatedComputeNodes: PoolNodeCount,
-                            virtualMachineSize: PoolVMSize,
-                            virtualMachineConfiguration: virtualMachineConfiguration);
-
+                            poolId: PoolId, targetDedicatedComputeNodes: PoolNodeCount, 
+                            virtualMachineSize: PoolVMSize, virtualMachineConfiguration: virtualMachineConfiguration);
                         pool.Commit();
                     }
                     catch (BatchException be)
@@ -191,7 +186,6 @@ namespace SqlBuildManager.Console.Batch
                         CloudJob job = batchClient.JobOperations.CreateJob();
                         job.Id = JobId;
                         job.PoolInformation = new PoolInformation { PoolId = PoolId };
-
                         job.Commit();
                     }
                     catch (BatchException be)
@@ -208,13 +202,14 @@ namespace SqlBuildManager.Console.Batch
                     }
 
                     // Create a collection to hold the tasks that we'll be adding to the job
-
                     log.InfoFormat("Adding {0} tasks to job [{1}]...", inputFiles.Count, JobId);
 
                     List<CloudTask> tasks = new List<CloudTask>();
 
                     // Create each of the tasks to process one of the input files. 
 
+
+                    
                     for (int i = 0; i < commandLines.Count; i++)
                     {
                         string taskId = String.Format("Task{0}", i);
@@ -222,6 +217,29 @@ namespace SqlBuildManager.Console.Batch
 
                         CloudTask task = new CloudTask(taskId, taskCommandLine);
                         task.ResourceFiles = inputFiles;
+                        task.ApplicationPackageReferences = new List<ApplicationPackageReference>
+                        {
+                            new ApplicationPackageReference { ApplicationId = "sqlbuildmanager" }
+                        };
+                        task.OutputFiles = new List<OutputFile>
+                        {
+                            new OutputFile(
+                                filePattern: @"D:\runlogs\*.log",
+                                destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
+                                        containerUrl: containerSasToken,
+                                        path: taskId)),
+                                uploadOptions: new OutputFileUploadOptions(
+                                uploadCondition: OutputFileUploadCondition.TaskCompletion)),
+
+                            new OutputFile(
+                                filePattern: @"D:\runlogs\*.xml",
+                                destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
+                                        containerUrl: containerSasToken,
+                                        path: taskId)),
+                                uploadOptions: new OutputFileUploadOptions(
+                                uploadCondition: OutputFileUploadCondition.TaskCompletion))
+
+                        };
                         tasks.Add(task);
                     }
 
@@ -259,19 +277,19 @@ namespace SqlBuildManager.Console.Batch
                     log.InfoFormat("Sample end: {0}", DateTime.Now);
                     log.InfoFormat("Elapsed time: {0}", timer.Elapsed);
 
-                    // Clean up Storage resources
-                    if (container.DeleteIfExists())
-                    {
-                        log.InfoFormat("Container [{0}] deleted.", inputContainerName);
-                    }
-                    else
-                    {
-                        log.InfoFormat("Container [{0}] does not exist, skipping deletion.", inputContainerName);
-                    }
+                    //// Clean up Storage resources
+                    //if (container.DeleteIfExists())
+                    //{
+                    //    log.InfoFormat("Container [{0}] deleted.", inputContainerName);
+                    //}
+                    //else
+                    //{
+                    //    log.InfoFormat("Container [{0}] does not exist, skipping deletion.", inputContainerName);
+                    //}
 
                     // Clean up Batch resources
                     batchClient.JobOperations.DeleteJob(JobId);
-                    batchClient.PoolOperations.DeletePool(PoolId);
+                    //batchClient.PoolOperations.DeletePool(PoolId);
                 }
             }
             finally
@@ -290,13 +308,15 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        private IList<string> CompileCommandLines(string[] args, CommandLineArgs cmdLine, int poolNodeCount)
+        private IList<string> CompileCommandLines(string[] args, CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount)
         {
+            var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
+
             List<string> commandLines = new List<string>();
             //Need to replace the paths to 
             for (int i=0; i< poolNodeCount; i++)
             {
-                StringBuilder sb = new StringBuilder("cmd /c SqlBuildManager.Console.exe");
+                StringBuilder sb = new StringBuilder("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe");
                 foreach(var arg in args)
                 {
                     if (arg.ToLower().Contains("/action"))
@@ -305,25 +325,30 @@ namespace SqlBuildManager.Console.Batch
                     }
                     else if (arg.ToLower().Contains("/packagename"))
                     {
-                        sb.Append(" /PackageName=" + Path.GetFileName(cmdLine.PackageName));
+                        var pkg = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PackageName.ToLower()))).FirstOrDefault();
+                        sb.Append(" /PackageName=" + pkg.FilePath);
                     }
                     else if (arg.ToLower().Contains("/platinumdacpac"))
                     {
-                        sb.Append(" /PlatinumDacpac=" + Path.GetFileName(cmdLine.PlatinumDacpac));
+                        var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PlatinumDacpac.ToLower()))).FirstOrDefault();
+                        sb.Append(" /PlatinumDacpac=" + dac.FilePath);
                     }
                     else if (arg.ToLower().Contains("/rootloggingpath"))
                     {
-                        sb.Append(" /RootLoggingPath=\\");
+                        sb.Append(" /RootLoggingPath=D:\\runlogs");
                     }
                     else if (arg.ToLower().Contains("/override"))
                     {
-                        sb.Append(" /Overide=" + string.Format(baseTargetFormat, i));
+                        var tmp = string.Format(baseTargetFormat, i);
+                        var tar = inputFiles.Where(x => x.FilePath.ToLower().Contains(tmp.ToLower())).FirstOrDefault();
+                        sb.Append(" /Override=" + tar.FilePath);
                     }
                     else
                     {
                         sb.Append(" " + arg);
                     }
                 }
+                sb.Append(" /OutputContainerSasUrl=\"" + containerSasToken + "\"");
                 commandLines.Add(sb.ToString());
             }
 
@@ -359,6 +384,19 @@ namespace SqlBuildManager.Console.Batch
             string blobSasUri = String.Format("{0}{1}", blobData.Uri, sasBlobToken);
 
             return new ResourceFile(blobSasUri, blobName);
+        }
+        private static string  GetOutputContainerSasUrl(CloudBlobClient blobClient, string outputContainerName)
+        {
+            log.InfoFormat("Ensuring presance of output blob container '{0}'", outputContainerName);
+            CloudBlobContainer container = blobClient.GetContainerReference(outputContainerName);
+            container.CreateIfNotExists();
+            SharedAccessBlobPolicy sasConstraints = new SharedAccessBlobPolicy
+            {
+                SharedAccessExpiryTime = DateTime.UtcNow.AddHours(2),
+                Permissions = SharedAccessBlobPermissions.Add | SharedAccessBlobPermissions.Create | SharedAccessBlobPermissions.Write | SharedAccessBlobPermissions.Read | SharedAccessBlobPermissions.List
+            };
+            string containerSasToken = container.GetSharedAccessSignature(sasConstraints);
+            return String.Format("{0}{1}", container.Uri, containerSasToken);
         }
         /// <summary>
         /// Gets a string array for all of the target DB override settings

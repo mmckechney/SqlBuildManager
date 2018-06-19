@@ -197,8 +197,10 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("testconnectivity"))
                 cmdLine.TestConnectivity = true;
 
+            if(dict.ContainsKey("outputcontainersasurl"))
+                cmdLine.OutputContainerSasUrl = dict["outputcontainersasurl"];
 
-            if(dict.ContainsKey("authtype"))
+            if (dict.ContainsKey("authtype"))
             {
                 switch(dict["authtype"].ToLower())
                 {

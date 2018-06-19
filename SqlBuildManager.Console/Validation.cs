@@ -242,10 +242,7 @@ namespace SqlBuildManager.Console
 
             return 0;
         }
-        //public static int ValidateAndLoadMultiDbData(string multiDbOverrideSettingFileName, out MultiDbData multiData, out string[] errorMessages)
-        //{
-        //    return ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, null, out multiData, out errorMessages);
-        //}
+
         /// <summary>
         /// Accepts a Multi-Database configuration file, processes it and outputs a populated MultiDbData object
         /// </summary>

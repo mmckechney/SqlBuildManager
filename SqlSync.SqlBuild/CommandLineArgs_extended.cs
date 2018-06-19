@@ -55,6 +55,7 @@ namespace SqlSync.SqlBuild
         public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; }
         [System.Runtime.Serialization.DataMember()]
         public bool TestConnectivity { get; set; }
+        public string OutputContainerSasUrl { get; set; }
 
         public override string ToString()
         {
