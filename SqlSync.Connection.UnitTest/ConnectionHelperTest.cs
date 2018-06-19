@@ -106,7 +106,7 @@ namespace SqlSync.Connection.UnitTest
             connData.AuthenticationType = AuthenticationType.UserNamePassword;
             connData.UserId = "User";
             connData.Password = "Password";
-            string expected = String.Format("User ID=User;Initial Catalog=mydatabase;Data Source=myserver;Password=Password;CONNECTION TIMEOUT=20;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
+            string expected = String.Format("Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;CONNECTION TIMEOUT=20;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
             Assert.AreEqual(expected, actual);
@@ -122,7 +122,7 @@ namespace SqlSync.Connection.UnitTest
             connData.UserId = "User";
             connData.Password = "Password";
             connData.ScriptTimeout = 30;
-            string expected = string.Format("User ID=User;Initial Catalog=mydatabase;Data Source=myserver;Password=Password;CONNECTION TIMEOUT=30;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
+            string expected = string.Format("Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;CONNECTION TIMEOUT=30;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
             Assert.AreEqual(expected, actual);
@@ -139,7 +139,7 @@ namespace SqlSync.Connection.UnitTest
             string uid = "userid";
             string pw = "password";
             int scriptTimeOut = 100;
-            string expected = string.Format("User ID=userid;Initial Catalog=mydatabase;Data Source=myserver;Password=password;CONNECTION TIMEOUT=100;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
+            string expected = string.Format("Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;CONNECTION TIMEOUT=100;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
             string actual;
             actual = ConnectionHelper.GetConnectionString(dbName, serverName, uid, pw, AuthenticationType.UserNamePassword, scriptTimeOut);
             Assert.AreEqual(expected, actual);
@@ -156,7 +156,7 @@ namespace SqlSync.Connection.UnitTest
             string uid = "userid";
             string pw = "password";
             int scriptTimeOut = 100;
-            string expected = string.Format("User ID=userid;Initial Catalog=mydatabase;Data Source=myserver;Password=password;CONNECTION TIMEOUT=100;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
+            string expected = string.Format("Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;CONNECTION TIMEOUT=100;Pooling=false;Application Name=Sql Build Manager v{0} [{1}];", version, user);
             SqlConnection actual;
             actual = ConnectionHelper.GetConnection(dbName, serverName, uid, pw, AuthenticationType.UserNamePassword, scriptTimeOut);
             Assert.IsNotNull(actual);
