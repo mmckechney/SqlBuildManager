@@ -283,6 +283,13 @@ namespace SqlBuildManager.Console.Batch
 
         }
 
+        /// <summary>
+        /// Builds commandlines for reach batch server based in the pool node count
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="cmdLine"></param>
+        /// <param name="poolNodeCount"></param>
+        /// <returns></returns>
         private IList<string> CompileCommandLines(string[] args, CommandLineArgs cmdLine, int poolNodeCount)
         {
             List<string> commandLines = new List<string>();
@@ -322,9 +329,6 @@ namespace SqlBuildManager.Console.Batch
 
             return commandLines;
         }
-
-
-
         /// <summary>
         /// Uploads the specified file to the specified Blob container.
         /// </summary>
@@ -356,6 +360,11 @@ namespace SqlBuildManager.Console.Batch
 
             return new ResourceFile(blobSasUri, blobName);
         }
+        /// <summary>
+        /// Gets a string array for all of the target DB override settings
+        /// </summary>
+        /// <param name="multiDBFileName"></param>
+        /// <returns></returns>
         private static string[] GetTargetConfigValues(string multiDBFileName)
         {
             MultiDbData multiDb;
@@ -364,9 +373,8 @@ namespace SqlBuildManager.Console.Batch
             string cfg = MultiDbHelper.ConvertMultiDbDataToTextConfig(multiDb);
             return cfg.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         }
-
         /// <summary>
-        /// Divde up the targets amongst the nodes
+        /// Divde up the override targets amongst the nodes
         /// </summary>
         /// <param name="unifiedSettings"></param>
         /// <param name="batchNodeCount"></param>
