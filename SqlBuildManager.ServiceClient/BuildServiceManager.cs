@@ -630,6 +630,10 @@ namespace SqlBuildManager.ServiceClient
                 int i = 0;
                 foreach (IEnumerable<string> targetList in dividedDbTargets)
                 {
+                    if(targetList.Count() == 0)
+                    {
+                        continue;
+                    }
                     BuildSettings tmpSetting = unifiedSettings.DeepClone<BuildSettings>();
                     tmpSetting.MultiDbTextConfig = targetList.ToArray();
                     distributedConfig.Add(executionServers[i], tmpSetting);

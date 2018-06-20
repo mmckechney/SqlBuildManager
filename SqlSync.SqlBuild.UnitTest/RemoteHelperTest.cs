@@ -207,7 +207,7 @@ namespace SqlSync.SqlBuild.UnitTest
             bool isTrial = false;
             bool isTransactional = false;
             string buildDescription = "Just testing";
-            string expected = "SqlBuildManager.Console.exe\" /Action=Remote /PackageName=\"C:\\temp\\test.sbm\" /RemoteServers=\"C:\\temp\\test.txt\" /override=\"C:\\temp\\test.cfg\" /RootLoggingPath=\"C:\\temp\" /DistributionType=\"local\" /Description=\"Just testing\" /transactional=False /trial=False /TimeoutRetryCount=0";
+            string expected = "SqlBuildManager.Console.exe\" /Action=Remote /PackageName=\"C:\\temp\\test.sbm\" /RemoteServers=\"C:\\temp\\test.txt\" /Override=\"C:\\temp\\test.cfg\" /RootLoggingPath=\"C:\\temp\" /DistributionType=\"local\" /Description=\"Just testing\" /Transactional=False /Trial=False /TimeoutRetryCount=0";
             string actual;
             actual = RemoteHelper.BuildRemoteExecutionCommandline(sbmFileName, overrideSettingFile, remoteExeServersFile, rootLoggingPath, distributionType, isTrial, isTransactional, buildDescription, 0, "", "", "", AuthenticationType.WindowsAuthentication.GetDescription());
             Assert.IsTrue(actual.IndexOf(expected) > -1);

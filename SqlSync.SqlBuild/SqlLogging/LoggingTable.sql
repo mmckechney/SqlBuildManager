@@ -1,18 +1,27 @@
 IF NOT EXISTS (SELECT 1 FROM sys.objects WHERE name = 'SqlBuild_Logging' AND type = 'U')
 	BEGIN
 
-		CREATE TABLE SqlBuild_Logging
+     	CREATE TABLE [dbo].[SqlBuild_Logging]
 		(
-			[BuildFileName] varchar(300) NOT NULL,
-			[ScriptFileName] varchar(300) NOT NULL,
-			[ScriptId] uniqueidentifier,
-			[ScriptFileHash] varchar(100),
-			[CommitDate] datetime NOT NULL,
-			[Sequence] int,
-			[UserId]	varchar(50),
-			[AllowScriptBlock] bit CONSTRAINT DF_SqlBuildLogging_AllowScriptBlock DEFAULT (1) ,
-			[AllowBlockUpdateId] varchar(50)
-		)
+			[BuildFileName] [varchar](300) NOT NULL,
+			[ScriptFileName] [varchar](300) NOT NULL,
+			[ScriptId] [uniqueidentifier] NULL,
+			[ScriptFileHash] [varchar](100) NULL,
+			[CommitDate] [datetime] NOT NULL,
+			[Sequence] [int] NULL,
+			[UserId] [varchar](50) NULL,
+			[AllowScriptBlock] [bit] CONSTRAINT DF_SqlBuildLogging_AllowScriptBlock DEFAULT (1) ,
+			[AllowBlockUpdateId] [varchar](50) NULL,
+			[ScriptText] [text] NULL,
+			[Tag] [varchar](200) NULL,
+			[TargetDatabase] [varchar](200) NULL,
+			[RunWithVersion] [varchar](20) NULL,
+			[BuildProjectHash] [varchar](45) NULL,
+			[BuildRequestedBy] [varchar](50) NULL,
+			[ScriptRunStart] [datetime] NULL,
+			[ScriptRunEnd] [datetime] NULL,
+			[Description] [varchar](150) NULL
+		) 
 	
 		CREATE NONCLUSTERED INDEX IX_SqlBuild_Logging ON dbo.SqlBuild_Logging
 			(

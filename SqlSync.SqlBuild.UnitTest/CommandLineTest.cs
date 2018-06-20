@@ -68,7 +68,8 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void ParseCommandLineArgTest()
         {
-            string[] args = new string[]{@"C:\Program Files\McKechney.com\Sql Build Manager\SqlBuildManager.Console.exe", 
+            string[] args = new string[]{@"C:\Program Files\McKechney.com\Sql Build Manager\SqlBuildManager.Console.exe",
+                "/Action=\"Build\"",
                 "/trial=\"True\"", 
                 "/threaded=\"true\"", 
                 "/LogAsText=\"false\"", 
@@ -121,26 +122,7 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(false, actual.AutoScriptDesignated);
             Assert.AreEqual(false, actual.SprocTestDesignated);
         }
-        [TestMethod()]
-        public void ParseCommandLineArgTest_BackwardCompatability()
-        {
-            string[] args = new string[]{@"C:\Program Files\McKechney.com\Sql Build Manager\SqlBuildManager.Console.exe", 
-                "/trial=\"True\"", 
-                "/threaded=\"true\"", 
-                "/b=\"c:\\Audit.sbm\"", 
-                "/RootLoggingPath=\"C:\\Temp\"", 
-                "/override=\"c:\\test.multiDb\"", 
-                "/description=\"Just Testing\"",
-                "/transactional=true"};
-            CommandLineArgs actual;
-            actual = CommandLine.ParseCommandLineArg(args);
-            Assert.AreEqual(true, actual.Trial);
-            Assert.AreEqual("c:\\Audit.sbm", actual.BuildFileName);
-            Assert.AreEqual("C:\\Temp", actual.RootLoggingPath);
-            Assert.AreEqual(true, actual.OverrideDesignated);
-            Assert.AreEqual("c:\\test.multiDb", actual.MultiDbRunConfigFileName);
-            Assert.AreEqual(true, actual.Transactional);
-        }
+
         /// <summary>
         ///A test for ParseCommandLineArg
         ///</summary>
@@ -167,26 +149,7 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(true, actual.SprocTestDesignated);
             Assert.AreEqual("C:\test.sptest", actual.SpTestFile);
         }
-        /// <summary>
-        ///A test for ParseCommandLineArg
-        ///</summary>
-        [TestMethod()]
-        public void ParseCommandLineArgTest_TheRestOfTheArgs()
-        {
-            string[] args = new string[]{@"C:\Program Files\McKechney.com\Sql Build Manager\SqlBuildManager.Console.exe", 
-                "/trial",
-                "/b=\"C:\test.sbm\"",
-                "/override=\"default;override,default2,override2\"",
-                "/log=\"log.log",
-                "/scriptlogfile=\"C:\\Scriptlog.log\""};
-            CommandLineArgs actual;
-            actual = CommandLine.ParseCommandLineArg(args);
-            Assert.AreEqual("C:\test.sbm", actual.BuildFileName);
-            Assert.AreEqual(true, actual.OverrideDesignated);
-            Assert.AreEqual("default;override,default2,override2", actual.ManualOverRideSets);
-            Assert.AreEqual("log.log", actual.LogFileName);
-            Assert.AreEqual("C:\\Scriptlog.log", actual.ScriptLogFileName);
-        }
+
         /// <summary>
         ///A test for CommandLine Constructor
         ///</summary>

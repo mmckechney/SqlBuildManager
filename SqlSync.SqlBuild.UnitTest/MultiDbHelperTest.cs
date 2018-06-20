@@ -112,17 +112,7 @@ namespace SqlSync.SqlBuild.UnitTest
             MultiDbData actual;
             actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
         }
-        /// <summary>
-        ///A test for ImportMultiDbTextConfig
-        ///</summary>
-        [TestMethod()]
-        [ExpectedException(typeof(MultiDbConfigurationException), "Error in configuration file line #1. Missing \",\" separator. This is needed to separate default and override database targets.")]
-        public void ImportMultiDbTextConfigTest_BadConfuguration_Comma()
-        {
-            string[] fileContents = new string[] { "SERVER:defaulttarget;default2,target2", "SERVER2:default,target;default2,target2" };
-            MultiDbData actual;
-            actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
-        }
+
         #endregion
 
         #region .: ImportMultiDbTextConfig(string fileName) Tests :.

@@ -170,19 +170,34 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void ValidateCommonCommandLineArgsTest_BadOverrideSetting()
         {
+            if(!File.Exists(@"C:\temp\multicfg.BadExt"))
+                File.WriteAllText(@"C:\temp\multicfg.BadExt","hi");
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
-            cmdLine.MultiDbRunConfigFileName = @"C\temp\multicfg.BadExt";
+            cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.BadExt";
             cmdLine.ScriptSrcDir = @"C:\temp";
+            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.InvalidOverrideFlag;
             int actual;
             actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
+            
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].LastIndexOf("The '/override' setting file value must be") > -1);
             Assert.AreEqual(expected, actual);
+
+            if (File.Exists(@"C:\temp\multicfg.BadExt"))
+            {
+                try
+                {
+                    File.Delete(@"C:\temp\multicfg.BadExt");
+                }
+                catch
+                { }
+            }
+                
         }
 
         /// <summary>

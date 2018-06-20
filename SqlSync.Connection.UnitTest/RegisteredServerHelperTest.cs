@@ -298,7 +298,7 @@ namespace SqlSync.Connection.UnitTest
 
             File.WriteAllText(xmlFile, Properties.Resources.RegisteredServers_Good);
 
-            RegisteredServerHelper.RegisteredServerFileName = string.Empty;
+            RegisteredServerHelper.RegisteredServerFileName = xmlFile;
             RegisteredServers actual;
             actual = RegisteredServerHelper.RegisteredServerData;
             Assert.IsNotNull(actual);

@@ -629,7 +629,7 @@ namespace SqlSync.SqlBuild
 						}
 						catch(SqlException e)
 						{
-                            if (e.Message.Trim().ToLower().StartsWith("timeout expired."))
+                            if (e.Message.Trim().ToLower().IndexOf("timeout expired.",StringComparison.CurrentCultureIgnoreCase) > -1)
                             {
                                 log.WarnFormat("Encountered a Timeout exception for script: \"{0}\"", cmd.CommandText);
                                 failureDueToScriptTimeout = true;
