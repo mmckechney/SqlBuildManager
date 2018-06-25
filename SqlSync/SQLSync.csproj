@@ -136,10 +136,6 @@
       <Project>{14dfbf75-98b1-4fbd-9b48-191d8aa55a6f}</Project>
       <Name>SqlSync.ScrollBarSync</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Tfs.Utility\Tfs.Utility.csproj">
-      <Project>{CA980B42-69F5-4A66-A327-4977E18A6018}</Project>
-      <Name>Tfs.Utility</Name>
-    </ProjectReference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>

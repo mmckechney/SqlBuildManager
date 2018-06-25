@@ -157,10 +157,6 @@
       <Project>{9B495B5F-1578-482B-8CF7-615B04D3AE2A}</Project>
       <Name>SqlSync.SqlBuild</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Tfs.Utility\Tfs.Utility.csproj">
-      <Project>{CA980B42-69F5-4A66-A327-4977E18A6018}</Project>
-      <Name>Tfs.Utility</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\DBList.cfg" />
