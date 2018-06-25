@@ -140,10 +140,6 @@
       <Project>{CA980B42-69F5-4A66-A327-4977E18A6018}</Project>
       <Name>Tfs.Utility</Name>
     </ProjectReference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
@@ -254,6 +250,13 @@
       <Name>System.Drawing</Name>
     </Reference>
     <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -726,9 +729,6 @@
     <Compile Include="SqlBuild\Utility\UtilityRegistry.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SqlBuild\ZipTest.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Controls\SQLConnect.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -1091,10 +1091,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SqlBuild\UtilityReplacementUnit.resx">
       <DependentUpon>UtilityReplacementUnit.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SqlBuild\ZipTest.resx">
-      <DependentUpon>ZipTest.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\SQLConnect.resx">

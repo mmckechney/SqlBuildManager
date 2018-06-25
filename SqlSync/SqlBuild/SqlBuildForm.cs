@@ -5052,14 +5052,14 @@ namespace SqlSync.SqlBuild
                         );
                 
                 //
-                if (this.projectIsUnderSourceControl)
-                {
-                    SourceControlStatus stat = SqlBuildFileHelper.CheckoutFileFromSourceControl(SqlSync.Properties.Settings.Default.SourceControlServerUrl, newLocalFile);
-                    if (stat == SourceControlStatus.Error || stat == SourceControlStatus.NotUnderSourceControl || stat == SourceControlStatus.Unknown)
-                    {
-                        MessageBox.Show("Unable to add file to source control. Please add it manually", "Source control problem", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-                }
+                //if (this.projectIsUnderSourceControl)
+                //{
+                //    SourceControlStatus stat = SqlBuildFileHelper.CheckoutFileFromSourceControl(SqlSync.Properties.Settings.Default.SourceControlServerUrl, newLocalFile);
+                //    if (stat == SourceControlStatus.Error || stat == SourceControlStatus.NotUnderSourceControl || stat == SourceControlStatus.Unknown)
+                //    {
+                //        MessageBox.Show("Unable to add file to source control. Please add it manually", "Source control problem", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                //    }
+                //}
 
                 //Refresh the file list
                 RefreshScriptFileList(cfgRow.BuildOrder, true);

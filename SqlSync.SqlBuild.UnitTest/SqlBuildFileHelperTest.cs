@@ -720,8 +720,8 @@ END
             actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
             Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
             Assert.AreEqual(buildData.GetXml().ToString().Length, cleanedBuildData.GetXml().ToString().Length);
-            Assert.IsTrue(2245 <= actual.Length, string.Format("Actual length of cleaned XML {0}.\r\n{1}", actual.Length.ToString(), cleanedBuildData.GetXml())); //can't get exact length due to variations in guids and dates.
-            Assert.IsTrue(expected.Length < actual.Length); //actual will be larger due to the pathing stored in the zip file.
+            Assert.IsTrue(1500 <= actual.Length, string.Format("Actual length of cleaned XML {0}.\r\n{1}", actual.Length.ToString(), cleanedBuildData.GetXml())); //can't get exact length due to variations in guids and dates.
+            Assert.IsTrue(expected.Length == actual.Length);
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
             Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
@@ -771,7 +771,7 @@ END
 
             SqlSyncBuildData cleanedBuildData;
             actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
-            Assert.IsTrue(actual.Length >= 1700);  //can't get exact length due to variations in guids and dates.
+            Assert.IsTrue(actual.Length >= 1200);  //can't get exact length due to variations in guids and dates.
             Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
             Assert.IsTrue(buildData.GetXml().ToString().Length > cleanedBuildData.GetXml().ToString().Length);
 
@@ -817,7 +817,7 @@ END
             SqlSyncBuildData cleanedBuildData;
             actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
             Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
-            Assert.IsTrue(2700 <= actual.Length);  //can't get exact length due to variations in guids and dates.
+            Assert.IsTrue(2000 <= actual.Length);  //can't get exact length due to variations in guids and dates.
             Assert.IsTrue(buildData.GetXml().ToString().Length > cleanedBuildData.GetXml().ToString().Length);
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
@@ -864,7 +864,7 @@ END
 
             SqlSyncBuildData cleanedBuildData;
             actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
-            Assert.IsTrue(2740 <= actual.Length);  //can't get exact length due to variations in guids and dates.
+            Assert.IsTrue(2000 <= actual.Length);  //can't get exact length due to variations in guids and dates.
             Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
             Assert.IsTrue(buildData.GetXml().ToString().Length > cleanedBuildData.GetXml().ToString().Length);
 
