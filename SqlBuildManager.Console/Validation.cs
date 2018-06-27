@@ -364,6 +364,46 @@ namespace SqlBuildManager.Console
 
             return 0;
         }
+
+        public static int ValidateBatchArguments(ref CommandLineArgs cmdLine, out string[] errorMessages)
+        {
+            int returnVal = 0;
+            List<string> messages = new List<string>();
+            if (String.IsNullOrEmpty(cmdLine.BatchAccountName))
+            {
+                messages.Add("BatchAccountName is required in command line or app settings");
+                returnVal = -888;
+            }
+            if (String.IsNullOrEmpty(cmdLine.BatchAccountKey))
+            {
+                messages.Add("BatchAccountKey is required in command line or app settings");
+                returnVal = -888;
+            }
+            if (String.IsNullOrEmpty(cmdLine.BatchAccountUrl))
+            {
+                messages.Add("BatchAccountUrl is required in command line or app settings");
+                returnVal = -888;
+            }
+            if (String.IsNullOrEmpty(cmdLine.StorageAccountName))
+            {
+                messages.Add("StorageAccountName is required in command line or app settings");
+                returnVal = -888;
+            }
+            if (String.IsNullOrEmpty(cmdLine.StorageAccountKey))
+            {
+                messages.Add("StorageAccountKey is required in command line or app settings");
+                returnVal = -888;
+            }
+
+            if (String.IsNullOrEmpty(cmdLine.BatchVmSize))
+            {
+                messages.Add("BatchVmSize is required in command line or app settings");
+                returnVal = -888;
+            }
+
+            errorMessages = messages.ToArray();
+            return returnVal;
+        }
        
     }
 }

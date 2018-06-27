@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
+using System.Configuration;
+
 namespace SqlSync.SqlBuild
 {
     public class CommandLine
@@ -205,6 +207,52 @@ namespace SqlSync.SqlBuild
             {
                 cmdLine.DeleteBatchPool = del;
             }
+
+            int node;
+            if (dict.ContainsKey("poolnodecount") && Int32.TryParse(dict["poolnodecount"], out node))
+            {
+                cmdLine.PoolNodeCount = node;
+            }
+
+            if (dict.ContainsKey("batchaccountname"))
+                cmdLine.BatchAccountName = dict["batchaccountname"];
+
+            if (String.IsNullOrEmpty(cmdLine.BatchAccountName))
+                cmdLine.BatchAccountName = ConfigurationManager.AppSettings["BatchAccountName"];
+
+            if (dict.ContainsKey("batchaccountkey"))
+                cmdLine.BatchAccountKey = dict["batchaccountkey"];
+
+            if (String.IsNullOrEmpty(cmdLine.BatchAccountKey))
+                cmdLine.BatchAccountKey = ConfigurationManager.AppSettings["BatchAccountKey"];
+
+            if (dict.ContainsKey("batchaccounturl"))
+                cmdLine.BatchAccountUrl = dict["batchaccounturl"];
+
+            if (String.IsNullOrEmpty(cmdLine.BatchAccountUrl))
+                cmdLine.BatchAccountUrl = ConfigurationManager.AppSettings["BatchAccountUrl"];
+
+            if (dict.ContainsKey("storageaccountname"))
+                cmdLine.StorageAccountName = dict["storageaccountname"];
+
+            if (String.IsNullOrEmpty(cmdLine.StorageAccountName))
+                cmdLine.StorageAccountName = ConfigurationManager.AppSettings["StorageAccountName"];
+
+            if (dict.ContainsKey("storageaccountkey"))
+                cmdLine.StorageAccountKey = dict["storageaccountkey"];
+
+            if (String.IsNullOrEmpty(cmdLine.StorageAccountKey))
+                cmdLine.StorageAccountKey = ConfigurationManager.AppSettings["StorageAccountKey"];
+
+            if (dict.ContainsKey("batchvmsize"))
+                cmdLine.BatchVmSize = dict["batchvmsize"];
+
+            if (String.IsNullOrEmpty(cmdLine.BatchVmSize))
+                cmdLine.BatchVmSize = ConfigurationManager.AppSettings["BatchVmSize"];
+
+
+
+
 
             if (dict.ContainsKey("authtype"))
             {

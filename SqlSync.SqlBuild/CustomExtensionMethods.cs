@@ -29,7 +29,7 @@ namespace SqlSync.SqlBuild
             double chunkSize = Math.Ceiling(listCount / dblChunks);
 
             if (listCount / chunkSize < numberOfChunks && 
-                (numberOfChunks % 2 == 0 || listCount / chunkSize % 2 == 0)) //if the chunkSize is exactly half of the list, but we have an odd number of chunks. we'd leave one chunk empty!!
+                (numberOfChunks % 2 == 0 || listCount / chunkSize % 2 == 0) && chunkSize != 1) //if the chunkSize is exactly half of the list, but we have an odd number of chunks. we'd leave one chunk empty!!
                 chunkSize--;
 
             List<IEnumerable<T>> retVal = new List<IEnumerable<T>>();

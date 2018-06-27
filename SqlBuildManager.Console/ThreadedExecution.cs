@@ -163,7 +163,7 @@ namespace SqlBuildManager.Console
             else if(!string.IsNullOrWhiteSpace(cmdLine.BuildFileName)) //using SBM as a source
             {
                 ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
-                string msg = "/build setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source";
+                string msg = "/PackageName setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source";
                 WriteToLog(msg, LogType.Message);
                 log.Info(msg);
             }

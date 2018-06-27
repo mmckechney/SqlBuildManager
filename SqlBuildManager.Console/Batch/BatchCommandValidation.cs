@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild;
-using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.Connection;
-using SqlBuildManager.Console;
+using System;
 using System.IO;
 namespace SqlBuildManager.Console.Batch
 {

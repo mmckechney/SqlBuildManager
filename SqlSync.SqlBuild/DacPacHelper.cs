@@ -19,7 +19,7 @@ namespace SqlSync.SqlBuild
         {
             get
             {
-                if(string.IsNullOrWhiteSpace(sqlPack))
+                if(string.IsNullOrWhiteSpace(sqlPack) || !File.Exists(sqlPack))
                 {
                     lock (appRoots)
                     {

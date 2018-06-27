@@ -155,26 +155,7 @@ namespace SqlSync
             Environment.Exit(returnCode);
             return returnCode;
         }
-        private static void TestCommandLineParser()
-        {
-            List<string> tests = new List<string>();
-            tests.Add("/build \"c:\\MY_DOCS\\sqlbuildfile.sbm\" /server mysrv /log test.txt");
-            tests.Add("-build \"c:\\sqlbuildfile.sbm\" -server mysrv ");
-            tests.Add("/build=\"j:\\sqlbuildfile.sbm\" /server=mysrv ");
-            tests.Add("/build=\"sqlbuildfile.sbm\" /server=mysrv ");
-            tests.Add("/server=mysrv  /build=\"sqlbuildfile.sbm\" ");
-            tests.Add("/auto \"script.auto\"");
-            tests.Add("/build \"sqlbuildfile.sbm\" /override override.multidb ");
-            tests.Add("/build \"sqlbuildfile.sbm\" /override default,override ");
-            tests.Add("/build \"sqlbuildfile.sbm\" /override default,override;def2,ovr2 /server=srv");
 
-            for(int i=0;i<tests.Count;i++)
-            {
-                string[] args = tests[i].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                CommandLineArgs cmd = CommandLine.ParseCommandLineArg(args);
-            }
-
-        }
         public static void WriteLog(string message)
         {
             if (Program.logFileName.Length > 0)

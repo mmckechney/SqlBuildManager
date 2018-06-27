@@ -57,7 +57,16 @@ namespace SqlSync.SqlBuild
         public bool TestConnectivity { get; set; }
         public string OutputContainerSasUrl { get; set; }
 
+        #region Needed for Azure batch processing 
         public bool DeleteBatchPool { get; set; } = true;
+        public int PoolNodeCount { get; set; } = 10;
+        public string BatchAccountName { get; set; } = null;
+        public string BatchAccountKey { get; set; } = null;
+        public string BatchAccountUrl { get; set; } = null;
+        public string StorageAccountName { get; set; } = null;
+        public string StorageAccountKey { get; set; } = null;
+        public string BatchVmSize { get; set; } = null;
+        #endregion 
 
         public override string ToString()
         {

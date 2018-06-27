@@ -20,23 +20,11 @@ namespace SqlBuildManager.Console.Batch
         private string[] args;
 
 
-        // Update the Batch and Storage account credential strings below with the values unique to your accounts.
-        // These are used when constructing connection strings for the Batch and Storage client objects.
-
-        // Batch account credentials
-        private const string BatchAccountName = "sqlbuildmanager";
-        private const string BatchAccountKey = "tEtBZirucqRIRIWGzoiF5df6uAjK1ReFv8n0Wj0Ab4/CwzVT+xMwUzceGn8zXhKk165uzklzlj6cKRrFxqWIMg==";
-        private const string BatchAccountUrl = "https://sqlbuildmanager.eastus.batch.azure.com";
-
-        // Storage account credentials
-        private const string StorageAccountName = "sqlbuildmanager";
-        private const string StorageAccountKey = "H966woP+Uf7AYxCrDyGlJ27OzOedvWpgLWaAaV/gdOXHIi5qp0UQIReiRK44VzzsU4cvtvKTAwkIU6ldkebChg==";
+ 
 
         // Batch resource settings
         private const string PoolIdFormat = "SqlBuildManagerPool";
         private const string JobIdFormat = "SqlBuildManagerJob_{0}";
-        private const int PoolNodeCount = 2;
-        private const string PoolVMSize = "STANDARD_A1_v2";
 
         private const string baseTargetFormat = "target_{0}.cfg";
 
@@ -48,27 +36,32 @@ namespace SqlBuildManager.Console.Batch
         public int StartBatch()
         {
 
-            if (String.IsNullOrEmpty(BatchAccountName) ||
-                String.IsNullOrEmpty(BatchAccountKey) ||
-                String.IsNullOrEmpty(BatchAccountUrl) ||
-                String.IsNullOrEmpty(StorageAccountName) ||
-                String.IsNullOrEmpty(StorageAccountKey))
-            {
-                throw new InvalidOperationException("One or more account credential strings have not been populated. Please ensure that your Batch and Storage account credentials have been specified.");
-            }
-            string jobToken = DateTime.Now.ToString("yyyyMMddhhmm");
-            string JobId = string.Format(JobIdFormat, jobToken);
-            string PoolId = PoolIdFormat;
+            string jobToken = DateTime.Now.ToString("yyyyMMddHHmm");
+            string jobId = string.Format(JobIdFormat, jobToken);
+            string poolId = PoolIdFormat;
             string inputContainerName = jobToken + "-input";
             string outputContainerName = jobToken + "-output";
+            int? myExitCode = 0;
 
-            log.Info("Validating command parameters");
+
+            log.Info("Validating general command parameters");
             CommandLineArgs cmdLine = CommandLine.ParseCommandLineArg(args);
             string[] errorMessages;
             int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
                 foreach(var msg in errorMessages)
+                {
+                    log.Error(msg);
+                }
+                return tmpReturn;
+            }
+
+            log.Info("Validating batch command parameters");
+            tmpReturn = Validation.ValidateBatchArguments(ref cmdLine, out errorMessages);
+            if (tmpReturn != 0)
+            {
+                foreach (var msg in errorMessages)
                 {
                     log.Error(msg);
                 }
@@ -84,12 +77,12 @@ namespace SqlBuildManager.Console.Batch
             try
             {
 
-                log.InfoFormat("Sample start: {0}", DateTime.Now);
+                log.InfoFormat("Batch job start: {0}", DateTime.Now);
                 Stopwatch timer = new Stopwatch();
                 timer.Start();
 
                 // Construct the Storage account connection string
-                string storageConnectionString = String.Format("DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}", StorageAccountName, StorageAccountKey);
+                string storageConnectionString = String.Format("DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}", cmdLine.StorageAccountName, cmdLine.StorageAccountKey);
 
                 // Retrieve the storage account
                 CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
@@ -120,7 +113,13 @@ namespace SqlBuildManager.Console.Batch
 
                 //Get the list of DB targets and distribute across batch count
                 var allTargets = GetTargetConfigValues(cmdLine.MultiDbRunConfigFileName);
-                var splitTargets = SplitLoadEvenly(allTargets, Execution.PoolNodeCount);
+                var splitTargets = SplitLoadEvenly(allTargets, cmdLine.PoolNodeCount);
+                if(splitTargets.Count < cmdLine.PoolNodeCount)
+                {
+                    log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.PoolNodeCount);
+                    cmdLine.PoolNodeCount = splitTargets.Count;
+                }
+       
 
                 //Write out each split file
                 string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
@@ -141,16 +140,16 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(args,cmdLine, inputFiles, containerSasToken, Execution.PoolNodeCount);
+                IList<string> commandLines = CompileCommandLines(args,cmdLine, inputFiles, containerSasToken, cmdLine.PoolNodeCount, jobId);
 
                 // Get a Batch client using account creds
 
-                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(BatchAccountUrl, BatchAccountName, BatchAccountKey);
+                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchAccountUrl, cmdLine.BatchAccountName, cmdLine.BatchAccountKey);
 
                 using (BatchClient batchClient = BatchClient.Open(cred))
                 {
                     // Create a Batch pool, VM configuration, Windows Server image
-                    log.InfoFormat("Creating pool [{0}]...", PoolId);
+                    log.InfoFormat("Creating pool [{0}]...", poolId);
 
                     ImageReference imageReference = new ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer",
                         sku: "2016-Datacenter-with-containers", version: "latest");
@@ -161,8 +160,8 @@ namespace SqlBuildManager.Console.Batch
                     try
                     {
                         CloudPool pool = batchClient.PoolOperations.CreatePool(
-                            poolId: PoolId, targetDedicatedComputeNodes: PoolNodeCount, 
-                            virtualMachineSize: PoolVMSize, virtualMachineConfiguration: virtualMachineConfiguration);
+                            poolId: poolId, targetDedicatedComputeNodes: cmdLine.PoolNodeCount, 
+                            virtualMachineSize: cmdLine.BatchVmSize, virtualMachineConfiguration: virtualMachineConfiguration);
                         pool.Commit();
                     }
                     catch (BatchException be)
@@ -170,7 +169,7 @@ namespace SqlBuildManager.Console.Batch
                         // Accept the specific error code PoolExists as that is expected if the pool already exists
                         if (be.RequestInformation?.BatchError?.Code == BatchErrorCodeStrings.PoolExists)
                         {
-                            log.InfoFormat("The pool {0} already existed when we tried to create it", PoolId);
+                            log.InfoFormat("The pool {0} already existed when we tried to create it", poolId);
                         }
                         else
                         {
@@ -179,13 +178,13 @@ namespace SqlBuildManager.Console.Batch
                     }
 
                     // Create a Batch job
-                    log.InfoFormat("Creating job [{0}]...", JobId);
+                    log.InfoFormat("Creating job [{0}]...", jobId);
 
                     try
                     {
                         CloudJob job = batchClient.JobOperations.CreateJob();
-                        job.Id = JobId;
-                        job.PoolInformation = new PoolInformation { PoolId = PoolId };
+                        job.Id = jobId;
+                        job.PoolInformation = new PoolInformation { PoolId = poolId };
                         job.Commit();
                     }
                     catch (BatchException be)
@@ -193,7 +192,7 @@ namespace SqlBuildManager.Console.Batch
                         // Accept the specific error code JobExists as that is expected if the job already exists
                         if (be.RequestInformation?.BatchError?.Code == BatchErrorCodeStrings.JobExists)
                         {
-                            log.InfoFormat("The job {0} already existed when we tried to create it", JobId);
+                            log.InfoFormat("The job {0} already existed when we tried to create it", jobId);
                         }
                         else
                         {
@@ -202,7 +201,7 @@ namespace SqlBuildManager.Console.Batch
                     }
 
                     // Create a collection to hold the tasks that we'll be adding to the job
-                    log.InfoFormat("Adding {0} tasks to job [{1}]...", inputFiles.Count, JobId);
+                    log.InfoFormat("Adding {0} tasks to job [{1}]...", splitTargets.Count, jobId);
 
                     List<CloudTask> tasks = new List<CloudTask>();
 
@@ -221,7 +220,7 @@ namespace SqlBuildManager.Console.Batch
                         task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
-                                filePattern: @"D:\runlogs\*.log",
+                                filePattern: @"D:\" + jobId + @"\*.log",
                                 destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
                                         containerUrl: containerSasToken,
                                         path: taskId)),
@@ -229,7 +228,7 @@ namespace SqlBuildManager.Console.Batch
                                 uploadCondition: OutputFileUploadCondition.TaskCompletion)),
 
                             new OutputFile(
-                                filePattern: @"D:\runlogs\*.xml",
+                                filePattern: @"D:\" + jobId + @"\*.xml",
                                 destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
                                         containerUrl: containerSasToken,
                                         path: taskId)),
@@ -241,13 +240,13 @@ namespace SqlBuildManager.Console.Batch
                     }
 
                     // Add all tasks to the job.
-                    batchClient.JobOperations.AddTask(JobId, tasks);
+                    batchClient.JobOperations.AddTask(jobId, tasks);
 
                     // Monitor task success/failure, specifying a maximum amount of time to wait for the tasks to complete.
                     TimeSpan timeout = TimeSpan.FromMinutes(30);
                     log.InfoFormat("Monitoring all tasks for 'Completed' state, timeout in {0}...", timeout);
 
-                    IEnumerable<CloudTask> addedTasks = batchClient.JobOperations.ListTasks(JobId);
+                    IEnumerable<CloudTask> addedTasks = batchClient.JobOperations.ListTasks(jobId);
 
                     batchClient.Utilities.CreateTaskStateMonitor().WaitAll(addedTasks, TaskState.Completed, timeout);
 
@@ -256,27 +255,32 @@ namespace SqlBuildManager.Console.Batch
                     // Print task output
                     log.Info("Printing task output...");
 
-                    IEnumerable<CloudTask> completedtasks = batchClient.JobOperations.ListTasks(JobId);
-
+                    IEnumerable<CloudTask> completedtasks = batchClient.JobOperations.ListTasks(jobId);
+                    
                     foreach (CloudTask task in completedtasks)
                     {
                         string nodeId = String.Format(task.ComputeNodeInformation.ComputeNodeId);
                         log.InfoFormat("Task: {0}", task.Id);
                         log.InfoFormat("Node: {0}", nodeId);
+                        log.InfoFormat("Exit Code: {0}", task.ExecutionInformation.ExitCode);
                         log.InfoFormat("Standard out:");
                         log.InfoFormat(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
+                        if(task.ExecutionInformation.ExitCode != 0)
+                        {
+                            myExitCode = task.ExecutionInformation.ExitCode;
+                        }
                     }
 
                     // Print out some timing info
                     timer.Stop();
-                    log.InfoFormat("Sample end: {0}", DateTime.Now);
+                    log.InfoFormat("Batch job end: {0}", DateTime.Now);
                     log.InfoFormat("Elapsed time: {0}", timer.Elapsed);
 
                     // Clean up Batch resources
-                    batchClient.JobOperations.DeleteJob(JobId);
+                    batchClient.JobOperations.DeleteJob(jobId);
                     if (cmdLine.DeleteBatchPool)
                     {
-                        batchClient.PoolOperations.DeletePool(PoolId);
+                        batchClient.PoolOperations.DeletePool(poolId);
                     }
 
                 }
@@ -286,7 +290,10 @@ namespace SqlBuildManager.Console.Batch
                 log.InfoFormat("Sample complete");
             }
 
-            return 0;
+            if (myExitCode.HasValue)
+                return myExitCode.Value;
+            else
+                return -100009;
 
         }
 
@@ -297,7 +304,7 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        private IList<string> CompileCommandLines(string[] args, CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount)
+        private IList<string> CompileCommandLines(string[] args, CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount,  string jobId)
         {
             var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
 
@@ -324,7 +331,7 @@ namespace SqlBuildManager.Console.Batch
                     }
                     else if (arg.ToLower().Contains("/rootloggingpath"))
                     {
-                        sb.Append(" /RootLoggingPath=D:\\runlogs");
+                        sb.AppendFormat(" /RootLoggingPath=D:\\{0}", jobId);
                     }
                     else if (arg.ToLower().Contains("/override"))
                     {
