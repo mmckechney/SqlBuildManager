@@ -2,6 +2,7 @@
 <SqlBuildManagerChangeNotes>
   <Version Major="10" Minor="4" Revision="0">
     <added>Functionality to leverage Azure Batch as an execution engine</added>
+    <note>Install now requires .NET Version 4.7.1 or higher</note>
   </Version>
   <Version Major="10" Minor="3" Revision="0">
     <added>New authentication types for Azure: Azure AD Password and Azure AD Integrated</added>

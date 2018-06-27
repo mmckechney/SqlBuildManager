@@ -19,7 +19,7 @@ namespace SqlBuildManager.Console.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -70,7 +70,7 @@ namespace SqlBuildManager.Console.Properties {
         ///    Build                    Performs a standard,local SBM execution via command line
         ///    Threaded                 For updating multiple databases simultaneously from the current machine
         ///    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing 
-        ///    Package                 [rest of string was truncated]&quot;;.
+        ///    Batch                   [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ConsoleHelp2 {
             get {
