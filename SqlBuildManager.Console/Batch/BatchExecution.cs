@@ -141,6 +141,8 @@ namespace SqlBuildManager.Console.Batch
 
                 //Create the individual command lines for each node
                 IList<string> commandLines = CompileCommandLines(args,cmdLine, inputFiles, containerSasToken, cmdLine.PoolNodeCount, jobId);
+                foreach (var s in commandLines)
+                    log.Debug(s);
 
                 // Get a Batch client using account creds
 
@@ -220,7 +222,7 @@ namespace SqlBuildManager.Console.Batch
                         task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
-                                filePattern: @"D:\" + jobId + @"\*.log",
+                                filePattern: cmdLine.RootLoggingPath + @"\*.log",
                                 destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
                                         containerUrl: containerSasToken,
                                         path: taskId)),
@@ -228,7 +230,7 @@ namespace SqlBuildManager.Console.Batch
                                 uploadCondition: OutputFileUploadCondition.TaskCompletion)),
 
                             new OutputFile(
-                                filePattern: @"D:\" + jobId + @"\*.xml",
+                                filePattern: cmdLine.RootLoggingPath + @"\*.xml",
                                 destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
                                         containerUrl: containerSasToken,
                                         path: taskId)),
@@ -322,16 +324,19 @@ namespace SqlBuildManager.Console.Batch
                     else if (arg.ToLower().Contains("/packagename"))
                     {
                         var pkg = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PackageName.ToLower()))).FirstOrDefault();
-                        sb.Append(" /PackageName=" + pkg.FilePath);
+                        sb.Append(" /PackageName=\"" + pkg.FilePath + "\"");
                     }
                     else if (arg.ToLower().Contains("/platinumdacpac"))
                     {
                         var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PlatinumDacpac.ToLower()))).FirstOrDefault();
-                        sb.Append(" /PlatinumDacpac=" + dac.FilePath);
+                        sb.Append(" /PlatinumDacpac=\"" + dac.FilePath + "\"");
                     }
                     else if (arg.ToLower().Contains("/rootloggingpath"))
                     {
+                        //sb.Append(" /RootLoggingPath=\"D:\\runlogs\\\"");
+                        //cmdLine.RootLoggingPath = @"D:\runlogs\";
                         sb.AppendFormat(" /RootLoggingPath=D:\\{0}", jobId);
+                        cmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
                     }
                     else if (arg.ToLower().Contains("/override"))
                     {
