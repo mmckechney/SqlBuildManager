@@ -61,7 +61,7 @@ Remote Execution settings (/Action=Remote)
     /RemoteDbErrorList=<remote name>|all           Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers
     /RemoteErrorDetail=<server:db>|<instance>|all  Retrieves the error detail for each instance in error. Is "server:db" is provided, full log detail is returned
 
-Dacpac Execution (/Action={Threaded|Remote})
+Dacpac Execution (/Action={Threaded|Remote|Batch})
     /PlatinumDacpac="<filename>"            Name of the dacpac containing the platinum schema
     /TargetDacpac="<filename>"              Name of the dacpac containing the schema of the database to be updated
     /ForceCustomDacPac=(true|false)         *USE WITH CAUTION! (/Action=Threaded only)This will force the dacpac extraction and creation of custom scripts for EVERY target database! Your execution will take much longer.

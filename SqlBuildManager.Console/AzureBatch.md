@@ -1,6 +1,6 @@
 ﻿# Leveraging Azure Batch for distributed builds
 
-## Set up yuor Batch Account (one time event)
+## Set up your Batch Account (one time event)
 
 ### Create Azure Batch Account
 1. Login to the Azure Portal at <http://portal.azure.com>
@@ -11,12 +11,12 @@
 6. Wait for the Azure Batch acount to be provisioned (should only take a few minutes)
 
 ### Upload SQL Build Manager code package
-1. First, make sure you have a build of SQL Build Manager (if you pull from Git and build, the executables will be in the root bin debug or release folder)
+1. First, make sure you have a build of SQL Build Manager (if you pull from Git and build, the executables will be in the root bin/debug or bin/release folder)
 2. Zip up all of the files in the build folder
 3. In the Azure Portal, navigate to your Azure Batch account and click the "Applications" blade.
 4. Click the "+ Add" link
 5. Fill in the Application Id with "sqlbuildmanager" (no quotes) and the version field (can be any alpha-numeric) 
-6. Use the folder icon to select your zip file that contains the code
+6. Use the folder icon to select your zip file that contains the compiled binaries
 7. Click the "OK" button - this will upload your zip package and it will now show up in the Application list
 
 ### Collect Azure Batch and storage account information
@@ -63,4 +63,12 @@ Azure Batch builds are started locally via `SqlBuildManager.Console.exe`. This p
 *Note:* you can always get a command line reference by executing `SqlBuildManager.Console.exe /?`
 
 
-###
+## Examples
+
+The following command contains all of the required arguments to run a Batch job:
+
+`SqlBuildManager.Console.exe /Action=Batch /override="C:\temp\override.cfg" /PackageName=c:\temp\mybuild.sbm /username=myname /password=P@ssw0rd! /DeleteBatchPool=false /BatchNodeCount=5 /BatchVmSize=STANDARD_DS1_V2 /BatchAccountName=mybatch /BatchAccountUrl=https://mybatch.eastus.batch.azure.com /BatchAccountKey=x1hGLIIrdd3rroqXpfc2QXubzzCYOAtrNf23d3dCtOL9cQ+WV6r/raNrsAdV7xTaAyNGsEagbF0VhsaOTxk6A== /StorageAccountName=mystorage /StorageAccountKey=lt2e2dr7JYVnaswZJiv1J5g8v2ser20B0pcO0PacPaVl33AAsuT2zlxaobdQuqs0GHr8+CtlE6DUi0AH+oUIeg==`
+
+The following command line assumes that the Batch and Storage settings (except for keys) are in the <appSettings>:
+
+`SqlBuildManager.Console.exe /Action=Batch /override="C:\temp\override.cfg" /PackageName=c:\temp\mybuild.sbm /username=mmcmynamekechney /password=P@ssw0rd! /DeleteBatchPool=false /BatchNodeCount=5 /BatchAccountKey=x1hGLIIrdd3rroqXpfc2QXubzzCYOAtrNf23d3dCtOL9cQ+WV6r/raNrsAdV7xTaAyNGsEagbF0VhsaOTxk6A== /StorageAccountKey=lt2e2dr7JYVnaswZJiv1J5g8v2ser20B0pcO0PacPaVl33AAsuT2zlxaobdQuqs0GHr8+CtlE6DUi0AH+oUIeg==`

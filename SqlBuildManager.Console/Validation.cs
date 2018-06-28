@@ -95,7 +95,7 @@ namespace SqlBuildManager.Console
             string error = string.Empty;
 
             //Validate and set the value for the root logging path
-            if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
+            if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath) && cmdLine.Action.Trim().ToLower() != "batch")
             {
                 string msg = "Invalid command line set. Missing /RootLoggingPath setting.";
                 log.Error(msg);
