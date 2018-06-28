@@ -191,6 +191,7 @@
       <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="AzureBatch.md" />
     <None Include="Dockerfile" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
