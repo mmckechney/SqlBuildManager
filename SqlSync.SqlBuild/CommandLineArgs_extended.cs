@@ -59,7 +59,7 @@ namespace SqlSync.SqlBuild
 
         #region Needed for Azure batch processing 
         public bool DeleteBatchPool { get; set; } = true;
-        public int PoolNodeCount { get; set; } = 10;
+        public int BatchNodeCount { get; set; } = 10;
         public string BatchAccountName { get; set; } = null;
         public string BatchAccountKey { get; set; } = null;
         public string BatchAccountUrl { get; set; } = null;

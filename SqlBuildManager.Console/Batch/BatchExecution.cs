@@ -94,7 +94,7 @@ namespace SqlBuildManager.Console.Batch
 
                 container.CreateIfNotExists();
 
-                string containerSasToken = GetOutputContainerSasUrl(blobClient, outputContainerName);
+                string containerSasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, false);
 
                 // The collection of data files that are to be processed by the tasks
                 List<string> inputFilePaths = new List<string>();
@@ -113,11 +113,11 @@ namespace SqlBuildManager.Console.Batch
 
                 //Get the list of DB targets and distribute across batch count
                 var allTargets = GetTargetConfigValues(cmdLine.MultiDbRunConfigFileName);
-                var splitTargets = SplitLoadEvenly(allTargets, cmdLine.PoolNodeCount);
-                if(splitTargets.Count < cmdLine.PoolNodeCount)
+                var splitTargets = SplitLoadEvenly(allTargets, cmdLine.BatchNodeCount);
+                if(splitTargets.Count < cmdLine.BatchNodeCount)
                 {
-                    log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.PoolNodeCount);
-                    cmdLine.PoolNodeCount = splitTargets.Count;
+                    log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.BatchNodeCount);
+                    cmdLine.BatchNodeCount = splitTargets.Count;
                 }
        
 
@@ -140,12 +140,11 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(args,cmdLine, inputFiles, containerSasToken, cmdLine.PoolNodeCount, jobId);
+                IList<string> commandLines = CompileCommandLines(args,cmdLine, inputFiles, containerSasToken, cmdLine.BatchNodeCount, jobId);
                 foreach (var s in commandLines)
                     log.Debug(s);
 
                 // Get a Batch client using account creds
-
                 BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchAccountUrl, cmdLine.BatchAccountName, cmdLine.BatchAccountKey);
 
                 using (BatchClient batchClient = BatchClient.Open(cred))
@@ -162,7 +161,7 @@ namespace SqlBuildManager.Console.Batch
                     try
                     {
                         CloudPool pool = batchClient.PoolOperations.CreatePool(
-                            poolId: poolId, targetDedicatedComputeNodes: cmdLine.PoolNodeCount, 
+                            poolId: poolId, targetDedicatedComputeNodes: cmdLine.BatchNodeCount, 
                             virtualMachineSize: cmdLine.BatchVmSize, virtualMachineConfiguration: virtualMachineConfiguration);
                         pool.Commit();
                     }
@@ -171,7 +170,28 @@ namespace SqlBuildManager.Console.Batch
                         // Accept the specific error code PoolExists as that is expected if the pool already exists
                         if (be.RequestInformation?.BatchError?.Code == BatchErrorCodeStrings.PoolExists)
                         {
-                            log.InfoFormat("The pool {0} already existed when we tried to create it", poolId);
+                            try
+                            {
+                                log.InfoFormat("The pool {0} already existed when we tried to create it", poolId);
+                                var pool = batchClient.PoolOperations.GetPool(poolId);
+                                log.InfoFormat("Pre-existing node count {0}", pool.CurrentDedicatedComputeNodes);
+                                if (pool.CurrentDedicatedComputeNodes != cmdLine.BatchNodeCount)
+                                {
+                                    log.WarnFormat("The pool {0} node count of {1} does not match the requested node count of {2}", poolId, pool.CurrentDedicatedComputeNodes, cmdLine.BatchNodeCount);
+                                    if (pool.CurrentDedicatedComputeNodes < cmdLine.BatchNodeCount)
+                                    {
+                                        log.WarnFormat("Requested node count is greater then existing node count. Resizing pool to {0}", cmdLine.BatchNodeCount);
+                                        pool.Resize(targetDedicatedComputeNodes: cmdLine.BatchNodeCount);
+                                    }
+                                    else
+                                    {
+                                        log.Warn("Existing node count is larger than requested node count. No pool changes bring made");
+                                    }
+                                }
+                            }catch(Exception exe)
+                            {
+                                log.Warn("Unable to get information on existing pool", exe);
+                            }
                         }
                         else
                         {
@@ -222,21 +242,12 @@ namespace SqlBuildManager.Console.Batch
                         task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
-                                filePattern: cmdLine.RootLoggingPath + @"\*.log",
-                                destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
-                                        containerUrl: containerSasToken,
-                                        path: taskId)),
-                                uploadOptions: new OutputFileUploadOptions(
-                                uploadCondition: OutputFileUploadCondition.TaskCompletion)),
-
-                            new OutputFile(
-                                filePattern: cmdLine.RootLoggingPath + @"\*.xml",
+                                filePattern: cmdLine.RootLoggingPath + @"\SqlBuildManager.Console.Execution.log",
                                 destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
                                         containerUrl: containerSasToken,
                                         path: taskId)),
                                 uploadOptions: new OutputFileUploadOptions(
                                 uploadCondition: OutputFileUploadCondition.TaskCompletion))
-
                         };
                         tasks.Add(task);
                     }
@@ -255,13 +266,14 @@ namespace SqlBuildManager.Console.Batch
                     log.Info("All tasks reached state Completed.");
 
                     // Print task output
-                    log.Info("Printing task output...");
+                    log.Info("Printing task output...\r\n");
 
                     IEnumerable<CloudTask> completedtasks = batchClient.JobOperations.ListTasks(jobId);
                     
                     foreach (CloudTask task in completedtasks)
                     {
                         string nodeId = String.Format(task.ComputeNodeInformation.ComputeNodeId);
+                        log.Info("---------------------------------");
                         log.InfoFormat("Task: {0}", task.Id);
                         log.InfoFormat("Node: {0}", nodeId);
                         log.InfoFormat("Exit Code: {0}", task.ExecutionInformation.ExitCode);
@@ -285,17 +297,26 @@ namespace SqlBuildManager.Console.Batch
                         batchClient.PoolOperations.DeletePool(poolId);
                     }
 
+                    string readOnlySasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, true);
+                    log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
+                    log.Info("The read-only SAS token URL is valid for 7 days. See https://azure.microsoft.com/en-us/features/storage-explorer/ to downoad Azure Storage Explorer");
                 }
             }
             finally
             {
-                log.InfoFormat("Sample complete");
+                log.InfoFormat("Batch complete");
             }
 
             if (myExitCode.HasValue)
+            {
+                log.InfoFormat("Exit Code: {0}", myExitCode.Value);
                 return myExitCode.Value;
+            }
             else
+            {
+                log.InfoFormat("Exit Code: {0}", -100009);
                 return -100009;
+            }
 
         }
 
@@ -386,19 +407,32 @@ namespace SqlBuildManager.Console.Batch
 
             return new ResourceFile(blobSasUri, blobName);
         }
-        private static string  GetOutputContainerSasUrl(CloudBlobClient blobClient, string outputContainerName)
+        private static string GetOutputContainerSasUrl(CloudBlobClient blobClient, string outputContainerName, bool forRead)
         {
-            log.InfoFormat("Ensuring presance of output blob container '{0}'", outputContainerName);
+            log.DebugFormat("Ensuring presence of output blob container '{0}'", outputContainerName);
             CloudBlobContainer container = blobClient.GetContainerReference(outputContainerName);
             container.CreateIfNotExists();
-            SharedAccessBlobPolicy sasConstraints = new SharedAccessBlobPolicy
+            SharedAccessBlobPolicy sasConstraints;
+            if (!forRead)
             {
-                SharedAccessExpiryTime = DateTime.UtcNow.AddHours(2),
-                Permissions = SharedAccessBlobPermissions.Add | SharedAccessBlobPermissions.Create | SharedAccessBlobPermissions.Write | SharedAccessBlobPermissions.Read | SharedAccessBlobPermissions.List
-            };
+                sasConstraints = new SharedAccessBlobPolicy
+                {
+                    SharedAccessExpiryTime = DateTime.UtcNow.AddHours(4),
+                    Permissions = SharedAccessBlobPermissions.Add | SharedAccessBlobPermissions.Create | SharedAccessBlobPermissions.Write | SharedAccessBlobPermissions.Read | SharedAccessBlobPermissions.List
+                };
+            }
+            else
+            {
+                sasConstraints = new SharedAccessBlobPolicy
+                {
+                    SharedAccessExpiryTime = DateTime.UtcNow.AddDays(7),
+                    Permissions =  SharedAccessBlobPermissions.Read | SharedAccessBlobPermissions.List
+                };
+            }
             string containerSasToken = container.GetSharedAccessSignature(sasConstraints);
             return String.Format("{0}{1}", container.Uri, containerSasToken);
         }
+
         /// <summary>
         /// Gets a string array for all of the target DB override settings
         /// </summary>

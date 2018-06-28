@@ -209,9 +209,9 @@ namespace SqlSync.SqlBuild
             }
 
             int node;
-            if (dict.ContainsKey("poolnodecount") && Int32.TryParse(dict["poolnodecount"], out node))
+            if (dict.ContainsKey("batchnodecount") && Int32.TryParse(dict["batchnodecount"], out node))
             {
-                cmdLine.PoolNodeCount = node;
+                cmdLine.BatchNodeCount = node;
             }
 
             if (dict.ContainsKey("batchaccountname"))
