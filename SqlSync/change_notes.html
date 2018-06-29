@@ -1,1002 +1,1392 @@
 ﻿<html>
-  <head>
+<head>
     <style type="text/css">
-					body
-					{
-					font-family:Calibri, Verdana, Arial;
-					font-size: 10pt;
-					color: black;
-					}
-					.added
-					{
-					font-size: 10pt;
-					color: green;
-					}
-					.fixed
-					{
-					font-size: 10pt;
-					color: red;
-					}
-					.updated
-					{
-					font-size: 10pt;
-					color: orange;
-					}
-					.note
-					{
-					font-size: 10pt;
-					color: blue;
-					}
-					.version
-					{
-					font-size: 11pt;
-					color: dark blue;
-					font-weight: bold;
-					}
+        body {
+            font-family: Calibri, Verdana, Arial;
+            font-size: 10pt;
+            color: black;
+        }
 
+        .added {
+            font-size: 10pt;
+            color: green;
+        }
 
-				</style>
-  </head>
-  <body>
+        .fixed {
+            font-size: 10pt;
+            color: red;
+        }
+
+        .updated {
+            font-size: 10pt;
+            color: orange;
+        }
+
+        .note {
+            font-size: 10pt;
+            color: blue;
+        }
+
+        .version {
+            font-size: 11pt;
+            color: dark blue;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="version">Version 10.4.0</div>
+    <div>
+        <span class="added">ADDED: </span>Functionality to leverage Azure Batch as an execution engine
+    </div>
+    <div>
+        <span class="updated">UPDATED: </span>Swaped out SharpZipLib to remove Zip Slip vunlerability
+    </div>
+    <br />
     <div class="version">Version 10.3.0</div>
     <div>
-      <span class="added">ADDED: </span>New authentication types for Azure: Azure AD Password and Azure AD Integrated</div>
+        <span class="added">ADDED: </span>New authentication types for Azure: Azure AD Password and Azure AD Integrated
+    </div>
     <div>
-      <span class="note">NOTE: </span>Install now requires .NET Version 4.6.1 or higher (https://www.microsoft.com/en-us/download/details.aspx?id=49981)</div>
+        <span class="note">NOTE: </span>Install now requires .NET Version 4.6.1 or higher (https://www.microsoft.com/en-us/download/details.aspx?id=49981)
+    </div>
     <div>
-      <span class="note">NOTE: </span>Also required is the Microsoft Active Directory Authentication Library for Microsoft SQL Server (https://www.microsoft.com/en-us/download/details.aspx?id=48742)</div>
+        <span class="note">NOTE: </span>Also required is the Microsoft Active Directory Authentication Library for Microsoft SQL Server (https://www.microsoft.com/en-us/download/details.aspx?id=48742)
+    </div>
     <br />
     <div class="version">Version 10.2.12</div>
     <div>
-      <span class="added">ADDED: </span>Added commandline to create an SBM package from a Platinum Dacpac and target database. New action /Action=ScriptExtract and /OutputSbm="&lt;filename&gt;"</div>
+        <span class="added">ADDED: </span>Added commandline to create an SBM package from a Platinum Dacpac and target database. New action /Action=ScriptExtract and /OutputSbm="&lt;filename&gt;"
+    </div>
     <div>
-      <span class="added">ADDED: </span>Now masking passwords on log messages</div>
+        <span class="added">ADDED: </span>Now masking passwords on log messages
+    </div>
     <div>
-      <span class="note">NOTE: </span>Consolidating cloud storage locations</div>
+        <span class="note">NOTE: </span>Consolidating cloud storage locations
+    </div>
     <div>
-      <span class="note">NOTE: </span>Removing obsolete projects from solution</div>
+        <span class="note">NOTE: </span>Removing obsolete projects from solution
+    </div>
     <br />
     <div class="version">Version 10.2.11</div>
     <div>
-      <span class="updated">UPDATED: </span>Changed the default script timeout for a dacpac generated script from 20 seconds to 500 seconds</div>
+        <span class="updated">UPDATED: </span>Changed the default script timeout for a dacpac generated script from 20 seconds to 500 seconds
+    </div>
     <br />
     <div class="version">Version 10.2.10</div>
     <div>
-      <span class="fixed">FIXED: </span>For a remote execution build console service check now only looks at the endpoints that were tasked with work during the session.</div>
+        <span class="fixed">FIXED: </span>For a remote execution build console service check now only looks at the endpoints that were tasked with work during the session.
+    </div>
     <br />
     <div class="version">Version 10.2.9</div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected issue of creating dacpac change scripts from incorrect source</div>
+        <span class="fixed">FIXED: </span>Corrected issue of creating dacpac change scripts from incorrect source
+    </div>
     <br />
     <div class="version">Version 10.2.8</div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected issue with retrieving client list from SQL statement</div>
+        <span class="fixed">FIXED: </span>Corrected issue with retrieving client list from SQL statement
+    </div>
     <br />
     <div class="version">Version 10.2.7</div>
     <div>
-      <span class="fixed">FIXED: </span>Fixed parsing of error logs from the remote servers</div>
+        <span class="fixed">FIXED: </span>Fixed parsing of error logs from the remote servers
+    </div>
     <br />
     <div class="version">Version 10.2.6</div>
     <div>
-      <span class="fixed">FIXED: </span>Fixed installer to include the SQLPackage.exe in all instances</div>
+        <span class="fixed">FIXED: </span>Fixed installer to include the SQLPackage.exe in all instances
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Removed restriction for the remote execution command option</div>
+        <span class="updated">UPDATED: </span>Removed restriction for the remote execution command option
+    </div>
     <br />
     <div class="version">Version 10.2.5</div>
     <div>
-      <span class="added">ADDED: </span>Can now execute ad hoc queries using SQL Authentication. Querying will use the same credentials (AD or SQL) used when opening SQL Build Manager</div>
+        <span class="added">ADDED: </span>Can now execute ad hoc queries using SQL Authentication. Querying will use the same credentials (AD or SQL) used when opening SQL Build Manager
+    </div>
     <br />
     <div class="version">Version 10.2.4</div>
     <div>
-      <span class="added">ADDED: </span>Changed dacpac scripting, removed custom scripting settings. These was preventing the drops of column defaults that then resulted in runtme build errors</div>
+        <span class="added">ADDED: </span>Changed dacpac scripting, removed custom scripting settings. These was preventing the drops of column defaults that then resulted in runtme build errors
+    </div>
     <div>
-      <span class="added">ADDED: </span>Stripping out login and user scripts</div>
+        <span class="added">ADDED: </span>Stripping out login and user scripts
+    </div>
     <br />
     <div class="version">Version 10.2.2</div>
     <div>
-      <span class="added">ADDED: </span>New argument /BuildRevision that will be used as the value to insert into a Versions table 'VersionNumber' column</div>
+        <span class="added">ADDED: </span>New argument /BuildRevision that will be used as the value to insert into a Versions table 'VersionNumber' column
+    </div>
     <div>
-      <span class="added">ADDED: </span>New argument /RemoteDbErrorList=&lt;remote name=&gt;|all. Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers </div>
+        <span class="added">ADDED: </span>New argument /RemoteDbErrorList=&lt;remote name=&gt;|all. Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers
+    </div>
     <div>
-      <span class="added">ADDED: </span>New argument /RemoteErrorDetail=&lt;server:db&gt;|&lt;instance&gt;|all.  Retrieves the error detail for each instance in error. Is "server:db" is provided, full log detail is returned</div>
+        <span class="added">ADDED: </span>New argument /RemoteErrorDetail=&lt;server:db&gt;|&lt;instance&gt;|all.  Retrieves the error detail for each instance in error. Is "server:db" is provided, full log detail is returned
+    </div>
     <div>
-      <span class="added">ADDED: </span>"Last Status" to values returned with /AzureRemoteStatus=true</div>
+        <span class="added">ADDED: </span>"Last Status" to values returned with /AzureRemoteStatus=true
+    </div>
     <br />
     <div class="version">Version 10.2.1</div>
     <div>
-      <span class="added">ADDED: </span>Ability to use a SQL file as the source for a multi-database configuration source. The query must return 2 columns: 1)server name 2) database name</div>
+        <span class="added">ADDED: </span>Ability to use a SQL file as the source for a multi-database configuration source. The query must return 2 columns: 1)server name 2) database name
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to specify a /PlatinumDbSource and /PlatinumServerSource as sources to generate the Platinum dacpac at runtime, vs using a pre-composed dacpac file</div>
+        <span class="added">ADDED: </span>Ability to specify a /PlatinumDbSource and /PlatinumServerSource as sources to generate the Platinum dacpac at runtime, vs using a pre-composed dacpac file
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Reworked commandline to use a single "/Action" argument that designates the basic functionality of the runtime instance</div>
+        <span class="updated">UPDATED: </span>Reworked commandline to use a single "/Action" argument that designates the basic functionality of the runtime instance
+    </div>
     <br />
     <div class="version">Version 10.1.1</div>
     <div>
-      <span class="added">ADDED: </span>Added console argument /AzureRemoteStatus=true to list Azure remote execution machines and their readiness status</div>
+        <span class="added">ADDED: </span>Added console argument /AzureRemoteStatus=true to list Azure remote execution machines and their readiness status
+    </div>
     <div>
-      <span class="added">ADDED: </span>Added console argument /ForceCustomDacPac=true to force teh creation of a custom dacpac and build script for each target database. USE WITH CAUTION this will exponentially increase the deployment time  and processing needs. Use only as a last scenario to ensure full database synchronicity</div>
+        <span class="added">ADDED: </span>Added console argument /ForceCustomDacPac=true to force teh creation of a custom dacpac and build script for each target database. USE WITH CAUTION this will exponentially increase the deployment time  and processing needs. Use only as a last scenario to ensure full database synchronicity
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Various remote/ threaded bug fixes</div>
+        <span class="fixed">FIXED: </span>Various remote/ threaded bug fixes
+    </div>
     <br />
     <div class="version">Version 10.1.0</div>
     <div>
-      <span class="added">ADDED: </span>Ability to use a "platinum" Data-tier application file (dacpac) to syncronize database schemas</div>
+        <span class="added">ADDED: </span>Ability to use a "platinum" Data-tier application file (dacpac) to syncronize database schemas
+    </div>
     <br />
     <div class="version">Version 10.0.0</div>
     <div>
-      <span class="added">ADDED: </span>New ability to compare package deploys between two databases</div>
+        <span class="added">ADDED: </span>New ability to compare package deploys between two databases
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to syncronize package deploys between a "golden copy" and a target</div>
+        <span class="added">ADDED: </span>Ability to syncronize package deploys between a "golden copy" and a target
+    </div>
     <div>
-      <span class="added">ADDED: </span>New Azure cloud service deployment for remote execution engines!</div>
+        <span class="added">ADDED: </span>New Azure cloud service deployment for remote execution engines!
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Installation for the Service is now a self-installing command-line for SqlBuildManager.Services.Host.exe</div>
+        <span class="updated">UPDATED: </span>Installation for the Service is now a self-installing command-line for SqlBuildManager.Services.Host.exe
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Installation for the SBM tool is through ClickOnce at www.sqlbuildmanager.com or an InstallShield installer</div>
+        <span class="updated">UPDATED: </span>Installation for the SBM tool is through ClickOnce at www.sqlbuildmanager.com or an InstallShield installer
+    </div>
     <div>
-      <span class="note">NOTE: </span>See the command-line reference for appropriate flags for data syncronization</div>
+        <span class="note">NOTE: </span>See the command-line reference for appropriate flags for data syncronization
+    </div>
     <br />
     <div class="version">Version 9.2.2</div>
     <div>
-      <span class="added">ADDED: </span>Command line argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of hte target databases</div>
+        <span class="added">ADDED: </span>Command line argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of hte target databases
+    </div>
     <div>
-      <span class="added">ADDED: </span>New command line help (/? or /help) message</div>
+        <span class="added">ADDED: </span>New command line help (/? or /help) message
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Remote execution validation between server names and execution agents is no longer case sensitive</div>
+        <span class="updated">UPDATED: </span>Remote execution validation between server names and execution agents is no longer case sensitive
+    </div>
     <br />
     <div class="version">Version 9.2.1</div>
     <div>
-      <span class="added">ADDED: </span>New policy check status that warns you that code should be reviewed before release</div>
+        <span class="added">ADDED: </span>New policy check status that warns you that code should be reviewed before release
+    </div>
     <div>
-      <span class="added">ADDED: </span>Commandline abilty to check script policies. Usage: SqlBuildManager.Console.exe /PolicyCheck "&lt;Source Package Path and Name&gt;" </div>
+        <span class="added">ADDED: </span>Commandline abilty to check script policies. Usage: SqlBuildManager.Console.exe /PolicyCheck "&lt;Source Package Path and Name&gt;"
+    </div>
     <div>
-      <span class="added">ADDED: </span>Commandline ability to create a default backout package. Usage: SqlBuildManager.Console.exe /CreateBackout "&lt;Source Package Path and Name&gt;" /server="&lt;Backout source server&gt;" /database="&lt;Backout source database&gt;"</div>
+        <span class="added">ADDED: </span>Commandline ability to create a default backout package. Usage: SqlBuildManager.Console.exe /CreateBackout "&lt;Source Package Path and Name&gt;" /server="&lt;Backout source server&gt;" /database="&lt;Backout source database&gt;"
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Script policy icons were getting set to "Policy checks not run" after a committed build</div>
+        <span class="fixed">FIXED: </span>Script policy icons were getting set to "Policy checks not run" after a committed build
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Database login error for accounts that do not have code review database permissions</div>
+        <span class="fixed">FIXED: </span>Database login error for accounts that do not have code review database permissions
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Added additional quick status update for the remote service to hopefully resolve issue on slower servers</div>
+        <span class="updated">UPDATED: </span>Added additional quick status update for the remote service to hopefully resolve issue on slower servers
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Increased delay of first check between console and remote agents from 500ms to 1 second to accomodate slower agent servers</div>
+        <span class="updated">UPDATED: </span>Increased delay of first check between console and remote agents from 500ms to 1 second to accomodate slower agent servers
+    </div>
     <br />
     <div class="version">Version 9.1.0</div>
     <div>
-      <span class="fixed">FIXED: </span>Issue when creating trigger DROP scripts in backout packages</div>
+        <span class="fixed">FIXED: </span>Issue when creating trigger DROP scripts in backout packages
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Empty Zip file getting created when archiving script logs</div>
+        <span class="fixed">FIXED: </span>Empty Zip file getting created when archiving script logs
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected issue with Code Review retrieval that could cause application errors </div>
+        <span class="fixed">FIXED: </span>Corrected issue with Code Review retrieval that could cause application errors
+    </div>
     <br />
     <div class="version">Version 9.0.0</div>
     <div>
-      <span class="note">NOTE: </span>** New install requires .NET Framework 4.0 ** If you do not have this version installed (but you really should), please contact Mike to assist in making your current tool version forward compatible.</div>
+        <span class="note">NOTE: </span>** New install requires .NET Framework 4.0 ** If you do not have this version installed (but you really should), please contact Mike to assist in making your current tool version forward compatible.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to track and manage code reviews of the SQL scripts</div>
+        <span class="added">ADDED: </span>Ability to track and manage code reviews of the SQL scripts
+    </div>
     <div>
-      <span class="added">ADDED: </span>Prohibited the use of the Ad Hoc query execution to perform INSERT, UPDATE or DELETE queries. A build package should be used instead to ensure proper logging and tracking</div>
+        <span class="added">ADDED: </span>Prohibited the use of the Ad Hoc query execution to perform INSERT, UPDATE or DELETE queries. A build package should be used instead to ensure proper logging and tracking
+    </div>
     <div>
-      <span class="added">ADDED: </span>Now logs an individual script start and end time in the SqlBuild_Logging table</div>
+        <span class="added">ADDED: </span>Now logs an individual script start and end time in the SqlBuild_Logging table
+    </div>
     <div>
-      <span class="added">ADDED: </span>Refined WITH (NOLOCK) policy to now require the name of the table in the exception tag. This will allow for per table NOLOCK exceptions</div>
+        <span class="added">ADDED: </span>Refined WITH (NOLOCK) policy to now require the name of the table in the exception tag. This will allow for per table NOLOCK exceptions
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Updated WITH (NOLOCK) check to capture more edge cases</div>
+        <span class="fixed">FIXED: </span>Updated WITH (NOLOCK) check to capture more edge cases
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Updated WITH (NOLOCK) check to better handle keywords when they appear on comments</div>
+        <span class="fixed">FIXED: </span>Updated WITH (NOLOCK) check to better handle keywords when they appear on comments
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Issue with opening scripts for SBM files that are under source control</div>
+        <span class="fixed">FIXED: </span>Issue with opening scripts for SBM files that are under source control
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Issue with source control when running an object script update</div>
+        <span class="fixed">FIXED: </span>Issue with source control when running an object script update
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Object script update issue that was not capturing the "current override settings"</div>
+        <span class="fixed">FIXED: </span>Object script update issue that was not capturing the "current override settings"
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Policy icons update in the background as each script is checked via multi-threaded execution</div>
+        <span class="updated">UPDATED: </span>Policy icons update in the background as each script is checked via multi-threaded execution
+    </div>
     <div>
-      <span class="added">ADDED: </span>New command-line option to calculate the hash of an SBM or SBX file:       /gethash "&lt;packageName&gt;"</div>
+        <span class="added">ADDED: </span>New command-line option to calculate the hash of an SBM or SBX file:       /gethash "&lt;packageName&gt;"
+    </div>
     <br />
     <div class="version">Version 8.8.2</div>
     <div>
-      <span class="added">ADDED: </span>Enhanced TFS source control to automatically add new files to source. NOTE: you still need to check-in manually.</div>
+        <span class="added">ADDED: </span>Enhanced TFS source control to automatically add new files to source. NOTE: you still need to check-in manually.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Updated TFS source control to checkout only files as needed instead of checking out all of the scripts in an SBX</div>
+        <span class="updated">UPDATED: </span>Updated TFS source control to checkout only files as needed instead of checking out all of the scripts in an SBX
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Policy icon updated to include warnings as well as alerts</div>
+        <span class="updated">UPDATED: </span>Policy icon updated to include warnings as well as alerts
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Changed background color for "read-only" files to make it less obnoxious</div>
+        <span class="updated">UPDATED: </span>Changed background color for "read-only" files to make it less obnoxious
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Case sentitivity issue when matching remote execution servers and target database servers</div>
+        <span class="fixed">FIXED: </span>Case sentitivity issue when matching remote execution servers and target database servers
+    </div>
     <br />
     <div class="version">Version 8.8.1</div>
     <div>
-      <span class="updated">UPDATED: </span>Updated the TFS source control integration to play nicer with the Visual Studio status refresh</div>
+        <span class="updated">UPDATED: </span>Updated the TFS source control integration to play nicer with the Visual Studio status refresh
+    </div>
     <br />
     <div class="version">Version 8.8.0.1</div>
     <div>
-      <span class="added">ADDED: </span>Integration with Source Control! New notification area indicator if project and files are under source control.</div>
+        <span class="added">ADDED: </span>Integration with Source Control! New notification area indicator if project and files are under source control.
+    </div>
     <div>
-      <span class="note">NOTE: </span> *Will Checkout and Add files only*   You will still need to checkin/commit your changes manually</div>
+        <span class="note">NOTE: </span> *Will Checkout and Add files only*   You will still need to checkin/commit your changes manually
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Compiled against Version 11 of Server Management Objects (SMO) for compatibility with SQL 2012</div>
+        <span class="updated">UPDATED: </span>Compiled against Version 11 of Server Management Objects (SMO) for compatibility with SQL 2012
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Improved threading when adding scripted files to ensure no dialog windows are "lost"</div>
+        <span class="updated">UPDATED: </span>Improved threading when adding scripted files to ensure no dialog windows are "lost"
+    </div>
     <div>
-      <span class="added">ADDED: </span>Will now accept WITH (READPAST) as valid query optimization. This should only be used in distinct use cases!</div>
+        <span class="added">ADDED: </span>Will now accept WITH (READPAST) as valid query optimization. This should only be used in distinct use cases!
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Updated service installer to accept username and password parameters to allow for unattended service install</div>
+        <span class="updated">UPDATED: </span>Updated service installer to accept username and password parameters to allow for unattended service install
+    </div>
     <br />
     <div class="version">Version 8.7.3</div>
     <div>
-      <span class="added">ADDED: </span>Made it easier to combine SBM files via drag and drop into script list</div>
+        <span class="added">ADDED: </span>Made it easier to combine SBM files via drag and drop into script list
+    </div>
     <div>
-      <span class="added">ADDED: </span>Export of script violations to CSV file from Tools menu</div>
+        <span class="added">ADDED: </span>Export of script violations to CSV file from Tools menu
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Bulk Add confimation window was opening hidden behind the main form</div>
+        <span class="fixed">FIXED: </span>Bulk Add confimation window was opening hidden behind the main form
+    </div>
     <br />
     <div class="version">Version 8.7.2</div>
     <div>
-      <span class="note">NOTE: </span>Auditing change! No longer uses an AuditTransactionMaster when creating audit tables and triggers. All system data is now captured directly in the child audit table.</div>
+        <span class="note">NOTE: </span>Auditing change! No longer uses an AuditTransactionMaster when creating audit tables and triggers. All system data is now captured directly in the child audit table.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Changed how Primary Keys are scripted for tables. They are now separated from the CREATE TABLE script to allow for easier editing and updating of the settings.</div>
+        <span class="updated">UPDATED: </span>Changed how Primary Keys are scripted for tables. They are now separated from the CREATE TABLE script to allow for easier editing and updating of the settings.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Ensured that triggers do not get scripted with the parent table object. They should be scripted out separately.</div>
+        <span class="fixed">FIXED: </span>Ensured that triggers do not get scripted with the parent table object. They should be scripted out separately.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Duplicated table entries when the same table name is found in different schemas</div>
+        <span class="fixed">FIXED: </span>Duplicated table entries when the same table name is found in different schemas
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Not all indexes were getting scripted</div>
+        <span class="fixed">FIXED: </span>Not all indexes were getting scripted
+    </div>
     <div>
-      <span class="added">ADDED: </span>Added "EnableVisualStyles" for application to render properly in Windows 7</div>
+        <span class="added">ADDED: </span>Added "EnableVisualStyles" for application to render properly in Windows 7
+    </div>
     <br />
     <div class="version">Version 8.7.1</div>
     <div>
-      <span class="fixed">FIXED: </span>Removed redundant policy checking when adding files in bulk</div>
+        <span class="fixed">FIXED: </span>Removed redundant policy checking when adding files in bulk
+    </div>
     <div>
-      <span class="added">ADDED: </span>Automatic creation of a MultiDb .cfg file of failed databases when running from the console. Creates the file in the same directory as the executable.</div>
+        <span class="added">ADDED: </span>Automatic creation of a MultiDb .cfg file of failed databases when running from the console. Creates the file in the same directory as the executable.
+    </div>
     <div>
-      <span class="added">ADDED: </span>String include context menu shortcut for index options</div>
+        <span class="added">ADDED: </span>String include context menu shortcut for index options
+    </div>
     <br />
     <div class="version">Version 8.7.0</div>
     <div>
-      <span class="note">NOTE: </span>New Feature! Additional script list icon column to identify policy check status</div>
+        <span class="note">NOTE: </span>New Feature! Additional script list icon column to identify policy check status
+    </div>
     <div>
-      <span class="added">ADDED: </span>Automatic policy checking on load of a build package - including icon updating</div>
+        <span class="added">ADDED: </span>Automatic policy checking on load of a build package - including icon updating
+    </div>
     <div>
-      <span class="added">ADDED: </span>New "Run Policy Checks" link on script form so you can check policy adherence without trying to save the file</div>
+        <span class="added">ADDED: </span>New "Run Policy Checks" link on script form so you can check policy adherence without trying to save the file
+    </div>
     <div>
-      <span class="added">ADDED: </span>New script policy "syntax pair" type. Allows you to make sure script snippets are always paired (or never paired if that's what you want)</div>
+        <span class="added">ADDED: </span>New script policy "syntax pair" type. Allows you to make sure script snippets are always paired (or never paired if that's what you want)
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Deserialization error when MultiDb file also includes additional query column data</div>
+        <span class="fixed">FIXED: </span>Deserialization error when MultiDb file also includes additional query column data
+    </div>
     <br />
     <div class="version">Version 8.6.13</div>
     <div>
-      <span class="fixed">FIXED: </span>Backout package creation was incorrectly missing pre-existing triggers</div>
+        <span class="fixed">FIXED: </span>Backout package creation was incorrectly missing pre-existing triggers
+    </div>
     <br />
     <div class="version">Version 8.6.12</div>
     <div>
-      <span class="fixed">FIXED: </span>Enhanced the Constraint Name policy check to provide more accurate matching</div>
+        <span class="fixed">FIXED: </span>Enhanced the Constraint Name policy check to provide more accurate matching
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Removed added tabbing in scripted object to eliminate "shift" of object with multiple scripting</div>
+        <span class="fixed">FIXED: </span>Removed added tabbing in scripted object to eliminate "shift" of object with multiple scripting
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Altered creation of backout package so that manual scripts with a build order &gt;= 1000 are not marked as "run once"</div>
+        <span class="updated">UPDATED: </span>Altered creation of backout package so that manual scripts with a build order &gt;= 1000 are not marked as "run once"
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Backout package creation has new option to have DROP scripts created for "Not Found" stored procedures, functions, triggers and views</div>
+        <span class="updated">UPDATED: </span>Backout package creation has new option to have DROP scripts created for "Not Found" stored procedures, functions, triggers and views
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to copy to clipboard the list of scripts that can not be automatically generated for a backout package</div>
+        <span class="added">ADDED: </span>Ability to copy to clipboard the list of scripts that can not be automatically generated for a backout package
+    </div>
     <br />
     <div class="version">Version 8.6.11</div>
     <div>
-      <span class="fixed">FIXED: </span>Updated scripting of table objects to ensure that the object schema is included all of the object references</div>
+        <span class="fixed">FIXED: </span>Updated scripting of table objects to ensure that the object schema is included all of the object references
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Updated trigger scripts to be the same whether created new via the "Tools --&gt; User Data History and Audit Scripting" or pulled from a database via the "Scripting --&gt; Add Object Create Scripts --&gt; Triggers" menu options</div>
+        <span class="updated">UPDATED: </span>Updated trigger scripts to be the same whether created new via the "Tools --&gt; User Data History and Audit Scripting" or pulled from a database via the "Scripting --&gt; Add Object Create Scripts --&gt; Triggers" menu options
+    </div>
     <div>
-      <span class="added">ADDED: </span>Synchronized zooming size between left and right sides in script comparison screens</div>
+        <span class="added">ADDED: </span>Synchronized zooming size between left and right sides in script comparison screens
+    </div>
     <br />
     <div class="version">Version 8.6.10</div>
     <div>
-      <span class="fixed">FIXED: </span>Error when scripting triggers that included an "IF EXISTS" statement in its script body</div>
+        <span class="fixed">FIXED: </span>Error when scripting triggers that included an "IF EXISTS" statement in its script body
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Intermittent SMO database connection error</div>
+        <span class="fixed">FIXED: </span>Intermittent SMO database connection error
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to set custom highlight colors in script comparison screens</div>
+        <span class="added">ADDED: </span>Ability to set custom highlight colors in script comparison screens
+    </div>
     <br />
     <div class="version">Version 8.6.9</div>
     <div>
-      <span class="added">ADDED: </span>Timeout Retry Count feature added to remote agent execution</div>
+        <span class="added">ADDED: </span>Timeout Retry Count feature added to remote agent execution
+    </div>
     <div>
-      <span class="added">ADDED: </span>Can now view the change history of a database object (stored procedures, views, etc) over time as executed by the Sql Build Manager tool.</div>
+        <span class="added">ADDED: </span>Can now view the change history of a database object (stored procedures, views, etc) over time as executed by the Sql Build Manager tool.
+    </div>
     <div>
-      <span class="note">NOTE: </span>The history feature currently accessible from the main form "Scripting -&gt; Add Object Create Scripts -&gt; (select object type)" in the pop-up window, select the object, right-click and choose "View Object's change history.."</div>
+        <span class="note">NOTE: </span>The history feature currently accessible from the main form "Scripting -&gt; Add Object Create Scripts -&gt; (select object type)" in the pop-up window, select the object, right-click and choose "View Object's change history.."
+    </div>
     <div>
-      <span class="note">NOTE: </span>Also available from the script list context menu "View object change history as run by Sql Build Manager" when you have selected a scriptable database object (stored proc, trigger, view, etc)</div>
+        <span class="note">NOTE: </span>Also available from the script list context menu "View object change history as run by Sql Build Manager" when you have selected a scriptable database object (stored proc, trigger, view, etc)
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Trigger scripting error when scripting via "Scripting -&gt; Add Object Create Scripts -&gt; Triggers". Was always producing the "UPDATE" trigger.</div>
+        <span class="fixed">FIXED: </span>Trigger scripting error when scripting via "Scripting -&gt; Add Object Create Scripts -&gt; Triggers". Was always producing the "UPDATE" trigger.
+    </div>
     <br />
     <div class="version">Version 8.6.8</div>
     <div>
-      <span class="added">ADDED: </span>New features for creating rollback packages: options for removal of new object scripts and auto-marking manually created scripts as "run once"</div>
+        <span class="added">ADDED: </span>New features for creating rollback packages: options for removal of new object scripts and auto-marking manually created scripts as "run once"
+    </div>
     <div>
-      <span class="added">ADDED: </span>New command line argument /TimeoutRetryCount to allow for multiple execution tries if the SQL Server error message received is "Timeout expired" </div>
+        <span class="added">ADDED: </span>New command line argument /TimeoutRetryCount to allow for multiple execution tries if the SQL Server error message received is "Timeout expired"
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to control minumum script timeouts by file type and AD group membership</div>
+        <span class="added">ADDED: </span>Ability to control minumum script timeouts by file type and AD group membership
+    </div>
     <div>
-      <span class="added">ADDED: </span>Execution timer added to adhoc query</div>
+        <span class="added">ADDED: </span>Execution timer added to adhoc query
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Re-build feature now allows selection of database vs. scanning entire server on page load</div>
+        <span class="updated">UPDATED: </span>Re-build feature now allows selection of database vs. scanning entire server on page load
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>User auditing triggers will produce a file per each trigger type vs. a single files with 3 triggers</div>
+        <span class="updated">UPDATED: </span>User auditing triggers will produce a file per each trigger type vs. a single files with 3 triggers
+    </div>
     <br />
     <div class="version">Version 8.6.7</div>
     <div>
-      <span class="added">ADDED: </span>Made script timeout for default script configurable</div>
+        <span class="added">ADDED: </span>Made script timeout for default script configurable
+    </div>
     <div>
-      <span class="added">ADDED: </span>Status icons based on server modified date now linked to system scripted views, triggers and tables (i.e. files with .VIW, .TRG, .TAB extensions) as well as stored procedures and functions (.PRC and .UDF)</div>
+        <span class="added">ADDED: </span>Status icons based on server modified date now linked to system scripted views, triggers and tables (i.e. files with .VIW, .TRG, .TAB extensions) as well as stored procedures and functions (.PRC and .UDF)
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to compare previously run versions of a script to each other (vs. just comparing to the existing current script). Available via the "View Run History Against Current Server" script context menu item. </div>
+        <span class="added">ADDED: </span>Ability to compare previously run versions of a script to each other (vs. just comparing to the existing current script). Available via the "View Run History Against Current Server" script context menu item.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Shows script count at bottom of main window</div>
+        <span class="added">ADDED: </span>Shows script count at bottom of main window
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>When retrieving the detailed database log from a remote service agent, the log for the specified run date is returned instead of just the newest file.</div>
+        <span class="fixed">FIXED: </span>When retrieving the detailed database log from a remote service agent, the log for the specified run date is returned instead of just the newest file.
+    </div>
     <div>
-      <span class="added">ADDED: </span>New commandline remote execution validation that will fail the request if any database servers are in the package but don't have a matching remote execution server</div>
+        <span class="added">ADDED: </span>New commandline remote execution validation that will fail the request if any database servers are in the package but don't have a matching remote execution server
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>CommandLine builder now strips of trailing backslash (\) from root logging path to avoid incorrect arguments parsing</div>
+        <span class="fixed">FIXED: </span>CommandLine builder now strips of trailing backslash (\) from root logging path to avoid incorrect arguments parsing
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected SQL Server SMO scripting error - it was leaving off the schema designation on table defaults for the IF NOT EXISTS check.</div>
+        <span class="fixed">FIXED: </span>Corrected SQL Server SMO scripting error - it was leaving off the schema designation on table defaults for the IF NOT EXISTS check.
+    </div>
     <br />
     <div class="version">Version 8.6.6</div>
     <div>
-      <span class="note">NOTE: </span>This update only includes changes related to remote execution (a DBA thing). It is not strictly necessary for anyone else.</div>
+        <span class="note">NOTE: </span>This update only includes changes related to remote execution (a DBA thing). It is not strictly necessary for anyone else.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to retrieve all error logs off a remote server in a single zip package via the remote execution UI</div>
+        <span class="added">ADDED: </span>Ability to retrieve all error logs off a remote server in a single zip package via the remote execution UI
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Logging error when running command-line remote execution</div>
+        <span class="fixed">FIXED: </span>Logging error when running command-line remote execution
+    </div>
     <br />
     <div class="version">Version 8.6.5</div>
     <div>
-      <span class="fixed">FIXED: </span>Script tag was not getting inferred when using the Action -&gt; Add New File menu option</div>
+        <span class="fixed">FIXED: </span>Script tag was not getting inferred when using the Action -&gt; Add New File menu option
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Package hash was not changing when scripts were reordered. It will now be different because the execution order can effect the final state of the database and as such the hash should be different</div>
+        <span class="fixed">FIXED: </span>Package hash was not changing when scripts were reordered. It will now be different because the execution order can effect the final state of the database and as such the hash should be different
+    </div>
     <br />
     <div class="version">Version 8.6.4</div>
     <div>
-      <span class="note">NOTE: </span>** ATTENTION! Due to a change in the parsing algorithm for scripts, hash values may differ between this version and prior versions of the tool! UPDATE AS SOON AS POSSIBLE. **</div>
+        <span class="note">NOTE: </span>** ATTENTION! Due to a change in the parsing algorithm for scripts, hash values may differ between this version and prior versions of the tool! UPDATE AS SOON AS POSSIBLE. **
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Changed the Adhoc query working directory from the user's temp folder to a hidden subfolder of the destination file. This is to avoid issues with lack of storage.</div>
+        <span class="updated">UPDATED: </span>Changed the Adhoc query working directory from the user's temp folder to a hidden subfolder of the destination file. This is to avoid issues with lack of storage.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to set script timeout for Adhoc queries.</div>
+        <span class="added">ADDED: </span>Ability to set script timeout for Adhoc queries.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Modified the batching of scripts to ignore "GO" delimiter in a comment block. This may effect the hash value of some scripts but 99% of the ones I have tested are unchanged. For the 1%, they may get a "changed" icon when in fact they were not changed.</div>
+        <span class="updated">UPDATED: </span>Modified the batching of scripts to ignore "GO" delimiter in a comment block. This may effect the hash value of some scripts but 99% of the ones I have tested are unchanged. For the 1%, they may get a "changed" icon when in fact they were not changed.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Changed highlight color in "diff" view to be more obvious on all monitors</div>
+        <span class="updated">UPDATED: </span>Changed highlight color in "diff" view to be more obvious on all monitors
+    </div>
     <div>
-      <span class="added">ADDED: </span>Additional database logging: build package hash value, user id of requestor from a remote execution, and the version number of the Sql Build Manager used to execute the run</div>
+        <span class="added">ADDED: </span>Additional database logging: build package hash value, user id of requestor from a remote execution, and the version number of the Sql Build Manager used to execute the run
+    </div>
     <br />
     <div class="version">Version 8.6.3.1</div>
     <div>
-      <span class="added">ADDED: </span>Ability to package all SBX files in a directory structure into their corresponding SBM packages via command line</div>
+        <span class="added">ADDED: </span>Ability to package all SBX files in a directory structure into their corresponding SBM packages via command line
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Reinstated the "View Log File" menu option accidentally removed in prior version</div>
+        <span class="fixed">FIXED: </span>Reinstated the "View Log File" menu option accidentally removed in prior version
+    </div>
     <br />
     <div class="version">Version 8.6.3</div>
     <div>
-      <span class="fixed">FIXED: </span>Script file was being deleted from directory when removed from SBM file. (This is the expected behavior for an SBX file deletion, not SBM)</div>
+        <span class="fixed">FIXED: </span>Script file was being deleted from directory when removed from SBM file. (This is the expected behavior for an SBX file deletion, not SBM)
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>App used to crash if there was an error running a multi-database query that caused no output file to be created</div>
+        <span class="fixed">FIXED: </span>App used to crash if there was an error running a multi-database query that caused no output file to be created
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Consolidated the "About" and "Check for Updates" menu items into a single view</div>
+        <span class="updated">UPDATED: </span>Consolidated the "About" and "Check for Updates" menu items into a single view
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>No longer forces you to change the script tag when selecting multiple scripts and selecting "Edit/View Script Build Detail"</div>
+        <span class="fixed">FIXED: </span>No longer forces you to change the script tag when selecting multiple scripts and selecting "Edit/View Script Build Detail"
+    </div>
     <div>
-      <span class="added">ADDED: </span>Now script tag value can be inferred from the file name or from within a SQL bulk comment section. If a matching pattern (P #### or CR ####) is found it will be used as the script tag.</div>
+        <span class="added">ADDED: </span>Now script tag value can be inferred from the file name or from within a SQL bulk comment section. If a matching pattern (P #### or CR ####) is found it will be used as the script tag.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Error was encountered when updating an object script</div>
+        <span class="fixed">FIXED: </span>Error was encountered when updating an object script
+    </div>
     <div>
-      <span class="added">ADDED: </span>Can now script triggers directly from a source database via the Scripting --&gt; Add Object Create Scripts --&gt; Triggers menu option</div>
+        <span class="added">ADDED: </span>Can now script triggers directly from a source database via the Scripting --&gt; Add Object Create Scripts --&gt; Triggers menu option
+    </div>
     <div>
-      <span class="added">ADDED: </span>Enforces that Triggers scripted via the tool never have transactions stripped out</div>
+        <span class="added">ADDED: </span>Enforces that Triggers scripted via the tool never have transactions stripped out
+    </div>
     <br />
     <div class="version">Version 8.6.2</div>
     <div>
-      <span class="note">NOTE: </span>New Feature! Added the ability to easily create a "backout package" using an unchanged environment as your source via the "Scripting --&gt; Create Backout Package" menu option</div>
+        <span class="note">NOTE: </span>New Feature! Added the ability to easily create a "backout package" using an unchanged environment as your source via the "Scripting --&gt; Create Backout Package" menu option
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected an issue with policy validation when encountering non-standard SQL syntax</div>
+        <span class="fixed">FIXED: </span>Corrected an issue with policy validation when encountering non-standard SQL syntax
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Changed formatting of log file to enable syntax highlighting</div>
+        <span class="updated">UPDATED: </span>Changed formatting of log file to enable syntax highlighting
+    </div>
     <div>
-      <span class="added">ADDED: </span>Syntax highlighting on log file viewer</div>
+        <span class="added">ADDED: </span>Syntax highlighting on log file viewer
+    </div>
     <div>
-      <span class="added">ADDED: </span>Cut/Copy/Paste context menu to script and log file viewer</div>
+        <span class="added">ADDED: </span>Cut/Copy/Paste context menu to script and log file viewer
+    </div>
     <br />
     <div class="version">Version 8.6.1</div>
     <div>
-      <span class="added">ADDED: </span>Ability to configure generic "syntax checks" for scripts and add them as policy checks</div>
+        <span class="added">ADDED: </span>Ability to configure generic "syntax checks" for scripts and add them as policy checks
+    </div>
     <div>
-      <span class="added">ADDED: </span>Policy check to disallow "EXECUTE AS" directives</div>
+        <span class="added">ADDED: </span>Policy check to disallow "EXECUTE AS" directives
+    </div>
     <div>
-      <span class="added">ADDED: </span>Policy check to disallow "WITH RECOMPILE" directives</div>
+        <span class="added">ADDED: </span>Policy check to disallow "WITH RECOMPILE" directives
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to change the logging level for the current session via the Help -&gt; Set Logging Level menu option</div>
+        <span class="added">ADDED: </span>Ability to change the logging level for the current session via the Help -&gt; Set Logging Level menu option
+    </div>
     <div>
-      <span class="added">ADDED: </span>Added ability to control feature access by AD group membership.</div>
+        <span class="added">ADDED: </span>Added ability to control feature access by AD group membership.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Can now control default script entries on an enterprise level based on AD group membership</div>
+        <span class="added">ADDED: </span>Can now control default script entries on an enterprise level based on AD group membership
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected crash when default script registry contained no items</div>
+        <span class="fixed">FIXED: </span>Corrected crash when default script registry contained no items
+    </div>
     <br />
     <div class="version">Version 8.6.0</div>
     <div>
-      <span class="updated">UPDATED: </span>Ability to pull back extremely large amounts of data via the Adhoc query function</div>
+        <span class="updated">UPDATED: </span>Ability to pull back extremely large amounts of data via the Adhoc query function
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Cut/Copy/Paste context menu on "Add Script" and "Configure Via Query" forms</div>
+        <span class="updated">UPDATED: </span>Cut/Copy/Paste context menu on "Add Script" and "Configure Via Query" forms
+    </div>
     <div>
-      <span class="added">ADDED: </span>Can view the application log via the "Help --&gt; View Application Log File" menu item.</div>
+        <span class="added">ADDED: </span>Can view the application log via the "Help --&gt; View Application Log File" menu item.
+    </div>
     <br />
     <div class="version">Version 8.5.10</div>
     <div>
-      <span class="added">ADDED: </span>New script policy check on ALTER VIEW. Adds a reminder to check for dropped indexes. Reminder can be suppressed with a [No Indexes] tag</div>
+        <span class="added">ADDED: </span>New script policy check on ALTER VIEW. Adds a reminder to check for dropped indexes. Reminder can be suppressed with a [No Indexes] tag
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Tool now looks for scripts that require a build description and prompts for one if found</div>
+        <span class="updated">UPDATED: </span>Tool now looks for scripts that require a build description and prompts for one if found
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Exception was being thrown on startup when the Registered Servers tree list had a folder with no entries</div>
+        <span class="fixed">FIXED: </span>Exception was being thrown on startup when the Registered Servers tree list had a folder with no entries
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>If a script timeout is set below the minimum allowed value, it will automatically be updated to the minimum value on attempted save</div>
+        <span class="updated">UPDATED: </span>If a script timeout is set below the minimum allowed value, it will automatically be updated to the minimum value on attempted save
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Removed release notes from user manual into separate HTML file</div>
+        <span class="updated">UPDATED: </span>Removed release notes from user manual into separate HTML file
+    </div>
     <br />
     <div class="version">Version 8.5.9</div>
     <div>
-      <span class="updated">UPDATED: </span>Added exception for "Select Star" policy to accept for views that are prefixed with "vw_" in their name. (Configurable) </div>
+        <span class="updated">UPDATED: </span>Added exception for "Select Star" policy to accept for views that are prefixed with "vw_" in their name. (Configurable)
+    </div>
     <div>
-      <span class="added">ADDED: </span>Creation of the specified external logging directory if it doesn't pre-exist.</div>
+        <span class="added">ADDED: </span>Creation of the specified external logging directory if it doesn't pre-exist.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Changed default script timeout to minimum default script timeout (vs. fixed value) to ensure nothing smaller is added</div>
+        <span class="updated">UPDATED: </span>Changed default script timeout to minimum default script timeout (vs. fixed value) to ensure nothing smaller is added
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Added database count to the server distribution list form</div>
+        <span class="updated">UPDATED: </span>Added database count to the server distribution list form
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Object scripting error for some objects that had 2 "CREATE" scripts vs. a "CREATE" and an "ALTER"</div>
+        <span class="fixed">FIXED: </span>Object scripting error for some objects that had 2 "CREATE" scripts vs. a "CREATE" and an "ALTER"
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected Null reference error when loading an SBX control file from a newly opened instance of the tool.</div>
+        <span class="fixed">FIXED: </span>Corrected Null reference error when loading an SBX control file from a newly opened instance of the tool.
+    </div>
     <br />
     <div class="version">Version 8.5.8</div>
     <div>
-      <span class="added">ADDED: </span>Build history tracking on remote build service client</div>
+        <span class="added">ADDED: </span>Build history tracking on remote build service client
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to view build history and retrieve log files for historical Build Service requests</div>
+        <span class="added">ADDED: </span>Ability to view build history and retrieve log files for historical Build Service requests
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Finder control to stop skipping to next find as you type</div>
+        <span class="fixed">FIXED: </span>Finder control to stop skipping to next find as you type
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Adhoc query would sometimes run "last" query</div>
+        <span class="fixed">FIXED: </span>Adhoc query would sometimes run "last" query
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to include additional summary data items in adhoc query</div>
+        <span class="added">ADDED: </span>Ability to include additional summary data items in adhoc query
+    </div>
     <br />
     <div class="version">Version 8.5.7</div>
     <div>
-      <span class="updated">UPDATED: </span>Updated "find" feature on script view window to search starting at cursor location vs. always at the top</div>
+        <span class="updated">UPDATED: </span>Updated "find" feature on script view window to search starting at cursor location vs. always at the top
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Increased maximum package size for WCF service call to 5Mb</div>
+        <span class="updated">UPDATED: </span>Increased maximum package size for WCF service call to 5Mb
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>The object scripting window for Views was duplicating objects when there were 2 objects with the same name in different schemas</div>
+        <span class="fixed">FIXED: </span>The object scripting window for Views was duplicating objects when there were 2 objects with the same name in different schemas
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to pull back the SqlBuildManager.Service.log file from the remote agent to the client</div>
+        <span class="added">ADDED: </span>Ability to pull back the SqlBuildManager.Service.log file from the remote agent to the client
+    </div>
     <div>
-      <span class="added">ADDED: </span>New TestDatabaseConnectivity WCF method to pre-check the ability of the remote agent to connect to its target databases before actually submitting a build.</div>
+        <span class="added">ADDED: </span>New TestDatabaseConnectivity WCF method to pre-check the ability of the remote agent to connect to its target databases before actually submitting a build.
+    </div>
     <div>
-      <span class="added">ADDED: </span>New "Using" extension method for WCF client calls to properly handle the Close() method when the channel is in a faulted state (http://nimtug.org/blogs/damien-mcgivern/archive/2010/05/13/2320.aspx)</div>
+        <span class="added">ADDED: </span>New "Using" extension method for WCF client calls to properly handle the Close() method when the channel is in a faulted state (http://nimtug.org/blogs/damien-mcgivern/archive/2010/05/13/2320.aspx)
+    </div>
     <div>
-      <span class="added">ADDED: </span>New BuildRequestFrom property on BuildSettings object to record on the Remote Execution server the user that submitted the build request</div>
+        <span class="added">ADDED: </span>New BuildRequestFrom property on BuildSettings object to record on the Remote Execution server the user that submitted the build request
+    </div>
     <br />
     <div class="version">Version 8.5.6</div>
     <div>
-      <span class="added">ADDED: </span>Enterprise level enforcement of script tag requirement</div>
+        <span class="added">ADDED: </span>Enterprise level enforcement of script tag requirement
+    </div>
     <div>
-      <span class="added">ADDED: </span>"Registered Server" capability on connection form</div>
+        <span class="added">ADDED: </span>"Registered Server" capability on connection form
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to have and load master registered server lists available at a shared enterprise level</div>
+        <span class="added">ADDED: </span>Ability to have and load master registered server lists available at a shared enterprise level
+    </div>
     <br />
     <div class="version">Version 8.5.5</div>
     <div>
-      <span class="added">ADDED: </span>Command-line builder for remote execution</div>
+        <span class="added">ADDED: </span>Command-line builder for remote execution
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to generate the remote execution server list from the list of override target servers</div>
+        <span class="added">ADDED: </span>Ability to generate the remote execution server list from the list of override target servers
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Product manual including new features</div>
+        <span class="updated">UPDATED: </span>Product manual including new features
+    </div>
     <br />
     <div class="version">Version 8.5.4</div>
     <div>
-      <span class="fixed">FIXED: </span>Directory parsing on remote service side when the server name is an IP address</div>
+        <span class="fixed">FIXED: </span>Directory parsing on remote service side when the server name is an IP address
+    </div>
     <div>
-      <span class="added">ADDED: </span>Made the minumum default script timeout an enterprise level setting</div>
+        <span class="added">ADDED: </span>Made the minumum default script timeout an enterprise level setting
+    </div>
     <br />
     <div class="version">Version 8.5.3</div>
     <div>
-      <span class="updated">UPDATED: </span>Rebuild using the SQL Management Objects (SMO) v10 DLL's</div>
+        <span class="updated">UPDATED: </span>Rebuild using the SQL Management Objects (SMO) v10 DLL's
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>"Qualified Names" policy check failures now include line number of offending script</div>
+        <span class="updated">UPDATED: </span>"Qualified Names" policy check failures now include line number of offending script
+    </div>
     <div>
-      <span class="added">ADDED: </span>Command line options for remote server execution </div>
+        <span class="added">ADDED: </span>Command line options for remote server execution
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to use System environment variables in the "remote logging path" for remote server execution.</div>
+        <span class="added">ADDED: </span>Ability to use System environment variables in the "remote logging path" for remote server execution.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to save a single pre-configured remote execution server package (.resp) file that includes remote server list, SBM contents, target databases, et. al.</div>
+        <span class="added">ADDED: </span>Ability to save a single pre-configured remote execution server package (.resp) file that includes remote server list, SBM contents, target databases, et. al.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Modified connection strings used to be "Pooling=false;" to solve connection and timeout issues.</div>
+        <span class="updated">UPDATED: </span>Modified connection strings used to be "Pooling=false;" to solve connection and timeout issues.
+    </div>
     <br />
     <div class="version">Version 8.5.2</div>
     <div>
-      <span class="added">ADDED: </span>Copy feature in Database Size Summary and Database Analysis forms to copy data and header information to clipboard for easy analysis in the spreadsheet of your choice.</div>
+        <span class="added">ADDED: </span>Copy feature in Database Size Summary and Database Analysis forms to copy data and header information to clipboard for easy analysis in the spreadsheet of your choice.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Stored procedure scripting error when using the "Script Object ALTER and CREATE" option. Was leaving out the ALTER script when the CREATE script had the CREATE text in lower case.</div>
+        <span class="fixed">FIXED: </span>Stored procedure scripting error when using the "Script Object ALTER and CREATE" option. Was leaving out the ALTER script when the CREATE script had the CREATE text in lower case.
+    </div>
     <br />
     <div class="version">Version 8.5.1</div>
     <div>
-      <span class="added">ADDED: </span>Hash Signature calculation Tool functionality and menu item to use as a package validation signature</div>
+        <span class="added">ADDED: </span>Hash Signature calculation Tool functionality and menu item to use as a package validation signature
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Manual to include new section "Validating a Build Package"</div>
+        <span class="updated">UPDATED: </span>Manual to include new section "Validating a Build Package"
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>File copy problem with SBX files when the script was already in the same folder as the SBX file itself</div>
+        <span class="fixed">FIXED: </span>File copy problem with SBX files when the script was already in the same folder as the SBX file itself
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Issue with adding "tag" values to new scripts then getting lost.</div>
+        <span class="fixed">FIXED: </span>Issue with adding "tag" values to new scripts then getting lost.
+    </div>
     <br />
     <div class="version">Version 8.4.0</div>
     <div>
-      <span class="added">ADDED: </span>Script policy to check for "SELECT *"</div>
+        <span class="added">ADDED: </span>Script policy to check for "SELECT *"
+    </div>
     <div>
-      <span class="added">ADDED: </span>Refinements to the Qualified Names script policy including ignoring statements in a comment block</div>
+        <span class="added">ADDED: </span>Refinements to the Qualified Names script policy including ignoring statements in a comment block
+    </div>
     <div>
-      <span class="added">ADDED: </span>Stored Procedure Parameter script policy</div>
+        <span class="added">ADDED: </span>Stored Procedure Parameter script policy
+    </div>
     <div>
-      <span class="added">ADDED: </span>Beta version of Remote Execution Service and client</div>
+        <span class="added">ADDED: </span>Beta version of Remote Execution Service and client
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Added new features to product manual</div>
+        <span class="updated">UPDATED: </span>Added new features to product manual
+    </div>
     <br />
     <div class="version">Version 8.3.9</div>
     <div>
-      <span class="updated">UPDATED: </span>User data auditing user interface improved</div>
+        <span class="updated">UPDATED: </span>User data auditing user interface improved
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>User data auditing ON UPDATE trigger changed to use 'deleted' vs 'inserted' data for audit record</div>
+        <span class="updated">UPDATED: </span>User data auditing ON UPDATE trigger changed to use 'deleted' vs 'inserted' data for audit record
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to directly import auditing scripts into currently open Sql Build Project</div>
+        <span class="added">ADDED: </span>Ability to directly import auditing scripts into currently open Sql Build Project
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Refresh error when multi-database UI opening an existing query package</div>
+        <span class="fixed">FIXED: </span>Refresh error when multi-database UI opening an existing query package
+    </div>
     <br />
     <div class="version">Version 8.3.8</div>
     <div>
-      <span class="updated">UPDATED: </span>Code table populate scripts to include WITH (NOLOCK)</div>
+        <span class="updated">UPDATED: </span>Code table populate scripts to include WITH (NOLOCK)
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Schema policy check to ignore the trigger tables "inserted" and "deleted"</div>
+        <span class="updated">UPDATED: </span>Schema policy check to ignore the trigger tables "inserted" and "deleted"
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>WITH (NOLOCK) policy check to ignore the trigger tables "inserted" and "deleted"</div>
+        <span class="updated">UPDATED: </span>WITH (NOLOCK) policy check to ignore the trigger tables "inserted" and "deleted"
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>References to SQL 2005 sys.objects view from SQL 2000 sysobjects</div>
+        <span class="updated">UPDATED: </span>References to SQL 2005 sys.objects view from SQL 2000 sysobjects
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Qualified names policy to handle an UPDATE statement that does not have a following WHERE</div>
+        <span class="fixed">FIXED: </span>Qualified names policy to handle an UPDATE statement that does not have a following WHERE
+    </div>
     <br />
     <div class="version">Version 8.3.7</div>
     <div>
-      <span class="updated">UPDATED: </span>Changed the Multiple database configration page from using pre-loaded tabs to creating pages on demand (this is to get around a window handle error that was found when loading a very large configuration)</div>
+        <span class="updated">UPDATED: </span>Changed the Multiple database configration page from using pre-loaded tabs to creating pages on demand (this is to get around a window handle error that was found when loading a very large configuration)
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Auditing trigger scripts to rename column from RowsEffected to RowsAffected</div>
+        <span class="updated">UPDATED: </span>Auditing trigger scripts to rename column from RowsEffected to RowsAffected
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Script status icon wasn't refreshing after an "update object create script" command</div>
+        <span class="fixed">FIXED: </span>Script status icon wasn't refreshing after an "update object create script" command
+    </div>
     <br />
     <div class="version">Version 8.3.6</div>
     <div>
-      <span class="updated">UPDATED: </span>File copy choices for default scripts when there is a pre-existing script or a readonly one already in place.</div>
+        <span class="updated">UPDATED: </span>File copy choices for default scripts when there is a pre-existing script or a readonly one already in place.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Physical file deletion warning in SBX files when that file is shared by another co-resident SBX file.</div>
+        <span class="updated">UPDATED: </span>Physical file deletion warning in SBX files when that file is shared by another co-resident SBX file.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Help Icon in Database Summary form.</div>
+        <span class="added">ADDED: </span>Help Icon in Database Summary form.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Error handling when creating a new project file and default scripts.</div>
+        <span class="updated">UPDATED: </span>Error handling when creating a new project file and default scripts.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Updated Regex to ignore all SQL 2005 system views in NOLOCK policy and optimization.</div>
+        <span class="added">ADDED: </span>Updated Regex to ignore all SQL 2005 system views in NOLOCK policy and optimization.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Additional SqlBuildManager.Enterprise unit tests to increase code coverage %</div>
+        <span class="added">ADDED: </span>Additional SqlBuildManager.Enterprise unit tests to increase code coverage %
+    </div>
     <br />
     <div class="version">Version 8.3.5</div>
     <div>
-      <span class="fixed">FIXED: </span>When scripting objects as DROP / CREATE, removed the IF NOT EXISTS for the create (we already know it's not there because it was dropped!)</div>
+        <span class="fixed">FIXED: </span>When scripting objects as DROP / CREATE, removed the IF NOT EXISTS for the create (we already know it's not there because it was dropped!)
+    </div>
     <div>
-      <span class="added">ADDED: </span>Enterprise/Team setting for watching and alerting on table changes</div>
+        <span class="added">ADDED: </span>Enterprise/Team setting for watching and alerting on table changes
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>NOLOCK policy to ignore SELECT FROM on functions</div>
+        <span class="updated">UPDATED: </span>NOLOCK policy to ignore SELECT FROM on functions
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>NOLOCK and Qualified names policies to ignore keywords that are encapsulated in comments.</div>
+        <span class="updated">UPDATED: </span>NOLOCK and Qualified names policies to ignore keywords that are encapsulated in comments.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Added 'sys.foreign_keys' to the ignore list for NOLOCK policy</div>
+        <span class="updated">UPDATED: </span>Added 'sys.foreign_keys' to the ignore list for NOLOCK policy
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Policy violation form UI update.</div>
+        <span class="updated">UPDATED: </span>Policy violation form UI update.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Manual and help file links</div>
+        <span class="updated">UPDATED: </span>Manual and help file links
+    </div>
     <br />
     <div class="version">Version 8.3.4</div>
     <div>
-      <span class="added">ADDED: </span>Adding help manual</div>
+        <span class="added">ADDED: </span>Adding help manual
+    </div>
     <div>
-      <span class="added">ADDED: </span>Links within the application to the help manual file</div>
+        <span class="added">ADDED: </span>Links within the application to the help manual file
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Utility scripts to be fully qualified</div>
+        <span class="updated">UPDATED: </span>Utility scripts to be fully qualified
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Added exclusion for cursors from the Qualified Names policy</div>
+        <span class="updated">UPDATED: </span>Added exclusion for cursors from the Qualified Names policy
+    </div>
     <div>
-      <span class="added">ADDED: </span>Checking for valid default and or target override database settings prior to execution of package.</div>
+        <span class="added">ADDED: </span>Checking for valid default and or target override database settings prior to execution of package.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Qualified Names Policy to not require schema qualifiers on temp table or table variables</div>
+        <span class="updated">UPDATED: </span>Qualified Names Policy to not require schema qualifiers on temp table or table variables
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Modified NOLOCK optimization and NOLOCK policy checker to ignore temp tables (#tablename) and table variables (@tablename)</div>
+        <span class="updated">UPDATED: </span>Modified NOLOCK optimization and NOLOCK policy checker to ignore temp tables (#tablename) and table variables (tablename)
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Modified icon for multi-database query configuration files (.multiDbQ)</div>
+        <span class="updated">UPDATED: </span>Modified icon for multi-database query configuration files (.multiDbQ)
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Moved policy interface into separate project for future growth of interfaces.</div>
+        <span class="updated">UPDATED: </span>Moved policy interface into separate project for future growth of interfaces.
+    </div>
     <br />
     <div class="version">Version 8.3.3</div>
     <div>
-      <span class="updated">UPDATED: </span>Updated Qualified Names Policy to check for qualifiers on INSERT and UPDATE scripts.</div>
+        <span class="updated">UPDATED: </span>Updated Qualified Names Policy to check for qualifiers on INSERT and UPDATE scripts.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Script Optimization and NO LOCK policy check to ignore UPDATE and DELETE statements</div>
+        <span class="updated">UPDATED: </span>Script Optimization and NO LOCK policy check to ignore UPDATE and DELETE statements
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Updated Stored Procedure scripting to hit SMO objects only once when scripting.</div>
+        <span class="fixed">FIXED: </span>Updated Stored Procedure scripting to hit SMO objects only once when scripting.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>With SBX files, handle adding default scripts when they reside in the same directory</div>
+        <span class="fixed">FIXED: </span>With SBX files, handle adding default scripts when they reside in the same directory
+    </div>
     <br />
     <div class="version">Version 8.3.1</div>
     <div>
-      <span class="added">ADDED: </span>Ability to drag and drop scripts between different Sql Build Manager instances</div>
+        <span class="added">ADDED: </span>Ability to drag and drop scripts between different Sql Build Manager instances
+    </div>
     <br />
     <div class="version">Version 8.3.0</div>
     <div>
-      <span class="added">ADDED: </span>Policy checking during the saving of a new file, scripting a file from the database and refreshing scripts from the database</div>
+        <span class="added">ADDED: </span>Policy checking during the saving of a new file, scripting a file from the database and refreshing scripts from the database
+    </div>
     <div>
-      <span class="added">ADDED: </span>Policy check to ensure that table names are fully qualified with a schema prefix</div>
+        <span class="added">ADDED: </span>Policy check to ensure that table names are fully qualified with a schema prefix
+    </div>
     <div>
-      <span class="added">ADDED: </span>Policy check for a consistent comment header on procedures and functions.</div>
+        <span class="added">ADDED: </span>Policy check for a consistent comment header on procedures and functions.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Standard header text insertable from the script context menu when editing a script</div>
+        <span class="added">ADDED: </span>Standard header text insertable from the script context menu when editing a script
+    </div>
     <div>
-      <span class="added">ADDED: </span>Policy check to ensure that constraint names include the name of the referenced table</div>
+        <span class="added">ADDED: </span>Policy check to ensure that constraint names include the name of the referenced table
+    </div>
     <div>
-      <span class="added">ADDED: </span>Policy check that procedures and functions do not have a GRANT EXECUTE to the 'public' role.</div>
+        <span class="added">ADDED: </span>Policy check that procedures and functions do not have a GRANT EXECUTE to the 'public' role.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Added a [NOLOCK Exception: &lt;reason&gt;] override tag to the WITH (NOLOCK) policy check. </div>
+        <span class="updated">UPDATED: </span>Added a [NOLOCK Exception: &lt;reason&gt;] override tag to the WITH (NOLOCK) policy check.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Default version script includes RAISEERROR if versions table is not present.</div>
+        <span class="fixed">FIXED: </span>Default version script includes RAISEERROR if versions table is not present.
+    </div>
     <br />
     <div class="version">Version 8.2.0</div>
     <div>
-      <span class="added">ADDED: </span>Ability to perform Ad Hoc query across multiple servers/databases with results in CSV, HTML or XML format</div>
+        <span class="added">ADDED: </span>Ability to perform Ad Hoc query across multiple servers/databases with results in CSV, HTML or XML format
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to load/save multi-database configuration via query </div>
+        <span class="added">ADDED: </span>Ability to load/save multi-database configuration via query
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to perform multi database run from query via command line</div>
+        <span class="added">ADDED: </span>Ability to perform multi database run from query via command line
+    </div>
     <br />
     <div class="version">Version 8.1.13</div>
     <div>
-      <span class="fixed">FIXED: </span>Updated object comparison to use the first sequenced database as the "baseline". Was looking for "0", but didn't enforce its presence.</div>
+        <span class="fixed">FIXED: </span>Updated object comparison to use the first sequenced database as the "baseline". Was looking for "0", but didn't enforce its presence.
+    </div>
     <br />
     <div class="version">Version 8.1.12</div>
     <div>
-      <span class="added">ADDED: </span>Ability to generate report showing script run status across multiple databases and servers</div>
+        <span class="added">ADDED: </span>Ability to generate report showing script run status across multiple databases and servers
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to generate report to compare database objects across multiple databases and servers</div>
+        <span class="added">ADDED: </span>Ability to generate report to compare database objects across multiple databases and servers
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to perform additional analysis of database object report after initial run (doesn't need to hit database again)</div>
+        <span class="added">ADDED: </span>Ability to perform additional analysis of database object report after initial run (doesn't need to hit database again)
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to select alternate Logging database from the UI for build run (formerly only available via command line)</div>
+        <span class="added">ADDED: </span>Ability to select alternate Logging database from the UI for build run (formerly only available via command line)
+    </div>
     <div>
-      <span class="added">ADDED: </span>Goto line number in edit script window</div>
+        <span class="added">ADDED: </span>Goto line number in edit script window
+    </div>
     <div>
-      <span class="added">ADDED: </span>Current Line and Character number labels in edit script window</div>
+        <span class="added">ADDED: </span>Current Line and Character number labels in edit script window
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Added plain JOIN statement to the Script Optimization algorithm</div>
+        <span class="fixed">FIXED: </span>Added plain JOIN statement to the Script Optimization algorithm
+    </div>
     <br />
     <div class="version">Version 8.1.10</div>
     <div>
-      <span class="added">ADDED: </span>Policy enforcement functionality with 3 built in policies: WITH (NOLOCK) directive, scripts wrapped in IF EXISTS for rerunability and GRANT execute for all routines.</div>
+        <span class="added">ADDED: </span>Policy enforcement functionality with 3 built in policies: WITH (NOLOCK) directive, scripts wrapped in IF EXISTS for rerunability and GRANT execute for all routines.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to change source database and server for object script updates from "Scripting" menu.</div>
+        <span class="added">ADDED: </span>Ability to change source database and server for object script updates from "Scripting" menu.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to select alternate Logging database from the UI for build run (formerly only available via command line)</div>
+        <span class="added">ADDED: </span>Ability to select alternate Logging database from the UI for build run (formerly only available via command line)
+    </div>
     <div>
-      <span class="added">ADDED: </span>Threaded execution support for non-transactional RunScriptClear</div>
+        <span class="added">ADDED: </span>Threaded execution support for non-transactional RunScriptClear
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Utility scripts updated for optimization</div>
+        <span class="updated">UPDATED: </span>Utility scripts updated for optimization
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Various compiler warning clean-ups</div>
+        <span class="updated">UPDATED: </span>Various compiler warning clean-ups
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Changed to catch it when unable to connect to a SQL server and notify the user to try another server.</div>
+        <span class="fixed">FIXED: </span>Changed to catch it when unable to connect to a SQL server and notify the user to try another server.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Error loading of an SBX file when the build history file (SqlSyncBuildHistory.xml) is not found in the directory.</div>
+        <span class="fixed">FIXED: </span>Error loading of an SBX file when the build history file (SqlSyncBuildHistory.xml) is not found in the directory.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Error saving/loading a multiDb configuration if there is a duplicate entry error. </div>
+        <span class="fixed">FIXED: </span>Error saving/loading a multiDb configuration if there is a duplicate entry error.
+    </div>
     <br />
     <div class="version">Version 8.1.8</div>
     <div>
-      <span class="fixed">FIXED: </span>Error loading SBX control file when there were missing files</div>
+        <span class="fixed">FIXED: </span>Error loading SBX control file when there were missing files
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Error loading SBX control file when the SqlSyncBuildHistory.xml file was writeable</div>
+        <span class="fixed">FIXED: </span>Error loading SBX control file when the SqlSyncBuildHistory.xml file was writeable
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Error loading command line creator form when the SBM file name or multi-db file is empty</div>
+        <span class="fixed">FIXED: </span>Error loading command line creator form when the SBM file name or multi-db file is empty
+    </div>
     <br />
     <div class="version">Version 8.1.7</div>
     <div>
-      <span class="note">NOTE: </span>Please manually uninstall your prior version before installing this new one **</div>
+        <span class="note">NOTE: </span>Please manually uninstall your prior version before installing this new one **
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Serial multi-db runs were always executed as Trial. Now will run as commit as directed.</div>
+        <span class="fixed">FIXED: </span>Serial multi-db runs were always executed as Trial. Now will run as commit as directed.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Added the ability to use dynamic script token replacements #BuildDescription# and #BuildFileName#</div>
+        <span class="added">ADDED: </span>Added the ability to use dynamic script token replacements #BuildDescription# and #BuildFileName#
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to specify build description for multi-db treaded execution via /description command argument</div>
+        <span class="added">ADDED: </span>Ability to specify build description for multi-db treaded execution via /description command argument
+    </div>
     <br />
     <div class="version">Version 8.1.6</div>
     <div>
-      <span class="updated">UPDATED: </span>Enhanced the Command Line builder form to have Auto-Complete feature</div>
+        <span class="updated">UPDATED: </span>Enhanced the Command Line builder form to have Auto-Complete feature
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to execute a constructed command line directly from the form</div>
+        <span class="added">ADDED: </span>Ability to execute a constructed command line directly from the form
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to set an alternate logging database for threaded builds</div>
+        <span class="added">ADDED: </span>Ability to set an alternate logging database for threaded builds
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to set a UserName and Password (as alternative to Windows Authentication) for threaded BuildScriptEvent</div>
+        <span class="added">ADDED: </span>Ability to set a UserName and Password (as alternative to Windows Authentication) for threaded BuildScriptEvent
+    </div>
     <br />
     <div class="version">Version 8.1.5</div>
     <div>
-      <span class="fixed">FIXED: </span>Updated the command line constructor for our best friends the DBA's... have fun.</div>
+        <span class="fixed">FIXED: </span>Updated the command line constructor for our best friends the DBA's... have fun.
+    </div>
     <div>
-      <span class="added">ADDED: </span>"Filtering" for object list in add object list window</div>
+        <span class="added">ADDED: </span>"Filtering" for object list in add object list window
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>File name of loaded .multiDb displays in the status bar</div>
+        <span class="fixed">FIXED: </span>File name of loaded .multiDb displays in the status bar
+    </div>
     <div>
-      <span class="added">ADDED: </span>New column in Logging table to include target database (will be used in later update)</div>
+        <span class="added">ADDED: </span>New column in Logging table to include target database (will be used in later update)
+    </div>
     <div>
-      <span class="added">ADDED: </span>New form to construct a command line string</div>
+        <span class="added">ADDED: </span>New form to construct a command line string
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>When removing a script file from an SBX file, will now physically remove the file from disk as well.</div>
+        <span class="fixed">FIXED: </span>When removing a script file from an SBX file, will now physically remove the file from disk as well.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Checks for a read-only "SqlSyncBuildHistory.xml" when working with SBX files since these are needed as writeable as well. </div>
+        <span class="fixed">FIXED: </span>Checks for a read-only "SqlSyncBuildHistory.xml" when working with SBX files since these are needed as writeable as well.
+    </div>
     <br />
     <div class="version">Version 8.1.4</div>
     <div>
-      <span class="added">ADDED: </span>Indicator and control for read-only files when working with the SBX loose file configuration.</div>
+        <span class="added">ADDED: </span>Indicator and control for read-only files when working with the SBX loose file configuration.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to generate Stored Procedures, Views and Functions with IF EXISTS CREATE and ALTER pair via setting.</div>
+        <span class="added">ADDED: </span>Ability to generate Stored Procedures, Views and Functions with IF EXISTS CREATE and ALTER pair via setting.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to generate Stored Procedures, Views and Functions with permissions script via setting.</div>
+        <span class="added">ADDED: </span>Ability to generate Stored Procedures, Views and Functions with permissions script via setting.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Updated autoscripting settings to accept zip and header settings from UI.</div>
+        <span class="updated">UPDATED: </span>Updated autoscripting settings to accept zip and header settings from UI.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Making name of rebuilt file always have a .sbm extension since it only supports packages and not loose configurations.</div>
+        <span class="fixed">FIXED: </span>Making name of rebuilt file always have a .sbm extension since it only supports packages and not loose configurations.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Improved formatting of scripts created as ALTER And CREATE</div>
+        <span class="added">ADDED: </span>Improved formatting of scripts created as ALTER And CREATE
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to use the delete key to remove scripts from the List</div>
+        <span class="added">ADDED: </span>Ability to use the delete key to remove scripts from the List
+    </div>
     <div>
-      <span class="added">ADDED: </span>Warning when scripts weren't successfully removed from a script list (still working on root cause of intermittent problem)</div>
+        <span class="added">ADDED: </span>Warning when scripts weren't successfully removed from a script list (still working on root cause of intermittent problem)
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Default key for removing scripts is now "No" instead of "Yes" to help eliminate unwanted removals.</div>
+        <span class="updated">UPDATED: </span>Default key for removing scripts is now "No" instead of "Yes" to help eliminate unwanted removals.
+    </div>
     <br />
     <div class="version">Version 8.1.4</div>
     <div>
-      <span class="fixed">FIXED: </span>Error in script list background color updating under some scenarios</div>
+        <span class="fixed">FIXED: </span>Error in script list background color updating under some scenarios
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Error blocking scripts when they were pre-run on the server, but not the specific database</div>
+        <span class="fixed">FIXED: </span>Error blocking scripts when they were pre-run on the server, but not the specific database
+    </div>
     <div>
-      <span class="added">ADDED: </span>New script helper to automatically add "WITH (NOLOCK)" directives on all "FROM" type statements: FROM, INNER JOIN, OUTER JOIN, RIGHT JOIN, LEFT JOIN. This can be used to improve select performance when a lock is not required on the target data.</div>
+        <span class="added">ADDED: </span>New script helper to automatically add "WITH (NOLOCK)" directives on all "FROM" type statements: FROM, INNER JOIN, OUTER JOIN, RIGHT JOIN, LEFT JOIN. This can be used to improve select performance when a lock is not required on the target data.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Alerting when SBM or SBX file is read-only with option to make writable or not load.</div>
+        <span class="added">ADDED: </span>Alerting when SBM or SBX file is read-only with option to make writable or not load.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Count of target databases hit to end of multi-threaded run log file</div>
+        <span class="added">ADDED: </span>Count of target databases hit to end of multi-threaded run log file
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Display of UpdateDate column name in table scripting tool-tip. It was instead being set as the UpdateID column type</div>
+        <span class="fixed">FIXED: </span>Display of UpdateDate column name in table scripting tool-tip. It was instead being set as the UpdateID column type
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>When an empty build package run was attempted, crashed the app. This is now caught and an error message is displayed.</div>
+        <span class="fixed">FIXED: </span>When an empty build package run was attempted, crashed the app. This is now caught and an error message is displayed.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Application icon for the SqlBuildManager.Console.exe tool</div>
+        <span class="added">ADDED: </span>Application icon for the SqlBuildManager.Console.exe tool
+    </div>
     <div>
-      <span class="added">ADDED: </span>Additional utility scripts for granting execute and revoke permissions</div>
+        <span class="added">ADDED: </span>Additional utility scripts for granting execute and revoke permissions
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Unhandled exception when using server quick change and no build project was loaded.</div>
+        <span class="fixed">FIXED: </span>Unhandled exception when using server quick change and no build project was loaded.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to add more than one update location for version checking. Can add delimited list for ProgramVersionCheckURL and ProgramUpdateFolderURL appsettings. They match up by array index, so make sure they're in order. </div>
+        <span class="added">ADDED: </span>Ability to add more than one update location for version checking. Can add delimited list for ProgramVersionCheckURL and ProgramUpdateFolderURL appsettings. They match up by array index, so make sure they're in order.
+    </div>
     <br />
     <div class="version">Version 8.1.0</div>
     <div>
-      <span class="note">NOTE: </span>
-      Major Update!   Now allows for managing scripts in either a single file package (the original .sbm file) or via a "loose" file structure. This new mechanism consists of a build control XML file (.sbx) that contains the script run metadata for the scripts that co-resident in the same file system directory. When you're ready to put them all together, a "package" feature is there to put all the files into a new build .sbm package.
+        <span class="note">NOTE: </span>
+        Major Update!   Now allows for managing scripts in either a single file package (the original .sbm file) or via a "loose" file structure. This new mechanism consists of a build control XML file (.sbx) that contains the script run metadata for the scripts that co-resident in the same file system directory. When you're ready to put them all together, a "package" feature is there to put all the files into a new build .sbm package.
     </div>
     <div>
-      <span class="added">ADDED: </span>Ability to create update/insert scripts from Data Extract file</div>
+        <span class="added">ADDED: </span>Ability to create update/insert scripts from Data Extract file
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Added schema name to the table in database analysis page</div>
+        <span class="fixed">FIXED: </span>Added schema name to the table in database analysis page
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Sorting of multi-db run. Was sorting alphabetically even for numeric sequence numbers!</div>
+        <span class="fixed">FIXED: </span>Sorting of multi-db run. Was sorting alphabetically even for numeric sequence numbers!
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Database list for scripting option wasn't refreshing when server changed via server quick change drop down</div>
+        <span class="fixed">FIXED: </span>Database list for scripting option wasn't refreshing when server changed via server quick change drop down
+    </div>
     <div>
-      <span class="updated">UPDATED: </span> Added error notification if object scripting was not successful</div>
+        <span class="updated">UPDATED: </span> Added error notification if object scripting was not successful
+    </div>
     <div>
-      <span class="updated">UPDATED: </span> updated some menu icons</div>
+        <span class="updated">UPDATED: </span> updated some menu icons
+    </div>
     <br />
     <div class="version">Version 8.0.5</div>
     <div>
-      <span class="added">ADDED: </span>New threaded execution setting /trial to all you to perform a threaded run that will always get rolled back.</div>
+        <span class="added">ADDED: </span>New threaded execution setting /trial to all you to perform a threaded run that will always get rolled back.
+    </div>
     <div>
-      <span class="added">ADDED: </span>New threaded execution setting /ScriptSrcDir to perform execution using a directory containing your scripts vs. using a pre-created SBM file. Keep in mind, you lose quite a bit of functionality, but now you can do it.</div>
+        <span class="added">ADDED: </span>New threaded execution setting /ScriptSrcDir to perform execution using a directory containing your scripts vs. using a pre-created SBM file. Keep in mind, you lose quite a bit of functionality, but now you can do it.
+    </div>
     <div>
-      <span class="added">ADDED: </span>New threaded execution setting /LogAsText to create log files in simple text. By default, they are created in HTML to allow for easy hyperlinking between the detailed run logs</div>
+        <span class="added">ADDED: </span>New threaded execution setting /LogAsText to create log files in simple text. By default, they are created in HTML to allow for easy hyperlinking between the detailed run logs
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Updated some menu icons</div>
+        <span class="updated">UPDATED: </span>Updated some menu icons
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected sorting of "Bulk Add"</div>
+        <span class="fixed">FIXED: </span>Corrected sorting of "Bulk Add"
+    </div>
     <br />
     <div class="version">Version 8.0.4</div>
     <div>
-      <span class="added">ADDED: </span>NEW FEATURE for the console application (now in version 2.0.0). Added the ability to use Sql Build Manager engine to process builds across multiple database instances in a threaded manner. Instead of the log and messages getting saved in the .SBM file, they are saved in a directory structure. This will allow you to update multiple same-schema databases quickly and efficiently.</div>
+        <span class="added">ADDED: </span>NEW FEATURE for the console application (now in version 2.0.0). Added the ability to use Sql Build Manager engine to process builds across multiple database instances in a threaded manner. Instead of the log and messages getting saved in the .SBM file, they are saved in a directory structure. This will allow you to update multiple same-schema databases quickly and efficiently.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Coloring of scripts marked as "run once" and also locked against running again. They were incorrectly getting displayed as white.</div>
+        <span class="fixed">FIXED: </span>Coloring of scripts marked as "run once" and also locked against running again. They were incorrectly getting displayed as white.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Updated menu icons</div>
+        <span class="updated">UPDATED: </span>Updated menu icons
+    </div>
     <br />
     <div class="version">Version 8.0.3</div>
     <div>
-      <span class="added">ADDED: </span>Ability to copy out build history on a per-run basis to an XML file. This is done via a new context menu option on the "Review Past Builds" form (Logging | Show Build History from the main screen). Select the build(s) from the top master list then right-click and select "Save Build Details for Selected Rows".</div>
+        <span class="added">ADDED: </span>Ability to copy out build history on a per-run basis to an XML file. This is done via a new context menu option on the "Review Past Builds" form (Logging | Show Build History from the main screen). Select the build(s) from the top master list then right-click and select "Save Build Details for Selected Rows".
+    </div>
     <div>
-      <span class="added">ADDED: </span>New executable SqlBuildManager.Console.exe to simplify command-line running. This allows you to automate Sql Build Manager and retrieve exit codes as well as the console out and console error values.</div>
+        <span class="added">ADDED: </span>New executable SqlBuildManager.Console.exe to simplify command-line running. This allows you to automate Sql Build Manager and retrieve exit codes as well as the console out and console error values.
+    </div>
     <div>
-      <span class="added">ADDED: </span>New command line option to run Stored Procedure testing in an unattended, non-interactive mode.</div>
+        <span class="added">ADDED: </span>New command line option to run Stored Procedure testing in an unattended, non-interactive mode.
+    </div>
     <div>
-      <span class="added">ADDED: </span>New command line option to run a multi-database/server configuration in an unattended, non-interactive mode.</div>
+        <span class="added">ADDED: </span>New command line option to run a multi-database/server configuration in an unattended, non-interactive mode.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Cleaned up command line options to a consistent key-value pair argument list.</div>
+        <span class="updated">UPDATED: </span>Cleaned up command line options to a consistent key-value pair argument list.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Issue when creating a new Stored Procedure test project file. You weren't able to select a menu item when there were no stored procedures already in the tree view.</div>
+        <span class="fixed">FIXED: </span>Issue when creating a new Stored Procedure test project file. You weren't able to select a menu item when there were no stored procedures already in the tree view.
+    </div>
     <br />
     <div class="version">Version 8.0.2</div>
     <div>
-      <span class="added">ADDED: </span>Enhancements to the Multi Database/Server run configuration form. Now alerts user when a loaded configuration doesn't match the databases found on the the target servers.</div>
+        <span class="added">ADDED: </span>Enhancements to the Multi Database/Server run configuration form. Now alerts user when a loaded configuration doesn't match the databases found on the the target servers.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Enhancements to the Multi Database/Server run configuration form. Added a tab view inside the server pane to make it easier to navigate the databases in the configuration. Added some coloring to make the area separation clearer.</div>
+        <span class="added">ADDED: </span>Enhancements to the Multi Database/Server run configuration form. Added a tab view inside the server pane to make it easier to navigate the databases in the configuration. Added some coloring to make the area separation clearer.
+    </div>
     <div>
-      <span class="added">ADDED: </span>New links to the project web site at http://www.SqlBuildManager.com so the user can easily access the help manual.</div>
+        <span class="added">ADDED: </span>New links to the project web site at http://www.SqlBuildManager.com so the user can easily access the help manual.
+    </div>
     <br />
     <div class="version">Version 8.0.1</div>
     <div>
-      <span class="note">NOTE: </span>Major updates!</div>
+        <span class="note">NOTE: </span>Major updates!
+    </div>
     <div>
-      <span class="updated">UPDATED: </span> 1.Upgrading from using the deprecated SQLDMO for scripting to the "new" SMO scripting</div>
+        <span class="updated">UPDATED: </span> 1.Upgrading from using the deprecated SQLDMO for scripting to the "new" SMO scripting
+    </div>
     <div>
-      <span class="updated">UPDATED: </span> 2. Full compatibility with SQL schema names for all objects. This includes scripted objects as well as all of the script helpers and wrappers.</div>
+        <span class="updated">UPDATED: </span> 2. Full compatibility with SQL schema names for all objects. This includes scripted objects as well as all of the script helpers and wrappers.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span> 3. New multi-database/server configuration. This allows you to run against multiple target databases and across multiple servers in a single run and transaction.</div>
+        <span class="updated">UPDATED: </span> 3. New multi-database/server configuration. This allows you to run against multiple target databases and across multiple servers in a single run and transaction.
+    </div>
     <br />
     <div class="version">Version 7.6.9</div>
     <div>
-      <span class="added">ADDED: </span>Automatically detects="" and strips our SQL "USE" statements (this should be handled by the tool)</div>
+        <span class="added">ADDED: </span>Automatically detects="" and strips our SQL "USE" statements (this should be handled by the tool)
+    </div>
     <div>
-      <span class="added">ADDED: </span>Project modifications to allow clean checkout/build/test process.</div>
+        <span class="added">ADDED: </span>Project modifications to allow clean checkout/build/test process.
+    </div>
     <div>
-      <span class="added">ADDED: </span>&lt;Ctrl&gt; key modifier to open project file temp directory when clicking on project file name in main window.</div>
+        <span class="added">ADDED: </span>&lt;Ctrl&gt; key modifier to open project file temp directory when clicking on project file name in main window.
+    </div>
     <div>
-      <span class="added">ADDED: </span>  More robust schema validation to ensure build file load.</div>
+        <span class="added">ADDED: </span>  More robust schema validation to ensure build file load.
+    </div>
     <br />
     <div class="version">Version 7.6.9</div>
     <div>
-      <span class="added">ADDED: </span>Updated content checking</div>
+        <span class="added">ADDED: </span>Updated content checking
+    </div>
     <br />
     <div class="version">Version 7.6.7</div>
     <div>
-      <span class="added">ADDED: </span>Check for change date on SP's and Functions to look for manual database changes.</div>
+        <span class="added">ADDED: </span>Check for change date on SP's and Functions to look for manual database changes.
+    </div>
     <div>
-      <span class="added">ADDED: </span>New status icon to alert user of a manual server side database change.</div>
+        <span class="added">ADDED: </span>New status icon to alert user of a manual server side database change.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Help menu for status icon meanings and background coloring + tool tips</div>
+        <span class="added">ADDED: </span>Help menu for status icon meanings and background coloring + tool tips
+    </div>
     <div>
-      <span class="added">ADDED: </span>Script tag to the SBM comparison form for easier cross-check</div>
+        <span class="added">ADDED: </span>Script tag to the SBM comparison form for easier cross-check
+    </div>
     <br />
     <div class="version">Version 7.6.5</div>
     <div>
-      <span class="added">ADDED: </span>Search feature in script comparison forms</div>
+        <span class="added">ADDED: </span>Search feature in script comparison forms
+    </div>
     <div>
-      <span class="added">ADDED: </span>"Find next diff" feature in file comparisons</div>
+        <span class="added">ADDED: </span>"Find next diff" feature in file comparisons
+    </div>
     <br />
     <div class="version">Version 7.6.4</div>
     <div>
-      <span class="added">ADDED: </span>Toggle button to slide build script list to display date added and date modified for scripts.</div>
+        <span class="added">ADDED: </span>Toggle button to slide build script list to display date added and date modified for scripts.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Override database list was case-sensitive when adding names causing doubles.</div>
+        <span class="fixed">FIXED: </span>Override database list was case-sensitive when adding names causing doubles.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Script search "OK" and "Cancel" buttons respond to Enter and Esc keys respectively</div>
+        <span class="fixed">FIXED: </span>Script search "OK" and "Cancel" buttons respond to Enter and Esc keys respectively
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>"Found" scripts from search weren't always getting highlighted</div>
+        <span class="fixed">FIXED: </span>"Found" scripts from search weren't always getting highlighted
+    </div>
     <div>
-      <span class="fixed">FIXED: </span> When there is a build file read error for an unattended build, the tool sends out an error code and exits</div>
+        <span class="fixed">FIXED: </span> When there is a build file read error for an unattended build, the tool sends out an error code and exits
+    </div>
     <br />
     <div class="version">Version 7.6.2</div>
     <div>
-      <span class="fixed">FIXED: </span>Database name showing with "*" when modifying multiple scripts</div>
+        <span class="fixed">FIXED: </span>Database name showing with "*" when modifying multiple scripts
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Target database override list not refreshing when a database was removed.</div>
+        <span class="fixed">FIXED: </span>Target database override list not refreshing when a database was removed.
+    </div>
     <br />
     <div class="version">Version 7.6.1</div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected roll-back error when database connection unavailable causing partially committed builds.</div>
+        <span class="fixed">FIXED: </span>Corrected roll-back error when database connection unavailable causing partially committed builds.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Changed docking for resize of build manager group box.</div>
+        <span class="fixed">FIXED: </span>Changed docking for resize of build manager group box.
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Error in refresh of status icons when Override target change is selected.</div>
+        <span class="fixed">FIXED: </span>Error in refresh of status icons when Override target change is selected.
+    </div>
     <div>
-      <span class="updated">UPDATED: </span>Updated DefaultScriptRegistry.xml to remove the IFOOrder default script entry.</div>
+        <span class="updated">UPDATED: </span>Updated DefaultScriptRegistry.xml to remove the IFOOrder default script entry.
+    </div>
     <br />
     <div class="version">Version 7.6.0</div>
     <div>
-      <span class="added">ADDED: </span>Override target database settings</div>
+        <span class="added">ADDED: </span>Override target database settings
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to maintain manual database entries</div>
+        <span class="added">ADDED: </span>Ability to maintain manual database entries
+    </div>
     <br />
     <div class="version">Version 7.5.5</div>
     <div>
-      <span class="added">ADDED: </span>Added "find" feature to SQL script windows</div>
+        <span class="added">ADDED: </span>Added "find" feature to SQL script windows
+    </div>
     <div>
-      <span class="added">ADDED: </span>Updated build review window to display results in full window </div>
+        <span class="added">ADDED: </span>Updated build review window to display results in full window
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected thread contention error in unattended builds.</div>
+        <span class="fixed">FIXED: </span>Corrected thread contention error in unattended builds.
+    </div>
     <br />
     <div class="version">Version 7.5.3</div>
     <div>
-      <span class="added">ADDED: </span>Time display for each script duration.</div>
+        <span class="added">ADDED: </span>Time display for each script duration.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Setting flag to create build log file or not (default to not) - keeps build file smaller</div>
+        <span class="added">ADDED: </span>Setting flag to create build log file or not (default to not) - keeps build file smaller
+    </div>
     <br />
     <div class="version">Version 7.5.2</div>
     <div>
-      <span class="added">ADDED: </span>Completed stored procedure testing framework</div>
+        <span class="added">ADDED: </span>Completed stored procedure testing framework
+    </div>
     <div>
-      <span class="added">ADDED: </span>Compare between current script and script previously run on server</div>
+        <span class="added">ADDED: </span>Compare between current script and script previously run on server
+    </div>
     <div>
-      <span class="added">ADDED: </span>Highlighted SQL view of scripts run on a server</div>
+        <span class="added">ADDED: </span>Highlighted SQL view of scripts run on a server
+    </div>
     <div>
-      <span class="added">ADDED: </span>New index to SQLBuild_logging table to speed up list refresh</div>
+        <span class="added">ADDED: </span>New index to SQLBuild_logging table to speed up list refresh
+    </div>
     <br />
     <div class="version">Version 7.5.1</div>
     <div>
-      <span class="added">ADDED: </span>Check to ensure that Stored Procedures (.PRC) and Functions (.UDF) never strip transactions.</div>
+        <span class="added">ADDED: </span>Check to ensure that Stored Procedures (.PRC) and Functions (.UDF) never strip transactions.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to import Stored Procedure test configurations.</div>
+        <span class="added">ADDED: </span>Ability to import Stored Procedure test configurations.
+    </div>
     <br />
     <div class="version">Version 7.5.0</div>
     <div>
-      <span class="added">ADDED: </span>Sorting of build script list by status image.</div>
+        <span class="added">ADDED: </span>Sorting of build script list by status image.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Stored procedure testing framework</div>
+        <span class="added">ADDED: </span>Stored procedure testing framework
+    </div>
     <br />
     <div class="version">Version 7.4.11</div>
     <div>
-      <span class="added">ADDED: </span>Ability to cancel a build.</div>
+        <span class="added">ADDED: </span>Ability to cancel a build.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Status timers for build duration and script duration.</div>
+        <span class="added">ADDED: </span>Status timers for build duration and script duration.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Added progress bar for Builds</div>
+        <span class="added">ADDED: </span>Added progress bar for Builds
+    </div>
     <div>
-      <span class="added">ADDED: </span>No script list refresh for failed builds (no need)</div>
+        <span class="added">ADDED: </span>No script list refresh for failed builds (no need)
+    </div>
     <div>
-      <span class="added">ADDED: </span>Ability to change multiple script tags at once. </div>
+        <span class="added">ADDED: </span>Ability to change multiple script tags at once.
+    </div>
     <div>
-      <span class="added">ADDED: </span>New utility scripts to wrap Stats and PK adds to make them re-runnable.</div>
+        <span class="added">ADDED: </span>New utility scripts to wrap Stats and PK adds to make them re-runnable.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Added CreateId and CreateDate for Code Table auditing</div>
+        <span class="added">ADDED: </span>Added CreateId and CreateDate for Code Table auditing
+    </div>
     <br />
     <div class="version">Version 7.4.6</div>
     <div>
-      <span class="fixed">FIXED: </span>Tag value not being saved with bulk add (ex. direct object scripting)</div>
+        <span class="fixed">FIXED: </span>Tag value not being saved with bulk add (ex. direct object scripting)
+    </div>
     <div>
-      <span class="added">ADDED: </span>Tool tip alert when an autoscripting candidate (&lt;F12&gt;) value is highlighted in script window</div>
+        <span class="added">ADDED: </span>Tool tip alert when an autoscripting candidate (&lt;F12&gt;) value is highlighted in script window
+    </div>
     <br />
     <div class="version">Version 7.4.5</div>
     <div>
-      <span class="fixed">FIXED: </span>Corrected object scripting error</div>
+        <span class="fixed">FIXED: </span>Corrected object scripting error
+    </div>
     <div>
-      <span class="fixed">FIXED: </span>Added error message when trying to open newer build files with old version.</div>
+        <span class="fixed">FIXED: </span>Added error message when trying to open newer build files with old version.
+    </div>
     <div>
-      <span class="added">ADDED: </span>Automatic Checking for new versions</div>
+        <span class="added">ADDED: </span>Automatic Checking for new versions
+    </div>
     <div>
-      <span class="added">ADDED: </span>Manual checking for new versions via Help menu</div>
+        <span class="added">ADDED: </span>Manual checking for new versions via Help menu
+    </div>
     <br />
-  </body>
+</body>
 </html>
