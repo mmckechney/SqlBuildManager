@@ -14,6 +14,7 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the lifecyle of
 * Massively parallel execution across thousands of databases utilzing local threading, an Azure cloud service deployment or an Azure Batch execution
 
 ## The Basics
+
 At the core of the process is the "SQL Build Manager Package" file (.sbm extension).  Under the hood, this file is a Zip file that contains the scripts that constitute your "release" along with a configuration file  (SqlSyncBuildProject.xml) that contains meta data on the scripts and execution parameters:
 
 * `FileName`: Self explanatary, the name of the script file
@@ -32,7 +33,6 @@ At the core of the process is the "SQL Build Manager Package" file (.sbm extensi
 * `ModifiedBy`: If the script has been modified after being added, this will be populated with the user's ID
 * `Tag`: Optional tag for the script
 
-
 ## Creating a Build Package
 
 ### Forms UI
@@ -43,11 +43,27 @@ While the focus of the app has changed to command line automation, the forms GUI
 
 The command line utility is geared more toward executing a build vs. creating the package itself. You can however extract a build package file from a DACPAC file using the `Action=ScriptExtract` flag. This is useful if you are utilizing the recommended [data-tier application](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications?view=sql-server-2017)  method.
 
+A DACPAC can also be created directly from a target "Platinum Database" (why platinum? because it's even more precious than gold!). Using the `/Action={Threaded|Remote|Batch}` along with the flags `/PlatinumDbSource="<database name>"` and `/PlatinumServerSource="<server name>"` the app will generate a DACPAC from the source database then can then be used to run a build directly on your target(s).
+
+## Running Builds (command line)
+
+There are 4 ways to run your database update builds each with their target use case
+
+### Local
+
+Leveraging the `/Action=Build` command, this runs the build on the current local machine. If you are targeting more than one database, the execution will be serial, only updating one database at a time and any transaction rollback will occur to all databases in the build.
+
+### Threaded
+
+Using the `/Action=Threaded` command will allow for updating multiple databases in parallel, but still executed from the local machine. Any transaction rollbacks will occur only on per-database - meaning if 5 of 6 databases succeed, the build will be committed on the 5 and rolled back only on the 6th
+
+### Batch
+Using the `/Action=Batch` command leverages Azure Batch to permit massively parallel updates across thousands of databases
+
 
 ## Full Command Line Reference
 
-
-```Command line automation is accomplished via  _SqlBuildManager.Console.exe_. The usage 
+```Command line automation is accomplished via  _SqlBuildManager.Console.exe_. The usage
 
 
 
@@ -58,7 +74,7 @@ The command line utility is geared more toward executing a build vs. creating th
 Action value options (/Action=<value>)
     Build                    Performs a standard,local SBM execution via command line
     Threaded                 For updating multiple databases simultaneously from the current machine
-    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing                                                 Uses SqlBuildManager.Services deployed as an Azure Cloud service - NOTE: this is a legacy deployment method)
+    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing. Uses SqlBuildManager.Services deployed as an Azure Cloud service - NOTE: this is a legacy deployment method)
     Batch                    For updating multiple databases simultaneously using Azure batch services (prefered method for distributed deployment)
     Package                  Creates an SBM package from an SBX configuraiton file and scripts
     PolicyCheck              Performs a script policy check on the specified SBM package
@@ -92,7 +108,7 @@ General Runtime settings (/Action={Build|Threaded|Remote})
 Azure Batch Execution (/Action=Batch)
     /PlatinumDacpac="<filename>"              Name of the dacpac containing the platinum schema
     /PackageName="<filename>"                 Name of the .sbm or .sbx file to execute
-    /RootLoggingPath="<directory>"            Directory to save execution logs 
+    /RootLoggingPath="<directory>"            Directory to save execution logs
     /DeleteBatchPool=(true|false)             Whether or not to delete the batch pool servers after an execution (default is true)
     /BatchNodeCount="##"                      Number of nodes to provision to run the batch job  (default is 10)
     /BatchVmSize="<size>"                     Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
@@ -104,10 +120,10 @@ Azure Batch Execution (/Action=Batch)
 
 Remote Execution settings (/Action=Remote)
     /RemoteServers=("<filename>"|derive|azure)     Pointer to file that contains the list of remote execution servers,
-	                                               "derive" to parse servers from DB list, azure to use Azure PaaS instances
+                                                  "derive" to parse servers from DB list, azure to use Azure PaaS instances
     /TimeoutRetryCount=(integer)                   Number of times to retry os a script timeout is encountered (default is 0)
     /DistributionType=(equal|local)                Sets whether to split execution evenly across all execution servers 
-	                                               or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
+                                                   or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
     /TestConnectivity=(true|false)                 True value will test connection to remote agent and databases but will not execute SQL scripts
     /AzureRemoteStatus=true                        Return a status of the Azure remote execution services. Will not execute SQL 
     /RemoteDbErrorList=<remote name>|all           Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers
@@ -132,16 +148,15 @@ Database Synchronization (/Action={Synchronize|GetDifference})
 
 SBX to SBM packaging (/Action=Package)
     /Directory="<directory>"          Directory containing 1 or more SBX files to package into SBM zip files
-   
+
 Policy checking (/Action=PolicyCheck)
     /PackageName="<filename>"        Name of the SBM package to check policies on
 
 Calculate hash/fingerprint (/Action=GetHash)
     /PackageName="<filename>"        Name of the SBM package to calculate SHA-1 hash value
-   
+
 Creating backout packages (/Action=CreateBackout)
     /PackageName="<filename>"        Name of the SBM package to calculate a backout package for
     /Server=<servername>             Name of the server that contains the desired state schema to "backout to"
     /Database=<databasename>         Name of the database that contains the desired state schema to "backout to"
 ```
- 

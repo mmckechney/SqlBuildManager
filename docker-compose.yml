@@ -1,8 +1,0 @@
-version: '3.4'
-
-services:
-  sqlbuildmanager.console:
-    image: ${DOCKER_REGISTRY}sqlbuildmanagerconsole
-    build:
-      context: .\SqlBuildManager.Console
-      dockerfile: Dockerfile
