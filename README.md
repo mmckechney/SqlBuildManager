@@ -37,7 +37,7 @@ At the core of the process is the "SQL Build Manager Package" file (.sbm extensi
 
 ### Forms UI
 
-While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _Sql Build Manager.exe_. There is docmentation on the GUI that you can find [here](https://github.com/mmckechney/SqlBuildManager/blob/master/SqlBuildManager%20Manual/SqlBuildManagerManual.pdf) that will walk through the creation of build packages
+While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _Sql Build Manager.exe_. There is docmentation on the GUI that you can find [here](https://github.com/mmckechney/SqlBuildManager/blob/master/SqlBuildManager%20Manual/SqlBuildManagerManual.pdf) that will walk through the creation of build packages.
 
 ### Command line
 
@@ -58,8 +58,12 @@ Leveraging the `/Action=Build` command, this runs the build on the current local
 Using the `/Action=Threaded` command will allow for updating multiple databases in parallel, but still executed from the local machine. Any transaction rollbacks will occur only on per-database - meaning if 5 of 6 databases succeed, the build will be committed on the 5 and rolled back only on the 6th
 
 ### Batch
-Using the `/Action=Batch` command leverages Azure Batch to permit massively parallel updates across thousands of databases
 
+Using the `/Action=Batch` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](SqlBuildManager.Console/AzureBatch.md)
+
+### Remote
+
+Using `/Action=Remote`, this method leverages an Azure Cloud Service deployment of the `SqlBuildManager.Services` application. This is a legacy method that allows for massively parallel updates. It is considered legacy because Azure Cloud Services themselves are a legacy deployment and also because of the effort to deploy and configure the Cloud Service compared to the same capability available via Azure Batch.
 
 ## Full Command Line Reference
 
@@ -74,9 +78,9 @@ Using the `/Action=Batch` command leverages Azure Batch to permit massively para
 Action value options (/Action=<value>)
     Build                    Performs a standard,local SBM execution via command line
     Threaded                 For updating multiple databases simultaneously from the current machine
-    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing. Uses SqlBuildManager.Services deployed as an Azure Cloud service - NOTE: this is a legacy deployment method)
+    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing (legacy method)
     Batch                    For updating multiple databases simultaneously using Azure batch services (prefered method for distributed deployment)
-    Package                  Creates an SBM package from an SBX configuraiton file and scripts
+    Package                  Creates an SBM package from an SBX configuration file and scripts
     PolicyCheck              Performs a script policy check on the specified SBM package
     GetHash                  Calculates the SHA-1 hash fingerprint value for the SBM package (scripts + run order)
     CreateBackout            Generates a backout package (reversing stored procedure and scripted object changes)
