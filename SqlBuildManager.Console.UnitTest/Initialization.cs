@@ -56,6 +56,7 @@ namespace SqlBuildManager.Console.UnitTest
         }
         public string GetTrulyUniqueFile(string extension)
         {
+            if (extension.StartsWith(".")) extension = extension.Replace(".", "");
             string tmpName = Path.GetTempFileName();
             string newName = Path.GetDirectoryName(tmpName) + @"\SqlBuildManager-Console-" + Guid.NewGuid().ToString() + "." + extension;
             File.Move(tmpName, newName);

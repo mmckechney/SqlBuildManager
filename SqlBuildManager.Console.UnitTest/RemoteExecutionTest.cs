@@ -290,23 +290,26 @@ localhost:def,ovr";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.NoTrans_MultiDb_sbm);
 
+            var init = new Initialization();
+            var tmpFile = init.GetTrulyUniqueFile(".cfg");
 
             string[] args = new string[8];
             args[0] = "/Action=remote";
             args[1] = "/RootLoggingPath=\"C:\temp\"";
             args[2] = "/transactional=true";
             args[3] = "/trial=true";
-            args[4] = "/override=\"" + Initialization.DbConfigFileName + "\"";
+            args[4] = "/override=\"" + tmpFile + "\"";
             args[5] = "/packagename=\"" + sbmFileName + "\"";
             args[6] = "/RemoteServers=\"" + fileName + "\"";
             args[7] = "/DistributionType=equal";
-
+            
             BuildSettings setting = null;
             int expected = (int)ExecutionReturn.NullMultiDbConfig;
             int actual;
             actual = RemoteExecution.DigestAndValidateCommandLineArguments(args, out setting);
             File.Delete(fileName);
             File.Delete(sbmFileName);
+            if (File.Exists(tmpFile)) File.Delete(tmpFile);
             Assert.IsNull(setting);
             Assert.AreEqual(expected, actual);
         }
@@ -917,21 +920,26 @@ anotherhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest";
             int expected = -601;
             int actual;
             actual = target.Execute();
-            if(Directory.Exists(loggingPath))
-                Directory.Delete(loggingPath, true);
 
-            if(File.Exists(fileName))
-                File.Delete(fileName);
-            if(File.Exists(sbmFileName))
-                File.Delete(sbmFileName);
-            if(File.Exists(multiDbOverrideSettingFileName))
-                File.Delete(multiDbOverrideSettingFileName);
+            try
+            {
+                if (actual == -600)
+                    Assert.Fail("Unable to complete test. Please make sure you have a Remote Execution Service running on localhost");
 
-            if (actual == -600)
-                Assert.Fail("Unable to complete test. Please make sure you have a Remote Execution Service running on localhost");
+                Assert.AreEqual(expected, actual, "Ensure that you have your service running on \"localhost\\SQLEXPRESS\"");
+                Assert.IsTrue(Directory.GetFiles(loggingPath, "*.cfg").Length > 0);
+            }finally
+            {
+                if (Directory.Exists(loggingPath))
+                    Directory.Delete(loggingPath, true);
 
-            Assert.AreEqual(expected, actual, "Ensure that you have your service running on \"localhost\\SQLEXPRESS\"");
-            Assert.IsTrue(Directory.GetFiles(SqlBuildManager.Logging.Configure.AppDataPath, "*.cfg").Length > 0); 
+                if (File.Exists(fileName))
+                    File.Delete(fileName);
+                if (File.Exists(sbmFileName))
+                    File.Delete(sbmFileName);
+                if (File.Exists(multiDbOverrideSettingFileName))
+                    File.Delete(multiDbOverrideSettingFileName);
+            }
         }
 
         /// <summary>
@@ -1015,10 +1023,10 @@ anotherhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest";
         #endregion
 
         #region ExecuteTest with Retries
-        [TestMethod()]
+        [TestMethod(),Ignore("This test is really a dupe of the one for the threaded one")]
         public void ExecuteTest_CommitWithRetries()
         {
-            int retryCount = 20;
+            int retryCount = 3;
 
             string fileName = Path.GetTempFileName();
             File.WriteAllText(fileName, "localhost");
@@ -1065,7 +1073,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
-                Regex regFindTimeout = new Regex("Error Message: Timeout expired");
+                Regex regFindTimeout = new Regex("Timeout Expired", RegexOptions.IgnoreCase);
 
                 MatchCollection matches = regFindTimeout.Matches(logContents);
                 Assert.IsTrue(matches.Count > 0, "No Timeout messages were encountered");

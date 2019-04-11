@@ -295,7 +295,7 @@ namespace SqlBuildManager.Console
             //    multiData = MultiDbHelper.ImportMultiDbTextConfig(multiDbOverrideSettingFileName);
            
 
-            if (multiData == null)
+            if (multiData == null || multiData.Count() == 0)
             {
                 error = "Unable to read in configuration file " + multiDbOverrideSettingFileName + ((message.Length > 0) ? " :: " + message : "");
                 errorMessages =  new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullMultiDbConfig };

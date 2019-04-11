@@ -184,10 +184,9 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)..\ICSharpCode.SharpZipLib.dll" "$(TargetDir)ICSharpCode.SharpZipLib.dll
-copy "$(TargetDir)*.exe" "D:\Program Files\McKechney.com\Sql Build Manager Services" /y
-copy "$(TargetDir)*.dll" "D:\Program Files\McKechney.com\Sql Build Manager Services" /y
-copy "$(TargetDir)*.config" "C:\Program Files\McKechney.com\Sql Build Manager Services" /y
+    <PostBuildEvent>#copy "$(TargetDir)*.exe" "D:\Program Files\McKechney.com\Sql Build Manager Services" /y
+#copy "$(TargetDir)*.dll" "D:\Program Files\McKechney.com\Sql Build Manager Services" /y
+#copy "$(TargetDir)*.config" "C:\Program Files\McKechney.com\Sql Build Manager Services" /y
 net start SqlBuildManager.Service
 exit 0</PostBuildEvent>
     <PreBuildEvent>net stop SqlBuildManager.Service
