@@ -61,7 +61,7 @@ namespace SqlBuildManager.Console.UnitTest
         /// <summary>
         ///A test for GetDatabaseRunHistoryDifference
         ///</summary>
-        [TestMethod()]
+        [TestMethod(), Ignore("Don't have the setup scripts ready yet")]
         public void GetDatabaseRunHistoryDifferenceTest()
         {
             string[] args = new string[]
@@ -81,7 +81,7 @@ namespace SqlBuildManager.Console.UnitTest
         /// <summary>
         ///A test for GetDatabaseRunHistoryDifference
         ///</summary>
-        [TestMethod()]
+        [TestMethod(), Ignore("Don't have the setup scripts ready yet")]
         public void GetDatabaseRunHistoryDifferenceTest1()
         {
             CommandLineArgs cmdLine = null; // TODO: Initialize to an appropriate value
@@ -95,7 +95,7 @@ namespace SqlBuildManager.Console.UnitTest
         /// <summary>
         ///A test for ParseAndValidateFlags
         ///</summary>
-        [TestMethod()]
+        [TestMethod(), Ignore("not complete")]
         [DeploymentItem("SqlBuildManager.Console.exe")]
         public void ParseAndValidateFlagsTest()
         {

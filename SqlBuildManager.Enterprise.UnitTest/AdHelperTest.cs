@@ -31,7 +31,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         /// <summary>
         ///A test for GetDistinguishedName
         ///</summary>
-        [TestMethod()]
+        [TestMethod(),Ignore("Not relevent for most deployments")]
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void GetDistinguishedNameTest_PassWithGoodDn()
         {
@@ -45,7 +45,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         /// <summary>
         ///A test for GetDistinguishedName
         ///</summary>
-        [TestMethod()]
+        [TestMethod(), Ignore("Not relevent for most deployments")]
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void GetDistinguishedNameTest_PassWithNoDnReturned()
         {
@@ -60,7 +60,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         /// <summary>
         ///A test for GetGroupMemberships
         ///</summary>
-        [TestMethod()]
+        [TestMethod(),Ignore]
         public void GetGroupMembershipsTest_PassWithGroupList()
         {
             string userName = "mmckechn";

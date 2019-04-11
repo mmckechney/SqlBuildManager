@@ -9429,6 +9429,16 @@
             DdlExternalLibraryEvents
             </summary>
         </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.EventGroupType.DdlSensitivityEvents">
+            <summary>
+            DdlSensitivityEvents
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.EventGroupType.DdlExternalLanguageEvents">
+            <summary>
+            DdlExternalLanguageEvents
+            </summary>
+        </member>
         <member name="F:Microsoft.SqlServer.Dac.Model.EventGroupType.DdlServiceEvents">
             <summary>
             DdlServiceEvents
@@ -10107,6 +10117,31 @@
         <member name="F:Microsoft.SqlServer.Dac.Model.EventType.DropExternalLibrary">
             <summary>
             DropExternalLibrary
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.EventType.AddSensitivityClassification">
+            <summary>
+            AddSensitivityClassification
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.EventType.DropSensitivityClassification">
+            <summary>
+            DropSensitivityClassification
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.EventType.CreateExternalLanguage">
+            <summary>
+            CreateExternalLanguage
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.EventType.AlterExternalLanguage">
+            <summary>
+            AlterExternalLanguage
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.EventType.DropExternalLanguage">
+            <summary>
+            DropExternalLanguage
             </summary>
         </member>
         <member name="F:Microsoft.SqlServer.Dac.Model.EventType.DropColumnMasterKey">
@@ -12492,6 +12527,16 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.ScalarFunction.SystemDataAccess">
             <summary>
             SystemDataAccess property class of ScalarFunction
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ScalarFunction.IsInline">
+            <summary>
+            IsInline property class of ScalarFunction
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ScalarFunction.IsInlineable">
+            <summary>
+            IsInlineable property class of ScalarFunction
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.ScalarFunction.IsNativeCompiled">
@@ -18698,6 +18743,11 @@
             on-premises, version 14.0
             </summary>
         </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.SqlServerVersion.Sql150">
+            <summary>
+            on-premises, version 15.0
+            </summary>
+        </member>
         <member name="T:Microsoft.SqlServer.Dac.Model.TSqlModel">
             <summary>
             Represents a model of a SQL Server database schema.
@@ -20180,6 +20230,11 @@
         <member name="F:Microsoft.SqlServer.Dac.Model.TSqlPlatforms.Sql140">
             <summary>
             on-premises, version 14.0
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.TSqlPlatforms.Sql150">
+            <summary>
+            on-premises, version 15.0
             </summary>
         </member>
         <member name="F:Microsoft.SqlServer.Dac.Model.TSqlPlatforms.OnPremises">

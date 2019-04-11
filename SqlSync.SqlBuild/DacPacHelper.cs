@@ -26,6 +26,7 @@ namespace SqlSync.SqlBuild
                         appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
                         appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\Microsoft_SqlDB_DAC"); 
                         appRoots.Add(@"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\Microsoft");
+                        appRoots.Add(@"C:\Program Files\Microsoft SQL Server\150\DAC\bin");
                     }
                     foreach(var dir in appRoots)
                     {

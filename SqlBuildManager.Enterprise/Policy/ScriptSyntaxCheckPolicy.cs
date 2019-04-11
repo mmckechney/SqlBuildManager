@@ -94,16 +94,19 @@ namespace SqlBuildManager.Enterprise.Policy
 
                 if (f.Any())
                 {
-                    return true;
+                    List<int> line = f.ToList();
+                    //Return an error for the first line...
+                    int lineNumber;
+                    if (line.Count() == 0)
+                        lineNumber = 1;
+                    else
+                        lineNumber = PolicyHelper.GetLineNumber(script, line[0]);
+                    message = this.ErrorMessage.Replace(PolicyHelper.LineNumberToken, lineNumber.ToString());
+                    return false;
                 }
                 else
                 {
-                    List<int> line = f.ToList();
-                    //Return an error for the first line...
-                    int lineNumber = PolicyHelper.GetLineNumber(script, line[0]);
-                    message = this.ErrorMessage.Replace(PolicyHelper.LineNumberToken, lineNumber.ToString());
-                    return false;
-
+                    return true;
                 }
             } 
             catch (Exception exe)

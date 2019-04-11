@@ -19,7 +19,7 @@ namespace SqlSync.Connection
         }
       
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static string appName = "Application Name=Sql Build Manager v{0} [{1}];";
+        public static string appName = "Application Name=Sql Build Manager v{0} [{1}];";
         static ConnectionHelper()
         {
             string version;
@@ -28,7 +28,7 @@ namespace SqlSync.Connection
             else
                 version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-            appName = string.Format("Application Name=Sql Build Manager v{0} [{1}];", version, System.Environment.UserName);
+            appName = string.Format($"Application Name=Sql Build Manager v{version} [{System.Environment.UserName}];");
         }
         public static SqlConnection GetConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut)
         {
@@ -63,24 +63,38 @@ namespace SqlSync.Connection
         }
         public static string GetConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut)
         {
-            string conn;
-            switch(authType)
+
+            var builder = new SqlConnectionStringBuilder();
+            builder.DataSource = serverName;
+            builder.InitialCatalog = dbName;
+            builder.ConnectTimeout = scriptTimeOut;
+            builder.Pooling = false;
+            builder.ApplicationName = appName;
+            //Set transient values
+            builder.ConnectRetryCount = 3;
+            builder.ConnectRetryInterval = 10;
+
+            switch (authType)
             {
                 case AuthenticationType.WindowsAuthentication:
-                    conn = "Data Source=" + serverName + ";Initial Catalog=" + dbName + ";Trusted_Connection=Yes;CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;" + appName;
+                    builder.IntegratedSecurity = true;
                     break;
                 case AuthenticationType.AzureActiveDirectory:
-                    conn = "Data Source=" + serverName + ";Initial Catalog=" + dbName + ";Authentication=Active Directory Integrated;CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;" + appName;
+                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryIntegrated;
                     break;
                 case AuthenticationType.AzureUserNamePassword:
-                    conn = "Data Source=" + serverName + ";Initial Catalog=" + dbName + ";Authentication=Active Directory Password;UID=" + uid + ";PWD=" + pw + ";CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;" + appName;
+                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryPassword;
+                    builder.UserID = uid;
+                    builder.Password = pw;
                     break;
                 case AuthenticationType.UserNamePassword:
                 default:
-                    conn = "Data Source=" + serverName + ";Initial Catalog=" + dbName + ";User ID=" + uid + ";Password=" + pw + ";CONNECTION TIMEOUT=" + scriptTimeOut.ToString() + ";Pooling=false;" + appName;
+                    builder.Authentication = SqlAuthenticationMethod.SqlPassword;
+                    builder.UserID = uid;
+                    builder.Password = pw;
                     break;
             }
-            return conn;
+            return builder.ToString();
         }
 
         public static string GetTargetDatabase(string defaultDatabase, List<DatabaseOverride> overrides)

@@ -25,6 +25,9 @@ namespace SqlBuildManager.Services.Host
 
         public override void Install(System.Collections.IDictionary stateSaver)
         {
+            this.serviceProcessInstaller1.Account = ServiceAccount.LocalSystem;
+            this.serviceProcessInstaller1.Username = null;
+            this.serviceProcessInstaller1.Password = null;
             if (stateSaver.Count == 0)
             {
                 stateSaver.Add(username, ProjectInstaller.Username);
@@ -51,6 +54,7 @@ namespace SqlBuildManager.Services.Host
                 System.Console.WriteLine("no custom username");
             }
 
+            //base.Install(null);
             base.Install(stateSaver);
         }
 

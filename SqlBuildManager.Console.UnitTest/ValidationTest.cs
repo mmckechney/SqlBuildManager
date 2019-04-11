@@ -75,7 +75,8 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_MissingRootLoggingPath()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            
+            cmdLine.Action = "Build";
+            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             string[] errorMessages = null;
             int expected = -99; 
             int actual;
@@ -91,6 +92,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_BadTransactionTrialCombo()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
+            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = false;
             cmdLine.Trial = true;
@@ -110,6 +112,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_MissingOverrideSetting()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
+            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
@@ -129,6 +132,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_MissingBuildFileName()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
+            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
@@ -138,7 +142,7 @@ namespace SqlBuildManager.Console.UnitTest
             int actual;
             actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].LastIndexOf("Missing /PackageName or /ScriptSrcDir setting.") > -1);
+            Assert.IsTrue(errorMessages[0].LastIndexOf("Invalid command line set. Missing /PackageName or /PlatinumDacpac or /ScriptSrcDir setting.") > -1);
             Assert.AreEqual(expected, actual);
         }
 
@@ -149,6 +153,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_MissingBuildFile()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
+            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
@@ -207,6 +212,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_InvalidScriptScrDir()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
+            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
@@ -227,18 +233,28 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void ValidateCommonCommandLineArgsTest_GoodConfig()
         {
+            var init = new Initialization();
+            var multFile = init.GetTrulyUniqueFile("cfg");
+            File.WriteAllBytes(multFile, Properties.Resources.NoTrans_MultiDb_multidb);
             CommandLineArgs cmdLine = new CommandLineArgs();
+            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
-            cmdLine.MultiDbRunConfigFileName = @"C\temp\multicfg.cfg";
+            cmdLine.MultiDbRunConfigFileName = multFile;
             cmdLine.ScriptSrcDir = @"C:\temp";
             string[] errorMessages = null;
             int expected = 0;
             int actual;
-            actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
-            Assert.AreEqual(0, errorMessages.Length);
-            Assert.AreEqual(expected, actual);
+            try
+            {
+                actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
+                Assert.AreEqual(0, errorMessages.Length);
+                Assert.AreEqual(expected, actual);
+            }finally
+            {
+                if (File.Exists(multFile)) File.Delete(multFile);
+            }
         }
         #endregion
 

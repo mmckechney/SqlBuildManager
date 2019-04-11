@@ -243,11 +243,11 @@ namespace SqlBuildManager.ServiceClient.UnitTest
 
             IDictionary<ServerConfigData, BuildSettings> actual;
             actual = target.SplitLoadEvenly(unifiedSettings, executionServers);
-            Assert.AreEqual(1, actual.Count);
+            Assert.AreEqual(2, actual.Count);
             //Assert the values of 1
-            Assert.AreEqual(2, actual[exeServer1].MultiDbTextConfig.Length);
+            Assert.AreEqual(1, actual[exeServer1].MultiDbTextConfig.Length);
             Assert.IsTrue(actual[exeServer1].MultiDbTextConfig[0].IndexOf("SERVER1") > -1);
-            Assert.IsTrue(actual[exeServer1].MultiDbTextConfig[1].IndexOf("SERVER2") > -1);
+            Assert.IsTrue(actual[exeServer2].MultiDbTextConfig[0].IndexOf("SERVER2") > -1);
 
         }
 

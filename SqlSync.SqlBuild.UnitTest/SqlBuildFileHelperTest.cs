@@ -214,7 +214,7 @@ namespace SqlSync.SqlBuild.UnitTest
             buildData.Script.Rows.Add(row2);
             buildData.Script.Rows.Add(row3);
 
-            string expected = "D218661A24E5D15CFBCA0FC498635460D268E963";
+            string expected = "4E0F54A4BA40DC62A78822B20C7D83713CE4F766";
             string actual;
             actual = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 

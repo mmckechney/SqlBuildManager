@@ -1594,7 +1594,7 @@
         </member>
         <member name="P:Microsoft.SqlServer.Dac.DacErrorResources.ErrorReadingProfile">
             <summary>
-              Looks up a localized string similar to Could not read profile properties: {0}.
+              Looks up a localized string similar to Could not read profile xml..
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.DacErrorResources.ErrorReadingProfileProperties">

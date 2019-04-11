@@ -180,7 +180,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\","*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
-                Regex regFindTimeout = new Regex("Error Message: Timeout expired");
+                Regex regFindTimeout = new Regex("Timeout expired",RegexOptions.IgnoreCase);
 
                 MatchCollection matches = regFindTimeout.Matches(logContents);
                 Assert.IsTrue(matches.Count > 0, "No Timeout messages were encountered");
@@ -256,7 +256,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 Assert.AreEqual(expected, actual);
 
                 //SqlBuildTest should have rolledback with 1 more timeout messages than is set for the retry value
-                Regex regFindTimeout = new Regex("Error Message: Timeout expired");
+                Regex regFindTimeout = new Regex("imeout expired", RegexOptions.IgnoreCase);
                 string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
@@ -332,7 +332,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 Assert.AreEqual(expected, actual);
 
                 //SqlBuildTest should have rolledback with 1 more timeout messages than is set for the retry value
-                Regex regFindTimeout = new Regex("Error Message: Timeout expired");
+                Regex regFindTimeout = new Regex("Timeout Expired", RegexOptions.IgnoreCase);
                 string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
@@ -725,7 +725,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 Assert.AreEqual(expected, actual);
 
                 //SqlBuildTest should have rolledback with 1 more timeout messages than is set for the retry value
-                Regex regFindTimeout = new Regex("Error Message: Timeout expired");
+                Regex regFindTimeout = new Regex("Timeout expired", RegexOptions.IgnoreCase);
                 string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
