@@ -1193,6 +1193,10 @@
     <None Include="SqlBuild\Utility\Add Constraint.sql" />
     <None Include="SqlBuild\Utility\Add NonClustered Index.sql" />
     <None Include="Images\Help-2.png" />
+    <Content Include="change_notes_md.xslt">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="change_notes.html" />
     <Content Include="change_notes.xml">
       <SubType>Designer</SubType>

@@ -26,10 +26,10 @@
 4. On the Storage Account blade, record the Storage Account Name and Key1 values
 
 ## How does Batch execution work?
-Azure Batch builds are started locally via `SqlBuildManager.Console.exe`. This process communicates with the Azure Storage account and Azure Batch account to execute in  parallel across the pool of Batch compute nodes. The number of nodes that are provisioned is determied by your command line arguments.
+Azure Batch builds are started locally via `SqlBuildManager.Console.exe`. This process communicates with the Azure Storage account and Azure Batch account to execute in  parallel across the pool of Batch compute nodes. The number of nodes that are provisioned is determined by your command line arguments.
 
 ### The order of processing is:
-1. Execute `SqlBuildManager.Console.exe` with the `Action=batch` directive
+1. Execute `SqlBuildManager.Console.exe` with the `/Action=batch` directive
 2. The provided command line arguments are validated for completeness
 3. The target database list is split into pieces for distribution to the compute nodes
 4. The number of requested compute nodes are provisioned by Batch (note: this can take 5-20 minutes)
