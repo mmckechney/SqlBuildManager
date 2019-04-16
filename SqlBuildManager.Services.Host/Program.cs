@@ -36,20 +36,20 @@ namespace SqlBuildManager.Services.Host
                     {
                         if (!arguments.ContainsKey("username") || !arguments.ContainsKey("password"))
                         {
-                            Console.Error.WriteLine("Installation requires both a /username and a /password commandline argument");
+                            Console.WriteLine("Installation requires both a /username and a /password commandline argument");
                             Environment.Exit(98);
                         }
 
                         if (string.IsNullOrEmpty(arguments["username"]) || string.IsNullOrEmpty(arguments["password"]))
                         {
-                            Console.Error.WriteLine("Installation requires values for both the /username and /password commandline arguments");
+                            Console.WriteLine("Installation requires values for both the /username and /password commandline arguments");
                             Environment.Exit(99);
                         }
 
 
                         if (arguments.ContainsKey("install") && IsServiceInstalled("SqlBuildManager.Service"))
                         {
-                            Console.Error.WriteLine("Cannot run installation, service is already installed. Use the /reinstall flag instead");
+                            Console.WriteLine("Cannot run installation, service is already installed. Use the /reinstall flag instead");
                             Environment.Exit(96);
                         }
 

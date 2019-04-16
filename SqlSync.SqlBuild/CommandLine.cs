@@ -20,7 +20,6 @@ namespace SqlSync.SqlBuild
             cmdLine.RawArguments = args;
 
             StringDictionary dict = Arguments.ParseArguments(args);
-            cmdLine.ArgumentCollection = dict;
             if(dict.ContainsKey("action"))
             {
                 cmdLine.Action = dict["action"].ToLowerInvariant();

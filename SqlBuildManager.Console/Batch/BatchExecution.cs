@@ -19,9 +19,6 @@ namespace SqlBuildManager.Console.Batch
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private string[] args;
 
-
- 
-
         // Batch resource settings
         private const string PoolIdFormat = "SqlBuildManagerPool";
         private const string JobIdFormat = "SqlBuildManagerJob_{0}";
@@ -190,11 +187,8 @@ namespace SqlBuildManager.Console.Batch
                         {
                             new OutputFile(
                                 filePattern: cmdLine.RootLoggingPath + @"\SqlBuildManager.Console.Execution.log",
-                                destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
-                                        containerUrl: containerSasToken,
-                                        path: taskId)),
-                                uploadOptions: new OutputFileUploadOptions(
-                                uploadCondition: OutputFileUploadCondition.TaskCompletion))
+                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
                         };
                     tasks.Add(task);
                 }
