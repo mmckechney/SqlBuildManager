@@ -218,13 +218,17 @@ namespace SqlBuildManager.Console.Batch
                     log.InfoFormat("Task: {0}", task.Id);
                     log.InfoFormat("Node: {0}", nodeId);
                     log.InfoFormat("Exit Code: {0}", task.ExecutionInformation.ExitCode);
-                    log.InfoFormat("Standard out:");
-                    log.InfoFormat(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
+                    if (log.IsDebugEnabled)
+                    {
+                        log.DebugFormat("Standard out:");
+                        log.DebugFormat(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
+                    }
                     if (task.ExecutionInformation.ExitCode != 0)
                     {
                         myExitCode = task.ExecutionInformation.ExitCode;
                     }
                 }
+                log.Info("---------------------------------");
 
                 // Print out some timing info
                 timer.Stop();
@@ -240,7 +244,9 @@ namespace SqlBuildManager.Console.Batch
 
                 string readOnlySasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, true);
                 log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
-                log.Info("The read-only SAS token URL is valid for 7 days. See https://azure.microsoft.com/en-us/features/storage-explorer/ to downoad Azure Storage Explorer");
+                log.Info("The read-only SAS token URL is valid for 7 days.");
+                log.Info("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
+                log.Info("You can also get details on your Azure Batch execution from the \"Azure Batch Explorer\" found here: https://azure.github.io/BatchExplorer/");
 
             }
             finally

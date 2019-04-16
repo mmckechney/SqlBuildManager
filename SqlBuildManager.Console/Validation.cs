@@ -120,7 +120,7 @@ namespace SqlBuildManager.Console
                 return (int)ExecutionReturn.MissingOverrideFlag;
             }
 
-            if (cmdLine.RemoteArgs.TestConnectivity ?? false)
+            if (cmdLine.RemoteArgs.TestConnectivity == false)
             {
                 //Validate and set the value for the build file name
                 if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName) && string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir)

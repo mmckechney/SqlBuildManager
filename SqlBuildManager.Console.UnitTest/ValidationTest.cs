@@ -93,7 +93,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
-            cmdLine.RootLoggingPath = @"C\temp";
+            cmdLine.RootLoggingPath = @"C:\temp";
             cmdLine.Transactional = false;
             cmdLine.Trial = true;
             string[] errorMessages = null;
@@ -113,7 +113,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
-            cmdLine.RootLoggingPath = @"C\temp";
+            cmdLine.RootLoggingPath = @"C:\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
             string[] errorMessages = null;
@@ -133,10 +133,10 @@ namespace SqlBuildManager.Console.UnitTest
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
-            cmdLine.RootLoggingPath = @"C\temp";
+            cmdLine.RootLoggingPath = @"C:\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
-            cmdLine.MultiDbRunConfigFileName = @"C\temp\multicfg.multidb";
+            cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.multidb";
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.MissingBuildFlag;
             int actual;
@@ -154,10 +154,10 @@ namespace SqlBuildManager.Console.UnitTest
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
-            cmdLine.RootLoggingPath = @"C\temp";
+            cmdLine.RootLoggingPath = @"C:\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
-            cmdLine.MultiDbRunConfigFileName = @"C\temp\multicfg.cfg";
+            cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.cfg";
             cmdLine.BuildFileName = @"C:\temp\not_here.sbm";
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.InvalidBuildFileNameValue;
@@ -165,8 +165,8 @@ namespace SqlBuildManager.Console.UnitTest
             actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].LastIndexOf("Missing Build file. The build file specified:") > -1);
-
             Assert.AreEqual(expected, actual);
+            
         }
 
         /// <summary>

@@ -71,10 +71,10 @@ namespace SqlSync.SqlBuild
         {
             public virtual string RemoteServers { get; set; } = string.Empty;
             public virtual string DistributionType { get; set; } = string.Empty;
-            public bool? TestConnectivity { get; set; } = null;
+            public bool TestConnectivity { get; set; } = false;
             public string RemoteDbErrorList { get; set; }
             public string RemoteErrorDetail { get; set; }
-            public bool? AzureRemoteStatus { get; set; } = null;
+            public bool AzureRemoteStatus { get; set; } = false;
         }
         public class Authentication
         {
@@ -139,11 +139,7 @@ namespace SqlSync.SqlBuild
         
         public override string ToString()
         {
-            var props = this.GetType().GetProperties();
-            StringBuilder sb = new StringBuilder();
-            var lst = props.OrderBy(p => p.Name).ToList();
-            lst.ForEach(p => sb.AppendLine("/" + p.Name + "=\"" + p.GetValue(this, null) + "\""));
-            return sb.ToString();
+            throw new System.NotImplementedException();
         }
 
     }

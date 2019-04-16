@@ -209,11 +209,11 @@ namespace SqlBuildManager.Console
             {
                 //string joinedArgs = string.Join(",", args).ToLower();
 
-                if(cmdLine.RemoteArgs.TestConnectivity ?? true)
+                if(cmdLine.RemoteArgs.TestConnectivity == true)
                 {
                     RemoteExecutionTestConnectivity(args);
                 }
-                else if(cmdLine.RemoteArgs.AzureRemoteStatus ?? true)
+                else if(cmdLine.RemoteArgs.AzureRemoteStatus == true)
                 {
                     GetAzureRemoteStatus(args);
                 }
