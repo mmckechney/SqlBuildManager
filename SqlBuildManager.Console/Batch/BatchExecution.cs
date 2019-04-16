@@ -19,9 +19,6 @@ namespace SqlBuildManager.Console.Batch
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private string[] args;
 
-
- 
-
         // Batch resource settings
         private const string PoolIdFormat = "SqlBuildManagerPool";
         private const string JobIdFormat = "SqlBuildManagerJob_{0}";
@@ -74,6 +71,7 @@ namespace SqlBuildManager.Console.Batch
                 return tmpReturn;
             }
 
+            BatchClient batchClient = null;
             try
             {
 
@@ -81,24 +79,26 @@ namespace SqlBuildManager.Console.Batch
                 Stopwatch timer = new Stopwatch();
                 timer.Start();
 
-                // Construct the Storage account connection string
-                string storageConnectionString = String.Format("DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}", cmdLine.StorageAccountName, cmdLine.StorageAccountKey);
-
-                // Retrieve the storage account
-                CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
-
-                // Create the blob client, for use in obtaining references to blob storage containers
-                CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-
-                CloudBlobContainer container = blobClient.GetContainerReference(inputContainerName);
-
-                container.CreateIfNotExists();
-
+                //Get storage ready
+                CloudBlobClient blobClient = CreateStorageAndGetBlobClient(cmdLine.StorageAccountName, cmdLine.StorageAccountKey, inputContainerName);
                 string containerSasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, false);
+                if (log.IsDebugEnabled)
+                {
+                    log.DebugFormat($"Output write SAS token: {containerSasToken}");
+                }
+
+
+                // Get a Batch client using account creds, and create the pool
+                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchAccountUrl, cmdLine.BatchAccountName, cmdLine.BatchAccountKey);
+                batchClient = BatchClient.Open(cred);
+
+                // Create a Batch pool, VM configuration, Windows Server image
+                bool success = CreateBatchPool(batchClient, poolId, cmdLine.BatchNodeCount, cmdLine.BatchVmSize);
+
 
                 // The collection of data files that are to be processed by the tasks
                 List<string> inputFilePaths = new List<string>();
-                if(!string.IsNullOrEmpty(cmdLine.PlatinumDacpac))
+                if (!string.IsNullOrEmpty(cmdLine.PlatinumDacpac))
                 {
                     inputFilePaths.Add(cmdLine.PlatinumDacpac);
                 }
@@ -114,12 +114,12 @@ namespace SqlBuildManager.Console.Batch
                 //Get the list of DB targets and distribute across batch count
                 var allTargets = GetTargetConfigValues(cmdLine.MultiDbRunConfigFileName);
                 var splitTargets = SplitLoadEvenly(allTargets, cmdLine.BatchNodeCount);
-                if(splitTargets.Count < cmdLine.BatchNodeCount)
+                if (splitTargets.Count < cmdLine.BatchNodeCount)
                 {
                     log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.BatchNodeCount);
                     cmdLine.BatchNodeCount = splitTargets.Count;
                 }
-       
+
 
                 //Write out each split file
                 string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
@@ -140,171 +140,116 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(args,cmdLine, inputFiles, containerSasToken, cmdLine.BatchNodeCount, jobId);
+                IList<string> commandLines = CompileCommandLines(args, cmdLine, inputFiles, containerSasToken, cmdLine.BatchNodeCount, jobId);
                 foreach (var s in commandLines)
                     log.Debug(s);
 
-                // Get a Batch client using account creds
-                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchAccountUrl, cmdLine.BatchAccountName, cmdLine.BatchAccountKey);
-
-                using (BatchClient batchClient = BatchClient.Open(cred))
+                try
                 {
-                    // Create a Batch pool, VM configuration, Windows Server image
-                    log.InfoFormat("Creating pool [{0}]...", poolId);
-
-                    ImageReference imageReference = new ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer",
-                        sku: "2016-Datacenter-with-containers", version: "latest");
-
-                    VirtualMachineConfiguration virtualMachineConfiguration = new VirtualMachineConfiguration(
-                        imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
-
-                    try
-                    {
-                        CloudPool pool = batchClient.PoolOperations.CreatePool(
-                            poolId: poolId, targetDedicatedComputeNodes: cmdLine.BatchNodeCount, 
-                            virtualMachineSize: cmdLine.BatchVmSize, virtualMachineConfiguration: virtualMachineConfiguration);
-                        pool.Commit();
-                    }
-                    catch (BatchException be)
-                    {
-                        // Accept the specific error code PoolExists as that is expected if the pool already exists
-                        if (be.RequestInformation?.BatchError?.Code == BatchErrorCodeStrings.PoolExists)
-                        {
-                            try
-                            {
-                                log.InfoFormat("The pool {0} already existed when we tried to create it", poolId);
-                                var pool = batchClient.PoolOperations.GetPool(poolId);
-                                log.InfoFormat("Pre-existing node count {0}", pool.CurrentDedicatedComputeNodes);
-                                if (pool.CurrentDedicatedComputeNodes != cmdLine.BatchNodeCount)
-                                {
-                                    log.WarnFormat("The pool {0} node count of {1} does not match the requested node count of {2}", poolId, pool.CurrentDedicatedComputeNodes, cmdLine.BatchNodeCount);
-                                    if (pool.CurrentDedicatedComputeNodes < cmdLine.BatchNodeCount)
-                                    {
-                                        log.WarnFormat("Requested node count is greater then existing node count. Resizing pool to {0}", cmdLine.BatchNodeCount);
-                                        pool.Resize(targetDedicatedComputeNodes: cmdLine.BatchNodeCount);
-                                    }
-                                    else
-                                    {
-                                        log.Warn("Existing node count is larger than requested node count. No pool changes bring made");
-                                    }
-                                }
-                            }catch(Exception exe)
-                            {
-                                log.Warn("Unable to get information on existing pool", exe);
-                            }
-                        }
-                        else
-                        {
-                            throw; // Any other exception is unexpected
-                        }
-                    }
-
                     // Create a Batch job
                     log.InfoFormat("Creating job [{0}]...", jobId);
-
-                    try
+                    CloudJob job = batchClient.JobOperations.CreateJob();
+                    job.Id = jobId;
+                    job.PoolInformation = new PoolInformation { PoolId = poolId };
+                    job.Commit();
+                }
+                catch (BatchException be)
+                {
+                    // Accept the specific error code JobExists as that is expected if the job already exists
+                    if (be.RequestInformation?.BatchError?.Code == BatchErrorCodeStrings.JobExists)
                     {
-                        CloudJob job = batchClient.JobOperations.CreateJob();
-                        job.Id = jobId;
-                        job.PoolInformation = new PoolInformation { PoolId = poolId };
-                        job.Commit();
+                        log.InfoFormat("The job {0} already existed when we tried to create it", jobId);
                     }
-                    catch (BatchException be)
+                    else
                     {
-                        // Accept the specific error code JobExists as that is expected if the job already exists
-                        if (be.RequestInformation?.BatchError?.Code == BatchErrorCodeStrings.JobExists)
-                        {
-                            log.InfoFormat("The job {0} already existed when we tried to create it", jobId);
-                        }
-                        else
-                        {
-                            throw; // Any other exception is unexpected
-                        }
+                        throw; // Any other exception is unexpected
                     }
+                }
 
-                    // Create a collection to hold the tasks that we'll be adding to the job
-                    log.InfoFormat("Adding {0} tasks to job [{1}]...", splitTargets.Count, jobId);
+                // Create a collection to hold the tasks that we'll be adding to the job
+                log.InfoFormat("Adding {0} tasks to job [{1}]...", splitTargets.Count, jobId);
 
-                    List<CloudTask> tasks = new List<CloudTask>();
+                List<CloudTask> tasks = new List<CloudTask>();
 
-                    // Create each of the tasks to process on each node 
-                    for (int i = 0; i < commandLines.Count; i++)
-                    {
-                        string taskId = String.Format("Task{0}", i);
-                        string taskCommandLine = commandLines[i];
+                // Create each of the tasks to process on each node 
+                for (int i = 0; i < commandLines.Count; i++)
+                {
+                    string taskId = String.Format($"Task{i}");
+                    string taskCommandLine = commandLines[i];
 
-                        CloudTask task = new CloudTask(taskId, taskCommandLine);
-                        task.ResourceFiles = inputFiles;
-                        task.ApplicationPackageReferences = new List<ApplicationPackageReference>
+                    CloudTask task = new CloudTask(taskId, taskCommandLine);
+                    task.ResourceFiles = inputFiles;
+                    task.ApplicationPackageReferences = new List<ApplicationPackageReference>
                         {
                             new ApplicationPackageReference { ApplicationId = "sqlbuildmanager" }
                         };
-                        task.OutputFiles = new List<OutputFile>
+                    task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
                                 filePattern: cmdLine.RootLoggingPath + @"\SqlBuildManager.Console.Execution.log",
-                                destination: new OutputFileDestination( new OutputFileBlobContainerDestination(
-                                        containerUrl: containerSasToken,
-                                        path: taskId)),
-                                uploadOptions: new OutputFileUploadOptions(
-                                uploadCondition: OutputFileUploadCondition.TaskCompletion))
+                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
                         };
-                        tasks.Add(task);
-                    }
-
-                    // Add all tasks to the job.
-                    batchClient.JobOperations.AddTask(jobId, tasks);
-
-                    // Monitor task success/failure, specifying a maximum amount of time to wait for the tasks to complete.
-                    TimeSpan timeout = TimeSpan.FromMinutes(30);
-                    log.InfoFormat("Monitoring all tasks for 'Completed' state, timeout in {0}...", timeout);
-
-                    IEnumerable<CloudTask> addedTasks = batchClient.JobOperations.ListTasks(jobId);
-
-                    batchClient.Utilities.CreateTaskStateMonitor().WaitAll(addedTasks, TaskState.Completed, timeout);
-
-                    log.Info("All tasks reached state Completed.");
-
-                    // Print task output
-                    log.Info("Printing task output...\r\n");
-
-                    IEnumerable<CloudTask> completedtasks = batchClient.JobOperations.ListTasks(jobId);
-                    
-                    foreach (CloudTask task in completedtasks)
-                    {
-                        string nodeId = String.Format(task.ComputeNodeInformation.ComputeNodeId);
-                        log.Info("---------------------------------");
-                        log.InfoFormat("Task: {0}", task.Id);
-                        log.InfoFormat("Node: {0}", nodeId);
-                        log.InfoFormat("Exit Code: {0}", task.ExecutionInformation.ExitCode);
-                        log.InfoFormat("Standard out:");
-                        log.InfoFormat(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
-                        if(task.ExecutionInformation.ExitCode != 0)
-                        {
-                            myExitCode = task.ExecutionInformation.ExitCode;
-                        }
-                    }
-
-                    // Print out some timing info
-                    timer.Stop();
-                    log.InfoFormat("Batch job end: {0}", DateTime.Now);
-                    log.InfoFormat("Elapsed time: {0}", timer.Elapsed);
-
-                    // Clean up Batch resources
-                    batchClient.JobOperations.DeleteJob(jobId);
-                    if (cmdLine.DeleteBatchPool)
-                    {
-                        batchClient.PoolOperations.DeletePool(poolId);
-                    }
-
-                    string readOnlySasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, true);
-                    log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
-                    log.Info("The read-only SAS token URL is valid for 7 days. See https://azure.microsoft.com/en-us/features/storage-explorer/ to downoad Azure Storage Explorer");
+                    tasks.Add(task);
                 }
+
+                // Add all tasks to the job.
+                batchClient.JobOperations.AddTask(jobId, tasks);
+
+                // Monitor task success/failure, specifying a maximum amount of time to wait for the tasks to complete.
+                TimeSpan timeout = TimeSpan.FromMinutes(30);
+                log.InfoFormat("Monitoring all tasks for 'Completed' state, timeout in {0}...", timeout);
+
+                IEnumerable<CloudTask> addedTasks = batchClient.JobOperations.ListTasks(jobId);
+
+                batchClient.Utilities.CreateTaskStateMonitor().WaitAll(addedTasks, TaskState.Completed, timeout);
+
+                log.Info("All tasks reached state Completed.");
+
+                // Print task output
+                log.Info("Printing task output...\r\n");
+
+                IEnumerable<CloudTask> completedtasks = batchClient.JobOperations.ListTasks(jobId);
+
+                foreach (CloudTask task in completedtasks)
+                {
+                    string nodeId = String.Format(task.ComputeNodeInformation.ComputeNodeId);
+                    log.Info("---------------------------------");
+                    log.InfoFormat("Task: {0}", task.Id);
+                    log.InfoFormat("Node: {0}", nodeId);
+                    log.InfoFormat("Exit Code: {0}", task.ExecutionInformation.ExitCode);
+                    log.InfoFormat("Standard out:");
+                    log.InfoFormat(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
+                    if (task.ExecutionInformation.ExitCode != 0)
+                    {
+                        myExitCode = task.ExecutionInformation.ExitCode;
+                    }
+                }
+
+                // Print out some timing info
+                timer.Stop();
+                log.InfoFormat("Batch job end: {0}", DateTime.Now);
+                log.InfoFormat("Elapsed time: {0}", timer.Elapsed);
+
+                // Clean up Batch resources
+                batchClient.JobOperations.DeleteJob(jobId);
+                if (cmdLine.DeleteBatchPool)
+                {
+                    batchClient.PoolOperations.DeletePool(poolId);
+                }
+
+                string readOnlySasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, true);
+                log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
+                log.Info("The read-only SAS token URL is valid for 7 days. See https://azure.microsoft.com/en-us/features/storage-explorer/ to downoad Azure Storage Explorer");
+
             }
             finally
             {
                 log.InfoFormat("Batch complete");
+                if (batchClient != null)
+                {
+                    batchClient.Dispose();
+                }
             }
 
             if (myExitCode.HasValue)
@@ -318,6 +263,80 @@ namespace SqlBuildManager.Console.Batch
                 return -100009;
             }
 
+        }
+
+        private bool CreateBatchPool(BatchClient batchClient, string poolId, int nodeCount, string vmSize)
+        {
+            log.InfoFormat("Creating pool [{0}]...", poolId);
+
+            ImageReference imageReference = new ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer",
+                sku: "2016-Datacenter-with-containers", version: "latest");
+
+            VirtualMachineConfiguration virtualMachineConfiguration = new VirtualMachineConfiguration(
+                imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
+
+            try
+            {
+                CloudPool pool = batchClient.PoolOperations.CreatePool(
+                    poolId: poolId, 
+                    targetDedicatedComputeNodes: nodeCount,
+                    virtualMachineSize: vmSize,
+                    virtualMachineConfiguration: virtualMachineConfiguration);
+                pool.Commit();
+            }
+            catch (BatchException be)
+            {
+                // Accept the specific error code PoolExists as that is expected if the pool already exists
+                if (be.RequestInformation?.BatchError?.Code == BatchErrorCodeStrings.PoolExists)
+                {
+                    try
+                    {
+                        log.InfoFormat("The pool {0} already existed when we tried to create it", poolId);
+                        var pool = batchClient.PoolOperations.GetPool(poolId);
+                        log.InfoFormat("Pre-existing node count {0}", pool.CurrentDedicatedComputeNodes);
+                        if (pool.CurrentDedicatedComputeNodes != nodeCount)
+                        {
+                            log.WarnFormat("The pool {0} node count of {1} does not match the requested node count of {2}", poolId, pool.CurrentDedicatedComputeNodes, nodeCount);
+                            if (pool.CurrentDedicatedComputeNodes < nodeCount)
+                            {
+                                log.WarnFormat("Requested node count is greater then existing node count. Resizing pool to {0}", nodeCount);
+                                pool.Resize(targetDedicatedComputeNodes: nodeCount);
+                            }
+                            else
+                            {
+                                log.Warn("Existing node count is larger than requested node count. No pool changes bring made");
+                            }
+                        }
+                    }
+                    catch (Exception exe)
+                    {
+                        log.Warn("Unable to get information on existing pool", exe);
+                        return false;
+                    }
+                }
+                else
+                {
+                    throw; // Any other exception is unexpected
+                }
+            }
+            return true;
+        }
+
+        private CloudBlobClient CreateStorageAndGetBlobClient(string storageAccountName, string storageAccountKey, string inputContainerName)
+        {
+            // Construct the Storage account connection string
+            string storageConnectionString = String.Format($"DefaultEndpointsProtocol=https;AccountName={storageAccountName};AccountKey={storageAccountKey}");
+
+            // Retrieve the storage account
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
+
+            // Create the blob client, for use in obtaining references to blob storage containers
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+
+            CloudBlobContainer container = blobClient.GetContainerReference(inputContainerName);
+            container.CreateIfNotExists();
+
+            return blobClient;
         }
 
         /// <summary>
@@ -370,6 +389,7 @@ namespace SqlBuildManager.Console.Batch
                         sb.Append(" " + arg);
                     }
                 }
+
                 sb.Append(" /OutputContainerSasUrl=\"" + containerSasToken + "\"");
                 commandLines.Add(sb.ToString());
             }
@@ -432,7 +452,10 @@ namespace SqlBuildManager.Console.Batch
             string containerSasToken = container.GetSharedAccessSignature(sasConstraints);
             return String.Format("{0}{1}", container.Uri, containerSasToken);
         }
-
+        private static bool CreateBatchPool(CommandLineArgs cmdLine)
+        {
+            return true;
+        }
         /// <summary>
         /// Gets a string array for all of the target DB override settings
         /// </summary>

@@ -1,5 +1,9 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="4" Revision="1">
+    <updated>Optimized Azure Batch </updated>
+    <fixed>Cleaned up unit tests</fixed>
+  </Version>
   <Version Major="10" Minor="4" Revision="0">
     <added>Functionality to leverage Azure Batch as an execution engine</added>
     <updated>Swaped out SharpZipLib to remove Zip Slip vunlerability </updated>

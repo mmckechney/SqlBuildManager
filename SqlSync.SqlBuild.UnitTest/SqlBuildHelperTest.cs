@@ -1677,7 +1677,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string scriptHash;
             string scriptHashExpected = "MadeUpHash";
             string scriptTextHash;
-            string scriptTextHashExpected = "0820B32B206B7352858E8903A838ED14319ACDFD";
+            string scriptTextHashExpected = "1E725D850DF0954D04A7C12F7C2B663A0A132EE6";
             DateTime commitDate; //Don't test, this will vary by test server.
             bool expected = true; 
             bool actual;
