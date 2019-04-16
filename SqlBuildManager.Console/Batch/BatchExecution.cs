@@ -389,6 +389,7 @@ namespace SqlBuildManager.Console.Batch
                         sb.Append(" " + arg);
                     }
                 }
+
                 sb.Append(" /OutputContainerSasUrl=\"" + containerSasToken + "\"");
                 commandLines.Add(sb.ToString());
             }
