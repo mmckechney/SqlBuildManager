@@ -18,7 +18,7 @@ namespace SqlBuildManager.Console.Batch
             string error = string.Empty;
 
             //Validate and set the value for the build file name
-            if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName) && string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac))
+            if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName) && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
             {
                 error = "Invalid command line set. Missing /PackageName or /PlatinumDacpac";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
@@ -36,9 +36,9 @@ namespace SqlBuildManager.Console.Batch
             }
 
             //Validate that the Platinum dacpac file exists if specified
-            if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac) && !File.Exists(cmdLine.PlatinumDacpac))
+            if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac) && !File.Exists(cmdLine.DacPacArgs.PlatinumDacpac))
             {
-                error = "Missing Platinum dacpac file. The  Platinum dacpac specified: " + cmdLine.PlatinumDacpac + " could not be found";
+                error = "Missing Platinum dacpac file. The  Platinum dacpac specified: " + cmdLine.DacPacArgs.PlatinumDacpac + " could not be found";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
                 log.Error(error);
                 return (int)ExecutionReturn.InvalidBuildFileNameValue;

@@ -167,24 +167,24 @@ namespace SqlBuildManager.Console
                 WriteToLog(msg, LogType.Message);
                 log.Info(msg);
             }
-            else if(!string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac)) //using a platinum dacpac as a source
+            else if(!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac)) //using a platinum dacpac as a source
             {
-                ThreadedExecution.platinumDacPacFileName = cmdLine.PlatinumDacpac;
+                ThreadedExecution.platinumDacPacFileName = cmdLine.DacPacArgs.PlatinumDacpac;
                 string msg = "/PlatinumDacpac setting found. Using '" + ThreadedExecution.platinumDacPacFileName + "' as build source";
                 WriteToLog(msg, LogType.Message);
                 log.Info(msg);
 
             }
-            else if(!string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource)) //using a platinum database as the source
+            else if(!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource)) //using a platinum database as the source
             {
-                log.InfoFormat("Extracting Platinum Dacpac from {0} : {1}", cmdLine.PlatinumServerSource, cmdLine.PlatinumDbSource);
-                string dacpacName = Path.Combine(ThreadedExecution.rootLoggingPath, cmdLine.PlatinumDbSource + ".dacpac");
+                log.InfoFormat("Extracting Platinum Dacpac from {0} : {1}", cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.DacPacArgs.PlatinumDbSource);
+                string dacpacName = Path.Combine(ThreadedExecution.rootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
 
-                if(!DacPacHelper.ExtractDacPac(cmdLine.PlatinumDbSource, cmdLine.PlatinumServerSource, cmdLine.UserName, cmdLine.Password, dacpacName))
+                if(!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
                 {
-                    log.ErrorFormat("Error creating the Platinum dacpac from {0} : {1}", cmdLine.PlatinumServerSource, cmdLine.PlatinumDbSource);
+                    log.ErrorFormat("Error creating the Platinum dacpac from {0} : {1}", cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.DacPacArgs.PlatinumDbSource);
                 }
-                cmdLine.PlatinumDacpac = dacpacName;
+                cmdLine.DacPacArgs.PlatinumDacpac = dacpacName;
 
             }
 
@@ -220,7 +220,7 @@ namespace SqlBuildManager.Console
             multiData.RunAsTrial = cmdLine.Trial;
             multiData.BuildRevision = cmdLine.BuildRevision;
 
-            return Execute(ThreadedExecution.buildZipFileName, cmdLine.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName, cmdLine.ForceCustomDacPac);
+            return Execute(ThreadedExecution.buildZipFileName, cmdLine.DacPacArgs.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName, cmdLine.DacPacArgs.ForceCustomDacPac);
         }
 
         /// <summary>
@@ -252,21 +252,21 @@ namespace SqlBuildManager.Console
                     this.cmdLine.Description = description;
                     this.cmdLine.AllowableTimeoutRetries = multiData.AllowableTimeoutRetries; //set the retries count...
                     if (!string.IsNullOrWhiteSpace(multiData.UserName))
-                        this.cmdLine.UserName = multiData.UserName;
+                        this.cmdLine.AuthenticationArgs.UserName = multiData.UserName;
                     if (!string.IsNullOrWhiteSpace(multiData.Password))
-                        this.cmdLine.Password = multiData.Password;
+                        this.cmdLine.AuthenticationArgs.Password = multiData.Password;
 
                     try
                     {
-                        this.cmdLine.AuthenticationType = multiData.AuthenticationType;
+                        this.cmdLine.AuthenticationArgs.AuthenticationType = multiData.AuthenticationType;
                     }
                     catch (Exception exe)
                     {
                         log.Warn("Issue setting authentication type. Defaulting to UsernamePassword", exe);
-                        this.cmdLine.AuthenticationType = AuthenticationType.UserNamePassword;
+                        this.cmdLine.AuthenticationArgs.AuthenticationType = AuthenticationType.UserNamePassword;
                     }
 
-                    this.cmdLine.PlatinumDacpac = platinumDacPacFileName;
+                    this.cmdLine.DacPacArgs.PlatinumDacpac = platinumDacPacFileName;
                     this.cmdLine.BuildRevision = multiData.BuildRevision;
                 }
 

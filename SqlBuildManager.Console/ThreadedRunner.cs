@@ -98,9 +98,9 @@ namespace SqlBuildManager.Console
             this.cmdArgs = cmdArgs;
             this.buildRequestedBy = buildRequestedBy;
             this.forceCustomDacpac = forceCustomDacpac;
-            this.username = cmdArgs.UserName;
-            this.password = cmdArgs.Password;
-            this.authType = cmdArgs.AuthenticationType;
+            this.username = cmdArgs.AuthenticationArgs.UserName;
+            this.password = cmdArgs.AuthenticationArgs.Password;
+            this.authType = cmdArgs.AuthenticationArgs.AuthenticationType;
             
             try
             {
@@ -148,7 +148,7 @@ namespace SqlBuildManager.Console
                 if (this.cmdArgs.LogToDatabaseName.Length > 0)
                     runData.LogToDatabaseName = this.cmdArgs.LogToDatabaseName;
 
-                runData.PlatinumDacPacFileName = cmdArgs.PlatinumDacpac;
+                runData.PlatinumDacPacFileName = cmdArgs.DacPacArgs.PlatinumDacpac;
                 runData.BuildRevision = cmdArgs.BuildRevision;
 
 
@@ -168,7 +168,7 @@ namespace SqlBuildManager.Console
                             break;
                         case DacpacDeltasStatus.InSync:
                         case DacpacDeltasStatus.OnlyPostDeployment:
-                            log.InfoFormat("Target database {0} is already in sync with {1}. Nothing to do!", targetDatabase, cmdArgs.PlatinumDacpac);
+                            log.InfoFormat("Target database {0} is already in sync with {1}. Nothing to do!", targetDatabase, cmdArgs.DacPacArgs.PlatinumDacpac);
                             this.returnValue = (int)RunnerReturn.DacpacDatabasesInSync;
                             break;
                         default:
@@ -203,12 +203,12 @@ namespace SqlBuildManager.Console
 
                 //Create a connection object.. all we need is the server here, the DB will be filled in at execution time
                 connData = new ConnectionData(server, "");
-                if (this.cmdArgs.UserName.Length > 0 && this.cmdArgs.Password.Length > 0)
+                if (this.cmdArgs.AuthenticationArgs.UserName.Length > 0 && this.cmdArgs.AuthenticationArgs.Password.Length > 0)
                 {
-                    connData.UserId = cmdArgs.UserName;
-                    connData.Password = cmdArgs.Password;
+                    connData.UserId = cmdArgs.AuthenticationArgs.UserName;
+                    connData.Password = cmdArgs.AuthenticationArgs.Password;
                 }
-                connData.AuthenticationType = this.cmdArgs.AuthenticationType;
+                connData.AuthenticationType = this.cmdArgs.AuthenticationArgs.AuthenticationType;
 
                 //Set the log file name
                 string logFile = loggingDirectory + @"\ExecutionLog.log";

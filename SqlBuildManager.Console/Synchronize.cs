@@ -20,9 +20,9 @@ namespace SqlBuildManager.Console
             }
 
             DatabaseDiffer differ = new DatabaseDiffer();
-            var history = differ.GetDatabaseHistoryDifference(cmdLine.GoldServer, cmdLine.GoldDatabase, cmdLine.Server, cmdLine.Database);
+            var history = differ.GetDatabaseHistoryDifference(cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server, cmdLine.Database);
              //= GetDatabaseRunHistoryDifference(cmdLine);
-            string header = String.Format("{0} Package differences found between Gold:[{1}].[{2}] and Target:[{3}].[{4}]\r\n", history.BuildFileHistory.Count(),cmdLine.GoldServer,cmdLine.GoldDatabase,cmdLine.Server,cmdLine.Database);
+            string header = String.Format("{0} Package differences found between Gold:[{1}].[{2}] and Target:[{3}].[{4}]\r\n", history.BuildFileHistory.Count(),cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server,cmdLine.Database);
             if(history.BuildFileHistory.Any())
                 return header + history.ToString();
             else
@@ -34,7 +34,7 @@ namespace SqlBuildManager.Console
         public static DatabaseRunHistory GetDatabaseRunHistoryDifference(CommandLineArgs cmdLine)
         {
             DatabaseDiffer differ = new DatabaseDiffer();
-            return differ.GetDatabaseHistoryDifference(cmdLine.GoldServer, cmdLine.GoldDatabase, cmdLine.Server,
+            return differ.GetDatabaseHistoryDifference(cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server,
                                                 cmdLine.Database);
         }
 
@@ -50,7 +50,7 @@ namespace SqlBuildManager.Console
              DatabaseSyncer dbSync = new DatabaseSyncer();
              dbSync.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(dbSync_SyncronizationInfoEvent);
             
-            return dbSync.SyncronizeDatabases(cmdLine.GoldServer, cmdLine.GoldDatabase, cmdLine.Server,
+            return dbSync.SyncronizeDatabases(cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server,
                                        cmdLine.Database,cmdLine.ContinueOnFailure);
 
         }
@@ -63,13 +63,13 @@ namespace SqlBuildManager.Console
         internal static CommandLineArgs ValidateFlags(CommandLineArgs cmdLine)
         {
 
-            if (string.IsNullOrEmpty(cmdLine.GoldDatabase))
+            if (string.IsNullOrEmpty(cmdLine.SynchronizeArgs.GoldDatabase))
             {
                 log.Error("Missing /GoldDatabase=\"<database>\" flag");
                 return null;
             }
 
-            if (string.IsNullOrEmpty(cmdLine.GoldServer))
+            if (string.IsNullOrEmpty(cmdLine.SynchronizeArgs.GoldServer))
             {
                 log.Error("Missing /GoldServer=\"<server>\" flag");
                 return null;

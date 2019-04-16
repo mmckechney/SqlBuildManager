@@ -215,7 +215,7 @@ namespace SqlBuildManager.Console
                 return tmpReturn;
             }
 
-            if(cmd.RemoteServers.Length == 0)
+            if(cmd.RemoteArgs.RemoteServers.Length == 0)
             {
                 string err = "The command line arguments is missing a value for \"RemoteServers\". This is required for a remote server execution";
                 log.Error(err);
@@ -223,7 +223,7 @@ namespace SqlBuildManager.Console
                 return -700;
             }
 
-            if(!File.Exists(cmd.RemoteServers) && cmd.RemoteServers.ToLower() != "derive" && cmd.RemoteServers.ToLower() != "azure")
+            if(!File.Exists(cmd.RemoteArgs.RemoteServers) && cmd.RemoteArgs.RemoteServers.ToLower() != "derive" && cmd.RemoteArgs.RemoteServers.ToLower() != "azure")
             {
                 string err = "The command line arguments value for \"RemoteServers\" is not a valid file name, nor is the value set to \"derive\" or \"azure\"";
                 log.Error(err);
@@ -231,7 +231,7 @@ namespace SqlBuildManager.Console
                 return -701;
             }
 
-            if (cmd.DistributionType.Length == 0 && cmd.RemoteServers.ToLower() != "azure")
+            if (cmd.RemoteArgs.DistributionType.Length == 0 && cmd.RemoteArgs.RemoteServers.ToLower() != "azure")
             {
                 string err = "The command line arguments is missing a value for \"DistributionType\". This is required for non-Azure remote server execution";
                 log.Error(err);
@@ -239,7 +239,7 @@ namespace SqlBuildManager.Console
                 return -702;
             }
 
-            if (cmd.DistributionType.ToLower() == "local" && cmd.RemoteServers.ToLower() == "azure")
+            if (cmd.RemoteArgs.DistributionType.ToLower() == "local" && cmd.RemoteArgs.RemoteServers.ToLower() == "azure")
             {
                 string err = "The command line combination of  DistributionType=local and RemoteServers=azure is not allowed.";
                 log.Error(err);
@@ -247,9 +247,9 @@ namespace SqlBuildManager.Console
                 return -704;
             }
 
-            if (cmd.RemoteServers.ToLower() != "azure")
+            if (cmd.RemoteArgs.RemoteServers.ToLower() != "azure")
             {
-                if (cmd.DistributionType.ToLower() != "equal" && cmd.DistributionType.ToLower() != "local")
+                if (cmd.RemoteArgs.DistributionType.ToLower() != "equal" && cmd.RemoteArgs.DistributionType.ToLower() != "local")
                 {
                     string err = "The command line argument \"DistributionType\" has an invalid value. Allowed values are \"equal\" or \"local\"";
                     log.Error(err);
@@ -259,10 +259,10 @@ namespace SqlBuildManager.Console
             }
             else
             {
-                cmd.DistributionType = "equal";
+                cmd.RemoteArgs.DistributionType = "equal";
             }
 
-             if (cmd.RemoteServers.ToLower() == "azure" && (String.IsNullOrWhiteSpace(cmd.UserName) || string.IsNullOrWhiteSpace(cmd.Password)))
+             if (cmd.RemoteArgs.RemoteServers.ToLower() == "azure" && (String.IsNullOrWhiteSpace(cmd.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmd.AuthenticationArgs.Password)))
              {
                   string err = "When running a remote execution on Azure, a username and password are required";
                     log.Error(err);
@@ -284,16 +284,16 @@ namespace SqlBuildManager.Console
                 return valRet;
             }
 
-            if (string.IsNullOrWhiteSpace(cmd.PlatinumDacpac) && !string.IsNullOrWhiteSpace(cmd.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmd.PlatinumServerSource))
+            if (string.IsNullOrWhiteSpace(cmd.DacPacArgs.PlatinumDacpac) && !string.IsNullOrWhiteSpace(cmd.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmd.DacPacArgs.PlatinumServerSource))
             {
-                log.InfoFormat("Extracting Platinum Dacpac from {0} : {1}", cmd.PlatinumServerSource, cmd.PlatinumDbSource);
-                string dacpacName = Path.Combine(cmd.RootLoggingPath, cmd.PlatinumDbSource + ".dacpac");
+                log.InfoFormat("Extracting Platinum Dacpac from {0} : {1}", cmd.DacPacArgs.PlatinumServerSource, cmd.DacPacArgs.PlatinumDbSource);
+                string dacpacName = Path.Combine(cmd.RootLoggingPath, cmd.DacPacArgs.PlatinumDbSource + ".dacpac");
 
-                if (!DacPacHelper.ExtractDacPac(cmd.PlatinumDbSource, cmd.PlatinumServerSource, cmd.UserName, cmd.Password, dacpacName))
+                if (!DacPacHelper.ExtractDacPac(cmd.DacPacArgs.PlatinumDbSource, cmd.DacPacArgs.PlatinumServerSource, cmd.AuthenticationArgs.UserName, cmd.AuthenticationArgs.Password, dacpacName))
                 {
-                    log.ErrorFormat("Error creating the Platinum dacpac from {0} : {1}", cmd.PlatinumServerSource, cmd.PlatinumDbSource);
+                    log.ErrorFormat("Error creating the Platinum dacpac from {0} : {1}", cmd.DacPacArgs.PlatinumServerSource, cmd.DacPacArgs.PlatinumDbSource);
                 }
-                cmd.PlatinumDacpac = dacpacName;
+                cmd.DacPacArgs.PlatinumDacpac = dacpacName;
             }
 
             //If there is a platinum dacpac specified...
@@ -305,9 +305,9 @@ namespace SqlBuildManager.Console
             }
             
             List<string> remote = null;
-            if (cmd.RemoteServers.ToLower() != "azure")
+            if (cmd.RemoteArgs.RemoteServers.ToLower() != "azure")
             {
-                remote = RemoteHelper.GetRemoteExecutionServers(cmd.RemoteServers, multiDb);
+                remote = RemoteHelper.GetRemoteExecutionServers(cmd.RemoteArgs.RemoteServers, multiDb);
             }
             else
             {
@@ -319,7 +319,7 @@ namespace SqlBuildManager.Console
 
             //Validate that all of the Azure servers are accepting commands
             List<ServerConfigData> remoteServer = null;
-            Protocol p = (cmd.RemoteServers.ToLower() == "azure") ? Protocol.AzureHttp : Protocol.Tcp;
+            Protocol p = (cmd.RemoteArgs.RemoteServers.ToLower() == "azure") ? Protocol.AzureHttp : Protocol.Tcp;
             int statReturn = ValidateRemoteServerAvailability(remote,p, out remoteServer, out errorMessages);
             if(statReturn != 0)
             {
@@ -339,7 +339,7 @@ namespace SqlBuildManager.Console
             setting.TimeoutRetryCount = cmd.AllowableTimeoutRetries;
             setting.AlternateLoggingDatabase = cmd.LogToDatabaseName;
             setting.Description = cmd.Description;
-            if (cmd.DistributionType.ToLower() == "equal" || cmd.RemoteServers.ToLower() == "azure")
+            if (cmd.RemoteArgs.DistributionType.ToLower() == "equal" || cmd.RemoteArgs.RemoteServers.ToLower() == "azure")
                 setting.DistributionType = DistributionType.EqualSplit;
             else
                 setting.DistributionType = DistributionType.OwnMachineName;
@@ -356,14 +356,14 @@ namespace SqlBuildManager.Console
 
             setting.SqlBuildManagerProjectContents = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(cmd.BuildFileName);
 
-            setting.DbUserName = cmd.UserName;
-            setting.DbPassword = cmd.Password;
-            setting.AuthenticationType = cmd.AuthenticationType;
+            setting.DbUserName = cmd.AuthenticationArgs.UserName;
+            setting.DbPassword = cmd.AuthenticationArgs.Password;
+            setting.AuthenticationType = cmd.AuthenticationArgs.AuthenticationType;
 
-            if (!string.IsNullOrEmpty(cmd.PlatinumDacpac))
+            if (!string.IsNullOrEmpty(cmd.DacPacArgs.PlatinumDacpac))
             {
-                setting.PlatinumDacpacContents = File.ReadAllBytes(cmd.PlatinumDacpac);
-                setting.PlatinumDacpacFileName = Path.GetFileName(cmd.PlatinumDacpac);
+                setting.PlatinumDacpacContents = File.ReadAllBytes(cmd.DacPacArgs.PlatinumDacpac);
+                setting.PlatinumDacpacFileName = Path.GetFileName(cmd.DacPacArgs.PlatinumDacpac);
             }
 
             setting.BuildRevision = cmd.BuildRevision;

@@ -27,10 +27,10 @@ namespace SqlBuildManager.Console
             }
 
             ConnectionData connectionData = new ConnectionData(cmdLine.Server,cmdLine.Database);
-            if (cmdLine.Password.Length > 0)
-                connectionData.Password = cmdLine.Password;
-            if (cmdLine.UserName.Length > 0)
-                connectionData.UserId = cmdLine.UserName;
+            if (cmdLine.AuthenticationArgs.Password.Length > 0)
+                connectionData.Password = cmdLine.AuthenticationArgs.Password;
+            if (cmdLine.AuthenticationArgs.UserName.Length > 0)
+                connectionData.UserId = cmdLine.AuthenticationArgs.UserName;
 
             if (connectionData.UserId.Length > 0 && connectionData.Password.Length > 0)
             {

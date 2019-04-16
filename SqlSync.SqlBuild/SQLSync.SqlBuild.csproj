@@ -161,7 +161,7 @@
     </Compile>
     <Compile Include="AdHocQuery\BuildValidationType.cs" />
     <Compile Include="BulkAddData.cs" />
-    <Compile Include="CommandLineArgs_extended.cs" />
+    <Compile Include="CommandLineArgs.cs" />
     <Compile Include="CommittedBuildData.cs">
       <DependentUpon>CommittedBuildData.xml</DependentUpon>
       <SubType>Component</SubType>
@@ -188,11 +188,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CommandLine.cs" />
-    <Compile Include="CommandLineArgs.cs">
-      <DependentUpon>CommandLineArgs.xml</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Default Scripts\DefaultScriptRegistry.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -294,11 +289,6 @@
     <Content Include="CodeTable\ScriptUpdates.xsd">
       <SubType>
       </SubType>
-    </Content>
-    <Content Include="CommandLineArgs.xml">
-      <Generator>SimpleDataClassGenerator</Generator>
-      <LastGenOutput>CommandLineArgs.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </Content>
     <Content Include="CommittedBuildData.xml">
       <Generator>SimpleDataClassGenerator</Generator>

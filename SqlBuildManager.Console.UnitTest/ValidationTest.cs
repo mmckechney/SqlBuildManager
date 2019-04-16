@@ -75,8 +75,8 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_MissingRootLoggingPath()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.Action = "Build";
-            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
+            cmdLine.Action = CommandLineArgs.ActionType.Build;
+            cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             string[] errorMessages = null;
             int expected = -99; 
             int actual;
@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_BadTransactionTrialCombo()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
+            cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = false;
             cmdLine.Trial = true;
@@ -112,7 +112,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_MissingOverrideSetting()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
+            cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
@@ -132,7 +132,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_MissingBuildFileName()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
+            cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
@@ -153,7 +153,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_MissingBuildFile()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
+            cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
@@ -183,7 +183,7 @@ namespace SqlBuildManager.Console.UnitTest
             cmdLine.Trial = true;
             cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.BadExt";
             cmdLine.ScriptSrcDir = @"C:\temp";
-            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
+            cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.InvalidOverrideFlag;
             int actual;
@@ -212,7 +212,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_InvalidScriptScrDir()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
+            cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
@@ -237,7 +237,7 @@ namespace SqlBuildManager.Console.UnitTest
             var multFile = init.GetTrulyUniqueFile("cfg");
             File.WriteAllBytes(multFile, Properties.Resources.NoTrans_MultiDb_multidb);
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
+            cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureActiveDirectory;
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
             cmdLine.Trial = true;

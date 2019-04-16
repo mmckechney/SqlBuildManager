@@ -37,43 +37,42 @@ namespace SqlBuildManager.Console
                 log.Info(Properties.Resources.ConsoleHelp2);
                 Environment.Exit(0);
             }
-
             switch(cmdLine.Action)
             {
-                case "remote":
+                case CommandLineArgs.ActionType.Remote:
                     RunRemoteExecution(args, cmdLine, start);
                     break;
-                case "threaded":
-                    RunThreadedExecution(args, start);
+                case CommandLineArgs.ActionType.Threaded:
+                    RunThreadedExecution(args, cmdLine, start);
                     break;
-                case "package":
+                case CommandLineArgs.ActionType.Package:
                     PackageSbxFilesIntoSbmFiles(cmdLine);
                     break;
-                case "policycheck":
+                case CommandLineArgs.ActionType.PolicyCheck:
                     ExecutePolicyCheck(cmdLine);
                     break;
-                case "gethash":
+                case CommandLineArgs.ActionType.GetHash:
                     GetPackageHash(cmdLine);
                     break;
-                case "createbackout":
+                case CommandLineArgs.ActionType.CreateBackout:
                     CreateBackout(cmdLine);
                     break;
-                case "getdifference":
+                case CommandLineArgs.ActionType.GetDifference:
                     GetDifferences(cmdLine);
                     break;
-                case "synchronize":
+                case CommandLineArgs.ActionType.Synchronize:
                     SyncronizeDatabase(cmdLine);
                     break;
-                case "build":
+                case CommandLineArgs.ActionType.Build:
                     StandardExecution(args, start);
                     break;
-                case "scriptextract":
+                case CommandLineArgs.ActionType.ScriptExtract:
                     ScriptExtraction(cmdLine);
                     break;
-                case "encrypt":
+                case CommandLineArgs.ActionType.Encrypt:
                     EncryptCreds(cmdLine);
                     break;
-                case "batch":
+                case CommandLineArgs.ActionType.Batch:
                     RunBatchExecution(args, start);
                     break;
                 default:
@@ -121,16 +120,16 @@ namespace SqlBuildManager.Console
             string username = string.Empty;
             string password = string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.UserName))
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
                 //System.Console.WriteLine(string.Format("<UserName>{0}</UserName>",
-                username = Cryptography.EncryptText(cmdLine.UserName, ConnectionHelper.ConnectCryptoKey);
+                username = Cryptography.EncryptText(cmdLine.AuthenticationArgs.UserName, ConnectionHelper.ConnectCryptoKey);
             }
-            if (!string.IsNullOrWhiteSpace(cmdLine.Password))
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
                 //System.Console.WriteLine(string.Format("<Password>{0}</Password>", 
 
-                password = Cryptography.EncryptText(cmdLine.Password, ConnectionHelper.ConnectCryptoKey);
+                password = Cryptography.EncryptText(cmdLine.AuthenticationArgs.Password, ConnectionHelper.ConnectCryptoKey);
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.Server))
@@ -148,7 +147,7 @@ namespace SqlBuildManager.Console
         private static void ScriptExtraction(CommandLineArgs cmdLine)
         {
             #region Validate flags
-            if (string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac))
+            if (string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
             {
                 log.Error("/PlatinumDacpac flag is required");
                 System.Environment.Exit(-1);
@@ -170,7 +169,7 @@ namespace SqlBuildManager.Console
                 log.Error(errorMessages.Aggregate((a, b) => a + "; " + b));
             }
 
-            if (string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+            if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
                 log.Error("/Username and /Password flags are required");
                 System.Environment.Exit(-1);
@@ -208,31 +207,31 @@ namespace SqlBuildManager.Console
         {
             try
             {
-                string joinedArgs = string.Join(",", args).ToLower();
+                //string joinedArgs = string.Join(",", args).ToLower();
 
-                if (joinedArgs.Contains("/testconnectivity=true"))
+                if(cmdLine.RemoteArgs.TestConnectivity ?? true)
                 {
                     RemoteExecutionTestConnectivity(args);
                 }
-                else if(joinedArgs.Contains("/azureremotestatus=true"))
+                else if(cmdLine.RemoteArgs.AzureRemoteStatus ?? true)
                 {
                     GetAzureRemoteStatus(args);
                 }
-                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteDbErrorList))
+                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteDbErrorList))
                 {
-                    var dbsInError = RemoteAzureHealth.GetDatabaseErrorList(cmdLine.RemoteDbErrorList);
+                    var dbsInError = RemoteAzureHealth.GetDatabaseErrorList(cmdLine.RemoteArgs.RemoteDbErrorList);
                    if (dbsInError != null)
                    {
                        log.Info("\r\n" + string.Join("\r\n", dbsInError.ToArray()));
                    }
                 }
-                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteErrorDetail))
+                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteErrorDetail))
                 {
-                    var errorMessages = RemoteAzureHealth.GetErrorDetail(cmdLine.RemoteErrorDetail);
+                    var errorMessages = RemoteAzureHealth.GetErrorDetail(cmdLine.RemoteArgs.RemoteErrorDetail);
                     log.Info("Returned error messages:");
                     log.Info("\r\n" + errorMessages);
                 }
-                else if(cmdLine.ForceCustomDacPac == true)
+                else if(cmdLine.DacPacArgs.ForceCustomDacPac == true)
                 {
                     log.Error("The /ForceCustomDacPac flag is not compatible with the /Action=Remote action");
                     System.Environment.Exit(681);
@@ -331,9 +330,8 @@ namespace SqlBuildManager.Console
 
         #endregion
 
-        private static void RunThreadedExecution(string[] args, DateTime start)
+        private static void RunThreadedExecution(string[] args, CommandLineArgs cmdLine, DateTime start)
         {
-            var cmdLine = CommandLine.ParseCommandLineArg(args);
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Threaded Execution");
             log.Info("Running...");
@@ -357,10 +355,10 @@ namespace SqlBuildManager.Console
             string msg = "Total Run time: " + span.ToString();
             log.Info(msg);
 
-            if(!String.IsNullOrEmpty(cmdLine.OutputContainerSasUrl))
+            if(!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.Info("Writing log files to storage...");
-                WriteLogsToBlobContainer(cmdLine.OutputContainerSasUrl, cmdLine.RootLoggingPath);
+                WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
             }
           
             log.Debug("Exiting Threaded Execution");

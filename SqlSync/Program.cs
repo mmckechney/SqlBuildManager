@@ -64,7 +64,7 @@ namespace SqlSync
                     CommandLineArgs cmdLine = SqlSync.SqlBuild.CommandLine.ParseCommandLineArg(args);
                     if (cmdLine.LogFileName.Length > 0)
                         Program.logFileName = cmdLine.LogFileName;
-                    if (cmdLine.BuildDesignated)
+                    if (cmdLine.Action == CommandLineArgs.ActionType.Build)
                     {
                         if (cmdLine.OverrideDesignated && cmdLine.MultiDbRunConfigFileName.Length > 0) //build with multi Db config
                         {
@@ -102,7 +102,7 @@ namespace SqlSync
                         {
                             //If we get here, there are missing required arguments.
                             StringBuilder sb = new StringBuilder();
-                            sb.AppendLine("The build directive (as designated by the '/build' argument)");
+                            sb.AppendLine("The build directive (as designated by the '/Action=Build' argument)");
                             sb.AppendLine("is missing supporting arguments.\r\n");
                             sb.AppendLine("Additional arguments include:");
                             sb.AppendLine("'/server=<server name>' to execute on targer server");
@@ -114,7 +114,7 @@ namespace SqlSync
                             returnCode = 654;
                         }
                     }
-                    else if (cmdLine.SprocTestDesignated)
+                    else if (cmdLine.StoredProcTestingArgs.SprocTestDesignated)
                     {
                         if (cmdLine.Server.Length == 0 || cmdLine.Database.Length == 0 || cmdLine.LogFileName.Length == 0)
                         {
@@ -127,9 +127,9 @@ namespace SqlSync
                             {
                                 Program.logFileName = string.Empty;
                                 Connection.ConnectionData cData = new SqlSync.Connection.ConnectionData(cmdLine.Server, cmdLine.Database);
-                                SprocTest.Configuration.Database testConfig = SqlSync.SprocTest.TestManager.ReadConfiguration(cmdLine.SpTestFile);
+                                SprocTest.Configuration.Database testConfig = SqlSync.SprocTest.TestManager.ReadConfiguration(cmdLine.StoredProcTestingArgs.SpTestFile);
                                 testConfig.SelectAllTests();
-                                Application.Run(new Test.SprocTestForm(testConfig, cData, cmdLine.SpTestFile, cmdLine.LogFileName));
+                                Application.Run(new Test.SprocTestForm(testConfig, cData, cmdLine.StoredProcTestingArgs.SpTestFile, cmdLine.LogFileName));
                             }
                             catch (Exception exe)
                             {
@@ -138,9 +138,9 @@ namespace SqlSync
                             }
                         }
                     }
-                    else if (cmdLine.AutoScriptDesignated)
+                    else if (cmdLine.AutoScriptingArgs.AutoScriptDesignated)
                     {
-                        Application.Run(new AutoScript.AutoScriptMDI(cmdLine.AutoScriptFileName));
+                        Application.Run(new AutoScript.AutoScriptMDI(cmdLine.AutoScriptingArgs.AutoScriptFileName));
                     }
                 }
             }

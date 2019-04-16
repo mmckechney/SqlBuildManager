@@ -85,8 +85,8 @@ namespace SqlSync.SqlBuild.UnitTest
             actual = CommandLine.ParseCommandLineArg(args);
             Assert.AreEqual(true, actual.Trial);
             Assert.AreEqual(false, actual.LogAsText);
-            Assert.AreEqual("UserName1", actual.UserName);
-            Assert.AreEqual("Password1", actual.Password);
+            Assert.AreEqual("UserName1", actual.AuthenticationArgs.UserName);
+            Assert.AreEqual("Password1", actual.AuthenticationArgs.Password);
             Assert.AreEqual("AltLogDb", actual.LogToDatabaseName);
             Assert.AreEqual("c:\\Audit.sbm", actual.BuildFileName);
             Assert.AreEqual("C:\\Temp", actual.RootLoggingPath);
@@ -94,7 +94,7 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual("c:\\test.multiDb", actual.MultiDbRunConfigFileName);
             Assert.AreEqual("Just Testing", actual.Description);
             Assert.AreEqual(false, actual.Transactional);
-            Assert.AreEqual(true, actual.BuildDesignated);
+            Assert.AreEqual(CommandLineArgs.ActionType.Build, actual.Action);
         }
 
         /// <summary>
@@ -119,8 +119,8 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(false, actual.OverrideDesignated);
             Assert.AreEqual("Just Testing", actual.Description);
             Assert.AreEqual(true, actual.Transactional);
-            Assert.AreEqual(false, actual.AutoScriptDesignated);
-            Assert.AreEqual(false, actual.SprocTestDesignated);
+            Assert.AreEqual(false, actual.AutoScriptingArgs.AutoScriptDesignated);
+            Assert.AreEqual(false, actual.StoredProcTestingArgs.SprocTestDesignated);
         }
 
         /// <summary>
@@ -133,8 +133,8 @@ namespace SqlSync.SqlBuild.UnitTest
                 "/auto=\"C:\test.sqlauto\""};
             CommandLineArgs actual;
             actual = CommandLine.ParseCommandLineArg(args);
-            Assert.AreEqual(true, actual.AutoScriptDesignated);
-            Assert.AreEqual("C:\test.sqlauto", actual.AutoScriptFileName);
+            Assert.AreEqual(true, actual.AutoScriptingArgs.AutoScriptDesignated);
+            Assert.AreEqual("C:\test.sqlauto", actual.AutoScriptingArgs.AutoScriptFileName);
         }
         /// <summary>
         ///A test for ParseCommandLineArg
@@ -146,8 +146,8 @@ namespace SqlSync.SqlBuild.UnitTest
                 "/test=\"C:\test.sptest\""};
             CommandLineArgs actual;
             actual = CommandLine.ParseCommandLineArg(args);
-            Assert.AreEqual(true, actual.SprocTestDesignated);
-            Assert.AreEqual("C:\test.sptest", actual.SpTestFile);
+            Assert.AreEqual(true, actual.StoredProcTestingArgs.SprocTestDesignated);
+            Assert.AreEqual("C:\test.sptest", actual.StoredProcTestingArgs.SpTestFile);
         }
 
         /// <summary>

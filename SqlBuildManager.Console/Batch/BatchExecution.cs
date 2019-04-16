@@ -80,7 +80,7 @@ namespace SqlBuildManager.Console.Batch
                 timer.Start();
 
                 //Get storage ready
-                CloudBlobClient blobClient = CreateStorageAndGetBlobClient(cmdLine.StorageAccountName, cmdLine.StorageAccountKey, inputContainerName);
+                CloudBlobClient blobClient = CreateStorageAndGetBlobClient(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey, inputContainerName);
                 string containerSasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, false);
                 if (log.IsDebugEnabled)
                 {
@@ -89,18 +89,18 @@ namespace SqlBuildManager.Console.Batch
 
 
                 // Get a Batch client using account creds, and create the pool
-                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchAccountUrl, cmdLine.BatchAccountName, cmdLine.BatchAccountKey);
+                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchArgs.BatchAccountUrl, cmdLine.BatchArgs.BatchAccountName, cmdLine.BatchArgs.BatchAccountKey);
                 batchClient = BatchClient.Open(cred);
 
                 // Create a Batch pool, VM configuration, Windows Server image
-                bool success = CreateBatchPool(batchClient, poolId, cmdLine.BatchNodeCount, cmdLine.BatchVmSize);
+                bool success = CreateBatchPool(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize);
 
 
                 // The collection of data files that are to be processed by the tasks
                 List<string> inputFilePaths = new List<string>();
-                if (!string.IsNullOrEmpty(cmdLine.PlatinumDacpac))
+                if (!string.IsNullOrEmpty(cmdLine.DacPacArgs.PlatinumDacpac))
                 {
-                    inputFilePaths.Add(cmdLine.PlatinumDacpac);
+                    inputFilePaths.Add(cmdLine.DacPacArgs.PlatinumDacpac);
                 }
                 if (!string.IsNullOrEmpty(cmdLine.PackageName))
                 {
@@ -113,11 +113,11 @@ namespace SqlBuildManager.Console.Batch
 
                 //Get the list of DB targets and distribute across batch count
                 var allTargets = GetTargetConfigValues(cmdLine.MultiDbRunConfigFileName);
-                var splitTargets = SplitLoadEvenly(allTargets, cmdLine.BatchNodeCount);
-                if (splitTargets.Count < cmdLine.BatchNodeCount)
+                var splitTargets = SplitLoadEvenly(allTargets, cmdLine.BatchArgs.BatchNodeCount);
+                if (splitTargets.Count < cmdLine.BatchArgs.BatchNodeCount)
                 {
-                    log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.BatchNodeCount);
-                    cmdLine.BatchNodeCount = splitTargets.Count;
+                    log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.BatchArgs.BatchNodeCount);
+                    cmdLine.BatchArgs.BatchNodeCount = splitTargets.Count;
                 }
 
 
@@ -140,7 +140,7 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(args, cmdLine, inputFiles, containerSasToken, cmdLine.BatchNodeCount, jobId);
+                IList<string> commandLines = CompileCommandLines(args, cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId);
                 foreach (var s in commandLines)
                     log.Debug(s);
 
@@ -233,7 +233,7 @@ namespace SqlBuildManager.Console.Batch
 
                 // Clean up Batch resources
                 batchClient.JobOperations.DeleteJob(jobId);
-                if (cmdLine.DeleteBatchPool)
+                if (cmdLine.BatchArgs.DeleteBatchPool)
                 {
                     batchClient.PoolOperations.DeletePool(poolId);
                 }
@@ -368,7 +368,7 @@ namespace SqlBuildManager.Console.Batch
                     }
                     else if (arg.ToLower().Contains("/platinumdacpac"))
                     {
-                        var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PlatinumDacpac.ToLower()))).FirstOrDefault();
+                        var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac.ToLower()))).FirstOrDefault();
                         sb.Append(" /PlatinumDacpac=\"" + dac.FilePath + "\"");
                     }
                     else if (arg.ToLower().Contains("/rootloggingpath"))
