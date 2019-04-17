@@ -87,7 +87,7 @@ namespace SqlBuildManager.Console
 
         private string username = string.Empty;
         private string password = string.Empty;
-        private AuthenticationType authType = AuthenticationType.UserNamePassword;
+        private AuthenticationType authType = AuthenticationType.Password;
         private string buildRequestedBy = string.Empty;
 
         public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac)

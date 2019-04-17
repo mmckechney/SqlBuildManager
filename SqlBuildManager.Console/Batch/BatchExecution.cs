@@ -11,6 +11,7 @@ using System.Linq;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using System.Text;
+using SqlBuildManager.Interfaces.Console;
 
 namespace SqlBuildManager.Console.Batch
 {
@@ -65,10 +66,28 @@ namespace SqlBuildManager.Console.Batch
                 return tmpReturn;
             }
 
-            tmpReturn = BatchCommandValidation.ValidateBatchCommandLine(cmdLine);
-            if (tmpReturn != 0)
+            //if extracting scripts from a platinum copy.. create the DACPAC here
+            if(!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource)) //using a platinum database as the source
             {
-                return tmpReturn;
+                log.InfoFormat("Extracting Platinum Dacpac from {0} : {1}", cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.DacPacArgs.PlatinumDbSource);
+                string dacpacName = Path.Combine(cmdLine.RootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
+
+                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
+                {
+                    log.ErrorFormat("Error creating the Platinum dacpac from {0} : {1}", cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.DacPacArgs.PlatinumDbSource);
+                }
+                cmdLine.DacPacArgs.PlatinumDacpac = dacpacName;
+            }
+            //Check for the platinum dacpac and configure it if necessary
+            var tmp = new MultiDbData();
+            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref tmp);
+            if (tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
+            {
+                return (int)ExecutionReturn.DacpacDatabasesInSync;
+            }
+            else if (tmpReturn != 0)
+            {
+                return tmpValReturn;
             }
 
             BatchClient batchClient = null;
@@ -125,7 +144,7 @@ namespace SqlBuildManager.Console.Batch
                 string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
                 for (int i = 0; i < splitTargets.Count; i++)
                 {
-                    var tmpName = rootPath + string.Format(baseTargetFormat, i);
+                    var tmpName = Path.Combine(rootPath,string.Format(baseTargetFormat, i));
                     File.WriteAllLines(tmpName, splitTargets[i]);
                     inputFilePaths.Add(tmpName);
                 }
@@ -140,7 +159,7 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(args, cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId);
+                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId);
                 foreach (var s in commandLines)
                     log.Debug(s);
 
@@ -352,51 +371,46 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        private IList<string> CompileCommandLines(string[] args, CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount,  string jobId)
+        private IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount,  string jobId)
         {
-            var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
+           // var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
 
             List<string> commandLines = new List<string>();
             //Need to replace the paths to 
             for (int i=0; i< poolNodeCount; i++)
             {
-                StringBuilder sb = new StringBuilder("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe");
-                foreach(var arg in args)
+
+                var threadCmdLine = cmdLine.DeepClone<CommandLineArgs>();
+                threadCmdLine.Action = CommandLineArgs.ActionType.Threaded; // set action to threaded
+
+                //Set package name to the path on the node (if set)
+                if (!string.IsNullOrWhiteSpace(threadCmdLine.PackageName))
                 {
-                    if (arg.ToLower().Contains("/action"))
-                    {
-                        sb.Append(" /Action=Threaded");
-                    }
-                    else if (arg.ToLower().Contains("/packagename"))
-                    {
-                        var pkg = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PackageName.ToLower()))).FirstOrDefault();
-                        sb.Append(" /PackageName=\"" + pkg.FilePath + "\"");
-                    }
-                    else if (arg.ToLower().Contains("/platinumdacpac"))
-                    {
-                        var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac.ToLower()))).FirstOrDefault();
-                        sb.Append(" /PlatinumDacpac=\"" + dac.FilePath + "\"");
-                    }
-                    else if (arg.ToLower().Contains("/rootloggingpath"))
-                    {
-                        //sb.Append(" /RootLoggingPath=\"D:\\runlogs\\\"");
-                        //cmdLine.RootLoggingPath = @"D:\runlogs\";
-                        sb.AppendFormat(" /RootLoggingPath=D:\\{0}", jobId);
-                        cmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
-                    }
-                    else if (arg.ToLower().Contains("/override"))
-                    {
-                        var tmp = string.Format(baseTargetFormat, i);
-                        var tar = inputFiles.Where(x => x.FilePath.ToLower().Contains(tmp.ToLower())).FirstOrDefault();
-                        sb.Append(" /Override=" + tar.FilePath);
-                    }
-                    else
-                    {
-                        sb.Append(" " + arg);
-                    }
+                    var pkg = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PackageName.ToLower()))).FirstOrDefault();
+                    threadCmdLine.PackageName = pkg.FilePath;
                 }
 
-                sb.Append(" /OutputContainerSasUrl=\"" + containerSasToken + "\"");
+                //Set the DacPac name to the path on the node (if set)
+                if (!string.IsNullOrWhiteSpace(threadCmdLine.DacPacArgs.PlatinumDacpac))
+                {
+                    var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac.ToLower()))).FirstOrDefault();
+                    threadCmdLine.DacPacArgs.PlatinumDacpac = dac.FilePath;
+                }
+
+                //Set root logging path to the jobId
+                threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
+
+                //Set the override file for this node.
+                var tmp = string.Format(baseTargetFormat, i);
+                var target = inputFiles.Where(x => x.FilePath.ToLower().Contains(tmp.ToLower())).FirstOrDefault();
+                threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
+
+                //Set set the Sas URL
+                cmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
+
+                StringBuilder sb = new StringBuilder("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe ");
+                sb.Append(threadCmdLine.ToString());
+
                 commandLines.Add(sb.ToString());
             }
 

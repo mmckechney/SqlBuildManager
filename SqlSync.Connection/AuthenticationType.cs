@@ -6,13 +6,13 @@ namespace SqlSync.Connection
     public enum AuthenticationType
     {
         [Description("Username/Password")]
-        UserNamePassword,
+        Password,
         [Description("Windows Authentication")]
-        WindowsAuthentication,
+        Windows,
         [Description("Azure AD Integrated Authentication")]
-        AzureActiveDirectory,
+        AzureADIntegrated,
         [Description("Azure AD Password Authentication")]
-        AzureUserNamePassword
+        AzureADPassword
     }
 }
 

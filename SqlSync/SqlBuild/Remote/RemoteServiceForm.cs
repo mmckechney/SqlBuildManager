@@ -106,7 +106,7 @@ namespace SqlSync.SqlBuild.Remote
                 }
             }
 
-            if((ddAuthentication.SelectedItem.ToString() == AuthenticationType.UserNamePassword.GetDescription() || ddAuthentication.SelectedItem.ToString() == AuthenticationType.AzureUserNamePassword.GetDescription() ) && (string.IsNullOrWhiteSpace(txtUserName.Text) || string.IsNullOrWhiteSpace(txtPassword.Text)))
+            if((ddAuthentication.SelectedItem.ToString() == AuthenticationType.Password.GetDescription() || ddAuthentication.SelectedItem.ToString() == AuthenticationType.AzureADPassword.GetDescription() ) && (string.IsNullOrWhiteSpace(txtUserName.Text) || string.IsNullOrWhiteSpace(txtPassword.Text)))
             {
                 MessageBox.Show("Missing username/password combination", "Missing authentication", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return false;
@@ -1117,15 +1117,15 @@ namespace SqlSync.SqlBuild.Remote
 
         private void ddAuthentication_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureUserNamePassword.GetDescription()
-               || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.UserNamePassword.GetDescription())
+            if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureADPassword.GetDescription()
+               || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.Password.GetDescription())
             {
 
                 txtPassword.Enabled = true;
                 txtUserName.Enabled = true;
             }
-            else if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureActiveDirectory.GetDescription()
-                 || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.WindowsAuthentication.GetDescription())
+            else if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureADIntegrated.GetDescription()
+                 || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.Windows.GetDescription())
             {
                 txtPassword.Enabled = false;
                 txtUserName.Enabled = false;

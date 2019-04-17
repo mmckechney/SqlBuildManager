@@ -99,7 +99,7 @@ namespace SqlSync.Connection.UnitTest
         public void GetConnectionStringTest_FromConnectionDataObj_WithPassword()
         {
             ConnectionData connData = new ConnectionData("myserver", "mydatabase");
-            connData.AuthenticationType = AuthenticationType.UserNamePassword;
+            connData.AuthenticationType = AuthenticationType.Password;
             connData.UserId = "User";
             connData.Password = "Password";
             string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;Pooling=False;Connect Timeout=20;Authentication=\"Sql Password\";Application Name=\"{appNameString}\";ConnectRetryCount=3;ConnectRetryInterval=10");
@@ -114,7 +114,7 @@ namespace SqlSync.Connection.UnitTest
         public void GetConnectionStringTest_FromConnectionDataObj_WithPassordAndTimeout()
         {
             ConnectionData connData = new ConnectionData("myserver", "mydatabase");
-            connData.AuthenticationType = AuthenticationType.UserNamePassword;
+            connData.AuthenticationType = AuthenticationType.Password;
             connData.UserId = "User";
             connData.Password = "Password";
             connData.ScriptTimeout = 30;
@@ -136,7 +136,7 @@ namespace SqlSync.Connection.UnitTest
             int scriptTimeOut = 100;
             string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=userid;Password=password;Pooling=False;Connect Timeout=100;Authentication=\"Sql Password\";Application Name=\"{appNameString}\";ConnectRetryCount=3;ConnectRetryInterval=10");
             string actual;
-            actual = ConnectionHelper.GetConnectionString(dbName, serverName, uid, pw, AuthenticationType.UserNamePassword, scriptTimeOut);
+            actual = ConnectionHelper.GetConnectionString(dbName, serverName, uid, pw, AuthenticationType.Password, scriptTimeOut);
             Assert.AreEqual(expected, actual);
         }
 
@@ -153,7 +153,7 @@ namespace SqlSync.Connection.UnitTest
             int scriptTimeOut = 100;
             string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=userid;Password=password;Pooling=False;Connect Timeout=100;Authentication=\"Sql Password\";Application Name=\"{appNameString}\";ConnectRetryCount=3;ConnectRetryInterval=10");
             SqlConnection actual;
-            actual = ConnectionHelper.GetConnection(dbName, serverName, uid, pw, AuthenticationType.UserNamePassword, scriptTimeOut);
+            actual = ConnectionHelper.GetConnection(dbName, serverName, uid, pw, AuthenticationType.Password, scriptTimeOut);
             Assert.IsNotNull(actual);
             Assert.AreEqual(expected, actual.ConnectionString);
             Assert.AreEqual(System.Data.ConnectionState.Closed, actual.State);
@@ -341,7 +341,7 @@ namespace SqlSync.Connection.UnitTest
             int scriptTimeOut = 20;
             bool expected = true;
             bool actual;
-            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName,"","",AuthenticationType.WindowsAuthentication, scriptTimeOut);
+            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName,"","",AuthenticationType.Windows, scriptTimeOut);
             Assert.AreEqual(expected, actual, "NOTE: If this test fails, please make sure you have localhost\\SQLEXPRESS instance running.");
         }
         /// <summary>
@@ -355,7 +355,7 @@ namespace SqlSync.Connection.UnitTest
             int scriptTimeOut = 20;
             bool expected = false;
             bool actual;
-            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, "", "", AuthenticationType.WindowsAuthentication, scriptTimeOut);
+            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, "", "", AuthenticationType.Windows, scriptTimeOut);
             Assert.AreEqual(expected, actual);
         }
 
@@ -370,7 +370,7 @@ namespace SqlSync.Connection.UnitTest
                 DatabaseName = "SqlBuildTest",
                 ScriptTimeout = 20,
                 SQLServerName = "localhost\\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             bool expected = true;
             bool actual;
@@ -388,7 +388,7 @@ namespace SqlSync.Connection.UnitTest
                 DatabaseName = "BadDatabaseNAme",
                 ScriptTimeout = 20,
                 SQLServerName = "localhost\\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             bool expected = false;
             bool actual;

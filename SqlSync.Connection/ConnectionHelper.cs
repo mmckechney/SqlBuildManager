@@ -76,18 +76,18 @@ namespace SqlSync.Connection
 
             switch (authType)
             {
-                case AuthenticationType.WindowsAuthentication:
+                case AuthenticationType.Windows:
                     builder.IntegratedSecurity = true;
                     break;
-                case AuthenticationType.AzureActiveDirectory:
+                case AuthenticationType.AzureADIntegrated:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryIntegrated;
                     break;
-                case AuthenticationType.AzureUserNamePassword:
+                case AuthenticationType.AzureADPassword:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryPassword;
                     builder.UserID = uid;
                     builder.Password = pw;
                     break;
-                case AuthenticationType.UserNamePassword:
+                case AuthenticationType.Password:
                 default:
                     builder.Authentication = SqlAuthenticationMethod.SqlPassword;
                     builder.UserID = uid;

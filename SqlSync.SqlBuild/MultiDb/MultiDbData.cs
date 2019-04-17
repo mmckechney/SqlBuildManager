@@ -124,7 +124,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 password = value;
             }
         }
-        private AuthenticationType authenticationType = AuthenticationType.UserNamePassword;
+        private AuthenticationType authenticationType = AuthenticationType.Password;
         public AuthenticationType AuthenticationType
         {
             get

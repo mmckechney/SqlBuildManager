@@ -263,7 +263,7 @@ namespace SqlBuildManager.Console
                     catch (Exception exe)
                     {
                         log.Warn("Issue setting authentication type. Defaulting to UsernamePassword", exe);
-                        this.cmdLine.AuthenticationArgs.AuthenticationType = AuthenticationType.UserNamePassword;
+                        this.cmdLine.AuthenticationArgs.AuthenticationType = AuthenticationType.Password;
                     }
 
                     this.cmdLine.DacPacArgs.PlatinumDacpac = platinumDacPacFileName;

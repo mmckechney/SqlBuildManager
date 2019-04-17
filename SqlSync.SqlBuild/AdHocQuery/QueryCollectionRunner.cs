@@ -74,7 +74,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 QueryCollectionRunnerUpdate(this, new QueryCollectionRunnerUpdateEventArgs(this.serverName, this.databaseName, "Starting"));
 
             ConnectionData connData = new ConnectionData(serverName, databaseName);
-            if(this.masterConnData.AuthenticationType == AuthenticationType.AzureUserNamePassword || this.masterConnData.AuthenticationType == AuthenticationType.UserNamePassword)
+            if(this.masterConnData.AuthenticationType == AuthenticationType.AzureADPassword || this.masterConnData.AuthenticationType == AuthenticationType.Password)
             {
                 connData.UserId = this.masterConnData.UserId;
                 connData.Password = this.masterConnData.Password;

@@ -110,7 +110,7 @@ namespace SqlBuildManager.Console
             string msg = "Total Run time: " + span.ToString();
             log.Info(msg);
 
-            log.Debug("Exiting Threaded Execution");
+            log.Debug("Exiting Batch Execution");
 
             System.Environment.Exit(retVal);
         }

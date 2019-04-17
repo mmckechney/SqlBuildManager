@@ -341,7 +341,7 @@ namespace SqlSync.SqlBuild
                 stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, false, buildRevision, out sbmName);
             }
 
-            if (stat == DacpacDeltasStatus.Processing)
+            if (stat == DacpacDeltasStatus.Processing && multiDb != null)
             {
                 foreach (var serv in multiDb)
                 {

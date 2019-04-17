@@ -1049,7 +1049,7 @@ namespace SqlSync.ObjectScript
             {
                 if (this.smoServer == null)
                 {
-                    if (this.data.AuthenticationType == Connection.AuthenticationType.WindowsAuthentication)
+                    if (this.data.AuthenticationType == Connection.AuthenticationType.Windows)
                         this.smoServer = new Microsoft.SqlServer.Management.Smo.Server(this.ConnData.SQLServerName);
                     else
                         this.smoServer = new Server(new ServerConnection(this.ConnData.SQLServerName, this.ConnData.UserId, this.ConnData.Password));

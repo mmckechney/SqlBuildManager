@@ -16,7 +16,7 @@ namespace SqlSync.Connection {
         
         private string _StartingDirectory = string.Empty;
         
-        private AuthenticationType authType = AuthenticationType.UserNamePassword;
+        private AuthenticationType authType = AuthenticationType.Password;
         
         private int _ScriptTimeout = 20;
         
@@ -28,7 +28,7 @@ namespace SqlSync.Connection {
         {
             this._SQLServerName = serverName;
             this._DatabaseName = databaseName;
-            authType = AuthenticationType.WindowsAuthentication;
+            authType = AuthenticationType.Windows;
         }
 
         public virtual string SQLServerName {

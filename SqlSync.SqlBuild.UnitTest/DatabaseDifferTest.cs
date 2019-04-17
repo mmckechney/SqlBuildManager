@@ -92,13 +92,13 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             ConnectionData toBeUpdated = new ConnectionData()
             {
                 DatabaseName = "SqlBuildTest_SyncTest2",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             DatabaseRunHistory actual;
             actual = target.GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
@@ -121,13 +121,13 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             ConnectionData toBeUpdated = new ConnectionData()
             {
                 DatabaseName = "SqlBuildTest_SyncTest3",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             DatabaseRunHistory actual;
             actual = target.GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
@@ -148,13 +148,13 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             ConnectionData toBeUpdated = new ConnectionData()
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             DatabaseRunHistory actual;
             actual = target.GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
@@ -173,7 +173,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 {
                     DatabaseName = "SqlBuildTest_SyncTest1",
                     SQLServerName = @"localhost\SQLEXPRESS",
-                    AuthenticationType = AuthenticationType.WindowsAuthentication
+                    AuthenticationType = AuthenticationType.Windows
                 };
 
             DatabaseRunHistory actual;

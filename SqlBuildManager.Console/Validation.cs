@@ -18,7 +18,7 @@ namespace SqlBuildManager.Console
             string error = string.Empty;
             errorMessages = new string[0];
 
-            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.AzureUserNamePassword || cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.UserNamePassword)
+            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.AzureADPassword || cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.Password)
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
@@ -125,9 +125,9 @@ namespace SqlBuildManager.Console
                 //Validate and set the value for the build file name
                 if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName) && string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir)
                     && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac)
-                    && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource))
+                    && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource))
                 {
-                    error = "Invalid command line set. Missing /PackageName or /PlatinumDacpac or /ScriptSrcDir setting.";
+                    error = "Invalid command line set. Missing /PackageName, /PlatinumDacpac, /ScriptSrcDir, or /PlatinumDbSource and /PlatinumServerSource settings.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
                     log.Error(error);
                     return (int)ExecutionReturn.MissingBuildFlag;

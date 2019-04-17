@@ -958,7 +958,7 @@ namespace SqlSync.TableScript
             {
                 if (this.smoServer == null)
                 {
-                    if (this.data.AuthenticationType == Connection.AuthenticationType.WindowsAuthentication || this.data.AuthenticationType == Connection.AuthenticationType.AzureActiveDirectory)
+                    if (this.data.AuthenticationType == Connection.AuthenticationType.Windows || this.data.AuthenticationType == Connection.AuthenticationType.AzureADIntegrated)
                         this.smoServer = new Microsoft.SqlServer.Management.Smo.Server(this.data.SQLServerName);
                     else
                         this.smoServer = new Server(new ServerConnection(this.data.SQLServerName, this.data.UserId, this.data.Password));

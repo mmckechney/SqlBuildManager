@@ -22,7 +22,7 @@ namespace SqlSync.Connection
         }
 
 
-        private AuthenticationType authenticationType = SqlSync.Connection.AuthenticationType.UserNamePassword;
+        private AuthenticationType authenticationType = SqlSync.Connection.AuthenticationType.Password;
         public AuthenticationType AuthenticationType
         {
             get { return authenticationType; }

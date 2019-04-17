@@ -17,7 +17,6 @@ namespace SqlSync.SqlBuild
         public static CommandLineArgs ParseCommandLineArg(string[] args)
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.RawArguments = args;
 
             StringDictionary dict = Arguments.ParseArguments(args);
             if(dict.ContainsKey("action"))
@@ -132,7 +131,6 @@ namespace SqlSync.SqlBuild
 
             if (dict.ContainsKey("packagename"))
             {
-                cmdLine.PackageName = dict["packagename"];
                 cmdLine.BuildFileName = dict["packagename"];
             }
 
@@ -260,17 +258,17 @@ namespace SqlSync.SqlBuild
                 switch(dict["authtype"].ToLower())
                 {
                     case "windows":
-                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.WindowsAuthentication;
+                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.Windows;
                         break;
                     case "azureadintegrated":
-                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.AzureActiveDirectory;
+                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.AzureADIntegrated;
                         break;
                     case "azureadpassword":
-                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.AzureUserNamePassword;
+                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.AzureADPassword;
                         break;
                     case "password":
                     default:
-                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.UserNamePassword;
+                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.Password;
                         break;
                 }
             }
@@ -278,11 +276,11 @@ namespace SqlSync.SqlBuild
             {
                 if(!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password) && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
                 {
-                    cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.UserNamePassword;
+                    cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.Password;
                 }
                 else
                 {
-                    cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.WindowsAuthentication;
+                    cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.Windows;
                 }
             }
             
