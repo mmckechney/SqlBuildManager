@@ -12,13 +12,14 @@ using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using System.Text;
 using SqlBuildManager.Interfaces.Console;
+using System.Text.RegularExpressions;
 
 namespace SqlBuildManager.Console.Batch
 {
     public class Execution
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private string[] args;
+        private CommandLineArgs cmdLine;
 
         // Batch resource settings
         private const string PoolIdFormat = "SqlBuildManagerPool";
@@ -26,24 +27,41 @@ namespace SqlBuildManager.Console.Batch
 
         private const string baseTargetFormat = "target_{0}.cfg";
 
-        public Execution(string[] args)
+        public Execution(CommandLineArgs cmdLine)
         {
-            this.args = args;
+            this.cmdLine = cmdLine;
         }
 
         public int StartBatch()
         {
-
-            string jobToken = DateTime.Now.ToString("yyyyMMddHHmm");
-            string jobId = string.Format(JobIdFormat, jobToken);
-            string poolId = PoolIdFormat;
-            string inputContainerName = jobToken + "-input";
-            string outputContainerName = jobToken + "-output";
+            string jobId, poolId, inputContainerName, outputContainerName;
+            string jobToken = DateTime.Now.ToString("yyyy-MM-dd-HHmm");
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
+            {
+                cmdLine.BatchArgs.BatchJobName  = Regex.Replace(cmdLine.BatchArgs.BatchJobName, "[^a-zA-Z0-9]", "");
+                cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.ToLower();
+                if(cmdLine.BatchArgs.BatchJobName.Length > 47)
+                {
+                    cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.Substring(0, 47);
+                }
+                jobId = cmdLine.BatchArgs.BatchJobName + "-" + jobToken;
+                poolId = PoolIdFormat;
+                inputContainerName = cmdLine.BatchArgs.BatchJobName;
+                outputContainerName = cmdLine.BatchArgs.BatchJobName;
+            }
+            else
+            {
+                jobId = string.Format(JobIdFormat, jobToken);
+                poolId = PoolIdFormat;
+                inputContainerName = jobToken;
+                outputContainerName = jobToken;
+            }
+            
+  
             int? myExitCode = 0;
 
 
             log.Info("Validating general command parameters");
-            CommandLineArgs cmdLine = CommandLine.ParseCommandLineArg(args);
             string[] errorMessages;
             int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             if (tmpReturn != 0)
@@ -271,6 +289,10 @@ namespace SqlBuildManager.Console.Batch
                 log.Info("You can also get details on your Azure Batch execution from the \"Azure Batch Explorer\" found here: https://azure.github.io/BatchExplorer/");
 
             }
+            catch(Exception exe)
+            {
+                log.ErrorFormat($"Exception when running batch job\r\n{exe.ToString()}");
+            }
             finally
             {
                 log.InfoFormat("Batch complete");
@@ -402,6 +424,9 @@ namespace SqlBuildManager.Console.Batch
 
                 //Set root logging path to the jobId
                 threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
+
+                //set logging to text only
+                threadCmdLine.LogAsText = true;
 
                 //Set the override file for this node.
                 var tmp = string.Format(baseTargetFormat, i);

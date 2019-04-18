@@ -102,6 +102,7 @@ namespace SqlSync.SqlBuild
             public string OutputContainerSasUrl { get; set; }
             public bool DeleteBatchPool { get; set; } = true;
             public bool DeleteBatchJob { get; set; } = true;
+            public string BatchJobName { get; set; } = null;
         }
 
         [Serializable]

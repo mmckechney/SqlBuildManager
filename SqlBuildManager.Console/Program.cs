@@ -14,6 +14,8 @@ using SqlSync.Connection;
 using System.Text.RegularExpressions;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console
 {
@@ -21,73 +23,81 @@ namespace SqlBuildManager.Console
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             log4net.Config.XmlConfigurator.Configure();
             SqlBuildManager.Logging.Configure.SetLoggingPath();
 
             log.Debug("Received Command: " + String.Join(" | ", args));
             DateTime start = DateTime.Now;
-
-            string joinedArgs = string.Join(",", args).ToLower();
-            var cmdLine = CommandLine.ParseCommandLineArg(args);
-
-            if (args.Length == 0 || joinedArgs.Contains("/?") || joinedArgs.Contains("/help"))
+            int retVal = 0;
+            try
             {
-                log.Info(Properties.Resources.ConsoleHelp2);
-                Environment.Exit(0);
+                string joinedArgs = string.Join(",", args).ToLower();
+                var cmdLine = CommandLine.ParseCommandLineArg(args);
+
+                if (args.Length == 0 || joinedArgs.Contains("/?") || joinedArgs.Contains("/help"))
+                {
+                    log.Info(Properties.Resources.ConsoleHelp2);
+                    Environment.Exit(0);
+                }
+                switch (cmdLine.Action)
+                {
+                    case CommandLineArgs.ActionType.Remote:
+                        RunRemoteExecution(args, cmdLine, start);
+                        break;
+                    case CommandLineArgs.ActionType.Threaded:
+                        retVal = await RunThreadedExecutionAsync(args, cmdLine, start);
+                        break;
+                    case CommandLineArgs.ActionType.Package:
+                        PackageSbxFilesIntoSbmFiles(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.PolicyCheck:
+                        ExecutePolicyCheck(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.GetHash:
+                        GetPackageHash(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.CreateBackout:
+                        CreateBackout(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.GetDifference:
+                        GetDifferences(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.Synchronize:
+                        SyncronizeDatabase(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.Build:
+                        StandardExecution(args, start);
+                        break;
+                    case CommandLineArgs.ActionType.ScriptExtract:
+                        ScriptExtraction(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.Encrypt:
+                        EncryptCreds(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.Batch:
+                        retVal = await RunBatchExecution(cmdLine, start);
+                        break;
+                    default:
+                        log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
+                        System.Environment.Exit(8675309);
+                        break;
+
+                }
+
+                System.Environment.Exit(retVal);
             }
-            switch(cmdLine.Action)
+            catch(Exception exe)
             {
-                case CommandLineArgs.ActionType.Remote:
-                    RunRemoteExecution(args, cmdLine, start);
-                    break;
-                case CommandLineArgs.ActionType.Threaded:
-                    RunThreadedExecution(args, cmdLine, start);
-                    break;
-                case CommandLineArgs.ActionType.Package:
-                    PackageSbxFilesIntoSbmFiles(cmdLine);
-                    break;
-                case CommandLineArgs.ActionType.PolicyCheck:
-                    ExecutePolicyCheck(cmdLine);
-                    break;
-                case CommandLineArgs.ActionType.GetHash:
-                    GetPackageHash(cmdLine);
-                    break;
-                case CommandLineArgs.ActionType.CreateBackout:
-                    CreateBackout(cmdLine);
-                    break;
-                case CommandLineArgs.ActionType.GetDifference:
-                    GetDifferences(cmdLine);
-                    break;
-                case CommandLineArgs.ActionType.Synchronize:
-                    SyncronizeDatabase(cmdLine);
-                    break;
-                case CommandLineArgs.ActionType.Build:
-                    StandardExecution(args, start);
-                    break;
-                case CommandLineArgs.ActionType.ScriptExtract:
-                    ScriptExtraction(cmdLine);
-                    break;
-                case CommandLineArgs.ActionType.Encrypt:
-                    EncryptCreds(cmdLine);
-                    break;
-                case CommandLineArgs.ActionType.Batch:
-                    RunBatchExecution(args, start);
-                    break;
-                default:
-                    log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
-                    System.Environment.Exit(8675309);
-                    break;
-
+                log.Error("Something went wrong!", exe);
             }
 
         }
 
-        private static void RunBatchExecution(string[] args, DateTime start)
+        private static async Task<int> RunBatchExecution(CommandLineArgs cmdLine, DateTime start)
         {
-            Batch.Execution batchExe = new Batch.Execution(args);
-            CommandLineArgs cmdLine = CommandLine.ParseCommandLineArg(args);
+            Batch.Execution batchExe = new Batch.Execution(cmdLine);
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Batch Execution");
             log.Info("Running...");
@@ -112,7 +122,7 @@ namespace SqlBuildManager.Console
 
             log.Debug("Exiting Batch Execution");
 
-            System.Environment.Exit(retVal);
+            return retVal;
         }
 
         private static void EncryptCreds(CommandLineArgs cmdLine)
@@ -330,7 +340,7 @@ namespace SqlBuildManager.Console
 
         #endregion
 
-        private static void RunThreadedExecution(string[] args, CommandLineArgs cmdLine, DateTime start)
+        private static async Task<int> RunThreadedExecutionAsync(string[] args, CommandLineArgs cmdLine, DateTime start)
         {
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Threaded Execution");
@@ -358,39 +368,75 @@ namespace SqlBuildManager.Console
             if(!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.Info("Writing log files to storage...");
-                WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
+                bool success = await WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
             }
           
             log.Debug("Exiting Threaded Execution");
 
-            System.Environment.Exit(retVal);
+            return retVal;
+
         }
 
-        private static void WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
+        private static async Task<bool> WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
         {
             try
             {
+                var writeTasks = new List<Task>();
+                var appendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
+                var renameLogFiles = new string[] { "execution.log" };
                 CloudBlobContainer container = new CloudBlobContainer(new Uri(outputContainerSasUrl));
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
                 string machine = Environment.MachineName;
-                fileList.ToList().ForEach(f =>
+                fileList.ToList().ForEach(async f =>
                 {
-                    var tmp = machine + f.Replace(rootLoggingPath, "");
-                    log.InfoFormat("Saving File '{0}' as '{1}'", f, tmp);
-                    var b = container.GetBlockBlobReference(tmp);
                     try
                     {
-                        b.UploadFromFile(f);
+                        var tmp = f.Replace(rootLoggingPath + @"\", "");
+                        if (appendLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
+                        {
+                            log.InfoFormat($"Saving File '{f}' as '{tmp}'");
+                            var append = container.GetAppendBlobReference(tmp);
+
+                            writeTasks.Add(
+                                append.AppendFromFileAsync(f,
+                                AccessCondition.GenerateIfNotExistsCondition(),
+                                new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
+                        
+                        }
+                        else if (renameLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
+                        {
+                            tmp = machine + "-" + tmp;
+                            log.InfoFormat($"Saving File '{f}' as '{tmp}'");
+                            var rename = container.GetBlockBlobReference(tmp);
+
+                            writeTasks.Add(
+                                rename.UploadFromFileAsync(f,
+                                AccessCondition.GenerateIfNotExistsCondition(),
+                                new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
+                        }
+                        else
+                        {
+                            log.InfoFormat($"Saving File '{f}' as '{tmp}'");
+                            var b = container.GetBlockBlobReference(tmp);
+                            writeTasks.Add(
+                                b.UploadFromFileAsync(f,
+                                AccessCondition.GenerateIfNotExistsCondition(),
+                                new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
+                        }
                     }
                     catch (Exception e)
                     {
-                        log.Error("Unable to upload log file '" + f + "' to blob storage", e);
+                        log.ErrorFormat($"Unable to upload log file '{f}' to blob storage: {e.ToString()}");
                     }
                 });
+
+                await Task.WhenAll(writeTasks);
+                return true;
             }
             catch (Exception exe)
             {
                 log.Error("Unable to upload log files to blob storage", exe);
+                return false;
             }
         }
 

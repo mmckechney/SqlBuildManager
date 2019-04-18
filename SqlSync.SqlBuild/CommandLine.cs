@@ -218,6 +218,10 @@ namespace SqlSync.SqlBuild
                 cmdLine.BatchArgs.BatchNodeCount = node;
             }
 
+            
+            if (dict.ContainsKey("batchjobname"))
+                cmdLine.BatchArgs.BatchJobName = dict["batchjobname"];
+
             if (dict.ContainsKey("batchaccountname"))
                 cmdLine.BatchArgs.BatchAccountName = dict["batchaccountname"];
 
