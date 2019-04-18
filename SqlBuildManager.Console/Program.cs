@@ -557,13 +557,13 @@ namespace SqlBuildManager.Console
 
         private static void GetPackageHash(CommandLineArgs cmdLine)
         {
-            if(string.IsNullOrWhiteSpace(cmdLine.PackageName))
+            if(string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.Error("No /PackageName was specified. This is required for /Action=GetHash");
                 System.Environment.Exit(626);
 
             }
-            string packageName = cmdLine.PackageName;
+            string packageName = cmdLine.BuildFileName;
             string hash = SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
             if (!String.IsNullOrEmpty(hash))
             {
@@ -578,13 +578,13 @@ namespace SqlBuildManager.Console
 
         private static void ExecutePolicyCheck(CommandLineArgs cmdLine)
         {
-            if (string.IsNullOrWhiteSpace(cmdLine.PackageName))
+            if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.Error("No /PackageName was specified. This is required for /Action=PolicyCheck");
                 System.Environment.Exit(34536);
 
             }
-            string packageName = cmdLine.PackageName;
+            string packageName = cmdLine.BuildFileName;
             PolicyHelper helper = new PolicyHelper();
             bool passed;
             List<string> policyMessages = helper.CommandLinePolicyCheck(packageName, out passed);

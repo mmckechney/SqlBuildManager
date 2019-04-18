@@ -63,8 +63,6 @@ namespace SqlSync.SqlBuild
 
         public bool ContinueOnFailure { get; set; }
 
-        public string PackageName { get; set; }
-
         public string Directory { get; set; }
 
         public string BuildRevision { get; set; }
@@ -93,7 +91,7 @@ namespace SqlSync.SqlBuild
         [Serializable]
         public class Batch
         {
-            public bool DeleteBatchPool { get; set; } = true;
+ 
             public int BatchNodeCount { get; set; } = 10;
             public string BatchAccountName { get; set; } = null;
             public string BatchAccountKey { get; set; } = null;
@@ -102,6 +100,8 @@ namespace SqlSync.SqlBuild
             public string StorageAccountKey { get; set; } = null;
             public string BatchVmSize { get; set; } = null;
             public string OutputContainerSasUrl { get; set; }
+            public bool DeleteBatchPool { get; set; } = true;
+            public bool DeleteBatchJob { get; set; } = true;
         }
 
         [Serializable]
@@ -211,7 +211,13 @@ namespace SqlSync.SqlBuild
                             sb.Append("/Override=\"" + property.GetValue(obj).ToString() + "\" ");
                         }
                     }
-
+                    else if (property.Name == "BuildFileName") //special case where commandline arg != propertyname
+                    {
+                        if (property.GetValue(obj) != null && !string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
+                        {
+                            sb.Append("/PackageName=\"" + property.GetValue(obj).ToString() + "\" ");
+                        }
+                    }
                     else if (property.Name == "OverrideDesignated") //special case
                     {
                         //do nothing

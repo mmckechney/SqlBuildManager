@@ -102,7 +102,7 @@ namespace SqlSync.SqlBuild
                         return cleanStatus;
                 }
 
-                string baseFileName = path + string.Format("{0} to {1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
+                string baseFileName = path + string.Format("{0}_to_{1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
                 
                 List<string> files = new List<string>();
                 if (batchScripts)

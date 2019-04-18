@@ -121,9 +121,9 @@ namespace SqlBuildManager.Console.Batch
                 {
                     inputFilePaths.Add(cmdLine.DacPacArgs.PlatinumDacpac);
                 }
-                if (!string.IsNullOrEmpty(cmdLine.PackageName))
+                if (!string.IsNullOrEmpty(cmdLine.BuildFileName))
                 {
-                    inputFilePaths.Add(cmdLine.PackageName);
+                    inputFilePaths.Add(cmdLine.BuildFileName);
                 }
                 if (!string.IsNullOrEmpty(cmdLine.MultiDbRunConfigFileName))
                 {
@@ -205,7 +205,7 @@ namespace SqlBuildManager.Console.Batch
                     task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
-                                filePattern: cmdLine.RootLoggingPath + @"\SqlBuildManager.Console.Execution.log",
+                                filePattern: @"..\std*.txt",
                                 destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
                         };
@@ -255,7 +255,10 @@ namespace SqlBuildManager.Console.Batch
                 log.InfoFormat("Elapsed time: {0}", timer.Elapsed);
 
                 // Clean up Batch resources
-                batchClient.JobOperations.DeleteJob(jobId);
+                if (cmdLine.BatchArgs.DeleteBatchJob)
+                {
+                    batchClient.JobOperations.DeleteJob(jobId);
+                }
                 if (cmdLine.BatchArgs.DeleteBatchPool)
                 {
                     batchClient.PoolOperations.DeletePool(poolId);
@@ -384,10 +387,10 @@ namespace SqlBuildManager.Console.Batch
                 threadCmdLine.Action = CommandLineArgs.ActionType.Threaded; // set action to threaded
 
                 //Set package name to the path on the node (if set)
-                if (!string.IsNullOrWhiteSpace(threadCmdLine.PackageName))
+                if (!string.IsNullOrWhiteSpace(threadCmdLine.BuildFileName))
                 {
-                    var pkg = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PackageName.ToLower()))).FirstOrDefault();
-                    threadCmdLine.PackageName = pkg.FilePath;
+                    var pkg = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.BuildFileName.ToLower()))).FirstOrDefault();
+                    threadCmdLine.BuildFileName = pkg.FilePath;
                 }
 
                 //Set the DacPac name to the path on the node (if set)
@@ -406,7 +409,7 @@ namespace SqlBuildManager.Console.Batch
                 threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
 
                 //Set set the Sas URL
-                cmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
+                threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
 
                 StringBuilder sb = new StringBuilder("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe ");
                 sb.Append(threadCmdLine.ToString());

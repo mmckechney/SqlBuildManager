@@ -15,11 +15,11 @@ namespace SqlBuildManager.Console
         internal static string CreateBackoutPackage(CommandLineArgs cmdLine)
         {
             
-            if(string.IsNullOrWhiteSpace(cmdLine.PackageName))
+            if(string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.Error("/PackageName argument is required when creating a backout package");
             }
-            string sourcePackageName = cmdLine.PackageName;
+            string sourcePackageName = cmdLine.BuildFileName;
             if (cmdLine.Server.Length == 0 || cmdLine.Database.Length == 0)
             {
                 log.Error("/server and /database arguments are required when creating a backout package");

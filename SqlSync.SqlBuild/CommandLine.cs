@@ -206,6 +206,11 @@ namespace SqlSync.SqlBuild
             {
                 cmdLine.BatchArgs.DeleteBatchPool = del;
             }
+            bool delJob;
+            if (dict.ContainsKey("deletebatchjob") && Boolean.TryParse(dict["deletebatchjob"], out delJob))
+            {
+                cmdLine.BatchArgs.DeleteBatchJob = delJob;
+            }
 
             int node;
             if (dict.ContainsKey("batchnodecount") && Int32.TryParse(dict["batchnodecount"], out node))
