@@ -80,13 +80,13 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             ConnectionData toUpdate = new ConnectionData()
             {
                 DatabaseName = "SqlBuildTest_SyncTest2",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
             bool success = target.SyncronizeDatabases(gold, toUpdate,false);
@@ -104,13 +104,13 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             ConnectionData toUpdate = new ConnectionData()
             {
                 DatabaseName = "SqlBuildTest_SyncTest2",
                 SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.WindowsAuthentication
+                AuthenticationType = AuthenticationType.Windows
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
             bool success = target.SyncronizeDatabases(gold, toUpdate,false);
@@ -137,7 +137,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 {
                     DatabaseName = "SqlBuildTest_SyncTest2",
                     SQLServerName = @"localhost\SQLEXPRESS",
-                    AuthenticationType = AuthenticationType.WindowsAuthentication
+                    AuthenticationType = AuthenticationType.Windows
                 };
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(sync2Conn);
             conn.Open();

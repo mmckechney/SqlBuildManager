@@ -14,81 +14,92 @@ using SqlSync.Connection;
 using System.Text.RegularExpressions;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console
 {
+    
     class Program
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             log4net.Config.XmlConfigurator.Configure();
             SqlBuildManager.Logging.Configure.SetLoggingPath();
 
             log.Debug("Received Command: " + String.Join(" | ", args));
             DateTime start = DateTime.Now;
-
-            string joinedArgs = string.Join(",", args).ToLower();
-            var cmdLine = CommandLine.ParseCommandLineArg(args);
-
-            if (args.Length == 0 || joinedArgs.Contains("/?") || joinedArgs.Contains("/help"))
+            int retVal = 0;
+            try
             {
-                log.Info(Properties.Resources.ConsoleHelp2);
-                Environment.Exit(0);
+                string joinedArgs = string.Join(",", args).ToLower();
+                var cmdLine = CommandLine.ParseCommandLineArg(args);
+
+                if (args.Length == 0 || joinedArgs.Contains("/?") || joinedArgs.Contains("/help"))
+                {
+                    log.Info(Properties.Resources.ConsoleHelp2);
+                    Environment.Exit(0);
+                }
+                switch (cmdLine.Action)
+                {
+                    case CommandLineArgs.ActionType.Remote:
+                        RunRemoteExecution(args, cmdLine, start);
+                        break;
+                    case CommandLineArgs.ActionType.Threaded:
+                        retVal = await RunThreadedExecutionAsync(args, cmdLine, start);
+                        break;
+                    case CommandLineArgs.ActionType.Package:
+                        PackageSbxFilesIntoSbmFiles(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.PolicyCheck:
+                        ExecutePolicyCheck(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.GetHash:
+                        GetPackageHash(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.CreateBackout:
+                        CreateBackout(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.GetDifference:
+                        GetDifferences(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.Synchronize:
+                        SyncronizeDatabase(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.Build:
+                        StandardExecution(args, start);
+                        break;
+                    case CommandLineArgs.ActionType.ScriptExtract:
+                        ScriptExtraction(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.Encrypt:
+                        EncryptCreds(cmdLine);
+                        break;
+                    case CommandLineArgs.ActionType.Batch:
+                        retVal = await RunBatchExecution(cmdLine, start);
+                        break;
+                    default:
+                        log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
+                        System.Environment.Exit(8675309);
+                        break;
+
+                }
+
+                System.Environment.Exit(retVal);
             }
-
-            switch(cmdLine.Action)
+            catch(Exception exe)
             {
-                case "remote":
-                    RunRemoteExecution(args, cmdLine, start);
-                    break;
-                case "threaded":
-                    RunThreadedExecution(args, start);
-                    break;
-                case "package":
-                    PackageSbxFilesIntoSbmFiles(cmdLine);
-                    break;
-                case "policycheck":
-                    ExecutePolicyCheck(cmdLine);
-                    break;
-                case "gethash":
-                    GetPackageHash(cmdLine);
-                    break;
-                case "createbackout":
-                    CreateBackout(cmdLine);
-                    break;
-                case "getdifference":
-                    GetDifferences(cmdLine);
-                    break;
-                case "synchronize":
-                    SyncronizeDatabase(cmdLine);
-                    break;
-                case "build":
-                    StandardExecution(args, start);
-                    break;
-                case "scriptextract":
-                    ScriptExtraction(cmdLine);
-                    break;
-                case "encrypt":
-                    EncryptCreds(cmdLine);
-                    break;
-                case "batch":
-                    RunBatchExecution(args, start);
-                    break;
-                default:
-                    log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
-                    System.Environment.Exit(8675309);
-                    break;
-
+                log.ErrorFormat($"Something went wrong!\r\n{exe.ToString()}");
             }
 
         }
 
-        private static void RunBatchExecution(string[] args, DateTime start)
+        private static async Task<int> RunBatchExecution(CommandLineArgs cmdLine, DateTime start)
         {
-            Batch.Execution batchExe = new Batch.Execution(args);
-            CommandLineArgs cmdLine = CommandLine.ParseCommandLineArg(args);
+            Batch.Execution batchExe = new Batch.Execution(cmdLine);
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Batch Execution");
             log.Info("Running...");
@@ -111,9 +122,9 @@ namespace SqlBuildManager.Console
             string msg = "Total Run time: " + span.ToString();
             log.Info(msg);
 
-            log.Debug("Exiting Threaded Execution");
+            log.Debug("Exiting Batch Execution");
 
-            System.Environment.Exit(retVal);
+            return retVal;
         }
 
         private static void EncryptCreds(CommandLineArgs cmdLine)
@@ -121,16 +132,16 @@ namespace SqlBuildManager.Console
             string username = string.Empty;
             string password = string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.UserName))
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
                 //System.Console.WriteLine(string.Format("<UserName>{0}</UserName>",
-                username = Cryptography.EncryptText(cmdLine.UserName, ConnectionHelper.ConnectCryptoKey);
+                username = Cryptography.EncryptText(cmdLine.AuthenticationArgs.UserName, ConnectionHelper.ConnectCryptoKey);
             }
-            if (!string.IsNullOrWhiteSpace(cmdLine.Password))
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
                 //System.Console.WriteLine(string.Format("<Password>{0}</Password>", 
 
-                password = Cryptography.EncryptText(cmdLine.Password, ConnectionHelper.ConnectCryptoKey);
+                password = Cryptography.EncryptText(cmdLine.AuthenticationArgs.Password, ConnectionHelper.ConnectCryptoKey);
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.Server))
@@ -148,7 +159,7 @@ namespace SqlBuildManager.Console
         private static void ScriptExtraction(CommandLineArgs cmdLine)
         {
             #region Validate flags
-            if (string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac))
+            if (string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
             {
                 log.Error("/PlatinumDacpac flag is required");
                 System.Environment.Exit(-1);
@@ -170,7 +181,7 @@ namespace SqlBuildManager.Console
                 log.Error(errorMessages.Aggregate((a, b) => a + "; " + b));
             }
 
-            if (string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+            if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
                 log.Error("/Username and /Password flags are required");
                 System.Environment.Exit(-1);
@@ -208,31 +219,31 @@ namespace SqlBuildManager.Console
         {
             try
             {
-                string joinedArgs = string.Join(",", args).ToLower();
+                //string joinedArgs = string.Join(",", args).ToLower();
 
-                if (joinedArgs.Contains("/testconnectivity=true"))
+                if(cmdLine.RemoteArgs.TestConnectivity == true)
                 {
                     RemoteExecutionTestConnectivity(args);
                 }
-                else if(joinedArgs.Contains("/azureremotestatus=true"))
+                else if(cmdLine.RemoteArgs.AzureRemoteStatus == true)
                 {
                     GetAzureRemoteStatus(args);
                 }
-                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteDbErrorList))
+                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteDbErrorList))
                 {
-                    var dbsInError = RemoteAzureHealth.GetDatabaseErrorList(cmdLine.RemoteDbErrorList);
+                    var dbsInError = RemoteAzureHealth.GetDatabaseErrorList(cmdLine.RemoteArgs.RemoteDbErrorList);
                    if (dbsInError != null)
                    {
                        log.Info("\r\n" + string.Join("\r\n", dbsInError.ToArray()));
                    }
                 }
-                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteErrorDetail))
+                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteErrorDetail))
                 {
-                    var errorMessages = RemoteAzureHealth.GetErrorDetail(cmdLine.RemoteErrorDetail);
+                    var errorMessages = RemoteAzureHealth.GetErrorDetail(cmdLine.RemoteArgs.RemoteErrorDetail);
                     log.Info("Returned error messages:");
                     log.Info("\r\n" + errorMessages);
                 }
-                else if(cmdLine.ForceCustomDacPac == true)
+                else if(cmdLine.DacPacArgs.ForceCustomDacPac == true)
                 {
                     log.Error("The /ForceCustomDacPac flag is not compatible with the /Action=Remote action");
                     System.Environment.Exit(681);
@@ -331,9 +342,8 @@ namespace SqlBuildManager.Console
 
         #endregion
 
-        private static void RunThreadedExecution(string[] args, DateTime start)
+        private static async Task<int> RunThreadedExecutionAsync(string[] args, CommandLineArgs cmdLine, DateTime start)
         {
-            var cmdLine = CommandLine.ParseCommandLineArg(args);
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Threaded Execution");
             log.Info("Running...");
@@ -357,42 +367,81 @@ namespace SqlBuildManager.Console
             string msg = "Total Run time: " + span.ToString();
             log.Info(msg);
 
-            if(!String.IsNullOrEmpty(cmdLine.OutputContainerSasUrl))
+            if(!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.Info("Writing log files to storage...");
-                WriteLogsToBlobContainer(cmdLine.OutputContainerSasUrl, cmdLine.RootLoggingPath);
+                bool success = await WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
             }
           
             log.Debug("Exiting Threaded Execution");
 
-            System.Environment.Exit(retVal);
+            return retVal;
+
         }
 
-        private static void WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
+        private static async Task<bool> WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
         {
             try
             {
+                var writeTasks = new List<Task>();
+                
+                var renameLogFiles = new string[] { "execution.log" };
                 CloudBlobContainer container = new CloudBlobContainer(new Uri(outputContainerSasUrl));
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
                 string machine = Environment.MachineName;
                 fileList.ToList().ForEach(f =>
                 {
-                    var tmp = machine + f.Replace(rootLoggingPath, "");
-                    log.InfoFormat("Saving File '{0}' as '{1}'", f, tmp);
-                    var b = container.GetBlockBlobReference(tmp);
                     try
                     {
-                        b.UploadFromFile(f);
+                        var tmp = f.Replace(rootLoggingPath + @"\", "");
+
+                        if (Program.AppendLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
+                        {
+
+                            tmp = machine + "-" + tmp;
+                            log.InfoFormat($"Saving File '{f}' as '{tmp}'");
+                            var rename = container.GetBlockBlobReference(tmp);
+
+                            writeTasks.Add(
+                                rename.UploadFromFileAsync(f,
+                                AccessCondition.GenerateIfNotExistsCondition(),
+                                new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
+
+                        }
+                        else if (renameLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
+                        {
+                            tmp = machine + "-" + tmp;
+                            log.InfoFormat($"Saving File '{f}' as '{tmp}'");
+                            var rename = container.GetBlockBlobReference(tmp);
+
+                            writeTasks.Add(
+                                rename.UploadFromFileAsync(f,
+                                AccessCondition.GenerateIfNotExistsCondition(),
+                                new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
+                        }
+                        else
+                        {
+                            log.InfoFormat($"Saving File '{f}' as '{tmp}'");
+                            var b = container.GetBlockBlobReference(tmp);
+                            writeTasks.Add(
+                                b.UploadFromFileAsync(f,
+                                AccessCondition.GenerateIfNotExistsCondition(),
+                                new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
+                        }
                     }
                     catch (Exception e)
                     {
-                        log.Error("Unable to upload log file '" + f + "' to blob storage", e);
+                        log.ErrorFormat($"Unable to upload log file '{f}' to blob storage: {e.ToString()}");
                     }
                 });
+
+                await Task.WhenAll(writeTasks);
+                return true;
             }
             catch (Exception exe)
             {
                 log.Error("Unable to upload log files to blob storage", exe);
+                return false;
             }
         }
 
@@ -559,13 +608,13 @@ namespace SqlBuildManager.Console
 
         private static void GetPackageHash(CommandLineArgs cmdLine)
         {
-            if(string.IsNullOrWhiteSpace(cmdLine.PackageName))
+            if(string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.Error("No /PackageName was specified. This is required for /Action=GetHash");
                 System.Environment.Exit(626);
 
             }
-            string packageName = cmdLine.PackageName;
+            string packageName = cmdLine.BuildFileName;
             string hash = SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
             if (!String.IsNullOrEmpty(hash))
             {
@@ -580,13 +629,13 @@ namespace SqlBuildManager.Console
 
         private static void ExecutePolicyCheck(CommandLineArgs cmdLine)
         {
-            if (string.IsNullOrWhiteSpace(cmdLine.PackageName))
+            if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.Error("No /PackageName was specified. This is required for /Action=PolicyCheck");
                 System.Environment.Exit(34536);
 
             }
-            string packageName = cmdLine.PackageName;
+            string packageName = cmdLine.BuildFileName;
             PolicyHelper helper = new PolicyHelper();
             bool passed;
             List<string> policyMessages = helper.CommandLinePolicyCheck(packageName, out passed);

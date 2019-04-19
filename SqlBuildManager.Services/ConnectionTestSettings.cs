@@ -20,7 +20,7 @@ namespace SqlBuildManager.Services
             set;
         }
 
-        private AuthenticationType authenticationType = SqlSync.Connection.AuthenticationType.UserNamePassword;
+        private AuthenticationType authenticationType = SqlSync.Connection.AuthenticationType.Password;
         [DataMember(IsRequired = false)]
         public AuthenticationType AuthenticationType
         {

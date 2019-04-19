@@ -18,9 +18,9 @@ namespace SqlBuildManager.Console
             string error = string.Empty;
             errorMessages = new string[0];
 
-            if (cmdLine.AuthenticationType == AuthenticationType.AzureUserNamePassword || cmdLine.AuthenticationType == AuthenticationType.UserNamePassword)
+            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.AzureADPassword || cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.Password)
             {
-                if (string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+                if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
                     error = "The /UserName and /Password arguments are required when authentication type is set to Password or AzurePassword.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
@@ -30,9 +30,9 @@ namespace SqlBuildManager.Console
             }
 
             //Validate that if username or password is specified, then both are
-            if (!string.IsNullOrWhiteSpace(cmdLine.UserName) || !string.IsNullOrWhiteSpace(cmdLine.Password))
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
-                if(string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+                if(string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
                     error = "The /UserName and /Password arguments must be used together.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
@@ -41,7 +41,7 @@ namespace SqlBuildManager.Console
                 }
             }
 
-            if(cmdLine.SavedCreds)
+            if(cmdLine.AuthenticationArgs.SavedCreds)
             {
                 if(string.IsNullOrWhiteSpace(cmdLine.Server))
                 {
@@ -60,10 +60,10 @@ namespace SqlBuildManager.Console
                     var row = tmpTbl.Where(r => r.Name.Trim().ToLowerInvariant() == server);
                     if (row.Any())
                     {
-                        cmdLine.UserName = Cryptography.DecryptText(row.First().UserName, ConnectionHelper.ConnectCryptoKey);
-                        cmdLine.Password = Cryptography.DecryptText(row.First().Password, ConnectionHelper.ConnectCryptoKey);
+                        cmdLine.AuthenticationArgs.UserName = Cryptography.DecryptText(row.First().UserName, ConnectionHelper.ConnectCryptoKey);
+                        cmdLine.AuthenticationArgs.Password = Cryptography.DecryptText(row.First().Password, ConnectionHelper.ConnectCryptoKey);
                         found = true;
-                        log.InfoFormat("Saved credentials found. Server={2}: UserName={0} and Password={1}", cmdLine.UserName, "*".PadRight(cmdLine.Password.Length, '*'),server);
+                        log.InfoFormat("Saved credentials found. Server={2}: UserName={0} and Password={1}", cmdLine.AuthenticationArgs.UserName, "*".PadRight(cmdLine.AuthenticationArgs.Password.Length, '*'),server);
                     }
                 }
                 if(!found)
@@ -95,7 +95,7 @@ namespace SqlBuildManager.Console
             string error = string.Empty;
 
             //Validate and set the value for the root logging path
-            if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath) && cmdLine.Action.Trim().ToLower() != "batch")
+            if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
             {
                 string msg = "Invalid command line set. Missing /RootLoggingPath setting.";
                 log.Error(msg);
@@ -120,23 +120,23 @@ namespace SqlBuildManager.Console
                 return (int)ExecutionReturn.MissingOverrideFlag;
             }
 
-            if (!cmdLine.TestConnectivity)
+            if (cmdLine.RemoteArgs.TestConnectivity == false)
             {
                 //Validate and set the value for the build file name
                 if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName) && string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir)
-                    && string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac)
-                    && string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) && string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource))
+                    && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac)
+                    && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource))
                 {
-                    error = "Invalid command line set. Missing /PackageName or /PlatinumDacpac or /ScriptSrcDir setting.";
+                    error = "Invalid command line set. Missing /PackageName, /PlatinumDacpac, /ScriptSrcDir, or /PlatinumDbSource and /PlatinumServerSource settings.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
                     log.Error(error);
                     return (int)ExecutionReturn.MissingBuildFlag;
                 }
 
                 //If using Platinum DB source, make sure we have both DB and Server arguments
-                if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) || !string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource))
+                if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) || !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource))
                 {
-                    if (string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) || string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource))
+                    if (string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) || string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource))
                     {
                         error = "The /PlatinumDbSource and /PlatinumServerSource arguments must be used together";
                         errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
@@ -146,9 +146,9 @@ namespace SqlBuildManager.Console
                 }
 
                 //If using Platinum DB source, make sure we have a username and password as well
-                if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.PlatinumServerSource))
+                if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource))
                 {
-                    if (string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+                    if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                     {
                         error = "The /UserName and /Password arguments are required when using /PlatinumDbSource";
                         errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
@@ -167,9 +167,9 @@ namespace SqlBuildManager.Console
                 }
 
                 //Validate that the Platinum dacpac file exists if specified
-                if (!string.IsNullOrWhiteSpace(cmdLine.PlatinumDacpac) && !File.Exists(cmdLine.PlatinumDacpac))
+                if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac) && !File.Exists(cmdLine.DacPacArgs.PlatinumDacpac))
                 {
-                    error = "Missing Platinum dacpac file. The  Platinum dacpa specified: " + cmdLine.PlatinumDacpac + " could not be found";
+                    error = "Missing Platinum dacpac file. The  Platinum dacpa specified: " + cmdLine.DacPacArgs.PlatinumDacpac + " could not be found";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
                     log.Error(error);
                     return (int)ExecutionReturn.InvalidBuildFileNameValue;
@@ -220,7 +220,7 @@ namespace SqlBuildManager.Console
             {
    
                 if(string.IsNullOrWhiteSpace(cmdLine.Database) || string.IsNullOrWhiteSpace(cmdLine.Server) || 
-                    string.IsNullOrWhiteSpace(cmdLine.UserName) || string.IsNullOrWhiteSpace(cmdLine.Password))
+                    string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
                     error = "Invalid command line set. When the /Override setting specifies a SQL file, the following are also required:\r\n /Database, /Server - will be used as source to run scripts \r\n /Username, /Password - provide authentication to that database";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
@@ -277,9 +277,9 @@ namespace SqlBuildManager.Console
                         {
                             DatabaseName = cmdLine.Database,
                             SQLServerName = cmdLine.Server,
-                            UserId = cmdLine.UserName,
-                            Password = cmdLine.Password,
-                            AuthenticationType = cmdLine.AuthenticationType
+                            UserId = cmdLine.AuthenticationArgs.UserName,
+                            Password = cmdLine.AuthenticationArgs.Password,
+                            AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType
                         };
                         multiData = MultiDbHelper.CreateMultiDbConfigFromQuery(connData, File.ReadAllText(cmdLine.MultiDbRunConfigFileName), out message);
                     }
@@ -316,18 +316,18 @@ namespace SqlBuildManager.Console
         public static int ValidateAndLoadPlatinumDacpac(ref CommandLineArgs cmdLine, ref MultiDbData multiDb)
         {
             //DacPac settings validation
-            if (!String.IsNullOrEmpty(cmdLine.PlatinumDacpac))
+            if (!String.IsNullOrEmpty(cmdLine.DacPacArgs.PlatinumDacpac))
             {
-                if (!File.Exists(cmdLine.PlatinumDacpac))
+                if (!File.Exists(cmdLine.DacPacArgs.PlatinumDacpac))
                 {
-                    string err = String.Format("A Platinum Dacpac file was specified but could not be located at '{0}'", cmdLine.PlatinumDacpac);
+                    string err = String.Format("A Platinum Dacpac file was specified but could not be located at '{0}'", cmdLine.DacPacArgs.PlatinumDacpac);
                     log.Error(err);
                     return -729;
                 }
 
-                if (!String.IsNullOrEmpty(cmdLine.TargetDacpac) && !File.Exists(cmdLine.TargetDacpac))
+                if (!String.IsNullOrEmpty(cmdLine.DacPacArgs.TargetDacpac) && !File.Exists(cmdLine.DacPacArgs.TargetDacpac))
                 {
-                    string err = String.Format("A Target Dacpac file was specified but could not be located at '{0}'", cmdLine.TargetDacpac);
+                    string err = String.Format("A Target Dacpac file was specified but could not be located at '{0}'", cmdLine.DacPacArgs.TargetDacpac);
                     log.Error(err);
                     return -728;
                 }
@@ -335,9 +335,9 @@ namespace SqlBuildManager.Console
 
 
             //If there are Dacpac settings... we will need to create the SBM automatically..
-            if (!string.IsNullOrEmpty(cmdLine.PlatinumDacpac) && string.IsNullOrEmpty(cmdLine.BuildFileName))
+            if (!string.IsNullOrEmpty(cmdLine.DacPacArgs.PlatinumDacpac) && string.IsNullOrEmpty(cmdLine.BuildFileName))
             {
-                if (cmdLine.ForceCustomDacPac == false)
+                if (cmdLine.DacPacArgs.ForceCustomDacPac == false)
                 {
                     string sbmName;
                     var stat = DacPacHelper.GetSbmFromDacPac(cmdLine, multiDb, out sbmName);
@@ -369,33 +369,33 @@ namespace SqlBuildManager.Console
         {
             int returnVal = 0;
             List<string> messages = new List<string>();
-            if (String.IsNullOrEmpty(cmdLine.BatchAccountName))
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
             {
                 messages.Add("BatchAccountName is required in command line or app settings");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchAccountKey))
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
             {
                 messages.Add("BatchAccountKey is required in command line or app settings");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchAccountUrl))
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
             {
                 messages.Add("BatchAccountUrl is required in command line or app settings");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.StorageAccountName))
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountName))
             {
                 messages.Add("StorageAccountName is required in command line or app settings");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.StorageAccountKey))
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountKey))
             {
                 messages.Add("StorageAccountKey is required in command line or app settings");
                 returnVal = -888;
             }
 
-            if (String.IsNullOrEmpty(cmdLine.BatchVmSize))
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
             {
                 messages.Add("BatchVmSize is required in command line or app settings");
                 returnVal = -888;

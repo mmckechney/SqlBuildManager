@@ -82,15 +82,15 @@ namespace SqlSync.SqlBuild
         }
         private void ddAuthentication_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureUserNamePassword.GetDescription()
-                || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.UserNamePassword.GetDescription())
+            if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureADPassword.GetDescription()
+                || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.Password.GetDescription())
             {
 
                 txtPassword.Enabled = true;
                 txtUserName.Enabled = true;
             }
-            else if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureActiveDirectory.GetDescription()
-                 || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.WindowsAuthentication.GetDescription())
+            else if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureADIntegrated.GetDescription()
+                 || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.Windows.GetDescription())
             {
                 txtPassword.Enabled = false;
                 txtUserName.Enabled = false;
@@ -118,19 +118,19 @@ namespace SqlSync.SqlBuild
                     sb.Append("/LogAsText=\"true\" ");
             }
 
-            if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.UserNamePassword.GetDescription())
+            if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.Password.GetDescription())
             {
                 sb.Append("/AuthType=Password");
             }
-            else if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.AzureActiveDirectory.GetDescription())
+            else if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.AzureADIntegrated.GetDescription())
             {
                 sb.Append("/AuthType=AzureADIntegrated");
             }
-            else if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.AzureUserNamePassword.GetDescription())
+            else if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.AzureADPassword.GetDescription())
             {
                 sb.Append("/AuthType=AzureADPassword");
             }
-            else if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.WindowsAuthentication.GetDescription())
+            else if (ddAuthentication.SelectedItem.ToString() == AuthenticationType.Windows.GetDescription())
             {
                 sb.Append("/AuthType=Windows");
             }

@@ -1,7 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
   <Version Major="10" Minor="4" Revision="1">
-    <updated>Optimized Azure Batch </updated>
+    <updated>Updated Azure Batch to better handle pools, jobs and log file storage as well as job naming</updated>
+    <updated>Refactored command line handling to clarify components</updated>
     <fixed>Cleaned up unit tests</fixed>
   </Version>
   <Version Major="10" Minor="4" Revision="0">

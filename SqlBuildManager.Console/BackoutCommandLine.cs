@@ -15,11 +15,11 @@ namespace SqlBuildManager.Console
         internal static string CreateBackoutPackage(CommandLineArgs cmdLine)
         {
             
-            if(string.IsNullOrWhiteSpace(cmdLine.PackageName))
+            if(string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.Error("/PackageName argument is required when creating a backout package");
             }
-            string sourcePackageName = cmdLine.PackageName;
+            string sourcePackageName = cmdLine.BuildFileName;
             if (cmdLine.Server.Length == 0 || cmdLine.Database.Length == 0)
             {
                 log.Error("/server and /database arguments are required when creating a backout package");
@@ -27,18 +27,18 @@ namespace SqlBuildManager.Console
             }
 
             ConnectionData connectionData = new ConnectionData(cmdLine.Server,cmdLine.Database);
-            if (cmdLine.Password.Length > 0)
-                connectionData.Password = cmdLine.Password;
-            if (cmdLine.UserName.Length > 0)
-                connectionData.UserId = cmdLine.UserName;
+            if (cmdLine.AuthenticationArgs.Password.Length > 0)
+                connectionData.Password = cmdLine.AuthenticationArgs.Password;
+            if (cmdLine.AuthenticationArgs.UserName.Length > 0)
+                connectionData.UserId = cmdLine.AuthenticationArgs.UserName;
 
             if (connectionData.UserId.Length > 0 && connectionData.Password.Length > 0)
             {
-                connectionData.AuthenticationType = AuthenticationType.UserNamePassword;
+                connectionData.AuthenticationType = AuthenticationType.Password;
             }
             else
             {
-                connectionData.AuthenticationType = AuthenticationType.WindowsAuthentication;
+                connectionData.AuthenticationType = AuthenticationType.Windows;
             }
 
             return SqlSync.ObjectScript.BackoutPackage.CreateDefaultBackoutPackage(connectionData, sourcePackageName, cmdLine.Server, cmdLine.Database);

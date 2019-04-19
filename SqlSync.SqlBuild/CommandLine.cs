@@ -17,49 +17,47 @@ namespace SqlSync.SqlBuild
         public static CommandLineArgs ParseCommandLineArg(string[] args)
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.RawArguments = args;
 
             StringDictionary dict = Arguments.ParseArguments(args);
             if(dict.ContainsKey("action"))
             {
-                cmdLine.Action = dict["action"].ToLowerInvariant();
+                try
+                {
+                    var actionType = (CommandLineArgs.ActionType)Enum.Parse(typeof(CommandLineArgs.ActionType), dict["action"].ToString(), true);
+                    cmdLine.Action = actionType;
+                }catch
+                {
+                    cmdLine.Action = CommandLineArgs.ActionType.Error;
+                }
             }
 
             switch (cmdLine.Action)
             {
-                case "remote":
+                case CommandLineArgs.ActionType.Remote:
                     if (dict.ContainsKey("remoteservers"))
                     {
-                        cmdLine.RemoteServers = dict["remoteservers"];
+                        cmdLine.RemoteArgs.RemoteServers = dict["remoteservers"];
                     }
                     if (dict.ContainsKey("distributiontype"))
                     {
-                        cmdLine.DistributionType = dict["distributiontype"];
+                        cmdLine.RemoteArgs.DistributionType = dict["distributiontype"];
                     }
                     break;
-                case "threaded":
-                    
+                case CommandLineArgs.ActionType.Threaded:
                     break;
-                case "package":
-                    
+                case CommandLineArgs.ActionType.Package:
                     break;
-                case "policycheck":
-                    
+                case CommandLineArgs.ActionType.PolicyCheck:
                     break;
-                case "gethash":
-                    
+                case CommandLineArgs.ActionType.GetHash:
                     break;
-                case "createbackout":
-                    
+                case CommandLineArgs.ActionType.CreateBackout:
                     break;
-                case "getdifference":
-                    cmdLine.GetDifference = true;
+                case CommandLineArgs.ActionType.GetDifference:
                     break;
-                case "synchronize":
-                    cmdLine.Synchronize = true;
+                case CommandLineArgs.ActionType.Synchronize:
                     break;
-                case "build":
-                    cmdLine.BuildDesignated = true;
+                case CommandLineArgs.ActionType.Build:
                     cmdLine.BuildFileName = dict["packagename"];
                     break;
                 default:
@@ -79,8 +77,8 @@ namespace SqlSync.SqlBuild
 
             if (dict.ContainsKey("auto"))
             {
-                cmdLine.AutoScriptDesignated = true;
-                cmdLine.AutoScriptFileName = dict["auto"];
+                cmdLine.AutoScriptingArgs.AutoScriptDesignated = true;
+                cmdLine.AutoScriptingArgs.AutoScriptFileName = dict["auto"];
             }
 
             if (dict.ContainsKey("server"))
@@ -91,8 +89,8 @@ namespace SqlSync.SqlBuild
 
             if (dict.ContainsKey("test"))
             {
-                cmdLine.SprocTestDesignated = true;
-                cmdLine.SpTestFile = dict["test"];
+                cmdLine.StoredProcTestingArgs.SprocTestDesignated = true;
+                cmdLine.StoredProcTestingArgs.SpTestFile = dict["test"];
             }
 
             if (dict.ContainsKey("database"))
@@ -120,10 +118,10 @@ namespace SqlSync.SqlBuild
                 cmdLine.ScriptSrcDir = dict["scriptsrcdir"];
 
             if (dict.ContainsKey("username"))
-                cmdLine.UserName = dict["username"];
+                cmdLine.AuthenticationArgs.UserName = dict["username"];
 
             if (dict.ContainsKey("password"))
-                cmdLine.Password = dict["password"];
+                cmdLine.AuthenticationArgs.Password = dict["password"];
 
             if (dict.ContainsKey("logtodatabasename"))
                 cmdLine.LogToDatabaseName = dict["logtodatabasename"];
@@ -133,7 +131,6 @@ namespace SqlSync.SqlBuild
 
             if (dict.ContainsKey("packagename"))
             {
-                cmdLine.PackageName = dict["packagename"];
                 cmdLine.BuildFileName = dict["packagename"];
             }
 
@@ -154,100 +151,112 @@ namespace SqlSync.SqlBuild
             }
 
             if (dict.ContainsKey("golddatabase"))
-                cmdLine.GoldDatabase = dict["golddatabase"];
+                cmdLine.SynchronizeArgs.GoldDatabase = dict["golddatabase"];
 
 
             if (dict.ContainsKey("goldserver"))
-                cmdLine.GoldServer = dict["goldserver"];
+                cmdLine.SynchronizeArgs.GoldServer = dict["goldserver"];
 
             bool cont;
             if (dict.ContainsKey("continueonfailure") && Boolean.TryParse(dict["continueonfailure"], out cont))
                 cmdLine.ContinueOnFailure = cont;
 
             if (dict.ContainsKey("platinumdacpac"))
-                cmdLine.PlatinumDacpac = dict["platinumdacpac"];
+                cmdLine.DacPacArgs.PlatinumDacpac = dict["platinumdacpac"];
 
             if (dict.ContainsKey("targetdacpac"))
-                cmdLine.TargetDacpac = dict["targetdacpac"];
+                cmdLine.DacPacArgs.TargetDacpac = dict["targetdacpac"];
 
             bool forceCustom;
             if (dict.ContainsKey("forcecustomdacpac") && Boolean.TryParse(dict["forcecustomdacpac"], out forceCustom))
-                cmdLine.ForceCustomDacPac = forceCustom;
+                cmdLine.DacPacArgs.ForceCustomDacPac = forceCustom;
 
             if (dict.ContainsKey("platinumdbsource"))
-                cmdLine.PlatinumDbSource = dict["platinumdbsource"];
+                cmdLine.DacPacArgs.PlatinumDbSource = dict["platinumdbsource"];
 
             if (dict.ContainsKey("platinumserversource"))
-                cmdLine.PlatinumServerSource = dict["platinumserversource"];
+                cmdLine.DacPacArgs.PlatinumServerSource = dict["platinumserversource"];
 
             if (dict.ContainsKey("buildrevision"))
                 cmdLine.BuildRevision = dict["buildrevision"];
 
             if (dict.ContainsKey("remotedberrorlist"))
-                cmdLine.RemoteDbErrorList = dict["remotedberrorlist"];
+                cmdLine.RemoteArgs.RemoteDbErrorList = dict["remotedberrorlist"];
 
             if (dict.ContainsKey("remoteerrordetail"))
-                cmdLine.RemoteErrorDetail = dict["remoteerrordetail"];
+                cmdLine.RemoteArgs.RemoteErrorDetail = dict["remoteerrordetail"];
 
             if (dict.ContainsKey("outputsbm"))
                 cmdLine.OutputSbm = dict["outputsbm"];
 
             if (dict.ContainsKey("savedcreds"))
-                cmdLine.SavedCreds = true;
+                cmdLine.AuthenticationArgs.SavedCreds = true;
 
             if (dict.ContainsKey("testconnectivity"))
-                cmdLine.TestConnectivity = true;
+                cmdLine.RemoteArgs.TestConnectivity = true;
 
-            if(dict.ContainsKey("outputcontainersasurl"))
-                cmdLine.OutputContainerSasUrl = dict["outputcontainersasurl"];
+            if (dict.ContainsKey("azureremotestatus"))
+                cmdLine.RemoteArgs.AzureRemoteStatus = true;
+
+            if (dict.ContainsKey("outputcontainersasurl"))
+                cmdLine.BatchArgs.OutputContainerSasUrl = dict["outputcontainersasurl"];
 
             bool del;
             if (dict.ContainsKey("deletebatchpool") && Boolean.TryParse(dict["deletebatchpool"], out del))
             {
-                cmdLine.DeleteBatchPool = del;
+                cmdLine.BatchArgs.DeleteBatchPool = del;
+            }
+            bool delJob;
+            if (dict.ContainsKey("deletebatchjob") && Boolean.TryParse(dict["deletebatchjob"], out delJob))
+            {
+                cmdLine.BatchArgs.DeleteBatchJob = delJob;
             }
 
             int node;
             if (dict.ContainsKey("batchnodecount") && Int32.TryParse(dict["batchnodecount"], out node))
             {
-                cmdLine.BatchNodeCount = node;
+                cmdLine.BatchArgs.BatchNodeCount = node;
             }
 
-            if (dict.ContainsKey("batchaccountname"))
-                cmdLine.BatchAccountName = dict["batchaccountname"];
+            
+            if (dict.ContainsKey("batchjobname"))
+                cmdLine.BatchArgs.BatchJobName = dict["batchjobname"];
 
-            if (String.IsNullOrEmpty(cmdLine.BatchAccountName))
-                cmdLine.BatchAccountName = ConfigurationManager.AppSettings["BatchAccountName"];
+            if (dict.ContainsKey("batchaccountname"))
+                cmdLine.BatchArgs.BatchAccountName = dict["batchaccountname"];
+
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
+                cmdLine.BatchArgs.BatchAccountName = ConfigurationManager.AppSettings["BatchAccountName"];
 
             if (dict.ContainsKey("batchaccountkey"))
-                cmdLine.BatchAccountKey = dict["batchaccountkey"];
+                cmdLine.BatchArgs.BatchAccountKey = dict["batchaccountkey"];
 
-            if (String.IsNullOrEmpty(cmdLine.BatchAccountKey))
-                cmdLine.BatchAccountKey = ConfigurationManager.AppSettings["BatchAccountKey"];
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
+                cmdLine.BatchArgs.BatchAccountKey = ConfigurationManager.AppSettings["BatchAccountKey"];
 
             if (dict.ContainsKey("batchaccounturl"))
-                cmdLine.BatchAccountUrl = dict["batchaccounturl"];
+                cmdLine.BatchArgs.BatchAccountUrl = dict["batchaccounturl"];
 
-            if (String.IsNullOrEmpty(cmdLine.BatchAccountUrl))
-                cmdLine.BatchAccountUrl = ConfigurationManager.AppSettings["BatchAccountUrl"];
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
+                cmdLine.BatchArgs.BatchAccountUrl = ConfigurationManager.AppSettings["BatchAccountUrl"];
 
             if (dict.ContainsKey("storageaccountname"))
-                cmdLine.StorageAccountName = dict["storageaccountname"];
+                cmdLine.BatchArgs.StorageAccountName = dict["storageaccountname"];
 
-            if (String.IsNullOrEmpty(cmdLine.StorageAccountName))
-                cmdLine.StorageAccountName = ConfigurationManager.AppSettings["StorageAccountName"];
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountName))
+                cmdLine.BatchArgs.StorageAccountName = ConfigurationManager.AppSettings["StorageAccountName"];
 
             if (dict.ContainsKey("storageaccountkey"))
-                cmdLine.StorageAccountKey = dict["storageaccountkey"];
+                cmdLine.BatchArgs.StorageAccountKey = dict["storageaccountkey"];
 
-            if (String.IsNullOrEmpty(cmdLine.StorageAccountKey))
-                cmdLine.StorageAccountKey = ConfigurationManager.AppSettings["StorageAccountKey"];
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountKey))
+                cmdLine.BatchArgs.StorageAccountKey = ConfigurationManager.AppSettings["StorageAccountKey"];
 
             if (dict.ContainsKey("batchvmsize"))
-                cmdLine.BatchVmSize = dict["batchvmsize"];
+                cmdLine.BatchArgs.BatchVmSize = dict["batchvmsize"];
 
-            if (String.IsNullOrEmpty(cmdLine.BatchVmSize))
-                cmdLine.BatchVmSize = ConfigurationManager.AppSettings["BatchVmSize"];
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
+                cmdLine.BatchArgs.BatchVmSize = ConfigurationManager.AppSettings["BatchVmSize"];
 
 
 
@@ -258,29 +267,29 @@ namespace SqlSync.SqlBuild
                 switch(dict["authtype"].ToLower())
                 {
                     case "windows":
-                        cmdLine.AuthenticationType = Connection.AuthenticationType.WindowsAuthentication;
+                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.Windows;
                         break;
                     case "azureadintegrated":
-                        cmdLine.AuthenticationType = Connection.AuthenticationType.AzureActiveDirectory;
+                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.AzureADIntegrated;
                         break;
                     case "azureadpassword":
-                        cmdLine.AuthenticationType = Connection.AuthenticationType.AzureUserNamePassword;
+                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.AzureADPassword;
                         break;
                     case "password":
                     default:
-                        cmdLine.AuthenticationType = Connection.AuthenticationType.UserNamePassword;
+                        cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.Password;
                         break;
                 }
             }
             else
             {
-                if(!string.IsNullOrWhiteSpace(cmdLine.Password) && !string.IsNullOrWhiteSpace(cmdLine.UserName))
+                if(!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password) && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
                 {
-                    cmdLine.AuthenticationType = Connection.AuthenticationType.UserNamePassword;
+                    cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.Password;
                 }
                 else
                 {
-                    cmdLine.AuthenticationType = Connection.AuthenticationType.WindowsAuthentication;
+                    cmdLine.AuthenticationArgs.AuthenticationType = Connection.AuthenticationType.Windows;
                 }
             }
             

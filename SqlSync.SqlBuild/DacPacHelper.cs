@@ -102,7 +102,7 @@ namespace SqlSync.SqlBuild
                         return cleanStatus;
                 }
 
-                string baseFileName = path + string.Format("{0} to {1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
+                string baseFileName = path + string.Format("{0}_to_{1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
                 
                 List<string> files = new List<string>();
                 if (batchScripts)
@@ -341,7 +341,7 @@ namespace SqlSync.SqlBuild
                 stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, false, buildRevision, out sbmName);
             }
 
-            if (stat == DacpacDeltasStatus.Processing)
+            if (stat == DacpacDeltasStatus.Processing && multiDb != null)
             {
                 foreach (var serv in multiDb)
                 {
@@ -410,24 +410,24 @@ namespace SqlSync.SqlBuild
             {
                 //if we are getting the list from a SQL statement, then the database and server settings mean something different! Dont pass them in.
                  return GetSbmFromDacPac(cmd.RootLoggingPath,
-                    cmd.PlatinumDacpac,
-                    cmd.TargetDacpac,
+                    cmd.DacPacArgs.PlatinumDacpac,
+                    cmd.DacPacArgs.TargetDacpac,
                     string.Empty,
                     string.Empty,
-                    cmd.UserName,
-                    cmd.Password,
+                    cmd.AuthenticationArgs.UserName,
+                    cmd.AuthenticationArgs.Password,
                     cmd.BuildRevision,
                     multiDb, out sbmName);
             }
             else
             {
                 return GetSbmFromDacPac(cmd.RootLoggingPath,
-                    cmd.PlatinumDacpac,
-                    cmd.TargetDacpac,
+                    cmd.DacPacArgs.PlatinumDacpac,
+                    cmd.DacPacArgs.TargetDacpac,
                     cmd.Database,
                     cmd.Server,
-                    cmd.UserName,
-                    cmd.Password,
+                    cmd.AuthenticationArgs.UserName,
+                    cmd.AuthenticationArgs.Password,
                     cmd.BuildRevision,
                     multiDb, out sbmName);
             }

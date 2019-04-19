@@ -415,7 +415,7 @@ namespace SqlSync.SqlBuild
             this.buildZipFileName = buildZipFileName;
             this.connData = new ConnectionData();
             this.connData.SQLServerName = serverName;
-            this.connData.AuthenticationType = AuthenticationType.WindowsAuthentication;
+            this.connData.AuthenticationType = AuthenticationType.Windows;
 
             if (scriptLogFileName.Length > 0)
             {
@@ -448,7 +448,7 @@ namespace SqlSync.SqlBuild
             
             this.runningUnattended = true;
             this.connData = new ConnectionData(); //initialize, but don't need to populate it...
-            this.connData.AuthenticationType = AuthenticationType.WindowsAuthentication;
+            this.connData.AuthenticationType = AuthenticationType.Windows;
         }
         private void SqlBuildForm_Load(object sender, System.EventArgs e)
         {

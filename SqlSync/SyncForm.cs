@@ -95,7 +95,7 @@ namespace SqlSync
 			this.connData.SQLServerName = server;
 			this.connData.Password = password;
 			this.connData.UserId = userid;
-            this.connData.AuthenticationType = AuthenticationType.UserNamePassword;
+            this.connData.AuthenticationType = AuthenticationType.Password;
 			this.connData.StartingDirectory = destinationDirectory;
 
 			//Set the messagebox

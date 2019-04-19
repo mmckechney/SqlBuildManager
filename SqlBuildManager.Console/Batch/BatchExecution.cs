@@ -11,13 +11,15 @@ using System.Linq;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using System.Text;
+using SqlBuildManager.Interfaces.Console;
+using System.Text.RegularExpressions;
 
 namespace SqlBuildManager.Console.Batch
 {
     public class Execution
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private string[] args;
+        private CommandLineArgs cmdLine;
 
         // Batch resource settings
         private const string PoolIdFormat = "SqlBuildManagerPool";
@@ -25,24 +27,40 @@ namespace SqlBuildManager.Console.Batch
 
         private const string baseTargetFormat = "target_{0}.cfg";
 
-        public Execution(string[] args)
+        public Execution(CommandLineArgs cmdLine)
         {
-            this.args = args;
+            this.cmdLine = cmdLine;
         }
 
         public int StartBatch()
         {
+            string jobId, poolId, inputContainerName, outputContainerName;
+            string jobToken = DateTime.Now.ToString("yyyy-MM-dd-HHmm");
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
+            {
+                cmdLine.BatchArgs.BatchJobName  = Regex.Replace(cmdLine.BatchArgs.BatchJobName, "[^a-zA-Z0-9]", "");
+                cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.ToLower();
+                if(cmdLine.BatchArgs.BatchJobName.Length > 47)
+                {
+                    cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.Substring(0, 47);
+                }
+                jobId = cmdLine.BatchArgs.BatchJobName + "-" + jobToken;
+                poolId = PoolIdFormat;
+                inputContainerName = cmdLine.BatchArgs.BatchJobName;
+                outputContainerName = cmdLine.BatchArgs.BatchJobName;
+            }
+            else
+            {
+                jobId = string.Format(JobIdFormat, jobToken);
+                poolId = PoolIdFormat;
+                inputContainerName = jobToken;
+                outputContainerName = jobToken;
+            }
 
-            string jobToken = DateTime.Now.ToString("yyyyMMddHHmm");
-            string jobId = string.Format(JobIdFormat, jobToken);
-            string poolId = PoolIdFormat;
-            string inputContainerName = jobToken + "-input";
-            string outputContainerName = jobToken + "-output";
             int? myExitCode = 0;
 
 
             log.Info("Validating general command parameters");
-            CommandLineArgs cmdLine = CommandLine.ParseCommandLineArg(args);
             string[] errorMessages;
             int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             if (tmpReturn != 0)
@@ -65,10 +83,28 @@ namespace SqlBuildManager.Console.Batch
                 return tmpReturn;
             }
 
-            tmpReturn = BatchCommandValidation.ValidateBatchCommandLine(cmdLine);
-            if (tmpReturn != 0)
+            //if extracting scripts from a platinum copy.. create the DACPAC here
+            if(!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource)) //using a platinum database as the source
             {
-                return tmpReturn;
+                log.InfoFormat("Extracting Platinum Dacpac from {0} : {1}", cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.DacPacArgs.PlatinumDbSource);
+                string dacpacName = Path.Combine(cmdLine.RootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
+
+                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
+                {
+                    log.ErrorFormat("Error creating the Platinum dacpac from {0} : {1}", cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.DacPacArgs.PlatinumDbSource);
+                }
+                cmdLine.DacPacArgs.PlatinumDacpac = dacpacName;
+            }
+            //Check for the platinum dacpac and configure it if necessary
+            var tmp = new MultiDbData();
+            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref tmp);
+            if (tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
+            {
+                return (int)ExecutionReturn.DacpacDatabasesInSync;
+            }
+            else if (tmpReturn != 0)
+            {
+                return tmpValReturn;
             }
 
             BatchClient batchClient = null;
@@ -80,7 +116,7 @@ namespace SqlBuildManager.Console.Batch
                 timer.Start();
 
                 //Get storage ready
-                CloudBlobClient blobClient = CreateStorageAndGetBlobClient(cmdLine.StorageAccountName, cmdLine.StorageAccountKey, inputContainerName);
+                CloudBlobClient blobClient = CreateStorageAndGetBlobClient(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey, inputContainerName);
                 string containerSasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, false);
                 if (log.IsDebugEnabled)
                 {
@@ -89,22 +125,22 @@ namespace SqlBuildManager.Console.Batch
 
 
                 // Get a Batch client using account creds, and create the pool
-                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchAccountUrl, cmdLine.BatchAccountName, cmdLine.BatchAccountKey);
+                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchArgs.BatchAccountUrl, cmdLine.BatchArgs.BatchAccountName, cmdLine.BatchArgs.BatchAccountKey);
                 batchClient = BatchClient.Open(cred);
 
                 // Create a Batch pool, VM configuration, Windows Server image
-                bool success = CreateBatchPool(batchClient, poolId, cmdLine.BatchNodeCount, cmdLine.BatchVmSize);
+                bool success = CreateBatchPool(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize);
 
 
                 // The collection of data files that are to be processed by the tasks
                 List<string> inputFilePaths = new List<string>();
-                if (!string.IsNullOrEmpty(cmdLine.PlatinumDacpac))
+                if (!string.IsNullOrEmpty(cmdLine.DacPacArgs.PlatinumDacpac))
                 {
-                    inputFilePaths.Add(cmdLine.PlatinumDacpac);
+                    inputFilePaths.Add(cmdLine.DacPacArgs.PlatinumDacpac);
                 }
-                if (!string.IsNullOrEmpty(cmdLine.PackageName))
+                if (!string.IsNullOrEmpty(cmdLine.BuildFileName))
                 {
-                    inputFilePaths.Add(cmdLine.PackageName);
+                    inputFilePaths.Add(cmdLine.BuildFileName);
                 }
                 if (!string.IsNullOrEmpty(cmdLine.MultiDbRunConfigFileName))
                 {
@@ -113,11 +149,11 @@ namespace SqlBuildManager.Console.Batch
 
                 //Get the list of DB targets and distribute across batch count
                 var allTargets = GetTargetConfigValues(cmdLine.MultiDbRunConfigFileName);
-                var splitTargets = SplitLoadEvenly(allTargets, cmdLine.BatchNodeCount);
-                if (splitTargets.Count < cmdLine.BatchNodeCount)
+                var splitTargets = SplitLoadEvenly(allTargets, cmdLine.BatchArgs.BatchNodeCount);
+                if (splitTargets.Count < cmdLine.BatchArgs.BatchNodeCount)
                 {
-                    log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.BatchNodeCount);
-                    cmdLine.BatchNodeCount = splitTargets.Count;
+                    log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.BatchArgs.BatchNodeCount);
+                    cmdLine.BatchArgs.BatchNodeCount = splitTargets.Count;
                 }
 
 
@@ -125,7 +161,7 @@ namespace SqlBuildManager.Console.Batch
                 string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
                 for (int i = 0; i < splitTargets.Count; i++)
                 {
-                    var tmpName = rootPath + string.Format(baseTargetFormat, i);
+                    var tmpName = Path.Combine(rootPath,string.Format(baseTargetFormat, i));
                     File.WriteAllLines(tmpName, splitTargets[i]);
                     inputFilePaths.Add(tmpName);
                 }
@@ -140,7 +176,7 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(args, cmdLine, inputFiles, containerSasToken, cmdLine.BatchNodeCount, jobId);
+                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId);
                 foreach (var s in commandLines)
                     log.Debug(s);
 
@@ -186,7 +222,7 @@ namespace SqlBuildManager.Console.Batch
                     task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
-                                filePattern: cmdLine.RootLoggingPath + @"\SqlBuildManager.Console.Execution.log",
+                                filePattern: @"..\std*.txt",
                                 destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
                         };
@@ -218,13 +254,17 @@ namespace SqlBuildManager.Console.Batch
                     log.InfoFormat("Task: {0}", task.Id);
                     log.InfoFormat("Node: {0}", nodeId);
                     log.InfoFormat("Exit Code: {0}", task.ExecutionInformation.ExitCode);
-                    log.InfoFormat("Standard out:");
-                    log.InfoFormat(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
+                    if (log.IsDebugEnabled)
+                    {
+                        log.DebugFormat("Standard out:");
+                        log.DebugFormat(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
+                    }
                     if (task.ExecutionInformation.ExitCode != 0)
                     {
                         myExitCode = task.ExecutionInformation.ExitCode;
                     }
                 }
+                log.Info("---------------------------------");
 
                 // Print out some timing info
                 timer.Stop();
@@ -232,16 +272,28 @@ namespace SqlBuildManager.Console.Batch
                 log.InfoFormat("Elapsed time: {0}", timer.Elapsed);
 
                 // Clean up Batch resources
-                batchClient.JobOperations.DeleteJob(jobId);
-                if (cmdLine.DeleteBatchPool)
+                if (cmdLine.BatchArgs.DeleteBatchJob)
+                {
+                    batchClient.JobOperations.DeleteJob(jobId);
+                }
+                if (cmdLine.BatchArgs.DeleteBatchPool)
                 {
                     batchClient.PoolOperations.DeletePool(poolId);
                 }
 
+                log.Info("Consolidating log files");
+                ConsolidateLogFiles(blobClient, outputContainerName, inputFilePaths);
+
                 string readOnlySasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, true);
                 log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
-                log.Info("The read-only SAS token URL is valid for 7 days. See https://azure.microsoft.com/en-us/features/storage-explorer/ to downoad Azure Storage Explorer");
+                log.Info("The read-only SAS token URL is valid for 7 days.");
+                log.Info("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
+                log.Info("You can also get details on your Azure Batch execution from the \"Azure Batch Explorer\" found here: https://azure.github.io/BatchExplorer/");
 
+            }
+            catch(Exception exe)
+            {
+                log.ErrorFormat($"Exception when running batch job\r\n{exe.ToString()}");
             }
             finally
             {
@@ -264,6 +316,53 @@ namespace SqlBuildManager.Console.Batch
             }
 
         }
+
+        private void ConsolidateLogFiles(CloudBlobClient blobClient, string outputContainerName, List<string> workerFiles)
+        {
+            workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql","execution.log" });
+            var container = blobClient.GetContainerReference(outputContainerName);
+            var blobs = container.ListBlobs();
+
+            //Move worker files to "Working" directory
+            foreach (var blob in blobs)
+            {
+                if (blob is CloudBlockBlob)
+                {
+                    var sourceBlob = (CloudBlockBlob)blob;
+                    if (workerFiles.Any(a => blob.Uri.ToString().ToLower().EndsWith(a.ToLower())))
+                    {
+                        var destBlob = container.GetBlockBlobReference("Working/" + sourceBlob.Name);
+                        using (var stream = sourceBlob.OpenRead())
+                        {
+                            destBlob.UploadFromStream(stream);
+                        }
+                        sourceBlob.Delete();
+                    }
+
+                    foreach (string append in Program.AppendLogFiles)
+                    {
+                        if (sourceBlob.Uri.ToString().ToLower().EndsWith(append.ToLower()))
+                        {
+                            var destinationBlob = container.GetAppendBlobReference(append);
+                            try
+                            {
+                                destinationBlob.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition(), null, null);
+                            }
+                            catch { }
+                            
+
+                            using (var stream = sourceBlob.OpenRead())
+                            {
+                                destinationBlob.AppendFromStream(stream);
+                            }
+                            sourceBlob.Delete();
+                        }
+                    }
+                }
+            }
+
+        }
+        
 
         private bool CreateBatchPool(BatchClient batchClient, string poolId, int nodeCount, string vmSize)
         {
@@ -346,51 +445,49 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        private IList<string> CompileCommandLines(string[] args, CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount,  string jobId)
+        private IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount,  string jobId)
         {
-            var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
+           // var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
 
             List<string> commandLines = new List<string>();
             //Need to replace the paths to 
             for (int i=0; i< poolNodeCount; i++)
             {
-                StringBuilder sb = new StringBuilder("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe");
-                foreach(var arg in args)
+
+                var threadCmdLine = cmdLine.DeepClone<CommandLineArgs>();
+                threadCmdLine.Action = CommandLineArgs.ActionType.Threaded; // set action to threaded
+
+                //Set package name to the path on the node (if set)
+                if (!string.IsNullOrWhiteSpace(threadCmdLine.BuildFileName))
                 {
-                    if (arg.ToLower().Contains("/action"))
-                    {
-                        sb.Append(" /Action=Threaded");
-                    }
-                    else if (arg.ToLower().Contains("/packagename"))
-                    {
-                        var pkg = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PackageName.ToLower()))).FirstOrDefault();
-                        sb.Append(" /PackageName=\"" + pkg.FilePath + "\"");
-                    }
-                    else if (arg.ToLower().Contains("/platinumdacpac"))
-                    {
-                        var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.PlatinumDacpac.ToLower()))).FirstOrDefault();
-                        sb.Append(" /PlatinumDacpac=\"" + dac.FilePath + "\"");
-                    }
-                    else if (arg.ToLower().Contains("/rootloggingpath"))
-                    {
-                        //sb.Append(" /RootLoggingPath=\"D:\\runlogs\\\"");
-                        //cmdLine.RootLoggingPath = @"D:\runlogs\";
-                        sb.AppendFormat(" /RootLoggingPath=D:\\{0}", jobId);
-                        cmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
-                    }
-                    else if (arg.ToLower().Contains("/override"))
-                    {
-                        var tmp = string.Format(baseTargetFormat, i);
-                        var tar = inputFiles.Where(x => x.FilePath.ToLower().Contains(tmp.ToLower())).FirstOrDefault();
-                        sb.Append(" /Override=" + tar.FilePath);
-                    }
-                    else
-                    {
-                        sb.Append(" " + arg);
-                    }
+                    var pkg = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.BuildFileName.ToLower()))).FirstOrDefault();
+                    threadCmdLine.BuildFileName = pkg.FilePath;
                 }
 
-                sb.Append(" /OutputContainerSasUrl=\"" + containerSasToken + "\"");
+                //Set the DacPac name to the path on the node (if set)
+                if (!string.IsNullOrWhiteSpace(threadCmdLine.DacPacArgs.PlatinumDacpac))
+                {
+                    var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac.ToLower()))).FirstOrDefault();
+                    threadCmdLine.DacPacArgs.PlatinumDacpac = dac.FilePath;
+                }
+
+                //Set root logging path to the jobId
+                threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
+
+                //set logging to text only
+                threadCmdLine.LogAsText = true;
+
+                //Set the override file for this node.
+                var tmp = string.Format(baseTargetFormat, i);
+                var target = inputFiles.Where(x => x.FilePath.ToLower().Contains(tmp.ToLower())).FirstOrDefault();
+                threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
+
+                //Set set the Sas URL
+                threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
+
+                StringBuilder sb = new StringBuilder("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe ");
+                sb.Append(threadCmdLine.ToString());
+
                 commandLines.Add(sb.ToString());
             }
 

@@ -109,7 +109,7 @@ namespace SqlSync.SqlBuild
                     }
                     else
                     {
-                        return AuthenticationType.UserNamePassword;
+                        return AuthenticationType.Password;
                     }
 
                 }
@@ -117,7 +117,7 @@ namespace SqlSync.SqlBuild
 
             password = string.Empty;
             username = string.Empty;
-            return AuthenticationType.UserNamePassword;
+            return AuthenticationType.Password;
         }
 
         private static string defaultBrowser = string.Empty;

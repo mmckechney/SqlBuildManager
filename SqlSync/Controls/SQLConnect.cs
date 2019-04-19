@@ -545,15 +545,15 @@ namespace SqlSync
         }
         private void ddAuthentication_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureUserNamePassword.GetDescription()
-                || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.UserNamePassword.GetDescription())
+            if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureADPassword.GetDescription()
+                || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.Password.GetDescription())
             {
 
                 txtPassword.Enabled = true;
                 txtUser.Enabled = true;
             }
-            else if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureActiveDirectory.GetDescription()
-                 || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.WindowsAuthentication.GetDescription())
+            else if (ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.AzureADIntegrated.GetDescription()
+                 || ddAuthentication.SelectedItem.ToString() == Connection.AuthenticationType.Windows.GetDescription())
             {
                 txtPassword.Enabled = false;
                 txtUser.Enabled = false;
@@ -843,17 +843,17 @@ namespace SqlSync
 
             switch (authType)
             {
-                case Connection.AuthenticationType.UserNamePassword:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.UserNamePassword.GetDescription());
+                case Connection.AuthenticationType.Password:
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.Password.GetDescription());
                     break;
-                case Connection.AuthenticationType.WindowsAuthentication:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.WindowsAuthentication.GetDescription());
+                case Connection.AuthenticationType.Windows:
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.Windows.GetDescription());
                     break;
-                case Connection.AuthenticationType.AzureActiveDirectory:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.AzureActiveDirectory.GetDescription());
+                case Connection.AuthenticationType.AzureADIntegrated:
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.AzureADIntegrated.GetDescription());
                     break;
-                case Connection.AuthenticationType.AzureUserNamePassword:
-                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.AzureUserNamePassword.GetDescription());
+                case Connection.AuthenticationType.AzureADPassword:
+                    ddAuthentication.SelectedIndex = ddAuthentication.FindStringExact(Connection.AuthenticationType.AzureADPassword.GetDescription());
                     break;
             }
             ddAuthentication_SelectionChangeCommitted(null, null);

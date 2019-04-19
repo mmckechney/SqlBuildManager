@@ -70,21 +70,18 @@ An excellent tool for viewing and monitoring your Azure batch accounts and jobs 
 Using `/Action=Remote`, this method leverages an Azure Cloud Service deployment of the `SqlBuildManager.Services` application. This is a legacy method that allows for massively parallel updates. It is considered legacy because Azure Cloud Services themselves are a legacy deployment and also because of the effort to deploy and configure the Cloud Service compared to the same capability available via Azure Batch.
 
 ## Full Command Line Reference
-
-```Command line automation is accomplished via  _SqlBuildManager.Console.exe_. The usage
-
-
-
-    Usage: SqlBuildManager.Console /Action=<action> | args below
+Command line automation is accomplished via  _SqlBuildManager.Console.exe_. The usage is
+```
+Usage: SqlBuildManager.Console /Action=<action> | args below
 
     /? or /help                      Show this help
 
 Action value options (/Action=<value>)
     Build                    Performs a standard,local SBM execution via command line
     Threaded                 For updating multiple databases simultaneously from the current machine
-    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing (legacy method)
-    Batch                    For updating multiple databases simultaneously using Azure batch services (prefered method for distributed deployment)
-    Package                  Creates an SBM package from an SBX configuration file and scripts
+    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing 
+    Batch                    For updating multiple databases simultaneously using Azure batch services
+    Package                  Creates an SBM package from an SBX configuraiton file and scripts
     PolicyCheck              Performs a script policy check on the specified SBM package
     GetHash                  Calculates the SHA-1 hash fingerprint value for the SBM package (scripts + run order)
     CreateBackout            Generates a backout package (reversing stored procedure and scripted object changes)
@@ -116,8 +113,9 @@ General Runtime settings (/Action={Build|Threaded|Remote})
 Azure Batch Execution (/Action=Batch)
     /PlatinumDacpac="<filename>"              Name of the dacpac containing the platinum schema
     /PackageName="<filename>"                 Name of the .sbm or .sbx file to execute
-    /RootLoggingPath="<directory>"            Directory to save execution logs
+    /RootLoggingPath="<directory>"            Directory to save execution logs 
     /DeleteBatchPool=(true|false)             Whether or not to delete the batch pool servers after an execution (default is true)
+	/DeleteBatchJob=(true|false)              Whether or not to delete the batch job after an execution (default is true)
     /BatchNodeCount="##"                      Number of nodes to provision to run the batch job  (default is 10)
     /BatchVmSize="<size>"                     Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
     /BatchAccountName="<batch acct name>"     String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
@@ -125,13 +123,14 @@ Azure Batch Execution (/Action=Batch)
     /BatchAccountUrl="<batch acct url>"       URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
     /StorageAccountName="<storage acct name>" Name of storage account associated with the Azure Batch account  [can also be set via StorageAccountName app settings key]
     /StorageAccountKey="<storage acct key>"   Account Key for the storage account  [can also be set via StorageAccountKey app settings key]
+    /BatchJobName="<name>"                    [Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be replaced with "-"
 
 Remote Execution settings (/Action=Remote)
     /RemoteServers=("<filename>"|derive|azure)     Pointer to file that contains the list of remote execution servers,
-                                                  "derive" to parse servers from DB list, azure to use Azure PaaS instances
+                                                   "derive" to parse servers from DB list, azure to use Azure PaaS instances
     /TimeoutRetryCount=(integer)                   Number of times to retry os a script timeout is encountered (default is 0)
     /DistributionType=(equal|local)                Sets whether to split execution evenly across all execution servers 
-                                                   or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
+	                                               or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
     /TestConnectivity=(true|false)                 True value will test connection to remote agent and databases but will not execute SQL scripts
     /AzureRemoteStatus=true                        Return a status of the Azure remote execution services. Will not execute SQL 
     /RemoteDbErrorList=<remote name>|all           Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers
@@ -156,13 +155,13 @@ Database Synchronization (/Action={Synchronize|GetDifference})
 
 SBX to SBM packaging (/Action=Package)
     /Directory="<directory>"          Directory containing 1 or more SBX files to package into SBM zip files
-
+   
 Policy checking (/Action=PolicyCheck)
     /PackageName="<filename>"        Name of the SBM package to check policies on
 
 Calculate hash/fingerprint (/Action=GetHash)
     /PackageName="<filename>"        Name of the SBM package to calculate SHA-1 hash value
-
+   
 Creating backout packages (/Action=CreateBackout)
     /PackageName="<filename>"        Name of the SBM package to calculate a backout package for
     /Server=<servername>             Name of the server that contains the desired state schema to "backout to"
@@ -215,3 +214,64 @@ If your tests are still failing, check the log file generated by the service. It
 
 ## SQL Package
 `sqlpackage.exe` is needed for the use of the DACPAC features of the tool. It should already be available in the `Microsoft_SqlDB_DAC` subfolder where you are running your tests. If not, you can install the package from here [https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download?view=sql-server-2017](https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download?view=sql-server-2017). The unit tests should find the executable but if not, you may need to add the path to `\SqlBuildManager\SqlSync.SqlBuild\DacPacHelper.cs` in the getter for `sqlPackageExe`.
+
+# Setting up a test Azure Environment
+
+## Create Test Target databases
+To test against Azure databases, you will need some in Azure! The following PowerShell will create an Azure SQL Server, an Elastic Pool and "X" number of databases for that pool. This can be done locally or via the Azure Cloud Shell (http://shell.azure.com)
+
+1. Create the Resource Group and Server (change your values accordingly)
+```
+$ResourceGroupName = "SqlResourceGroup"
+$Location = "East US"
+$ServerName = "TestServer001"
+
+New-AzResourceGroup  -ResourceGroupName $ResourceGroupName -Location $Location 
+
+New-AzSqlServer -ResourceGroupName $ResourceGroupName -Location $Location -ServerName $ServerName -ServerVersion "12.0" -SqlAdministratorCredentials (Get-Credential)
+
+New-AzSqlServerFirewallRule -AllowAllAzureIPs -ResourceGroupName $ResourceGroupName -ServerName $ServerName
+```
+
+2. Create the elastic pool
+```
+$ElasticPoolName="MyBasicPool2"
+New-AzSqlElasticPool -ResourceGroupName $ResourceGroupName -ServerName $ServerName -ElasticPoolName $ElasticPoolName -Edition "Basic" -Dtu 50 
+```
+
+3. Create databases within the pool for testing
+```
+$DatabaseName="SqlDemo001"
+New-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $ServerName -ElasticPoolName $ElasticPoolName -DatabaseName $DatabaseName
+```
+
+4. Or to create a collection of databases you  can use
+```
+$DatabaseName = "SqlDemo"
+
+For ($i=1; $i -lt 101; $i++) 
+{
+    $dbNumber = $DatabaseName + $i.ToString("000")
+    New-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $ServerName -ElasticPoolName $ElasticPoolName -DatabaseName $dbNumber
+}
+```
+
+## Creating a database target file
+To create database target files for a parallel test execution, you can use the following script. Note that this will get _every_ SQL Server and _every_ database. You may want to add some customization to get only those that you want.
+
+```
+$outputFile = "C:\temp\databasetargets.cfg"
+$servers = Get-AzResourceGroup | Get-AzSqlServer
+foreach($server in $servers)
+{
+    $dbs = Get-AzSqlDatabase -ResourceGroupName $server.ResourceGroupName -ServerName $server.ServerName | Sort-Object -Property DatabaseName
+    
+    foreach($db in $dbs)
+    {
+        if($db.DatabaseName -ne "master")
+        {
+            $server.FullyQualifiedDomainName + ":client,"+$db.DatabaseName | Out-File -Append $outputFile
+        }
+    }
+}
+```

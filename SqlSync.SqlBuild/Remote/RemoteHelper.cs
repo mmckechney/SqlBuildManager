@@ -80,19 +80,19 @@ namespace SqlSync.SqlBuild.Remote
             }
 
 
-            if (authType == AuthenticationType.UserNamePassword.GetDescription())
+            if (authType == AuthenticationType.Password.GetDescription())
             {
                 sb.Append("/AuthType=Password");
             }
-            else if (authType == AuthenticationType.AzureActiveDirectory.GetDescription())
+            else if (authType == AuthenticationType.AzureADIntegrated.GetDescription())
             {
                 sb.Append("/AuthType=AzureADIntegrated");
             }
-            else if (authType == AuthenticationType.AzureUserNamePassword.GetDescription())
+            else if (authType == AuthenticationType.AzureADPassword.GetDescription())
             {
                 sb.Append("/AuthType=AzureADPassword");
             }
-            else if (authType == AuthenticationType.WindowsAuthentication.GetDescription())
+            else if (authType == AuthenticationType.Windows.GetDescription())
             {
                 sb.Append("/AuthType=Windows");
             }
