@@ -56,8 +56,7 @@ namespace SqlBuildManager.Console.Batch
                 inputContainerName = jobToken;
                 outputContainerName = jobToken;
             }
-            
-  
+
             int? myExitCode = 0;
 
 
@@ -282,6 +281,9 @@ namespace SqlBuildManager.Console.Batch
                     batchClient.PoolOperations.DeletePool(poolId);
                 }
 
+                log.Info("Consolidating log files");
+                ConsolidateLogFiles(blobClient, outputContainerName, inputFilePaths);
+
                 string readOnlySasToken = GetOutputContainerSasUrl(blobClient, outputContainerName, true);
                 log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
                 log.Info("The read-only SAS token URL is valid for 7 days.");
@@ -314,6 +316,53 @@ namespace SqlBuildManager.Console.Batch
             }
 
         }
+
+        private void ConsolidateLogFiles(CloudBlobClient blobClient, string outputContainerName, List<string> workerFiles)
+        {
+            workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql","execution.log" });
+            var container = blobClient.GetContainerReference(outputContainerName);
+            var blobs = container.ListBlobs();
+
+            //Move worker files to "Working" directory
+            foreach (var blob in blobs)
+            {
+                if (blob is CloudBlockBlob)
+                {
+                    var sourceBlob = (CloudBlockBlob)blob;
+                    if (workerFiles.Any(a => blob.Uri.ToString().ToLower().EndsWith(a.ToLower())))
+                    {
+                        var destBlob = container.GetBlockBlobReference("Working/" + sourceBlob.Name);
+                        using (var stream = sourceBlob.OpenRead())
+                        {
+                            destBlob.UploadFromStream(stream);
+                        }
+                        sourceBlob.Delete();
+                    }
+
+                    foreach (string append in Program.AppendLogFiles)
+                    {
+                        if (sourceBlob.Uri.ToString().ToLower().EndsWith(append.ToLower()))
+                        {
+                            var destinationBlob = container.GetAppendBlobReference(append);
+                            try
+                            {
+                                destinationBlob.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition(), null, null);
+                            }
+                            catch { }
+                            
+
+                            using (var stream = sourceBlob.OpenRead())
+                            {
+                                destinationBlob.AppendFromStream(stream);
+                            }
+                            sourceBlob.Delete();
+                        }
+                    }
+                }
+            }
+
+        }
+        
 
         private bool CreateBatchPool(BatchClient batchClient, string poolId, int nodeCount, string vmSize)
         {

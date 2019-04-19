@@ -19,9 +19,11 @@ using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console
 {
+    
     class Program
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
         static async Task Main(string[] args)
         {
@@ -90,7 +92,7 @@ namespace SqlBuildManager.Console
             }
             catch(Exception exe)
             {
-                log.Error("Something went wrong!", exe);
+                log.ErrorFormat($"Something went wrong!\r\n{exe.ToString()}");
             }
 
         }
@@ -382,26 +384,29 @@ namespace SqlBuildManager.Console
             try
             {
                 var writeTasks = new List<Task>();
-                var appendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
+                
                 var renameLogFiles = new string[] { "execution.log" };
                 CloudBlobContainer container = new CloudBlobContainer(new Uri(outputContainerSasUrl));
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
                 string machine = Environment.MachineName;
-                fileList.ToList().ForEach(async f =>
+                fileList.ToList().ForEach(f =>
                 {
                     try
                     {
                         var tmp = f.Replace(rootLoggingPath + @"\", "");
-                        if (appendLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
+
+                        if (Program.AppendLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
                         {
+
+                            tmp = machine + "-" + tmp;
                             log.InfoFormat($"Saving File '{f}' as '{tmp}'");
-                            var append = container.GetAppendBlobReference(tmp);
+                            var rename = container.GetBlockBlobReference(tmp);
 
                             writeTasks.Add(
-                                append.AppendFromFileAsync(f,
+                                rename.UploadFromFileAsync(f,
                                 AccessCondition.GenerateIfNotExistsCondition(),
                                 new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
-                        
+
                         }
                         else if (renameLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
                         {
