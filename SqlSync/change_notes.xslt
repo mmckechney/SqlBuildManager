@@ -45,6 +45,7 @@
 				</style>
 			</head>
 			<body>
+        <h1>SQL Build Manager Change Notes</h1>
 				<xsl:for-each select="Version">
 					
 					<div class="version">Version <xsl:value-of select="@Major"/>.<xsl:value-of select="@Minor"/>.<xsl:value-of select="@Revision"/></div>

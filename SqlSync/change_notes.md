@@ -1,9 +1,10 @@
 ﻿
-## Change Notes
+## SQL Build Manager Change Notes
       
 					
 ### Version 10.4.1
-- *UPDATED:* Optimized Azure Batch 
+- *UPDATED:* Updated Azure Batch to better handle pools, jobs and log file storage as well as job naming
+- *UPDATED:* Refactored command line handling to clarify components
 - *FIXED:* Cleaned up unit tests
 					
 ### Version 10.4.0
