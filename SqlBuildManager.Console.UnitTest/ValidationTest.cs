@@ -142,7 +142,7 @@ namespace SqlBuildManager.Console.UnitTest
             int actual;
             actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].LastIndexOf("Invalid command line set. Missing /PackageName or /PlatinumDacpac or /ScriptSrcDir setting.") > -1);
+            Assert.IsTrue(errorMessages[0].LastIndexOf("Invalid command line set. Missing /PackageName, /PlatinumDacpac, /ScriptSrcDir, or /PlatinumDbSource and /PlatinumServerSource settings.") > -1);
             Assert.AreEqual(expected, actual);
         }
 
