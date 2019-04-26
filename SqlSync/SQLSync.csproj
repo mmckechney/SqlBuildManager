@@ -1490,7 +1490,7 @@
     <PreBuildEvent>%25SystemRoot%25\system32\xcopy "$(ProjectDir)SqlBuild\Utility" "$(TargetDir)Utility" /I /Y /D
 %25SystemRoot%25\system32\xcopy "$(ProjectDir)SqlBuild\Default Scripts" "$(TargetDir)Default Scripts" /I /Y /D
 </PreBuildEvent>
-    <PostBuildEvent>%25SystemRoot%25\system32\xcopy "$(SolutionDir)SqlBuildManager Manual\HTML" "$(TargetDir)Manual" /I /Y /D /S</PostBuildEvent>
+    <PostBuildEvent>%25SystemRoot%25\system32\xcopy "$(SolutionDir)SqlBuildManager Manual" "$(TargetDir)Manual" /I /Y /D /S</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Microsoft.SqlServer.SqlManagementObjects.150.18097.0-preview\build\net45\Microsoft.SqlServer.SqlManagementObjects.targets" Condition="Exists('..\packages\Microsoft.SqlServer.SqlManagementObjects.150.18097.0-preview\build\net45\Microsoft.SqlServer.SqlManagementObjects.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

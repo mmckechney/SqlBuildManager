@@ -404,6 +404,59 @@ namespace SqlBuildManager.Console
             errorMessages = messages.ToArray();
             return returnVal;
         }
-       
+
+        public static int ValidateBatchPreStageArguments(ref CommandLineArgs cmdLine, out string[] errorMessages)
+        {
+            int returnVal = 0;
+            List<string> messages = new List<string>();
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
+            {
+                messages.Add("BatchAccountName is required in command line or app settings");
+                returnVal = -888;
+            }
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
+            {
+                messages.Add("BatchAccountKey is required in command line or app settings");
+                returnVal = -888;
+            }
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
+            {
+                messages.Add("BatchAccountUrl is required in command line or app settings");
+                returnVal = -888;
+            }
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
+            {
+                messages.Add("BatchVmSize is required in command line or app settings");
+                returnVal = -888;
+            }
+
+            errorMessages = messages.ToArray();
+            return returnVal;
+        }
+
+        public static int ValidateBatchCleanUpArguments(ref CommandLineArgs cmdLine, out string[] errorMessages)
+        {
+            int returnVal = 0;
+            List<string> messages = new List<string>();
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
+            {
+                messages.Add("BatchAccountName is required in command line or app settings");
+                returnVal = -888;
+            }
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
+            {
+                messages.Add("BatchAccountKey is required in command line or app settings");
+                returnVal = -888;
+            }
+            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
+            {
+                messages.Add("BatchAccountUrl is required in command line or app settings");
+                returnVal = -888;
+            }
+            
+            errorMessages = messages.ToArray();
+            return returnVal;
+        }
+
     }
 }

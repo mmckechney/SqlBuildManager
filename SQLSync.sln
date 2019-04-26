@@ -1346,7 +1346,6 @@ Global
 		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|Any CPU.ActiveCfg = Release
 		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|Any CPU.Build.0 = Release
 		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|Mixed Platforms.ActiveCfg = Release
-		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|Mixed Platforms.Build.0 = Release
 		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|x64.ActiveCfg = Release
 		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|x64.Build.0 = Release
 		{CC74AAB6-527F-4D03-A32C-E29DE9185B97}.Release|x86.ActiveCfg = Release

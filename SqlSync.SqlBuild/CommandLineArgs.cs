@@ -100,9 +100,11 @@ namespace SqlSync.SqlBuild
             public string StorageAccountKey { get; set; } = null;
             public string BatchVmSize { get; set; } = null;
             public string OutputContainerSasUrl { get; set; }
-            public bool DeleteBatchPool { get; set; } = true;
+            public bool DeleteBatchPool { get; set; } = false;
             public bool DeleteBatchJob { get; set; } = true;
             public string BatchJobName { get; set; } = null;
+            public bool PollBatchPoolStatus { get; set; } = true;
+            public string BatchPoolName { get; set; } = null;
         }
 
         [Serializable]
@@ -151,7 +153,9 @@ namespace SqlSync.SqlBuild
             Synchronize,
             ScriptExtract,
             Encrypt,
-            Error
+            Error,
+            BatchPreStage, 
+            BatchCleanUp
         }
         
         public override string ToString()

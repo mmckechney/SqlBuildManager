@@ -255,6 +255,15 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("batchvmsize"))
                 cmdLine.BatchArgs.BatchVmSize = dict["batchvmsize"];
 
+            if (dict.ContainsKey("batchpoolname"))
+                cmdLine.BatchArgs.BatchPoolName = dict["batchpoolname"];
+
+            bool poll = true;
+            if(dict.ContainsKey("pollbatchpoolstatus") && Boolean.TryParse(dict["pollbatchpoolstatus"], out poll))
+            {
+                cmdLine.BatchArgs.PollBatchPoolStatus = poll;
+            }
+
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
                 cmdLine.BatchArgs.BatchVmSize = ConfigurationManager.AppSettings["BatchVmSize"];
 

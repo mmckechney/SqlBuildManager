@@ -1,6 +1,11 @@
-﻿
+
 ## SQL Build Manager Change Notes
       
+					
+### Version 10.4.2
+- *ADDED:* Added Batch pool handling action 'BatchPreStage' so that Pools can be created in advance of needing the compute. Avoids the waiting "cold start" of a batch job
+- *ADDED:* Added Batch pool handling action  'BatchCleanup' so that Pools can be deleted separately from a build run (useful if you need to re-run jobs)
+- *UPDATED:* Changed default action of /DeleteBatchPool flag to 'false' so that pool VMs are not immediately deleted after a Batch job. More useful now with the BatchPreStage and BatchCleanUp actions
 					
 ### Version 10.4.1
 - *UPDATED:* Updated Azure Batch to better handle pools, jobs and log file storage as well as job naming

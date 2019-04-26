@@ -8,6 +8,7 @@ Action value options (/Action=<value>)
     Threaded                 For updating multiple databases simultaneously from the current machine
     Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing 
     Batch                    For updating multiple databases simultaneously using Azure batch services
+	BatchPreStage            Pre-stage the Azure Batch VM nodes
     Package                  Creates an SBM package from an SBX configuraiton file and scripts
     PolicyCheck              Performs a script policy check on the specified SBM package
     GetHash                  Calculates the SHA-1 hash fingerprint value for the SBM package (scripts + run order)
@@ -41,7 +42,7 @@ Azure Batch Execution (/Action=Batch)
     /PlatinumDacpac="<filename>"              Name of the dacpac containing the platinum schema
     /PackageName="<filename>"                 Name of the .sbm or .sbx file to execute
     /RootLoggingPath="<directory>"            Directory to save execution logs 
-    /DeleteBatchPool=(true|false)             Whether or not to delete the batch pool servers after an execution (default is true)
+    /DeleteBatchPool=(true|false)             Whether or not to delete the batch pool servers after an execution (default is false)
 	/DeleteBatchJob=(true|false)              Whether or not to delete the batch job after an execution (default is true)
     /BatchNodeCount="##"                      Number of nodes to provision to run the batch job  (default is 10)
     /BatchVmSize="<size>"                     Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
@@ -51,6 +52,20 @@ Azure Batch Execution (/Action=Batch)
     /StorageAccountName="<storage acct name>" Name of storage account associated with the Azure Batch account  [can also be set via StorageAccountName app settings key]
     /StorageAccountKey="<storage acct key>"   Account Key for the storage account  [can also be set via StorageAccountKey app settings key]
     /BatchJobName="<name>"                    [Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed
+
+Azure Batch Pre-Stage Batch nodes (/Action=BatchPreStage)
+    /BatchNodeCount="##"                      Number of nodes to provision to run the batch job  (default is 10)
+    /BatchVmSize="<size>"                     Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
+    /BatchAccountName="<batch acct name>"     String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
+    /BatchAccountKey="<batch acct key>"       Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
+    /BatchAccountUrl="<batch acct url>"       URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
+    /PollBatchPoolStatus=(true|false)         Whether or not you want to get updated status (true, default) or fire and forget (false)
+	
+Azure Batch Clean Up (delete) nodes (/Action=BatchCleanUp)
+    /BatchAccountName="<batch acct name>"     String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
+    /BatchAccountKey="<batch acct key>"       Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
+    /BatchAccountUrl="<batch acct url>"       URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
+    /PollBatchPoolStatus=(true|false)         Whether or not you want to get updated status (true, default) or fire and forget (false)
 
 Remote Execution settings (/Action=Remote)
     /RemoteServers=("<filename>"|derive|azure)     Pointer to file that contains the list of remote execution servers,

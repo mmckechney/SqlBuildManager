@@ -81,6 +81,12 @@ namespace SqlBuildManager.Console
                     case CommandLineArgs.ActionType.Batch:
                         retVal = await RunBatchExecution(cmdLine, start);
                         break;
+                    case CommandLineArgs.ActionType.BatchPreStage:
+                        retVal = await RunBatchPreStage(cmdLine, start);
+                        break;
+                    case CommandLineArgs.ActionType.BatchCleanUp:
+                        retVal = await RunBatchCleanUp(cmdLine, start);
+                        break;
                     default:
                         log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
                         System.Environment.Exit(8675309);
@@ -95,6 +101,30 @@ namespace SqlBuildManager.Console
                 log.ErrorFormat($"Something went wrong!\r\n{exe.ToString()}");
             }
 
+        }
+
+        private static async Task<int> RunBatchCleanUp(CommandLineArgs cmdLine, DateTime start)
+        {
+            Batch.Execution batchExe = new Batch.Execution(cmdLine);
+            var retVal = batchExe.CleanUpBatchNodes();
+
+            TimeSpan span = DateTime.Now - start;
+            string msg = "Total Run time: " + span.ToString();
+            log.Info(msg);
+
+            return retVal;
+        }
+
+        private static async Task<int> RunBatchPreStage(CommandLineArgs cmdLine, DateTime start)
+        {
+            Batch.Execution batchExe = new Batch.Execution(cmdLine);
+            var retVal = batchExe.PreStageBatchNodes();
+
+            TimeSpan span = DateTime.Now - start;
+            string msg = "Total Run time: " + span.ToString();
+            log.Info(msg);
+
+            return retVal;
         }
 
         private static async Task<int> RunBatchExecution(CommandLineArgs cmdLine, DateTime start)

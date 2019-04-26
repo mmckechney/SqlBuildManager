@@ -1,5 +1,10 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="4" Revision="2">
+    <added>Added Batch pool handling action 'BatchPreStage' so that Pools can be created in advance of needing the compute. Avoids the waiting "cold start" of a batch job</added>
+    <added>Added Batch pool handling action  'BatchCleanup' so that Pools can be deleted separately from a build run (useful if you need to re-run jobs)</added>
+    <updated>Changed default action of /DeleteBatchPool flag to 'false' so that pool VMs are not immediately deleted after a Batch job. More useful now with the BatchPreStage and BatchCleanUp actions</updated>
+  </Version>
   <Version Major="10" Minor="4" Revision="1">
     <updated>Updated Azure Batch to better handle pools, jobs and log file storage as well as job naming</updated>
     <updated>Refactored command line handling to clarify components</updated>
