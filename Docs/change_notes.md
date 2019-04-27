@@ -1,5 +1,5 @@
 
-## SQL Build Manager Change Notes
+# SQL Build Manager Change Notes
       
 					
 ### Version 10.4.2

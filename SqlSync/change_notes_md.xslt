@@ -5,7 +5,7 @@
     <xsl:output method="text" indent="no" omit-xml-declaration="yes" />
 
     <xsl:template match="/SqlBuildManagerChangeNotes">
-## SQL Build Manager Change Notes
+# SQL Build Manager Change Notes
       <xsl:for-each select="Version">
 					
 ### Version <xsl:value-of select="@Major"/>.<xsl:value-of select="@Minor"/>.<xsl:value-of select="@Revision"/>
