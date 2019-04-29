@@ -32,10 +32,10 @@ Azure Batch builds are started locally via `SqlBuildManager.Console.exe`. This p
  
  #### Pre-stage the Azure Batch pool VMs
 Execute SqlBuildManager.Console.exe with the `/Action=BatchPreStage` directive. This will create the desired number of Azure Batch VM's ahead of time\
-(_NOTE:_ it can take 10-20 minutes for the VMs to be provisioned and ready). See the argument details [here](#Azure-Batch---Pre-Stage-Batch-nodes-/(Action=BatchPreStage))
+(_NOTE:_ it can take 10-20 minutes for the VMs to be provisioned and ready). See the argument details [here](#azure-batch---pre-stage-batch-nodes-actionbatchprestage)
 
 #### Execute batch build
- Execute `SqlBuildManager.Console.exe` with the `/Action=batch` directive. See the argument details [here](#Azure-Batch-Execution-(/Action=Batch))
+ Execute `SqlBuildManager.Console.exe` with the `/Action=batch` directive. See the argument details [here](#azure-batch-execution-actionbatch)
 
 This will start the following process:
 
@@ -54,7 +54,7 @@ If there is a issue with the execution - either with the SQL updates or somethin
 
 #### Cleanup post build
 
-1.  Execute SqlBuildManager.Console.exe with the `/Action=BatchCleanup` directive. This will delete the Azure Batch VM's so you are no longer charged for the compute. See the argument details [here](Azure-Batch-Clean-Up-(delete) nodes-(/Action=BatchCleanUp))\
+1.  Execute SqlBuildManager.Console.exe with the `/Action=BatchCleanup` directive. This will delete the Azure Batch VM's so you are no longer charged for the compute. See the argument details [here](#azure-batch-clean-up-delete-nodes-actionbatchcleanup)\
 _NOTE:_ this will not delete the log files, these are generally needed more long term and they will stay in the storage account
 
 ### Alternative run options
@@ -125,7 +125,7 @@ _Note:_ All of these files are consolidated logs from across all of your Batch n
 - `Working` - this is the folder that contains the runtime files such as the DACPAC, SBM and distributed database configuration files
 - `<server name>` folders - There is one folder per target SQL Server. Within each of these is a folder for each target database. 
     - `<database name>` folder - within these folders are three files
-        - Log file: a detailed script by script run result
+        - `LogFile-\<date,time\>.log` -  a detailed script by script run result
         - `SqlSyncBuildHistory.xml` - detailed log along with script meta-data (such as start/end times, file hash, status, user id)
         - `SqlSyncBuildProject.xml` - meta-data file for the script package run against the database
 

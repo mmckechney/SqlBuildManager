@@ -68,16 +68,16 @@ Applies to: `/Action={Build|Threaded|Batch|Remote}`
 
 
 In addition to the authentication and runtime arguments above, these are arguements specifically needed for Azure Batch executions\
-See detailed Batch [documentation](AzureBatch.md)
+See detailed Batch [documentation](AzureBatch.md#azure-batch-execution-actionbatch)
 
 
 #### Azure Batch Pre-Stage Batch nodes (/Action=BatchPreStage)
 
-See detailed Batch [documentation](AzureBatch.md)
+See detailed Batch [documentation](AzureBatch.md#azure-batch---pre-stage-batch-nodes-actionbatchprestage)
 	
 #### Azure Batch Clean Up (delete) nodes (/Action=BatchCleanUp)
 
-See detailed Batch [documentation](AzureBatch.md)
+See detailed Batch [documentation](AzureBatch.md#azure-batch-clean-up-delete-nodes-actionbatchcleanup)
 
 #### Remote Execution settings (/Action=Remote)
 - `/RemoteServers=("<filename>"|derive|azure)` - Pointer to file that contains the list of remote execution servers, "derive" to parse servers from DB list, azure to use Azure PaaS instances
@@ -158,16 +158,16 @@ For each server/database combination that was executed, a folder
 structure is created for each server and a subfolder in those for each
 database. Inside each database level folder will be three files:
 
--->  LogFile-\<date,time\>.log: This is the script execution log for the
+- `LogFile-\<date,time\>.log`: This is the script execution log for the
 database. It contains the actual SQL scripts that were executed as well
 as the return results of the execution. This file is formatted as a SQL
 script itself and can be used manually if need-be.
 
--->  SqlSyncBuildHistory.xml: the XML file showing run time meta-data
+- `SqlSyncBuildHistory.xml`: the XML file showing run time meta-data
 details on each script file as executed including run time, file hash,
 run order and results.
 
--->  SqlSyncBuildProject.xml: the XML file showing the design time
+- `SqlSyncBuildProject.xml`: the XML file showing the design time
 meta-data on each script file that defined the run settings, script
 creation user ID's and the committed script record and hash for each.
 	
