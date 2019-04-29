@@ -5,4 +5,4 @@ DOSKEY cp=COPY $*
 DOSKEY xcp=XCOPY $*
 DOSKEY mv=MOVE $* 
 DOSKEY clear=CLS
-DOSKEY sbm="C:\Users\mimcke\source\repos\SqlBuildManager\bin\Debug\SqlBuildManager.Console.exe" $*
+DOSKEY sbm="%USERPROFILE%\source\repos\SqlBuildManager\bin\Debug\SqlBuildManager.Console.exe" $*
