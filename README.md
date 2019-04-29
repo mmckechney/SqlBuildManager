@@ -16,8 +16,9 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the lifecyle of
 * Execution of a build package (see below) is recorded in the database for full tracking of update history, script validation and potential rebuilding of packages
 * Massively parallel execution across thousands of databases utilzing local threading, an Azure cloud service deployment or an Azure Batch execution
 
-## The Basics
+# The Basics
 
+## Build Package meta-data
 At the core of the process is the "SQL Build Manager Package" file (.sbm extension).  Under the hood, this file is a Zip file that contains the scripts that constitute your "release" along with a configuration file  (SqlSyncBuildProject.xml) that contains meta data on the scripts and execution parameters:
 
 * `FileName`: Self explanatary, the name of the script file
@@ -71,5 +72,7 @@ An excellent tool for viewing and monitoring your Azure batch accounts and jobs 
 Using `/Action=Remote`, this method leverages an Azure Cloud Service deployment of the `SqlBuildManager.Services` application. This is a legacy method that allows for massively parallel updates. It is considered legacy because Azure Cloud Services themselves are a legacy deployment and also because of the effort to deploy and configure the Cloud Service compared to the same capability available via Azure Batch.
 
 ## For full command line reference details, go [here](Docs/commandline.md)
+
+## Detailed information on leveraging Azure Batch for massively parallel deployments, go [here](Docs/AzureBatch.md)
 
 ## For into on building and unit testing, go [here](Docs/localbuild.md)

@@ -45,10 +45,6 @@ McKechney](http://mckechney.com/) on
 ## Basic Command Line Execution
 
 - [Command Line Arguments](#Command-Line-Arguments)
-- [Auto-Creation of Command Line Statements](#Auto-Creation-of-Command-Line-Statements)
-    - [Configuring the command statement](#Configuring-the-command-statement)
-    - [Generating the Command statement](#Generating-the-Command-statement)
-    - [Command Line Execution via UI](#Command-Line-Execution-via-UI)
 - [Command Line Examples](#Command-Line-Examples)
 
 ## Targeting Multiple Servers and Databases
@@ -66,13 +62,6 @@ McKechney](http://mckechney.com/) on
     - [Section Detail](#Section-Detail)
 - [Pre-testing database connectivity](#Pre-testing-database-connectivity)
 - [Performing a remote execution](#Performing-a-remote-execution)
-
-## Advanced Command Line Execution
-
-- [Execution Flags](#Execution-Flags)
-- [Logging](#Logging)
-- [Command Line Return Codes](#Command-Line-Return-Codes)
-    - [Execution Result codes](#Execution-Result-codes)
 
 ## Advanced Script Handling
 
@@ -660,7 +649,7 @@ the "console" application is that you will be able to record exit code
 values as well as stream the standard output and error text into any
 automation or scheduling software that you may be using.
 
-### [Command line details](commandline.md)
+### For command line details go [here](commandline.md)
 
 
 ## Command Line Examples 
@@ -709,25 +698,6 @@ the .sbm file for review.
 ```
  SqlBuildManager.Console.exe /Action=Build /PackageName="ProjectUpdate.sbm" /override="prod release.multiDb"
  ```
-
-**Script databases using an Auto Script configuration**\
-Uses Sql Build Manager's database scripting feature to script the
-designated server/database objects to a target folder.
-
-```
-SqlBuildManager.Console.exe /auto "script dev databases.sqlauto"
-```
-**Running a Stored Procedure Test configuration set**\
-Utilizes Sql Build Manager's ability to perform unit tests against stored procedures and
-saves the results in a parseable XML data format.
-
-```
-SqlBuildManager.Console.exe /test="testing.sptest" /server=Production /database=myDb /log="C:\\logfile.xml"
-```
-**Opening an interactive Build Manager Session****\
-**Opens the selected .sbm build project file in a user window
-
--   " Sql Build Manager.exe" ".sbm file name"
 
 See [Advanced Command Line Execution](#Advanced-Command-Line-Execution) for
 return codes.
@@ -1175,8 +1145,8 @@ the connection could not be made.
 Below is a step-by-step how-to for running a remote execution and
 deployment. For details about each section and its function see above in
 the Remote Execution and Deployment
-[overview](#RemoteServiceExecutionandDeploymentOvr) and [section
-detail](#RemoteServiceExecutionandDeploymentSect)
+overview and section
+detail
 
 1.       Open the Remote Execution Service From
 
@@ -1228,167 +1198,7 @@ you should check the results via the -->View Execution -->Errors--> Log--> and
 the detailed log results to see how you can mediate and correct the
 problems.
 
-For a command line execution across multiple servers, see the _Advanced
-Command Line Execution_ below
 
-Advanced Command Line Execution
-===============================
-
-Execution Flags
----------------
-
-To run your multithreaded build or remote server execution, you need to
-use the SqlBuildManager.Console.exe utility with the command line
-options:
-
--   /Action=Threaded This is the key flag to alert the utility that you
-    will be executing this SBM file in a multi-threaded mode. This flag
-    is used exclusively for the threaded mode.
--   /build="\<.sbm file name\>" \
-     Lets the tool know that you want to run a Sql Build using the
-    specified .sbm file. This is not used alone, but in conjunction with
-    a /server and/or a /override argument.
--   /ScriptSrcDir="\<directory path\>"\
-     Alternatively, if you want to run your scripts from a directory
-    instead of a pre-constructed SBM file, you can use this option. Set
-    the value to the directory where your scripts are located. The
-    engine will look for all files with a .sql extension and sort them
-    by file name. They will be configured to leave transactions with
-    full rollback on failure. If this and a /build tag are found, this
-    will be used. Also, since the files will be added without a default
-    database setting, the engine will use the first override database
-    setting per line in the config file
--   /override="\<.multiDb file name\>" or /override="\<.cfg file
-    name\>"\
-     Sets the pre-configured multi database/server configuration or the
-    text delimited configuration to be used along with the .sbm file for
-    the build run.
--   /RootLoggingPath="\<directory name\>" Sets the root directory under
-    which all of the log files and folders will be placed. This flag is
-    used exclusively for the threaded mode. Note that you may use
-    environment variables in this path to make value more dynamic per
-    system.
--   /trial=\<true or false\> By default, the threaded execution will
-    commit the changes to the target databases. If you want to
-    experiment with the run to check how it will go, you can set the
-    trial tag to true. This will work the same as the trial mode in the
-    UI and roll back the changes in each database, even upon successful
-    completion. To keep things more simple, the successful runs are
-    still added to the Commits log file but are recorded as "Build
-    Successful. Trial Rolled-back"
--   /LogAsText=\<true or false\>. Be default, the value is false, which
-    will create the Commits and Errors log files in HTML. The advantage
-    of this is that it will hyperlink you to the appropriate folder for
-    viewing error or execution log details. If you set the value to
-    true, the same information will be written, just in plain text.
--   /username="\<user name\>" The user name for a SQL Server user
-    account that you want to execute under. If this tag is present, then
-    a /password tag is also required. If these tags are not present, the
-    tool will use Windows authentication when connecting to the
-    database.
--   /password="\<password\>" The password for the SQL Server user
-    account that you want to execute under. If this tag is present, then
-    a /username tag is also required. If these tags are not present, the
-    tool will use Windows authentication when connecting to the
-    database.
--   /LogToDatabaseName="\<alternate database\>" Allows you to write the
-    commit logs to the SqlBuild\_Logging table on a different database
-    than the target databases. This should be used sparingly as it will
-    not give you the proper script status when opened in the user
-    interface
--   /description="\<run description\>" Allows you to add a custom
-    description to the run. This will be used in the same fashion as a
-    description added during a serial/manual run. This will also be used
-    as the token replacement for any dynamic scripts you have. The token
-    for this value is \#BuildDescription\#
--   /Transactional=\<true or false\> Allows you to run the scripts
-    without transactional protection. WARNING! Using this setting will
-    mean that if a script fails, all previous scripts will still be
-    committed and your databases will be left in an inconsistent state
--   /TimeoutRetryCount=\<positive integer number value\> Sets the
-    ability to have the package be automatically re-run -->x--> number of
-    times if the SQL Server exception encountered is -->Timeout expired-->.
-    This is not valid in combination of /Transactional=false
-
-The following keys are used exclusively for [Remote Server
-Execution](#RemoteServiceExecutionandDeploymentOvr). See this section
-above for the UI version and explanation of this functionality. Unless
-noted, the above [Execution Flags](#Execution) can also be used to
-configure the run. -->For ease of use and to help you create a properly
-formed command-line string, there is now a -->Create Command Line--> button
-available --> but be aware that while this does create a well formed
-string it does NOT validate the values or files and therefore does not
-guarantee execution success.
-
-![](images/image048.png)
-
--   /remote=true This is the key flag to alert the utility that you will
-    be distributing execution to remote execution servers. This key
-    should *not* be combined with the /threaded flag.
--   /RemoteServers=-->\<remote server file\>--> This defines the file to use
-    that defines the remote execution servers that will be used for this
-    run. This file should be a simple text file that contains one
-    machine name per line.
--   /RemoteServers=-->derive--> This is an advanced setting that you can use
-    if your target database servers also act as your remote execution
-    servers. This instructs the tool to derive the unique server names
-    from the /override settings and use that list as the remote server
-    list.
--   /DistributionType=equal or /DistributionType=local Defines how the
-    load for the execution will be split across the execution servers.
-    For details, see the [Workload Distribution](#WorkloadDistribution)
-    section.
-
-Logging
--------
-
-Since there isn't a user interface for this type of execution, logging
-is obviously important. For general logging, the
-SqlBuildManager.Console.exe has its own local messages. This log file is
-named SqlBuildManager.Console.log and can be found in the same folder as
-the executable. This file will be the first place to check for general
-execution errors or problems.
-
-To accommodate the logging of the actual build, all of the output is
-saved to files and folders under the path specified in
-the /RootLoggingPath flag. For a simple threaded execution, this is a
-single root folder. For a remote server execution, this folder is
-created for each execution server.
-
-**Working folder**
-
-This folder is where the contents of the .SBM file are extracted. This
-file is extracted only once and loaded into memory for the duration of
-the run to efficiently use memory.
-
-**Commits.html (or .log for text scripting)**
-
-Contains a list of all databases that the build was committed on. This
-is a quick reference for each location that had a successful execution.
-
-**Errors.log (or .log for text scripting)**
-
-Contains a list of all databases that the build failed on and was rolled
-back. This is a quick reference for all locations that had failures.
-
-**Server/Database folders**
-
-For each server/database combination that was executed, a folder
-structure is created for each server and a subfolder in those for each
-database. Inside each database level folder will be three files:
-
--->  LogFile-\<date,time\>.log: This is the script execution log for the
-database. It contains the actual SQL scripts that were executed as well
-as the return results of the execution. This file is formatted as a SQL
-script itself and can be used manually if need-be.
-
--->  SqlSyncBuildHistory.xml: the XML file showing run time meta-data
-details on each script file as executed including run time, file hash,
-run order and results.
-
--->  SqlSyncBuildProject.xml: the XML file showing the design time
-meta-data on each script file that defined the run settings, script
-creation user ID's and the committed script record and hash for each.
 
 Command Line Return Codes
 -------------------------

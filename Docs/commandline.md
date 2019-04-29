@@ -1,5 +1,7 @@
-2
+
 # Command line Usage
+
+**NOTE:** For command line operations, you must use `SqlBuildManager.Console.exe`
 
 **Tip**: If you don't like typing the full name of the exe you can easily create an alias with the files in the *Utility* folder:
 - Edit the *alias.bat* file with the path to where you have the SqlBuildManager.Console.exe file. 
@@ -64,35 +66,18 @@ Applies to: `/Action={Build|Threaded|Batch|Remote}`
 
 #### Azure Batch Execution (/Action=Batch)
 
-In addition to the authentication and runtime arguments above, these are specifically needed for Azure Batch executions
 
-*Note:* either /PlatinumDacpac _or_ /PackageName are required. If both are given, then /PackageName will be used.
-- `/PlatinumDacpac="<filename>"` - Name of the dacpac containing the platinum schema
-- `/PackageName="<filename>"` - Name of the .sbm or .sbx file to execute save execution logs 
-- `/DeleteBatchPool=(true|false)` - Whether or not to delete the batch pool servers after an execution (default is `false`)
-- `/DeleteBatchJob=(true|false)` - Whether or not to delete the batch job after an execution (default is `true`)
-- `/BatchNodeCount="##"` - Number of nodes to provision to run the batch job  (default is 10)
-- `/BatchVmSize="<size>"` - Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
-- `/BatchAccountName="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
-- `/BatchAccountKey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
-- `/BatchAccountUrl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
-- `/StorageAccountName="<storage acct name>"` - Name of storage account associated with the Azure Batch account  [can also be set via StorageAccountName app settings key]
-- `/StorageAccountKey="<storage acct key>"` - Account Key for the storage account  [can also be set via StorageAccountKey app settings key]
-- `/BatchJobName="<name>"` - [Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed
+In addition to the authentication and runtime arguments above, these are arguements specifically needed for Azure Batch executions\
+See detailed Batch [documentation](AzureBatch.md)
+
 
 #### Azure Batch Pre-Stage Batch nodes (/Action=BatchPreStage)
-- `/BatchNodeCount="##"` - Number of nodes to provision to run the batch job  (default is 10)
-- `/BatchVmSize="<size>"` - Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
-- `/BatchAccountName="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
-- `/BatchAccountKey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
-- `/BatchAccountUrl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
-- `/PollBatchPoolStatus=(true|false)` - Whether or not you want to get updated status (true, default) or fire and forget (false)
+
+See detailed Batch [documentation](AzureBatch.md)
 	
 #### Azure Batch Clean Up (delete) nodes (/Action=BatchCleanUp)
-- `/BatchAccountName="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
-- `/BatchAccountKey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
-- `/BatchAccountUrl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
-- `/PollBatchPoolStatus=(true|false)` - Whether or not you want to get updated status (true, default) or fire and forget (false)
+
+See detailed Batch [documentation](AzureBatch.md)
 
 #### Remote Execution settings (/Action=Remote)
 - `/RemoteServers=("<filename>"|derive|azure)` - Pointer to file that contains the list of remote execution servers, "derive" to parse servers from DB list, azure to use Azure PaaS instances
@@ -137,5 +122,52 @@ Applies to: `/Action={Threaded|Batch|Remote}`
 - `/Server=<servername>` - Name of the server that contains the desired state schema to "backout to"
 - `/Database=<databasename>` - Name of the database that contains the desired state schema to "backout to"
 
- 
+ # Logging
+
+For general logging, the
+SqlBuildManager.Console.exe has its own local messages. This log file is
+named SqlBuildManager.Console.log and can be found in the same folder as
+the executable. This file will be the first place to check for general
+execution errors or problems.
+
+To accommodate the logging of the actual build, all of the output is
+saved to files and folders under the path specified in
+the `/RootLoggingPath` flag. For a simple threaded execution, this is a
+single root folder. For a remote server execution, this folder is
+created for each execution server.
+
+**Working folder**
+
+This folder is where the contents of the .SBM file are extracted. This
+file is extracted only once and loaded into memory for the duration of
+the run to efficiently use memory.
+
+**Commits.log**
+
+Contains a list of all databases that the build was committed on. This
+is a quick reference for each location that had a successful execution.
+
+**Errors.log**
+
+Contains a list of all databases that the build failed on and was rolled
+back. This is a quick reference for all locations that had failures.
+
+**Server/Database folders**
+
+For each server/database combination that was executed, a folder
+structure is created for each server and a subfolder in those for each
+database. Inside each database level folder will be three files:
+
+-->  LogFile-\<date,time\>.log: This is the script execution log for the
+database. It contains the actual SQL scripts that were executed as well
+as the return results of the execution. This file is formatted as a SQL
+script itself and can be used manually if need-be.
+
+-->  SqlSyncBuildHistory.xml: the XML file showing run time meta-data
+details on each script file as executed including run time, file hash,
+run order and results.
+
+-->  SqlSyncBuildProject.xml: the XML file showing the design time
+meta-data on each script file that defined the run settings, script
+creation user ID's and the committed script record and hash for each.
 	
