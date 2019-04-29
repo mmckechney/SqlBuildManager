@@ -1,4 +1,4 @@
-
+2
 # Command line Usage
 
 **Tip**: If you don't like typing the full name of the exe you can easily create an alias with the files in the *Utility* folder:
