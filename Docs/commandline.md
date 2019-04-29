@@ -3,6 +3,8 @@
 
 **NOTE:** For command line operations, you must use `SqlBuildManager.Console.exe`
 
+----
+
 **Tip**: If you don't like typing the full name of the exe you can easily create an alias with the files in the [Utility](../Utility) folder:
 - Edit the [alias.bat](../Utility/alias.bat) file with the path to where you have the SqlBuildManager.Console.exe file. 
 - Edit the [command_alias.reg](../Utility/command_alias.reg) file to the path where you save the *alias.bat* file.
@@ -24,7 +26,7 @@ The basics of running the command line is the /Action argument. This is required
 - `Build` - Performs a standard, local execution via command line
 - `Threaded` - For updating multiple databases simultaneously. The threading is all run from the current machine
  - `Batch` - For massively parallel updating of databases simultaneously using Azure batch services
-- `Remote` - deprecated - use `Batch` instead] For massively parallel updating of databases simultaneously using remote execution servers deployed as Azure classic cloud services 
+- `Remote` - [_deprecated_ - use `Batch` instead] For massively parallel updating of databases simultaneously using remote execution servers deployed as Azure classic cloud services 
 
 ##### Utility actions 
 - `BatchPreStage` - Pre-stage Azure Batch VM nodes
@@ -67,7 +69,7 @@ Applies to: `/Action={Build|Threaded|Batch|Remote}`
 #### Azure Batch Execution (/Action=Batch)
 
 
-In addition to the authentication and runtime arguments above, these are arguements specifically needed for Azure Batch executions\
+In addition to the authentication and runtime arguments above, these are arguments specifically needed for Azure Batch executions\
 See detailed Batch [documentation](AzureBatch.md#azure-batch-execution-actionbatch)
 
 
