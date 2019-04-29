@@ -45,10 +45,6 @@ McKechney](http://mckechney.com/) on
 ## Basic Command Line Execution
 
 - [Command Line Arguments](#Command-Line-Arguments)
-- [Auto-Creation of Command Line Statements](#Auto-Creation-of-Command-Line-Statements)
-    - [Configuring the command statement](#Configuring-the-command-statement)
-    - [Generating the Command statement](#Generating-the-Command-statement)
-    - [Command Line Execution via UI](#Command-Line-Execution-via-UI)
 - [Command Line Examples](#Command-Line-Examples)
 
 ## Targeting Multiple Servers and Databases
@@ -66,13 +62,6 @@ McKechney](http://mckechney.com/) on
     - [Section Detail](#Section-Detail)
 - [Pre-testing database connectivity](#Pre-testing-database-connectivity)
 - [Performing a remote execution](#Performing-a-remote-execution)
-
-## Advanced Command Line Execution
-
-- [Execution Flags](#Execution-Flags)
-- [Logging](#Logging)
-- [Command Line Return Codes](#Command-Line-Return-Codes)
-    - [Execution Result codes](#Execution-Result-codes)
 
 ## Advanced Script Handling
 
@@ -161,7 +150,7 @@ because 99% of its functionality needs a live connection to work.
 1.       To get started, run the Sql Build Manager.exe to bring up the
 connection window:
 
-![](SqlBuildManagerManual_files/image001.jpg)
+![](images/image001.jpg)
 
 The SQL Servers dropdown will scan your network for broadcasting
 servers. Once it has done this it will populate the list. If you don't
@@ -203,7 +192,7 @@ open the file dialog. Navigate to the directory you want the file
 created and name your project. Just click the "Open" button to create
 the project shell.
 
-![](SqlBuildManagerManual_files/image002.png)
+![](images/image002.png)
 
 Now you're ready to start adding scripts to your project file. See
 "[Adding Scripts](#_Adding_Scripts_to)"
@@ -218,15 +207,15 @@ to these:
 - Right-Click in the Build Scripts section and select one of the
 "Add New..." options 
 
-![](SqlBuildManagerManual_files/image003.png)
+![](images/image003.png)
 
 - From the Actions menu, select one of the "Add New..." options
 
- ![](SqlBuildManagerManual_files/image004.jpg)
+ ![](images/image004.jpg)
 
 - Perform a Bulk Add via the "List" main menu option 
 
-![](SqlBuildManagerManual_files/image005.jpg)
+![](images/image005.jpg)
 
 - Drag and drop files from windows explorer onto the Build
 Scripts section
@@ -247,7 +236,7 @@ make your selection and click "Open" you will need to Configure your
 Script to determine
 how you want it to run.
 
-![](SqlBuildManagerManual_files/image006.jpg)
+![](images/image006.jpg)
 
 #### Adding Script Text
 
@@ -258,7 +247,7 @@ the script itself and then [Configure your
 Script](#_Script_Configuration:_Setting) to determine how you want it to
 run.
 
-![](SqlBuildManagerManual_files/image007.jpg)
+![](images/image007.jpg)
 
  
 
@@ -312,11 +301,11 @@ is constructed to allow running again (a Stored Procedure update script
 for instance), you can check this option to have it execute again.
 
 *Configuration window for "Add File" and "Bulk Add" options*\
- **![](SqlBuildManagerManual_files/image008.jpg)**
+ **![](images/image008.jpg)**
 
 *Configuration window for the "New Sql Script (Text)" option and
 whenever editing an existing script\
-****![](SqlBuildManagerManual_files/image009.jpg)**
+****![](images/image009.jpg)**
 
 When editing an existing file, these configuration options are hidden in
 the new window. To display them, use the double arrow icon on the right
@@ -327,7 +316,7 @@ Bulk Adding Scripts
 There are 3 ways to bulk add scripts into your Sql Build Project file,
 all accessed via the List menu item:
 
-![](SqlBuildManagerManual_files/image010.jpg)
+![](images/image010.jpg)
 
 ### Bulk Add
 
@@ -343,7 +332,7 @@ This menu option opens a dialog box where you can type or paste in a
 list of files (with full paths) that you want to add to the project
 file. Simply add them, one per line, and click the "Add Files" button
 
-![](SqlBuildManagerManual_files/image011.jpg)
+![](images/image011.jpg)
 
 Next, you will see a confirmation screen. This step is added in case you
 are trying to add a script that has the same name as a script already in
@@ -355,7 +344,7 @@ you have added them in error. If you click "Add Checked Files" you will
 be presented with the [script
 configuration](#_Script_Configuration:_Setting) screen
 
-![](SqlBuildManagerManual_files/image012.jpg)]
+![](images/image012.jpg)]
 
 ### Bulk Add From Text File
 
@@ -386,7 +375,7 @@ if you'd prefer or if your server isn't broadcasting or select from you
 registered servers list.
 
 
-![](SqlBuildManagerManual_files/image014.jpg)
+![](images/image014.jpg)
 
 ###  Recent Servers list
 
@@ -396,7 +385,7 @@ connected to and by simply changing your current selection; you will
 change the target server. In both this case and the Action menu option,
 the new server name will display in the header section.
 
-![](SqlBuildManagerManual_files/image015.jpg)
+![](images/image015.jpg)
 
  
 ## Running Your SQL Builds
@@ -444,7 +433,7 @@ execution. Whenever the tool encounters a script that is configured for
 a default target that has an override set, it will use the override
 instead.
 
-![](SqlBuildManagerManual_files/image016.jpg)
+![](images/image016.jpg)
 
 **Description**\
  Before you start a build execution, you will need to enter a
@@ -471,7 +460,7 @@ via the header section; both next to the Server label as well as in the
 Recent Servers dropdown box (this drop down is a quick way to switch
 your connection-to another server)
 
-![](SqlBuildManagerManual_files/image017.jpg)
+![](images/image017.jpg)
 
 #### Set Run Parameters
 
@@ -483,7 +472,7 @@ these are set, the disabled "Please Enter a Description" link will
 change to "Start Build {Server Name}" and become active. Click this and
 your off and running!
 
-![](SqlBuildManagerManual_files/image018.jpg)
+![](images/image018.jpg)
 
 #### Advanced Runtime Settings: Log Target Database and Run Build without a Transaction
 
@@ -518,7 +507,7 @@ Once you click the link to start the build, several things happen:
 -   A "Cancel" button becomes visible. Clicking this will, of course,
     cancel the build execution and roll back any changes made
 
-![](SqlBuildManagerManual_files/image019.jpg)
+![](images/image019.jpg)
 
 Once the build completes, either successfully or with an error, the
 final status of the build is shown in the status panel. The example
@@ -528,7 +517,7 @@ results of any script that ran, you can right-click on that item in the
 Build Results list and select "Display Results". The pop-up window will
 display the SQL Server message and any errors.
 
-![](SqlBuildManagerManual_files/image020.jpg)
+![](images/image020.jpg)
 
 ### Executing select scripts
 
@@ -540,7 +529,7 @@ against Database (Commit)". These do exactly what you'd expect them to
 do. Note that they will use any Override Target setting you may have set
 in the "Build Manager" section.
 
-![](SqlBuildManagerManual_files/image021.jpg)
+![](images/image021.jpg)
 
 Just like a full build, you will get the status update in the "Build
 Results" section and the final status in the status bar.
@@ -566,7 +555,7 @@ information about a build run:
 
  
 
-![](SqlBuildManagerManual_files/image022.jpg)
+![](images/image022.jpg)
 
 In addition, it captures details about each script that was run. The
 three most useful data points collected are:
@@ -646,14 +635,13 @@ hash of all the script files together. You can use the Copy button to
 grab the hash value for publishing. The hash value will not change
 unless there is a change (no matter how minor) to the scripts.
 
-![](SqlBuildManagerManual_files/image023.jpg)-->
-![](SqlBuildManagerManual_files/image024.jpg)
+![](images/image023.jpg)-->
+![](images/image024.jpg)
 
 Basic Command Line Execution
 ============================
 
 ## Command Line Arguments 
-
 
 Sql Build Manager can be run directly via command line or through the
 SqlBuildManager.Console.exe helper application. The advantage of using
@@ -661,157 +649,8 @@ the "console" application is that you will be able to record exit code
 values as well as stream the standard output and error text into any
 automation or scheduling software that you may be using.
 
-In either case, the command line arguments are the same:
+### For command line details go [here](commandline.md)
 
--   /build="\<.sbm file name\>" \
-     Lets the tool know that you want to run a Sql Build using the
-    specified .sbm file. This is not used alone, but in conjunction with
-    a "/server" and/or a "/override" argument.
--   /server=\<server name\>\
-     Designates the target server to run the .sbm file against. Used in
-    conjunction with "/build"
--   /override="\<.multiDb file name\>"\
-     Sets the pre-configured multi database/server
-    configuration to
-    be used along with the .sbm file for the build run.
--   /override=\<default database\>,\<Override database\>\
-     Defines a one-time [database override](#_Run_Time_Build) setting
-    where the override database is used where ever the default database
-    is found in the .sbm file configutation. A "/server" and "/build"
-    argument set are also needed.
--   /auto="\<.sqlauto file name\>"\
-     Used independently of the above, this is used to script the
-    database(s) defined in the Sql Auto-scripting file.
--   /test="\<.sptest file name\>"\
-     Sets the Stored Procedure test configuration to execute. Used in
-    conjunction with "/server", "/database" and "/log" arguments.
--   /database=\<database name\>\
-     Sets the database to execute a stored procedure test configuration
-    against.
--   /scriptlogfile="\<script log file\>"\
-     Allows you to set a destination, outside of the Sql Build Project,
-    where the [SQL script log](#_Build_File_SQL) will be saved. This can
-    be useful if you need to store that information in a particular
-    location for auditing.
-
-NOTE: There are special command line arguments specific just
-for [threaded multi-database execution ](#Execution)
-
-## Auto-Creation of Command Line Statements
-
-To simplify the creation of a command line execution, the application
-offers a user interface to create a command-line for you. You can then
-either copy this statement to be used later, or use an execute button to
-kick it off then and there.
-
-### Configuring the command statement
-
-1.       From either the Tools --> Construct Command line string menu item
-of the main form or the Action --> Construct Command line string menu item
-from the Multi Database Run Configuration form you can open the creation
-window.
-
-![](SqlBuildManagerManual_files/image025.jpg)![](SqlBuildManagerManual_files/image026.jpg)
-
-2.       The Command Line Builder form will give you options for each
-setting.
-
-![](SqlBuildManagerManual_files/image027.jpg)
-
-- **Run Settings** --> How do you want the execution to run
-
-- *Run multi-database as threaded* --> sets whether or not you want the
-tool to thread out the execution. This is checked by default since this
-is the biggest benefit of running via command line
-
-- *Run as Trial (rollback) mode* --> sets whether or not you want
-database changes to commit when completed. If checked, all scripts will
-be rolled back and leave the target database unchanged
-
-- *Run builds without transactions* --> allows you to run the scripts
-without transactional protection. WARNING! Using this setting will mean
-that if a script fails, all previous scripts will still be committed and
-your databases will be left in an inconsistent state
-
-- *Description*--> the description of your build. Any comments you want
-to add regarding this execution.
-
-- *Allowed Timeout Retry Count*--> Sets how many times the build can be
-retried is the SQL Server error message is -->Timeout expired-->
-
-- **Threaded Run Logging**--> when running in a threaded mode, how
-do you want to create the log files
-
-- *Log File Format*--> HTML or Plain Text. Obvious. The HTML format
-allows you to link from the base log files (commits.html or errors.html)
-to easily locate the specific database run logs
-
-- *Root Logging Path*-->- the base folder that you want the log files
-and sub-directories to be created
-
-- **Script Source -->**where are the scripts that you want to run?
-You can only populate one of these options as a time.
-
-- *Sql Build Manager Package (.sbm)*--> command lines can only be run
-from .sbm compiled files, vs .sbx files. This will be the location of
-the .sbm file you want to use. NOTE: this will be auto-populated with
-the path of the .sbm file that is loaded in the main form if applicable.
-
-- *Script Source Directory*--> if you want to run un-configured scripts
-that reside in a folder, you can point this to that directory path. By
-doing this, you lose the advantages of configuring run-time settings for
-scripts.
-
-- **Override Target Settings**
-
-- *Target Override Settings (.multiDb, .multiQbQ or -->.cfg) -->*the
-location of the config file that lists the servers/databases that you
-want the multi-database run to execute against.
-
-- **Database Authentication Settings**
-
-- *Use Windows Authentication -->*when checked, the connection to the
-databases will use the windows account being used to run the execution
-as the authentication to the databases
-
-- *UserName -->*****enabled if Use Windows Authentication is unchecked.
-The SQL Server user to use for the connection.
-
-- *Password -->*****enabled if Use Windows Authentication us unchecked.
-The SQL Server user-->s password to use for the connection.
-
-- **Alternate Logging Database**- if you select alternate
-database logging (generally NOT recommended as it reduces the
-effectiveness of the logging) this is the name of that database.
-
-** **
-
-### Generating the Command statement
-
-Once you have applied all of your settings in the form, you can click
--->Construct Command Line-->. The form will validate that you have populated
-all necessary settings and configured your options properly. It will not
-validate that file paths are correct and files exist (this is because
-you may want to set up a command line not relative to where you are
-setting it up). The generated command line string will be populated into
-the box below the button. Also, the -->Execute--> button will become
-enabled.
-
-![](SqlBuildManagerManual_files/image028.png)
-
-### Command Line Execution via UI
-
-After successfully generating a command line string and the -->Execute-->
-button is enabled, you can click it! This will create a command window
-to run the string via an external process. You may see a blank command
-window pop open and remain open until the execution is complete. When
-that window closes, the execution output window will display that output
-of the execution (hopefully a success message!).--> Also, the -->Open
-Logging Folder--> button will become enabled. This is a courtesy button to
-open the logging folder directly from the application should you want to
-browse the log files.
-
-![](SqlBuildManagerManual_files/image029.png)
 
 ## Command Line Examples 
 
@@ -822,71 +661,43 @@ execution uses Windows authentication of the executing process to
 connect to the server and database(s). As with in interactive execution,
 the results are saved in the .sbm file for review.
 
--   SqlBuildManager.Console.exe /build=".sbm file name"
+-   SqlBuildManager.Console.exe /Action=Build /PackageName=".sbm file name"
     /server=myserver 
 
 ```
-SqlBuildManager.Console.exe /build="ProjectUpdate.sbm" /server=ProdServer 
+SqlBuildManager.Console.exe /Action=Build /PackageName="ProjectUpdate.sbm" /server=ProdServer 
 ```
 
 **Run an unattended Sql build with manual database override
-settings****\
-**Runs the specified .sbm build file on the designated server using the
+settings**\
+Runs the specified .sbm build file on the designated server using the
 override database settings defined in the command line arguments. This
 is the same as using the Target Database Override setting in the UI.
 The command line execution uses Windows authentication of the executing
 process to connect to the server and database(s). As with in interactive
 execution, the results are saved in the .sbm file for review.
 
--   SqlBuildManager.Console.exe /build=".sbm file name" /server=server
+-   SqlBuildManager.Console.exe /Action=Build /PackageName=".sbm file name" /server=server
     /override=default,override
 
 ```
-SqlBuildManager.Console.exe /build="ProjectUpdate.sbm" /server=ProdServer /override=Main,Copy1
+SqlBuildManager.Console.exe /Action=Build /PackageName="ProjectUpdate.sbm" /server=ProdServer /override=Main,Copy1
 ```
 
 Note that multiple overrides may be set if the build file contains more
 than one default database setting via a semi-colon delimited
 list:/override:Main,Copy1;Template,Template2\>
 
-**Run an unattended Sql build with saved Multi Db configuration****\
-**Runs the specified .sbm build file using a pre-configured multiple
+**Run an unattended Sql build with saved Multi Db configuration**\
+Runs the specified .sbm build file using a pre-configured multiple
 server/database configuration. The command line execution uses Windows
 authentication of the executing process to connect to the server and
 database(s). As with in interactive execution, the results are saved in
 the .sbm file for review.
 
--   SqlBuildManager.Console.exe /build ".sbm file name" /override
-    ".multiDb File Name"
-
 ```
- SqlBuildManager.Console.exe /build="ProjectUpdate.sbm" /override="prod release.multiDb"
+ SqlBuildManager.Console.exe /Action=Build /PackageName="ProjectUpdate.sbm" /override="prod release.multiDb"
  ```
-
-**Script databases using an Auto Script configuration****\
-**Uses Sql Build Manager's database scripting feature to script the
-designated server/database objects to a target folder.
-
--   SqlBuildManager.Console.exe /auto=".sqlauto script cfg file"
-```
-SqlBuildManager.Console.exe /auto "script dev databases.sqlauto"
-```
-**Running a Stored Procedure Test configuration set****\
-**Utilizes Sql Build Manager's ability to perform unit tests against
-stored
-procedures and
-saves the results in a parseable XML data format.
-
--   SqlBuildManager.Console.exe /test=".sptest file"
-    /server=myserver /database=myDb /log=logfile.xml
-
-```
-SqlBuildManager.Console.exe /test="testing.sptest" /server=Production /database=myDb /log="C:\\logfile.xml"
-```
-**Opening an interactive Build Manager Session****\
-**Opens the selected .sbm build project file in a user window
-
--   " Sql Build Manager.exe" ".sbm file name"
 
 See [Advanced Command Line Execution](#Advanced-Command-Line-Execution) for
 return codes.
@@ -908,7 +719,7 @@ however, you open up the -->Multiple Database Run Configuration--> window
 via the Sql Build Manager window, Action --> Configure Multi
 Server/Database Run menu option
 
-![](SqlBuildManagerManual_files/image030.jpg)
+![](images/image030.jpg)
 
 The default window opened when opening the Multiple Database Run
 Configuration window will have a single main tab for the server that
@@ -932,7 +743,7 @@ database names that are used for the override target of the sub-tab
 named database if you are configuring a multi-database build or will
 define the target databases for a report generation.
 
-![](SqlBuildManagerManual_files/image031.jpg)
+![](images/image031.jpg)
 
 2.       If you need to add additional server targets, you can use the
 Action --> Add Another Server Configuration menu option and use the
@@ -940,7 +751,7 @@ connection window to add that server and its database list to the top
 level tabs. You would then configure the target database for this server
 also by manually typing in the sequence number.
 
-![](SqlBuildManagerManual_files/image032.jpg)
+![](images/image032.jpg)
 
 3.       To remove a server configuration that you don-->t need, make sure
 that its tab is selected, then click the Remove button on that
@@ -957,7 +768,7 @@ sequence textbox for databases that have similar names.
 to display the context menu and select the Auto Sequence Target
 Databases option
 
-![](SqlBuildManagerManual_files/image033.png)
+![](images/image033.png)
 
 2.       The auto sequence pop-up window will display. In this window,
 highlight the portion of the database name that is common to all those
@@ -966,7 +777,7 @@ and the increment for sequencing in this box. Once you have this
 configured, click the OK button and all of the databases that match the
 common pattern in their name will be sequenced accordingly.
 
-![](SqlBuildManagerManual_files/image034.jpg)
+![](images/image034.jpg)
 
 ### Create Configuration via a Query
 
@@ -976,7 +787,7 @@ that query to generate a multi-database configuration file at run time.
 1.       From the Multiple Database Run Configuration window select the
 Load Configuration via Query.
 
-![](SqlBuildManagerManual_files/image035.jpg)
+![](images/image035.jpg)
 
 2.       In this window, you can type in the query that you will use to
 retrieve your database list. The query must return 3 columns worth of
@@ -1078,7 +889,7 @@ Execution Service menu item. (If this menu item is not enabled, you will
 need to have your [user id configured](#FeatureAccessSettings) by your
 administrator to get access)
 
-![](SqlBuildManagerManual_files/image036.jpg)
+![](images/image036.jpg)
 
 The remote execution form has 4 sections:
 
@@ -1105,7 +916,7 @@ Dashboard*](#RemoteServiceStatusDashboard)**--> gives you a view of the
 status of the Sql Build Manager Build Service on each of the execution
 servers.
 
-![](SqlBuildManagerManual_files/image037.png)
+![](images/image037.png)
 
 ### Section Detail
 
@@ -1118,7 +929,7 @@ on re-using server sets, you are better of creating Server Sets via the
 Action --> Manager Server Sets, menu item which will display the Remote
 Execution Server Configuration window.
 
-![](SqlBuildManagerManual_files/image038.png)-->![](SqlBuildManagerManual_files/image039.jpg)
+![](images/image038.png)-->![](images/image039.jpg)
 
 The first step in creating a reusable configuration is to use the Action
 --> New Configuration menu. You will be prompted for a Server Group name,
@@ -1176,7 +987,7 @@ automatically change the [Workload Distribution](#WorkloadDistribution)
 to *Each execution server handles only its local load (matches host
 names).*You can change the selection if you-->d prefer however.
 
-![](SqlBuildManagerManual_files/image040.png)
+![](images/image040.png)
 
 #### Workload Distribution
 
@@ -1196,7 +1007,7 @@ This will tell the distributor to do a match between the execution
 server name and the server name of the target database. It will only
 task the execution server with positive matches.
 
-![](SqlBuildManagerManual_files/image041.png)
+![](images/image041.png)
 
 Because work is being distributed and/or matched to execution servers,
 there is the potential that the workload could be unbalanced and/or
@@ -1207,7 +1018,7 @@ have the tool do a dry run at splitting up the workload and display for
 you how it will be managed as well as any databases that will be skipped
 and execution servers that would be un-tasked.
 
-![](SqlBuildManagerManual_files/image042.jpg)
+![](images/image042.jpg)
 
 #### Remote Service Status Dashboard
 
@@ -1215,7 +1026,7 @@ This report the status of the execution servers you have configured in
 the [Remote Servers](#RemoteServers) section. It is populated by
 clicking the -->Check Service Status--> button.
 
-![](SqlBuildManagerManual_files/image043.png)
+![](images/image043.png)
 
 The 6 status columns are:
 
@@ -1273,13 +1084,13 @@ troubleshooting.
 To view the details of the last execution, you can right click on a cell
 in the [Remote Service Status Dashboard](#RemoteServiceStatusDashboard)
 to pull up the context menu. In this menu you have five options:
-![](SqlBuildManagerManual_files/image044.png)
+![](images/image044.png)
 
 - View Last Execution -->Errors--> log --> this will display the error
 log from the selected row-->s target server. This log displays the list of
 servers for which execution was not successful.
 
-![](SqlBuildManagerManual_files/image045.jpg)
+![](images/image045.jpg)
 
 - View Last Execution -->Commits--> log --> this will display the
 commits log from the selected row-->s execution server. This log displays
@@ -1306,7 +1117,7 @@ requests. This menu item will display information about these requests.
 From this new window, you will also be able to use the context menu to
 pull back the log files for each specific execution.
 
-![](SqlBuildManagerManual_files/image046.png)
+![](images/image046.png)
 
 ## Pre-testing database connectivity
 
@@ -1326,7 +1137,7 @@ there are connection issues, you will get a pop-up listing the remote
 execution server name, the SQL Server name and the database name where
 the connection could not be made.
 
-![](SqlBuildManagerManual_files/image047.png)
+![](images/image047.png)
 
 ## Performing a remote execution
 
@@ -1334,8 +1145,8 @@ the connection could not be made.
 Below is a step-by-step how-to for running a remote execution and
 deployment. For details about each section and its function see above in
 the Remote Execution and Deployment
-[overview](#RemoteServiceExecutionandDeploymentOvr) and [section
-detail](#RemoteServiceExecutionandDeploymentSect)
+overview and section
+detail
 
 1.       Open the Remote Execution Service From
 
@@ -1387,167 +1198,7 @@ you should check the results via the -->View Execution -->Errors--> Log--> and
 the detailed log results to see how you can mediate and correct the
 problems.
 
-For a command line execution across multiple servers, see the _Advanced
-Command Line Execution_ below
 
-Advanced Command Line Execution
-===============================
-
-Execution Flags
----------------
-
-To run your multithreaded build or remote server execution, you need to
-use the SqlBuildManager.Console.exe utility with the command line
-options:
-
--   /threaded=true This is the key flag to alert the utility that you
-    will be executing this SBM file in a multi-threaded mode. This flag
-    is used exclusively for the threaded mode.
--   /build="\<.sbm file name\>" \
-     Lets the tool know that you want to run a Sql Build using the
-    specified .sbm file. This is not used alone, but in conjunction with
-    a /server and/or a /override argument.
--   /ScriptSrcDir="\<directory path\>"\
-     Alternatively, if you want to run your scripts from a directory
-    instead of a pre-constructed SBM file, you can use this option. Set
-    the value to the directory where your scripts are located. The
-    engine will look for all files with a .sql extension and sort them
-    by file name. They will be configured to leave transactions with
-    full rollback on failure. If this and a /build tag are found, this
-    will be used. Also, since the files will be added without a default
-    database setting, the engine will use the first override database
-    setting per line in the config file
--   /override="\<.multiDb file name\>" or /override="\<.cfg file
-    name\>"\
-     Sets the pre-configured multi database/server configuration or the
-    text delimited configuration to be used along with the .sbm file for
-    the build run.
--   /RootLoggingPath="\<directory name\>" Sets the root directory under
-    which all of the log files and folders will be placed. This flag is
-    used exclusively for the threaded mode. Note that you may use
-    environment variables in this path to make value more dynamic per
-    system.
--   /trial=\<true or false\> By default, the threaded execution will
-    commit the changes to the target databases. If you want to
-    experiment with the run to check how it will go, you can set the
-    trial tag to true. This will work the same as the trial mode in the
-    UI and roll back the changes in each database, even upon successful
-    completion. To keep things more simple, the successful runs are
-    still added to the Commits log file but are recorded as "Build
-    Successful. Trial Rolled-back"
--   /LogAsText=\<true or false\>. Be default, the value is false, which
-    will create the Commits and Errors log files in HTML. The advantage
-    of this is that it will hyperlink you to the appropriate folder for
-    viewing error or execution log details. If you set the value to
-    true, the same information will be written, just in plain text.
--   /username="\<user name\>" The user name for a SQL Server user
-    account that you want to execute under. If this tag is present, then
-    a /password tag is also required. If these tags are not present, the
-    tool will use Windows authentication when connecting to the
-    database.
--   /password="\<password\>" The password for the SQL Server user
-    account that you want to execute under. If this tag is present, then
-    a /username tag is also required. If these tags are not present, the
-    tool will use Windows authentication when connecting to the
-    database.
--   /LogToDatabaseName="\<alternate database\>" Allows you to write the
-    commit logs to the SqlBuild\_Logging table on a different database
-    than the target databases. This should be used sparingly as it will
-    not give you the proper script status when opened in the user
-    interface
--   /description="\<run description\>" Allows you to add a custom
-    description to the run. This will be used in the same fashion as a
-    description added during a serial/manual run. This will also be used
-    as the token replacement for any dynamic scripts you have. The token
-    for this value is \#BuildDescription\#
--   /Transactional=\<true or false\> Allows you to run the scripts
-    without transactional protection. WARNING! Using this setting will
-    mean that if a script fails, all previous scripts will still be
-    committed and your databases will be left in an inconsistent state
--   /TimeoutRetryCount=\<positive integer number value\> Sets the
-    ability to have the package be automatically re-run -->x--> number of
-    times if the SQL Server exception encountered is -->Timeout expired-->.
-    This is not valid in combination of /Transactional=false
-
-The following keys are used exclusively for [Remote Server
-Execution](#RemoteServiceExecutionandDeploymentOvr). See this section
-above for the UI version and explanation of this functionality. Unless
-noted, the above [Execution Flags](#Execution) can also be used to
-configure the run. -->For ease of use and to help you create a properly
-formed command-line string, there is now a -->Create Command Line--> button
-available --> but be aware that while this does create a well formed
-string it does NOT validate the values or files and therefore does not
-guarantee execution success.
-
-![](SqlBuildManagerManual_files/image048.png)
-
--   /remote=true This is the key flag to alert the utility that you will
-    be distributing execution to remote execution servers. This key
-    should *not* be combined with the /threaded flag.
--   /RemoteServers=-->\<remote server file\>--> This defines the file to use
-    that defines the remote execution servers that will be used for this
-    run. This file should be a simple text file that contains one
-    machine name per line.
--   /RemoteServers=-->derive--> This is an advanced setting that you can use
-    if your target database servers also act as your remote execution
-    servers. This instructs the tool to derive the unique server names
-    from the /override settings and use that list as the remote server
-    list.
--   /DistributionType=equal or /DistributionType=local Defines how the
-    load for the execution will be split across the execution servers.
-    For details, see the [Workload Distribution](#WorkloadDistribution)
-    section.
-
-Logging
--------
-
-Since there isn't a user interface for this type of execution, logging
-is obviously important. For general logging, the
-SqlBuildManager.Console.exe has its own local messages. This log file is
-named SqlBuildManager.Console.log and can be found in the same folder as
-the executable. This file will be the first place to check for general
-execution errors or problems.
-
-To accommodate the logging of the actual build, all of the output is
-saved to files and folders under the path specified in
-the /RootLoggingPath flag. For a simple threaded execution, this is a
-single root folder. For a remote server execution, this folder is
-created for each execution server.
-
-**Working folder**
-
-This folder is where the contents of the .SBM file are extracted. This
-file is extracted only once and loaded into memory for the duration of
-the run to efficiently use memory.
-
-**Commits.html (or .log for text scripting)**
-
-Contains a list of all databases that the build was committed on. This
-is a quick reference for each location that had a successful execution.
-
-**Errors.log (or .log for text scripting)**
-
-Contains a list of all databases that the build failed on and was rolled
-back. This is a quick reference for all locations that had failures.
-
-**Server/Database folders**
-
-For each server/database combination that was executed, a folder
-structure is created for each server and a subfolder in those for each
-database. Inside each database level folder will be three files:
-
--->  LogFile-\<date,time\>.log: This is the script execution log for the
-database. It contains the actual SQL scripts that were executed as well
-as the return results of the execution. This file is formatted as a SQL
-script itself and can be used manually if need-be.
-
--->  SqlSyncBuildHistory.xml: the XML file showing run time meta-data
-details on each script file as executed including run time, file hash,
-run order and results.
-
--->  SqlSyncBuildProject.xml: the XML file showing the design time
-meta-data on each script file that defined the run settings, script
-creation user ID's and the committed script record and hash for each.
 
 Command Line Return Codes
 -------------------------
@@ -1656,14 +1307,14 @@ knows!
 1.       Right click on the Build Script list and select -->Add New Sql
 Script (Text)--> menu item (you can also use the Ctrl+N hot key)
 
-![](SqlBuildManagerManual_files/image049.png)
+![](images/image049.png)
 
 2.       The -->Add Sql Script Text--> window will pop up. In this window,
 right click in the main script window to pull up the utility script
 context menu. Since we-->re adding a column, pick the -->Columns--> menu, then
 the -->Add Column--> option.
 
-![](SqlBuildManagerManual_files/image050.jpg)
+![](images/image050.jpg)
 
 3.       The Utility Script Replacements window will display. Since we
 picked Add Column, the fields required to define a new column. The
@@ -1673,7 +1324,7 @@ definition for the required fields. As a short cut, you can highlight
 text in your scratchpad area and press the function key associated with
 the textbox you want to fill.
 
-![](SqlBuildManagerManual_files/image051.jpg)
+![](images/image051.jpg)
 
 4.       Once you have filled in your definition, click the Submit
 button. This will close the Utility Scripts Replacements window and
@@ -1687,7 +1338,7 @@ exists in the database. This allows you to commit the script multiple
 times without worrying about getting an error that the column already
 exists
 
-![](SqlBuildManagerManual_files/image052.jpg)
+![](images/image052.jpg)
 
  
 
@@ -1709,7 +1360,7 @@ that have selects against tables that can afford the potential for a
 script at the location of your cursor. Great for ensuring consistency in
 your procedure and function definitions.
 
-![](SqlBuildManagerManual_files/image053.png)
+![](images/image053.png)
 
 - **Grant Database Permissions:**Adds a rather large script to
 iterate through your target database and grant permissions to all of
@@ -1723,7 +1374,7 @@ A canned search and replace function.
 highlighted for the word CREATE (case insensitive) and replace it with
 ALTER.
 
-![](SqlBuildManagerManual_files/image054.png)
+![](images/image054.png)
 
 ### Script Creation
 
@@ -1735,7 +1386,7 @@ creation utility. The others are found in the sub-menu for their object
 type. All of these scripts will contain the -->IF EXISTS--> or -->IF NOT
 EXISTS--> wrapping to ensure they are fully re-runable.
 
-![](SqlBuildManagerManual_files/image055.png)
+![](images/image055.png)
 
 - **Columns**
 
@@ -1819,7 +1470,7 @@ sub-menu items for the object type.
 (or portion of) that you want to be wrapped, then select the appropriate
 object wrapper selection
 
-![](SqlBuildManagerManual_files/image056.jpg)
+![](images/image056.jpg)
 
 2.       The utility window will open up. Notice that your highlighted
 text has been added to the scratchpad. Also notice that the checkbox
@@ -1827,12 +1478,12 @@ text has been added to the scratchpad. Also notice that the checkbox
 text in the scratchpad will be inserted inside the--> wrapper. Fill out
 the form and click submit.
 
-![](SqlBuildManagerManual_files/image057.jpg)
+![](images/image057.jpg)
 
 3.       The utility window will close and your highlighted text with be
 overwritten with the--> updated -->wrapped--> script
 
-![](SqlBuildManagerManual_files/image058.jpg)
+![](images/image058.jpg)
 
 - **Columns**
 
@@ -1893,7 +1544,7 @@ will run your enclosed script
 There are several built in routines that will modify your scripts to
 perform specific functions.
 
-![](SqlBuildManagerManual_files/image059.png)
+![](images/image059.png)
 
 #### Optimize SELECT : Add -->WITH (NOLOCK)--> Directive
 
@@ -1914,13 +1565,13 @@ definitions and modify it to a series of ADD/ALTER column.
 column definition sections) and highlight it. Right-Click and select the
 -->Convert to ALTER COLUMN--> menu option
 
-![](SqlBuildManagerManual_files/image060.png)
+![](images/image060.png)
 
 2.       The program will run through its processing and produce the
 altered script containing an IF EXISTS wrapper to ALTER or ADD the
 defined columns.
 
-![](SqlBuildManagerManual_files/image061.jpg)
+![](images/image061.jpg)
 
 #### Transform to resync TABLE
 
@@ -1937,17 +1588,17 @@ loss.
 the text. Next, Right-Click and select the -->Transform to resync TABLE-->
 menu option.
 
-![](SqlBuildManagerManual_files/image062.png)
+![](images/image062.png)
 
 2.       You will be presented with a warning message, just to make sure
 you are aware of the risks and what will be created
 
-![](SqlBuildManagerManual_files/image063.jpg)
+![](images/image063.jpg)
 
 3.       Clicking -->Yes--> will process the script and produce the re-sync
 results.
 
-![](SqlBuildManagerManual_files/image064.jpg)
+![](images/image064.jpg)
 
  
 
@@ -1961,7 +1612,7 @@ optimized. If a script does not pass one or more policy checks message
 box describing the violation will display. The user does have the
 ability to ignore the warning and continue on if they choose to do so.
 
-![](SqlBuildManagerManual_files/image065.jpg)
+![](images/image065.jpg)
 
  
 
@@ -1972,7 +1623,7 @@ the Sql Build Manager project, you can also run the policy checks
 against the entire contents of the package at once. This is accomplished
 via the Tools --> Script Policy Checking menu option
 
-![](SqlBuildManagerManual_files/image066.jpg)
+![](images/image066.jpg)
 
 This will present you with the Script Policy Checking window. This
 window gives you the list of available policies and a description of
@@ -1983,7 +1634,7 @@ By default, failures are sorted at the top of the list. To correct
 violations, you can double click on the script name in this list to open
 an edit window.
 
-![](SqlBuildManagerManual_files/image067.jpg)
+![](images/image067.jpg)
 
 ### Grant Execute Policy
 
@@ -2088,19 +1739,19 @@ database objects all at once! Here's how...
 1.       Select a database to be your script source via the Scripting
 menu's database drop down list:
 
-![](SqlBuildManagerManual_files/image068.jpg)
+![](images/image068.jpg)
 
 2.       Once a database is selected, the next menu item list is
 available, where you can select the object type:
 
-![](SqlBuildManagerManual_files/image069.jpg)
+![](images/image069.jpg)
 
 3.       Now that you've selected your object type, *Sql Build
 Manager*presents you with a list of all objects in the source database
 for you to select. You can check one or more. You can also right-click
 on any one of them to get a script preview of the object.
 
-![](SqlBuildManagerManual_files/image070.jpg)
+![](images/image070.jpg)
 
 4.       Once you've selected your objects for scripting, click the "Add
 Files" button and the scripts are created. As a means to confirm the
@@ -2109,7 +1760,7 @@ confirmation screen. Files that match (by file name) items already in
 your build file are colored in orange. To add the checked files into
 your build project, click on "Add Checked Files".
 
-![](SqlBuildManagerManual_files/image071.jpg)
+![](images/image071.jpg)
 
 5.       Lastly, you need to tell *Sql Build Manager *how to handle
 running the files against a target database; you do this via the
@@ -2118,7 +1769,7 @@ the scripts you're adding in this "bulk" fashion. Check out [script
 configuration](#_Script_Configuration:_Setting) for all of your options
 
 \
- ![](SqlBuildManagerManual_files/image072.jpg)
+ ![](images/image072.jpg)
 
 Updating Scripted Objects
 -------------------------
@@ -2138,20 +1789,20 @@ context menu item will be enabled. From here, you have two choices: use
 the settings from the original script header or use the target database
 override setting (see that advanced topic).
 
-![](SqlBuildManagerManual_files/image073.jpg)
+![](images/image073.jpg)
 
 2.       Once you have selected how to re-generate the scripts, you are
 presented with a confirmation window (similar to the one from the
 original scripting), then just click "Update Checked Files" update the
 scripts in the project file.
 
--    ![](SqlBuildManagerManual_files/image074.jpg)
+-    ![](images/image074.jpg)
 
 3.       You can also update the scripts for *all*scriptable objects in
 the project file via the "Scripting --> Update Object Create Scripts" main
 menu option.
 
-![](SqlBuildManagerManual_files/image075.jpg)
+![](images/image075.jpg)
 
 Creating a -->Back out Package-->
 -----------------------------
@@ -2166,7 +1817,7 @@ an unaltered version of the database somewhere (i.e. to this BEFORE you
 apply your changes to your production database!). To get started, click
 on the -->Scripting --> Create back out package--> main menu option.
 
-![](SqlBuildManagerManual_files/image076.jpg)
+![](images/image076.jpg)
 
 This will open update the Backout Package form. To change your database
 source to an unaltered version of your database, use the -->Action -->
@@ -2199,7 +1850,7 @@ Package--> button. If there are any errors, the back out package will not
 be created and you can use the -->Help --> View Application Log File--> link
 to view the errors.
 
-![](SqlBuildManagerManual_files/image077.jpg)
+![](images/image077.jpg)
 
 Reporting and Adhoc Queries
 ===========================
@@ -2215,7 +1866,7 @@ are in sync with the build file.
 1.  From the main Sql Build Manager window, select Action --> Configure
     Multi Server/Database Run
 
-![](SqlBuildManagerManual_files/image078.jpg)
+![](images/image078.jpg)
 
 2.       Configure the databases you want to generate the report
 against.--> (See [Configuring Multiple Database
@@ -2224,11 +1875,11 @@ Targets](#_Configuring_Multiple_Database))
 3.       From the opened Multiple Database Run Configuration Page,
 select--> the Reports --> Script Status Report menu item
 
-![](SqlBuildManagerManual_files/image079.png)
+![](images/image079.png)
 
 4.       The Script Status Reporting window will display.
 
-![](SqlBuildManagerManual_files/image080.jpg)
+![](images/image080.jpg)
 
 From this window, you can select the output type you would like for the
 report.
@@ -2265,7 +1916,7 @@ configured for comparison.
 1.  From the main Sql Build Manager window, select Action --> Configure
     Multi Server/Database Run
 
-![](SqlBuildManagerManual_files/image081.jpg)
+![](images/image081.jpg)
 
 2.       Configure the databases you want to generate the report
 against.--> (See [Configuring Multiple Database
@@ -2276,11 +1927,11 @@ database.
 3.       From the opened Multiple Database Run Configuration Page,
 select -->the Reports --> Object Comparison Report menu item
 
-![](SqlBuildManagerManual_files/image082.jpg)
+![](images/image082.jpg)
 
 4.       The Object Comparison Report form will display.
 
-![](SqlBuildManagerManual_files/image083.jpg)
+![](images/image083.jpg)
 
 From this window, you can select the output type you would like for the
 report.
@@ -2313,7 +1964,7 @@ and open it in your default HTML viewer. Note that this option does not
 re-scan the databases but rather reuses the data gleaned in the original
 run so there is no processing delay or performance impact.
 
-![](SqlBuildManagerManual_files/image084.png)
+![](images/image084.png)
 
  
 
@@ -2330,7 +1981,7 @@ you select.
 1.       From the main Sql Build Manager window, select Action -->
 Configure Multi Server/Database Run
 
-![](SqlBuildManagerManual_files/image081.jpg)
+![](images/image081.jpg)
 
 2.       Configure the databases you want to run the Adhoc query
 against.--> (See [Configuring Multiple Database
@@ -2339,7 +1990,7 @@ Targets](#_Configuring_Multiple_Database))
 3.       From the opened Multiple Database Run Configuration Page,
 select--> the Reports --> Adhoc Query Execution menu item
 
-![](SqlBuildManagerManual_files/image085.png)
+![](images/image085.png)
 
 4.       The query window will display. In this window, you have the
 option to select the output type for the report:
@@ -2353,7 +2004,7 @@ XML - the raw data retrieved in XML format.
 Also through the Action menu item, you can Open or Save a SQL query for
 reuse.
 
-![](SqlBuildManagerManual_files/image086.jpg)
+![](images/image086.jpg)
 
 5.       Once you have selected your output type and either typed in
 your query or opened an existing query from a file, click the Run Script
@@ -2380,7 +2031,7 @@ Stored Procedure Testing-Setup
 1.       You access the stored procedure testing module via the main
 screen *Tools | Stored Procedure Testing *menu option
 
-![](SqlBuildManagerManual_files/image087.jpg)
+![](images/image087.jpg)
 
 2.       This will open up a new Stored Procedure Test Configuration
 window. To get going, you will need to create a new test configuration.
@@ -2393,7 +2044,7 @@ another database, you will need to create another configuration. Note
 however, if you have two or more databases with the same stored
 procedures, you can use a single configuration across those databases.
 
-![](SqlBuildManagerManual_files/image088.jpg)
+![](images/image088.jpg)
 
 3.       Now that you have your database set, you can start selecting
 stored procedures and creating test cases.
@@ -2405,8 +2056,8 @@ the left (this is where your selected stored procedures and test cases
 will soon display) and select the only active option - Add New Stored
 Procedure; this will give you the Stored Procedure list:
 
-![](SqlBuildManagerManual_files/image089.jpg)-->
-![](SqlBuildManagerManual_files/image090.jpg)
+![](images/image089.jpg)-->
+![](images/image090.jpg)
 
 2.       From this list (which shows all of the user stored procedures
 on the target database that have not been previously selected), check
@@ -2419,12 +2070,12 @@ eventually be all of them right?) and click "Add Checked Files".
 side list and right-click to pull up the menu. From this menu, select
 "Add New Test Case to \<sp name\>".
 
-![](SqlBuildManagerManual_files/image091.jpg)
+![](images/image091.jpg)
 
 2.       This will then activate the right side, test configuration
 section of the screen where you can set-up the test
 
-![](SqlBuildManagerManual_files/image092.jpg)
+![](images/image092.jpg)
 
 #### Test Case Definition\
  \
@@ -2529,7 +2180,7 @@ the tests you want to run (or use the "Check All" link) and click the
 "Run Checked Test" button. An execution/results window will open up and
 the tests will automatically start.
 
-![](SqlBuildManagerManual_files/image093.jpg)
+![](images/image093.jpg)
 
 ### Interpreting the results
 
@@ -2537,7 +2188,7 @@ the tests will automatically start.
 logging the results for each test and displaying the summary results in
 the execution window
 
-![](SqlBuildManagerManual_files/image094.jpg)
+![](images/image094.jpg)
 
 2.       For each test run, you will get a result row, with an
 success/failure indicator, the stored procedure name, the test case name
@@ -2554,7 +2205,7 @@ criteria that were used in the test and the actual results retrieved. In
 the bottom section, the actual SQL that was executed is shown in case
 you need to retrieve it for another use.
 
-![](SqlBuildManagerManual_files/image095.jpg)
+![](images/image095.jpg)
 
 ### Saving the results
 
@@ -2567,7 +2218,7 @@ the forms above, plus the name of the target server, target database,
 and start and end times. Also, the test case definition is included with
 each result.
 
-![](SqlBuildManagerManual_files/image096.jpg)
+![](images/image096.jpg)
 
 Automating stored procedure testing
 -----------------------------------
@@ -2602,13 +2253,13 @@ time. These files serve many purposes for different features of the
 application.
 
 - **.sbm** : ![Description:
-C:\\Projects\\SqlSync\\Images\\SqlBuildManager.png](SqlBuildManagerManual_files/image097.png)Single
+C:\\Projects\\SqlSync\\Images\\SqlBuildManager.png](images/image097.png)Single
 file package that contain the scripts, script metadata and run result
 history for the package.
 
  
 
-- **.sbx** :![](SqlBuildManagerManual_files/image098.png) XML
+- **.sbx** :![](images/image098.png) XML
 configuration file. This contains the script metadata for run time
 settings. The scripts are assumed to be in the same folder as the .sbx
 file. This file can be packaged into a single .sbm file via the Action -->
@@ -2617,41 +2268,41 @@ Package Scripts into Project File (.sbm) menu option.
  
 
 - **.sbe** : ![Description:
-C:\\Projects\\SqlSync\\Images\\SqlBuildManager.png](SqlBuildManagerManual_files/image097.png)A
+C:\\Projects\\SqlSync\\Images\\SqlBuildManager.png](images/image097.png)A
 -->Sql Build Export--> file. The product of an export of scripts from a .sbm
 file. This is essentially the same as a .sbm file, but is used to denote
 scripts that are intended to be imported into another sbm file.
 
 
 - **.multiDb** :
-![](SqlBuildManagerManual_files/image099.png)**Multi-database execution
+![](images/image099.png)**Multi-database execution
 configuration file. See [Configuring Multiple Database
 Targets](#_Configuring_Multiple_Database).
 
 ** **
 
 - **.multiDbQ** :
-![](SqlBuildManagerManual_files/image100.png)**Multi-database
+![](images/image100.png)**Multi-database
 configuration query file. See [Create Configuration via
 Query](#_Create_Configuration_via)
 
  
 
-- **.audit** : ![](SqlBuildManagerManual_files/image101.png)a
+- **.audit** : ![](images/image101.png)a
 auditing script creation template file. These files are used to create a
 group of tables that require data auditing.--> The program can then
 generate audit tables and triggers for these tables.
 
  
 
-- **.sqlauto** : ![](SqlBuildManagerManual_files/image102.png)a
+- **.sqlauto** : ![](images/image102.png)a
 configuration file for automated schema scripting. This can be used for
 creating a scheduled task to generate DDL scripts for databases on a
 regular basis
 
  
 
-- **.sts** : ![](SqlBuildManagerManual_files/image103.png)Sql
+- **.sts** : ![](images/image103.png)Sql
 Table Scripting. A configuration file of -->look-up--> or -->code tables-->.
 From this, the program can create script files that can be used to
 replicate their contents to other environments. These scripts are
@@ -2660,7 +2311,7 @@ re-runable and handle both inserts and updates of values.
  
 
 - **.sptest** :
-![](SqlBuildManagerManual_files/image104.png)Stored Procedure test
+![](images/image104.png)Stored Procedure test
 configuration file. With not programming, the application can create
 unit tests for stored procedures. You can supply standard or query based
 input values and interrogate execution times and return values to
@@ -2674,7 +2325,7 @@ Database Analysis
 Sql Build Manager has the built in features to run size and utilization
 analysis against a SQL server.
 
-![](SqlBuildManagerManual_files/image105.jpg)
+![](images/image105.jpg)
 
 Server Analysis
 ---------------
@@ -2684,7 +2335,7 @@ Database Size Summary window will open. On loading, it will begin
 scanning the current server (as identified in both the title bar and the
 -->Recent Servers--> drop down box to gather the data.
 
-![](SqlBuildManagerManual_files/image106.jpg)
+![](images/image106.jpg)
 
 2.       Once the scan is complete, you the grid will be populated with
 four pieces of data for each database associated with the server:
@@ -2715,7 +2366,7 @@ Individual Database Details
 database details by right-clicking on the database and selecting the Get
 Database Details menu item.
 
-![](SqlBuildManagerManual_files/image107.jpg)
+![](images/image107.jpg)
 
 2.       The size analysis for the selected database will run and load
 the data form. This contains data about each table in the database.
@@ -2744,7 +2395,7 @@ table
 - Average Index --> the average amount of space used per row for
 all of the indexes on the table
 
-![](SqlBuildManagerManual_files/image108.jpg)
+![](images/image108.jpg)
 
  
 
@@ -2766,7 +2417,7 @@ Data Extraction
 1.       Open the Data Extraction form via the Tools --> Data Extraction
 menu item from the main window
 
-![](SqlBuildManagerManual_files/image109.jpg)
+![](images/image109.jpg)
 
 2.       On the Data Extract window, you will need to do the following:
 
@@ -2788,7 +2439,7 @@ e.      The files that were created display in the -->Extract Results-->
 list. If you want to open a file, you can right-click on it and select
 -->Open File-->.
 
-![](SqlBuildManagerManual_files/image110.jpg)
+![](images/image110.jpg)
 
  
 
@@ -2805,7 +2456,7 @@ extracted data.
 1.       Open the Data Extract Script Creation Form via the Tools -->
 Create Scripts from Extracted Data menu option.
 
-![](SqlBuildManagerManual_files/image111.jpg)
+![](images/image111.jpg)
 
 2.       Open a data extract file (\*.data) via the Action --> Open Data
 Extract File menu item. Once you select the file, its contents will be
@@ -2814,7 +2465,7 @@ kicked off. The generated scripts are displayed in the bottom text box.
 These scripts are suitable to be copied and pasted into a Sql Build
 Manager project file or SQL management studio window for execution.
 
-![](SqlBuildManagerManual_files/image112.jpg)
+![](images/image112.jpg)
 
  
 
@@ -2845,14 +2496,14 @@ return a status alerting you of such.
 1.       Open the Database Object Validation form using the Tools -->
 Database Object Validation menu item.
 
-![](SqlBuildManagerManual_files/image113.jpg)
+![](images/image113.jpg)
 
 2.       On the form, select the database you want to check in the
 database dropdown list. (You can also change your SQL Server connection
 via the Action --> Change Sql Server Connection menu option or Recent
 Servers list).
 
-![](SqlBuildManagerManual_files/image114.jpg)
+![](images/image114.jpg)
 
 3.       The list will populate with the checked Stored Procedures (type
 -->P-->), Function (type -->FN-->) and Views (type -->V-->). There are 4 status
@@ -2888,7 +2539,7 @@ environment.
 1.       Open the Rebuild Sql Build Manager File form with the Tools -->
 Rebuild Previously Committed Build File menu item
 
-![](SqlBuildManagerManual_files/image115.jpg)
+![](images/image115.jpg)
 
 2.       When the form opens, it will automatically scan the server you
 are connected to. It will populate the table with all of the build files
@@ -2898,19 +2549,19 @@ the number of scripts that were included in the file. You can change the
 server via the Action --> Changes Sql Server Connection or Recent Servers
 drop down
 
-![](SqlBuildManagerManual_files/image116.jpg)
+![](images/image116.jpg)
 
 3.       Once you pick a build file to reconstruct, select it in the
 list, then right-click and select Rebuild File context menu item. You
 will then be prompted where to save the file.
 
-![](SqlBuildManagerManual_files/image117.jpg)
+![](images/image117.jpg)
 
 4.       After the rebuild is completed, you will be prompted whether or
 not you want to open this new file. Selecting -->Yes--> will--> you guessed
 it--> open the file
 
-![](SqlBuildManagerManual_files/image118.jpg)
+![](images/image118.jpg)
 
 5.       Once the file opens, you will notice that all of the scripts
 are marked as -->Run Once-->. This may or may not have been the original
@@ -2918,7 +2569,7 @@ setting. The logging does not record your runtime settings, so it
 defaults to the -->safest--> setting. You can however, update these settings
 as needed for you to reuse the package.
 
-![](SqlBuildManagerManual_files/image119.jpg)
+![](images/image119.jpg)
 
  
 
@@ -2951,7 +2602,7 @@ share location, UNC path, or HTTP URL where you team settings file can
 be found. Upon restarting the application, it will now use this file for
 team settings.
 
-![](SqlBuildManagerManual_files/image120.png)
+![](images/image120.png)
 
  
 
@@ -2986,7 +2637,7 @@ Notification--> button (for each alert box if there is more than one).
 This will open your default e-mail program with a configured, populated
 e-mail --> just click -->Send-->.
 
-![](SqlBuildManagerManual_files/image121.jpg)
+![](images/image121.jpg)
 
 ### Configuring Table Change Watch
 
@@ -2995,7 +2646,7 @@ these can contain one or more Table and Notify elements. You can use any
 XML editor to help you create the file, but one that can validate
 against the schema will be the most helpful.
 
-![](SqlBuildManagerManual_files/image122.jpg)
+![](images/image122.jpg)
 
  
 
@@ -3028,7 +2679,7 @@ Enforce attribute value to false.\
 
 - WithNoLockPolicy
 
-![](SqlBuildManagerManual_files/image123.jpg)
+![](images/image123.jpg)
 
 The StoredProcParameterPolicy is additionally configurable with 4
 -->Arguments--> that are added via \<Argument\> sub-elements. The allowed
@@ -3062,4 +2713,4 @@ Execution Service](#RemoteServicsExecutionandDeployment). The
 Enabled. A sub-element of \<Allow\> takes a LoginId value that should be
 set to the userid of the user that has access to the particular feature.
 
-![](SqlBuildManagerManual_files/image124.jpg)
+![](images/image124.jpg)
