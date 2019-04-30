@@ -1,5 +1,5 @@
 ﻿# Leveraging Azure Batch for distributed builds
-To use Azure Batch, you will need to have an Azure Batch account. This setup is a one-time event and can be done via scripts or maually via the Azure portal
+To use Azure Batch, you will need to have an Azure Batch account. This setup is a one-time event and can be done via scripts or manually via the Azure portal
 
 ## Set up your Batch Account (Scripted)
 
@@ -8,8 +8,8 @@ To use Azure Batch, you will need to have an Azure Batch account. This setup is 
 2. Edit the `azuredeploy.parameters.json` file, giving your Azure Batch and Azure Storage account names (keep in mind the [rules for naming storage accounts](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#naming-storage-accounts))
 3. Run the `deploy_batch.ps1` file, providing values for 
     - `-subscriptionId` - Guid for the subscription to deploy to
-    - `-resourceGroupName` - Resource group name to put the Batch and storage accounts int0
-    - `-resourceGroupLocation` - Azure region for the accounts
+    - `-resourceGroupName` - Resource group name to put the Batch and storage accounts into
+    - `-resourceGroupLocation` - Azure region for the accounts. You can get the location values via the PowerShell `Get-AzLocation | Select-Object -Property Location`
     - `-deploymentName` - Custom text description for the deployment
 
 Assuming the script succeeds, the last few lines will provide pre-populated arguments that you can save for your command line execution (You can also retrieve this data at a later time from the [Azure portal](Collect-Azure-Batch-and-storage-account-information)):
@@ -48,8 +48,8 @@ Pre-populated command line arguments. Record these for use later:
 2. In the Azure Portal, navigate to your new Batch account 
 3. On the Keys blade, record the Batch Account, URL and Primary access key values
 4. On the Storage Account blade, record the Storage Account Name and Key1 values
-
-## Running a Batch execution work
+----
+## Running a Batch execution
 Azure Batch builds are started locally via `SqlBuildManager.Console.exe`. This process communicates with the Azure Storage account and Azure Batch account to execute in  parallel across the pool of Batch compute nodes. The number of nodes that are provisioned is determined by your command line arguments.
 
 ### Recommended order of execution:
@@ -92,7 +92,7 @@ The following command contains all of the required arguments to run a Batch job:
 
 The following command line assumes that the Batch and Storage settings (except for keys) are in the \<appSettings\>:
 
-`SqlBuildManager.Console.exe /Action=Batch /override="C:\temp\override.cfg" /PackageName=c:\temp\mybuild.sbm /username=mmcmynamekechney /password=P@ssw0rd! /DeleteBatchPool=false /BatchNodeCount=5 /BatchAccountKey=x1hGLIIrdd3rroqXpfc2QXubzzCYOAtrNf23d3dCtOL9cQ+WV6r/raNrsAdV7xTaAyNGsEagbF0VhsaOTxk6A== /StorageAccountKey=lt2e2dr7JYVnaswZJiv1J5g8v2ser20B0pcO0PacPaVl33AAsuT2zlxaobdQuqs0GHr8+CtlE6DUi0AH+oUIeg==`
+`SqlBuildManager.Console.exe /Action=Batch /override="C:\temp\override.cfg" /PackageName=c:\temp\mybuild.sbm /username=myname /password=P@ssw0rd! /DeleteBatchPool=false /BatchNodeCount=5 /BatchAccountKey=x1hGLIIrdd3rroqXpfc2QXubzzCYOAtrNf23d3dCtOL9cQ+WV6r/raNrsAdV7xTaAyNGsEagbF0VhsaOTxk6A== /StorageAccountKey=lt2e2dr7JYVnaswZJiv1J5g8v2ser20B0pcO0PacPaVl33AAsuT2zlxaobdQuqs0GHr8+CtlE6DUi0AH+oUIeg==`
 
 ----
 ## Azure Batch - Pre-Stage Batch nodes (/Action=BatchPreStage)
@@ -153,7 +153,7 @@ _Note:_ All of these files are consolidated logs from across all of your Batch n
         - `SqlSyncBuildHistory.xml` - detailed log along with script meta-data (such as start/end times, file hash, status, user id)
         - `SqlSyncBuildProject.xml` - meta-data file for the script package run against the database
 
-### Troubleshooting tips
+## Troubleshooting tips
 If you have SQL errors in your execution, you will probably want to figure out what happened. Here is a suggested troubleshooting path:
 
 1. Open up the `failuredatabases.cfg` file to see what databases had problems
