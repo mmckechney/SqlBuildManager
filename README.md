@@ -41,7 +41,7 @@ At the core of the process is the "SQL Build Manager Package" file (.sbm extensi
 
 ### Forms UI
 
-While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _Sql Build Manager.exe_. There is docmentation on the GUI that you can find [here](SqlBuildManager%20Manual/SqlBuildManagerManual.md) that will walk through the creation of build packages ([PDF version](SqlBuildManager%20Manual/SqlBuildManagerManual.pdf)).
+While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _Sql Build Manager.exe_. There is docmentation on the GUI that you can find [here](Docs/SqlBuildManagerManual.md) that will walk through the creation of build packages ([PDF version](SqlBuildManager%20Manual/SqlBuildManagerManual.pdf)).
 
 ### Command line
 

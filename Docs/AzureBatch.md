@@ -1,6 +1,30 @@
 ﻿# Leveraging Azure Batch for distributed builds
+To use Azure Batch, you will need to have an Azure Batch account. This setup is a one-time event and can be done via scripts or maually via the Azure portal
 
-## Set up your Batch Account (one time event)
+## Set up your Batch Account (Scripted)
+
+0. _Prerequisite_: Make sure you have the [Azure PowerShell Modules installed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.8.0)
+1. Download the files in the [templates](templates) folder
+2. Edit the `azuredeploy.parameters.json` file, giving your Azure Batch and Azure Storage account names (keep in mind the [rules for naming storage accounts](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#naming-storage-accounts))
+3. Run the `deploy_batch.ps1` file, providing values for 
+    - `-subscriptionId` - Guid for the subscription to deploy to
+    - `-resourceGroupName` - Resource group name to put the Batch and storage accounts int0
+    - `-resourceGroupLocation` - Azure region for the accounts
+    - `-deploymentName` - Custom text description for the deployment
+
+Assuming the script succeeds, the last few lines will provide pre-populated arguments that you can save for your command line execution (You can also retrieve this data at a later time from the [Azure portal](Collect-Azure-Batch-and-storage-account-information)):
+```
+Pre-populated command line arguments. Record these for use later: 
+
+/BatchAccountName=mybatchaccountname
+/BatchAccountUrl=https://mybatchaccountname.eastus.batch.azure.com
+/BatchAccountKey=CLHvqpOqRW2X+z6Z2G/25zY9sQn/ePLMRknX1EbA79AJ74UVLV/7X1HqE91xV0UF24fPJYZfqDM/cfU6c1lPTA==
+/StorageAccountName=mystorageaccountname
+/StorageAccountKey=deDGkC2D3eOzI2BiVVmrxVpP1PPf7AdllA89HRYRAxD703iM/Me4D815aNYJTan8xiRypmfQ7QxCnZhM7QlYog==
+
+```
+(Collect-Azure-Batch-and-storage-account-information)
+## Set up your Batch Account (via Azure Portal)
 
 ### Create Azure Batch Account
 1. Login to the Azure Portal at <http://portal.azure.com>
@@ -8,11 +32,11 @@
 3. Search for "Batch Service"
 4. On the information page, select "Create"
 5. Fill out the new batch and storage account information and click "Create"
-6. Wait for the Azure Batch acount to be provisioned (should only take a few minutes)
+6. Wait for the Azure Batch account to be provisioned (should only take a few minutes)
 
 ### Upload SQL Build Manager code package
 1. First, make sure you have a build of SQL Build Manager (if you pull from Git and build, the executables will be in the root bin/debug or bin/release folder)
-2. Zip up all of the files in the build folder
+2. Zip up all of the files in the build folder - you can also grab the latest release Zip file from [here](https://github.com/mmckechney/SqlBuildManager/releases)
 3. In the Azure Portal, navigate to your Azure Batch account and click the "Applications" blade.
 4. Click the "+ Add" link
 5. Fill in the Application Id with "sqlbuildmanager" (no quotes) and the version field (can be any alpha-numeric) 

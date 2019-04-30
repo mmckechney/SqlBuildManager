@@ -2,14 +2,14 @@
 
 Michael McKechney
 ([michael@mckechney.com](mailto:michael@mckechney.com)) \
- [www.SqlBuildManager.com](http://https://github.com/mmckechney/SqlBuildManager) \
+ [www.SqlBuildManager.com](https://mmckechney.github.io/SqlBuildManager/) \
  Copyright 2004-2019
 
 ------
 
 Sql Build Manager is an open source project maintained by [Michael
 McKechney](http://mckechney.com/) on
-[GitHub](https://sourceforge.net/projects/sqlsync/)
+[GitHub](https://github.com/mmckechney/SqlBuildManager)
 
 -----
 
