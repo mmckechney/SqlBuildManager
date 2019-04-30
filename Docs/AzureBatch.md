@@ -12,7 +12,7 @@ To use Azure Batch, you will need to have an Azure Batch account. This setup is 
     - `-resourceGroupLocation` - Azure region for the accounts. You can get the location values via the PowerShell `Get-AzLocation | Select-Object -Property Location`
     - `-deploymentName` - Custom text description for the deployment
 
-Assuming the script succeeds, the last few lines will provide pre-populated arguments that you can save for your command line execution (You can also retrieve this data at a later time from the [Azure portal](Collect-Azure-Batch-and-storage-account-information)):
+Assuming the script succeeds, the last few lines will provide pre-populated arguments that you can save for your command line execution (You can also retrieve this data at a later time from the [Azure portal](#Collect-Azure-Batch-and-storage-account-information)):
 ```
 Pre-populated command line arguments. Record these for use later: 
 
@@ -23,7 +23,6 @@ Pre-populated command line arguments. Record these for use later:
 /StorageAccountKey=deDGkC2D3eOzI2BiVVmrxVpP1PPf7AdllA89HRYRAxD703iM/Me4D815aNYJTan8xiRypmfQ7QxCnZhM7QlYog==
 
 ```
-(Collect-Azure-Batch-and-storage-account-information)
 ## Set up your Batch Account (via Azure Portal)
 
 ### Create Azure Batch Account
