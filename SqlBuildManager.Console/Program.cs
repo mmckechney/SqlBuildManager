@@ -16,6 +16,9 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using System.Threading.Tasks;
+using System.Runtime.Serialization.Json;
+using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 
 namespace SqlBuildManager.Console
 {
@@ -36,9 +39,11 @@ namespace SqlBuildManager.Console
             try
             {
                 string joinedArgs = string.Join(",", args).ToLower();
+                string[] helpRequest = new string[] {"/?", "-?", "--?", "-h", "-help", "/help", "--help", "--h", "/h" };
+               
                 var cmdLine = CommandLine.ParseCommandLineArg(args);
 
-                if (args.Length == 0 || joinedArgs.Contains("/?") || joinedArgs.Contains("/help"))
+                if (args.Length == 0 || helpRequest.Any(h => joinedArgs.Contains(h))) 
                 {
                     log.Info(Properties.Resources.ConsoleHelp2);
                     Environment.Exit(0);
@@ -75,8 +80,8 @@ namespace SqlBuildManager.Console
                     case CommandLineArgs.ActionType.ScriptExtract:
                         ScriptExtraction(cmdLine);
                         break;
-                    case CommandLineArgs.ActionType.Encrypt:
-                        EncryptCreds(cmdLine);
+                    case CommandLineArgs.ActionType.SaveSettings:
+                        SaveAndEncryptSettings(cmdLine);
                         break;
                     case CommandLineArgs.ActionType.Batch:
                         retVal = await RunBatchExecution(cmdLine, start);
@@ -157,33 +162,44 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        private static void EncryptCreds(CommandLineArgs cmdLine)
+        private static void SaveAndEncryptSettings(CommandLineArgs cmdLine)
         {
-            string username = string.Empty;
-            string password = string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
+            if(string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
-                //System.Console.WriteLine(string.Format("<UserName>{0}</UserName>",
-                username = Cryptography.EncryptText(cmdLine.AuthenticationArgs.UserName, ConnectionHelper.ConnectCryptoKey);
-            }
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
-            {
-                //System.Console.WriteLine(string.Format("<Password>{0}</Password>", 
-
-                password = Cryptography.EncryptText(cmdLine.AuthenticationArgs.Password, ConnectionHelper.ConnectCryptoKey);
+                log.Error("When /Action=SaveSettings is specified the /SettingsFile argument is also required");
             }
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.Server))
+            cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);
+            var mystuff = JsonConvert.SerializeObject(cmdLine, Formatting.Indented, new JsonSerializerSettings
             {
-                System.Console.WriteLine(
-                    string.Format("<ServerConfiguration Name=\"{0}\" LastAccessed=\"2000-01-01T00:00:00.0000-04:00\">\r\n    <UserName>{1}</UserName>\r\n    <Password>{2}</Password>\r\n</ServerConfiguration>", cmdLine.Server, username, password));
-            }
-            else
+                NullValueHandling = NullValueHandling.Ignore
+            });
+
+            try
             {
-                System.Console.WriteLine(string.Format("<UserName>{0}</UserName>", username));
-                System.Console.WriteLine(string.Format("<Password>{0}</Password>", password));
+                string write = "y";
+                if(File.Exists(cmdLine.SettingsFile))
+                {
+                    System.Console.WriteLine($"The settings file '{cmdLine.SettingsFile}' already exists. Overwrite (Y/N)?");
+                    write = System.Console.ReadLine();
+                }
+
+                if (write.ToLower() == "y")
+                {
+                    File.WriteAllText(cmdLine.SettingsFile, mystuff);
+                    log.Info($"Settings file saved to '{cmdLine.SettingsFile}'");
+                }
+                else
+                {
+                    log.Info("Settings file not saved");
+                }
             }
+            catch (Exception exe)
+            {
+                log.Error($"Unable to save settings file.\r\n{exe.ToString()}");
+            }
+           
         }
 
         private static void ScriptExtraction(CommandLineArgs cmdLine)

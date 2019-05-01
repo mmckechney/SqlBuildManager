@@ -41,42 +41,6 @@ namespace SqlBuildManager.Console
                 }
             }
 
-            if(cmdLine.AuthenticationArgs.SavedCreds)
-            {
-                if(string.IsNullOrWhiteSpace(cmdLine.Server))
-                {
-                    error = "The /Server argument is required when /SavedCreds is used";
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors};
-                    log.Error(error);
-                    return (int)ExecutionReturn.FinishingWithErrors;
-                }
-
-                ServerConnectConfig.ServerConfigurationDataTable tmpTbl;
-                bool found = false;
-                UtilityHelper.GetRecentServers(out tmpTbl);
-                if(tmpTbl != null)
-                {
-                    string server = cmdLine.Server.Trim().ToLowerInvariant();
-                    var row = tmpTbl.Where(r => r.Name.Trim().ToLowerInvariant() == server);
-                    if (row.Any())
-                    {
-                        cmdLine.AuthenticationArgs.UserName = Cryptography.DecryptText(row.First().UserName, ConnectionHelper.ConnectCryptoKey);
-                        cmdLine.AuthenticationArgs.Password = Cryptography.DecryptText(row.First().Password, ConnectionHelper.ConnectCryptoKey);
-                        found = true;
-                        log.InfoFormat("Saved credentials found. Server={2}: UserName={0} and Password={1}", cmdLine.AuthenticationArgs.UserName, "*".PadRight(cmdLine.AuthenticationArgs.Password.Length, '*'),server);
-                    }
-                }
-                if(!found)
-                {
-                    error = string.Format("The /SavedCreds could not be retrieved for /Server={0}", cmdLine.Server);
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
-                    log.Error(error);
-                    return (int)ExecutionReturn.FinishingWithErrors;
-                }
-        
-                
-            }
-
             return 0;
         }
         /// <summary>

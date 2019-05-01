@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.IO;
+using SqlSync.Connection;
 namespace SqlSync.SqlBuild
 {
     /// <summary>
@@ -129,6 +130,54 @@ namespace SqlSync.SqlBuild
             }
 
             return Sb.ToString();
+        }
+
+        public static CommandLineArgs EncryptSensitiveFields(CommandLineArgs cmdLine)
+        {
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
+            {
+                cmdLine.AuthenticationArgs.UserName = Cryptography.EncryptText(cmdLine.AuthenticationArgs.UserName, ConnectionHelper.ConnectCryptoKey);
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+            {
+                cmdLine.AuthenticationArgs.Password = Cryptography.EncryptText(cmdLine.AuthenticationArgs.Password, ConnectionHelper.ConnectCryptoKey);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchAccountKey))
+            {
+                cmdLine.BatchArgs.BatchAccountKey = Cryptography.EncryptText(cmdLine.BatchArgs.BatchAccountKey, ConnectionHelper.ConnectCryptoKey);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.StorageAccountKey))
+            {
+                cmdLine.BatchArgs.StorageAccountKey = Cryptography.EncryptText(cmdLine.BatchArgs.StorageAccountKey, ConnectionHelper.ConnectCryptoKey);
+            }
+
+            return cmdLine;
+        }
+
+        public static CommandLineArgs DecryptSensitiveFields(CommandLineArgs cmdLine)
+        {
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
+            {
+                cmdLine.AuthenticationArgs.UserName = Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, ConnectionHelper.ConnectCryptoKey);
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+            {
+                cmdLine.AuthenticationArgs.Password = Cryptography.DecryptText(cmdLine.AuthenticationArgs.Password, ConnectionHelper.ConnectCryptoKey);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchAccountKey))
+            {
+                cmdLine.BatchArgs.BatchAccountKey = Cryptography.DecryptText(cmdLine.BatchArgs.BatchAccountKey, ConnectionHelper.ConnectCryptoKey);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.StorageAccountKey))
+            {
+                cmdLine.BatchArgs.StorageAccountKey = Cryptography.DecryptText(cmdLine.BatchArgs.StorageAccountKey, ConnectionHelper.ConnectCryptoKey);
+            }
+
+            return cmdLine;
         }
     }
 }

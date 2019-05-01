@@ -4,11 +4,16 @@ using System.Text;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using System.Configuration;
+using System.IO;
+using log4net;
+using System.Reflection;
+using Newtonsoft.Json;
 
 namespace SqlSync.SqlBuild
 {
     public class CommandLine
     {
+        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         /// <summary>
         /// Parses out the command line arguments array and populates a CommandLineArgs object
         /// </summary>
@@ -19,17 +24,44 @@ namespace SqlSync.SqlBuild
             CommandLineArgs cmdLine = new CommandLineArgs();
 
             StringDictionary dict = Arguments.ParseArguments(args);
-            if(dict.ContainsKey("action"))
+
+            CommandLineArgs.ActionType actionType = CommandLineArgs.ActionType.Error;
+            if (dict.ContainsKey("action"))
             {
                 try
                 {
-                    var actionType = (CommandLineArgs.ActionType)Enum.Parse(typeof(CommandLineArgs.ActionType), dict["action"].ToString(), true);
+                    actionType = (CommandLineArgs.ActionType)Enum.Parse(typeof(CommandLineArgs.ActionType), dict["action"].ToString(), true);
                     cmdLine.Action = actionType;
                 }catch
                 {
                     cmdLine.Action = CommandLineArgs.ActionType.Error;
                 }
             }
+
+            //Configure from the settings file first if applicable. These would then get overwritten by the command-line args if duplicated
+            if (dict.ContainsKey("settingsfile") && actionType != CommandLineArgs.ActionType.SaveSettings)
+            {
+                string settings = dict["settingsfile"];
+                if (!File.Exists(settings))
+                {
+                    log.Error($"The specified Settings file (/SettingsFile) does not exist at '{settings}'.");
+                }
+                else
+                {
+                    try
+                    {
+                        cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(settings));
+                        cmdLine = Cryptography.DecryptSensitiveFields(cmdLine);
+
+                    }
+                    catch (Exception exe)
+                    {
+                        log.Error($"Unable to deserialize the specified Settings File at '{settings}'.\r\n{exe.Message}");
+                    }
+                }
+            }
+            //reset it, just in case.
+            cmdLine.Action = actionType;
 
             switch (cmdLine.Action)
             {
@@ -189,9 +221,6 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("outputsbm"))
                 cmdLine.OutputSbm = dict["outputsbm"];
 
-            if (dict.ContainsKey("savedcreds"))
-                cmdLine.AuthenticationArgs.SavedCreds = true;
-
             if (dict.ContainsKey("testconnectivity"))
                 cmdLine.RemoteArgs.TestConnectivity = true;
 
@@ -217,7 +246,6 @@ namespace SqlSync.SqlBuild
             {
                 cmdLine.BatchArgs.BatchNodeCount = node;
             }
-
             
             if (dict.ContainsKey("batchjobname"))
                 cmdLine.BatchArgs.BatchJobName = dict["batchjobname"];
@@ -225,38 +253,26 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("batchaccountname"))
                 cmdLine.BatchArgs.BatchAccountName = dict["batchaccountname"];
 
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
-                cmdLine.BatchArgs.BatchAccountName = ConfigurationManager.AppSettings["BatchAccountName"];
-
             if (dict.ContainsKey("batchaccountkey"))
                 cmdLine.BatchArgs.BatchAccountKey = dict["batchaccountkey"];
-
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
-                cmdLine.BatchArgs.BatchAccountKey = ConfigurationManager.AppSettings["BatchAccountKey"];
 
             if (dict.ContainsKey("batchaccounturl"))
                 cmdLine.BatchArgs.BatchAccountUrl = dict["batchaccounturl"];
 
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
-                cmdLine.BatchArgs.BatchAccountUrl = ConfigurationManager.AppSettings["BatchAccountUrl"];
-
             if (dict.ContainsKey("storageaccountname"))
                 cmdLine.BatchArgs.StorageAccountName = dict["storageaccountname"];
 
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountName))
-                cmdLine.BatchArgs.StorageAccountName = ConfigurationManager.AppSettings["StorageAccountName"];
-
             if (dict.ContainsKey("storageaccountkey"))
                 cmdLine.BatchArgs.StorageAccountKey = dict["storageaccountkey"];
-
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountKey))
-                cmdLine.BatchArgs.StorageAccountKey = ConfigurationManager.AppSettings["StorageAccountKey"];
 
             if (dict.ContainsKey("batchvmsize"))
                 cmdLine.BatchArgs.BatchVmSize = dict["batchvmsize"];
 
             if (dict.ContainsKey("batchpoolname"))
                 cmdLine.BatchArgs.BatchPoolName = dict["batchpoolname"];
+
+            if (dict.ContainsKey("settingsfile"))
+                cmdLine.SettingsFile = dict["settingsfile"];
 
             bool poll = true;
             if(dict.ContainsKey("pollbatchpoolstatus") && Boolean.TryParse(dict["pollbatchpoolstatus"], out poll))

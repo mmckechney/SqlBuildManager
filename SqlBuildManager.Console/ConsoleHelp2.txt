@@ -8,7 +8,7 @@ Action value options (/Action=<value>)
     Threaded                 For updating multiple databases simultaneously from the current machine
     Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing 
     Batch                    For updating multiple databases simultaneously using Azure batch services
-	BatchPreStage            Pre-stage the Azure Batch VM nodes
+    BatchPreStage            Pre-stage the Azure Batch VM nodes
     Package                  Creates an SBM package from an SBX configuraiton file and scripts
     PolicyCheck              Performs a script policy check on the specified SBM package
     GetHash                  Calculates the SHA-1 hash fingerprint value for the SBM package (scripts + run order)
@@ -43,7 +43,7 @@ Azure Batch Execution (/Action=Batch)
     /PackageName="<filename>"                 Name of the .sbm or .sbx file to execute
     /RootLoggingPath="<directory>"            Directory to save execution logs 
     /DeleteBatchPool=(true|false)             Whether or not to delete the batch pool servers after an execution (default is false)
-	/DeleteBatchJob=(true|false)              Whether or not to delete the batch job after an execution (default is true)
+    /DeleteBatchJob=(true|false)              Whether or not to delete the batch job after an execution (default is true)
     /BatchNodeCount="##"                      Number of nodes to provision to run the batch job  (default is 10)
     /BatchVmSize="<size>"                     Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
     /BatchAccountName="<batch acct name>"     String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]

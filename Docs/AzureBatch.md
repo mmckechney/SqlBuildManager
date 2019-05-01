@@ -95,18 +95,23 @@ The following command line assumes that the Batch and Storage settings (except f
 
 ----
 ## Azure Batch - Pre-Stage Batch nodes (/Action=BatchPreStage)
+_Note:_ You can also leverage the [SettingsFile](commandline.md#save-settings-actionsavesettings) option to reuse most of the arguments
 - `/BatchNodeCount="##"` - Number of nodes to provision to run the batch job  (default is 10)
 - `/BatchVmSize="<size>"` - Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
 - `/BatchAccountName="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
 - `/BatchAccountKey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
 - `/BatchAccountUrl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
 - `/PollBatchPoolStatus=(true|false)` - Whether or not you want to get updated status (true, default) or fire and forget (false)
+
 ----
 ## Azure Batch Execution (/Action=Batch)
 
-In addition to the [authentication](commandline.md#General-Authentication-settings) and [runtime](commandline.md#General-Runtime-settings) arguments above, these are specifically needed for Azure Batch executions
+In addition to the [authentication](commandline.md#General-Authentication-settings) and [runtime](commandline.md#General-Runtime-settings) arguments above, these are specifically needed for Azure Batch executions.
+\
+_Note:_ 
+1. You can also leverage the [SettingsFile](commandline.md#save-settings-actionsavesettings) option to reuse most of the arguments
+2. either /PlatinumDacpac _or_ /PackageName are required. If both are given, then /PackageName will be used.
 
-*Note:* either /PlatinumDacpac _or_ /PackageName are required. If both are given, then /PackageName will be used.
 - `/PlatinumDacpac="<filename>"` - Name of the dacpac containing the platinum schema
 - `/PackageName="<filename>"` - Name of the .sbm or .sbx file to execute save execution logs 
 - `/BatchAccountName="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
@@ -125,6 +130,8 @@ If you don't run the `/Action=BatchPreStage`  and `Action=BatchCleanup` command 
 
 ----
 ## Azure Batch Clean Up (delete) nodes (/Action=BatchCleanUp)
+
+_Note:_ You can also leverage the [SettingsFile](commandline.md#save-settings-actionsavesettings) option to reuse most of the arguments
 - `/BatchAccountName="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
 - `/BatchAccountKey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
 - `/BatchAccountUrl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]

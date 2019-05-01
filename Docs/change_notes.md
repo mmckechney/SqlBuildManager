@@ -1,6 +1,9 @@
-
+﻿
 # SQL Build Manager Change Notes
       
+					
+### Version 10.4.3
+- *ADDED:* New utility /Action=SaveSettings and /SettingsFile argument for simple reuse of settings.
 					
 ### Version 10.4.2
 - *ADDED:* Added Batch pool handling action 'BatchPreStage' so that Pools can be created in advance of needing the compute. Avoids the waiting "cold start" of a batch job

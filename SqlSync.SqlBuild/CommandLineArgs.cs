@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-
+using Newtonsoft.Json;
 namespace SqlSync.SqlBuild
 {
 
@@ -17,57 +17,66 @@ namespace SqlSync.SqlBuild
         {
 
         }
+        [JsonIgnore]
         public ActionType Action { get; set; }
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
         public Batch BatchArgs { get; set; } = new Batch();
+        [JsonIgnore]
         public Remote RemoteArgs { get; set; } = new Remote();
+        [JsonIgnore]
         public DacPac DacPacArgs { get; set; } = new DacPac();
+        [JsonIgnore]
         public Synchronize SynchronizeArgs { get; set; } = new Synchronize();
+        [JsonIgnore]
         public AutoScripting AutoScriptingArgs { get; set; } = new AutoScripting();
+        [JsonIgnore]
         public StoredProcTesting StoredProcTestingArgs { get; set; } = new StoredProcTesting();
-       
 
 
 
+        [JsonIgnore]
         public virtual string BuildFileName { get; set; } = string.Empty;
-
+        [JsonIgnore]
         public virtual bool OverrideDesignated { get; set; } = false;
-
+        [JsonIgnore]
         public virtual string MultiDbRunConfigFileName { get; set; } = string.Empty;
-
+        [JsonIgnore]
         public virtual string ManualOverRideSets { get; set; } = string.Empty;
-
+        [JsonIgnore]
         public virtual string Server { get; set; } = string.Empty;
-
+        [JsonIgnore]
         public virtual string LogFileName { get; set; } = string.Empty;
-
+        [JsonIgnore]
         public virtual string Database { get; set; } = string.Empty;
-
+        [JsonIgnore]
         public virtual string ScriptLogFileName { get; set; } = string.Empty;
 
         public virtual string RootLoggingPath { get; set; } = string.Empty;
 
         public virtual bool LogAsText { get; set; } = true;
-
+        [JsonIgnore]
         public virtual bool Trial { get; set; } = false;
-
+        [JsonIgnore]
         public virtual string ScriptSrcDir { get; set; } = string.Empty;
-
+        [JsonIgnore]
         public virtual string LogToDatabaseName { get; set; } = string.Empty;
-
+        [JsonIgnore]
         public virtual string Description { get; set; } = string.Empty;
-
+        [JsonIgnore]
         public virtual bool Transactional { get; set; } = true;
-
+        [JsonIgnore]
         public virtual int AllowableTimeoutRetries { get; set; } = 0;
-
+        [JsonIgnore]
         public bool ContinueOnFailure { get; set; }
-
+        [JsonIgnore]
         public string Directory { get; set; }
-
+        [JsonIgnore]
         public string BuildRevision { get; set; }
-
+        [JsonIgnore]
         public string OutputSbm { get; set; }
+        [JsonIgnore]
+        public string SettingsFile { get; set; }
+
         [Serializable]
         public class Remote
         {
@@ -83,9 +92,9 @@ namespace SqlSync.SqlBuild
         {
             public virtual string UserName { get; set; } = string.Empty;
             public virtual string Password { get; set; } = string.Empty;
-            public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = Connection.AuthenticationType.Password;
-            public bool SavedCreds { get; set; } = false;
 
+            [JsonIgnore]
+            public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = Connection.AuthenticationType.Password;
         }
 
         [Serializable]
@@ -99,9 +108,11 @@ namespace SqlSync.SqlBuild
             public string StorageAccountName { get; set; } = null;
             public string StorageAccountKey { get; set; } = null;
             public string BatchVmSize { get; set; } = null;
+            [JsonIgnore]
             public string OutputContainerSasUrl { get; set; }
             public bool DeleteBatchPool { get; set; } = false;
             public bool DeleteBatchJob { get; set; } = true;
+            [JsonIgnore]
             public string BatchJobName { get; set; } = null;
             public bool PollBatchPoolStatus { get; set; } = true;
             public string BatchPoolName { get; set; } = null;
@@ -141,6 +152,7 @@ namespace SqlSync.SqlBuild
         [Serializable]
         public enum ActionType
         {
+            Error,
             Build,
             Threaded,
             Remote,
@@ -152,8 +164,7 @@ namespace SqlSync.SqlBuild
             GetDifference,
             Synchronize,
             ScriptExtract,
-            Encrypt,
-            Error,
+            SaveSettings,
             BatchPreStage, 
             BatchCleanUp
         }
@@ -162,21 +173,6 @@ namespace SqlSync.SqlBuild
         {
             return this.ToStringExtension();
         }
-        //public CommandLineArgs Clone()
-        //{
-        //    MemoryStream ms = new MemoryStream();
-        //    BinaryFormatter bf = new BinaryFormatter();
-
-        //    bf.Serialize(ms, this);
-
-        //    ms.Position = 0;
-        //    object obj = bf.Deserialize(ms);
-        //    ms.Close();
-
-        //    return obj as CommandLineArgs;
-        //}
-
-
     }
 
     public static class CommandLineExtensions

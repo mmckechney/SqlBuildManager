@@ -31,18 +31,21 @@ The basics of running the command line is the /Action argument. This is required
 ##### Utility actions 
 - `BatchPreStage` - Pre-stage Azure Batch VM nodes
 - `BatchCleanUp` - Deletes Azure Batch VM nodes
+- `SaveSettings` - Creates a Json file that will save your userName and password as well as your Batch settings so that you can reference them later.
 - `Package` - Create an SBM package from an SBX configuration file and scripts
 - `PolicyCheck` - Performs a script policy check on the specified SBM package
 -  `GetHash` - Calculates the SHA-1 hash fingerprint value for the SBM package (scripts + run order)
 - `CreateBackout` - Generates a backout package (reversing stored procedure and scripted object changes)
 - `GetDifference` - Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between /Database and /GoldDatabase
-- `Syncronize` - Performs a database syncronization between between /Database and /GoldDatabase
+- `Synchronize` - Performs a database synchronization between between /Database and /GoldDatabase
 - `ScriptExtract` - Extract a SBM package from a source `/PlatinumDacPac`
+
 
 #### General Authentication settings 
 
 Used to provide authentication to databases during a build or for script extraction/ DACPAC creation\
-Applies to: `/Action={Build|Threaded|Batch|Remote|GetDifference|Syncronize`
+Applies to: `/Action={Build|Threaded|Batch|Remote|GetDifference|Synchronize`\
+_Note:_ Is using username/password authentication, you can also leverage the [SettingsFile](#save-settings-actionsavesettings) option
 - `/AuthType="<type>"` - Values: `AzureADIntegrated`, `AzureADPassword`, `Password` (default if Username/Password set), `Windows` (default if no Username/Password set), 
 - `/UserName="<username>"` - The username to authenticate against the database if not using integrate auth (required when `RemoteServers="azure"`)
 - `/Password="<password>"` - The password to authenticate against the database if not using integrate auth (required when `/RemoteServers="azure`")
@@ -100,6 +103,18 @@ Applies to: `/Action={Threaded|Batch|Remote}`
 - `/PlatinumDbSource="<database name>"` - Instead of a formally built Platinum Dacpac, target this database as having the desired state schema
 - `/PlatinumServerSource="<server name>"` - Instead of a formally built Platinum Dacpac, target a database on this server as having the desired state schema
 
+#### Save Settings (/Action=SaveSettings)
+This utility action will save a reusable Json file to make running the command line easier (especially for Batch processing). To save the settings, create the command line as you normally would, and set the `/Action=SaveSettings` and add a `/SettingsFile="<file path>`" argument. 
+
+The next time you run a build action, use the `/SettingsFile="<file path>` in place of the arguments below.
+
+- Authentication: `/UserName`, `/Password`
+- Azure Batch: `BatchNodeCount`, `/BatchAccountName`, `/BatchAccountKey`, `/BatchAccountUrl`, `/StorageAccountName`, `/StorageAccountKey`, `/BatchVmSize`, `/DeleteBatchPool`, `/DeleteBatchJob`, `/PollBatchPoolStatus`
+- Run time settings: `/RootLoggingPath`, `/LogAsText`
+
+_Note:_ 
+1. the values for `/UserName`, `/Password`, `/BatchAccountKey` and `/StorageAccountKey` will be encrypted. 
+2. If there are duplicate values in the `/SettingsFile` and the command line, the command line argument will take precedence. 
 
 #### Script Extraction from Dacpac (/Action=ScriptExtract)
 - `/PlatinumDacpac="<filename>"` - Name of the dacpac containing the platinum schema

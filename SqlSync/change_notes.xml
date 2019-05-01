@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="4" Revision="3">
+    <added>New utility /Action=SaveSettings and /SettingsFile argument for simple reuse of settings.</added>
+  </Version>
   <Version Major="10" Minor="4" Revision="2">
     <added>Added Batch pool handling action 'BatchPreStage' so that Pools can be created in advance of needing the compute. Avoids the waiting "cold start" of a batch job</added>
     <added>Added Batch pool handling action  'BatchCleanup' so that Pools can be deleted separately from a build run (useful if you need to re-run jobs)</added>
