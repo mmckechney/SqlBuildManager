@@ -34,7 +34,7 @@ namespace SqlBuildManager.Console
             {
                 if(string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
-                    error = "The /UserName and /Password arguments must be used together.";
+                    error = "The /UserName and /Password arguments must be used together in command line of /SettingsFile Json.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
                     log.Error(error);
                     return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
@@ -335,33 +335,33 @@ namespace SqlBuildManager.Console
             List<string> messages = new List<string>();
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
             {
-                messages.Add("BatchAccountName is required in command line or app settings");
+                messages.Add("BatchAccountName is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
             {
-                messages.Add("BatchAccountKey is required in command line or app settings");
+                messages.Add("BatchAccountKey is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
             {
-                messages.Add("BatchAccountUrl is required in command line or app settings");
+                messages.Add("BatchAccountUrl is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountName))
             {
-                messages.Add("StorageAccountName is required in command line or app settings");
+                messages.Add("StorageAccountName is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountKey))
             {
-                messages.Add("StorageAccountKey is required in command line or app settings");
+                messages.Add("StorageAccountKey is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
 
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
             {
-                messages.Add("BatchVmSize is required in command line or app settings");
+                messages.Add("BatchVmSize is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
 
@@ -375,22 +375,22 @@ namespace SqlBuildManager.Console
             List<string> messages = new List<string>();
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
             {
-                messages.Add("BatchAccountName is required in command line or app settings");
+                messages.Add("BatchAccountName is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
             {
-                messages.Add("BatchAccountKey is required in command line or app settings");
+                messages.Add("BatchAccountKey is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
             {
-                messages.Add("BatchAccountUrl is required in command line or app settings");
+                messages.Add("BatchAccountUrl is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
             {
-                messages.Add("BatchVmSize is required in command line or app settings");
+                messages.Add("BatchVmSize is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
 
@@ -404,17 +404,17 @@ namespace SqlBuildManager.Console
             List<string> messages = new List<string>();
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
             {
-                messages.Add("BatchAccountName is required in command line or app settings");
+                messages.Add("BatchAccountName is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
             {
-                messages.Add("BatchAccountKey is required in command line or app settings");
+                messages.Add("BatchAccountKey is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
             {
-                messages.Add("BatchAccountUrl is required in command line or app settings");
+                messages.Add("BatchAccountUrl is required in command line or /SettingsFile Json");
                 returnVal = -888;
             }
             

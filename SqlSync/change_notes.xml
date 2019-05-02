@@ -15,7 +15,7 @@
   </Version>
   <Version Major="10" Minor="4" Revision="0">
     <added>Functionality to leverage Azure Batch as an execution engine</added>
-    <updated>Swaped out SharpZipLib to remove Zip Slip vunlerability </updated>
+    <updated>Swaped out SharpZipLib to remove Zip Slip vulnerability </updated>
    </Version>
   <Version Major="10" Minor="3" Revision="0">
     <added>New authentication types for Azure: Azure AD Password and Azure AD Integrated</added>
@@ -71,19 +71,19 @@
     <fixed>Various remote/ threaded bug fixes</fixed>
   </Version>
   <Version Major="10" Minor="1" Revision="0">
-    <added>Ability to use a "platinum" Data-tier application file (dacpac) to syncronize database schemas</added>
+    <added>Ability to use a "platinum" Data-tier application file (dacpac) to synchronize database schemas</added>
   </Version>
   <Version Major="10" Minor="0" Revision="0">
     <added>New ability to compare package deploys between two databases</added>
-    <added>Ability to syncronize package deploys between a "golden copy" and a target</added>
+    <added>Ability to synchronize package deploys between a "golden copy" and a target</added>
     <added>New Azure cloud service deployment for remote execution engines!</added>
     <updated>Installation for the Service is now a self-installing command-line for SqlBuildManager.Services.Host.exe</updated>
     <updated>Installation for the SBM tool is through ClickOnce at www.sqlbuildmanager.com or an InstallShield installer</updated>
-    <note>See the command-line reference for appropriate flags for data syncronization</note>
+    <note>See the command-line reference for appropriate flags for data synchronization</note>
   </Version>
   <Version Major="9" Minor="2" Revision="2">
     <!-- July 16, 2014 -->
-    <added>Command line argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of hte target databases</added>
+    <added>Command line argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of the target databases</added>
     <added>New command line help (/? or /help) message</added>
     <updated>Remote execution validation between server names and execution agents is no longer case sensitive</updated>
   </Version>
@@ -95,7 +95,7 @@
     <fixed>Script policy icons were getting set to &quot;Policy checks not run&quot; after a committed build</fixed>
     <fixed>Database login error for accounts that do not have code review database permissions</fixed>
     <updated>Added additional quick status update for the remote service to hopefully resolve issue on slower servers</updated>
-    <updated>Increased delay of first check between console and remote agents from 500ms to 1 second to accomodate slower agent servers</updated>
+    <updated>Increased delay of first check between console and remote agents from 500ms to 1 second to accommodate slower agent servers</updated>
   </Version>
   <Version Major="9" Minor="1" Revision="0">
     <!-- October 25, 2013 -->
@@ -124,7 +124,7 @@
     <updated>Updated TFS source control to checkout only files as needed instead of checking out all of the scripts in an SBX</updated>
     <updated>Policy icon updated to include warnings as well as alerts</updated>
     <updated>Changed background color for "read-only" files to make it less obnoxious</updated>
-    <fixed>Case sentitivity issue when matching remote execution servers and target database servers</fixed>
+    <fixed>Case sensitivity issue when matching remote execution servers and target database servers</fixed>
   </Version>
   <Version Major="8" Minor="8" Revision="1">
     <!-- August 17, 2012-->
@@ -144,7 +144,7 @@
     <!-- June 20,2012 -->
     <added>Made it easier to combine SBM files via drag and drop into script list</added>
     <added>Export of script violations to CSV file from Tools menu</added>
-    <fixed>Bulk Add confimation window was opening hidden behind the main form</fixed>
+    <fixed>Bulk Add confirmation window was opening hidden behind the main form</fixed>
   </Version>
   <Version Major="8" Minor="7" Revision="2">
     <!-- April 4, 2012 -->
@@ -205,8 +205,8 @@
     <!--March 30, 2011-->
     <added>New features for creating rollback packages: options for removal of new object scripts and auto-marking manually created scripts as "run once"</added>
     <added>New command line argument /TimeoutRetryCount to allow for multiple execution tries if the SQL Server error message received is "Timeout expired" </added>
-    <added>Ability to control minumum script timeouts by file type and AD group membership</added>
-    <added>Execution timer added to adhoc query</added>
+    <added>Ability to control minimum script timeouts by file type and AD group membership</added>
+    <added>Execution timer added to ad hoc query</added>
     <updated>Re-build feature now allows selection of database vs. scanning entire server on page load</updated>
     <updated>User auditing triggers will produce a file per each trigger type vs. a single files with 3 triggers</updated>
   </Version>
@@ -231,8 +231,8 @@
   </Version>
   <Version Major="8" Minor="6" Revision="4">
     <note>** ATTENTION! Due to a change in the parsing algorithm for scripts, hash values may differ between this version and prior versions of the tool! UPDATE AS SOON AS POSSIBLE. **</note>
-    <updated>Changed the Adhoc query working directory from the user's temp folder to a hidden subfolder of the destination file. This is to avoid issues with lack of storage.</updated>
-    <added>Ability to set script timeout for Adhoc queries.</added>
+    <updated>Changed the ad hoc query working directory from the user's temp folder to a hidden subfolder of the destination file. This is to avoid issues with lack of storage.</updated>
+    <added>Ability to set script timeout for ad hoc queries.</added>
     <updated>Modified the batching of scripts to ignore "GO" delimiter in a comment block. This may effect the hash value of some scripts but 99% of the ones I have tested are unchanged. For the 1%, they may get a "changed" icon when in fact they were not changed.</updated>
     <updated>Changed highlight color in "diff" view to be more obvious on all monitors</updated>
     <added>Additional database logging: build package hash value, user id of requestor from a remote execution, and the version number of the Sql Build Manager used to execute the run</added>
@@ -268,7 +268,7 @@
     <fixed>Corrected crash when default script registry contained no items</fixed>
   </Version>
   <Version Major="8" Minor="6" Revision="0">
-    <updated>Ability to pull back extremely large amounts of data via the Adhoc query function</updated>
+    <updated>Ability to pull back extremely large amounts of data via the ad hoc query function</updated>
     <updated>Cut/Copy/Paste context menu on "Add Script" and "Configure Via Query" forms</updated>
     <added>Can view the application log via the "Help --> View Application Log File" menu item.</added>
   </Version>
@@ -291,8 +291,8 @@
     <added>Build history tracking on remote build service client</added>
     <added>Ability to view build history and retrieve log files for historical Build Service requests</added>
     <fixed>Finder control to stop skipping to next find as you type</fixed>
-    <fixed>Adhoc query would sometimes run "last" query</fixed>
-    <added>Ability to include additional summary data items in adhoc query</added>
+    <fixed>ad hoc query would sometimes run "last" query</fixed>
+    <added>Ability to include additional summary data items in ad hoc query</added>
   </Version>
   <Version Major="8" Minor="5" Revision="7">
     <updated>Updated "find" feature on script view window to search starting at cursor location vs. always at the top</updated>
@@ -315,7 +315,7 @@
   </Version>
   <Version Major="8" Minor="5" Revision="4">
     <fixed>Directory parsing on remote service side when the server name is an IP address</fixed>
-    <added>Made the minumum default script timeout an enterprise level setting</added>
+    <added>Made the minimum default script timeout an enterprise level setting</added>
   </Version>
   <Version Major="8" Minor="5" Revision="3">
     <updated>Rebuild using the SQL Management Objects (SMO) v10 DLL's</updated>
@@ -361,7 +361,7 @@
     <fixed>Script status icon wasn't refreshing after an "update object create script" command</fixed>
   </Version>
   <Version Major="8" Minor="3" Revision="6">
-    <updated>File copy choices for default scripts when there is a pre-existing script or a readonly one already in place.</updated>
+    <updated>File copy choices for default scripts when there is a pre-existing script or a read-only one already in place.</updated>
     <updated>Physical file deletion warning in SBX files when that file is shared by another co-resident SBX file.</updated>
     <added>Help Icon in Database Summary form.</added>
     <updated>Error handling when creating a new project file and default scripts.</updated>
@@ -425,7 +425,7 @@
     <fixed>Added plain JOIN statement to the Script Optimization algorithm</fixed>
   </Version>
   <Version Major="8" Minor="1" Revision="10">
-    <added>Policy enforcement functionality with 3 built in policies: WITH (NOLOCK) directive, scripts wrapped in IF EXISTS for rerunability and GRANT execute for all routines.</added>
+    <added>Policy enforcement functionality with 3 built in policies: WITH (NOLOCK) directive, scripts wrapped in IF EXISTS for re-runability and GRANT execute for all routines.</added>
     <added>Ability to change source database and server for object script updates from "Scripting" menu.</added>
     <added>Ability to select alternate Logging database from the UI for build run (formerly only available via command line)</added>
     <added>Threaded execution support for non-transactional RunScriptClear</added>
@@ -466,7 +466,7 @@
     <added>Indicator and control for read-only files when working with the SBX loose file configuration.</added>
     <added>Ability to generate Stored Procedures, Views and Functions with IF EXISTS CREATE and ALTER pair via setting.</added>
     <added>Ability to generate Stored Procedures, Views and Functions with permissions script via setting.</added>
-    <updated>Updated autoscripting settings to accept zip and header settings from UI.</updated>
+    <updated>Updated auto-scripting settings to accept zip and header settings from UI.</updated>
     <fixed>Making name of rebuilt file always have a .sbm extension since it only supports packages and not loose configurations.</fixed>
     <added>Improved formatting of scripts created as ALTER And CREATE</added>
     <added>Ability to use the delete key to remove scripts from the List</added>

@@ -17,7 +17,7 @@
 					
 ### Version 10.4.0
 - *ADDED:* Functionality to leverage Azure Batch as an execution engine
-- *UPDATED:* Swaped out SharpZipLib to remove Zip Slip vunlerability 
+- *UPDATED:* Swaped out SharpZipLib to remove Zip Slip vulnerability 
 					
 ### Version 10.3.0
 - *ADDED:* New authentication types for Azure: Azure AD Password and Azure AD Integrated
@@ -73,18 +73,18 @@
 - *FIXED:* Various remote/ threaded bug fixes
 					
 ### Version 10.1.0
-- *ADDED:* Ability to use a "platinum" Data-tier application file (dacpac) to syncronize database schemas
+- *ADDED:* Ability to use a "platinum" Data-tier application file (dacpac) to synchronize database schemas
 					
 ### Version 10.0.0
 - *ADDED:* New ability to compare package deploys between two databases
-- *ADDED:* Ability to syncronize package deploys between a "golden copy" and a target
+- *ADDED:* Ability to synchronize package deploys between a "golden copy" and a target
 - *ADDED:* New Azure cloud service deployment for remote execution engines!
 - *UPDATED:* Installation for the Service is now a self-installing command-line for SqlBuildManager.Services.Host.exe
 - *UPDATED:* Installation for the SBM tool is through ClickOnce at www.sqlbuildmanager.com or an InstallShield installer
-- **NOTE:** See the command-line reference for appropriate flags for data syncronization
+- **NOTE:** See the command-line reference for appropriate flags for data synchronization
 					
 ### Version 9.2.2
-- *ADDED:* Command line argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of hte target databases
+- *ADDED:* Command line argument /TestConnectivity=true when used in conjunction with /Remote=true will test the connectivity to the remote agents and all of the target databases
 - *ADDED:* New command line help (/? or /help) message
 - *UPDATED:* Remote execution validation between server names and execution agents is no longer case sensitive
 					
@@ -95,7 +95,7 @@
 - *FIXED:* Script policy icons were getting set to "Policy checks not run" after a committed build
 - *FIXED:* Database login error for accounts that do not have code review database permissions
 - *UPDATED:* Added additional quick status update for the remote service to hopefully resolve issue on slower servers
-- *UPDATED:* Increased delay of first check between console and remote agents from 500ms to 1 second to accomodate slower agent servers
+- *UPDATED:* Increased delay of first check between console and remote agents from 500ms to 1 second to accommodate slower agent servers
 					
 ### Version 9.1.0
 - *FIXED:* Issue when creating trigger DROP scripts in backout packages
@@ -121,7 +121,7 @@
 - *UPDATED:* Updated TFS source control to checkout only files as needed instead of checking out all of the scripts in an SBX
 - *UPDATED:* Policy icon updated to include warnings as well as alerts
 - *UPDATED:* Changed background color for "read-only" files to make it less obnoxious
-- *FIXED:* Case sentitivity issue when matching remote execution servers and target database servers
+- *FIXED:* Case sensitivity issue when matching remote execution servers and target database servers
 					
 ### Version 8.8.1
 - *UPDATED:* Updated the TFS source control integration to play nicer with the Visual Studio status refresh
@@ -137,7 +137,7 @@
 ### Version 8.7.3
 - *ADDED:* Made it easier to combine SBM files via drag and drop into script list
 - *ADDED:* Export of script violations to CSV file from Tools menu
-- *FIXED:* Bulk Add confimation window was opening hidden behind the main form
+- *FIXED:* Bulk Add confirmation window was opening hidden behind the main form
 					
 ### Version 8.7.2
 - **NOTE:** Auditing change! No longer uses an AuditTransactionMaster when creating audit tables and triggers. All system data is now captured directly in the child audit table.
@@ -189,8 +189,8 @@
 ### Version 8.6.8
 - *ADDED:* New features for creating rollback packages: options for removal of new object scripts and auto-marking manually created scripts as "run once"
 - *ADDED:* New command line argument /TimeoutRetryCount to allow for multiple execution tries if the SQL Server error message received is "Timeout expired" 
-- *ADDED:* Ability to control minumum script timeouts by file type and AD group membership
-- *ADDED:* Execution timer added to adhoc query
+- *ADDED:* Ability to control minimum script timeouts by file type and AD group membership
+- *ADDED:* Execution timer added to ad hoc query
 - *UPDATED:* Re-build feature now allows selection of database vs. scanning entire server on page load
 - *UPDATED:* User auditing triggers will produce a file per each trigger type vs. a single files with 3 triggers
 					
@@ -215,8 +215,8 @@
 					
 ### Version 8.6.4
 - **NOTE:** ** ATTENTION! Due to a change in the parsing algorithm for scripts, hash values may differ between this version and prior versions of the tool! UPDATE AS SOON AS POSSIBLE. **
-- *UPDATED:* Changed the Adhoc query working directory from the user's temp folder to a hidden subfolder of the destination file. This is to avoid issues with lack of storage.
-- *ADDED:* Ability to set script timeout for Adhoc queries.
+- *UPDATED:* Changed the ad hoc query working directory from the user's temp folder to a hidden subfolder of the destination file. This is to avoid issues with lack of storage.
+- *ADDED:* Ability to set script timeout for ad hoc queries.
 - *UPDATED:* Modified the batching of scripts to ignore "GO" delimiter in a comment block. This may effect the hash value of some scripts but 99% of the ones I have tested are unchanged. For the 1%, they may get a "changed" icon when in fact they were not changed.
 - *UPDATED:* Changed highlight color in "diff" view to be more obvious on all monitors
 - *ADDED:* Additional database logging: build package hash value, user id of requestor from a remote execution, and the version number of the Sql Build Manager used to execute the run
@@ -252,7 +252,7 @@
 - *FIXED:* Corrected crash when default script registry contained no items
 					
 ### Version 8.6.0
-- *UPDATED:* Ability to pull back extremely large amounts of data via the Adhoc query function
+- *UPDATED:* Ability to pull back extremely large amounts of data via the ad hoc query function
 - *UPDATED:* Cut/Copy/Paste context menu on "Add Script" and "Configure Via Query" forms
 - *ADDED:* Can view the application log via the "Help --> View Application Log File" menu item.
 					
@@ -275,8 +275,8 @@
 - *ADDED:* Build history tracking on remote build service client
 - *ADDED:* Ability to view build history and retrieve log files for historical Build Service requests
 - *FIXED:* Finder control to stop skipping to next find as you type
-- *FIXED:* Adhoc query would sometimes run "last" query
-- *ADDED:* Ability to include additional summary data items in adhoc query
+- *FIXED:* ad hoc query would sometimes run "last" query
+- *ADDED:* Ability to include additional summary data items in ad hoc query
 					
 ### Version 8.5.7
 - *UPDATED:* Updated "find" feature on script view window to search starting at cursor location vs. always at the top
@@ -299,7 +299,7 @@
 					
 ### Version 8.5.4
 - *FIXED:* Directory parsing on remote service side when the server name is an IP address
-- *ADDED:* Made the minumum default script timeout an enterprise level setting
+- *ADDED:* Made the minimum default script timeout an enterprise level setting
 					
 ### Version 8.5.3
 - *UPDATED:* Rebuild using the SQL Management Objects (SMO) v10 DLL's
@@ -345,7 +345,7 @@
 - *FIXED:* Script status icon wasn't refreshing after an "update object create script" command
 					
 ### Version 8.3.6
-- *UPDATED:* File copy choices for default scripts when there is a pre-existing script or a readonly one already in place.
+- *UPDATED:* File copy choices for default scripts when there is a pre-existing script or a read-only one already in place.
 - *UPDATED:* Physical file deletion warning in SBX files when that file is shared by another co-resident SBX file.
 - *ADDED:* Help Icon in Database Summary form.
 - *UPDATED:* Error handling when creating a new project file and default scripts.
@@ -409,7 +409,7 @@
 - *FIXED:* Added plain JOIN statement to the Script Optimization algorithm
 					
 ### Version 8.1.10
-- *ADDED:* Policy enforcement functionality with 3 built in policies: WITH (NOLOCK) directive, scripts wrapped in IF EXISTS for rerunability and GRANT execute for all routines.
+- *ADDED:* Policy enforcement functionality with 3 built in policies: WITH (NOLOCK) directive, scripts wrapped in IF EXISTS for re-runability and GRANT execute for all routines.
 - *ADDED:* Ability to change source database and server for object script updates from "Scripting" menu.
 - *ADDED:* Ability to select alternate Logging database from the UI for build run (formerly only available via command line)
 - *ADDED:* Threaded execution support for non-transactional RunScriptClear
@@ -449,7 +449,7 @@
 - *ADDED:* Indicator and control for read-only files when working with the SBX loose file configuration.
 - *ADDED:* Ability to generate Stored Procedures, Views and Functions with IF EXISTS CREATE and ALTER pair via setting.
 - *ADDED:* Ability to generate Stored Procedures, Views and Functions with permissions script via setting.
-- *UPDATED:* Updated autoscripting settings to accept zip and header settings from UI.
+- *UPDATED:* Updated auto-scripting settings to accept zip and header settings from UI.
 - *FIXED:* Making name of rebuilt file always have a .sbm extension since it only supports packages and not loose configurations.
 - *ADDED:* Improved formatting of scripts created as ALTER And CREATE
 - *ADDED:* Ability to use the delete key to remove scripts from the List

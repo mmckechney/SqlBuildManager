@@ -115,6 +115,7 @@ The next time you run a build action, use the `/SettingsFile="<file path>` in pl
 _Note:_ 
 1. the values for `/UserName`, `/Password`, `/BatchAccountKey` and `/StorageAccountKey` will be encrypted. 
 2. If there are duplicate values in the `/SettingsFile` and the command line, the command line argument will take precedence. 
+3. You can hand-craft the Json yourself in the [format below](#settings-file-format) but the password and keys will not be encrypted (which may be OK depending on where you save the files)
 
 #### Script Extraction from Dacpac (/Action=ScriptExtract)
 - `/PlatinumDacpac="<filename>"` - Name of the dacpac containing the platinum schema
@@ -188,3 +189,28 @@ run order and results.
 meta-data on each script file that defined the run settings, script
 creation user ID's and the committed script record and hash for each.
 	
+# Settings File Format
+The format for the saved settings Json file is below. You can include or exclude any values that would like. Also as a reminder, for any duplicate keys found in the settings file and command line arguments, the command line argument's value will be used.
+
+```
+{
+  "AuthenticationArgs": {
+    "UserName": "<database use name>",
+    "Password": <database password>"
+  },
+  "BatchArgs": {
+    "BatchNodeCount": <int value>,
+    "BatchAccountName": "<batch account name>",
+    "BatchAccountKey": "<key for batch account ",
+    "BatchAccountUrl": "<https URL for batch account>",
+    "StorageAccountName": "<storage account name>",
+    "StorageAccountKey": "<storage account key>",
+    "BatchVmSize": "<VM size designator>",
+    "DeleteBatchPool": <true|false>,
+    "DeleteBatchJob": <true|false>,
+    "PollBatchPoolStatus": <true|false>
+  },
+  "RootLoggingPath": "<valid folder path>",
+  "LogAsText": <true|false>
+}
+```
