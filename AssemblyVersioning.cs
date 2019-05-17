@@ -27,5 +27,5 @@ using System;
 //   2) Update the installer version to match the AssemblyVersion below.
 //   These can be found in SqlBuildManager.Setup -> Organize Your Setup -> General Information
 // ** Also, don't forget to update the change_notes.xml and .html files!
-[assembly: AssemblyVersion("10.4.3.*")]
-[assembly: AssemblyFileVersion("10.4.3")]
+[assembly: AssemblyVersion("10.4.4.*")]
+[assembly: AssemblyFileVersion("10.4.4")]

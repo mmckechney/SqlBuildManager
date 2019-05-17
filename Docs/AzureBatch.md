@@ -1,7 +1,9 @@
 ﻿# Leveraging Azure Batch for distributed builds
-To use Azure Batch, you will need to have an Azure Batch account. This setup is a one-time event and can be done via scripts or manually via the Azure portal
 
-## Set up your Batch Account (Scripted)
+## Set up your Batch Account
+To use Azure Batch, you will need to have an Azure Batch account and upload the Sql Build Manager code package zip file (either from a [GitHub release](https://github.com/mmckechney/SqlBuildManager/releases) or a custom build) to the account. This setup is a one-time event and can be done via scripts or manually via the Azure portal
+
+ ### **Option 1: Scripted**
 
 0. _Prerequisite_: Make sure you have the [Azure PowerShell Modules installed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.8.0)
 1. Download the files in the [templates](templates) folder
@@ -23,32 +25,35 @@ Pre-populated command line arguments. Record these for use later:
 /StorageAccountKey=deDGkC2D3eOzI2BiVVmrxVpP1PPf7AdllA89HRYRAxD703iM/Me4D815aNYJTan8xiRypmfQ7QxCnZhM7QlYog==
 
 ```
-## Set up your Batch Account (via Azure Portal)
+### **Option 2: via Azure Portal**
 
-### Create Azure Batch Account
+
 1. Login to the Azure Portal at <http://portal.azure.com>
 2. Click "Create a Resource"
 3. Search for "Batch Service"
 4. On the information page, select "Create"
 5. Fill out the new batch and storage account information and click "Create"
 6. Wait for the Azure Batch account to be provisioned (should only take a few minutes)
-
-### Upload SQL Build Manager code package
-1. First, make sure you have a build of SQL Build Manager (if you pull from Git and build, the executables will be in the root bin/debug or bin/release folder)
-2. Zip up all of the files in the build folder - you can also grab the latest release Zip file from [here](https://github.com/mmckechney/SqlBuildManager/releases)
+7. Collect Azure Batch and storage account information
+    -  Create a new text document to capture the information you will collect
+    - In the Azure Portal, navigate to your new Batch account 
+    -  On the Keys blade, record the Batch Account, URL and Primary access key values
+    - On the Storage Account blade, record the Storage Account Name and Key1 values
+----
+## Upload SQL Build Manager code package
+1. First, make sure you have a build of SQL Build Manager either from [GitHub Release](https://github.com/mmckechney/SqlBuildManager/releases) or built locally (clone/pull from [Github](https://github.com/mmckechney/SqlBuildManager) and build, the executables will be in the root bin/debug or bin/release folder)
+2. Zip up all of the files in the build folder - or grab the latest release Zip file from [here](https://github.com/mmckechney/SqlBuildManager/releases)
 3. In the Azure Portal, navigate to your Azure Batch account and click the "Applications" blade.
 4. Click the "+ Add" link
 5. Fill in the Application Id with "sqlbuildmanager" (no quotes) and the version field (can be any alpha-numeric) 
 6. Use the folder icon to select your zip file that contains the compiled binaries
 7. Click the "OK" button - this will upload your zip package and it will now show up in the Application list
 
-### Collect Azure Batch and storage account information
-1. Create a new text document to capture the information you will collect
-2. In the Azure Portal, navigate to your new Batch account 
-3. On the Keys blade, record the Batch Account, URL and Primary access key values
-4. On the Storage Account blade, record the Storage Account Name and Key1 values
+
 ----
 ## Running a Batch execution
+(for a full end-to-end example, see [this document](./AzureBatchExample.md))
+
 Azure Batch builds are started locally via `SqlBuildManager.Console.exe`. This process communicates with the Azure Storage account and Azure Batch account to execute in  parallel across the pool of Batch compute nodes. The number of nodes that are provisioned is determined by your command line arguments.
 
 ### Recommended order of execution:

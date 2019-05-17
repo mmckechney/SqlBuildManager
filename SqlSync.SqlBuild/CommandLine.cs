@@ -179,7 +179,7 @@ namespace SqlSync.SqlBuild
             if(dict.ContainsKey("timeoutretrycount"))
             {
                 if(int.TryParse(dict["timeoutretrycount"],out allowableTimeoutRetries))
-                    cmdLine.AllowableTimeoutRetries = allowableTimeoutRetries;
+                    cmdLine.TimeoutRetryCount = allowableTimeoutRetries;
             }
 
             if (dict.ContainsKey("golddatabase"))
@@ -283,9 +283,11 @@ namespace SqlSync.SqlBuild
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
                 cmdLine.BatchArgs.BatchVmSize = ConfigurationManager.AppSettings["BatchVmSize"];
 
-
-
-
+            int defaultTimeout = 500;
+            if (dict.ContainsKey("defaultscripttimeout") && int.TryParse(dict["defaultscripttimeout"], out defaultTimeout))
+            {
+                cmdLine.DefaultScriptTimeout = defaultTimeout;
+            }
 
             if (dict.ContainsKey("authtype"))
             {

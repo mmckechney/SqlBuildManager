@@ -67,7 +67,9 @@ Applies to: `/Action={Build|Threaded|Batch|Remote}`
 - `/LogToDatabaseName="<db name>"` - [Not recommended] Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target). 
 - `/ScriptSrcDir="<directory>"` - [Not recommended] Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)
 - `/ScriptLogFile="<filename>"` - [Not recommended] Alternate name for the file containing the script run log
-- `/RootLoggingPath="<directory>"` - Directory to
+- `/RootLoggingPath="<directory>"` - Directory to write the logs to 
+- `/TimeoutRetryCount=(integer)` - Number of times to retry os a script timeout is encountered (default is 0)
+- `/DefaultScriptTimeout=<int>` - default number of seconds to set the script timeout for for generated SBM packages (such as from a DACPAC)
 
 #### Azure Batch Execution (/Action=Batch)
 
@@ -86,7 +88,6 @@ See detailed Batch [documentation](AzureBatch.md#azure-batch-clean-up-delete-nod
 
 #### Remote Execution settings (/Action=Remote)
 - `/RemoteServers=("<filename>"|derive|azure)` - Pointer to file that contains the list of remote execution servers, "derive" to parse servers from DB list, azure to use Azure PaaS instances
-- `/TimeoutRetryCount=(integer)` - Number of times to retry os a script timeout is encountered (default is 0)
 - `/DistributionType=(equal|local)` - Sets whether to split execution evenly across all execution servers or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
 - `/TestConnectivity=(true|false)` - True value will test connection to remote agent and databases but will not execute SQL scripts
 - `/AzureRemoteStatus=true` - Return a status of the Azure remote execution services. Will not execute SQL 
@@ -211,6 +212,8 @@ The format for the saved settings Json file is below. You can include or exclude
     "PollBatchPoolStatus": <true|false>
   },
   "RootLoggingPath": "<valid folder path>",
-  "LogAsText": <true|false>
+  "LogAsText": <true|false>, 
+  "DefaultScriptTimeout" : <int>,
+  "TimeoutRetryCount: <int>
 }
 ```

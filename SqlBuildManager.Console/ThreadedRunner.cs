@@ -150,6 +150,7 @@ namespace SqlBuildManager.Console
 
                 runData.PlatinumDacPacFileName = cmdArgs.DacPacArgs.PlatinumDacpac;
                 runData.BuildRevision = cmdArgs.BuildRevision;
+                runData.DefaultScriptTimeout = cmdArgs.DefaultScriptTimeout;
 
 
                 //Initilize the logging directory for this run
@@ -160,7 +161,7 @@ namespace SqlBuildManager.Console
                 {
                     runData.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
-                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.username, this.password, loggingDirectory, cmdArgs.BuildRevision);
+                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.username, this.password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout);
                     switch(status)
                     {
                         case DacpacDeltasStatus.Success:
@@ -235,7 +236,7 @@ namespace SqlBuildManager.Console
                 helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
                 helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
                 helper.BuildSuccessTrialRolledBackEvent += new EventHandler(helper_BuildSuccessTrialRolledBackEvent);
-                helper.ProcessBuild(runData, bg, e, ThreadedExecution.BatchColl, this.buildRequestedBy,cmdArgs.AllowableTimeoutRetries);
+                helper.ProcessBuild(runData, bg, e, ThreadedExecution.BatchColl, this.buildRequestedBy,cmdArgs.TimeoutRetryCount);
             }
             catch (Exception exe)
             {

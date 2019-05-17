@@ -215,7 +215,7 @@ namespace SqlBuildManager.Console
             }
 
             //Set the number of allowed retries...
-            multiData.AllowableTimeoutRetries = cmdLine.AllowableTimeoutRetries;
+            multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;
             //Set Trial
             multiData.RunAsTrial = cmdLine.Trial;
             multiData.BuildRevision = cmdLine.BuildRevision;
@@ -250,7 +250,7 @@ namespace SqlBuildManager.Console
                     this.cmdLine.Transactional = multiData.IsTransactional;
                     this.cmdLine.Trial = multiData.RunAsTrial;
                     this.cmdLine.Description = description;
-                    this.cmdLine.AllowableTimeoutRetries = multiData.AllowableTimeoutRetries; //set the retries count...
+                    this.cmdLine.TimeoutRetryCount = multiData.AllowableTimeoutRetries; //set the retries count...
                     if (!string.IsNullOrWhiteSpace(multiData.UserName))
                         this.cmdLine.AuthenticationArgs.UserName = multiData.UserName;
                     if (!string.IsNullOrWhiteSpace(multiData.Password))

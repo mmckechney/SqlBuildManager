@@ -1524,7 +1524,7 @@ namespace SqlSync
 			else
 			{
 
-                SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildFileName, files.ToList(), this.data.DatabaseName);
+                SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildFileName, files.ToList(), this.data.DatabaseName, SqlSync.Properties.Settings.Default.DefaultMinimumScriptTimeout);
 				
 				files = Directory.GetFiles(directory);
 				for(int i=0;i<files.Length;i++)

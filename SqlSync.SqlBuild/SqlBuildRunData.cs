@@ -6,116 +6,23 @@ namespace SqlSync.SqlBuild
 {
     public class SqlBuildRunData
     {
-        SqlSyncBuildData buildData = null;
-        public SqlSyncBuildData BuildData
-        {
-            get { return buildData; }
-            set { buildData = value; }
-        }
-        
-        string buildType = string.Empty;
-        public string BuildType
-        {
-            get { return buildType; }
-            set { buildType = value; }
-        }
-        string server = string.Empty;
-        public string Server
-        {
-            get { return server; }
-            set { server = value; }
-        }
-
-        string buildDescription = string.Empty;
-        public string BuildDescription
-        {
-            get { return buildDescription; }
-            set { buildDescription = value; }
-        }
-
-        double startIndex = 0;
-        public double StartIndex
-        {
-            get { return startIndex; }
-            set { startIndex = value; }
-        }
-       
-        string projectFileName;
-        public string ProjectFileName
-        {
-            get { return projectFileName; }
-            set { projectFileName = value; }
-        }
-        
-        bool isTrial = false;
-        public bool IsTrial
-        {
-            get { return isTrial; }
-            set { isTrial = value; }
-        }
-       
-        double[] runItemIndexes = new double[0];
-        public double[] RunItemIndexes
-        {
-            get { return runItemIndexes; }
-            set { runItemIndexes = value; }
-        }
-       
-        bool runScriptOnly = false;
-        public bool RunScriptOnly
-        {
-            get { return runScriptOnly; }
-            set { runScriptOnly = value; }
-        }
-       
-        string buildFileName;
-        public string BuildFileName
-        {
-            get { return buildFileName; }
-            set { buildFileName = value; }
-        }
-
-        string logToDatabaseName = string.Empty;
-
-        public string LogToDatabaseName
-        {
-            get { return logToDatabaseName; }
-            set { logToDatabaseName = value; }
-        }
-
-        bool isTransactional = true;
-
-        public bool IsTransactional
-        {
-            get { return isTransactional; }
-            set { isTransactional = value; }
-        }
-
-        string platinumDacPacFileName = string.Empty;
-        public string PlatinumDacPacFileName
-        {
-            get { return platinumDacPacFileName; }
-            set { platinumDacPacFileName = value; }
-        }
-        
-        List<DatabaseOverride> targetDatabaseOverrides;
-
-        public List<DatabaseOverride> TargetDatabaseOverrides
-        {
-            get { return targetDatabaseOverrides; }
-            set { targetDatabaseOverrides = value; }
-        }
-
-        public bool ForceCustomDacpac
-        {
-            get;
-            set;
-        }
-
-        public string BuildRevision
-        {
-            get;
-            set;
-        }
+        public SqlSyncBuildData BuildData { get; set; } = null;
+        public string BuildType { get; set; } = string.Empty;
+        public string Server { get; set; } = string.Empty;
+        public string BuildDescription { get; set; } = string.Empty;
+        public double StartIndex { get; set; } = 0;
+        public string ProjectFileName { get; set; }
+        public bool IsTrial { get; set; } = false;
+        public double[] RunItemIndexes { get; set; } = new double[0];
+        public bool RunScriptOnly { get; set; } = false;
+        public string BuildFileName { get; set; }
+        public string LogToDatabaseName { get; set; } = string.Empty;
+        public bool IsTransactional { get; set; } = true;
+        public string PlatinumDacPacFileName { get; set; } = string.Empty;
+        public List<DatabaseOverride> TargetDatabaseOverrides { get; set; }
+        public bool ForceCustomDacpac { get; set; }
+        public string BuildRevision { get; set; }
+        public int DefaultScriptTimeout { get; set; } = 500;
+ 
     }
 }

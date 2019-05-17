@@ -2,13 +2,17 @@
 # SQL Build Manager Change Notes
       
 					
+### Version 10.4.4
+- *ADDED:* Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds
+- *UPDATED:* Refactored the `/TimeoutRetryCount` setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X`times if the build fails because of any timeout error
+					
 ### Version 10.4.3
-- *ADDED:* New utility /Action=SaveSettings and /SettingsFile argument for simple reuse of settings.
+- *ADDED:* New utility `/Action=SaveSettings` and `/SettingsFile` argument for simple reuse of settings.
 					
 ### Version 10.4.2
-- *ADDED:* Added Batch pool handling action 'BatchPreStage' so that Pools can be created in advance of needing the compute. Avoids the waiting "cold start" of a batch job
-- *ADDED:* Added Batch pool handling action  'BatchCleanup' so that Pools can be deleted separately from a build run (useful if you need to re-run jobs)
-- *UPDATED:* Changed default action of /DeleteBatchPool flag to 'false' so that pool VMs are not immediately deleted after a Batch job. More useful now with the BatchPreStage and BatchCleanUp actions
+- *ADDED:* Added Batch pool handling `/Action=BatchPreStage` so that Pools can be created in advance of needing the compute. Avoids the waiting "cold start" of a batch job
+- *ADDED:* Added Batch pool handling `/Action=BatchCleanup` so that Pools can be deleted separately from a build run (useful if you need to re-run jobs)
+- *UPDATED:* Changed default action of `/DeleteBatchPool` flag to `false` so that pool VMs are not immediately deleted after a Batch job. More useful now with the BatchPreStage and BatchCleanUp actions
 					
 ### Version 10.4.1
 - *UPDATED:* Updated Azure Batch to better handle pools, jobs and log file storage as well as job naming

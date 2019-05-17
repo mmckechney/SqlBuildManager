@@ -367,12 +367,12 @@ namespace SqlSync.SqlBuild
 			PackageProjectFileIntoZip(buildData,Path.GetDirectoryName(projFileName)+@"\", buildZipFileName);
 		}
 
-        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName)
+        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout)
         {
-            return SaveSqlFilesToNewBuildFile(buildFileName, fileNames, targetDatabaseName, false);
+            return SaveSqlFilesToNewBuildFile(buildFileName, fileNames, targetDatabaseName, false, defaultScriptTimeout);
         }
 
-        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, bool overwritePreExistingFile)
+        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, bool overwritePreExistingFile, int defaultScriptTimeout)
         {
             if (File.Exists(buildFileName) && !overwritePreExistingFile)
             {
@@ -406,7 +406,7 @@ namespace SqlSync.SqlBuild
                         false,
                         true,
                         System.Environment.UserName,
-                        500, "");
+                        defaultScriptTimeout, "");
 
                 }
                 SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildFileName);
@@ -419,10 +419,10 @@ namespace SqlSync.SqlBuild
             }
 
         }
-        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, string directory, string targetDatabaseName)
+        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, string directory, string targetDatabaseName, int defaultScriptTimeout)
         {
             string[] files = Directory.GetFiles(directory);
-            return SaveSqlFilesToNewBuildFile(buildFileName, files.ToList(), targetDatabaseName);
+            return SaveSqlFilesToNewBuildFile(buildFileName, files.ToList(), targetDatabaseName, defaultScriptTimeout);
         }
 
         #region .: Packaging SBX into SBM :.

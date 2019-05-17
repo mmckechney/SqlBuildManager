@@ -1,12 +1,16 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="10" Minor="4" Revision="4">
+    <added>Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds</added>
+    <updated>Refactored the `/TimeoutRetryCount` setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X`times if the build fails because of any timeout error</updated>
+  </Version>
   <Version Major="10" Minor="4" Revision="3">
-    <added>New utility /Action=SaveSettings and /SettingsFile argument for simple reuse of settings.</added>
+    <added>New utility `/Action=SaveSettings` and `/SettingsFile` argument for simple reuse of settings.</added>
   </Version>
   <Version Major="10" Minor="4" Revision="2">
-    <added>Added Batch pool handling action 'BatchPreStage' so that Pools can be created in advance of needing the compute. Avoids the waiting "cold start" of a batch job</added>
-    <added>Added Batch pool handling action  'BatchCleanup' so that Pools can be deleted separately from a build run (useful if you need to re-run jobs)</added>
-    <updated>Changed default action of /DeleteBatchPool flag to 'false' so that pool VMs are not immediately deleted after a Batch job. More useful now with the BatchPreStage and BatchCleanUp actions</updated>
+    <added>Added Batch pool handling `/Action=BatchPreStage` so that Pools can be created in advance of needing the compute. Avoids the waiting "cold start" of a batch job</added>
+    <added>Added Batch pool handling `/Action=BatchCleanup` so that Pools can be deleted separately from a build run (useful if you need to re-run jobs)</added>
+    <updated>Changed default action of `/DeleteBatchPool` flag to `false` so that pool VMs are not immediately deleted after a Batch job. More useful now with the BatchPreStage and BatchCleanUp actions</updated>
   </Version>
   <Version Major="10" Minor="4" Revision="1">
     <updated>Updated Azure Batch to better handle pools, jobs and log file storage as well as job naming</updated>

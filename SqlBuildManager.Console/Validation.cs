@@ -150,7 +150,7 @@ namespace SqlBuildManager.Console
                 }
             }
 
-            if (cmdLine.AllowableTimeoutRetries < 0)
+            if (cmdLine.TimeoutRetryCount < 0)
             {
               
                     error = "The /TimeoutRetryCount setting is a negative number. This value needs to be a positive integer.";
@@ -159,7 +159,7 @@ namespace SqlBuildManager.Console
                     return (int)ExecutionReturn.NegativeTimeoutRetryCount;
              }
 
-            if (cmdLine.AllowableTimeoutRetries > 0 && !cmdLine.Transactional)
+            if (cmdLine.TimeoutRetryCount > 0 && !cmdLine.Transactional)
             {
 
                 error = "The /TimeoutRetryCount setting is not allowed when /Transactional=false";
