@@ -1,5 +1,5 @@
 # Azure Batch execution example
-Below is an end-to-end example of running an Azure Batch build. This assumes that you have already created your batch account and uploaded yoru code package. If you have not, please refer follow the instructions found [here](./AzureBatch.md)
+Below is an end-to-end example of running an Azure Batch build. This assumes that you have already created your batch account and uploaded your code package. If you have not, please refer follow the instructions found [here](./AzureBatch.md)
 
 ## 1. Save your batch settings to a `/SettingsFile`
 This only needs to be run once and this file can be reused for future builds as long as you don't change any keys or passwords. By creating this file now, you greatly simplify the subsequent commands. 

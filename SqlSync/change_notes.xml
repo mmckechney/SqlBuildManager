@@ -2,7 +2,7 @@
 <SqlBuildManagerChangeNotes>
   <Version Major="10" Minor="4" Revision="4">
     <added>Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds</added>
-    <updated>Refactored the `/TimeoutRetryCount` setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X`times if the build fails because of any timeout error</updated>
+    <updated>Refactored the `/TimeoutRetryCount` (integer) setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X` times if the build fails because of any timeout error that reults in a build rollback</updated>
   </Version>
   <Version Major="10" Minor="4" Revision="3">
     <added>New utility `/Action=SaveSettings` and `/SettingsFile` argument for simple reuse of settings.</added>

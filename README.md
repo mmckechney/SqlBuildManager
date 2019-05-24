@@ -37,6 +37,21 @@ At the core of the process is the "SQL Build Manager Package" file (.sbm extensi
 * `ModifiedBy`: If the script has been modified after being added, this will be populated with the user's ID
 * `Tag`: Optional tag for the script
 
+If you are using a DACPAC deployment, this all gets generated for you based on your command line parameters and defaults
+
+Example `SqlSyncBuildProject.xml` file. You can build this by hand to create your own `.sbm` file or leverage the options below (recommended).
+```
+<?xml version="1.0" standalone="yes"?>
+<SqlSyncBuildData xmlns="http://schemas.mckechney.com/SqlSyncBuildProject.xsd">
+  <SqlSyncBuildProject ProjectName="" ScriptTagRequired="false">
+    <Scripts>
+      <Script FileName="select.sql" BuildOrder="1" Description="Testing select script" RollBackOnError="true" CausesBuildFailure="true" DateAdded="2019-04-11T19:45:05.081043-04:00" ScriptId="14f775d2-d026-426b-bece-7faa323e0e14" Database="Client" StripTransactionText="true" AllowMultipleRuns="true" AddedBy="mimcke" ScriptTimeOut="500" DateModified="0001-01-01T00:00:00-05:00" ModifiedBy="" Tag="default" />
+    </Scripts>
+    <Builds />
+  </SqlSyncBuildProject>
+</SqlSyncBuildData>
+```
+
 ## Creating a Build Package
 
 ### Forms UI
@@ -59,17 +74,17 @@ Leveraging the `/Action=Build` command, this runs the build on the current local
 
 ### Threaded
 
-Using the `/Action=Threaded` command will allow for updating multiple databases in parallel, but still executed from the local machine. Any transaction rollbacks will occur only on per-database - meaning if 5 of 6 databases succeed, the build will be committed on the 5 and rolled back only on the 6th
+Using the `/Action=Threaded` command will allow for updating multiple databases in parallel, but still executed from the local machine. Any transaction rollbacks will occur per-database - meaning if 5 of 6 databases succeed, the build will be committed on the 5 and rolled back only on the 6th
 
 ### Batch
 
-Using the `/Action=Batch` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](Docs/AzureBatch.md)
+Using the `/Action=Batch` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](Docs/AzureBatch.md).
 
 An excellent tool for viewing and monitoring your Azure batch accounts and jobs can be found here [https://azure.github.io/BatchExplorer/](https://azure.github.io/BatchExplorer/)
 
 ### Remote
 
-Using `/Action=Remote`, this method leverages an Azure Cloud Service deployment of the `SqlBuildManager.Services` application. This is a legacy method that allows for massively parallel updates. It is considered legacy because Azure Cloud Services themselves are a legacy deployment and also because of the effort to deploy and configure the Cloud Service compared to the same capability available via Azure Batch.
+Using `/Action=Remote`, this method leverages an Azure Cloud Service deployment of the `SqlBuildManager.Services` application. This is a legacy method that allows for massively parallel updates. It is considered legacy because Azure Cloud Services themselves are a legacy deployment and also because of the extra effort to deploy and configure the Cloud Service compared to the same capability available via Azure Batch.
 
 ### For full command line reference details, go [here](Docs/commandline.md)
 

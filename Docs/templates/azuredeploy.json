@@ -3,11 +3,16 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "batchAccountName": {
-            "defaultValue": "sqlbuildmanager",
-            "type": "String"
+            "type": "string",
+            "metadata": {
+              "description": "Batch Account Name"
+            }
         },
         "storageAccountName": {
-            "type": "String"
+            "type": "string",
+            "metadata": {
+                "description": "Storage Account Name"
+              }
         }
     },
     "variables": {},
