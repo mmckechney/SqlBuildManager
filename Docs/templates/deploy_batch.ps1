@@ -45,9 +45,8 @@ param(
  [string]
  $resourceGroupLocation,
 
- [Parameter(Mandatory=$True)]
  [string]
- $deploymentName,
+ $deploymentName = "batchaccount",
 
  [string]
  $templateFilePath = "azuredeploy.json",

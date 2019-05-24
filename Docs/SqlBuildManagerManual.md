@@ -19,8 +19,8 @@ McKechney](http://mckechney.com/) on
 - [Connecting to a database](#Connecting-to-a-database)
 - [Creating your first Sql Build Manager Project file](#Creating-your-first-Sql-Build-Manager-Project-file)
 - [Adding Scripts to your project](#Adding-Scripts-to-your-project)
-- [Script Configuration: Setting run time rules](#Script-Configuration:-Setting-run-time-rules)
-- [Bulk Add](Bulk-Add)
+- [Script Configuration: Setting run time rules](#script-configuration-setting-run-time-rules)
+- [Bulk Add](#Bulk-Add)
 - [Bulk Add From List](#Bulk-Add-From-List)
 - [Bulk Add From Text File](#Bulk-Add-From-Text-File)
 
@@ -31,7 +31,7 @@ McKechney](http://mckechney.com/) on
 
 ## Running Your SQL Builds
 
-- [Run Time Build Settings](#Running-Your-SQL-Builds)
+- [Run Time Build Settings](#run-time-build-settings)
 - [Executing your build project](#Executing-your-build-project)
     - [Executing the full project](#Executing-the-full-project)
     - [Executing select scripts](#Executing-select-scripts)
@@ -58,7 +58,7 @@ McKechney](http://mckechney.com/) on
 
 ## Remote Service Execution and Deployment
 
-- [Overview](#[Overview)
+- [Overview](#overview)
     - [Section Detail](#Section-Detail)
 - [Pre-testing database connectivity](#Pre-testing-database-connectivity)
 - [Performing a remote execution](#Performing-a-remote-execution)
@@ -76,8 +76,8 @@ McKechney](http://mckechney.com/) on
 - [Script Policy Checking](#Script-Policy-Checking)
     - [Manual Policy Checking of Build Package](#Manual-Policy-Checking-of-Build-Package)
     - [Grant Execute Policy](#Grant-Execute-Policy)
-    - [Grant Execute to [public] Policy](#Grant-Execute-to-[public]-Policy)
-    - [WITH (NOLOCK) Policy](#WITH-(NOLOCK)-Policy)
+    - [Grant Execute to [public] Policy](#grant-execute-to-public-policy)
+    - [WITH (NOLOCK) Policy](#with-nolock-policy)
     - [Re-runable Script Policy](#Re-runable-Script-Policy)
     - [Qualified Table Names Policy](#Qualified-Table-Names-Policy)
     - [Comment Header Policy](#Comment-Header-Policy)
@@ -87,7 +87,7 @@ McKechney](http://mckechney.com/) on
 
 - [Scripting Database Objects](#Scripting-Database-Objects)
 - [Updating Scripted Objects](#Updating-Scripted-Objects)
-- [Creating a Back out Package](#Creating-a-Back-out-Package)
+- [Creating a Back out Package](#creating-a---back-out-package--)
 
 ## Reporting and Adhoc Queries
 
@@ -98,7 +98,7 @@ McKechney](http://mckechney.com/) on
 ## Stored Procedure Testing
 
 - [Stored Procedure Testing-Setup](#Stored-Procedure-Testing-Setup)
-- [Stored Procedure Testing - Execution](#Stored-Procedure-Testing---Execution)
+- [Stored Procedure Testing - Execution](#stored-procedure-testing---execution-manual-and-automated)
     - [Running your stored procedure tests - manual](#Running-your-stored-procedure-tests-manual)
     - [Interpreting the results](#Interpreting-the-results)
     - [Saving the results](#Saving-the-results)
@@ -108,12 +108,12 @@ McKechney](http://mckechney.com/) on
 
 - [Associated File Types](#Associated-File-Types)
 
-## [Database Analysis](#Database-Analysis)
+## Database Analysis
 
 - [Server Analysis](#Server-Analysis)
 - [Individual Database Details](#Individual-Database-Details)
 
-## [Data Extraction and Insertion](#Data-Extraction-and-Insertion)
+## Data Extraction and Insertion
 
 - [Data Extraction](#Data-Extraction)
 - [Data Insertion Script Creation](#Data-Insertion-Script-Creation)
@@ -122,10 +122,10 @@ McKechney](http://mckechney.com/) on
 
 [Rebuilding Previously Committed Build Packages](#Rebuilding-Previously-Committed-Build-Packages)
 
-## Enterprise / Team Settings]
+## Enterprise / Team Settings
 
-- [Enterprise Team Settings Configuration File](#Enterprise/Team-Settings-Configuration-File)
-- [appSettings Key Value Pair](#appSettings-Key/Value-Pair)
+- [Enterprise Team Settings Configuration File](#enterpriseteam-settings-configuration-file)
+- [appSettings Key Value Pair](#appsettings-keyvalue-pair)
 - [Script Change Settings](#Script-Change-Settings)
     - [Table Change Watch](#Table-Change-Watch)
     - [Configuring Table Change Watch](#Configuring-Table-Change-Watch)
