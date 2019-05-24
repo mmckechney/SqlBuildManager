@@ -56,10 +56,10 @@ param(
  $parametersFilePath = "azuredeploy.parameters.json",
 
   [string]
- $sbmReleaseUrl = "https://github.com/mmckechney/SqlBuildManager/releases/download/v10.4.2/SqlBuildManager-v10.4.2.zip",
+ $sbmReleaseUrl = "https://github.com/mmckechney/SqlBuildManager/releases/download/v10.4.4/SqlBuildManager-v10.4.4.zip",
 
   [string]
- $version= "10.4.2",
+ $version= "10.4.4",
 
  [string]
  $applicationId  = "SqlBuldManager"
@@ -153,7 +153,7 @@ Write-Host "Setting default application version to $version"
 Set-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationId -DefaultVersion $version
 
 
-$batch = Get-AzBatchAccountKey –AccountName $batchAcctName -ResourceGroupName $resourceGroupName
+$batch = Get-AzBatchAccountKey -AccountName $batchAcctName -ResourceGroupName $resourceGroupName
 $t = Get-AzBatchAccount -AccountName $batchAcctName -ResourceGroupName $resourceGroupName
 
 

@@ -780,6 +780,10 @@ namespace SqlSync.DbInformation
                 catch (Exception rExe)
                 {
                     log.WarnFormat("Unable to get modify date information for routines: {0}", rExe.Message);
+                    if (rExe.Message.ToLowerInvariant().IndexOf("login failed") > -1)
+                    {
+                        continue;
+                    }
                 }
                
                 //Get the information for Views
@@ -807,6 +811,10 @@ namespace SqlSync.DbInformation
                 catch (Exception vExe)
                 {
                     log.WarnFormat("Unable to get modify date information for routines: {0}", vExe.Message);
+                    if (vExe.Message.ToLowerInvariant().IndexOf("login failed") > -1)
+                    {
+                        continue;
+                    }
                 }
 
                 //Get the information for Tables
@@ -834,6 +842,10 @@ namespace SqlSync.DbInformation
                 catch (Exception tExe)
                 {
                     log.WarnFormat("Unable to get modify date information for routines: {0}", tExe.Message);
+                    if (tExe.Message.ToLowerInvariant().IndexOf("login failed") > -1)
+                    {
+                        continue;
+                    }
                 }
 
                 //Get the information for Triggers
@@ -861,6 +873,11 @@ namespace SqlSync.DbInformation
                 catch (Exception trExe)
                 {
                     log.WarnFormat("Unable to get modify date information for routines: {0}", trExe.Message);
+                    if (trExe.Message.ToLowerInvariant().IndexOf("login failed") > -1)
+                    {
+                        continue;
+                    }
+
                 }
 
 

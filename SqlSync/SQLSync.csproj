@@ -1157,7 +1157,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="change_notes.md" />
     <None Include="ClassDiagram1.cd" />
     <None Include="Images\Database-analysis.xcf" />
     <None Include="Images\Database-clock.xcf" />
