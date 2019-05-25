@@ -5,9 +5,9 @@
 
 ----
 
-**Tip**: If you don't like typing the full name of the exe you can easily create an alias with the files in the [Utility](../Utility) folder:
-- Edit the [alias.bat](../Utility/alias.bat) file with the path to where you have the SqlBuildManager.Console.exe file. 
-- Edit the [command_alias.reg](../Utility/command_alias.reg) file to the path where you save the *alias.bat* file.
+**Tip**: If you don't like typing the full name of the exe you can easily create an alias with the files in the [Utility](../utility) folder:
+- Edit the [alias.bat](../utility/alias.bat) file with the path to where you have the SqlBuildManager.Console.exe file. 
+- Edit the [command_alias.reg](../utility/command_alias.reg) file to the path where you save the *alias.bat* file.
 - Run th *command_alias.reg* file to add the key to your registry. 
 
 Now you can use shorthand *sbm* to run the command-line!

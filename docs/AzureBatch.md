@@ -28,10 +28,10 @@ Pre-populated command line arguments. Record these for use later:
 ### **Option 2: Direct deployment**
 Use the "Deploy to Azure" button to deploy using the template via the Azure portal. You will need to collect the account information from the resources once created the same as step 7 [here](#option-3-manually-via-azure-portal)
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2FDocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2Fdocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
     <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.png"/>
 </a>
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2FDocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2Fdocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
 <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.png"/>
 </a>
 

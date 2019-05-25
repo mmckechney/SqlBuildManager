@@ -2,7 +2,7 @@
 
 SQL Build Manager is a multi-faceted tool to allow you to manage the lifecyle of your databases. It started as a forms based application for the management of a handful of databases and then switched focus to command line automation for the management of thousands of databases.
 
-### [Change notes](Docs/change_notes.md)
+### [Change notes](docs/change_notes.md)
 
 ## Key Features
 
@@ -56,7 +56,7 @@ Example `SqlSyncBuildProject.xml` file. You can build this by hand to create you
 
 ### Forms UI
 
-While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _Sql Build Manager.exe_. There is docmentation on the GUI that you can find [here](Docs/SqlBuildManagerManual.md) that will walk through the creation of build packages ([PDF version](SqlBuildManager%20Manual/SqlBuildManagerManual.pdf)).
+While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _Sql Build Manager.exe_. There is docmentation on the GUI that you can find [here](docs/SqlBuildManagerManual.md) that will walk through the creation of build packages ([PDF version](src/SqlBuildManager%20Manual/SqlBuildManagerManual.pdf)).
 
 ### Command line
 
@@ -78,7 +78,7 @@ Using the `/Action=Threaded` command will allow for updating multiple databases 
 
 ### Batch
 
-Using the `/Action=Batch` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](Docs/AzureBatch.md).
+Using the `/Action=Batch` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](docs/AzureBatch.md).
 
 An excellent tool for viewing and monitoring your Azure batch accounts and jobs can be found here [https://azure.github.io/BatchExplorer/](https://azure.github.io/BatchExplorer/)
 
@@ -86,8 +86,8 @@ An excellent tool for viewing and monitoring your Azure batch accounts and jobs 
 
 Using `/Action=Remote`, this method leverages an Azure Cloud Service deployment of the `SqlBuildManager.Services` application. This is a legacy method that allows for massively parallel updates. It is considered legacy because Azure Cloud Services themselves are a legacy deployment and also because of the extra effort to deploy and configure the Cloud Service compared to the same capability available via Azure Batch.
 
-### For full command line reference details, go [here](Docs/commandline.md)
+### For full command line reference details, go [here](docs/commandline.md)
 
-### Detailed information on leveraging Azure Batch for massively parallel deployments, go [here](Docs/AzureBatch.md)
+### Detailed information on leveraging Azure Batch for massively parallel deployments, go [here](docs/AzureBatch.md)
 
-### For help on building and unit testing, go [here](Docs/localbuild.md)
+### For help on building and unit testing, go [here](docs/localbuild.md)
