@@ -3,27 +3,18 @@
 ## Set up your Batch Account
 To use Azure Batch, you will need to have an Azure Batch account and upload the Sql Build Manager code package zip file (either from a [GitHub release](https://github.com/mmckechney/SqlBuildManager/releases) or a custom build) to the account. This setup is a one-time event and can be done via scripts or manually via the Azure portal
 
- ### **Option 1: Scripted**
-
- 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2FDocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
-    <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.png"/>
-</a>
-
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2FDocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
-<img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.png"/>
-</a>
+ ### **Option 1: PowerShell and ARM Template**
+_Note_: this method has the added benefit of also uploading the [latest release zip file](https://github.com/mmckechney/SqlBuildManager/releases/latest) to your batch account so it is ready to go
 
 0. _Prerequisite_: Make sure you have the [Azure PowerShell Modules installed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 1. Download the files in the [templates](templates) folder
 2. Edit the `azuredeploy.parameters.json` file, giving your Azure Batch and Azure Storage account names (keep in mind the [rules for naming storage accounts](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#naming-storage-accounts))
-3. Run the `deploy_batch.ps1` file, providing values for 
+3. Run the `deploy_batch.ps1` file, providing values for:
     - `-subscriptionId` - Guid for the subscription to deploy to
     - `-resourceGroupName` - Resource group name to put the Batch and storage accounts into
     - `-resourceGroupLocation` - Azure region for the accounts. You can get the location values via the PowerShell `Get-AzLocation | Select-Object -Property Location`
-    - `-deploymentName` - Custom text description for the deployment
 
-Assuming the script succeeds, the last few lines will provide pre-populated arguments that you can save for your command line execution (You can also retrieve this data at a later time from the [Azure portal](#Collect-Azure-Batch-and-storage-account-information)):
+Assuming the script succeeds, the last few lines will provide pre-populated arguments that you can save for your command line execution (You can also retrieve this data at a later time from the [Azure portal](#option-3-manually-via-azure-portal)):
 ```
 Pre-populated command line arguments. Record these for use later: 
 
@@ -34,7 +25,17 @@ Pre-populated command line arguments. Record these for use later:
 /StorageAccountKey=deDGkC2D3eOzI2BiVVmrxVpP1PPf7AdllA89HRYRAxD703iM/Me4D815aNYJTan8xiRypmfQ7QxCnZhM7QlYog==
 
 ```
-### **Option 2: via Azure Portal**
+### **Option 2: Direct deployment**
+Use the "Deploy to Azure" button to deploy using the template via the Azure portal. You will need to collect the account information from the resources once created the same as step 7 [here](#option-3-manually-via-azure-portal)
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2FDocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
+    <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.png"/>
+</a>
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2FDocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
+<img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.png"/>
+</a>
+
+### **Option 3: Manually via Azure Portal**
 
 
 1. Login to the Azure Portal at <http://portal.azure.com>
@@ -44,9 +45,9 @@ Pre-populated command line arguments. Record these for use later:
 5. Fill out the new batch and storage account information and click "Create"
 6. Wait for the Azure Batch account to be provisioned (should only take a few minutes)
 7. Collect Azure Batch and storage account information
-    -  Create a new text document to capture the information you will collect
+    - Create a new text document to capture the information you will collect
     - In the Azure Portal, navigate to your new Batch account 
-    -  On the Keys blade, record the Batch Account, URL and Primary access key values
+    - On the Keys blade, record the Batch Account, URL and Primary access key values
     - On the Storage Account blade, record the Storage Account Name and Key1 values
 ----
 ## Upload SQL Build Manager code package
