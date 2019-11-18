@@ -7,10 +7,9 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'vs2019-win2016'
 
 steps:
-
 - task: NuGetToolInstaller@1
   inputs:
     versionSpec: 
@@ -32,5 +31,17 @@ steps:
     SearchPattern: '**\bin\**\*.pdb'
   continueOnError: true
 
-
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+- task: CopyPublishBuildArtifacts@1
+  displayName: 'Copy Publish Artifact: drop'
+  inputs:
+    Contents: '**\bin'
+    ArtifactName: drop
+    ArtifactType: Container
 
