@@ -24,13 +24,22 @@ steps:
     solution: '**\sqlbuildmanager-console.sln'
 - task: CopyFiles@2
   inputs:
-    SourceFolder: 'src/SqlBuildManager.Console/bin/$(BuildConfiguration)'
+    SourceFolder: 'src/bin/$(BuildConfiguration)'
     Contents: '**'
-    TargetFolder: '''$(Build.ArtifactStagingDirectory)'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/SqlBuildManager.Console-$(Build.BuildId).zip'
+    replaceExistingArchive: true
+
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/SqlBuildManager.Console-$(Build.BuildId).zip'
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
