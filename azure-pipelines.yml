@@ -22,6 +22,9 @@ steps:
 - task: VSBuild@1
   inputs:
     solution: '**\sqlbuildmanager-console.sln'
+    platform: 'any CPU'
+    configuration: '$(BuildConfiguration)'
+
 - task: CopyFiles@2
   inputs:
     SourceFolder: 'src/bin/$(BuildConfiguration)'
