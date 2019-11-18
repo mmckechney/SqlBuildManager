@@ -22,14 +22,6 @@ steps:
 - task: VSBuild@1
   inputs:
     solution: '**\sqlbuildmanager-console.sln'
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: 'src/SqlBuildManager.Console/bin/$(BuildConfiguration)'
-    includeRootFolder: true
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    replaceExistingArchive: true
-
 - task: CopyFiles@2
   inputs:
     SourceFolder: 'src/SqlBuildManager.Console/bin/$(BuildConfiguration)'
