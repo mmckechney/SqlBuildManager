@@ -22,24 +22,23 @@ steps:
 - task: VSBuild@1
   inputs:
     solution: '**\sqlbuildmanager-console.sln'
-
-- task: PublishSymbols@1
-  displayName: 'Publish symbols path: '
-  inputs:
-    SearchPattern: '**\bin\**\*.pdb'
-  continueOnError: true
-
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    rootFolderOrFile: 'src/SqlBuildManager.Console/bin/$(BuildConfiguration)'
     includeRootFolder: true
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
     replaceExistingArchive: true
-- task: CopyPublishBuildArtifacts@1
-  displayName: 'Copy Publish Artifact: drop'
+
+- task: CopyFiles@2
   inputs:
-    Contents: '**\bin'
-    ArtifactName: drop
-    ArtifactType: Container
+    SourceFolder: 'src/SqlBuildManager.Console/bin/$(BuildConfiguration)'
+    Contents: '**'
+    TargetFolder: '''$(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
 
