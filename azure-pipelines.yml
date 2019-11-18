@@ -26,4 +26,11 @@ steps:
   inputs:
     solution: '**\sqlbuildmanager-console.sln'
 
+- task: PublishSymbols@1
+  displayName: 'Publish symbols path: '
+  inputs:
+    SearchPattern: '**\bin\**\*.pdb'
+  continueOnError: true
+
+
 
