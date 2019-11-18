@@ -14,13 +14,11 @@ steps:
   inputs:
     versionSpec: 
     checkLatest: true
-
 - task: NuGetCommand@2
   inputs:
     command: 'restore'
-    restoreSolution: '**/sqlbuildmanager-console.sln'
+    restoreSolution: '**/*.sln'
     feedsToUse: 'select'
-
 - task: VSBuild@1
   inputs:
     solution: '**\sqlbuildmanager-console.sln'
