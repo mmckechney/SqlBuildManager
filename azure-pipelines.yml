@@ -14,11 +14,13 @@ steps:
   inputs:
     versionSpec: 
     checkLatest: true
+
 - task: NuGetCommand@2
   inputs:
     command: 'restore'
     restoreSolution: '**/*.sln'
     feedsToUse: 'select'
+
 - task: VSBuild@1
   inputs:
     solution: '**\sqlbuildmanager-console.sln'
@@ -38,7 +40,6 @@ steps:
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/SqlBuildManager.Console-$(Build.BuildNumber).zip'
     replaceExistingArchive: true
-
 
 - task: PublishBuildArtifacts@1
   inputs:
