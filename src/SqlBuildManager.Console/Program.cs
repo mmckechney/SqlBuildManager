@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Diagnostics;
-using log4net;
-using System.Reflection;
-using SqlSync.SqlBuild;
-using SqlBuildManager.Enterprise.Policy;
-using SqlBuildManager.Interfaces.Console;
-using System.Linq;
-using SqlBuildManager.ServiceClient;
-using SqlSync.Connection;
-using System.Text.RegularExpressions;
+﻿using log4net;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
-using System.Threading.Tasks;
-using System.Runtime.Serialization.Json;
-using System.Web.Script.Serialization;
 using Newtonsoft.Json;
+using SqlBuildManager.Enterprise.Policy;
+using SqlBuildManager.Interfaces.Console;
+using SqlBuildManager.ServiceClient;
+using SqlSync.SqlBuild;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console
 {
-    
+
     class Program
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -99,6 +95,7 @@ namespace SqlBuildManager.Console
 
                 }
 
+                LogManager.Flush(10000);
                 System.Environment.Exit(retVal);
             }
             catch(Exception exe)
@@ -420,7 +417,7 @@ namespace SqlBuildManager.Console
             }
           
             log.Debug("Exiting Threaded Execution");
-
+  
             return retVal;
 
         }

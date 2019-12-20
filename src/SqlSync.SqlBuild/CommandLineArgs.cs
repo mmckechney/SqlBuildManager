@@ -53,8 +53,6 @@ namespace SqlSync.SqlBuild
 
         public virtual string RootLoggingPath { get; set; } = string.Empty;
 
-        public virtual bool LogAsText { get; set; } = true;
-
         public virtual int DefaultScriptTimeout { get; set; } = 500;
         [JsonIgnore]
         public virtual bool Trial { get; set; } = false;

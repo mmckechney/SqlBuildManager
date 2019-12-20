@@ -84,7 +84,7 @@ namespace SqlBuildManager.Console
             get { return forceCustomDacpac; }
             set { forceCustomDacpac = value; }
         }
-
+        public string DacpacName { get; set; } = string.Empty;
         private string username = string.Empty;
         private string password = string.Empty;
         private AuthenticationType authType = AuthenticationType.Password;
@@ -101,6 +101,8 @@ namespace SqlBuildManager.Console
             this.username = cmdArgs.AuthenticationArgs.UserName;
             this.password = cmdArgs.AuthenticationArgs.Password;
             this.authType = cmdArgs.AuthenticationArgs.AuthenticationType;
+            this.DacpacName = cmdArgs.DacPacArgs.PlatinumDacpac;
+
             
             try
             {

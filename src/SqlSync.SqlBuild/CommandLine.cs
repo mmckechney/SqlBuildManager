@@ -134,12 +134,6 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("rootloggingpath"))
                 cmdLine.RootLoggingPath = dict["rootloggingpath"].Trim();
 
-            bool val;
-            if (dict.ContainsKey("logastext") && Boolean.TryParse(dict["logastext"], out val))
-            {
-                cmdLine.LogAsText = val;
-            }
-
             bool trial;
             if (dict.ContainsKey("trial") && Boolean.TryParse(dict["trial"], out trial))
             {

@@ -32,7 +32,6 @@ General Runtime settings (/Action={Build|Threaded|Remote})
     /Transactional=(true|false)       Whether or not to run with a wrapping transaction (default is true)
     /Override=("<filename>"|list)     File containing the target database settings (usually a formatted .cfg file)
     /Description="<description>"      A free form description for the execution run
-    /LogAsText=(true|false)           Whether to log as text or HTML. Default is true
     /BuildRevision="<rev identifier>" If provided, the build will include an update to a "Versions" table and this will be the value used to add to a "VersionNumber" column (varchar(max))
     /LogToDatabaseName="<db name>"    [Not recommended] Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target). 
     /ScriptSrcDir="<directory>"       [Not recommended] Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)

@@ -1,7 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System;
 
 //
 // General Information about an assembly is controlled through the following
@@ -27,5 +24,5 @@ using System;
 //   2) Update the installer version to match the AssemblyVersion below.
 //   These can be found in SqlBuildManager.Setup -> Organize Your Setup -> General Information
 // ** Also, don't forget to update the change_notes.xml and .html files!
-[assembly: AssemblyVersion("10.4.4.*")]
-[assembly: AssemblyFileVersion("10.4.4")]
+[assembly: AssemblyVersion("11.0.0.*")]
+[assembly: AssemblyFileVersion("11.0.0")]

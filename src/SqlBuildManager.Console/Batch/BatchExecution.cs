@@ -481,9 +481,6 @@ namespace SqlBuildManager.Console.Batch
                 //Set root logging path to the jobId
                 threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
 
-                //set logging to text only
-                threadCmdLine.LogAsText = true;
-
                 //Set the override file for this node.
                 var tmp = string.Format(baseTargetFormat, i);
                 var target = inputFiles.Where(x => x.FilePath.ToLower().Contains(tmp.ToLower())).FirstOrDefault();
