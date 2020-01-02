@@ -39,12 +39,12 @@ steps:
     rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
     includeRootFolder: true
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/SqlBuildManager.Console-$(Build.BuildNumber).zip'
+    archiveFile: 'SqlBuildManager.Console-$(Build.BuildNumber).zip'
     replaceExistingArchive: true
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/SqlBuildManager.Console-$(Build.BuildNumber).zip'
+    PathtoPublish: 'SqlBuildManager.Console-$(Build.BuildNumber).zip'
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
