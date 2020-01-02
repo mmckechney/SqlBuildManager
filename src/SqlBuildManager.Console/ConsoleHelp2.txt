@@ -6,7 +6,6 @@ Usage: SqlBuildManager.Console /Action=<action> | args below
 Action value options (/Action=<value>)
     Build                    Performs a standard,local SBM execution via command line
     Threaded                 For updating multiple databases simultaneously from the current machine
-    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing 
     Batch                    For updating multiple databases simultaneously using Azure batch services
     BatchPreStage            Pre-stage the Azure Batch VM nodes
     Package                  Creates an SBM package from an SBX configuraiton file and scripts
@@ -19,14 +18,14 @@ Action value options (/Action=<value>)
     SaveSettings             Save a settings json file for Batch arguments (see Batch documentation)
 
 
-General Authentication settings (/Action={Build|Threaded|Remote|Batch|GetDifference|Syncronize})
+General Authentication settings (/Action={Build|Threaded|Batch|GetDifference|Syncronize})
     /AuthType="<type>"                Values: "Windows" (default if no Username/Password set), "AzureADIntegrated", "AzureADPassword", "Password" (default if Username/Password set)
     /UserName="<username>"            The username to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
     /Password="<password>"            The password to authenticate against the database if not using integrate auth (required when RemoteServers="azure")
     /Database="<database name>"       1) Name of a single database to run against or 2) source database for scripting or runtime configuration
     /Server="<server name>"           1) Name of a server for single database run or 2) source server for scripting or runtime configuration
 
-General Runtime settings (/Action={Build|Threaded|Remote})
+General Runtime settings (/Action={Build|Threaded})
     /PackageName="<filename>"         Name of the .sbm or .sbx file to execute
     /RootLoggingPath="<directory>"    Directory to save execution logs (for threaded and remote executions)
     /Trial=(true|false)               Whether or not to run in trial mode (default is false)
@@ -68,18 +67,7 @@ Azure Batch Clean Up (delete) nodes (/Action=BatchCleanUp)
     /BatchAccountUrl="<batch acct url>"       URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
     /PollBatchPoolStatus=(true|false)         Whether or not you want to get updated status (true, default) or fire and forget (false)
 
-Remote Execution settings (/Action=Remote)
-    /RemoteServers=("<filename>"|derive|azure)     Pointer to file that contains the list of remote execution servers,
-	                                               "derive" to parse servers from DB list, azure to use Azure PaaS instances
-    /TimeoutRetryCount=(integer)                   Number of times to retry os a script timeout is encountered (default is 0)
-    /DistributionType=(equal|local)                Sets whether to split execution evenly across all execution servers 
-	                                               or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
-    /TestConnectivity=(true|false)                 True value will test connection to remote agent and databases but will not execute SQL scripts
-    /AzureRemoteStatus=true                        Return a status of the Azure remote execution services. Will not execute SQL 
-    /RemoteDbErrorList=<remote name>|all           Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers
-    /RemoteErrorDetail=<server:db>|<instance>|all  Retrieves the error detail for each instance in error. Is "server:db" is provided, full log detail is returned
-
-Dacpac Execution (/Action={Threaded|Remote|Batch})
+Dacpac Execution (/Action={Threaded|Batch})
     /PlatinumDacpac="<filename>"            Name of the dacpac containing the platinum schema
     /TargetDacpac="<filename>"              Name of the dacpac containing the schema of the database to be updated
     /ForceCustomDacPac=(true|false)         *USE WITH CAUTION! (/Action=Threaded only)This will force the dacpac extraction and creation of custom scripts for EVERY target database! Your execution will take much longer.

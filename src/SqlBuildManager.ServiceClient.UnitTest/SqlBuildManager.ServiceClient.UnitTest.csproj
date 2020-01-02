@@ -103,12 +103,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
-      <Project>{641F4F7D-7730-4760-9454-7B9FCE0AA32C}</Project>
-      <Name>SqlBuildManager.ServiceClient</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>

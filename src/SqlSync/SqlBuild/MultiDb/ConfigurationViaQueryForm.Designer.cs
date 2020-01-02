@@ -255,16 +255,16 @@
             // 
             // btnPreview
             // 
-            this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPreview.Location = new System.Drawing.Point(361, 381);
-            this.btnPreview.Name = "btnPreview";
-            this.btnPreview.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.btnPreview.Size = new System.Drawing.Size(148, 23);
-            this.btnPreview.TabIndex = 13;
-            this.btnPreview.Text = "Preview Configuration";
-            this.btnPreview.UseVisualStyleBackColor = true;
-            this.btnPreview.Visible = false;
-            this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
+            //this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            //this.btnPreview.Location = new System.Drawing.Point(361, 381);
+            //this.btnPreview.Name = "btnPreview";
+            //this.btnPreview.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            //this.btnPreview.Size = new System.Drawing.Size(148, 23);
+            //this.btnPreview.TabIndex = 13;
+            //this.btnPreview.Text = "Preview Configuration";
+            //this.btnPreview.UseVisualStyleBackColor = true;
+            //this.btnPreview.Visible = false;
+            //this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
             // 
             // rtbSqlScript
             // 

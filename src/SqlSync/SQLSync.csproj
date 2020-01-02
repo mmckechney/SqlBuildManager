@@ -298,10 +298,6 @@
       <Project>{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}</Project>
       <Name>SqlBuildManager.ScriptHandling</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
-      <Project>{641F4F7D-7730-4760-9454-7B9FCE0AA32C}</Project>
-      <Name>SqlBuildManager.ServiceClient</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj">
       <Name>SqlSync.Compare</Name>
       <Project>{053B2B2A-51CF-48CD-BD22-8DED7D292690}</Project>
@@ -435,12 +431,6 @@
     <Compile Include="Controls\OAKControls\OAKListView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\RemoteExecutionLogsContextMenuStrip.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Controls\RemoteExecutionLogsContextMenuStrip.Designer.cs">
-      <DependentUpon>RemoteExecutionLogsContextMenuStrip.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\SetLoggingLevelMenuItem.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -514,30 +504,6 @@
     </Compile>
     <Compile Include="SqlBuild\PackageSignatureForm.cs">
       <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\BuildHistoryForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\BuildHistoryForm.Designer.cs">
-      <DependentUpon>BuildHistoryForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\ExecutionDistributionForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\ExecutionDistributionForm.Designer.cs">
-      <DependentUpon>ExecutionDistributionForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\ExecutionServerForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\ExecutionServerForm.Designer.cs">
-      <DependentUpon>ExecutionServerForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\RemoteServiceForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\RemoteServiceForm.Designer.cs">
-      <DependentUpon>RemoteServiceForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ScriptDisplayForm.cs">
       <SubType>Form</SubType>
@@ -697,18 +663,6 @@
     </Compile>
     <Compile Include="SqlBuild\RebuildForm.Designer.cs">
       <DependentUpon>RebuildForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\ServerDistributionListForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\ServerDistributionListForm.Designer.cs">
-      <DependentUpon>ServerDistributionListForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\ServerSetNamePrompt.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SqlBuild\Remote\ServerSetNamePrompt.Designer.cs">
-      <DependentUpon>ServerSetNamePrompt.cs</DependentUpon>
     </Compile>
     <Compile Include="SqlBuild\RenameScriptForm.cs">
       <SubType>Form</SubType>
@@ -897,9 +851,6 @@
     <EmbeddedResource Include="Controls\CodeReviewItemControl.resx">
       <DependentUpon>CodeReviewItemControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\RemoteExecutionLogsContextMenuStrip.resx">
-      <DependentUpon>RemoteExecutionLogsContextMenuStrip.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="DataDump\DataDumpForm.resx">
       <DependentUpon>DataDumpForm.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -939,18 +890,6 @@
     <EmbeddedResource Include="SqlBuild\PackageSignatureForm.resx">
       <DependentUpon>PackageSignatureForm.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SqlBuild\Remote\BuildHistoryForm.resx">
-      <DependentUpon>BuildHistoryForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SqlBuild\Remote\ExecutionDistributionForm.resx">
-      <DependentUpon>ExecutionDistributionForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SqlBuild\Remote\ExecutionServerForm.resx">
-      <DependentUpon>ExecutionServerForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SqlBuild\Remote\RemoteServiceForm.resx">
-      <DependentUpon>RemoteServiceForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ScriptDisplayForm.resx">
       <DependentUpon>ScriptDisplayForm.cs</DependentUpon>
@@ -1072,12 +1011,6 @@
     <EmbeddedResource Include="SqlBuild\RebuildForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>RebuildForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SqlBuild\Remote\ServerDistributionListForm.resx">
-      <DependentUpon>ServerDistributionListForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SqlBuild\Remote\ServerSetNamePrompt.resx">
-      <DependentUpon>ServerSetNamePrompt.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SqlBuild\RenameScriptForm.resx">
       <SubType>Designer</SubType>

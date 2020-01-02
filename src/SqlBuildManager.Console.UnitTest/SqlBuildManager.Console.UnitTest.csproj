@@ -118,7 +118,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="RemoteExecutionTest.cs" />
     <Compile Include="SynchronizeTest.cs" />
     <Compile Include="ThreadedExecutionTest.cs" />
     <Compile Include="ThreadedRunnerTest.cs" />
@@ -148,14 +147,6 @@
     <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj">
       <Project>{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}</Project>
       <Name>SqlBuildManager.ScriptHandling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
-      <Project>{641F4F7D-7730-4760-9454-7B9FCE0AA32C}</Project>
-      <Name>SqlBuildManager.ServiceClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlBuildManager.Services\SqlBuildManager.Services.csproj">
-      <Project>{A4814E5E-BD38-4658-9D56-CA41DC44ABE0}</Project>
-      <Name>SqlBuildManager.Services</Name>
     </ProjectReference>
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj">
       <Project>{F3F1EFFF-265E-4995-958B-9763F947E5C8}</Project>

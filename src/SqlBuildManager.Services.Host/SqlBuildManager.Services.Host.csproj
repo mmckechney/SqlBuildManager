@@ -171,10 +171,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.Services\SqlBuildManager.Services.csproj">
-      <Project>{A4814E5E-BD38-4658-9D56-CA41DC44ABE0}</Project>
-      <Name>SqlBuildManager.Services</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj">
       <Project>{9b495b5f-1578-482b-8cf7-615b04d3ae2a}</Project>
       <Name>SqlSync.SqlBuild</Name>

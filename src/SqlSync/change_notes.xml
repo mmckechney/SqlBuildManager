@@ -1,5 +1,9 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="11" Minor="0" Revision="0">
+    <note>MAJOR CHANGE -- removed the legacy Azure Cloud Service deployment model. Please update to use the Azure Batch model instead!</note>
+    <added>New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution</added>
+  </Version>
   <Version Major="10" Minor="4" Revision="4">
     <added>Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds</added>
     <updated>Refactored the `/TimeoutRetryCount` (integer) setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X` times if the build fails because of any timeout error that reults in a build rollback</updated>

@@ -234,8 +234,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="RemoteExecution.cs" />
-    <Compile Include="RemoteAzureHealth.cs" />
     <Compile Include="Synchronize.cs" />
     <Compile Include="ThreadedExecution.cs" />
     <Compile Include="ThreadedRunner.cs" />
@@ -253,10 +251,6 @@
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj">
       <Project>{c9de9821-ba13-4528-b149-a3e990530aad}</Project>
       <Name>SqlBuildManager.Logging</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
-      <Project>{641F4F7D-7730-4760-9454-7B9FCE0AA32C}</Project>
-      <Name>SqlBuildManager.ServiceClient</Name>
     </ProjectReference>
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj">
       <Project>{F3F1EFFF-265E-4995-958B-9763F947E5C8}</Project>

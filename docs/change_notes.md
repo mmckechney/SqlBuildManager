@@ -2,9 +2,13 @@
 # SQL Build Manager Change Notes
       
 					
+### Version 11.0.0
+- **NOTE:** MAJOR CHANGE -- removed the legacy Azure Cloud Service deployment model. Please update to use the Azure Batch model instead!
+- *ADDED:* New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution
+					
 ### Version 10.4.4
 - *ADDED:* Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds
-- *UPDATED:* Refactored the `/TimeoutRetryCount` setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X`times if the build fails because of any timeout error
+- *UPDATED:* Refactored the `/TimeoutRetryCount` (integer) setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X` times if the build fails because of any timeout error that reults in a build rollback
 					
 ### Version 10.4.3
 - *ADDED:* New utility `/Action=SaveSettings` and `/SettingsFile` argument for simple reuse of settings.

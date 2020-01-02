@@ -201,10 +201,6 @@
       <Project>{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}</Project>
       <Name>SqlBuildManager.ScriptHandling</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj">
-      <Project>{641F4F7D-7730-4760-9454-7B9FCE0AA32C}</Project>
-      <Name>SqlBuildManager.ServiceClient</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj">
       <Project>{053B2B2A-51CF-48CD-BD22-8DED7D292690}</Project>
       <Name>SqlSync.Compare</Name>
