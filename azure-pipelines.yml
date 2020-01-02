@@ -18,7 +18,7 @@ steps:
 - task: NuGetCommand@2
   inputs:
     command: 'restore'
-    restoreSolution: '**/*.sln'
+    restoreSolution: '**\sqlbuildmanager-console.sln'
     feedsToUse: 'select'
 
 - task: VSBuild@1
