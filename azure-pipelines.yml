@@ -31,7 +31,7 @@ steps:
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: 'src/bin/$(BuildConfiguration)'
-    includeRootFolder: true
+    includeRootFolder: false
     archiveType: 'zip'
     archiveFile: 'SqlBuildManager.Console-$(Build.BuildNumber).zip'
     replaceExistingArchive: true
