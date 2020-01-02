@@ -16,6 +16,7 @@ Action value options (/Action=<value>)
     GetDifference            Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between /Database and /GoldDatabase
     Syncronize               Performs a database syncronization between between /Database and /GoldDatabase
     ScriptExtract            Extract a SBM package from a source /PlatinumDacPac
+    SaveSettings             Save a settings json file for Batch arguments (see Batch documentation)
 
 
 General Authentication settings (/Action={Build|Threaded|Remote|Batch|GetDifference|Syncronize})
@@ -51,6 +52,7 @@ Azure Batch Execution (/Action=Batch)
     /StorageAccountName="<storage acct name>" Name of storage account associated with the Azure Batch account  [can also be set via StorageAccountName app settings key]
     /StorageAccountKey="<storage acct key>"   Account Key for the storage account  [can also be set via StorageAccountKey app settings key]
     /BatchJobName="<name>"                    [Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed
+    /EventHubConnection="<connection str>"    Event Hub connection string for Event Hub logging of batch execution
 
 Azure Batch Pre-Stage Batch nodes (/Action=BatchPreStage)
     /BatchNodeCount="##"                      Number of nodes to provision to run the batch job  (default is 10)

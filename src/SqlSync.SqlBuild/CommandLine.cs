@@ -268,6 +268,9 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("settingsfile"))
                 cmdLine.SettingsFile = dict["settingsfile"];
 
+            if (dict.ContainsKey("eventhubconnection"))
+                cmdLine.BatchArgs.EventHubConnectionString = dict["eventhubconnection"];
+
             bool poll = true;
             if(dict.ContainsKey("pollbatchpoolstatus") && Boolean.TryParse(dict["pollbatchpoolstatus"], out poll))
             {
