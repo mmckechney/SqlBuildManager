@@ -18,7 +18,7 @@ steps:
 - task: NuGetCommand@2
   inputs:
     command: 'restore'
-    restoreSolution: '**\sqlbuildmanager-console.sln'
+    restoreSolution: '**\*console.sln'
     feedsToUse: 'select'
     vstsFeed: '13893109-2090-413a-87d0-9539cabbfcad/9d117720-4777-425f-a00e-9b010a51c6e2'
 
