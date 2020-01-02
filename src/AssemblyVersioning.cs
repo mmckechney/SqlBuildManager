@@ -6,8 +6,8 @@
 // associated with an assembly.
 //
 [assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2019")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2019")]
+[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2020")]
+[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2020")]
 
 //
 // Version information for an assembly consists of the following four values:
