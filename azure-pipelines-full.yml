@@ -33,19 +33,23 @@ steps:
     configuration: '$(buildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      !**\*Dependent.UnitTest.dll
       **\*UnitTest.dll
-      !**\obj\**
+      !**\*Dependent.UnitTest.dll
+      !**\obj\*
     searchFolder: '$(System.DefaultWorkingDirectory)'
+    codeCoverageEnabled: true
 
-- task: WhiteSource Bolt@19
-  inputs:
-    cwd: '$(System.DefaultWorkingDirectory)'
 
 - task: PublishCodeCoverageResults@1
+  condition: succeededOrFailed()
   inputs:
     codeCoverageTool: 'cobertura' 
     summaryFileLocation: '$(System.DefaultWorkingDirectory)/SqlBuildManager/**/site/cobertura/coverage.xml'
+
+- task: WhiteSource Bolt@19
+  condition: succeededOrFailed()
+  inputs:
+    cwd: '$(System.DefaultWorkingDirectory)'
 
 - task: ArchiveFiles@2
   inputs:
