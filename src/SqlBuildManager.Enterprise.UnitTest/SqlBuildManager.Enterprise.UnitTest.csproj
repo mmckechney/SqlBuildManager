@@ -202,7 +202,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>"$(ProjectDir)BatchSubstitute.bat" "SUBST" "$(TargetDir)EnterpriseConfiguration.xml"   "$(ProjectDir)app.config" &gt; "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.tmp"</PreBuildEvent>
+    <PreBuildEvent>powershell (Get-Content  "$(ProjectDir)app.config").replace('"SUBST', '$(TargetDir)EnterpriseConfiguration.xml') | Set-Content "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.tmp"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>COPY /Y "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.tmp"   "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.config"</PostBuildEvent>
