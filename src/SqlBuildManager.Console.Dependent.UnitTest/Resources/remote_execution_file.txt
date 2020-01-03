@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BuildSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <DistributionType>EqualSplit</DistributionType>
+  <RemoteExecutionServers>
+    <ServerConfigData>
+      <ServerName>localhost</ServerName>
+      <TcpServiceEndpoint>net.tcp://localhost:8676/SqlBuildManager.Services/BuildService</TcpServiceEndpoint>
+      <HttpServiceEndpoint>http://localhost:8675/SqlBuildManager.Services/BuildService</HttpServiceEndpoint>
+      <ServiceReadiness>ReadyToAccept</ServiceReadiness>
+      <ExecutionReturn>NullBuildData</ExecutionReturn>
+      <LastStatusCheck>2010-04-09T12:43:38.66974-04:00</LastStatusCheck>
+      <ServiceVersion>8.5.2.0</ServiceVersion>
+    </ServerConfigData>
+  </RemoteExecutionServers>
+  <AlternateLoggingDatabase />
+  <Description>1212</Description>
+  <IsTransactional>true</IsTransactional>
+  <IsTrialBuild>false</IsTrialBuild>
+  <LocalRootLoggingPath>C:\temp</LocalRootLoggingPath>
+  <MultiDbTextConfig>
+    <string>Server1\Instance_1:Client,Database_001</string>
+    <string>localhost\SQLEXPRESS:Client,SqlBuildTest</string>
+    <string>localhost\SQLEXPRESS:Client,SqlBuildTest1</string>
+    <string>localhost\SQLEXPRESS:Client,SqlBuildTest2</string>
+  </MultiDbTextConfig>
+  <SqlBuildManagerProjectContents>UEsDBBQAAAAIAAxogjsUhJ2vMwAAADEAAAAQAAAAU2VsZWN0IHVzZXJzLnNxbAtOzUlNLlEoyS9QMDRQ0FJwC/L3VUhJytcLLU4t8sxLy1cI9wzxUNDw8/fxd/bW5OUCAFBLAwQUAAAACAAMaII7bXk+iokBAACdAgAAFwAAAFNxbFN5bmNCdWlsZFByb2plY3QueG1sbVJbTsMwEPxH4g6W/5M4KU3TKgFRHhIfpajNBVx7Sw2O09oOtLfHdhMECMmRFe/u7MzOljfHRqIP0Ea0qsJpTDAylipOZaugwicw+Ob68qJcH+T6pNi8E5LfU0uRq1Omwjtr97MkMWwHDTVxw96B7RScYtY2yc+iF92+AbPx0XDsABEq/4mi/n6mjWuO0Zppsbc1fV3BoRMaeIW3VBo4I3iMkGD63+8H9CgknEHWID1wZ5zG2BwkRqHhUnPQTjBG92BCTRgARqtWyjll70v1oHXrUqzuAKM76hBMKH2kQnYahoibBtxy7rllhEyjNItIVqejGSGzbBzn+bTIJpOIjN3DoOjJJU85n/gvyvPxKLrabEfRptiyqMjYKOPFVZ6SIqDTDTWu250UoKxDsA6h1lQZyjzpGo524HIrZfu56KQVewmrzhvUBzzB+anCTe/Q92xFA8vOeu5nKYuWi63wagghaRRO7aSEM6gYkjwiRs4ffyWDKclvV8owNdPHy/+2wm9Y8nfFrr8AUEsBAhQAFAAAAAgADGiCOxSEna8zAAAAMQAAABAAAAAAAAAAAAAAAAAAAAAAAFNlbGVjdCB1c2Vycy5zcWxQSwECFAAUAAAACAAMaII7bXk+iokBAACdAgAAFwAAAAAAAAAAAAAAAABhAAAAU3FsU3luY0J1aWxkUHJvamVjdC54bWxQSwUGAAAAAAIAAgCDAAAAHwIAAAAA</SqlBuildManagerProjectContents>
+  <SqlBuildManagerProjectFileName>remote_execution_test.sbm</SqlBuildManagerProjectFileName>
+</BuildSettings>

@@ -72,22 +72,6 @@ namespace SqlSync.ObjectScript.UnitTest
         ///A test for GetDatabaseObjectHashes
         ///</summary>
         [TestMethod()]
-        public void GetDatabaseObjectHashesTest()
-        {
-            Initialization init = new Initialization();
-            ConnectionData data = init.connData;
-            ObjectScriptHelper target = new ObjectScriptHelper(data); 
-            ObjectScriptHashData actual;
-            actual = target.GetDatabaseObjectHashes();
-            Assert.IsNotNull(actual);
-            Assert.AreEqual("C9D84C93D15E8D9ADF4F78BF8B97C051", actual.Tables["dbo.TransactionTest"].HashValue);
-            Assert.AreEqual("Added", actual.Tables["dbo.TransactionTest"].ComparisonValue);
-        }
-
-        /// <summary>
-        ///A test for GetDatabaseObjectHashes
-        ///</summary>
-        [TestMethod()]
         public void GetDatabaseObjectHashesTest_BadDatabase()
         {
             Initialization init = new Initialization();
