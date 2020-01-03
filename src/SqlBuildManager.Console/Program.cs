@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Diagnostics;
-using log4net;
-using System.Reflection;
-using SqlSync.SqlBuild;
-using SqlBuildManager.Enterprise.Policy;
-using SqlBuildManager.Interfaces.Console;
-using System.Linq;
-using SqlBuildManager.ServiceClient;
-using SqlSync.Connection;
-using System.Text.RegularExpressions;
+﻿using log4net;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
-using System.Threading.Tasks;
-using System.Runtime.Serialization.Json;
-using System.Web.Script.Serialization;
 using Newtonsoft.Json;
+using SqlBuildManager.Enterprise.Policy;
+using SqlBuildManager.Interfaces.Console;
+
+using SqlSync.SqlBuild;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console
 {
-    
+
     class Program
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -50,9 +46,9 @@ namespace SqlBuildManager.Console
                 }
                 switch (cmdLine.Action)
                 {
-                    case CommandLineArgs.ActionType.Remote:
-                        RunRemoteExecution(args, cmdLine, start);
-                        break;
+                    //case CommandLineArgs.ActionType.Remote:
+                    //    RunRemoteExecution(args, cmdLine, start);
+                    //    break;
                     case CommandLineArgs.ActionType.Threaded:
                         retVal = await RunThreadedExecutionAsync(args, cmdLine, start);
                         break;
@@ -99,6 +95,7 @@ namespace SqlBuildManager.Console
 
                 }
 
+                LogManager.Flush(10000);
                 System.Environment.Exit(retVal);
             }
             catch(Exception exe)
@@ -260,132 +257,167 @@ namespace SqlBuildManager.Console
                 log.ErrorFormat("Error creating SBM package: {0}", status.ToString());
             }
         }
-      
-        private static void RunRemoteExecution(string[] args, CommandLineArgs cmdLine, DateTime start)
-        {
-            try
-            {
-                //string joinedArgs = string.Join(",", args).ToLower();
-
-                if(cmdLine.RemoteArgs.TestConnectivity == true)
-                {
-                    RemoteExecutionTestConnectivity(args);
-                }
-                else if(cmdLine.RemoteArgs.AzureRemoteStatus == true)
-                {
-                    GetAzureRemoteStatus(args);
-                }
-                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteDbErrorList))
-                {
-                    var dbsInError = RemoteAzureHealth.GetDatabaseErrorList(cmdLine.RemoteArgs.RemoteDbErrorList);
-                   if (dbsInError != null)
-                   {
-                       log.Info("\r\n" + string.Join("\r\n", dbsInError.ToArray()));
-                   }
-                }
-                else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteErrorDetail))
-                {
-                    var errorMessages = RemoteAzureHealth.GetErrorDetail(cmdLine.RemoteArgs.RemoteErrorDetail);
-                    log.Info("Returned error messages:");
-                    log.Info("\r\n" + errorMessages);
-                }
-                else if(cmdLine.DacPacArgs.ForceCustomDacPac == true)
-                {
-                    log.Error("The /ForceCustomDacPac flag is not compatible with the /Action=Remote action");
-                    System.Environment.Exit(681);
-                }
-                else
-                {
 
 
-                    log.Info("Entering Remote Server Execution - command flag option");
-                    log.Info("Running remote execution...");
-                    RemoteExecution remote = new RemoteExecution(args);
+        #region Deprecated -- Remote Exectution via Azure Cloud Service deployment
+        //private static void RunRemoteExecution(string[] args, CommandLineArgs cmdLine, DateTime start)
+        //{
+        //    try
+        //    {
+        //        //string joinedArgs = string.Join(",", args).ToLower();
 
-                    int retVal = remote.Execute();
-                    if (retVal != 0)
-                        log.Warn("Completed with Errors - check log. Exiting with code: " + retVal.ToString());
-                    else
-                        log.Info("Completed Successfully. Exiting with code: " + retVal.ToString());
+        //        if(cmdLine.RemoteArgs.TestConnectivity == true)
+        //        {
+        //            RemoteExecutionTestConnectivity(args);
+        //        }
+        //        else if(cmdLine.RemoteArgs.AzureRemoteStatus == true)
+        //        {
+        //            GetAzureRemoteStatus(args);
+        //        }
+        //        else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteDbErrorList))
+        //        {
+        //            var dbsInError = RemoteAzureHealth.GetDatabaseErrorList(cmdLine.RemoteArgs.RemoteDbErrorList);
+        //           if (dbsInError != null)
+        //           {
+        //               log.Info("\r\n" + string.Join("\r\n", dbsInError.ToArray()));
+        //           }
+        //        }
+        //        else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteErrorDetail))
+        //        {
+        //            var errorMessages = RemoteAzureHealth.GetErrorDetail(cmdLine.RemoteArgs.RemoteErrorDetail);
+        //            log.Info("Returned error messages:");
+        //            log.Info("\r\n" + errorMessages);
+        //        }
+        //        else if(cmdLine.DacPacArgs.ForceCustomDacPac == true)
+        //        {
+        //            log.Error("The /ForceCustomDacPac flag is not compatible with the /Action=Remote action");
+        //            System.Environment.Exit(681);
+        //        }
+        //        else
+        //        {
 
-                    TimeSpan span = DateTime.Now - start;
-                    string msg = "Total Run time: " + span.ToString();
-                    log.Info(msg);
-                  
-                    log.Info("Exiting Remote Execution");
-                    System.Environment.Exit(retVal);
 
-                }
-            }
-            catch (Exception exe)
-            {
-                log.Warn("Exiting Remote Execution with 603: " + exe.ToString());
+        //            log.Info("Entering Remote Server Execution - command flag option");
+        //            log.Info("Running remote execution...");
+        //            RemoteExecution remote = new RemoteExecution(args);
 
-                log.Error("Execution error - check logs");
-                System.Environment.Exit(603);
-            }
-        }
+        //            int retVal = remote.Execute();
+        //            if (retVal != 0)
+        //                log.Warn("Completed with Errors - check log. Exiting with code: " + retVal.ToString());
+        //            else
+        //                log.Info("Completed Successfully. Exiting with code: " + retVal.ToString());
 
-        #region .: Remote Health Check :.
-        private static void RemoteExecutionTestConnectivity(string[] args)
-        {
-            log.Info("Entering Remote Server Connectivity Testing: agent and database connectivity");
-            log.Info("Entering Remote Server Connectivity Testing...");
-            RemoteExecution remote = new RemoteExecution(args);
+        //            TimeSpan span = DateTime.Now - start;
+        //            string msg = "Total Run time: " + span.ToString();
+        //            log.Info(msg);
 
-            int retVal = remote.TestConnectivity();
-            if (retVal != 0)
-                log.Error(
-                    string.Format("Test Connectivity Failed for {0} server/databases. - check log.",
-                                  retVal.ToString()));
-            else
-                log.Info("Test Connectivity Completed Successfully. Exiting with code: " + retVal.ToString());
-        }
-        private static void GetAzureRemoteStatus(string[] args)
-        {
-            try
-            {
-                string format = "{0}{1}{2}{3}";
-                log.Info("Getting list of Azure instances...");
-                BuildServiceManager manager = new BuildServiceManager();
-                List<ServerConfigData> serverData = manager.GetListOfAzureInstancePublicUrls();
-                var remote = serverData.Select(s => s.ServerName).ToList();
-                if (remote.Count() > 0)
-                {
-                    log.InfoFormat("{0} instances available at {1}", remote.Count(), Regex.Replace(serverData[0].ActiveServiceEndpoint, @":\d{5}", ""));
-                }
-                List<ServerConfigData> remoteServer = null;
-                string[] errorMessages;
-                log.Info("Retrieving status of each instance...");
+        //            log.Info("Exiting Remote Execution");
+        //            System.Environment.Exit(retVal);
 
- 
+        //        }
+        //    }
+        //    catch (Exception exe)
+        //    {
+        //        log.Warn("Exiting Remote Execution with 603: " + exe.ToString());
 
-                int statReturn = RemoteExecution.ValidateRemoteServerAvailability(remote, Protocol.AzureHttp, out remoteServer, out errorMessages);
+        //        log.Error("Execution error - check logs");
+        //        System.Environment.Exit(603);
+        //    }
+        //}
 
-                int serverPad = remoteServer.Max(s => s.ServerName.Length) + 2;
-                int statusPad = remoteServer.Max(s => s.ServiceReadiness.ToString().Length) + 2;
-                int exePad = remoteServer.Max(s => s.ExecutionReturn.ToString().Length) + 2;
-                if (exePad < "Last Status".Length + 2)
-                    exePad = "Last Status".Length + 2;
-                int versionPad = remoteServer.Max(s => s.ServiceVersion.ToString().Length) + 2;
+        //#region .: Remote Health Check :.
+        //private static void RemoteExecutionTestConnectivity(string[] args)
+        //{
+        //    log.Info("Entering Remote Server Connectivity Testing: agent and database connectivity");
+        //    log.Info("Entering Remote Server Connectivity Testing...");
+        //    RemoteExecution remote = new RemoteExecution(args);
 
-                log.InfoFormat(format, "Service".PadRight(serverPad, ' '), "Status".PadRight(statusPad, ' '), "Last Status".PadRight(exePad, ' '), "Version".PadRight(versionPad, ' '));
-                log.InfoFormat(format, "-".PadRight(serverPad-2, '-'), "-".PadRight(statusPad-2, '-'), "-".PadRight(exePad-2, '-'), "--".PadRight(versionPad-2, '-'));
-                remoteServer.ForEach(s =>
-                    log.InfoFormat(format, s.ServerName.PadRight(serverPad, ' '), s.ServiceReadiness.ToString().PadRight(statusPad, ' '), s.ExecutionReturn.ToString().PadRight(exePad, ' '), s.ServiceVersion.PadRight(versionPad, ' ')));
+        //    int retVal = remote.TestConnectivity();
+        //    if (retVal != 0)
+        //        log.Error(
+        //            string.Format("Test Connectivity Failed for {0} server/databases. - check log.",
+        //                          retVal.ToString()));
+        //    else
+        //        log.Info("Test Connectivity Completed Successfully. Exiting with code: " + retVal.ToString());
+        //}
+        //private static void GetAzureRemoteStatus(string[] args)
+        //{
+        //    try
+        //    {
+        //        string format = "{0}{1}{2}{3}";
+        //        log.Info("Getting list of Azure instances...");
+        //        BuildServiceManager manager = new BuildServiceManager();
+        //        List<ServerConfigData> serverData = manager.GetListOfAzureInstancePublicUrls();
+        //        var remote = serverData.Select(s => s.ServerName).ToList();
+        //        if (remote.Count() > 0)
+        //        {
+        //            log.InfoFormat("{0} instances available at {1}", remote.Count(), Regex.Replace(serverData[0].ActiveServiceEndpoint, @":\d{5}", ""));
+        //        }
+        //        List<ServerConfigData> remoteServer = null;
+        //        string[] errorMessages;
+        //        log.Info("Retrieving status of each instance...");
 
-                if(errorMessages.Length > 0)
-                {
-                    errorMessages.ToList().ForEach(e => log.Error(e));
-                }
 
-            }
-            catch (Exception exe)
-            {
-                log.Error("Unable to get list of Azure instances", exe);
-            }
-        }
 
+        //        int statReturn = RemoteExecution.ValidateRemoteServerAvailability(remote, Protocol.AzureHttp, out remoteServer, out errorMessages);
+
+        //        int serverPad = remoteServer.Max(s => s.ServerName.Length) + 2;
+        //        int statusPad = remoteServer.Max(s => s.ServiceReadiness.ToString().Length) + 2;
+        //        int exePad = remoteServer.Max(s => s.ExecutionReturn.ToString().Length) + 2;
+        //        if (exePad < "Last Status".Length + 2)
+        //            exePad = "Last Status".Length + 2;
+        //        int versionPad = remoteServer.Max(s => s.ServiceVersion.ToString().Length) + 2;
+
+        //        log.InfoFormat(format, "Service".PadRight(serverPad, ' '), "Status".PadRight(statusPad, ' '), "Last Status".PadRight(exePad, ' '), "Version".PadRight(versionPad, ' '));
+        //        log.InfoFormat(format, "-".PadRight(serverPad-2, '-'), "-".PadRight(statusPad-2, '-'), "-".PadRight(exePad-2, '-'), "--".PadRight(versionPad-2, '-'));
+        //        remoteServer.ForEach(s =>
+        //            log.InfoFormat(format, s.ServerName.PadRight(serverPad, ' '), s.ServiceReadiness.ToString().PadRight(statusPad, ' '), s.ExecutionReturn.ToString().PadRight(exePad, ' '), s.ServiceVersion.PadRight(versionPad, ' ')));
+
+        //        if(errorMessages.Length > 0)
+        //        {
+        //            errorMessages.ToList().ForEach(e => log.Error(e));
+        //        }
+
+        //    }
+        //    catch (Exception exe)
+        //    {
+        //        log.Error("Unable to get list of Azure instances", exe);
+        //    }
+        //}
+
+        //#endregion
+
+        //private static void RemoteExecutionWithRespFile(string[] args, DateTime start)
+        //{
+        //    log.Info("Entering Remote Server Execution - single config file option.");
+        //    try
+        //    {
+        //        log.Info("Starting Remote Execution...");
+
+        //        RemoteExecution remote = new RemoteExecution(args[0]);
+        //        int retVal = remote.Execute();
+        //        if (retVal != 0)
+        //            log.Warn("Completed with Errors - check logs");
+        //        else
+        //            log.Info("Completed Successfully");
+
+
+        //        TimeSpan span = DateTime.Now - start;
+        //        string msg = "Total Run time: " + span.ToString();
+        //        log.Info(msg);
+
+        //        log.Debug("Exiting Remote Execution with " + retVal.ToString());
+
+        //        System.Environment.Exit(retVal);
+        //    }
+        //    catch (Exception exe)
+        //    {
+        //        log.Debug("Exiting Remote Execution with 602: " + exe.ToString());
+
+        //        log.Error("Execution error - check logs");
+        //        System.Environment.Exit(602);
+        //    }
+        //}
         #endregion
 
         private static async Task<int> RunThreadedExecutionAsync(string[] args, CommandLineArgs cmdLine, DateTime start)
@@ -420,7 +452,7 @@ namespace SqlBuildManager.Console
             }
           
             log.Debug("Exiting Threaded Execution");
-
+  
             return retVal;
 
         }
@@ -588,37 +620,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        private static void RemoteExecutionWithRespFile(string[] args, DateTime start)
-        {
-             log.Info("Entering Remote Server Execution - single config file option.");
-                try
-                {
-                    log.Info("Starting Remote Execution...");
-
-                    RemoteExecution remote = new RemoteExecution(args[0]);
-                    int retVal = remote.Execute();
-                    if (retVal != 0)
-                        log.Warn("Completed with Errors - check logs");
-                    else
-                        log.Info("Completed Successfully");
-
-
-                    TimeSpan span = DateTime.Now - start;
-                    string msg = "Total Run time: " + span.ToString();
-                    log.Info(msg);
-
-                    log.Debug("Exiting Remote Execution with " + retVal.ToString());
-
-                    System.Environment.Exit(retVal);
-                }
-                catch (Exception exe)
-                {
-                    log.Debug("Exiting Remote Execution with 602: " + exe.ToString());
-
-                    log.Error("Execution error - check logs");
-                    System.Environment.Exit(602);
-                }
-        }
+   
 
 
         #region .: Helper Processes :.

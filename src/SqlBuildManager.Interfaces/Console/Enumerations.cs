@@ -2,19 +2,31 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.Serialization;
+using System.ComponentModel;
+using System.Reflection;
+
 namespace SqlBuildManager.Interfaces.Console
 {
     public enum RunnerReturn
     {
+        [Description("Rolled Back")]
         RolledBack = -400,
+        [Description("Committed")]
         BuildCommitted = 0,
+        [Description("Success - Trial Rolled Back")]
         SuccessWithTrialRolledBack = 5,
+        [Description("Inconclusive")]
         BuildResultInconclusive = 10,
+        [Description("Error - Non Transactional")]
         BuildErrorNonTransactional = 20,
+        [Description("Dacpac Databases In Sync")]
         DacpacDatabasesInSync = 87598,
+        [Description("Committed - With Custom Dacpac")]
         CommittedWithCustomDacpac = 87599,
+        [Description("Package Creation Error")]
         PackageCreationError = 87600
     }
+    
 
     [DataContract()]
     public enum ExecutionReturn
@@ -72,10 +84,15 @@ namespace SqlBuildManager.Interfaces.Console
 
     public enum LogType
     {
+        [Description("Message")]
         Message,
+        [Description("Error")]
         Error,
+        [Description("Commit")]
         Commit,
-        SuccessDatabases, 
+        [Description("SuccessDatabases")]
+        SuccessDatabases,
+        [Description("FailureDatabases")]
         FailureDatabases
     }
 }

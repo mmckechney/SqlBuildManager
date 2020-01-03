@@ -120,30 +120,6 @@ namespace SqlSync.SqlBuild
             return AuthenticationType.Password;
         }
 
-        private static string defaultBrowser = string.Empty;
-        public static string DefaultBrowser
-        {
-            get
-            {
-                if (defaultBrowser.Length == 0)
-                {
-                    Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(@"HTTP\shell\open\command", false);
-
-                    //trim off quotes
-                    string browser = key.GetValue(null).ToString().ToLower().Replace("\"", "");
-                    if (!browser.EndsWith("exe"))
-                    {
-                        //get rid of everything after the ".exe"
-                        browser = browser.Substring(0, browser.LastIndexOf(".exe") + 4);
-                    }
-                    if (browser.Length > 0)
-                        defaultBrowser = browser;
-                    else
-                        defaultBrowser = @"C:\Program Files\Internet Explorer\IEXPLORE.EXE";
-                }
-                return defaultBrowser;
-            }
-        }
         public static void OpenManual(string anchor)
         {
             if (anchor == null)
@@ -153,11 +129,9 @@ namespace SqlSync.SqlBuild
             {
                 if (!anchor.StartsWith("#")) anchor = "#" + anchor;
             }
-            string path = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-            string htmlFile = path + @"\Manual\SqlBuildManagerManual.htm" + anchor;
             System.Diagnostics.Process prc = new Process();
-            prc.StartInfo.FileName = @"C:\Program Files\Internet Explorer\IEXPLORE.EXE"; // Utility.DefaultBrowser;
-            prc.StartInfo.Arguments = htmlFile.Replace('\\','/'); 
+            prc.StartInfo.FileName = $"https://github.com/mmckechney/SqlBuildManager/blob/master/docs/SqlBuildManagerManual.md{anchor}"; // Utility.DefaultBrowser;
+  
             prc.Start();
         }
     }

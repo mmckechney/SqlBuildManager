@@ -72,7 +72,6 @@ namespace SqlSync.SqlBuild.UnitTest
                 "/Action=\"Build\"",
                 "/trial=\"True\"", 
                 "/threaded=\"true\"", 
-                "/LogAsText=\"false\"", 
                 "/username=\"UserName1\"", 
                 "/password=\"Password1\"", 
                 "/LogToDatabaseName=\"AltLogDb\"", 
@@ -84,7 +83,6 @@ namespace SqlSync.SqlBuild.UnitTest
             CommandLineArgs actual;
             actual = CommandLine.ParseCommandLineArg(args);
             Assert.AreEqual(true, actual.Trial);
-            Assert.AreEqual(false, actual.LogAsText);
             Assert.AreEqual("UserName1", actual.AuthenticationArgs.UserName);
             Assert.AreEqual("Password1", actual.AuthenticationArgs.Password);
             Assert.AreEqual("AltLogDb", actual.LogToDatabaseName);

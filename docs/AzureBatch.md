@@ -52,7 +52,7 @@ Use the "Deploy to Azure" button to deploy using the template via the Azure port
 ----
 ## Upload SQL Build Manager code package
 1. First, make sure you have a build of SQL Build Manager either from [GitHub Release](https://github.com/mmckechney/SqlBuildManager/releases) or built locally (clone/pull from [Github](https://github.com/mmckechney/SqlBuildManager) and build, the executables will be in the root bin/debug or bin/release folder)
-2. Zip up all of the files in the build folder - or grab the latest release Zip file from [here](https://github.com/mmckechney/SqlBuildManager/releases)
+2. Zip up all of the files in the build folder - or grab the latest release Zip file from [here](https://github.com/mmckechney/SqlBuildManager/releases/latest)
 3. In the Azure Portal, navigate to your Azure Batch account and click the "Applications" blade.
 4. Click the "+ Add" link
 5. Fill in the Application Id with "sqlbuildmanager" (no quotes) and the version field (can be any alpha-numeric) 

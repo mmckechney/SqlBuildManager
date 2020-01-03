@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfServerData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ServerData>
+    <ServerName>(local)\SQLEXPRESS</ServerName>
+    <OverrideSequence>
+      <item>
+        <key>
+          <string>1</string>
+        </key>
+        <value>
+          <ArrayOfDatabaseOverride>
+            <DatabaseOverride>
+              <DefaultDbTarget>SqlBuildTest</DefaultDbTarget>
+              <OverrideDbTarget>SqlBuildTest</OverrideDbTarget>
+            </DatabaseOverride>
+          </ArrayOfDatabaseOverride>
+        </value>
+      </item>
+      <item>
+        <key>
+          <string>2</string>
+        </key>
+        <value>
+          <ArrayOfDatabaseOverride>
+            <DatabaseOverride>
+              <DefaultDbTarget>SqlBuildTest</DefaultDbTarget>
+              <OverrideDbTarget>SqlBuiltTest1</OverrideDbTarget>
+            </DatabaseOverride>
+          </ArrayOfDatabaseOverride>
+        </value>
+      </item>
+    </OverrideSequence>
+  </ServerData>
+</ArrayOfServerData>

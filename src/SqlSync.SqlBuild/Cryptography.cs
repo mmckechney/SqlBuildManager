@@ -153,6 +153,11 @@ namespace SqlSync.SqlBuild
                 cmdLine.BatchArgs.StorageAccountKey = Cryptography.EncryptText(cmdLine.BatchArgs.StorageAccountKey, ConnectionHelper.ConnectCryptoKey);
             }
 
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
+            {
+                cmdLine.BatchArgs.EventHubConnectionString = Cryptography.EncryptText(cmdLine.BatchArgs.EventHubConnectionString, ConnectionHelper.ConnectCryptoKey);
+            }
+
             return cmdLine;
         }
 
@@ -175,6 +180,10 @@ namespace SqlSync.SqlBuild
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.StorageAccountKey))
             {
                 cmdLine.BatchArgs.StorageAccountKey = Cryptography.DecryptText(cmdLine.BatchArgs.StorageAccountKey, ConnectionHelper.ConnectCryptoKey);
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
+            {
+                cmdLine.BatchArgs.EventHubConnectionString = Cryptography.DecryptText(cmdLine.BatchArgs.EventHubConnectionString, ConnectionHelper.ConnectCryptoKey);
             }
 
             return cmdLine;

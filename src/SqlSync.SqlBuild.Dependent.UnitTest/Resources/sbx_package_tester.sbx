@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone="yes"?>
+<SqlSyncBuildData xmlns="http://schemas.mckechney.com/SqlSyncBuildProject.xsd">
+  <SqlSyncBuildProject ProjectName="" ScriptTagRequired="false">
+    <Scripts>
+      <Script FileName="CreateTestTablesScript.sql" BuildOrder="1" Description="" RollBackOnError="true" CausesBuildFailure="true" DateAdded="2010-10-28T14:30:19.8793551-04:00" ScriptId="be10ab3c-f6f9-45c7-8d7c-9052c96e1742" Database="SqlBuildTest" StripTransactionText="true" AllowMultipleRuns="true" AddedBy="mmckechn" ScriptTimeOut="500" DateModified="0001-01-01T00:00:00-05:00" ModifiedBy="" Tag="Default" />
+      <Script FileName="LoggingTable.sql" BuildOrder="2" Description="" RollBackOnError="true" CausesBuildFailure="true" DateAdded="2010-10-28T14:30:19.8793551-04:00" ScriptId="3672f50e-527b-46d0-a14d-32e489c36d95" Database="SqlBuildTest" StripTransactionText="true" AllowMultipleRuns="true" AddedBy="mmckechn" ScriptTimeOut="500" DateModified="0001-01-01T00:00:00-05:00" ModifiedBy="" Tag="Default" />
+    </Scripts>
+    <Builds />
+  </SqlSyncBuildProject>
+</SqlSyncBuildData>

@@ -134,12 +134,6 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("rootloggingpath"))
                 cmdLine.RootLoggingPath = dict["rootloggingpath"].Trim();
 
-            bool val;
-            if (dict.ContainsKey("logastext") && Boolean.TryParse(dict["logastext"], out val))
-            {
-                cmdLine.LogAsText = val;
-            }
-
             bool trial;
             if (dict.ContainsKey("trial") && Boolean.TryParse(dict["trial"], out trial))
             {
@@ -273,6 +267,9 @@ namespace SqlSync.SqlBuild
 
             if (dict.ContainsKey("settingsfile"))
                 cmdLine.SettingsFile = dict["settingsfile"];
+
+            if (dict.ContainsKey("eventhubconnection"))
+                cmdLine.BatchArgs.EventHubConnectionString = dict["eventhubconnection"];
 
             bool poll = true;
             if(dict.ContainsKey("pollbatchpoolstatus") && Boolean.TryParse(dict["pollbatchpoolstatus"], out poll))

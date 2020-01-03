@@ -244,16 +244,16 @@ namespace SqlSync.SqlBuild.MultiDb
             this.isDirty = true;
         }
 
-        private void btnPreview_Click(object sender, EventArgs e)
-        {
-            if (PrecompileMultiDbData())
-            {
-                Remote.ServerDistributionListForm frmDist = new SqlSync.SqlBuild.Remote.ServerDistributionListForm(this.multiDbConfig, false);
-                frmDist.ShowDialog();
-                frmDist.Dispose();
-            }
+        //private void btnPreview_Click(object sender, EventArgs e)
+        //{
+        //    if (PrecompileMultiDbData())
+        //    {
+        //        Remote.ServerDistributionListForm frmDist = new SqlSync.SqlBuild.Remote.ServerDistributionListForm(this.multiDbConfig, false);
+        //        frmDist.ShowDialog();
+        //        frmDist.Dispose();
+        //    }
 
-        }
+        //}
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {

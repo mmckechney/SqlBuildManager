@@ -2538,11 +2538,11 @@ namespace SqlSync.SqlBuild
             // 
             // remoteExecutionServiceToolStripMenuItem
             // 
-            this.remoteExecutionServiceToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Server_Internet;
-            this.remoteExecutionServiceToolStripMenuItem.Name = "remoteExecutionServiceToolStripMenuItem";
-            this.remoteExecutionServiceToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
-            this.remoteExecutionServiceToolStripMenuItem.Text = "Remote Execution Service";
-            this.remoteExecutionServiceToolStripMenuItem.Click += new System.EventHandler(this.remoteExecutionServiceToolStripMenuItem_Click);
+            //this.remoteExecutionServiceToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Server_Internet;
+            //this.remoteExecutionServiceToolStripMenuItem.Name = "remoteExecutionServiceToolStripMenuItem";
+            //this.remoteExecutionServiceToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
+            //this.remoteExecutionServiceToolStripMenuItem.Text = "Remote Execution Service";
+            //this.remoteExecutionServiceToolStripMenuItem.Click += new System.EventHandler(this.remoteExecutionServiceToolStripMenuItem_Click);
             // 
             // toolStripSeparator7
             // 
@@ -8653,16 +8653,16 @@ namespace SqlSync.SqlBuild
             SqlSync.SqlBuild.UtilityHelper.OpenManual("RunTimeBuildSettings");
         }
 
-        private void remoteExecutionServiceToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            RemoteServiceForm frmRemote;
-            if(this.buildZipFileName != null && this.buildZipFileName.Length > 0)
-                frmRemote = new RemoteServiceForm(this.connData, this.databaseList,this.buildZipFileName);
-            else
-                frmRemote = new RemoteServiceForm(this.connData,this.databaseList);
+        //private void remoteExecutionServiceToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    RemoteServiceForm frmRemote;
+        //    if(this.buildZipFileName != null && this.buildZipFileName.Length > 0)
+        //        frmRemote = new RemoteServiceForm(this.connData, this.databaseList,this.buildZipFileName);
+        //    else
+        //        frmRemote = new RemoteServiceForm(this.connData,this.databaseList);
 
-            frmRemote.Show();
-        }
+        //    frmRemote.Show();
+        //}
 
         private void calculateScriptPackageHashSignatureToolStripMenuItem_Click(object sender, EventArgs e)
         {

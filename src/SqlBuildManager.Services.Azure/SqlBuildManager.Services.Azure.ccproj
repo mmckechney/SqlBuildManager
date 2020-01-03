@@ -39,16 +39,6 @@
     <ServiceConfiguration Include="ServiceConfiguration.Cloud.cscfg" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.Services\SqlBuildManager.Services.csproj">
-      <Name>SqlBuildManager.Services</Name>
-      <Project>{a4814e5e-bd38-4658-9d56-ca41dc44abe0}</Project>
-      <Private>True</Private>
-      <RoleType>Web</RoleType>
-      <RoleName>SqlBuildManager.Services</RoleName>
-      <UpdateDiagnosticsConnectionStringOnPublish>True</UpdateDiagnosticsConnectionStringOnPublish>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Profiles" />
     <Folder Include="SqlBuildManager.ServicesContent\" />
     <Folder Include="SqlBuildManager.ServicesContent\bin" />
@@ -78,6 +68,9 @@
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
     <CloudExtensionsDir Condition=" '$(CloudExtensionsDir)' == '' ">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Windows Azure Tools\2.9\</CloudExtensionsDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'DevOpsBuild' ">
+    <OutputPath>bin\DevOpsBuild\</OutputPath>
   </PropertyGroup>
   <Import Project="$(CloudExtensionsDir)Microsoft.WindowsAzure.targets" />
 </Project>

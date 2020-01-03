@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfServerData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ServerData>
+    <ServerName>Server1\Instance_1</ServerName>
+    <OverrideSequence>
+      <item>
+        <key>
+          <string>0</string>
+        </key>
+        <value>
+          <ArrayOfDatabaseOverride>
+            <DatabaseOverride>
+              <DefaultDbTarget>Default</DefaultDbTarget>
+              <OverrideDbTarget>Db_0001</OverrideDbTarget>
+              <QueryRowData>
+                <QueryRowItem ColumnName="CompanyName" Value="MyCompany" />
+                <QueryRowItem ColumnName="CompanyID" Value="000001" />
+              </QueryRowData>
+            </DatabaseOverride>
+          </ArrayOfDatabaseOverride>
+        </value>
+      </item>
+    </OverrideSequence>
+  </ServerData>
+  <ServerData>
+    <ServerName>Server2\Instance_1</ServerName>
+    <OverrideSequence>
+      <item>
+        <key>
+          <string>1</string>
+        </key>
+        <value>
+          <ArrayOfDatabaseOverride>
+            <DatabaseOverride>
+              <DefaultDbTarget>Default</DefaultDbTarget>
+              <OverrideDbTarget>Db_0002</OverrideDbTarget>
+              <QueryRowData>
+                <QueryRowItem ColumnName="CompanyName" Value="MyCompany2" />
+                <QueryRowItem ColumnName="CompanyID" Value="000002" />
+              </QueryRowData>
+            </DatabaseOverride>
+          </ArrayOfDatabaseOverride>
+        </value>
+      </item>
+      <item>
+        <key>
+          <string>2</string>
+        </key>
+        <value>
+          <ArrayOfDatabaseOverride>
+            <DatabaseOverride>
+              <DefaultDbTarget>Default</DefaultDbTarget>
+              <OverrideDbTarget>Db_0003</OverrideDbTarget>
+              <QueryRowData>
+                <QueryRowItem ColumnName="CompanyName" Value="MyCompany3" />
+                <QueryRowItem ColumnName="CompanyID" Value="000003" />
+              </QueryRowData>
+            </DatabaseOverride>
+          </ArrayOfDatabaseOverride>
+        </value>
+      </item>
+    </OverrideSequence>
+  </ServerData>
+</ArrayOfServerData>

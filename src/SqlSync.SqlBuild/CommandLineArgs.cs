@@ -53,8 +53,6 @@ namespace SqlSync.SqlBuild
 
         public virtual string RootLoggingPath { get; set; } = string.Empty;
 
-        public virtual bool LogAsText { get; set; } = true;
-
         public virtual int DefaultScriptTimeout { get; set; } = 500;
         [JsonIgnore]
         public virtual bool Trial { get; set; } = false;
@@ -118,6 +116,7 @@ namespace SqlSync.SqlBuild
             public string BatchJobName { get; set; } = null;
             public bool PollBatchPoolStatus { get; set; } = true;
             public string BatchPoolName { get; set; } = null;
+            public string EventHubConnectionString { get; set; } = string.Empty;
         }
 
         [Serializable]

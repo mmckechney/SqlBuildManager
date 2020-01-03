@@ -118,61 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="DBList" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\dblist.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="multi_query" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\multi-query.multidbq;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="NoTrans_MultiDb" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\notrans_multidb.multidb;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="remote_server_list" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\remote_server_list.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="remote_server_list_with_spaces" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\remote_server_list_with_spaces.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="remote_server_list_with_spaces_and_blank_lines" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\remote_server_list_with_spaces_and_blank_lines.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  <data name="CreateTestTablesScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateTestTablesScript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="LoggingTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LoggingTable.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="LoggingTableCommitCheckIndex" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\LoggingTableCommitCheckIndex.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="XmlWithInvalidNamespace" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\XmlWithInvalidNamespace.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="XmlWithNoNamespace" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\XmlWithNoNamespace.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="CreateDatabaseScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\createdatabasescript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="CreateTestTablesScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\createtesttablesscript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="InsertPreRunScriptLogEntryScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\insertprerunscriptlogentryscript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  <data name="MultiDb_WithQueryRowData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MultiDb_WithQueryRowData.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="sbx_package_tester" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\sbx_package_tester.sbx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="TableLockingScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\tablelockingscript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="MultiDb_WithQueryRowData" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\multidb_withqueryrowdata.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="PlatunumSchema" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\platunumschema.dacpac;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="TarnishedSchema" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\tarnishedschema.dacpac;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="SyncScriptRaw" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\syncscriptraw.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\Resources\sbx_package_tester.sbx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

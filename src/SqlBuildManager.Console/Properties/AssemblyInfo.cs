@@ -20,3 +20,4 @@ using System.Runtime.InteropServices;
 [assembly: Guid("a0c6e2c3-0db0-421d-b43f-c5c3dbe5a411")]
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Console.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Console.Dependent.UnitTest")]

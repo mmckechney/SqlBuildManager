@@ -7,42 +7,38 @@ trigger:
 - master
 
 pool:
-  vmImage: 'vs2017-win2016'
+  vmImage: 'windows-latest'
 
 steps:
 - task: NuGetToolInstaller@1
   inputs:
     versionSpec: 
     checkLatest: true
+
 - task: NuGetCommand@2
   inputs:
     command: 'restore'
-    restoreSolution: '**/*.sln'
+    restoreSolution: '**\*console.sln'
     feedsToUse: 'select'
+    vstsFeed: '13893109-2090-413a-87d0-9539cabbfcad/9d117720-4777-425f-a00e-9b010a51c6e2'
+
 - task: VSBuild@1
   inputs:
     solution: '**\sqlbuildmanager-console.sln'
     platform: 'any CPU'
     configuration: '$(BuildConfiguration)'
 
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: 'src/bin/$(BuildConfiguration)'
-    Contents: '**'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
-    includeRootFolder: true
+    rootFolderOrFile: 'src/bin/$(BuildConfiguration)'
+    includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/SqlBuildManager.Console-$(Build.BuildNumber).zip'
+    archiveFile: 'SqlBuildManager.Console-$(Build.BuildNumber).zip'
     replaceExistingArchive: true
-
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/SqlBuildManager.Console-$(Build.BuildNumber).zip'
+    PathtoPublish: 'SqlBuildManager.Console-$(Build.BuildNumber).zip'
     ArtifactName: 'drop'
     publishLocation: 'Container'
 

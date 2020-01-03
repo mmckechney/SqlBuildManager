@@ -1,7 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System;
 
 //
 // General Information about an assembly is controlled through the following
@@ -9,8 +6,8 @@ using System;
 // associated with an assembly.
 //
 [assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2019")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2019")]
+[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2020")]
+[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2020")]
 
 //
 // Version information for an assembly consists of the following four values:
@@ -27,5 +24,5 @@ using System;
 //   2) Update the installer version to match the AssemblyVersion below.
 //   These can be found in SqlBuildManager.Setup -> Organize Your Setup -> General Information
 // ** Also, don't forget to update the change_notes.xml and .html files!
-[assembly: AssemblyVersion("10.4.4.*")]
-[assembly: AssemblyFileVersion("10.4.4")]
+[assembly: AssemblyVersion("11.0.0.*")]
+[assembly: AssemblyFileVersion("11.0.0")]
