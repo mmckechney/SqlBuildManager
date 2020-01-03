@@ -76,7 +76,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BlueSkyDev.Logging.AzureEventHubAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\BlueSkyDev.Logging.AzureEventHubAppender.1.1.0-CI-20191219-211758\lib\netstandard2.0\BlueSkyDev.Logging.AzureEventHubAppender.dll</HintPath>
+      <HintPath>..\packages\BlueSkyDev.Logging.AzureEventHubAppender.1.1.0-CI-20200103-191040\lib\netstandard2.0\BlueSkyDev.Logging.AzureEventHubAppender.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>

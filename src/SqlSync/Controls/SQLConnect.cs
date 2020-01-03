@@ -205,7 +205,7 @@ namespace SqlSync
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(9, 5);
+            this.label1.Location = new System.Drawing.Point(9, 3);
             this.label1.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(180, 18);
@@ -215,7 +215,7 @@ namespace SqlSync
             // 
             // ddServers
             // 
-            this.ddServers.Location = new System.Drawing.Point(12, 23);
+            this.ddServers.Location = new System.Drawing.Point(12, 21);
             this.ddServers.Name = "ddServers";
             this.ddServers.Size = new System.Drawing.Size(240, 21);
             this.ddServers.TabIndex = 0;
@@ -609,7 +609,8 @@ namespace SqlSync
                 }
                 catch (Exception exe)
                 {
-                    MessageBox.Show("Unable to get server list.\r\n" + exe.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                   // MessageBox.Show("Unable to get server list."); //\r\n" + exe.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    e.Result = null;
                 }
             }
         }

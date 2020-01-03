@@ -26,7 +26,6 @@ The basics of running the command line is the /Action argument. This is required
 - `Build` - Performs a standard, local execution via command line
 - `Threaded` - For updating multiple databases simultaneously. The threading is all run from the current machine
  - `Batch` - For massively parallel updating of databases simultaneously using Azure batch services
-- `Remote` - [_deprecated_ - use `Batch` instead] For massively parallel updating of databases simultaneously using remote execution servers deployed as Azure classic cloud services 
 
 ##### Utility actions 
 - `BatchPreStage` - Pre-stage Azure Batch VM nodes
@@ -44,7 +43,7 @@ The basics of running the command line is the /Action argument. This is required
 #### General Authentication settings 
 
 Used to provide authentication to databases during a build or for script extraction/ DACPAC creation\
-Applies to: `/Action={Build|Threaded|Batch|Remote|GetDifference|Synchronize`\
+Applies to: `/Action={Build|Threaded|Batch|GetDifference|Synchronize`\
 _Note:_ Is using username/password authentication, you can also leverage the [SettingsFile](#save-settings-actionsavesettings) option
 - `/AuthType="<type>"` - Values: `AzureADIntegrated`, `AzureADPassword`, `Password` (default if Username/Password set), `Windows` (default if no Username/Password set), 
 - `/UserName="<username>"` - The username to authenticate against the database if not using integrate auth (required when `RemoteServers="azure"`)
@@ -55,7 +54,7 @@ _Note:_ Is using username/password authentication, you can also leverage the [Se
 #### General Runtime settings 
 
 Arguments needed when performing a database update build\
-Applies to: `/Action={Build|Threaded|Batch|Remote}`
+Applies to: `/Action={Build|Threaded|Batch}`
 - `/PackageName="<filename>"` - Name of the .sbm or .sbx file to execute
 - `/RootLoggingPath="<directory>` - Directory to save execution logs (for threaded, batch and remote executions)
 - `/Trial=(true|false)` - Whether or not to run in trial mode (i.e. will automatically rollback changes - default is `false`)
@@ -86,14 +85,6 @@ See detailed Batch [documentation](AzureBatch.md#azure-batch---pre-stage-batch-n
 
 See detailed Batch [documentation](AzureBatch.md#azure-batch-clean-up-delete-nodes-actionbatchcleanup)
 
-#### Remote Execution settings (/Action=Remote)
-- `/RemoteServers=("<filename>"|derive|azure)` - Pointer to file that contains the list of remote execution servers, "derive" to parse servers from DB list, azure to use Azure PaaS instances
-- `/DistributionType=(equal|local)` - Sets whether to split execution evenly across all execution servers or have each agent only run against its local databases. Local not supported with RemoteServers="azure" 
-- `/TestConnectivity=(true|false)` - True value will test connection to remote agent and databases but will not execute SQL scripts
-- `/AzureRemoteStatus=true` - Return a status of the Azure remote execution services. Will not execute SQL 
-- `/RemoteDbErrorList=<remote name>|all` - Returns the list of databases that has execution errors in the last run. Use "all" to get list from all remote servers
-- `/RemoteErrorDetail=<server:db>|<instance>|all` - Retrieves the error detail for each instance in error. Is "server:db" is provided, full log detail is returned
-
 #### Dacpac Execution
 
 When using a source DACPAC file `/PlatinumDacpac` or creating one one at run time (`/PlatinumDbSource`, `/PlatinumServerSource` along with `/Server` and `/Database`).\
@@ -110,11 +101,11 @@ This utility action will save a reusable Json file to make running the command l
 The next time you run a build action, use the `/SettingsFile="<file path>` in place of the arguments below.
 
 - Authentication: `/UserName`, `/Password`
-- Azure Batch: `BatchNodeCount`, `/BatchAccountName`, `/BatchAccountKey`, `/BatchAccountUrl`, `/StorageAccountName`, `/StorageAccountKey`, `/BatchVmSize`, `/DeleteBatchPool`, `/DeleteBatchJob`, `/PollBatchPoolStatus`
+- Azure Batch: `BatchNodeCount`, `/BatchAccountName`, `/BatchAccountKey`, `/BatchAccountUrl`, `/StorageAccountName`, `/StorageAccountKey`, `/BatchVmSize`, `/DeleteBatchPool`, `/DeleteBatchJob`, `/PollBatchPoolStatus`, `/EventHubConnectionString`
 - Run time settings: `/RootLoggingPath`, `/LogAsText`
 
 _Note:_ 
-1. the values for `/UserName`, `/Password`, `/BatchAccountKey` and `/StorageAccountKey` will be encrypted. 
+1. the values for `/UserName`, `/Password`, `/BatchAccountKey`, `/StorageAccountKey` and  `/EventHubConnectionString` will be encrypted. 
 2. If there are duplicate values in the `/SettingsFile` and the command line, the command line argument will take precedence. 
 3. You can hand-craft the Json yourself in the [format below](#settings-file-format) but the password and keys will not be encrypted (which may be OK depending on where you save the files)
 
@@ -193,27 +184,28 @@ creation user ID's and the committed script record and hash for each.
 # Settings File Format
 The format for the saved settings Json file is below. You can include or exclude any values that would like. Also as a reminder, for any duplicate keys found in the settings file and command line arguments, the command line argument's value will be used.
 
-```
+```json
 {
   "AuthenticationArgs": {
     "UserName": "<database use name>",
-    "Password": <database password>"
+    "Password": "<database password>"
   },
   "BatchArgs": {
-    "BatchNodeCount": <int value>,
+    "BatchNodeCount": "<int value>",
     "BatchAccountName": "<batch account name>",
     "BatchAccountKey": "<key for batch account ",
     "BatchAccountUrl": "<https URL for batch account>",
     "StorageAccountName": "<storage account name>",
     "StorageAccountKey": "<storage account key>",
     "BatchVmSize": "<VM size designator>",
-    "DeleteBatchPool": <true|false>,
-    "DeleteBatchJob": <true|false>,
-    "PollBatchPoolStatus": <true|false>
+    "DeleteBatchPool": "<true|false>",
+    "DeleteBatchJob": "<true|false>",
+    "PollBatchPoolStatus": "<true|false>",
+    "EventHubConnectionString": "<connection string to EventHub (optional)>"
   },
   "RootLoggingPath": "<valid folder path>",
-  "LogAsText": <true|false>, 
-  "DefaultScriptTimeout" : <int>,
-  "TimeoutRetryCount: <int>
+  "LogAsText": "<true|false>", 
+  "DefaultScriptTimeout" : "<int>",
+  "TimeoutRetryCount" : "<int>"
 }
 ```

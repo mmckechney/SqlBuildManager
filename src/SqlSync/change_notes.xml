@@ -3,6 +3,8 @@
   <Version Major="11" Minor="0" Revision="0">
     <note>MAJOR CHANGE -- removed the legacy Azure Cloud Service deployment model. Please update to use the Azure Batch model instead!</note>
     <added>New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution</added>
+    <updated>Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not</updated>
+    <added>YML files for Azure DevOps builds (and changes to ensure they build successfully)</added>
   </Version>
   <Version Major="10" Minor="4" Revision="4">
     <added>Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds</added>

@@ -5,6 +5,8 @@
 ### Version 11.0.0
 - **NOTE:** MAJOR CHANGE -- removed the legacy Azure Cloud Service deployment model. Please update to use the Azure Batch model instead!
 - *ADDED:* New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution
+- *UPDATED:* Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not
+- *ADDED:* YML files for Azure DevOps builds (and changes to ensure they build successfully)
 					
 ### Version 10.4.4
 - *ADDED:* Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds

@@ -21,7 +21,8 @@ Replace the sample values with your own account values and keys
     /StorageAccountKey=1VT2/+3Xh4XzK6vSYCHHacbeRJth2/gEoy+buaGlq+oXvhQ19NQG9/D8sSgSCJ1Z+ICB/GrxJMvCI+xnaM5cQg== ^
     /DeleteBatchPool=False ^
     /DeleteBatchJob=False ^
-    /RootLoggingPath="C:\temp" 
+    /RootLoggingPath="C:\temp" ^
+    /EventHubConnectionString="Endpoint=sb://myeventhub.servicebus.windows.net/;SharedAccessKeyName=keyname;SharedAccessKey=KPnb2SyLfQz5jY1LqXl3TxnMBuJJn4id6OCJ7n4yYEo=;EntityPath=hubname"
 ```
 
 ## 2. Pre-stage your Batch VM nodes
