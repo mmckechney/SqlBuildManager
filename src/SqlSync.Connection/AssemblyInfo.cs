@@ -45,3 +45,4 @@ using System.Runtime.CompilerServices;
 
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.Connection.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.Connection.Dependent.UnitTest")]
