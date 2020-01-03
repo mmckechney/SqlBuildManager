@@ -2,6 +2,8 @@
 
 SQL Build Manager is a multi-faceted tool to allow you to manage the lifecyle of your databases. It started as a forms based application for the management of a handful of databases and then switched focus to command line automation for the management of thousands of databases.
 
+[![Build Status](https://dev.azure.com/mckechney/SqlBuildManager/_apis/build/status/GitHub%20SqlBuildManager%20-%20full?branchName=master)](https://dev.azure.com/mckechney/SqlBuildManager/_build/latest?definitionId=24&branchName=master)
+
 ### [Change notes](docs/change_notes.md)
 
 ## Key Features
