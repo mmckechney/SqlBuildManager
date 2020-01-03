@@ -7,6 +7,18 @@
         },
         "storageAccountName": {
             "value": "changeme"
-        }        
+        },
+        "namespaceName": {
+            "value": "GEN-UNIQUE"
+        },
+        "eventhubSku": {
+            "value": "Standard"
+        },
+        "eventHubName": {
+            "value": "GEN-UNIQUE-15"
+        },
+        "consumerGroupName": {
+            "value": "GEN-UNIQUE"
+        }
     }
 }
