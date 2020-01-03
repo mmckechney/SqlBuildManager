@@ -1,3 +1,4 @@
+
 # Starter pipeline
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
@@ -38,14 +39,6 @@ steps:
     codeCoverageEnabled: true
     
 
-
-- task: PublishCodeCoverageResults@1
-  condition: succeededOrFailed()
-  inputs:
-
-    codeCoverageTool: 'cobertura' 
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/TestResults/**/*.coverage'
-
 - task: WhiteSource Bolt@19
   condition: succeededOrFailed()
   inputs:
@@ -64,4 +57,3 @@ steps:
     PathtoPublish: 'SqlBuildManager-$(Build.BuildNumber).zip'
     ArtifactName: 'drop'
     publishLocation: 'Container'
-
