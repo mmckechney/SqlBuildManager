@@ -38,13 +38,15 @@ steps:
       !**\obj\*
     searchFolder: '$(System.DefaultWorkingDirectory)'
     codeCoverageEnabled: true
+    
 
 
 - task: PublishCodeCoverageResults@1
   condition: succeededOrFailed()
   inputs:
+
     codeCoverageTool: 'cobertura' 
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/SqlBuildManager/**/site/cobertura/coverage.xml'
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/TestResults/**/*.coverage'
 
 - task: WhiteSource Bolt@19
   condition: succeededOrFailed()
