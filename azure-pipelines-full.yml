@@ -27,15 +27,17 @@ steps:
     solution: '**\*.sln'
     platform: 'any CPU'
     configuration: '$(BuildConfiguration)'
-
+                      
 - task: VSTest@2
   inputs:
-    platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-    testSelector: 'TestAssemblies'
-    testAssemblyVer2: '!**\*dependent.unittest.dll
-                       **\*test*.dll'
-                      
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\*UnitTest.dll
+      !**\*Dependent.UnitTest.dll
+      !**\obj\**
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+
 
 - task: ArchiveFiles@2
   inputs:
