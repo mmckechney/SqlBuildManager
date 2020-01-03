@@ -8061,91 +8061,53 @@ namespace SqlSync.SqlBuild
                         verData.CheckIntervalElapsed = true;
                         bool contacted = false;
                         string errorMessage = string.Empty;
-                       
-                            for (int i = 0; i < fileURL.Length; i++)
+
+                        for (int i = 0; i < fileURL.Length; i++)
+                        {
+                            try
                             {
-                                try
+                                System.Net.WebRequest req = System.Net.WebRequest.Create(fileURL[i]);
+                                req.Proxy = System.Net.WebRequest.DefaultWebProxy;
+                                req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                                System.Net.WebResponse resp = req.GetResponse();
+                                var redirectUrl = resp.ResponseUri.AbsoluteUri;
+                                var ver = redirectUrl.Substring(redirectUrl.LastIndexOf("/v") + 2);
+
+                                verData.LatestVersion = new Version(ver);
+                                verData.LastCompatableVersion = new Version(ver);
+
+                                string changeNotesFilePath = "https://raw.githubusercontent.com/mmckechney/SqlBuildManager/master/docs/change_notes.md";
+                                req = System.Net.WebRequest.Create(changeNotesFilePath);
+                                req.Proxy = System.Net.WebRequest.DefaultWebProxy;
+                                req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                                resp = req.GetResponse();
+                                StreamReader srChangeNotes = new StreamReader(resp.GetResponseStream());
+                                string changeNotesFileContents = srChangeNotes.ReadToEnd();
+                                srChangeNotes.Close();
+
+
+                                verData.ReleaseNotes = changeNotesFileContents;
+
+                                if (verData.UpdateFolder.Split(delims).Length == fileURL.Length)
                                 {
-                                    System.Net.WebRequest req = System.Net.WebRequest.Create(fileURL[i]);
-                                    req.Proxy = System.Net.WebRequest.DefaultWebProxy;
-                                    req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                                    System.Net.WebResponse resp = req.GetResponse();
-                                    System.IO.StreamReader sr = new System.IO.StreamReader(resp.GetResponseStream());
-
-                                    string versionFile = sr.ReadToEnd();
-                                    sr.Close();
-
-                                    string[] versions = versionFile.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                                    verData.LatestVersion = new Version(versions[0]);
-                                    verData.LastCompatableVersion = new Version(versions[1]);
-                                    if (versions.Length > 3)
-                                    {
-                                        //This is the "classic" versions file with the change notes in-line
-                                        verData.ReleaseNotes = String.Join("\r\n", versions, 2, versions.Length - 2);
-                                    }
-                                    else if(versions.Length == 3)
-                                    {
-                                        //This is the new versions file that has a file pointer to the change notes file...
-                                        string changeNotesFilePath = versions[2];
-                                        req = System.Net.WebRequest.Create(changeNotesFilePath);
-                                        req.Proxy = System.Net.WebRequest.DefaultWebProxy;
-                                        req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                                        resp = req.GetResponse();
-                                        StreamReader srChangeNotes = new StreamReader(resp.GetResponseStream());
-                                        string changeNotesFileContents = srChangeNotes.ReadToEnd();
-                                        srChangeNotes.Close();
-
-                                        //The file contents should be XML, so lets transform them 
-                                        string xsltFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\" + SqlSync.VersionData.XsltTransformFileName;
-
-                                        if (File.Exists(xsltFilePath))
-                                        {
-                                            XmlTextReader xsltReader;
-
-                                            XslCompiledTransform trans = new XslCompiledTransform();
-                                            StringReader srContents = new StringReader(changeNotesFileContents);
-                                            StringReader xsltText;
-                                            XmlTextReader xmlReader = new XmlTextReader(srContents);
-                                            XPathDocument xPathDoc = new XPathDocument(xmlReader);
-
-
-                                            StringBuilder sbHtml = new StringBuilder();
-                                            StringWriter swHtml = new StringWriter(sbHtml);
-                                            xsltText = new StringReader(File.ReadAllText(xsltFilePath));
-                                            xsltReader = new XmlTextReader(xsltText);
-                                            trans.Load(xsltReader);
-                                            trans.Transform(xPathDoc, null, swHtml);
-                                            verData.ReleaseNotes = sbHtml.ToString();
-                                            verData.ReleaseNotesAreHtml = true;
-                                        }
-                                        else
-                                        {
-                                            verData.ReleaseNotes = changeNotesFileContents;
-                                        }
-                                    }
-
-
-                                    if (verData.UpdateFolder.Split(delims).Length == fileURL.Length)
-                                    {
-                                        verData.UpdateFolder = verData.UpdateFolder.Split(delims)[i];
-                                    }
-                                    else
-                                    {
-                                        verData.UpdateFolder = verData.UpdateFolder.Split(delims)[0];
-                                    }
-                                    contacted = true;
-                                    break;
+                                    verData.UpdateFolder = verData.UpdateFolder.Split(delims)[i];
                                 }
-                                catch(Exception exe)
+                                else
                                 {
-                                    errorMessage = exe.ToString();
+                                    verData.UpdateFolder = verData.UpdateFolder.Split(delims)[0];
                                 }
+                                contacted = true;
+                                break;
                             }
-                        
-                        if(!contacted)
+                            catch (Exception exe)
+                            {
+                                errorMessage = exe.ToString();
+                            }
+                        }
+
+                        if (!contacted)
                         {
                             verData.UpdateFileReadError = true;
-                            //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Unable to read update file.\r\n" + errorMessage, EventLogEntryType.Error, 901);
                         }
 
                         if (config.LastProgramUpdateCheck.Count == 0)
