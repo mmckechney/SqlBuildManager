@@ -1,0 +1,51 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: 'vs2017-win2016'
+
+steps:
+- task: NuGetToolInstaller@1
+  inputs:
+    versionSpec: 
+    checkLatest: true
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'restore'
+    restoreSolution: '**\*.sln'
+    feedsToUse: 'select'
+    vstsFeed: '13893109-2090-413a-87d0-9539cabbfcad/9d117720-4777-425f-a00e-9b010a51c6e2'
+
+- task: VSBuild@1
+  inputs:
+    solution: '**\*.sln'
+    platform: 'any CPU'
+    configuration: '$(BuildConfiguration)'
+
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+    testSelector: 'TestAssemblies'
+    testAssemblyVer2: '**\\*test*.dll!**\*dependent.unittest.dll'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: 'src/bin/$(BuildConfiguration)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: 'SqlBuildManager-$(Build.BuildNumber).zip'
+    replaceExistingArchive: true
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'SqlBuildManager-$(Build.BuildNumber).zip'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
