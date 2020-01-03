@@ -82,9 +82,6 @@ Using the `/Action=Batch` command leverages Azure Batch to permit massively para
 
 An excellent tool for viewing and monitoring your Azure batch accounts and jobs can be found here [https://azure.github.io/BatchExplorer/](https://azure.github.io/BatchExplorer/)
 
-### Remote
-
-Using `/Action=Remote`, this method leverages an Azure Cloud Service deployment of the `SqlBuildManager.Services` application. This is a legacy method that allows for massively parallel updates. It is considered legacy because Azure Cloud Services themselves are a legacy deployment and also because of the extra effort to deploy and configure the Cloud Service compared to the same capability available via Azure Batch.
 
 ### For full command line reference details, go [here](docs/commandline.md)
 

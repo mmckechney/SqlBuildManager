@@ -30,7 +30,7 @@ This will create the VMs and get them ready to accept a build. Doing this in adv
 ```
 SqlBuildManager.Console.exe ^
     /Action=BatchPreStage ^
-    /SettingsFile="C:\temp\my_settings.json" ^
+    /SettingsFile="C:\temp\my_settings.json"
 ```
 
 ## 3. Run your Build (schema changes)

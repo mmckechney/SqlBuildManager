@@ -202,12 +202,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>ECHO "$(ProjectDir)BatchSubstitute.bat" SUBST "$(TargetDir)EnterpriseConfiguration.xml"   "$(ProjectDir)app.config" &gt; "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.tmp"
-"$(ProjectDir)BatchSubstitute.bat" SUBST "$(TargetDir)EnterpriseConfiguration.xml"   "$(ProjectDir)app.config" &gt; "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.tmp"</PreBuildEvent>
+    <PreBuildEvent>"$(ProjectDir)BatchSubstitute.bat" SUBST "$(TargetDir)EnterpriseConfiguration.xml"   "$(ProjectDir)app.config" &gt; "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.tmp"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>ECHO COPY /Y "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.tmp"   "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.config"
-COPY /Y "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.tmp"   "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.config"</PostBuildEvent>
+    <PostBuildEvent>COPY /Y "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.tmp"   "$(TargetDir)SqlBuildManager.Enterprise.UnitTest.dll.config"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
