@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'vs2017-win2016'
+  vmImage: 'windows-latest'
 
 steps:
 - task: NuGetToolInstaller@1
@@ -33,11 +33,19 @@ steps:
     configuration: '$(buildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\*UnitTest.dll
       !**\*Dependent.UnitTest.dll
+      **\*UnitTest.dll
       !**\obj\**
     searchFolder: '$(System.DefaultWorkingDirectory)'
 
+- task: WhiteSource Bolt@19
+  inputs:
+    cwd: '$(System.DefaultWorkingDirectory)'
+
+- task: PublishCodeCoverageResults@1
+  inputs:
+    codeCoverageTool: 'cobertura' 
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/SqlBuildManager/**/site/cobertura/coverage.xml'
 
 - task: ArchiveFiles@2
   inputs:

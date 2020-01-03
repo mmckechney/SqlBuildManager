@@ -330,20 +330,7 @@ namespace SqlSync.Connection.UnitTest
             Assert.AreEqual(expected, actual);
         }
 
-        /// <summary>
-        ///A test for TestDatabaseConnection
-        ///</summary>
-        [TestMethod()]
-        public void TestDatabaseConnectionTest_StringOverrideSuccess()
-        {
-            string dbName = "SqlBuildTest";
-            string serverName = "localhost\\SQLEXPRESS";
-            int scriptTimeOut = 20;
-            bool expected = true;
-            bool actual;
-            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName,"","",AuthenticationType.Windows, scriptTimeOut);
-            Assert.AreEqual(expected, actual, "NOTE: If this test fails, please make sure you have localhost\\SQLEXPRESS instance running.");
-        }
+        
         /// <summary>
         ///A test for TestDatabaseConnection
         ///</summary>
@@ -359,24 +346,7 @@ namespace SqlSync.Connection.UnitTest
             Assert.AreEqual(expected, actual);
         }
 
-        /// <summary>
-        ///A test for TestDatabaseConnection
-        ///</summary>
-        [TestMethod()]
-        public void TestDatabaseConnectionTest1_ConnDataOverrideSuccess()
-        {
-            ConnectionData connData = new ConnectionData()
-            {
-                DatabaseName = "SqlBuildTest",
-                ScriptTimeout = 20,
-                SQLServerName = "localhost\\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.Windows
-            };
-            bool expected = true;
-            bool actual;
-            actual = ConnectionHelper.TestDatabaseConnection(connData);
-            Assert.AreEqual(expected, actual, "NOTE: If this test fails, please make sure you have localhost\\SQLEXPRESS instance running.");
-        }
+       
         /// <summary>
         ///A test for TestDatabaseConnection
         ///</summary>
