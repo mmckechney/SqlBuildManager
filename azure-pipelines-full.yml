@@ -33,7 +33,9 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
     testSelector: 'TestAssemblies'
-    testAssemblyVer2: '**\\*test*.dll!**\*dependent.unittest.dll'
+    testAssemblyVer2: '!**\*dependent.unittest.dll
+                       **\*test*.dll'
+                      
 
 - task: ArchiveFiles@2
   inputs:

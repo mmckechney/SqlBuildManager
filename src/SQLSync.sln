@@ -5,8 +5,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6B399EB5-5A92-4122-9480-64A4945AEF6A}"
 	ProjectSection(SolutionItems) = preProject
 		AssemblyVersioning.cs = AssemblyVersioning.cs
+		..\azure-pipelines-full.yml = ..\azure-pipelines-full.yml
 		..\azure-pipelines.yml = ..\azure-pipelines.yml
-		README.md = README.md
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLSync", "SqlSync\SQLSync.csproj", "{F54DD837-AD98-4A45-A709-1AA9E38E1A24}"
