@@ -16,9 +16,6 @@
         },
         "eventHubName": {
             "value": "GEN-UNIQUE-15"
-        },
-        "consumerGroupName": {
-            "value": "GEN-UNIQUE"
         }
     }
 }

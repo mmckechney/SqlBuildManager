@@ -64,7 +64,7 @@ While the focus of the app has changed to command line automation, the forms GUI
 
 The command line utility is geared more toward executing a build vs. creating the package itself. You can however extract a build package file from a DACPAC file using the `Action=ScriptExtract` flag. This is useful if you are utilizing the recommended [data-tier application](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications?view=sql-server-2017)  method.
 
-A DACPAC can also be created directly from a target "Platinum Database" (why platinum? because it's even more precious than gold!). Using the `/Action={Threaded|Batch|Remote}` along with the flags `/PlatinumDbSource="<database name>"` and `/PlatinumServerSource="<server name>"` the app will generate a DACPAC from the source database then can then be used to run a build directly on your target(s).
+A DACPAC can also be created directly from a target "Platinum Database" (why platinum? because it's even more precious than gold!). Using the `/Action={Threaded|Batch}` along with the flags `/PlatinumDbSource="<database name>"` and `/PlatinumServerSource="<server name>"` the app will generate a DACPAC from the source database then can then be used to run a build directly on your target(s).
 
 ## Running Builds (command line)
 

@@ -5,16 +5,16 @@
         "batchAccountName": {
             "type": "string",
             "metadata": {
-              "description": "Batch Account Name"
+                "description": "Batch Account Name"
             }
         },
         "storageAccountName": {
             "type": "string",
             "metadata": {
                 "description": "Storage Account Name"
-              }
+            }
         },
-         "namespaceName": {
+        "namespaceName": {
             "type": "string",
             "metadata": {
                 "description": "Name of EventHub namespace"
@@ -47,12 +47,6 @@
             "type": "string",
             "metadata": {
                 "description": "Name of Event Hub"
-            }
-        },
-        "consumerGroupName": {
-            "type": "string",
-            "metadata": {
-                "description": "Name of Consumer Group"
             }
         },
         "location": {
@@ -113,44 +107,45 @@
             }
         },
         {
-        "apiVersion": "2017-04-01",
-        "name": "[parameters('namespaceName')]",
-        "type": "Microsoft.EventHub/namespaces",
-        "location": "[parameters('location')]",
-        "sku": {
-            "name": "[parameters('eventhubSku')]",
-            "tier": "[parameters('eventhubSku')]",
-            "capacity": "[parameters('skuCapacity')]"
+            "type": "Microsoft.EventHub/namespaces",
+            "apiVersion": "2017-04-01",
+            "name": "[parameters('namespaceName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('eventhubSku')]",
+                "tier": "[parameters('eventhubSku')]",
+                "capacity": "[parameters('skuCapacity')]"
+            }
         },
-        "tags": {
-            "tag1": "value1",
-            "tag2": "value2"
+        {
+            "type": "Microsoft.EventHub/namespaces/eventhubs",
+            "apiVersion": "2017-04-01",
+            "name": "[concat(parameters('namespaceName'), '/', parameters('eventHubName'))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces', parameters('namespaceName'))]"
+            ],
+            "properties": {
+                "messageRetentionInDays": 1,
+                "partitionCount": 5,
+                "status": "Active"
+            }
         },
-        "properties": {},
-        "resources": [
-            {
-                "apiVersion": "2017-04-01",
-                "name": "[parameters('eventHubName')]",
-                "type": "eventhubs",
-                "dependsOn": [
-                    "[concat('Microsoft.EventHub/namespaces/', parameters('namespaceName'))]"
-                ],
-                "properties": {},
-                "resources": [
-                    {
-                        "apiVersion": "2017-04-01",
-                        "name": "[parameters('consumerGroupName')]",
-                        "type": "consumergroups",
-                        "dependsOn": [
-                            "[parameters('eventHubName')]"
-                        ],
-                        "properties": {
-                            "userMetadata": "User Metadata goes here"
-                        }
-                    }
+        {
+            "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+            "apiVersion": "2017-04-01",
+            "name": "[concat(parameters('namespaceName'), '/', parameters('eventHubName'),'/batchbuilder')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('namespaceName'),  parameters('eventHubName'))]",
+                "[resourceId('Microsoft.EventHub/namespaces', parameters('namespaceName'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen",
+                    "Send"
                 ]
             }
-        ]
-    }
+        }
     ]
 }

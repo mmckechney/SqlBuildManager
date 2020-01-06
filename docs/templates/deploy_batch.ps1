@@ -17,9 +17,6 @@
  .PARAMETER deploymentName
     The deployment name.
 
- .PARAMETER templateFilePath
-    Optional, path to the template file. Defaults to template.json.
-
  .PARAMETER parametersFilePath
     Optional, path to the parameters file. Defaults to parameters.json. If file is not found, will prompt for parameter values based on template.
 
@@ -49,16 +46,13 @@ param(
  $deploymentName = "batchaccount",
 
  [string]
- $templateFilePath = "azuredeploy.json",
-
- [string]
  $parametersFilePath = "azuredeploy.parameters.json",
 
   [string]
- $sbmReleaseUrl = "https://github.com/mmckechney/SqlBuildManager/releases/download/v10.4.4/SqlBuildManager-v10.4.4.zip",
+ $sbmReleaseUrl = "https://github.com/mmckechney/SqlBuildManager/releases/download/v11.0.0/SqlBuildManager-v11.0.0.zip",
 
   [string]
- $version= "10.4.4",
+ $version= "11.0.0",
 
  [string]
  $applicationId  = "SqlBuldManager"
@@ -94,7 +88,7 @@ Write-Host "Selecting subscription '$subscriptionId'";
 Select-AzSubscription -SubscriptionID $subscriptionId;
 
 # Register RPs
-$resourceProviders = @("microsoft.storage","microsoft.batch");
+$resourceProviders = @("microsoft.storage","microsoft.batch","microsoft.eventhub");
 if($resourceProviders.length) {
     Write-Host "Registering resource providers"
     foreach($resourceProvider in $resourceProviders) {
@@ -117,12 +111,14 @@ else{
     Write-Host "Using existing resource group '$resourceGroupName'";
 }
 
+$templateUri = "https://raw.githubusercontent.com/mmckechney/SqlBuildManager/master/docs/templates/azuredeploy.json"
+
 # Start the deployment
 Write-Host "Starting deployment...";
 if(Test-Path $parametersFilePath) {
-    New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateFile $templateFilePath -TemplateParameterFile $parametersFilePath;
+    New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateUri $templateUri -TemplateParameterFile $parametersFilePath; 
 } else {
-    New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateFile $templateFilePath;
+    New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateUri $templateUri;
 }
 
 # Create application
@@ -159,6 +155,9 @@ $t = Get-AzBatchAccount -AccountName $batchAcctName -ResourceGroupName $resource
 $storage = Get-AzStorageAccount -Name $storageAcctName -ResourceGroupName $resourceGroupName
 $s = Get-AzStorageAccountKey -Name $storageAcctName -ResourceGroupName $resourceGroupName
 
+$e = Get-AzEventHubKey -ResourceGroupName $resourceGroupName -NamespaceName $namespaceName -EventHubName $eventHubName -AuthorizationRuleName batchbuilder
+
+
 Write-Host "Pre-populated command line arguments. Record these for use later: "
 Write-Host ""
 Write-Host "/BatchAccountName=$batchAcctName"
@@ -166,3 +165,4 @@ Write-Host "/BatchAccountUrl=https://$($t.AccountEndpoint)"
 Write-Host "/BatchAccountKey=$($batch.PrimaryAccountKey)"
 Write-Host "/StorageAccountName=$storageAcctName"
 Write-Host "/StorageAccountKey=$($s.Value[0])"
+Write-Host "/EventHubConnectionString=$($e.PrimaryConnectionString)"
