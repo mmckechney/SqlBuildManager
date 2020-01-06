@@ -20,7 +20,7 @@ _Note_: this method has the added benefit of also uploading the [latest release 
 Sample script
 
 ``` powershell
-.\deploy_batch.ps1 -parametersFilePath azuredeploy.parameters.json -resourceGroupName myresourcegrp -resourceGroupLocation EastUs -sbmReleaseUrl https://github.com/mmckechney/SqlBuildManager/releases/download/v11.0.0/SqlBuildManager-v11.0.0.zip
+.\deploy_batch.ps1 -subscriptionId <your sub GUID> -parametersFilePath azuredeploy.parameters.json -resourceGroupName myresourcegrp -resourceGroupLocation EastUs -sbmReleaseUrl https://github.com/mmckechney/SqlBuildManager/releases/download/v11.0.0/SqlBuildManager-v11.0.0.zip
 
 ```
 

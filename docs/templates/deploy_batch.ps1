@@ -70,7 +70,7 @@ Function RegisterRP {
     )
 
     Write-Host "Registering resource provider '$ResourceProviderNamespace'";
-    Register-AzResourceProvider -ProviderNamespace $ResourceProviderNamespace;
+    Register-AzResourceProvider -ProviderNamespace $ResourceProviderNamespace -ErrorAction SilentlyContinue
 }
 
 #******************************************************************************
@@ -126,6 +126,8 @@ $json = (Get-Content "$parametersFilePath" -Raw) | ConvertFrom-Json
 
 $batchAcctName = $json.parameters.batchAccountName.value
 $storageAcctName = $json.parameters.storageAccountName.value
+$namespaceName = $json.parameters.namespaceName.value
+$eventHubName = $json.parameters.eventHubName.value
 
 #Create the application
 Write-Host "Creating new Azure Batch Application named $applicationId"
