@@ -38,7 +38,6 @@ Pre-populated command line arguments. Record these for use later:
 ```
 
 ### **Option 2: Direct ARM Template deployment**
-This is by far the easiest way to deploy the require resources!
 
 Use the "Deploy to Azure" button to deploy using the template via the Azure portal. You will need to collect the account information from the resources once created the same as step 7 [here](#option-3-manually-via-azure-portal)
 
