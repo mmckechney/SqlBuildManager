@@ -49,6 +49,16 @@ namespace SqlSync.SqlBuild.UnitTest
             if (!CreateSqlBuildLoggingTables())
                 Assert.Fail("Unable to create the SqlBuild_Logging tables");
 
+            if(!CleanTestTables())
+            {
+                Assert.Fail("Unable to clean pre-existing data from the target tables");
+            }
+
+            if(!CleanSqlBuildLoggingTables())
+            {
+                Assert.Fail("Unable to clean pre-existing data from the SqlBuild_Logging tables");
+            }
+
 
 
             tempFiles = new List<string>();
@@ -130,6 +140,28 @@ namespace SqlSync.SqlBuild.UnitTest
             }
 
         }
+        public bool CleanTestTables()
+        {
+            try
+            {
+
+                for (int i = 0; i < testDatabaseNames.Count; i++)
+                {
+                    string connString = String.Format(connectionString, testDatabaseNames[i]);
+                    SqlConnection conn = new SqlConnection(connString);
+                    string cleaner = string.Format(Properties.Resources.CleanTestTable, DateTime.Now.AddHours(-1).ToString());
+                    SqlCommand cmd = new SqlCommand(cleaner, conn);
+                    conn.Open();
+                    object val = cmd.ExecuteNonQuery();
+                    conn.Close();
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public bool CreateSqlBuildLoggingTables()
         {
             for (int i = 0; i < testDatabaseNames.Count; i++)
@@ -139,11 +171,34 @@ namespace SqlSync.SqlBuild.UnitTest
                 SqlCommand cmd = new SqlCommand(Properties.Resources.LoggingTable, conn);
                 conn.Open();
                 object val = cmd.ExecuteNonQuery();
+
                 cmd = new SqlCommand(Properties.Resources.LoggingTableCommitCheckIndex, conn);
                 cmd.ExecuteNonQuery();
                 conn.Close();
             }
             return true;
+        }
+        public bool CleanSqlBuildLoggingTables()
+        {
+            try
+            {
+
+                for (int i = 0; i < testDatabaseNames.Count; i++)
+                {
+                    string connString = String.Format(connectionString, testDatabaseNames[i]);
+                    SqlConnection conn = new SqlConnection(connString);
+                    string cleaner = string.Format(Properties.Resources.CleanLoggingTable, DateTime.Now.AddHours(-1).ToString());
+                    SqlCommand cmd = new SqlCommand(cleaner, conn);
+                    conn.Open();
+                    object val = cmd.ExecuteNonQuery();
+                    conn.Close();
+                }
+                return true;
+            }
+            catch(Exception exe)
+            {
+                return false;
+            }
         }
         public bool InsertPreRunScriptEntry()
         {
@@ -487,9 +542,9 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 BuildData = buildData,
                 BuildDescription = "UnitTestRun",
-                BuildFileName = "UnitTestBuildFile.sbm",
+                BuildFileName = @"C:\temp\UnitTestBuildFile.sbm",
                 BuildType = "Development",
-                ProjectFileName = "ProjectFile.xml",
+                ProjectFileName = @"C:\temp\ProjectFile.xml",
                 Server = this.serverName,
                 StartIndex = 0
             };
