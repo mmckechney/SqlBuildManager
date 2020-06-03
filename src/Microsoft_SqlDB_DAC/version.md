@@ -1,3 +1,9 @@
-SqlPackage.exe DACPAC tools installed from [https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download?view=sql-server-2017](https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download?view=sql-server-2017)
+SqlPackage.exe DACPAC tools installed from:
 
-Current version: 15.0.4316.1
+ [https://docs.microsoft.com/en-us/sql/tools/release-notes-sqlpackage?view=sql-server-ver15](hhttps://docs.microsoft.com/en-us/sql/tools/release-notes-sqlpackage?view=sql-server-ver15)
+
+The version here is:
+
+- Version 18.5
+- Build version: 15.0.4769.1
+- Release Date: April 28, 2020
