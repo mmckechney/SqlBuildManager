@@ -376,6 +376,33 @@
             Default is 60
             </value>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacExportOptions.LongRunningCommandTimeout">
+            <summary>
+            Specifies the long running command timeout in seconds when executing queries against SQLServer.
+            </summary>
+            <value>
+            The command timeout in seconds.
+            Default is 0 which will wait indefinitely
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacExportOptions.DatabaseLockTimeout">
+            <summary>
+            Specifies the database lock timeout in seconds when executing queries against SQLServer.
+            </summary>
+            <value>
+            The database lock timeout in seconds
+            Default is 60
+            Specify -1 to wait indefinitely
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacExportOptions.TempDirectoryForTableData">
+            <summary>
+            Specifies the temporary directory used to buffer table data before being written to the package file.
+            </summary>
+            <value>
+            The path to the temporary directory.  If null or empty, the default is the users temporary folder.
+            </value>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.DacExportOptions.Storage">
             <summary>
             Get the type of backing storage for the schema model used during extraction.
@@ -421,6 +448,11 @@
             Construct a new instance of the <see cref="T:Microsoft.SqlServer.Dac.DacImportOptions"/> class.
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacImportOptions.ImportContributorPaths">
+            <summary>
+            Specifies paths to load additional import contributors. This should be a semi-colon delimited list of values.
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.DacImportOptions.ImportContributors">
             <summary>
             Specifies additional deployment contributors which should run.
@@ -443,6 +475,25 @@
             <value>
             The command timeout in seconds.
             Default is 60
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacImportOptions.LongRunningCommandTimeout">
+            <summary>
+            Specifies the long running command timeout in seconds when executing queries against SQLServer.
+            </summary>
+            <value>
+            The command timeout in seconds.
+            Default is 0 which will wait indefinitely
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacImportOptions.DatabaseLockTimeout">
+            <summary>
+            Specifies the database lock timeout in seconds when executing queries against SQLServer.
+            </summary>
+            <value>
+            The database lock timeout in seconds
+            Default is 60
+            Specify -1 to wait indefinitely
             </value>
         </member>
         <member name="T:Microsoft.SqlServer.Dac.DacOperationProgressMessage">
@@ -564,6 +615,11 @@
             When removing or renaming an option, the compiler will complain (good).
             </remarks>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacDeployOptions.AdditionalDeploymentContributorPaths">
+            <summary>
+            Specifies paths to load additional deployment contributors. This should be a semi-colon delimited list of values.
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.DacDeployOptions.AdditionalDeploymentContributors">
             <summary>
             Specifies additional deployment contributors which should run - in addition
@@ -632,6 +688,25 @@
             <value>
             The command timeout in seconds.
             Default is 60
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacDeployOptions.LongRunningCommandTimeout">
+            <summary>
+            Specifies the long running command timeout in seconds when executing queries against SQLServer.
+            </summary>
+            <value>
+            The command timeout in seconds.
+            Default is 0 which will wait indefinitely
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacDeployOptions.DatabaseLockTimeout">
+            <summary>
+            Specifies the database lock timeout in seconds when executing queries against SQLServer.
+            </summary>
+            <value>
+            The database lock timeout in seconds.
+            Default is 60
+            Specify -1 to wait indefinitely
             </value>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.DacDeployOptions.CommentOutSetVarDeclarations">
@@ -1095,6 +1170,17 @@
             </summary>
             <value>
             True to ignore aspects of partition functions and schemes; otherwise, false.
+            Default is false.
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacDeployOptions.IgnoreTablePartitionOptions">
+            <summary>
+            Get or set boolean that specifies whether to exclude the RANGE and BOUNDARY VALUES
+            of a table partition option from consideration when comparing the source and target
+            model.
+            </summary>
+            <value>
+            True to ignore aspects of table partition option; otherwise, false.
             Default is false.
             </value>
         </member>
@@ -1682,6 +1768,11 @@
               Looks up a localized string similar to {0} is not supported on Microsoft Azure SQL Database as it aliases the external element {1}..
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacErrorResources.ErrorUnsupportedPlatformForDataPackage">
+            <summary>
+              Looks up a localized string similar to SQL Data Warehouse does not support data operations such as the Export or Import task..
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.DacErrorResources.ErrorUnsupportUserDefinedTypeColumnForDataPackage">
             <summary>
               Looks up a localized string similar to Element {0} is an unsupported CLR User-defined type column that is not allowed when used as part of a data package..
@@ -1805,6 +1896,26 @@
             CREATE DATABASE database_name EDITION = <b>'premiumRS'</b>
             </summary>
         </member>
+        <member name="F:Microsoft.SqlServer.Dac.DacAzureEdition.DataWarehouse">
+            <summary>
+            CREATE DATABASE database_name EDITION = <b>'dataWarehouse'</b>
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.DacAzureEdition.GeneralPurpose">
+            <summary>
+            CREATE DATABASE database_name EDITION = <b>'GeneralPurpose'</b>
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.DacAzureEdition.BusinessCritical">
+            <summary>
+            CREATE DATABASE database_name EDITION = <b>'BusinessCritical'</b>
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.DacAzureEdition.Hyperscale">
+            <summary>
+            CREATE DATABASE database_name EDITION = <b>'Hyperscale'</b>
+            </summary>
+        </member>
         <member name="F:Microsoft.SqlServer.Dac.DacAzureEdition.Default">
             <summary>
             CREATE DATABASE database_name
@@ -1832,9 +1943,21 @@
             
             {edition_options} ::= 
             {
-               (MAXSIZE = { 100 MB | 500 MB | 1 | 5 | 10 | 20 | 30 ... 150 ... 500 } GB
-                |<b>(EDITION = {'web' | 'business' | 'basic' | 'standard' | 'premium' | 'premiumRS'})</b>
-                |<b>(SERVICE_OBJECTIVE = { 'shared' | 'basic' | 'S0' | 'S1' | 'S2' | 'S3' | 'P1' | 'P2' | 'P3' | 'P4' | 'P6' | 'P11' | 'P15' | 'PRS1' | 'PRS2' | 'PRS4' | 'PRS6' })</b>
+               MAXSIZE = { 100 MB | 250 MB | 500 MB | 1 ... 1024 ... 4096 GB }
+                |<b>(EDITION = {'web' | 'business' | 'basic' | 'standard' | 'premium' | 'GeneralPurpose' | 'BusinessCritical' | 'Hyperscale'})</b>
+                |<b>(SERVICE_OBJECTIVE =  {'basic' 
+                  | 'S0' | 'S1' | 'S2' | 'S3' | 'S4'| 'S6'| 'S7'| 'S9'| 'S12'
+                  | 'P1' | 'P2' | 'P4'| 'P6' | 'P11' | 'P15'
+                  | 'GP_GEN4_1' | 'GP_GEN4_2' | 'GP_GEN4_3' | 'GP_GEN4_4' | 'GP_GEN4_5' | 'GP_GEN4_6'
+                  | 'GP_Gen4_7' | 'GP_Gen4_8' | 'GP_Gen4_9' | 'GP_Gen4_10' | 'GP_Gen4_16' | 'GP_Gen4_24'
+                  | 'GP_Gen5_2' | 'GP_Gen5_4' | 'GP_Gen5_6' | 'GP_Gen5_8' | 'GP_Gen5_10' | 'GP_Gen5_12' | 'GP_Gen5_14'
+                  | 'GP_Gen5_16' | 'GP_Gen5_18' | 'GP_Gen5_20' | 'GP_Gen5_24' | 'GP_Gen5_32' | 'GP_Gen5_40' | 'GP_Gen5_80'
+                  | 'BC_Gen4_1' | 'BC_Gen4_2' | 'BC_Gen4_3' | 'BC_Gen4_4' | 'BC_Gen4_5' | 'BC_Gen4_6'
+                  | 'BC_Gen4_7' | 'BC_Gen4_8' | 'BC_Gen4_9' | 'BC_Gen4_10' | 'BC_Gen4_16' | 'BC_Gen4_24'
+                  | 'BC_Gen5_2' | 'BC_Gen5_4' | 'BC_Gen5_6' | 'BC_Gen5_8' | 'BC_Gen5_10' | 'BC_Gen5_12' | 'BC_Gen5_14'
+                  | 'BC_Gen5_16' | 'BC_Gen5_18' | 'BC_Gen5_20' | 'BC_Gen5_24' | 'BC_Gen5_32' | 'BC_Gen5_40' | 'BC_Gen5_80'
+                  | 'HS_GEN4_1' | 'HS_GEN4_2' | 'HS_GEN4_4' | 'HS_GEN4_8' | 'HS_GEN4_16' | 'HS_GEN4_24'
+                  | 'HS_GEN5_2' | 'HS_GEN5_4' | 'HS_GEN5_8' | 'HS_GEN5_16' | 'HS_GEN5_24' | 'HS_GEN5_32' | 'HS_GEN5_48' | 'HS_GEN5_80' })</b>
             }
             </remarks>
         </member>
@@ -1850,9 +1973,21 @@
             
             {edition_options} ::= 
             {
-               <b>(MAXSIZE = { 100 MB | 500 MB | 1 | 5 | 10 | 20 | 30 ... 150 ... 500 } GB</b>
-                |(EDITION = {'web' | 'business' | 'basic' | 'standard' | 'premium' | 'premiumRS'})
-                |(SERVICE_OBJECTIVE = { 'shared' | 'basic' | 'S0' | 'S1' | 'S2' | 'S3' | 'P1' | 'P2' | 'P3' | 'P4' | 'P6' | 'P11' | 'P15' | 'PRS1' | 'PRS2' | 'PRS4' | 'PRS6' })
+               MAXSIZE = { 100 MB | 250 MB | 500 MB | 1 ... 1024 ... 4096 GB }
+                |<b>(EDITION = {'web' | 'business' | 'basic' | 'standard' | 'premium' | 'GeneralPurpose' | 'BusinessCritical' | 'Hyperscale'})</b>
+                |<b>(SERVICE_OBJECTIVE =  {'basic' 
+                  | 'S0' | 'S1' | 'S2' | 'S3' | 'S4'| 'S6'| 'S7'| 'S9'| 'S12'
+                  | 'P1' | 'P2' | 'P4'| 'P6' | 'P11' | 'P15'
+                  | 'GP_GEN4_1' | 'GP_GEN4_2' | 'GP_GEN4_3' | 'GP_GEN4_4' | 'GP_GEN4_5' | 'GP_GEN4_6'
+                  | 'GP_Gen4_7' | 'GP_Gen4_8' | 'GP_Gen4_9' | 'GP_Gen4_10' | 'GP_Gen4_16' | 'GP_Gen4_24'
+                  | 'GP_Gen5_2' | 'GP_Gen5_4' | 'GP_Gen5_6' | 'GP_Gen5_8' | 'GP_Gen5_10' | 'GP_Gen5_12' | 'GP_Gen5_14'
+                  | 'GP_Gen5_16' | 'GP_Gen5_18' | 'GP_Gen5_20' | 'GP_Gen5_24' | 'GP_Gen5_32' | 'GP_Gen5_40' | 'GP_Gen5_80'
+                  | 'BC_Gen4_1' | 'BC_Gen4_2' | 'BC_Gen4_3' | 'BC_Gen4_4' | 'BC_Gen4_5' | 'BC_Gen4_6'
+                  | 'BC_Gen4_7' | 'BC_Gen4_8' | 'BC_Gen4_9' | 'BC_Gen4_10' | 'BC_Gen4_16' | 'BC_Gen4_24'
+                  | 'BC_Gen5_2' | 'BC_Gen5_4' | 'BC_Gen5_6' | 'BC_Gen5_8' | 'BC_Gen5_10' | 'BC_Gen5_12' | 'BC_Gen5_14'
+                  | 'BC_Gen5_16' | 'BC_Gen5_18' | 'BC_Gen5_20' | 'BC_Gen5_24' | 'BC_Gen5_32' | 'BC_Gen5_40' | 'BC_Gen5_80'
+                  | 'HS_GEN4_1' | 'HS_GEN4_2' | 'HS_GEN4_4' | 'HS_GEN4_8' | 'HS_GEN4_16' | 'HS_GEN4_24'
+                  | 'HS_GEN5_2' | 'HS_GEN5_4' | 'HS_GEN5_8' | 'HS_GEN5_16' | 'HS_GEN5_24' | 'HS_GEN5_32' | 'HS_GEN5_48' | 'HS_GEN5_80' })</b>
             }
             </remarks>
         </member>
@@ -1868,9 +2003,21 @@
             
             {edition_options} ::= 
             {
-               (MAXSIZE = { 100 MB | 500 MB | 1 | 5 | 10 | 20 | 30 ... 150 ... 500 } GB  
-                |(EDITION = {'web' | 'business' | 'basic' | 'standard' | 'premium' | 'premiumRS'})
-                |<b>(SERVICE_OBJECTIVE = { 'shared' | 'basic' | 'S0' | 'S1' | 'S2' | 'S3' | 'P1' | 'P2' | 'P3' | 'P4' | 'P6' | 'P11' | 'P15' | 'PRS1' | 'PRS2' | 'PRS4' | 'PRS6' })</b>
+               MAXSIZE = { 100 MB | 250 MB | 500 MB | 1 ... 1024 ... 4096 GB }
+                |<b>(EDITION = {'web' | 'business' | 'basic' | 'standard' | 'premium' | 'GeneralPurpose' | 'BusinessCritical' | 'Hyperscale'})</b>
+                |<b>(SERVICE_OBJECTIVE =  {'basic' 
+                  | 'S0' | 'S1' | 'S2' | 'S3' | 'S4'| 'S6'| 'S7'| 'S9'| 'S12'
+                  | 'P1' | 'P2' | 'P4'| 'P6' | 'P11' | 'P15'
+                  | 'GP_GEN4_1' | 'GP_GEN4_2' | 'GP_GEN4_3' | 'GP_GEN4_4' | 'GP_GEN4_5' | 'GP_GEN4_6'
+                  | 'GP_Gen4_7' | 'GP_Gen4_8' | 'GP_Gen4_9' | 'GP_Gen4_10' | 'GP_Gen4_16' | 'GP_Gen4_24'
+                  | 'GP_Gen5_2' | 'GP_Gen5_4' | 'GP_Gen5_6' | 'GP_Gen5_8' | 'GP_Gen5_10' | 'GP_Gen5_12' | 'GP_Gen5_14'
+                  | 'GP_Gen5_16' | 'GP_Gen5_18' | 'GP_Gen5_20' | 'GP_Gen5_24' | 'GP_Gen5_32' | 'GP_Gen5_40' | 'GP_Gen5_80'
+                  | 'BC_Gen4_1' | 'BC_Gen4_2' | 'BC_Gen4_3' | 'BC_Gen4_4' | 'BC_Gen4_5' | 'BC_Gen4_6'
+                  | 'BC_Gen4_7' | 'BC_Gen4_8' | 'BC_Gen4_9' | 'BC_Gen4_10' | 'BC_Gen4_16' | 'BC_Gen4_24'
+                  | 'BC_Gen5_2' | 'BC_Gen5_4' | 'BC_Gen5_6' | 'BC_Gen5_8' | 'BC_Gen5_10' | 'BC_Gen5_12' | 'BC_Gen5_14'
+                  | 'BC_Gen5_16' | 'BC_Gen5_18' | 'BC_Gen5_20' | 'BC_Gen5_24' | 'BC_Gen5_32' | 'BC_Gen5_40' | 'BC_Gen5_80'
+                  | 'HS_GEN4_1' | 'HS_GEN4_2' | 'HS_GEN4_4' | 'HS_GEN4_8' | 'HS_GEN4_16' | 'HS_GEN4_24'
+                  | 'HS_GEN5_2' | 'HS_GEN5_4' | 'HS_GEN5_8' | 'HS_GEN5_16' | 'HS_GEN5_24' | 'HS_GEN5_32' | 'HS_GEN5_48' | 'HS_GEN5_80' })</b>
             }
             </remarks>
         </member>
@@ -1893,6 +2040,25 @@
             Default is 60
             </value>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacExtractOptions.LongRunningCommandTimeout">
+            <summary>
+            Specifies the long running command timeout in seconds when executing queries against SQLServer.
+            </summary>
+            <value>
+            The command timeout in seconds.
+            Default is 0 which will wait indefinitely
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacExtractOptions.DatabaseLockTimeout">
+            <summary>
+            Specifies the database lock timeout in seconds when executing queries against SQLServer.
+            </summary>
+            <value>
+            The database lock timeout in seconds
+            Default is 60
+            Specify -1 to wait indefinitely
+            </value>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.DacExtractOptions.ExtractAllTableData">
             <summary>
             Get or set boolean that specifies whether data for all user tables will be extracted.
@@ -1900,6 +2066,14 @@
             <value>
             True if data for all user tables will be extracted; otherwise false.
             Default value is false.
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacExtractOptions.TempDirectoryForTableData">
+            <summary>
+            Specifies the temporary directory used to buffer table data before being written to the package file.
+            </summary>
+            <value>
+            The path to the temporary directory.  If null or empty, the default is the users temporary folder.
             </value>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.DacExtractOptions.ExtractReferencedServerScopedElements">
@@ -3336,6 +3510,11 @@
             Invoked as an operation reports status updates or errors.
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.DacServices.DiagnosticTrace">
+            <summary>
+            Get the <see cref="T:System.Diagnostics.TraceSource"/> for diagnostics traces.
+            </summary>
+        </member>
         <member name="T:Microsoft.SqlServer.Dac.Data.DataException">
             <summary>
             This class is meant to be a public exception class - i.e. when throwing it ensure
@@ -3887,6 +4066,11 @@
         <member name="F:Microsoft.SqlServer.Dac.ObjectType.Filegroups">
             <summary>
             Filegroup objects
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.ObjectType.Files">
+            <summary>
+            File objects
             </summary>
         </member>
         <member name="F:Microsoft.SqlServer.Dac.ObjectType.FileTables">

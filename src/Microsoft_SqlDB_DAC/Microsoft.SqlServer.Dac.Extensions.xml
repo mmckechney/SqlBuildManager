@@ -2247,6 +2247,11 @@
               Looks up a localized string similar to The specified connection string is not valid..
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Compare.SchemaCompareApiResources.InvalidDifferenceNode">
+            <summary>
+              Looks up a localized string similar to The node selected is not part of the model selected for dependencies lookup..
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Compare.SchemaCompareApiResources.OperationFailedDueToAnUnexpectedException">
             <summary>
               Looks up a localized string similar to The operation failed..
@@ -2342,6 +2347,16 @@
             <exception cref="T:System.FormatException">Invalid value within the connection string (for example, when a Boolean or numeric value was expected but not supplied).</exception>
             <exception cref="T:System.ArgumentException">The supplied connectionString is not valid.</exception>
         </member>
+        <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaCompareDatabaseEndpoint.#ctor(System.String,Microsoft.SqlServer.Dac.IUniversalAuthProvider)">
+            <summary>
+            Constructs a schema compare endpoint that refers to a database
+            </summary>
+            <param name="connectionString">A connection string to a database instance</param>
+            <param name="authProvider">Provide the up-to-date access token for AAD Universal Login (smartcard, phone, etc) </param>
+            <exception cref="T:System.ArgumentNullException">The supplied connection string or auth provider is null.</exception>
+            <exception cref="T:System.FormatException">Invalid value within the connection string (for example, when a Boolean or numeric value was expected but not supplied).</exception>
+            <exception cref="T:System.ArgumentException">The supplied connectionString is not valid.</exception>
+        </member>
         <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaCompareDatabaseEndpoint.#ctor(Microsoft.Data.Tools.Schema.Common.SqlClient.SqlConnectionFactory)">
             <summary>
             Constructs a schema compare endpoint that refers to a database
@@ -2378,6 +2393,13 @@
             <summary>
             Performs schema comparison, populating comparison results.
             </summary>
+        </member>
+        <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaComparison.Compare(System.Threading.CancellationToken)">
+            <summary>
+            Performs schema comparison, populating comparison results.
+            </summary>
+            <param name="cancellationToken">Cancellation token to send cancellation signal to the operation</param>
+            <returns>Schema comparison result containing differences</returns>
         </member>
         <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaComparison.SaveToFile(System.String,System.Boolean)">
             <summary>
@@ -2416,6 +2438,11 @@
         <member name="P:Microsoft.SqlServer.Dac.Compare.SchemaComparison.Options">
             <summary>
             Options that affect the behavior of package deployment.
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Compare.SchemaComparison.DataModel">
+            <summary>
+            Data Model for the schema compare operation
             </summary>
         </member>
         <member name="T:Microsoft.SqlServer.Dac.Compare.SchemaDifferenceType">
@@ -2466,10 +2493,49 @@
             <returns>SchemaCompareScriptGenerationResult </returns>
             <exception cref="T:System.ArgumentException">If the target is a dacpac and a null or empty databaseName value was provided.</exception>
         </member>
+        <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaComparisonResult.GenerateScript(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Generates a T-SQL update script that makes the target schema consistent with the source schema.
+            </summary>
+            <param name="databaseName">The name of the target database.</param>
+            <param name="cancellationToken"> cancellation token to cancel this operation</param>
+            <returns>SchemaCompareScriptGenerationResult containing script</returns>
+            <exception cref="T:System.ArgumentException">If the target is a dacpac and a null or empty databaseName value was provided.</exception>
+        </member>
+        <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaComparisonResult.GetExcludeDependencies(Microsoft.SqlServer.Dac.Compare.SchemaDifference)">
+            <summary>
+            Get Dependencies to cost Exclude operation on a node
+            </summary>
+            <param name="node">Difference node</param>
+            <returns>List of difference that can block the operation</returns>
+        </member>
+        <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaComparisonResult.GetIncludeDependencies(Microsoft.SqlServer.Dac.Compare.SchemaDifference)">
+            <summary>
+            Get Dependencies to cost Include operation on a node
+            </summary>
+            <param name="node">Difference node</param>
+            <returns>List of difference that can block the operation</returns>
+        </member>
+        <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaComparisonResult.GetDependencies(Microsoft.SqlServer.Dac.Compare.SchemaDifference,Microsoft.SqlServer.Dac.Compare.SchemaNodeAction)">
+            <summary>
+            Get Dependencies to cost Exclude or Include operations. 
+            for exclude operation this will calculate what depends on the current node
+            for include operation this is calculate what the node depends on
+            </summary>
+            <param name="node">Difference node</param>
+            <param name="action">Include or Exclude action in context of which dependencies should be calculated.</param>
+            <returns>List of difference that can block the operation</returns>
+        </member>
         <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaComparisonResult.PublishChangesToTarget">
             <summary>
             Generates and then executes a T-SQL update script that makes the target schema consistent with the source schema.
             </summary>
+        </member>
+        <member name="M:Microsoft.SqlServer.Dac.Compare.SchemaComparisonResult.PublishChangesToTarget(System.Threading.CancellationToken)">
+            <summary>
+            Generates and then executes a T-SQL update script that makes the target schema consistent with the source schema.
+            </summary>
+            <param name="cancellationToken"> cancellation token to cancel this operation</param>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Compare.SchemaComparisonResult.IsValid">
             <summary>
@@ -2494,6 +2560,11 @@
         <member name="P:Microsoft.SqlServer.Dac.Compare.SchemaComparisonResult.Differences">
             <summary>
             A tree that contains results of schema comparison of source and target endpoints.
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Compare.SchemaComparisonResult.DataModel">
+            <summary>
+            Data Model for the schema compare operation
             </summary>
         </member>
         <member name="T:Microsoft.SqlServer.Dac.Compare.SchemaCompareScriptGenerationResult">
@@ -2676,6 +2747,21 @@
         <member name="F:Microsoft.SqlServer.Dac.Compare.SchemaUpdateAction.Add">
             <summary>
             Add - adding an object to the database
+            </summary>
+        </member>
+        <member name="T:Microsoft.SqlServer.Dac.Compare.SchemaNodeAction">
+            <summary>
+            Represents a schema include/exclude action
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Compare.SchemaNodeAction.Include">
+            <summary>
+            Include a node
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Compare.SchemaNodeAction.Exclude">
+            <summary>
+            Exclude a node
             </summary>
         </member>
         <member name="T:Microsoft.SqlServer.Dac.DacPackageExtensions">
@@ -3413,6 +3499,22 @@
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Deployment.SqlColumnEncryptionRenameToOriginalStep.TargetTable">
+            <summary>
+            Gets the target table object
+            </summary>
+        </member>
+        <member name="T:Microsoft.SqlServer.Dac.Deployment.SqlCreateTableAsSelectStep">
+            <summary>
+            Represents a CTAS step in a sql deployment plan.
+            This class is for read-only purpose and cannot be instantiated.
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Deployment.SqlCreateTableAsSelectStep.SourceTable">
+            <summary>
+            Gets the source table object
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Deployment.SqlCreateTableAsSelectStep.TargetTable">
             <summary>
             Gets the target table object
             </summary>
@@ -4263,6 +4365,13 @@
             PARTITION SCHEMA from consideration when comparing the source and target model.
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Deployment.SqlDeploymentOptionsService.IgnoreTablePartitionOptions">
+            <summary>
+            Get or set boolean that specifies whether to exclude the RANGE and BOUNDARY VALUES
+            of a table partition option from consideration when comparing the source and target
+            model.
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Deployment.SqlDeploymentOptionsService.IgnorePermissions">
             <summary>
             Get boolean that specifies whether to exclude all permission statements 
@@ -5059,6 +5168,17 @@
             </summary>
             <value>
             True to ignore aspects of partition functions and schemes; otherwise, false.
+            Default is false.
+            </value>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Deployment.SqlDeploymentOptions.IgnoreTablePartitionOptions">
+            <summary>
+            Get or set boolean that specifies whether to exclude the RANGE and BOUNDARY VALUES
+            of a table partition option from consideration when comparing the source and target
+            model.
+            </summary>
+            <value>
+            True to ignore aspects of table partition; otherwise, false.
             Default is false.
             </value>
         </member>
@@ -6964,6 +7084,21 @@
             Model type class for Column
             </summary>
         </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.ModelSchema.ColumnEncryptionKey">
+            <summary>
+            Model type class for ColumnEncryptionKey
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.ModelSchema.ColumnEncryptionKeyValue">
+            <summary>
+            Model type class for ColumnEncryptionKeyValue
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.ModelSchema.ColumnMasterKey">
+            <summary>
+            Model type class for ColumnMasterKey
+            </summary>
+        </member>
         <member name="F:Microsoft.SqlServer.Dac.Model.ModelSchema.TableValuedFunction">
             <summary>
             Model type class for TableValuedFunction
@@ -7229,6 +7364,11 @@
             Model type class for ForeignKeyConstraint
             </summary>
         </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.ModelSchema.EdgeConstraint">
+            <summary>
+            Model type class for EdgeConstraint
+            </summary>
+        </member>
         <member name="F:Microsoft.SqlServer.Dac.Model.ModelSchema.FullTextCatalog">
             <summary>
             Model type class for FullTextCatalog
@@ -7277,6 +7417,11 @@
         <member name="F:Microsoft.SqlServer.Dac.Model.ModelSchema.MessageType">
             <summary>
             Model type class for MessageType
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.ModelSchema.PartitionSpecification">
+            <summary>
+            Model type class for PartitionSpecification
             </summary>
         </member>
         <member name="F:Microsoft.SqlServer.Dac.Model.ModelSchema.PartitionFunction">
@@ -8374,6 +8519,36 @@
             AlterAnyExternalFileFormat
             </summary>
         </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.PermissionType.AlterAnyDatabaseScopedConfiguration">
+            <summary>
+            AlterAnyDatabaseScopedConfiguration
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.PermissionType.AlterAnySensitivityClassification">
+            <summary>
+            AlterAnySensitivityClassification
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.PermissionType.ViewAnySensitivityClassification">
+            <summary>
+            ViewAnySensitivityClassification
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.PermissionType.KillDatabaseConnection">
+            <summary>
+            KillDatabaseConnection
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.PermissionType.ExecuteAnyExternalScript">
+            <summary>
+            ExecuteAnyExternalScript
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.PermissionType.AdministerDatabaseBulkOperations">
+            <summary>
+            AdministerDatabaseBulkOperations
+            </summary>
+        </member>
         <member name="T:Microsoft.SqlServer.Dac.Model.AuthenticationModes">
             <summary>
             SQL Server 2005 authentication mode
@@ -9252,6 +9427,21 @@
         <member name="F:Microsoft.SqlServer.Dac.Model.Degree.High">
             <summary>
             High
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.Degree.Normal">
+            <summary>
+            Normal
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.Degree.Above_Normal">
+            <summary>
+            Above_Normal
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.Degree.Below_Normal">
+            <summary>
+            Below_Normal
             </summary>
         </member>
         <member name="T:Microsoft.SqlServer.Dac.Model.State">
@@ -11379,6 +11569,11 @@
             BlobStorage
             </summary>
         </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.DataSourceType.ExternalGenerics">
+            <summary>
+            ExternalGenerics
+            </summary>
+        </member>
         <member name="T:Microsoft.SqlServer.Dac.Model.FileFormatType">
             <summary>
             External file format type options.
@@ -12129,6 +12324,31 @@
             SQL_Latin1_General_CP1_CI_AS
             </summary>
         </member>
+        <member name="T:Microsoft.SqlServer.Dac.Model.TableDistributionPolicyType">
+            <summary>
+            The type of a SQL DW table distribution policy.
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.TableDistributionPolicyType.None">
+            <summary>
+            None
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.TableDistributionPolicyType.Replicate">
+            <summary>
+            Replicate
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.TableDistributionPolicyType.RoundRobin">
+            <summary>
+            RoundRobin
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.TableDistributionPolicyType.Hash">
+            <summary>
+            Hash
+            </summary>
+        </member>
         <member name="T:Microsoft.SqlServer.Dac.Model.Column">
             <summary>
             Model schema container class for Column
@@ -12264,6 +12484,31 @@
             MaskingFunction property class of Column
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Column.SensitivityInformationType">
+            <summary>
+            SensitivityInformationType property class of Column
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Column.SensitivityInformationTypeId">
+            <summary>
+            SensitivityInformationTypeId property class of Column
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Column.SensitivityLabel">
+            <summary>
+            SensitivityLabel property class of Column
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Column.SensitivityLabelId">
+            <summary>
+            SensitivityLabelId property class of Column
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Column.SensitivityRank">
+            <summary>
+            SensitivityRank property class of Column
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.Column.ExpressionDependencies">
             <summary>
             ExpressionDependencies relationship class of Column
@@ -12282,6 +12527,76 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.Column.ColumnEncryptionKey">
             <summary>
             ColumnEncryptionKey relationship class of Column
+            </summary>
+        </member>
+        <member name="T:Microsoft.SqlServer.Dac.Model.ColumnEncryptionKey">
+            <summary>
+            Model schema container class for ColumnEncryptionKey
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnEncryptionKey.TypeClass">
+            <summary>
+            Type class for ColumnEncryptionKey
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnEncryptionKey.ColumnEncryptionKeyValue">
+            <summary>
+            ColumnEncryptionKeyValue relationship class of ColumnEncryptionKey
+            </summary>
+        </member>
+        <member name="T:Microsoft.SqlServer.Dac.Model.ColumnEncryptionKeyValue">
+            <summary>
+            Model schema container class for ColumnEncryptionKeyValue
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnEncryptionKeyValue.TypeClass">
+            <summary>
+            Type class for ColumnEncryptionKeyValue
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnEncryptionKeyValue.EncryptedValue">
+            <summary>
+            EncryptedValue property class of ColumnEncryptionKeyValue
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnEncryptionKeyValue.EncryptionAlgorithm">
+            <summary>
+            EncryptionAlgorithm property class of ColumnEncryptionKeyValue
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnEncryptionKeyValue.ColumnMasterKey">
+            <summary>
+            ColumnMasterKey relationship class of ColumnEncryptionKeyValue
+            </summary>
+        </member>
+        <member name="T:Microsoft.SqlServer.Dac.Model.ColumnMasterKey">
+            <summary>
+            Model schema container class for ColumnMasterKey
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnMasterKey.TypeClass">
+            <summary>
+            Type class for ColumnMasterKey
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnMasterKey.AllowEnclaveComputations">
+            <summary>
+            AllowEnclaveComputations property class of ColumnMasterKey
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnMasterKey.KeyPath">
+            <summary>
+            KeyPath property class of ColumnMasterKey
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnMasterKey.KeyStoreProviderName">
+            <summary>
+            KeyStoreProviderName property class of ColumnMasterKey
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnMasterKey.Signature">
+            <summary>
+            Signature property class of ColumnMasterKey
             </summary>
         </member>
         <member name="T:Microsoft.SqlServer.Dac.Model.TableValuedFunction">
@@ -12767,6 +13082,11 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.Index.Hash">
             <summary>
             Hash property class of Index
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Index.OptimizeForSequentialKey">
+            <summary>
+            OptimizeForSequentialKey property class of Index
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.Index.BucketCount">
@@ -13337,6 +13657,11 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.ColumnStoreIndex.IndexedObject">
             <summary>
             IndexedObject relationship class of ColumnStoreIndex
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ColumnStoreIndex.OrderedColumns">
+            <summary>
+            OrderedColumns relationship class of ColumnStoreIndex
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.ColumnStoreIndex.PartitionColumn">
@@ -14739,6 +15064,11 @@
             Type class for ExternalDataSource
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ExternalDataSource.ConnectionOptions">
+            <summary>
+            ConnectionOptions property class of ExternalDataSource
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.ExternalDataSource.DatabaseName">
             <summary>
             DatabaseName property class of ExternalDataSource
@@ -14752,6 +15082,11 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.ExternalDataSource.Location">
             <summary>
             Location property class of ExternalDataSource
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ExternalDataSource.PushdownOption">
+            <summary>
+            PushdownOption property class of ExternalDataSource
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.ExternalDataSource.ResourceManagerLocation">
@@ -14789,9 +15124,19 @@
             DateFormat property class of ExternalFileFormat
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ExternalFileFormat.Encoding">
+            <summary>
+            Encoding property class of ExternalFileFormat
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.ExternalFileFormat.FieldTerminator">
             <summary>
             FieldTerminator property class of ExternalFileFormat
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ExternalFileFormat.FirstRow">
+            <summary>
+            FirstRow property class of ExternalFileFormat
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.ExternalFileFormat.FormatType">
@@ -14867,6 +15212,11 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.ExternalTable.LockEscalation">
             <summary>
             LockEscalation property class of ExternalTable
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.ExternalTable.RejectedRowLocation">
+            <summary>
+            RejectedRowLocation property class of ExternalTable
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.ExternalTable.RejectSampleValue">
@@ -15077,6 +15427,36 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.ForeignKeyConstraint.ForeignTable">
             <summary>
             ForeignTable relationship class of ForeignKeyConstraint
+            </summary>
+        </member>
+        <member name="T:Microsoft.SqlServer.Dac.Model.EdgeConstraint">
+            <summary>
+            Model schema container class for EdgeConstraint
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.EdgeConstraint.TypeClass">
+            <summary>
+            Type class for EdgeConstraint
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.EdgeConstraint.Disabled">
+            <summary>
+            Disabled property class of EdgeConstraint
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.EdgeConstraint.DeleteAction">
+            <summary>
+            DeleteAction property class of EdgeConstraint
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.EdgeConstraint.Host">
+            <summary>
+            Host relationship class of EdgeConstraint
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.EdgeConstraint.Clauses">
+            <summary>
+            Clauses relationship class of EdgeConstraint
             </summary>
         </member>
         <member name="T:Microsoft.SqlServer.Dac.Model.FullTextCatalog">
@@ -15489,6 +15869,11 @@
             EncryptionOption property class of Login
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Login.IsMappedToExternalLogin">
+            <summary>
+            IsMappedToExternalLogin property class of Login
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.Login.Password">
             <summary>
             Password property class of Login
@@ -15552,6 +15937,26 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.MessageType.XmlSchemaCollection">
             <summary>
             XmlSchemaCollection relationship class of MessageType
+            </summary>
+        </member>
+        <member name="T:Microsoft.SqlServer.Dac.Model.PartitionSpecification">
+            <summary>
+            Model schema container class for PartitionSpecification
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.PartitionSpecification.TypeClass">
+            <summary>
+            Type class for PartitionSpecification
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.PartitionSpecification.Range">
+            <summary>
+            Range property class of PartitionSpecification
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.PartitionSpecification.BoundaryValues">
+            <summary>
+            BoundaryValues relationship class of PartitionSpecification
             </summary>
         </member>
         <member name="T:Microsoft.SqlServer.Dac.Model.PartitionFunction">
@@ -15747,6 +16152,11 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.PrimaryKeyConstraint.Hash">
             <summary>
             Hash property class of PrimaryKeyConstraint
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.PrimaryKeyConstraint.OptimizeForSequentialKey">
+            <summary>
+            OptimizeForSequentialKey property class of PrimaryKeyConstraint
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.PrimaryKeyConstraint.BucketCount">
@@ -17379,6 +17789,11 @@
             MemoryOptimized property class of Table
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Table.DistributionPolicyType">
+            <summary>
+            DistributionPolicyType property class of Table
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.Table.RowCount">
             <summary>
             RowCount property class of Table
@@ -17434,6 +17849,11 @@
             LockEscalation property class of Table
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Table.QueryScript">
+            <summary>
+            QueryScript property class of Table
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.Table.RemoteDataEnabled">
             <summary>
             RemoteDataEnabled property class of Table
@@ -17454,6 +17874,11 @@
             TextInRowSize property class of Table
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Table.DistributionColumn">
+            <summary>
+            DistributionColumn relationship class of Table
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.Table.Columns">
             <summary>
             Columns relationship class of Table
@@ -17462,6 +17887,11 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.Table.DataCompressionOptions">
             <summary>
             DataCompressionOptions relationship class of Table
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Table.DynamicObjects">
+            <summary>
+            DynamicObjects relationship class of Table
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.Table.Filegroup">
@@ -17492,6 +17922,16 @@
         <member name="P:Microsoft.SqlServer.Dac.Model.Table.PartitionScheme">
             <summary>
             PartitionScheme relationship class of Table
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Table.PartitionSpecification">
+            <summary>
+            PartitionSpecification relationship class of Table
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.Table.QueryDependencies">
+            <summary>
+            QueryDependencies relationship class of Table
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.Table.Schema">
@@ -17994,6 +18434,11 @@
             Hash property class of UniqueConstraint
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.UniqueConstraint.OptimizeForSequentialKey">
+            <summary>
+            OptimizeForSequentialKey property class of UniqueConstraint
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.UniqueConstraint.BucketCount">
             <summary>
             BucketCount property class of UniqueConstraint
@@ -18244,9 +18689,24 @@
             SelectStatement property class of View
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.View.DistributionPolicyType">
+            <summary>
+            DistributionPolicyType property class of View
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.View.ForAppend">
+            <summary>
+            ForAppend property class of View
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.View.BodyDependencies">
             <summary>
             BodyDependencies relationship class of View
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.View.DistributionColumn">
+            <summary>
+            DistributionColumn relationship class of View
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.View.Columns">
@@ -18269,6 +18729,11 @@
             Type class for WorkloadGroup
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.WorkloadGroup.CapPercentageResource">
+            <summary>
+            CapPercentageResource property class of WorkloadGroup
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.WorkloadGroup.GroupMaxRequests">
             <summary>
             GroupMaxRequests property class of WorkloadGroup
@@ -18284,6 +18749,16 @@
             MaxDop property class of WorkloadGroup
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.WorkloadGroup.MinPercentageResource">
+            <summary>
+            MinPercentageResource property class of WorkloadGroup
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.WorkloadGroup.QueryExecutionTimeoutSec">
+            <summary>
+            QueryExecutionTimeoutSec property class of WorkloadGroup
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.WorkloadGroup.RequestMaxCpuTimeSec">
             <summary>
             RequestMaxCpuTimeSec property class of WorkloadGroup
@@ -18294,9 +18769,19 @@
             RequestMaxMemoryGrantPercent property class of WorkloadGroup
             </summary>
         </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.WorkloadGroup.RequestMaxResourceGrantPercent">
+            <summary>
+            RequestMaxResourceGrantPercent property class of WorkloadGroup
+            </summary>
+        </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.WorkloadGroup.RequestMemoryGrantTimeoutSec">
             <summary>
             RequestMemoryGrantTimeoutSec property class of WorkloadGroup
+            </summary>
+        </member>
+        <member name="P:Microsoft.SqlServer.Dac.Model.WorkloadGroup.RequestMinResourceGrantPercent">
+            <summary>
+            RequestMinResourceGrantPercent property class of WorkloadGroup
             </summary>
         </member>
         <member name="P:Microsoft.SqlServer.Dac.Model.WorkloadGroup.ResourcePool">
@@ -18746,6 +19231,11 @@
         <member name="F:Microsoft.SqlServer.Dac.Model.SqlServerVersion.Sql150">
             <summary>
             on-premises, version 15.0
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.SqlServerVersion.SqlDw">
+            <summary>
+            For Sql Data Warehouse, version SqlDw
             </summary>
         </member>
         <member name="T:Microsoft.SqlServer.Dac.Model.TSqlModel">
@@ -20227,6 +20717,11 @@
             Microsoft Azure SQL Database, version 12
             </summary>
         </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.TSqlPlatforms.SqlDw">
+            <summary>
+            Microsoft SQL DW 
+            </summary>
+        </member>
         <member name="F:Microsoft.SqlServer.Dac.Model.TSqlPlatforms.Sql140">
             <summary>
             on-premises, version 14.0
@@ -20245,6 +20740,11 @@
         <member name="F:Microsoft.SqlServer.Dac.Model.TSqlPlatforms.Cloud">
             <summary>
             All cloud releases
+            </summary>
+        </member>
+        <member name="F:Microsoft.SqlServer.Dac.Model.TSqlPlatforms.AllDw">
+            <summary>
+            All data warehouse releases
             </summary>
         </member>
         <member name="F:Microsoft.SqlServer.Dac.Model.TSqlPlatforms.All">
