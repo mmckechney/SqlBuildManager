@@ -1,5 +1,5 @@
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Data.Common;
 using System.Collections.Generic;
 using log4net;
