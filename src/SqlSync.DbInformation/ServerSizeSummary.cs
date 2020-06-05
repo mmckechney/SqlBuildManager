@@ -24,7 +24,6 @@ namespace SqlSync.DbInformation
 	[System.ComponentModel.ToolboxItem(true)]
 	[System.ComponentModel.DesignerCategory("Component")]
 	[System.ComponentModel.DesignTimeVisible(true)]
-	[System.Drawing.ToolboxBitmap(typeof(System.Data.DataSet))]
 	public class ServerSizeSummary : DataTable, System.Collections.IEnumerable
 	{
 	

@@ -15,7 +15,6 @@ namespace SqlSync.ObjectScript {
     [System.ComponentModel.ToolboxItem(true)]
     [System.ComponentModel.DesignerCategory("Component")]
     [System.ComponentModel.DesignTimeVisible(true)]
-    [System.Drawing.ToolboxBitmap(typeof(System.Data.DataSet))]
     public class ObjectSyncData {
         
         private string _ObjectName = string.Empty;

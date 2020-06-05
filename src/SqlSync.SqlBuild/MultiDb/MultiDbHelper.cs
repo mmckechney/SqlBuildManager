@@ -6,7 +6,7 @@ using System.Xml.Serialization;
 using SqlSync.DbInformation;
 using SqlSync.Connection;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Xml;
 using log4net;
 using System.Linq;
