@@ -13,7 +13,7 @@ namespace SqlBuildManager.Console
     public class ThreadedExecution
     {
         private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static ILog logEvent = LogManager.GetLogger("AzureEventHubAppenderLogger");
+        private static ILog logEvent = LogManager.GetLogger(System.Reflection.Assembly.GetExecutingAssembly(),"AzureEventHubAppenderLogger");
 
         StringBuilder sbSuccessDatabasesCfg = new System.Text.StringBuilder();
         StringBuilder sbFailureDatabasesCfg = new System.Text.StringBuilder();

@@ -1,4 +1,6 @@
 ﻿using log4net;
+using log4net.Core;
+using log4net.Repository.Hierarchy;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.Storage.RetryPolicies;
@@ -26,7 +28,9 @@ namespace SqlBuildManager.Console
 
         static async Task Main(string[] args)
         {
-            log4net.Config.XmlConfigurator.Configure();
+
+            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+            log4net.Config.XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
             SqlBuildManager.Logging.Configure.SetLoggingPath();
 
             log.Debug("Received Command: " + String.Join(" | ", args));
@@ -540,7 +544,7 @@ namespace SqlBuildManager.Console
                         Directory.CreateDirectory(rootLoggingPath);
                     }
 
-                    var appender = LogManager.GetRepository().GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender").FirstOrDefault();
+                    var appender = LogManager.GetRepository(Assembly.GetEntryAssembly()).GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender").FirstOrDefault();
                     if (appender != null)
                     {
                         var thr = appender as log4net.Appender.FileAppender;
