@@ -7,6 +7,10 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using System.IO;
 using System.Reflection;
+using SqlSync.Connection;
+using SqlSync;
+using SqlSync.Constants;
+using System.Linq;
 
 namespace SQLSync
 {
@@ -23,12 +27,12 @@ namespace SQLSync
 		private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
 		private System.Windows.Forms.StatusBar statusBar1;
 		private System.Windows.Forms.StatusBarPanel statStatus;
-		private System.Windows.Forms.ContextMenu contextMenu1;
-		private System.Windows.Forms.MenuItem mnuAddTable;
-		private System.Windows.Forms.MenuItem menuItem1;
-		private System.Windows.Forms.MenuItem mnuDeleteTable;
-		private System.Windows.Forms.MenuItem mnuWhereClause;
-		private System.Windows.Forms.MenuItem menuItem3;
+		private System.Windows.Forms.ContextMenuStrip contextMenu1;
+		private System.Windows.Forms.ToolStripMenuItem mnuAddTable;
+		private System.Windows.Forms.ToolStripMenuItem menuItem1;
+		private System.Windows.Forms.ToolStripMenuItem mnuDeleteTable;
+		private System.Windows.Forms.ToolStripMenuItem mnuWhereClause;
+		private System.Windows.Forms.ToolStripMenuItem menuItem3;
 		private System.Windows.Forms.OpenFileDialog openFileDialog1;
 		private System.Windows.Forms.LinkLabel lnkLoadProject;
 		private System.Windows.Forms.Label label2;
@@ -45,8 +49,8 @@ namespace SQLSync
 		private System.Windows.Forms.TabControl tcTables;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.ComboBox ddDatabaseList;
-		private System.Windows.Forms.ContextMenu contextDatabase;
-		private System.Windows.Forms.MenuItem mnuRemoveDatabase;
+		private System.Windows.Forms.ContextMenuStrip contextDatabase;
+		private System.Windows.Forms.ToolStripMenuItem mnuRemoveDatabase;
 		private string projectFileName = string.Empty;
 		private string newDatabaseName = string.Empty;
 		public LookUpTableForm()
@@ -90,12 +94,12 @@ namespace SQLSync
 		private void InitializeComponent()
 		{
 			System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(LookUpTableForm));
-			this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-			this.mnuWhereClause = new System.Windows.Forms.MenuItem();
-			this.menuItem3 = new System.Windows.Forms.MenuItem();
-			this.mnuAddTable = new System.Windows.Forms.MenuItem();
-			this.menuItem1 = new System.Windows.Forms.MenuItem();
-			this.mnuDeleteTable = new System.Windows.Forms.MenuItem();
+			this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+			this.mnuWhereClause = new System.Windows.Forms.ToolStripMenuItem();
+			this.menuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuAddTable = new System.Windows.Forms.ToolStripMenuItem();
+			this.menuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuDeleteTable = new System.Windows.Forms.ToolStripMenuItem();
 			this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
 			this.statusBar1 = new System.Windows.Forms.StatusBar();
 			this.statStatus = new System.Windows.Forms.StatusBarPanel();
@@ -105,8 +109,8 @@ namespace SQLSync
 			this.lblCurrentProject = new System.Windows.Forms.Label();
 			this.grpScripting = new System.Windows.Forms.GroupBox();
 			this.ddDatabaseList = new System.Windows.Forms.ComboBox();
-			this.contextDatabase = new System.Windows.Forms.ContextMenu();
-			this.mnuRemoveDatabase = new System.Windows.Forms.MenuItem();
+			this.contextDatabase = new System.Windows.Forms.ContextMenuStrip();
+			this.mnuRemoveDatabase = new System.Windows.Forms.ToolStripMenuItem();
 			this.label3 = new System.Windows.Forms.Label();
 			this.chkReplaceDateAndId = new System.Windows.Forms.CheckBox();
 			this.lnkSaveScripts = new System.Windows.Forms.LinkLabel();
@@ -122,7 +126,7 @@ namespace SQLSync
 			// 
 			// contextMenu1
 			// 
-			this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+			this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
 																						 this.mnuWhereClause,
 																						 this.menuItem3,
 																						 this.mnuAddTable,
@@ -131,29 +135,29 @@ namespace SQLSync
 			// 
 			// mnuWhereClause
 			// 
-			this.mnuWhereClause.Index = 0;
+			//this.mnuWhereClause.Index = 0;
 			this.mnuWhereClause.Text = "Add/View \"Where\" Clause";
 			this.mnuWhereClause.Click += new System.EventHandler(this.mnuWhereClause_Click);
 			// 
 			// menuItem3
 			// 
-			this.menuItem3.Index = 1;
+			//this.menuItem3.Index = 1;
 			this.menuItem3.Text = "-";
 			// 
 			// mnuAddTable
 			// 
-			this.mnuAddTable.Index = 2;
+			//this.mnuAddTable.Index = 2;
 			this.mnuAddTable.Text = "Add Table";
 			this.mnuAddTable.Click += new System.EventHandler(this.mnuAddTable_Click);
 			// 
 			// menuItem1
 			// 
-			this.menuItem1.Index = 3;
+			//this.menuItem1.Index = 3;
 			this.menuItem1.Text = "-";
 			// 
 			// mnuDeleteTable
 			// 
-			this.mnuDeleteTable.Index = 4;
+			//this.mnuDeleteTable.Index = 4;
 			this.mnuDeleteTable.Text = "Delete Selected Table";
 			this.mnuDeleteTable.Click += new System.EventHandler(this.mnuDeleteTable_Click);
 			// 
@@ -237,7 +241,7 @@ namespace SQLSync
 			// 
 			// ddDatabaseList
 			// 
-			this.ddDatabaseList.ContextMenu = this.contextDatabase;
+			this.ddDatabaseList.ContextMenuStrip = this.contextDatabase;
 			this.ddDatabaseList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.ddDatabaseList.Location = new System.Drawing.Point(8, 32);
 			this.ddDatabaseList.Name = "ddDatabaseList";
@@ -247,12 +251,12 @@ namespace SQLSync
 			// 
 			// contextDatabase
 			// 
-			this.contextDatabase.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+			this.contextDatabase.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
 																							this.mnuRemoveDatabase});
 			// 
 			// mnuRemoveDatabase
 			// 
-			this.mnuRemoveDatabase.Index = 0;
+			//this.mnuRemoveDatabase.Index = 0;
 			this.mnuRemoveDatabase.Text = "Remove Database (and Tables)";
 			this.mnuRemoveDatabase.Click += new System.EventHandler(this.mnuRemoveDatabase_Click);
 			// 
@@ -333,7 +337,7 @@ namespace SQLSync
 			this.lstTables.CheckBoxes = true;
 			this.lstTables.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
 																						this.columnHeader1});
-			this.lstTables.ContextMenu = this.contextMenu1;
+			this.lstTables.ContextMenuStrip = this.contextMenu1;
 			this.lstTables.FullRowSelect = true;
 			this.lstTables.Location = new System.Drawing.Point(8, 80);
 			this.lstTables.Name = "lstTables";
@@ -618,7 +622,7 @@ namespace SQLSync
 				{
 					TabPage page = new TabPage();
 					page.Text = scriptedTables[i].TableName;
-					PopulateScriptDisplay disp = new PopulateScriptDisplay(scriptedTables[i]);
+					PopulateScriptDisplay disp = new PopulateScriptDisplay(scriptedTables[i],false);
 					disp.ScriptText = scriptedTables[i].InsertScript;
 					disp.ScriptName = scriptedTables[i].TableName;
 					disp.ScriptDataTable = scriptedTables[i].ValuesTable;
@@ -680,11 +684,11 @@ namespace SQLSync
 				listedTables[i] = this.lstTables.Items[i].Text;
 			}
 
-			NewLookUpForm frmNew = new NewLookUpForm( new PopulateHelper(this.data,null).RemainingTables(listedTables));
+			NewLookUpForm frmNew = new NewLookUpForm( new PopulateHelper(this.data,null).RemainingTables(listedTables).ToList());
 			DialogResult result =  frmNew.ShowDialog();
 			if(result == DialogResult.OK)
 			{
-				this.AddNewTables(frmNew.TableList);
+				this.AddNewTables(frmNew.TableList.ToArray());
 			}
 		}
 

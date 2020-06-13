@@ -90,7 +90,7 @@ namespace SqlSync.SqlBuild
         private LinkLabel lnkRunPolicyChecks;
         private bool scriptTagRequired;
         private Panel panel5;
-        private Controls.CodeReviewControl codeReviewControl1;
+        //private Controls.CodeReviewControl codeReviewControl1;
         private SqlSyncBuildData buildData;
 		public string SqlText
 		{
@@ -230,7 +230,7 @@ namespace SqlSync.SqlBuild
             this.rtbSqlScript = new UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox();
             this.cutCopyPastecontextMenuStrip1 = new SqlSync.CutCopyPasteContextMenuStrip();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.codeReviewControl1 = new SqlSync.Controls.CodeReviewControl();
+            //this.codeReviewControl1 = new SqlSync.Controls.CodeReviewControl();
             this.finderCtrl1 = new SqlSync.FinderCtrl();
             this.scriptConfigCtrl1 = new SqlSync.SqlBuild.ScriptConfigCtrl();
             this.panel1.SuspendLayout();
@@ -516,7 +516,7 @@ namespace SqlSync.SqlBuild
             // panel4
             // 
             this.panel4.Controls.Add(this.rtbSqlScript);
-            this.panel4.Controls.Add(this.codeReviewControl1);
+           // this.panel4.Controls.Add(this.codeReviewControl1);
             this.panel4.Controls.Add(this.panel5);
             this.panel4.Controls.Add(this.finderCtrl1);
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -644,14 +644,14 @@ namespace SqlSync.SqlBuild
             // 
             // codeReviewControl1
             // 
-            this.codeReviewControl1.BackColor = System.Drawing.SystemColors.Control;
-            this.codeReviewControl1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.codeReviewControl1.HasChanges = false;
-            this.codeReviewControl1.Location = new System.Drawing.Point(0, 334);
-            this.codeReviewControl1.Margin = new System.Windows.Forms.Padding(2);
-            this.codeReviewControl1.Name = "codeReviewControl1";
-            this.codeReviewControl1.Size = new System.Drawing.Size(1206, 71);
-            this.codeReviewControl1.TabIndex = 11;
+            //this.codeReviewControl1.BackColor = System.Drawing.SystemColors.Control;
+            //this.codeReviewControl1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            //this.codeReviewControl1.HasChanges = false;
+            //this.codeReviewControl1.Location = new System.Drawing.Point(0, 334);
+            //this.codeReviewControl1.Margin = new System.Windows.Forms.Padding(2);
+            //this.codeReviewControl1.Name = "codeReviewControl1";
+            //this.codeReviewControl1.Size = new System.Drawing.Size(1206, 71);
+            //this.codeReviewControl1.TabIndex = 11;
             // 
             // finderCtrl1
             // 
@@ -775,7 +775,7 @@ namespace SqlSync.SqlBuild
             }
 
 
-            this.codeReviewControl1.SaveData(this.rtbSqlScript.Text);
+           // this.codeReviewControl1.SaveData(this.rtbSqlScript.Text);
             
 
             this.scriptConfigCtrl1.UpdateScriptConfigValues();
@@ -785,8 +785,8 @@ namespace SqlSync.SqlBuild
             this.configurationChanged = this.scriptConfigCtrl1.HasChanged;
             this.buildSequenceChanged = this.scriptConfigCtrl1.BuildSequenceChanged;
 
-            if (this.codeReviewControl1.HasChanges)
-                this.configurationChanged = true;
+            //if (this.codeReviewControl1.HasChanges)
+            //    this.configurationChanged = true;
 
             this.Close();
         }
@@ -855,18 +855,18 @@ namespace SqlSync.SqlBuild
             if (!this.allowEdit)
                 btnOK.Enabled = false;
 
-            if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null || !EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
-            {
-                this.codeReviewControl1.Height = 0;
-                this.codeReviewControl1.Visible = false;
-            }
-            else
-            {
-                //Add code review items
-                //get the last editor
-                string lastEditor = this.scriptCfgRow.ModifiedBy.Length == 0 ? this.scriptCfgRow.AddedBy : this.scriptCfgRow.ModifiedBy;
-                this.codeReviewControl1.BindData(ref this.buildData, ref this.scriptCfgRow, this.rtbSqlScript.Text, lastEditor);
-            }
+            //if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null || !EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
+            //{
+            //    this.codeReviewControl1.Height = 0;
+            //    this.codeReviewControl1.Visible = false;
+            //}
+            //else
+            //{
+            //    //Add code review items
+            //    //get the last editor
+            //    string lastEditor = this.scriptCfgRow.ModifiedBy.Length == 0 ? this.scriptCfgRow.AddedBy : this.scriptCfgRow.ModifiedBy;
+            //    this.codeReviewControl1.BindData(ref this.buildData, ref this.scriptCfgRow, this.rtbSqlScript.Text, lastEditor);
+            //}
 		}
 
         void txtScriptName_TextChanged(object sender, EventArgs e)

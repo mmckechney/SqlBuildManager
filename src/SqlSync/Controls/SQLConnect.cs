@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using SqlBuildManager.Enterprise;
 using System.Linq;
 using SqlSync.SqlBuild;
-using Microsoft.WindowsAzure.ServiceRuntime;
+//using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace SqlSync
 {
@@ -581,11 +581,15 @@ namespace SqlSync
         {
             get
             {
-                Guid guidId;
-                if (RoleEnvironment.IsAvailable && Guid.TryParse(RoleEnvironment.DeploymentId, out guidId))
-                    return true;
                 return false;
             }
+            //get
+            //{
+            //    Guid guidId;
+            //    if (RoleEnvironment.IsAvailable && Guid.TryParse(RoleEnvironment.DeploymentId, out guidId))
+            //        return true;
+            //    return false;
+            //}
         }
 
         private void bgWorker_DoWork(object sender, DoWorkEventArgs e)

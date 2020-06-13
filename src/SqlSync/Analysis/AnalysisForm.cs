@@ -14,20 +14,20 @@ namespace SqlSync.Analysis
 	/// </summary>
 	public class AnalysisForm : System.Windows.Forms.Form
     {
-        private System.Windows.Forms.MainMenu mainMenu1;
+        private System.Windows.Forms.MenuStrip mainMenu1;
 		private Connection.ConnectionData connData = null;
 		private System.Windows.Forms.StatusBar statusBar1;
 		private System.Windows.Forms.StatusBarPanel statStatus;
-        private System.Windows.Forms.DataGrid dataGrid1;
-		private System.Windows.Forms.DataGridTableStyle dataGridTableStyle1;
-		private System.Windows.Forms.DataGridTextBoxColumn dataGridTextBoxColumn1;
-		private System.Windows.Forms.DataGridTextBoxColumn dataGridTextBoxColumn2;
-		private System.Windows.Forms.DataGridTextBoxColumn dataGridTextBoxColumn3;
-		private System.Windows.Forms.DataGridTextBoxColumn dataGridTextBoxColumn4;
-		private System.Windows.Forms.DataGridTextBoxColumn dataGridTextBoxColumn5;
-        private System.Windows.Forms.DataGridTextBoxColumn dataGridTextBoxColumn6;
-		private System.Windows.Forms.DataGridTextBoxColumn dataGridTextBoxColumn7;
-        private System.Windows.Forms.DataGridTextBoxColumn dataGridTextBoxColumn8;
+        private System.Windows.Forms.DataGridView dataGrid1;
+		//private System.Windows.Forms.DataGridViewTableStyle dataGridTableStyle1;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridTextBoxColumn1;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridTextBoxColumn2;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridTextBoxColumn3;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridTextBoxColumn4;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridTextBoxColumn5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridTextBoxColumn6;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridTextBoxColumn7;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridTextBoxColumn8;
         private SizeAnalysisTable sizeAnalysisTable1;
         private string databaseName;
         private Button btnCopy;
@@ -67,19 +67,19 @@ namespace SqlSync.Analysis
 		{
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AnalysisForm));
-            this.mainMenu1 = new System.Windows.Forms.MainMenu(this.components);
+            this.mainMenu1 = new System.Windows.Forms.MenuStrip();
             this.statusBar1 = new System.Windows.Forms.StatusBar();
             this.statStatus = new System.Windows.Forms.StatusBarPanel();
-            this.dataGrid1 = new System.Windows.Forms.DataGrid();
-            this.dataGridTableStyle1 = new System.Windows.Forms.DataGridTableStyle();
-            this.dataGridTextBoxColumn1 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn2 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn4 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn5 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn6 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn3 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn7 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn8 = new System.Windows.Forms.DataGridTextBoxColumn();
+            this.dataGrid1 = new System.Windows.Forms.DataGridView();
+            //this.dataGridTableStyle1 = new System.Windows.Forms.DataGridViewTableStyle();
+            this.dataGridTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sizeAnalysisTable1 = new SqlSync.DbInformation.SizeAnalysisTable();
             this.btnCopy = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
@@ -111,103 +111,103 @@ namespace SqlSync.Analysis
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGrid1.BackgroundColor = System.Drawing.Color.LightGray;
-            this.dataGrid1.CaptionText = "Table Size Data (All sizes are in KB)";
+            //this.dataGrid1.CaptionText = "Table Size Data (All sizes are in KB)";
             this.dataGrid1.DataMember = "";
-            this.dataGrid1.FlatMode = true;
-            this.dataGrid1.GridLineColor = System.Drawing.Color.DarkGray;
-            this.dataGrid1.HeaderForeColor = System.Drawing.SystemColors.ControlText;
+            //this.dataGrid1.FlatMode = true;
+           // this.dataGrid1.GridLineColor = System.Drawing.Color.DarkGray;
+           // this.dataGrid1.HeaderForeColor = System.Drawing.SystemColors.ControlText;
             this.dataGrid1.Location = new System.Drawing.Point(12, 12);
             this.dataGrid1.Name = "dataGrid1";
             this.dataGrid1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.dataGrid1.Size = new System.Drawing.Size(946, 296);
             this.dataGrid1.TabIndex = 22;
-            this.dataGrid1.TableStyles.AddRange(new System.Windows.Forms.DataGridTableStyle[] {
-            this.dataGridTableStyle1});
+            //this.dataGrid1.TableStyles.AddRange(new System.Windows.Forms.DataGridTableStyle[] {
+            //this.dataGridTableStyle1});
             // 
             // dataGridTableStyle1
             // 
-            this.dataGridTableStyle1.DataGrid = this.dataGrid1;
-            this.dataGridTableStyle1.GridColumnStyles.AddRange(new System.Windows.Forms.DataGridColumnStyle[] {
-            this.dataGridTextBoxColumn1,
-            this.dataGridTextBoxColumn2,
-            this.dataGridTextBoxColumn4,
-            this.dataGridTextBoxColumn5,
-            this.dataGridTextBoxColumn6,
-            this.dataGridTextBoxColumn3,
-            this.dataGridTextBoxColumn7,
-            this.dataGridTextBoxColumn8});
-            this.dataGridTableStyle1.HeaderForeColor = System.Drawing.SystemColors.ControlText;
+            //this.dataGridTableStyle1.DataGrid = this.dataGrid1;
+            //this.dataGridTableStyle1.GridColumnStyles.AddRange(new System.Windows.Forms.DataGridColumnStyle[] {
+            //this.dataGridTextBoxColumn1,
+            //this.dataGridTextBoxColumn2,
+            //this.dataGridTextBoxColumn4,
+            //this.dataGridTextBoxColumn5,
+            //this.dataGridTextBoxColumn6,
+            //this.dataGridTextBoxColumn3,
+            //this.dataGridTextBoxColumn7,
+            //this.dataGridTextBoxColumn8});
+            //this.dataGridTableStyle1.HeaderForeColor = System.Drawing.SystemColors.ControlText;
             // 
             // dataGridTextBoxColumn1
             // 
-            this.dataGridTextBoxColumn1.Format = "";
-            this.dataGridTextBoxColumn1.FormatInfo = null;
+            //this.dataGridTextBoxColumn1.Format = "";
+            //this.dataGridTextBoxColumn1.FormatInfo = null;
             this.dataGridTextBoxColumn1.HeaderText = "Table Name";
-            this.dataGridTextBoxColumn1.MappingName = "Table Name";
+            this.dataGridTextBoxColumn1.DataPropertyName = "Table Name";
             this.dataGridTextBoxColumn1.Width = 250;
             // 
             // dataGridTextBoxColumn2
             // 
-            this.dataGridTextBoxColumn2.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
-            this.dataGridTextBoxColumn2.Format = "N0";
-            this.dataGridTextBoxColumn2.FormatInfo = null;
+            //this.dataGridTextBoxColumn2.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+            //this.dataGridTextBoxColumn2.Format = "N0";
+            //this.dataGridTextBoxColumn2.FormatInfo = null;
             this.dataGridTextBoxColumn2.HeaderText = "Row Count ";
-            this.dataGridTextBoxColumn2.MappingName = "Row Count";
-            this.dataGridTextBoxColumn2.NullText = "";
+            this.dataGridTextBoxColumn2.DataPropertyName = "Row Count";
+            //this.dataGridTextBoxColumn2.NullText = "";
             this.dataGridTextBoxColumn2.Width = 95;
             // 
             // dataGridTextBoxColumn4
             // 
-            this.dataGridTextBoxColumn4.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
-            this.dataGridTextBoxColumn4.Format = "N0";
-            this.dataGridTextBoxColumn4.FormatInfo = null;
+            //this.dataGridTextBoxColumn4.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+            //this.dataGridTextBoxColumn4.Format = "N0";
+            //this.dataGridTextBoxColumn4.FormatInfo = null;
             this.dataGridTextBoxColumn4.HeaderText = "Data ";
-            this.dataGridTextBoxColumn4.MappingName = "Data Size";
+            this.dataGridTextBoxColumn4.DataPropertyName = "Data Size";
             this.dataGridTextBoxColumn4.Width = 85;
             // 
             // dataGridTextBoxColumn5
-            // 
-            this.dataGridTextBoxColumn5.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
-            this.dataGridTextBoxColumn5.Format = "N0";
-            this.dataGridTextBoxColumn5.FormatInfo = null;
+            //// 
+            //this.dataGridTextBoxColumn5.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+            //this.dataGridTextBoxColumn5.Format = "N0";
+            //this.dataGridTextBoxColumn5.FormatInfo = null;
             this.dataGridTextBoxColumn5.HeaderText = "Indexes ";
-            this.dataGridTextBoxColumn5.MappingName = "Index Size";
+            this.dataGridTextBoxColumn5.DataPropertyName = "Index Size";
             this.dataGridTextBoxColumn5.Width = 85;
             // 
             // dataGridTextBoxColumn6
             // 
-            this.dataGridTextBoxColumn6.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
-            this.dataGridTextBoxColumn6.Format = "N0";
-            this.dataGridTextBoxColumn6.FormatInfo = null;
+            //this.dataGridTextBoxColumn6.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+            //this.dataGridTextBoxColumn6.Format = "N0";
+            //this.dataGridTextBoxColumn6.FormatInfo = null;
             this.dataGridTextBoxColumn6.HeaderText = "Unused ";
-            this.dataGridTextBoxColumn6.MappingName = "Unused Size";
+            this.dataGridTextBoxColumn6.DataPropertyName = "Unused Size";
             this.dataGridTextBoxColumn6.Width = 85;
             // 
             // dataGridTextBoxColumn3
             // 
-            this.dataGridTextBoxColumn3.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
-            this.dataGridTextBoxColumn3.Format = "N0";
-            this.dataGridTextBoxColumn3.FormatInfo = null;
+            //this.dataGridTextBoxColumn3.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+            //this.dataGridTextBoxColumn3.Format = "N0";
+            //this.dataGridTextBoxColumn3.FormatInfo = null;
             this.dataGridTextBoxColumn3.HeaderText = "Total ";
-            this.dataGridTextBoxColumn3.MappingName = "Total Reserved Size";
+            this.dataGridTextBoxColumn3.DataPropertyName = "Total Reserved Size";
             this.dataGridTextBoxColumn3.Width = 85;
             // 
             // dataGridTextBoxColumn7
             // 
-            this.dataGridTextBoxColumn7.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
-            this.dataGridTextBoxColumn7.Format = "N3";
-            this.dataGridTextBoxColumn7.FormatInfo = null;
+            //this.dataGridTextBoxColumn7.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+            //this.dataGridTextBoxColumn7.Format = "N3";
+            //this.dataGridTextBoxColumn7.FormatInfo = null;
             this.dataGridTextBoxColumn7.HeaderText = "Average Data ";
-            this.dataGridTextBoxColumn7.MappingName = "Average Data Row Size";
+            this.dataGridTextBoxColumn7.DataPropertyName = "Average Data Row Size";
             this.dataGridTextBoxColumn7.Width = 95;
             // 
             // dataGridTextBoxColumn8
             // 
-            this.dataGridTextBoxColumn8.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
-            this.dataGridTextBoxColumn8.Format = "N3";
-            this.dataGridTextBoxColumn8.FormatInfo = null;
+            //this.dataGridTextBoxColumn8.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+            //this.dataGridTextBoxColumn8.Format = "N3";
+            //this.dataGridTextBoxColumn8.FormatInfo = null;
             this.dataGridTextBoxColumn8.HeaderText = "Average Index ";
-            this.dataGridTextBoxColumn8.MappingName = "Average Index Row Size";
+            this.dataGridTextBoxColumn8.DataPropertyName = "Average Index Row Size";
             this.dataGridTextBoxColumn8.Width = 95;
             // 
             // sizeAnalysisTable1
@@ -234,7 +234,7 @@ namespace SqlSync.Analysis
             this.Controls.Add(this.statusBar1);
             this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Menu = this.mainMenu1;
+            this.MainMenuStrip = this.mainMenu1;
             this.Name = "AnalysisForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Database Size Analysis for {0}";
@@ -258,7 +258,7 @@ namespace SqlSync.Analysis
                 this.connData.DatabaseName = this.databaseName;
                 SizeAnalysisTable tbl = SqlSync.DbInformation.InfoHelper.GetDatabaseSizeAnalysis(this.connData);
                 dataGrid1.DataSource = null;
-                dataGridTableStyle1.MappingName = tbl.TableName;
+                //dataGridTableStyle1.MappingName = tbl.TableName;
                 dataGrid1.DataSource = tbl;
                 double rowCount;
                 foreach (SizeAnalysisRow row in tbl.Rows)
@@ -293,10 +293,10 @@ namespace SqlSync.Analysis
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("Database Size Analysis");
                 sb.AppendLine("Server:\t" + this.connData.SQLServerName + "\tDatabase:\t" + this.databaseName);
-                foreach (DataGridColumnStyle style in dataGridTableStyle1.GridColumnStyles)
-                {
-                    sb.Append(style.HeaderText + "\t");
-                }
+                //foreach (DataGridColumnStyle style in dataGridTableStyle1.GridColumnStyles)
+                //{
+                //    sb.Append(style.HeaderText + "\t");
+                //}
                 sb.AppendLine();
 
             

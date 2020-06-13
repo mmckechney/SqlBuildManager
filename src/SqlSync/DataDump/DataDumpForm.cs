@@ -21,15 +21,15 @@ namespace SqlSync.DataDump
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.ListView lstTables;
 		private System.Windows.Forms.ColumnHeader columnHeader1;
-		private System.Windows.Forms.MenuItem menuItem2;
+		private System.Windows.Forms.ToolStripMenuItem menuItem2;
 		private System.Windows.Forms.ComboBox ddDatabaseList;
 		private Connection.ConnectionData connData;
 		private System.Windows.Forms.LinkLabel lnkExtractData;
 		private System.Windows.Forms.StatusBar statusBar1;
 		private System.Windows.Forms.StatusBarPanel statStatus;
         private System.Windows.Forms.ColumnHeader columnHeader2;
-		private System.Windows.Forms.MenuItem mnuChangeFolder;
-		private System.Windows.Forms.MenuItem menuItem1;
+		private System.Windows.Forms.ToolStripMenuItem mnuChangeFolder;
+		private System.Windows.Forms.ToolStripMenuItem menuItem1;
 		private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.ColumnHeader columnHeader3;
@@ -37,8 +37,8 @@ namespace SqlSync.DataDump
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.ListView lstResults;
 		private System.Windows.Forms.ColumnHeader columnHeader5;
-		private System.Windows.Forms.ContextMenu contextMenu1;
-        private System.Windows.Forms.MenuItem mnuOpen;
+		private System.Windows.Forms.ContextMenuStrip contextMenu1;
+        private System.Windows.Forms.ToolStripMenuItem mnuOpen;
         private SettingsControl settingsControl1;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem toolStripMenuItem1;
@@ -84,9 +84,9 @@ namespace SqlSync.DataDump
             this.lstTables = new System.Windows.Forms.ListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-            this.menuItem2 = new System.Windows.Forms.MenuItem();
-            this.mnuChangeFolder = new System.Windows.Forms.MenuItem();
-            this.menuItem1 = new System.Windows.Forms.MenuItem();
+            this.menuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuChangeFolder = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.ddDatabaseList = new System.Windows.Forms.ComboBox();
             this.lnkExtractData = new System.Windows.Forms.LinkLabel();
             this.statusBar1 = new System.Windows.Forms.StatusBar();
@@ -97,8 +97,8 @@ namespace SqlSync.DataDump
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-            this.mnuOpen = new System.Windows.Forms.MenuItem();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            this.mnuOpen = new System.Windows.Forms.ToolStripMenuItem();
             this.label3 = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -162,17 +162,17 @@ namespace SqlSync.DataDump
             // 
             // menuItem2
             // 
-            this.menuItem2.Index = -1;
+           // this.menuItem2.Index = -1;
             this.menuItem2.Text = "";
             // 
             // mnuChangeFolder
             // 
-            this.mnuChangeFolder.Index = -1;
+            //this.mnuChangeFolder.Index = -1;
             this.mnuChangeFolder.Text = "";
             // 
             // menuItem1
             // 
-            this.menuItem1.Index = -1;
+            //this.menuItem1.Index = -1;
             this.menuItem1.Text = "";
             // 
             // ddDatabaseList
@@ -231,7 +231,7 @@ namespace SqlSync.DataDump
             this.columnHeader3,
             this.columnHeader4,
             this.columnHeader5});
-            this.lstResults.ContextMenu = this.contextMenu1;
+            this.lstResults.ContextMenuStrip = this.contextMenu1;
             this.lstResults.FullRowSelect = true;
             this.lstResults.GridLines = true;
             this.lstResults.Location = new System.Drawing.Point(384, 147);
@@ -260,12 +260,12 @@ namespace SqlSync.DataDump
             // 
             // contextMenu1
             // 
-            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.mnuOpen});
             // 
             // mnuOpen
             // 
-            this.mnuOpen.Index = 0;
+            //this.mnuOpen.Index = 0;
             this.mnuOpen.Text = "Open File";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
             // 

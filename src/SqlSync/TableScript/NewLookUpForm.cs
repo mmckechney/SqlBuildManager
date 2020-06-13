@@ -94,9 +94,9 @@ namespace SqlSync
             this.button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button1.Location = new System.Drawing.Point(60, 478);
+            this.button1.Location = new System.Drawing.Point(48, 470);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(48, 20);
+            this.button1.Size = new System.Drawing.Size(58, 25);
             this.button1.TabIndex = 1;
             this.button1.Text = "OK";
             // 
@@ -105,25 +105,26 @@ namespace SqlSync
             this.button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button2.Location = new System.Drawing.Point(124, 478);
+            this.button2.Location = new System.Drawing.Point(125, 470);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(56, 20);
+            this.button2.Size = new System.Drawing.Size(67, 25);
             this.button2.TabIndex = 2;
             this.button2.Text = "Cancel";
             // 
             // lstTables
             // 
             this.lstTables.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.lstTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstTables.CheckBoxes = true;
             this.lstTables.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1});
             this.lstTables.FullRowSelect = true;
-            this.lstTables.Location = new System.Drawing.Point(14, 17);
+            this.lstTables.HideSelection = false;
+            this.lstTables.Location = new System.Drawing.Point(17, 21);
             this.lstTables.Name = "lstTables";
-            this.lstTables.Size = new System.Drawing.Size(213, 451);
+            this.lstTables.Size = new System.Drawing.Size(207, 437);
             this.lstTables.TabIndex = 0;
             this.lstTables.UseCompatibleStateImageBehavior = false;
             this.lstTables.View = System.Windows.Forms.View.Details;
@@ -135,7 +136,7 @@ namespace SqlSync
             // 
             // NewLookUpForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(241, 510);
             this.Controls.Add(this.lstTables);
             this.Controls.Add(this.button2);

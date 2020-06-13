@@ -14,7 +14,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLSync", "SqlSync\SQLSync.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.SqlBuild", "SqlSync.SqlBuild\SqlSync.SqlBuild.csproj", "{9B495B5F-1578-482B-8CF7-615B04D3AE2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.TableScript", "SqlSync.TableScript\SqlSync.TableScript.csproj", "{7902D9B0-FC03-42C7-9615-A2072D546EBD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.TableScript", "SqlSync.TableScript\SqlSync.TableScript.csproj", "{7902D9B0-FC03-42C7-9615-A2072D546EBD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.Connection", "SqlSync.Connection\SqlSync.Connection.csproj", "{F3F1EFFF-265E-4995-958B-9763F947E5C8}"
 EndProject
@@ -24,51 +24,51 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.ObjectScript", "Sql
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.Constants", "SqlSync.Constants\SqlSync.Constants.csproj", "{D68699E6-B97C-4BC4-AD52-5F3C63DB24A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.Compare", "SqlSync.Compare\SqlSync.Compare.csproj", "{053B2B2A-51CF-48CD-BD22-8DED7D292690}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.Compare", "SqlSync.Compare\SqlSync.Compare.csproj", "{053B2B2A-51CF-48CD-BD22-8DED7D292690}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "SqlSync.ScrollBarSync", "SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj", "{14DFBF75-98B1-4FBD-9B48-191D8AA55A6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SprocTest", "SqlSync.SprocTest\SqlSync.SprocTest.csproj", "{0959BC04-AEFF-42F4-918B-0636D0239830}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.SprocTest", "SqlSync.SprocTest\SqlSync.SprocTest.csproj", "{0959BC04-AEFF-42F4-918B-0636D0239830}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.DbInformation", "SqlSync.DbInformation\SqlSync.DbInformation.csproj", "{37A22666-195A-4CBB-A541-CFFBFB9D7905}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.BasicCompare", "SqlSync.BasicCompare\SqlSync.BasicCompare.csproj", "{ABC20CD6-C24A-4B58-8D0F-71FBDB64EBDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.BasicCompare", "SqlSync.BasicCompare\SqlSync.BasicCompare.csproj", "{ABC20CD6-C24A-4B58-8D0F-71FBDB64EBDE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Console", "SqlBuildManager.Console\SqlBuildManager.Console.csproj", "{E4496045-D324-4297-BE19-EBE664129C71}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.ScriptHandling", "SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj", "{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ScriptHandling.UnitTest", "SqlBuildManager.ScriptHandling.UnitTest\SqlBuildManager.ScriptHandling.UnitTest.csproj", "{1AA87D2D-5AB3-4DA6-9C88-4DDD27116CB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.ScriptHandling.UnitTest", "SqlBuildManager.ScriptHandling.UnitTest\SqlBuildManager.ScriptHandling.UnitTest.csproj", "{1AA87D2D-5AB3-4DA6-9C88-4DDD27116CB6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Console.Dependent.UnitTest", "SqlBuildManager.Console.Dependent.UnitTest\SqlBuildManager.Console.Dependent.UnitTest.csproj", "{F0ECC8B6-3FE6-4628-AFA4-D485D40F982A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.DbInformation.Dependent.UnitTest", "SqlSync.DbInformation.Dependent.UnitTest\SqlSync.DbInformation.Dependent.UnitTest.csproj", "{ABA09777-000D-44ED-9D2F-52D112C257F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.DbInformation.Dependent.UnitTest", "SqlSync.DbInformation.Dependent.UnitTest\SqlSync.DbInformation.Dependent.UnitTest.csproj", "{ABA09777-000D-44ED-9D2F-52D112C257F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.Connection.UnitTest", "SqlSync.Connection.UnitTest\SqlSync.Connection.UnitTest.csproj", "{BA445E2B-A9B2-4C8B-BD46-AF49103D899D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.Connection.UnitTest", "SqlSync.Connection.UnitTest\SqlSync.Connection.UnitTest.csproj", "{BA445E2B-A9B2-4C8B-BD46-AF49103D899D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.ObjectScript.Dependent.UnitTest", "SqlSync.ObjectScript.Dependent.UnitTest\SqlSync.ObjectScript.Dependent.UnitTest.csproj", "{59C6CCE5-78EB-4227-92EE-4E05DAFD679A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.ObjectScript.Dependent.UnitTest", "SqlSync.ObjectScript.Dependent.UnitTest\SqlSync.ObjectScript.Dependent.UnitTest.csproj", "{59C6CCE5-78EB-4227-92EE-4E05DAFD679A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Interfaces", "SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj", "{FDC576E6-ACC8-41D4-8A56-8E6E00221306}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Enterprise", "SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj", "{15497702-FB61-4316-949B-A8ED2EEC694A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Enterprise.UnitTest", "SqlBuildManager.Enterprise.UnitTest\SqlBuildManager.Enterprise.UnitTest.csproj", "{4ABDFB46-9ABA-4C3D-BE82-92B481D5826E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Enterprise.UnitTest", "SqlBuildManager.Enterprise.UnitTest\SqlBuildManager.Enterprise.UnitTest.csproj", "{4ABDFB46-9ABA-4C3D-BE82-92B481D5826E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.UnitTest", "SqlSync.UnitTest\SqlSync.UnitTest.csproj", "{D52BE21C-E59E-4517-8ADE-1FE479AF9295}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.UnitTest", "SqlSync.UnitTest\SqlSync.UnitTest.csproj", "{D52BE21C-E59E-4517-8ADE-1FE479AF9295}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SqlBuildManager.Installer", "SqlBuildManager.Installer\SqlBuildManager.Installer.vdproj", "{CC74AAB6-527F-4D03-A32C-E29DE9185B97}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Logging", "SqlBuildManager.Logging\SqlBuildManager.Logging.csproj", "{C9DE9821-BA13-4528-B149-A3E990530AAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild.Dependent.UnitTest", "SqlSync.SqlBuild.Dependent.UnitTest\SqlSync.SqlBuild.Dependent.UnitTest.csproj", "{0334A575-196C-470F-A2DF-75A599010FDC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.SqlBuild.Dependent.UnitTest", "SqlSync.SqlBuild.Dependent.UnitTest\SqlSync.SqlBuild.Dependent.UnitTest.csproj", "{0334A575-196C-470F-A2DF-75A599010FDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild.UnitTest", "SqlSync.SqlBuild.UnitTest\SqlSync.SqlBuild.UnitTest.csproj", "{BB28836A-AA83-49F0-802F-39D6847E3949}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.SqlBuild.UnitTest", "SqlSync.SqlBuild.UnitTest\SqlSync.SqlBuild.UnitTest.csproj", "{BB28836A-AA83-49F0-802F-39D6847E3949}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.UnitTest", "SqlBuildManager.Console.UnitTest\SqlBuildManager.Console.UnitTest.csproj", "{517EC058-71E5-473C-AB9A-339623565AFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Console.UnitTest", "SqlBuildManager.Console.UnitTest\SqlBuildManager.Console.UnitTest.csproj", "{517EC058-71E5-473C-AB9A-339623565AFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.ObjectScript.UnitTest", "SqlSync.ObjectScript.UnitTest\SqlSync.ObjectScript.UnitTest.csproj", "{08FEF1CB-B382-4C9D-AAFB-B85C790EAD96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.ObjectScript.UnitTest", "SqlSync.ObjectScript.UnitTest\SqlSync.ObjectScript.UnitTest.csproj", "{08FEF1CB-B382-4C9D-AAFB-B85C790EAD96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.Connection.Dependent.UnitTest", "SqlSync.Connection.Dependent.UnitTest\SqlSync.Connection.Dependent.UnitTest.csproj", "{448F2796-2D87-4165-9A11-81ED5D0EC62C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.Connection.Dependent.UnitTest", "SqlSync.Connection.Dependent.UnitTest\SqlSync.Connection.Dependent.UnitTest.csproj", "{448F2796-2D87-4165-9A11-81ED5D0EC62C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -121,16 +121,16 @@ Global
 		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.Debug|x64.Build.0 = Debug|Any CPU
 		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|.NET.ActiveCfg = DevOpsBuild|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|.NET.Build.0 = DevOpsBuild|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|Any CPU.ActiveCfg = DevOpsBuild|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|Any CPU.Build.0 = DevOpsBuild|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|Mixed Platforms.ActiveCfg = DevOpsBuild|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|Mixed Platforms.Build.0 = DevOpsBuild|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|x64.ActiveCfg = DevOpsBuild|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|x64.Build.0 = DevOpsBuild|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|x86.ActiveCfg = DevOpsBuild|Any CPU
-		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|x86.Build.0 = DevOpsBuild|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|.NET.ActiveCfg = Debug|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|.NET.Build.0 = Debug|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|Any CPU.ActiveCfg = Debug|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|Any CPU.Build.0 = Debug|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|x64.ActiveCfg = Debug|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|x64.Build.0 = Debug|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|x86.ActiveCfg = Debug|Any CPU
+		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DevOpsBuild|x86.Build.0 = Debug|Any CPU
 		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DVD-5|.NET.ActiveCfg = Debug|Any CPU
 		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
 		{F54DD837-AD98-4A45-A709-1AA9E38E1A24}.DVD-5|Any CPU.Build.0 = Debug|Any CPU

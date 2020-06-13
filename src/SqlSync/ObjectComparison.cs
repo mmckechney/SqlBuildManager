@@ -26,14 +26,14 @@ namespace SqlSync
 		private ObjectScriptHelper helper;
 		private string defaultSavePath = string.Empty;
 		private System.Windows.Forms.FolderBrowserDialog fldrSaveDir;
-		private System.Windows.Forms.ContextMenu contextMenu1;
-		private System.Windows.Forms.MenuItem mnuNotePad;
+		private System.Windows.Forms.ContextMenuStrip contextMenu1;
+		private System.Windows.Forms.ToolStripMenuItem mnuNotePad;
 		private System.Windows.Forms.StatusBar statusBar1;
 		private System.Windows.Forms.StatusBarPanel statStatus;
-		private System.Windows.Forms.MenuItem mnuDefaultPath;
+		private System.Windows.Forms.ToolStripMenuItem mnuDefaultPath;
 		private System.Windows.Forms.StatusBarPanel statDefaultPath;
-		private System.Windows.Forms.MenuItem menuItem1;
-		private System.Windows.Forms.MenuItem mnuDeleteFile;
+		private System.Windows.Forms.ToolStripMenuItem menuItem1;
+		private System.Windows.Forms.ToolStripMenuItem mnuDeleteFile;
 		private System.Windows.Forms.LinkLabel lnkDelete;
 		/// <summary>
 		/// Required designer variable.
@@ -82,11 +82,11 @@ namespace SqlSync
             this.colInFileSystem = new System.Windows.Forms.ColumnHeader();
             this.colFileName = new System.Windows.Forms.ColumnHeader();
             this.colFullPath = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-            this.mnuNotePad = new System.Windows.Forms.MenuItem();
-            this.mnuDefaultPath = new System.Windows.Forms.MenuItem();
-            this.menuItem1 = new System.Windows.Forms.MenuItem();
-            this.mnuDeleteFile = new System.Windows.Forms.MenuItem();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            this.mnuNotePad = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuDefaultPath = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuDeleteFile = new System.Windows.Forms.ToolStripMenuItem();
             this.lnkScript = new System.Windows.Forms.LinkLabel();
             this.fldrSaveDir = new System.Windows.Forms.FolderBrowserDialog();
             this.statusBar1 = new System.Windows.Forms.StatusBar();
@@ -110,7 +110,7 @@ namespace SqlSync
             this.colInFileSystem,
             this.colFileName,
             this.colFullPath});
-            this.lstComparison.ContextMenu = this.contextMenu1;
+            this.lstComparison.ContextMenuStrip = this.contextMenu1;
             this.lstComparison.FullRowSelect = true;
             this.lstComparison.Location = new System.Drawing.Point(16, 40);
             this.lstComparison.Name = "lstComparison";
@@ -152,7 +152,7 @@ namespace SqlSync
             // 
             // contextMenu1
             // 
-            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.mnuNotePad,
             this.mnuDefaultPath,
             this.menuItem1,
@@ -160,24 +160,24 @@ namespace SqlSync
             // 
             // mnuNotePad
             // 
-            this.mnuNotePad.Index = 0;
+            //this.mnuNotePad.Index = 0;
             this.mnuNotePad.Text = "Open File in NotePad";
             this.mnuNotePad.Click += new System.EventHandler(this.mnuNotePad_Click);
             // 
             // mnuDefaultPath
             // 
-            this.mnuDefaultPath.Index = 1;
+           // this.mnuDefaultPath.Index = 1;
             this.mnuDefaultPath.Text = "Set Path as Default Directory";
             this.mnuDefaultPath.Click += new System.EventHandler(this.mnuDefaultPath_Click);
             // 
             // menuItem1
             // 
-            this.menuItem1.Index = 2;
+            //this.menuItem1.Index = 2;
             this.menuItem1.Text = "-";
             // 
             // mnuDeleteFile
             // 
-            this.mnuDeleteFile.Index = 3;
+            //this.mnuDeleteFile.Index = 3;
             this.mnuDeleteFile.Text = "Delete File";
             this.mnuDeleteFile.Click += new System.EventHandler(this.mnuDeleteFile_Click);
             // 

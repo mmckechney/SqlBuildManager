@@ -15,8 +15,8 @@ namespace SqlSync.BuildHistory
 		private System.Windows.Forms.ColumnHeader columnHeader1;
 		private string basePath;
 		private System.Windows.Forms.ListView lstLogFiles;
-		private System.Windows.Forms.ContextMenu contextMenu1;
-		private System.Windows.Forms.MenuItem mnuOpenInNotePad;
+		private System.Windows.Forms.ContextMenuStrip contextMenu1;
+		private System.Windows.Forms.ToolStripMenuItem mnuOpenInNotePad;
 		private string queryAnalyzerPath = @"C:\Program Files\Microsoft SQL Server\80\Tools\Binn\isqlw.exe";
 		private System.Windows.Forms.ColumnHeader columnHeader2;
 		private System.Windows.Forms.Button btnArchive;
@@ -76,8 +76,8 @@ namespace SqlSync.BuildHistory
             this.lstLogFiles = new System.Windows.Forms.ListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-            this.mnuOpenInNotePad = new System.Windows.Forms.MenuItem();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            this.mnuOpenInNotePad = new System.Windows.Forms.ToolStripMenuItem();
             this.btnArchive = new System.Windows.Forms.Button();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.lnkCheckAll = new System.Windows.Forms.LinkLabel();
@@ -97,7 +97,7 @@ namespace SqlSync.BuildHistory
             this.lstLogFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2});
-            this.lstLogFiles.ContextMenu = this.contextMenu1;
+            this.lstLogFiles.ContextMenuStrip = this.contextMenu1;
             this.lstLogFiles.FullRowSelect = true;
             this.lstLogFiles.GridLines = true;
             this.lstLogFiles.Location = new System.Drawing.Point(16, 8);
@@ -120,12 +120,12 @@ namespace SqlSync.BuildHistory
             // 
             // contextMenu1
             // 
-            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.mnuOpenInNotePad});
             // 
             // mnuOpenInNotePad
             // 
-            this.mnuOpenInNotePad.Index = 0;
+            //this.mnuOpenInNotePad.Index = 0;
             this.mnuOpenInNotePad.Text = "Open Log File in NotePad";
             this.mnuOpenInNotePad.Click += new System.EventHandler(this.mnuOpenInNotePad_Click);
             // 
@@ -211,10 +211,10 @@ namespace SqlSync.BuildHistory
 
 			if(File.Exists(queryAnalyzerPath))
 			{
-				MenuItem item = new MenuItem("Open in Query Analyzer");
+				ToolStripMenuItem item = new ToolStripMenuItem("Open in Query Analyzer");
 				item.Click +=new EventHandler(mnuOpenInQueryAnalyzer_Click);
 
-				this.contextMenu1.MenuItems.Add(item);
+				this.contextMenu1.Items.Add(item);
 			}
 		}
 

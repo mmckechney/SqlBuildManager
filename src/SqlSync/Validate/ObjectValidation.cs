@@ -32,11 +32,11 @@ namespace SqlSync.Validate
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Panel pnlWarning;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ContextMenu contextMenu1;
-        private System.Windows.Forms.MenuItem mnuCopy;
-        private System.Windows.Forms.MenuItem mnuCopyInvalid;
-        private System.Windows.Forms.MenuItem menuItem2;
-        private System.Windows.Forms.MenuItem mnuViewObjectScript;
+        private System.Windows.Forms.ContextMenuStrip contextMenu1;
+        private System.Windows.Forms.ToolStripMenuItem mnuCopy;
+        private System.Windows.Forms.ToolStripMenuItem mnuCopyInvalid;
+        private System.Windows.Forms.ToolStripMenuItem menuItem2;
+        private System.Windows.Forms.ToolStripMenuItem mnuViewObjectScript;
         private System.Windows.Forms.ColumnHeader columnHeader4;
         private BackgroundWorker bgworker;
         private Button btnCancel;
@@ -88,11 +88,11 @@ namespace SqlSync.Validate
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-            this.mnuCopy = new System.Windows.Forms.MenuItem();
-            this.mnuCopyInvalid = new System.Windows.Forms.MenuItem();
-            this.menuItem2 = new System.Windows.Forms.MenuItem();
-            this.mnuViewObjectScript = new System.Windows.Forms.MenuItem();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            this.mnuCopy = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuCopyInvalid = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuViewObjectScript = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlWarning = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -164,7 +164,7 @@ namespace SqlSync.Validate
             this.columnHeader2,
             this.columnHeader3,
             this.columnHeader4});
-            this.lstResults.ContextMenu = this.contextMenu1;
+            this.lstResults.ContextMenuStrip = this.contextMenu1;
             this.lstResults.FullRowSelect = true;
             this.lstResults.GridLines = true;
             this.lstResults.Location = new System.Drawing.Point(8, 141);
@@ -197,7 +197,7 @@ namespace SqlSync.Validate
             // 
             // contextMenu1
             // 
-            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.mnuCopy,
             this.mnuCopyInvalid,
             this.menuItem2,
@@ -205,25 +205,25 @@ namespace SqlSync.Validate
             // 
             // mnuCopy
             // 
-            this.mnuCopy.Index = 0;
-            this.mnuCopy.Shortcut = System.Windows.Forms.Shortcut.CtrlC;
+           // this.mnuCopy.Index = 0;
+            this.mnuCopy.ShortcutKeys = System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C;
             this.mnuCopy.Text = "Copy";
             this.mnuCopy.Click += new System.EventHandler(this.mnuCopy_Click);
             // 
             // mnuCopyInvalid
             // 
-            this.mnuCopyInvalid.Index = 1;
+           // this.mnuCopyInvalid.Index = 1;
             this.mnuCopyInvalid.Text = "Copy Invalid Objects";
             this.mnuCopyInvalid.Click += new System.EventHandler(this.mnuCopyInvalid_Click);
             // 
             // menuItem2
             // 
-            this.menuItem2.Index = 2;
+            //this.menuItem2.Index = 2;
             this.menuItem2.Text = "-";
             // 
             // mnuViewObjectScript
             // 
-            this.mnuViewObjectScript.Index = 3;
+            //this.mnuViewObjectScript.Index = 3;
             this.mnuViewObjectScript.Text = "View Object Script";
             this.mnuViewObjectScript.Click += new System.EventHandler(this.mnuViewObjectScript_Click);
             // 

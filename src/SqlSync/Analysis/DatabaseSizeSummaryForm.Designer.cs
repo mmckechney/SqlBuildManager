@@ -38,9 +38,9 @@ namespace SqlSync.Analysis
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.getDatabaseDetailsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mainMenu1 = new System.Windows.Forms.MainMenu(this.components);
-            this.menuItem1 = new System.Windows.Forms.MenuItem();
-            this.mnuChangeSqlServer = new System.Windows.Forms.MenuItem();
+            this.mainMenu1 = new System.Windows.Forms.MenuStrip();
+            this.menuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuChangeSqlServer = new System.Windows.Forms.ToolStripMenuItem();
             this.bgWorker = new System.ComponentModel.BackgroundWorker();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.databaseNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -100,19 +100,19 @@ namespace SqlSync.Analysis
             // 
             // mainMenu1
             // 
-            this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.mainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.menuItem1});
             // 
             // menuItem1
             // 
-            this.menuItem1.Index = 0;
-            this.menuItem1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            //this.menuItem1.Index = 0;
+            this.menuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.mnuChangeSqlServer});
             this.menuItem1.Text = "Action";
             // 
             // mnuChangeSqlServer
             // 
-            this.mnuChangeSqlServer.Index = 0;
+            //this.mnuChangeSqlServer.Index = 0;
             this.mnuChangeSqlServer.Text = "Change Sql Server Connection";
             this.mnuChangeSqlServer.Click += new System.EventHandler(this.mnuChangeSqlServer_Click);
             // 
@@ -284,9 +284,9 @@ namespace SqlSync.Analysis
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel statSizeSum;
         private SettingsControl settingsControl1;
-        private System.Windows.Forms.MainMenu mainMenu1;
-        private System.Windows.Forms.MenuItem menuItem1;
-        private System.Windows.Forms.MenuItem mnuChangeSqlServer;
+        private System.Windows.Forms.MenuStrip mainMenu1;
+        private System.Windows.Forms.ToolStripMenuItem menuItem1;
+        private System.Windows.Forms.ToolStripMenuItem mnuChangeSqlServer;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem getDatabaseDetailsToolStripMenuItem;
         private System.ComponentModel.BackgroundWorker bgWorker;

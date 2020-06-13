@@ -22,12 +22,12 @@ namespace SqlSync.BuildHistory
 		private System.Windows.Forms.TextBox txtScriptId;
 		private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Panel panel1;
-        private DataGridTextBoxColumn dataGridTextBoxColumn10;
-        private DataGridTextBoxColumn dataGridTextBoxColumn9;
-        private DataGridTextBoxColumn dataGridTextBoxColumn3;
-        private DataGridTextBoxColumn dataGridTextBoxColumn2;
-        private DataGridTextBoxColumn dataGridTextBoxColumn7;
-        private DataGridTextBoxColumn dataGridTextBoxColumn1;
+        private DataGridViewTextBoxColumn dataGridTextBoxColumn10;
+        private DataGridViewTextBoxColumn dataGridTextBoxColumn9;
+        private DataGridViewTextBoxColumn dataGridTextBoxColumn3;
+        private DataGridViewTextBoxColumn dataGridTextBoxColumn2;
+        private DataGridViewTextBoxColumn dataGridTextBoxColumn7;
+        private DataGridViewTextBoxColumn dataGridTextBoxColumn1;
         private SqlSync.SqlBuild.ScriptRunLog scriptRunLog1;
         private DataGridView dataGridView1;
         private BindingSource scriptRunLogBindingSource;
@@ -100,12 +100,12 @@ namespace SqlSync.BuildHistory
             this.panel1 = new System.Windows.Forms.Panel();
             this.label3 = new System.Windows.Forms.Label();
             this.txtScriptHash = new System.Windows.Forms.TextBox();
-            this.dataGridTextBoxColumn10 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn9 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn3 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn2 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn7 = new System.Windows.Forms.DataGridTextBoxColumn();
-            this.dataGridTextBoxColumn1 = new System.Windows.Forms.DataGridTextBoxColumn();
+            this.dataGridTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.buildFileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.scriptFileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -199,51 +199,51 @@ namespace SqlSync.BuildHistory
             // 
             // dataGridTextBoxColumn10
             // 
-            this.dataGridTextBoxColumn10.Format = "";
-            this.dataGridTextBoxColumn10.FormatInfo = null;
+           // this.dataGridTextBoxColumn10.Format = "";
+            //this.dataGridTextBoxColumn10.FormatInfo = null;
             this.dataGridTextBoxColumn10.HeaderText = "Script Text";
-            this.dataGridTextBoxColumn10.MappingName = "ScriptText";
+            this.dataGridTextBoxColumn10.DataPropertyName = "ScriptText";
             this.dataGridTextBoxColumn10.Width = 75;
             // 
             // dataGridTextBoxColumn9
             // 
-            this.dataGridTextBoxColumn9.Format = "";
-            this.dataGridTextBoxColumn9.FormatInfo = null;
+            //this.dataGridTextBoxColumn9.Format = "";
+            //this.dataGridTextBoxColumn9.FormatInfo = null;
             this.dataGridTextBoxColumn9.HeaderText = "Blocking?";
-            this.dataGridTextBoxColumn9.MappingName = "AllowScriptBlock";
+            this.dataGridTextBoxColumn9.DataPropertyName = "AllowScriptBlock";
             this.dataGridTextBoxColumn9.Width = 70;
             // 
             // dataGridTextBoxColumn3
             // 
-            this.dataGridTextBoxColumn3.Format = "";
-            this.dataGridTextBoxColumn3.FormatInfo = null;
+            //this.dataGridTextBoxColumn3.Format = "";
+            //this.dataGridTextBoxColumn3.FormatInfo = null;
             this.dataGridTextBoxColumn3.HeaderText = "Source Build File";
-            this.dataGridTextBoxColumn3.MappingName = "BuildFileName";
+            this.dataGridTextBoxColumn3.DataPropertyName = "BuildFileName";
             this.dataGridTextBoxColumn3.Width = 245;
             // 
             // dataGridTextBoxColumn2
             // 
-            this.dataGridTextBoxColumn2.Format = "";
-            this.dataGridTextBoxColumn2.FormatInfo = null;
+            //this.dataGridTextBoxColumn2.Format = "";
+            //this.dataGridTextBoxColumn2.FormatInfo = null;
             this.dataGridTextBoxColumn2.HeaderText = "Script Hash";
-            this.dataGridTextBoxColumn2.MappingName = "ScriptFileHash";
+            this.dataGridTextBoxColumn2.DataPropertyName = "ScriptFileHash";
             this.dataGridTextBoxColumn2.Width = 305;
             // 
             // dataGridTextBoxColumn7
             // 
-            this.dataGridTextBoxColumn7.Format = "";
-            this.dataGridTextBoxColumn7.FormatInfo = null;
+            //this.dataGridTextBoxColumn7.Format = "";
+            //this.dataGridTextBoxColumn7.FormatInfo = null;
             this.dataGridTextBoxColumn7.HeaderText = "Run By";
-            this.dataGridTextBoxColumn7.MappingName = "UserId";
+            this.dataGridTextBoxColumn7.DataPropertyName = "UserId";
             this.dataGridTextBoxColumn7.Width = 80;
             // 
             // dataGridTextBoxColumn1
             // 
-            this.dataGridTextBoxColumn1.Format = "";
-            this.dataGridTextBoxColumn1.FormatInfo = null;
+            //this.dataGridTextBoxColumn1.Format = "";
+            //this.dataGridTextBoxColumn1.FormatInfo = null;
             this.dataGridTextBoxColumn1.HeaderText = "Commit Date";
-            this.dataGridTextBoxColumn1.MappingName = "CommitDate";
-            this.dataGridTextBoxColumn1.NullText = "";
+            this.dataGridTextBoxColumn1.DataPropertyName = "CommitDate";
+            //this.dataGridTextBoxColumn1.NullText = "";
             this.dataGridTextBoxColumn1.Width = 125;
             // 
             // dataGridView1

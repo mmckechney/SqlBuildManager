@@ -8,6 +8,8 @@ using System.Text;
 using System.Windows.Forms;
 using log4net;
 using System.IO;
+using System.Reflection;
+
 namespace SqlSync.Controls
 {
     public partial class SetLoggingLevelMenuItem : ToolStripMenuItem
@@ -78,7 +80,7 @@ namespace SqlSync.Controls
             eRRORToolStripMenuItem.Checked = false;
             iNFOToolStripMenuItem.Checked = false;
 
-            log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)log4net.LogManager.GetRepository();
+             log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)log4net.LogManager.GetRepository(Assembly.GetEntryAssembly());
             log4net.Repository.Hierarchy.Logger rootLogger = h.Root;
             string level = rootLogger.Level.DisplayName.ToUpper();
             switch (level)
@@ -125,7 +127,7 @@ namespace SqlSync.Controls
             //}
 
             //Configure the root logger.
-            log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)log4net.LogManager.GetRepository();
+            log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)log4net.LogManager.GetRepository(Assembly.GetEntryAssembly());
             log4net.Repository.Hierarchy.Logger rootLogger = h.Root;
             rootLogger.Level = h.LevelMap[level];
 

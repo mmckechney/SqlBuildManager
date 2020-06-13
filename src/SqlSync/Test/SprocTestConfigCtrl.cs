@@ -7,7 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using SqlSync.SprocTest.Configuration;
 using SqlSync.SprocTest;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 namespace SqlSync.Test
 {
     public partial class SprocTestConfigCtrl : UserControl

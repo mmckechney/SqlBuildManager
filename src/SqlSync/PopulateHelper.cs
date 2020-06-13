@@ -6,6 +6,8 @@ using System.Data.SqlClient;
 using System.Text;
 using System.Collections;
 using System.Configuration;
+using SqlSync.Connection;
+
 namespace SQLSync
 {
 	/// <summary>

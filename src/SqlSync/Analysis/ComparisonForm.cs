@@ -590,7 +590,7 @@ namespace SqlSync.Analysis
                 txtRightFile.Text = this.rightZipFilePath;
 
             if (this.buildData == null)
-                lstFiles.ContextMenu = null;
+                lstFiles.ContextMenuStrip = null;
             
             this.Show();
 
