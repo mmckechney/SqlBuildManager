@@ -94,7 +94,7 @@ namespace SqlSync.Connection
                     builder.Password = pw;
                     break;
             }
-            return builder.ToString();
+            return builder.ConnectionString;
         }
 
         public static string GetTargetDatabase(string defaultDatabase, List<DatabaseOverride> overrides)

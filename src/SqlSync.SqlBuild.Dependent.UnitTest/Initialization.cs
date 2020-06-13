@@ -8,7 +8,7 @@ using System.Data.SqlClient;
 using System.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.ComponentModel;
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     public class Initialization : IDisposable
     {

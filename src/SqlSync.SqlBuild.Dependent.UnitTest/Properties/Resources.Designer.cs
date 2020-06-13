@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SqlSync.SqlBuild.UnitTest.Properties {
+namespace SqlSync.SqlBuild.Dependent.UnitTest.Properties {
     using System;
     
     
@@ -22,7 +22,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,10 +36,10 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SqlSync.SqlBuild.UnitTest.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SqlSync.SqlBuild.Dependent.UnitTest.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -51,7 +51,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,10 +63,13 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized string similar to IF EXISTS (SELECT 1 FROM sys.objects WHERE name = &apos;SqlBuild_Logging&apos; AND type = &apos;U&apos;)
         ///BEGIN
-        ///    DELETE FROM SqlBuild_Logging
+        ///	IF EXISTS (SELECT 1 FROM dbo.SqlBuild_Logging WHERE CommitDate &lt; &apos;{0}&apos;)
+        ///	BEGIN
+        ///		DELETE FROM SqlBuild_Logging
+        ///	END
         ///END.
         /// </summary>
-        internal static string CleanLoggingTable {
+        public static string CleanLoggingTable {
             get {
                 return ResourceManager.GetString("CleanLoggingTable", resourceCulture);
             }
@@ -75,10 +78,13 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized string similar to IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = &apos;TransactionTest&apos; AND TABLE_SCHEMA = &apos;dbo&apos;)
         ///BEGIN
-        ///	DELETE FROM TransactionTest
+        ///	IF EXISTS (SELECT 1 FROM dbo.TransactionTest WHERE DateTimeStamp &lt; &apos;{0}&apos;)
+        ///	BEGIN
+        ///		DELETE FROM TransactionTest
+        ///	END
         ///END.
         /// </summary>
-        internal static string CleanTestTable {
+        public static string CleanTestTable {
             get {
                 return ResourceManager.GetString("CleanTestTable", resourceCulture);
             }
@@ -100,9 +106,10 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///ALTER DATABASE [{0}] SET ANSI_NULL_DEFAULT OFF 
         ///GO
         ///ALTER DATABASE [{0}] SET ANSI_NULLS OFF 
-        ///GO        /// [rest of string was truncated]&quot;;.
+        ///GO
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string CreateDatabaseScript {
+        public static string CreateDatabaseScript {
             get {
                 return ResourceManager.GetString("CreateDatabaseScript", resourceCulture);
             }
@@ -119,7 +126,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///) ON [PRIMARY]
         ///END.
         /// </summary>
-        internal static string CreateTestTablesScript {
+        public static string CreateTestTablesScript {
             get {
                 return ResourceManager.GetString("CreateTestTablesScript", resourceCulture);
             }
@@ -128,7 +135,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] DBList {
+        public static byte[] DBList {
             get {
                 object obj = ResourceManager.GetObject("DBList", resourceCulture);
                 return ((byte[])(obj));
@@ -166,7 +173,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///	&apos;{0}&apos;,
         /// [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string InsertPreRunScriptLogEntryScript {
+        public static string InsertPreRunScriptLogEntryScript {
             get {
                 return ResourceManager.GetString("InsertPreRunScriptLogEntryScript", resourceCulture);
             }
@@ -188,7 +195,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///			[AllowScriptBlock] [bit] CONSTRAINT DF_SqlBuildLogging_AllowScriptBlock DEFAULT (1) ,
         ///	 [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string LoggingTable {
+        public static string LoggingTable {
             get {
                 return ResourceManager.GetString("LoggingTable", resourceCulture);
             }
@@ -209,7 +216,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///END
         ///.
         /// </summary>
-        internal static string LoggingTableCommitCheckIndex {
+        public static string LoggingTableCommitCheckIndex {
             get {
                 return ResourceManager.GetString("LoggingTableCommitCheckIndex", resourceCulture);
             }
@@ -218,9 +225,9 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] multi_query {
+        public static byte[] multi_query {
             get {
-                object obj = ResourceManager.GetObject("multi_query", resourceCulture);
+                object obj = ResourceManager.GetObject("multi-query", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -241,7 +248,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///              &lt;DefaultDbTarget&gt;Default&lt;/DefaultDbTarget&gt;
         ///              &lt;OverrideDbTarget&gt;Db_0001&lt;/Ove [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string MultiDb_WithQueryRowData {
+        public static string MultiDb_WithQueryRowData {
             get {
                 return ResourceManager.GetString("MultiDb_WithQueryRowData", resourceCulture);
             }
@@ -250,7 +257,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] NoTrans_MultiDb {
+        public static byte[] NoTrans_MultiDb {
             get {
                 object obj = ResourceManager.GetObject("NoTrans_MultiDb", resourceCulture);
                 return ((byte[])(obj));
@@ -260,7 +267,17 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] PlatunumSchema {
+        public static byte[] NoTrans_MultiDb1 {
+            get {
+                object obj = ResourceManager.GetObject("NoTrans_MultiDb1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] PlatunumSchema {
             get {
                 object obj = ResourceManager.GetObject("PlatunumSchema", resourceCulture);
                 return ((byte[])(obj));
@@ -271,7 +288,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///   Looks up a localized string similar to ExeServer1
         ///ExeServer2.
         /// </summary>
-        internal static string remote_server_list {
+        public static string remote_server_list {
             get {
                 return ResourceManager.GetString("remote_server_list", resourceCulture);
             }
@@ -281,7 +298,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///   Looks up a localized string similar to ExeServer3           
         ///ExeServer4						.
         /// </summary>
-        internal static string remote_server_list_with_spaces {
+        public static string remote_server_list_with_spaces {
             get {
                 return ResourceManager.GetString("remote_server_list_with_spaces", resourceCulture);
             }
@@ -295,7 +312,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///
         ///.
         /// </summary>
-        internal static string remote_server_list_with_spaces_and_blank_lines {
+        public static string remote_server_list_with_spaces_and_blank_lines {
             get {
                 return ResourceManager.GetString("remote_server_list_with_spaces_and_blank_lines", resourceCulture);
             }
@@ -304,7 +321,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] sbx_package_tester {
+        public static byte[] sbx_package_tester {
             get {
                 object obj = ResourceManager.GetObject("sbx_package_tester", resourceCulture);
                 return ((byte[])(obj));
@@ -338,7 +355,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ////*
         ///Detect SQL [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string SyncScriptRaw {
+        public static string SyncScriptRaw {
             get {
                 return ResourceManager.GetString("SyncScriptRaw", resourceCulture);
             }
@@ -356,7 +373,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///END  
         ///COMMIT TRANSACTION.
         /// </summary>
-        internal static string TableLockingScript {
+        public static string TableLockingScript {
             get {
                 return ResourceManager.GetString("TableLockingScript", resourceCulture);
             }
@@ -365,7 +382,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] TarnishedSchema {
+        public static byte[] TarnishedSchema {
             get {
                 object obj = ResourceManager.GetObject("TarnishedSchema", resourceCulture);
                 return ((byte[])(obj));
@@ -379,7 +396,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///    &lt;Scripts&gt;
         ///      &lt;Script FileName=&quot;Create table.sql&quot; BuildOrder=&quot;3&quot; Description=&quot;&quot; RollBackOnError=&quot;true&quot; CausesBuildFailure=&quot;true&quot; DateAdded=&quot;2008-06-26T14:28:15.2685768-04:00&quot; ScriptId=&quot;bd58d42b-51f9-4052-85c8-44f247a690f4&quot; Database=&quot;Client&quot; StripTransactionText=&quot;true&quot; AllowMultipleRuns=&quot;true&quot; AddedBy=&quot;mmckechn&quot; Scrip [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string XmlWithInvalidNamespace {
+        public static string XmlWithInvalidNamespace {
             get {
                 return ResourceManager.GetString("XmlWithInvalidNamespace", resourceCulture);
             }
@@ -392,7 +409,7 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
         ///    &lt;Scripts&gt;
         ///      &lt;Script FileName=&quot;Create table.sql&quot; BuildOrder=&quot;3&quot; Description=&quot;&quot; RollBackOnError=&quot;true&quot; CausesBuildFailure=&quot;true&quot; DateAdded=&quot;2008-06-26T14:28:15.2685768-04:00&quot; ScriptId=&quot;bd58d42b-51f9-4052-85c8-44f247a690f4&quot; Database=&quot;Client&quot; StripTransactionText=&quot;true&quot; AllowMultipleRuns=&quot;true&quot; AddedBy=&quot;mmckechn&quot; ScriptTimeOut=&quot;20&quot; DateModified=&quot;2008-08-27T12:53:18.9312747-04:00 [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string XmlWithNoNamespace {
+        public static string XmlWithNoNamespace {
             get {
                 return ResourceManager.GetString("XmlWithNoNamespace", resourceCulture);
             }

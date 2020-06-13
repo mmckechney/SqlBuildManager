@@ -5,6 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="AdHocQuery\Xml\QueryResult_html.xslt" />
+    <EmbeddedResource Include="SqlLogging\LoggingTable.sql" />
+    <EmbeddedResource Include="SqlLogging\LoggingTableCommitCheckIndex.sql" />
+    <EmbeddedResource Include="SqlLogging\LogScript.sql" />
+    <EmbeddedResource Include="SqlLogging\VersionsInsert.sql" />
+    <EmbeddedResource Include="Status\Xml\ServerReport_csv.xslt" />
+    <EmbeddedResource Include="Status\Xml\ServerReport_html.xslt" />
+    <EmbeddedResource Include="Status\Xml\ServerReport_summary.xslt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="1.1.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />

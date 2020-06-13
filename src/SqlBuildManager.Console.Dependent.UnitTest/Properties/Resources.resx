@@ -118,34 +118,34 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="NoTrans_MultiDb_multidb" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NoTrans_MultiDb.multiDb;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="NoTrans_MultiDb_sbm" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NoTrans_MultiDb.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="remote_execution_file" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\remote_execution_file.txt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="remote_execution_file_bad_exeserver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\remote_execution_file_bad_exeserver.txt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="SimpleSelect" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\simpleselect.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="SyntaxError" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\syntaxerror.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="dbconfig" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\dbconfig.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="InsertForThreadedTest" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\insertforthreadedtest.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Resources\InsertForThreadedTest.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="TableLockingScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\tablelockingscript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  <data name="NoTrans_MultiDb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NoTrans_MultiDb.multiDb;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="NoTrans_MultiDb1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NoTrans_MultiDb.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="remote_execution_file" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\remote_execution_file.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="remote_execution_file_bad_exeserver" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\remote_execution_file_bad_exeserver.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="SimpleSelect" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SimpleSelect.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="SimpleSelect_WithCodeReview" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\simpleselect_withcodereview.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Resources\SimpleSelect_WithCodeReview.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="dbconfig" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\dbconfig.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="SyntaxError" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SyntaxError.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="TableLockingScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\TableLockingScript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>

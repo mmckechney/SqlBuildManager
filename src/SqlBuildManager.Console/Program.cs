@@ -40,14 +40,14 @@ namespace SqlBuildManager.Console
             {
                 string joinedArgs = string.Join(",", args).ToLower();
                 string[] helpRequest = new string[] {"/?", "-?", "--?", "-h", "-help", "/help", "--help", "--h", "/h" };
-               
-                var cmdLine = CommandLine.ParseCommandLineArg(args);
 
                 if (args.Length == 0 || helpRequest.Any(h => joinedArgs.Contains(h))) 
                 {
                     log.Info(Properties.Resources.ConsoleHelp2);
                     Environment.Exit(0);
                 }
+
+                var cmdLine = CommandLine.ParseCommandLineArg(args);
                 switch (cmdLine.Action)
                 {
                     //case CommandLineArgs.ActionType.Remote:

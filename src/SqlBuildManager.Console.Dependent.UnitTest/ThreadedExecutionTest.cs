@@ -8,7 +8,7 @@ using SqlBuildManager.Interfaces.Console;
 using System.Data.SqlClient;
 using System.Threading;
 using System.Text.RegularExpressions;
-namespace SqlBuildManager.Console.UnitTest
+namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     
     
@@ -203,7 +203,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -279,7 +279,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -590,7 +590,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);

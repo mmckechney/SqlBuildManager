@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
 using System.IO;
 
-namespace SqlBuildManager.Console.UnitTest
+namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     class Initialization : IDisposable
     {
@@ -44,11 +44,11 @@ namespace SqlBuildManager.Console.UnitTest
 
         public void CopySbmFileToTestPath()
         {
-            File.WriteAllBytes(Initialization.SqlBuildZipFileName, Properties.Resources.NoTrans_MultiDb_sbm);
+            File.WriteAllBytes(Initialization.SqlBuildZipFileName, Properties.Resources.NoTrans_MultiDb1);
         }
         public void CopyMultiDbFileToTestPath()
         {
-            File.WriteAllBytes(Initialization.MultiDbFileName, Properties.Resources.NoTrans_MultiDb_multidb);
+            File.WriteAllBytes(Initialization.MultiDbFileName, Properties.Resources.NoTrans_MultiDb);
         }
         public void CopyDbConfigFileeToTestPath()
         {

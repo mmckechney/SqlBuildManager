@@ -1,6 +1,8 @@
 ﻿using log4net.Appender;
 using System;
 using System.IO;
+using System.Reflection;
+
 namespace SqlBuildManager.Logging
 {
     public class Configure
@@ -16,7 +18,7 @@ namespace SqlBuildManager.Logging
         {
             try {
 
-                log4net.Repository.Hierarchy.Hierarchy hierarchy = log4net.LogManager.GetRepository("root") as log4net.Repository.Hierarchy.Hierarchy;
+                log4net.Repository.Hierarchy.Hierarchy hierarchy = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly()) as log4net.Repository.Hierarchy.Hierarchy;
 
                 foreach(var appender in hierarchy.Root.Appenders)
                 {

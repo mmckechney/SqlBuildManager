@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Data.SqlClient;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     [TestClass]
     public class SqlBuildHelperTest_ProcessBuild

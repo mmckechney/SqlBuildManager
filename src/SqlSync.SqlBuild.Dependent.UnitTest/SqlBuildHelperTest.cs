@@ -12,7 +12,7 @@ using Microsoft.Data.SqlClient;
 using System.IO;
 using SqlSync.SqlBuild.SqlLogging;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     
     

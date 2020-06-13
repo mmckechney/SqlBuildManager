@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using SqlSync.Connection;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     
     

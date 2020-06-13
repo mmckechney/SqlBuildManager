@@ -8,6 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\dbconfig.cfg" />
+    <EmbeddedResource Include="Resources\InsertForThreadedTest.sbm" />
+    <EmbeddedResource Include="Resources\NoTrans_MultiDb.multiDb" />
+    <EmbeddedResource Include="Resources\NoTrans_MultiDb.sbm" />
+    <EmbeddedResource Include="Resources\remote_execution_file.txt" />
+    <EmbeddedResource Include="Resources\remote_execution_file_bad_exeserver.txt" />
+    <EmbeddedResource Include="Resources\SimpleSelect.sbm" />
+    <EmbeddedResource Include="Resources\SimpleSelect_WithCodeReview.sbm" />
+    <EmbeddedResource Include="Resources\SyntaxError.sbm" />
+    <EmbeddedResource Include="Resources\TableLockingScript.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.0" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.0" />
