@@ -6,7 +6,7 @@ using System;
 using System.Collections.Specialized;
 using System.Text;
 
-namespace SqlSync.ObjectScript.UnitTest
+namespace SqlSync.ObjectScript.Dependent.UnitTest
 {
     
     

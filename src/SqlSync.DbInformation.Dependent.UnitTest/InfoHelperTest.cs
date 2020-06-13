@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 
-namespace SqlSync.DbInformation.UnitTest
+namespace SqlSync.DbInformation.Dependent.UnitTest
 {
     
     

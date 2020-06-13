@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SqlSync.Connection;
-namespace SqlSync.ObjectScript.UnitTest
+namespace SqlSync.ObjectScript.Dependent.UnitTest
 {
     class Initialization
     {
