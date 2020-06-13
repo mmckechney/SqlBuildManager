@@ -15,7 +15,6 @@ namespace SqlSync {
     [System.ComponentModel.ToolboxItem(true)]
     [System.ComponentModel.DesignerCategory("Component")]
     [System.ComponentModel.DesignTimeVisible(true)]
-    [System.Drawing.ToolboxBitmap(typeof(System.Data.DataSet))]
     public class TableScriptData {
         
         private string _TableName = string.Empty;

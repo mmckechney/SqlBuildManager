@@ -15,7 +15,6 @@ namespace SqlSync.TableScript {
     [System.ComponentModel.ToolboxItem(true)]
     [System.ComponentModel.DesignerCategory("Component")]
     [System.ComponentModel.DesignTimeVisible(true)]
-    [System.Drawing.ToolboxBitmap(typeof(System.Data.DataSet))]
     public class UpdateAutoDetectData {
         
         private string _TableName = string.Empty;

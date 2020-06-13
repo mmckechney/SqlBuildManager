@@ -8,7 +8,7 @@ using SqlSync.SqlBuild;
 using System.Reflection;
 using SqlSync.SqlBuild.MultiDb;
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.IO;
 using SqlSync.SqlBuild.SqlLogging;
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using SqlSync.Connection;
 using System.Text;
 using System.Xml.Serialization;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Text.RegularExpressions;
 using SqlSync.SprocTest.Configuration;
@@ -194,7 +194,7 @@ namespace SqlSync.SprocTest
 
             //It's easier if you get the longest arrays first...
             SqlParamListSorter sorter = new SqlParamListSorter();
-            paramList.Sort(sorter);
+            paramList.Sort((IComparer<List<SqlParameter>>) sorter);
             paramList.Reverse();
 
             if (paramList.Count >= 2)
