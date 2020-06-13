@@ -1,7 +1,7 @@
 ﻿using SqlSync.Connection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System;
 
 namespace SqlSync.Connection.UnitTest
