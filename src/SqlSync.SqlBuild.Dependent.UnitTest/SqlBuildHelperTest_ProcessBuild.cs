@@ -117,7 +117,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
             }
 
         }
@@ -155,7 +155,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
             }
 
         }
@@ -193,7 +193,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
             }
 
         }

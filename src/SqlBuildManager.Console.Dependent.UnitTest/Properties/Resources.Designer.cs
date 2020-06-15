@@ -83,6 +83,16 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] InsertForThreadedTest_ForceTimeout {
+            get {
+                object obj = ResourceManager.GetObject("InsertForThreadedTest_ForceTimeout", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] NoTrans_MultiDb {
             get {
                 object obj = ResourceManager.GetObject("NoTrans_MultiDb", resourceCulture);
@@ -153,6 +163,21 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to BEGIN TRANSACTION
+        ///
+        ///SELECT * FROM dbo.TransactionTest WITH (TABLOCKX, HOLDLOCK) WHERE 1 = 1
+        ///
+        ///WAITFOR DELAY &apos;00:30&apos;
+        ///
+        ///ROLLBACK TRANSACTION.
+        /// </summary>
+        public static string sql_waitfor_createtimeout {
+            get {
+                return ResourceManager.GetString("sql_waitfor_createtimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] SyntaxError {
@@ -177,6 +202,16 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         public static string TableLockingScript {
             get {
                 return ResourceManager.GetString("TableLockingScript", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] ThreadedTest_OnePassOneFail {
+            get {
+                object obj = ResourceManager.GetObject("ThreadedTest_OnePassOneFail", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

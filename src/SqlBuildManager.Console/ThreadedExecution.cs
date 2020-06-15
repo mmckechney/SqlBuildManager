@@ -393,6 +393,7 @@ namespace SqlBuildManager.Console
                         msg.LogType = LogType.Error;
                         WriteToLog(msg);
                         sbFailureDatabasesCfg.AppendLine(cfgString);
+                        this.hasError = true;
                         break;
                 }
 

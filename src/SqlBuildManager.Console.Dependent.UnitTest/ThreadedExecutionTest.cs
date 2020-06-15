@@ -354,7 +354,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -530,10 +530,10 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         public void ExecuteTest_ErrorWithoutTransactionsNoUsingRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.ThreadedTest_OnePassOneFail);
 
             string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -557,6 +557,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             {
                 THRInfinite = new Thread(StartInfiniteLockingThread);
                 THRInfinite.Start(10000000);
+              
 
                 actual = target.Execute();
 
@@ -671,7 +672,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -748,7 +749,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -765,9 +766,24 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int loop = (int)loopCount;
             string connStr = string.Format(Initialization.ConnectionString, "SqlBuildTest");
             SqlConnection conn = new SqlConnection(connStr);
-            SqlCommand cmd = new SqlCommand(String.Format(Properties.Resources.TableLockingScript,loop.ToString()), conn);
+            SqlCommand cmd = new SqlCommand(string.Format(Properties.Resources.TableLockingScript, loop.ToString()), conn);
             conn.Open();
             cmd.ExecuteNonQuery();
+        }
+
+        private void StartSqlTimeoutThread(object targetDatabase)
+        {
+            try
+            {
+                string connStr = string.Format(Initialization.ConnectionString, targetDatabase.ToString());
+                SqlConnection conn = new SqlConnection(connStr);
+                SqlCommand cmd = new SqlCommand(Properties.Resources.sql_waitfor_createtimeout, conn);
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            } catch
+            {
+
+            }
         }
     }
 }

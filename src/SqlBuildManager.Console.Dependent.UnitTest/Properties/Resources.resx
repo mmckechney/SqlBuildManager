@@ -124,6 +124,9 @@
   <data name="InsertForThreadedTest" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\InsertForThreadedTest.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="InsertForThreadedTest_ForceTimeout" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\InsertForThreadedTest_ForceTimeout.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="NoTrans_MultiDb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NoTrans_MultiDb.multiDb;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -142,10 +145,16 @@
   <data name="SimpleSelect_WithCodeReview" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SimpleSelect_WithCodeReview.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="sql_waitfor_createtimeout" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\sql_waitfor_createtimeout.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
   <data name="SyntaxError" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SyntaxError.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="TableLockingScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\TableLockingScript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="ThreadedTest_OnePassOneFail" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ThreadedTest_OnePassOneFail.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

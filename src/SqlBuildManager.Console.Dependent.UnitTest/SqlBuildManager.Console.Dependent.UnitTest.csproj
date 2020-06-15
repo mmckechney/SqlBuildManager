@@ -8,16 +8,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\InsertForThreadedTest_ForceTimeout.sbm" />
+    <None Remove="Resources\sql_waitfor_createtimeout.sql" />
+    <None Remove="Resources\ThreadedTest_OnePassOneFail.sbm" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Resources\dbconfig.cfg" />
     <EmbeddedResource Include="Resources\InsertForThreadedTest.sbm" />
+    <EmbeddedResource Include="Resources\InsertForThreadedTest_ForceTimeout.sbm" />
     <EmbeddedResource Include="Resources\NoTrans_MultiDb.multiDb" />
     <EmbeddedResource Include="Resources\NoTrans_MultiDb.sbm" />
     <EmbeddedResource Include="Resources\remote_execution_file.txt" />
     <EmbeddedResource Include="Resources\remote_execution_file_bad_exeserver.txt" />
     <EmbeddedResource Include="Resources\SimpleSelect.sbm" />
     <EmbeddedResource Include="Resources\SimpleSelect_WithCodeReview.sbm" />
+    <EmbeddedResource Include="Resources\sql_waitfor_createtimeout.sql" />
     <EmbeddedResource Include="Resources\SyntaxError.sbm" />
     <EmbeddedResource Include="Resources\TableLockingScript.sql" />
+    <EmbeddedResource Include="Resources\ThreadedTest_OnePassOneFail.sbm" />
   </ItemGroup>
 
   <ItemGroup>
