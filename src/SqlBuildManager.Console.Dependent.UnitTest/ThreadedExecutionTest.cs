@@ -763,12 +763,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
         private void StartInfiniteLockingThread(object loopCount)
         {
+            try
+            {
             int loop = (int)loopCount;
             string connStr = string.Format(Initialization.ConnectionString, "SqlBuildTest");
             SqlConnection conn = new SqlConnection(connStr);
             SqlCommand cmd = new SqlCommand(string.Format(Properties.Resources.TableLockingScript, loop.ToString()), conn);
             conn.Open();
             cmd.ExecuteNonQuery();
+            }catch
+            {}
         }
 
         private void StartSqlTimeoutThread(object targetDatabase)
