@@ -105,6 +105,10 @@ namespace SqlBuildManager.Console
             get { return buildData; }
         }
 
+        public ThreadedExecution(CommandLineArgs cmd)
+        {
+            this.cmdLine = cmd;
+        }
         public ThreadedExecution(string[] args)
         {
             this.args = args;
@@ -121,7 +125,10 @@ namespace SqlBuildManager.Console
             log.Debug("Entering Execute method of ThreadedExecution");
             string[] errorMessages;
             //Parse out the command line options
-            cmdLine = CommandLine.ParseCommandLineArg(args);
+            if (cmdLine == null)
+            {
+                cmdLine = CommandLine.ParseCommandLineArg(args);
+            }
 
             if(string.IsNullOrEmpty(cmdLine.RootLoggingPath))
             {

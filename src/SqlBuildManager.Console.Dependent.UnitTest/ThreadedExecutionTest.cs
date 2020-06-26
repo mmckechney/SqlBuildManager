@@ -446,7 +446,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
 
-                Assert.AreEqual(expected, actual);
+                Assert.AreEqual(expected, actual, "Run result was not the expected value of \"Success\"");
 
                 //SqlBuildTest should still committed with no timeout messages
                 string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
@@ -530,10 +530,10 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         public void ExecuteTest_ErrorWithoutTransactionsNoUsingRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.ThreadedTest_OnePassOneFail);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
             string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
+localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -584,7 +584,7 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
                 logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Error Message: Timeout expired.") == -1, "SqlBuildTest1 Log contains a 'Timeout expired message'");
                 Assert.IsTrue(logContents.IndexOf("COMMIT TRANSACTION") == -1, "SqlBuildTest1 Log contains a'COMMIT' message");
-                Assert.IsTrue(logContents.IndexOf("Completed: No Transaction Set") > -1, "SqlBuildTest1 does not contain a 'ERROR: No Transaction Set' message");
+                Assert.IsTrue(logContents.IndexOf("Completed: No Transaction Set") > -1, "SqlBuildTest1 does not contain a 'Completed: No Transaction Set' message");
                 Assert.IsTrue(logContents.IndexOf("use SqlBuildTest1") > -1, "SqlBuildTest1 Log does not contain the proper database name");
 
             }

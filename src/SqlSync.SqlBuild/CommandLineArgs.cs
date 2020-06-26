@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Transactions;
 using Newtonsoft.Json;
 namespace SqlSync.SqlBuild
 {
@@ -22,8 +24,6 @@ namespace SqlSync.SqlBuild
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
         public Batch BatchArgs { get; set; } = new Batch();
         [JsonIgnore]
-        public Remote RemoteArgs { get; set; } = new Remote();
-        [JsonIgnore]
         public DacPac DacPacArgs { get; set; } = new DacPac();
         [JsonIgnore]
         public Synchronize SynchronizeArgs { get; set; } = new Synchronize();
@@ -32,61 +32,203 @@ namespace SqlSync.SqlBuild
         [JsonIgnore]
         public StoredProcTesting StoredProcTestingArgs { get; set; } = new StoredProcTesting();
 
+        private string settingsFile = string.Empty;
+        [JsonIgnore]
+        public string SettingsFile
+        {
+            get
+            {
+                return this.settingsFile;
+            }
+            set
+            {
+                if (File.Exists(value))
+                {
 
-
+                    CommandLineArgs cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(value));
+                    cmdLine = Cryptography.DecryptSensitiveFields(cmdLine);
+                    this.BatchArgs = cmdLine.BatchArgs;
+                    this.AuthenticationArgs = cmdLine.AuthenticationArgs;
+                    this.RootLoggingPath = cmdLine.RootLoggingPath;
+                    this.DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
+                    this.TimeoutRetryCount = cmdLine.TimeoutRetryCount;
+                }
+                this.settingsFile = value;
+            }
+        }
+        public string Override {
+            set
+            {
+                this.OverrideDesignated = true;
+                var fileExt = new List<string> { ".multidb", ".cfg", ".multidbq", ".sql" };
+                fileExt.ForEach(ex =>
+                {
+                    if(value.ToLower().Trim().EndsWith(ex))
+                    {
+                        this.MultiDbRunConfigFileName = value;
+                    }
+                });
+                if(this.MultiDbRunConfigFileName == string.Empty)
+                {
+                    this.ManualOverRideSets = value;
+                }
+            }
+        }
+        [JsonIgnore]
+        public virtual string Server { get; set; } = string.Empty;
+        [JsonIgnore]
+        public virtual string Database { get; set; } = string.Empty;
+        public virtual string RootLoggingPath { get; set; } = string.Empty;
+        [JsonIgnore]
+        public virtual bool Trial { get; set; } = false;
+        [JsonIgnore]
+        public virtual string ScriptSrcDir { get; set; } = string.Empty;
+        [JsonIgnore]
+        public virtual string UserName
+        {
+            set { AuthenticationArgs.UserName = value; }
+        }
+        [JsonIgnore]
+        public virtual string Password
+        {
+            set { AuthenticationArgs.Password = value; }
+        }
+        [JsonIgnore]
+        public virtual string LogToDatabaseName { get; set; } = string.Empty;
+        [JsonIgnore]
+        public virtual string Description { get; set; } = string.Empty;
         [JsonIgnore]
         public virtual string BuildFileName { get; set; } = string.Empty;
+        [JsonIgnore]
+        public string Directory { get; set; } = string.Empty;
+        [JsonIgnore]
+        public virtual bool Transactional { get; set; } = true;
+        public virtual int TimeoutRetryCount { get; set; } = 0;
+        [JsonIgnore]
+        public virtual string GoldServer
+        {
+            set { SynchronizeArgs.GoldServer = value; }
+        }
+        [JsonIgnore]
+        public virtual string GoldDatabase
+        {
+            set { SynchronizeArgs.GoldDatabase = value; }
+        }
+        [JsonIgnore]
+        public bool ContinueOnFailure { get; set; }
+        [JsonIgnore]
+        public virtual string PlatinumDacpac
+        {
+            set { DacPacArgs.PlatinumDacpac = value; }
+        }
+        [JsonIgnore]
+        public virtual string TargetDacpac
+        {
+            set { DacPacArgs.TargetDacpac = value; }
+        }
+        [JsonIgnore]
+        public virtual bool ForceCustomDacPac
+        {
+            set { DacPacArgs.ForceCustomDacPac = value; }
+        }
+        [JsonIgnore]
+        public virtual string PlatinumDbSource
+        {
+            set { DacPacArgs.PlatinumDbSource = value; }
+        }
+        [JsonIgnore]
+        public virtual string PlatinumServerSource
+        {
+            set { DacPacArgs.PlatinumServerSource = value; }
+        }
+        [JsonIgnore]
+        public string BuildRevision { get; set; }
+        [JsonIgnore]
+        public string OutputSbm { get; set; }
+        [JsonIgnore]
+        public virtual string OutputContainerSasUrl
+        {
+            set { BatchArgs.OutputContainerSasUrl = value; }
+        }
+        [JsonIgnore]
+        public virtual bool DeleteBatchPool
+        {
+            set { BatchArgs.DeleteBatchPool = value; }
+        }
+        [JsonIgnore]
+        public virtual bool DeleteBatchJob
+        {
+            set { BatchArgs.DeleteBatchJob = value; }
+        }
+        [JsonIgnore]
+        public virtual int BatchNodeCount
+        {
+            set { BatchArgs.BatchNodeCount = value; }
+        }
+        [JsonIgnore]
+        public virtual string BatchJobName
+        {
+            set { BatchArgs.BatchJobName = value; }
+        }
+        [JsonIgnore]
+        public virtual string BatchAccountName
+        {
+            set { BatchArgs.BatchAccountName = value; }
+        }
+        [JsonIgnore]
+        public virtual string BatchAccountKey
+        {
+            set { BatchArgs.BatchAccountKey = value; }
+        }
+        [JsonIgnore]
+        public virtual string BatchAccountUrl
+        {
+            set { BatchArgs.BatchAccountUrl = value; }
+        }
+        [JsonIgnore]
+        public virtual string StorageAccountName
+        {
+            set { BatchArgs.StorageAccountName = value; }
+        }
+        [JsonIgnore]
+        public virtual string StorageAccountKey
+        {
+            set { BatchArgs.StorageAccountKey = value; }
+        }
+        [JsonIgnore]
+        public virtual string BatchVmSize
+        {
+            set { BatchArgs.BatchVmSize = value; }
+        }
+        [JsonIgnore]
+        public virtual string BatchPoolName
+        {
+            set { BatchArgs.BatchPoolName = value; }
+        }
+        [JsonIgnore]
+        public virtual string EventHubConnection
+        {
+            set { BatchArgs.EventHubConnectionString = value; }
+        }
+        [JsonIgnore]
+        public virtual bool PollBatchPoolStatus
+        {
+            set { BatchArgs.PollBatchPoolStatus = value; }
+        }
+        public virtual int DefaultScriptTimeout { get; set; } = 500;
+
+
+
+        #region Not direct commandline options
         [JsonIgnore]
         public virtual bool OverrideDesignated { get; set; } = false;
         [JsonIgnore]
         public virtual string MultiDbRunConfigFileName { get; set; } = string.Empty;
         [JsonIgnore]
         public virtual string ManualOverRideSets { get; set; } = string.Empty;
-        [JsonIgnore]
-        public virtual string Server { get; set; } = string.Empty;
-        [JsonIgnore]
-        public virtual string LogFileName { get; set; } = string.Empty;
-        [JsonIgnore]
-        public virtual string Database { get; set; } = string.Empty;
-        [JsonIgnore]
-        public virtual string ScriptLogFileName { get; set; } = string.Empty;
+        #endregion
 
-        public virtual string RootLoggingPath { get; set; } = string.Empty;
 
-        public virtual int DefaultScriptTimeout { get; set; } = 500;
-        [JsonIgnore]
-        public virtual bool Trial { get; set; } = false;
-        [JsonIgnore]
-        public virtual string ScriptSrcDir { get; set; } = string.Empty;
-        [JsonIgnore]
-        public virtual string LogToDatabaseName { get; set; } = string.Empty;
-        [JsonIgnore]
-        public virtual string Description { get; set; } = string.Empty;
-        [JsonIgnore]
-        public virtual bool Transactional { get; set; } = true;
-
-        public virtual int TimeoutRetryCount { get; set; } = 0;
-        [JsonIgnore]
-        public bool ContinueOnFailure { get; set; }
-        [JsonIgnore]
-        public string Directory { get; set; }
-        [JsonIgnore]
-        public string BuildRevision { get; set; }
-        [JsonIgnore]
-        public string OutputSbm { get; set; }
-        [JsonIgnore]
-        public string SettingsFile { get; set; }
-
-        [Serializable]
-        public class Remote
-        {
-            public virtual string RemoteServers { get; set; } = string.Empty;
-            public virtual string DistributionType { get; set; } = string.Empty;
-            public bool TestConnectivity { get; set; } = false;
-            public string RemoteDbErrorList { get; set; }
-            public string RemoteErrorDetail { get; set; }
-            public bool AzureRemoteStatus { get; set; } = false;
-        }
         [Serializable]
         public class Authentication
         {
@@ -183,8 +325,7 @@ namespace SqlSync.SqlBuild
             StringBuilder sb = new StringBuilder();
             foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
             {
-                if (property.PropertyType == typeof(CommandLineArgs.Remote) ||
-                    property.PropertyType == typeof(CommandLineArgs.Authentication) ||
+                if (property.PropertyType == typeof(CommandLineArgs.Authentication) ||
                     property.PropertyType == typeof(CommandLineArgs.Batch) ||
                     property.PropertyType == typeof(CommandLineArgs.AutoScripting) ||
                     property.PropertyType == typeof(CommandLineArgs.DacPac) ||
@@ -192,7 +333,7 @@ namespace SqlSync.SqlBuild
                     property.PropertyType == typeof(CommandLineArgs.Synchronize)
                     )
                 {
-                    if (property.GetValue(obj) != null)
+                    if (property.CanRead &&  property.GetValue(obj) != null)
                     {
                         sb.Append(property.GetValue(obj).ToStringExtension());
                     }
@@ -224,21 +365,21 @@ namespace SqlSync.SqlBuild
                     {
                         //do nothing
                     }
-                    else if (property.PropertyType == typeof(bool))
+                    else if (property.PropertyType == typeof(bool) && property.CanRead)
                     {
                         if (bool.Parse(property.GetValue(obj).ToString()) == true)
                         {
                             sb.Append("/" + property.Name + "=true ");
                         }
                     }
-                    else if (property.PropertyType == typeof(string))
+                    else if (property.PropertyType == typeof(string) && property.CanRead)
                     {
                         if (property.GetValue(obj) != null && !string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
                         {
                             sb.Append("/" + property.Name + "=\"" + property.GetValue(obj).ToString() + "\" ");
                         }
                     }
-                    else if (property.GetValue(obj) != null)
+                    else if (property.CanRead && property.GetValue(obj) != null)
                     {
                         double num;
                         if (double.TryParse(property.GetValue(obj).ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out num))

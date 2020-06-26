@@ -369,7 +369,7 @@ namespace SqlSync.SqlBuild
         private ToolStripMenuItem policyWarningActionMayBeRequiredToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator23;
         private ColumnHeader colCodeReviewIcon;
-        private ToolStripMenuItem codeReviewIconToolStripMenuItem;
+        //private ToolStripMenuItem codeReviewIconToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem1;
         private ToolStripMenuItem statusHelpToolStripMenuItem1;
         private ToolStripMenuItem reviewNotStartedToolStripMenuItem;
@@ -970,7 +970,7 @@ namespace SqlSync.SqlBuild
             this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.policyWarningActionMayBeRequiredToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.passesPolicyChecksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.codeReviewIconToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            //this.codeReviewIconToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.waitingOnStatusCheckToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reviewNotStartedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reviewInProgressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -1613,7 +1613,7 @@ namespace SqlSync.SqlBuild
             this.statusHelpToolStripMenuItem1,
             this.iconLegendToolStripMenuItem,
             this.policyCheckIconHelpToolStripMenuItem,
-            this.codeReviewIconToolStripMenuItem,
+            //this.codeReviewIconToolStripMenuItem,
             this.backgrounLegendToolStripMenuItem,
             this.toolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(3, 513);
@@ -1777,17 +1777,17 @@ namespace SqlSync.SqlBuild
             this.passesPolicyChecksToolStripMenuItem.Text = "Policy checks passed";
             // 
             // codeReviewIconToolStripMenuItem
-            // 
-            this.codeReviewIconToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.waitingOnStatusCheckToolStripMenuItem,
-            this.reviewNotStartedToolStripMenuItem,
-            this.reviewInProgressToolStripMenuItem,
-            this.reviewAcceptedToolStripMenuItem,
-            this.reviewAcceptedByDBAToolStripMenuItem});
-            this.codeReviewIconToolStripMenuItem.ForeColor = System.Drawing.Color.Blue;
-            this.codeReviewIconToolStripMenuItem.Name = "codeReviewIconToolStripMenuItem";
-            this.codeReviewIconToolStripMenuItem.Size = new System.Drawing.Size(113, 20);
-            this.codeReviewIconToolStripMenuItem.Text = "Code Review Icon";
+            //// 
+            //this.codeReviewIconToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            //this.waitingOnStatusCheckToolStripMenuItem,
+            //this.reviewNotStartedToolStripMenuItem,
+            //this.reviewInProgressToolStripMenuItem,
+            //this.reviewAcceptedToolStripMenuItem,
+            //this.reviewAcceptedByDBAToolStripMenuItem});
+            //this.codeReviewIconToolStripMenuItem.ForeColor = System.Drawing.Color.Blue;
+            //this.codeReviewIconToolStripMenuItem.Name = "codeReviewIconToolStripMenuItem";
+            //this.codeReviewIconToolStripMenuItem.Size = new System.Drawing.Size(113, 20);
+            //this.codeReviewIconToolStripMenuItem.Text = "Code Review Icon";
             // 
             // waitingOnStatusCheckToolStripMenuItem
             // 
