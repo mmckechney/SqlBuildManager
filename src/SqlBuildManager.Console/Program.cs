@@ -256,7 +256,11 @@ namespace SqlBuildManager.Console
                     Argument = new Argument<SqlSync.Connection.AuthenticationType>("authtype"),
                     Required = false
                 };
-
+                var whatIfOption = new Option(new string[] { "--whatif" }, "Provides commandline validation and some authentication validation")
+                {
+                    Argument = new Argument<bool>("whatif"),
+                    Required = false
+                };
                 List<Option> authOptions = new List<Option>()
                 {
                     passwordOption,
@@ -377,6 +381,7 @@ namespace SqlBuildManager.Console
                 batchCommand.Add(batchPreStageCommand);
                 batchCommand.Add(batchCleanUpCommand);
                 batchCommand.Add(batchRunCommand);
+                //batchCommand.Add(whatIfOption);
 
                 //General Building options
                 authOptions.ForEach(a => buildCommand.Add(a));
@@ -408,6 +413,7 @@ namespace SqlBuildManager.Console
                 batchRunCommand.Add(forcecustomdacpacOption);
                 batchRunCommand.Add(platinumdbsourceOption);
                 batchRunCommand.Add(platinumserversourceOption);
+                
 
                 //Batch pre-stage
                 generalBatchAccountOptions.ForEach(a => batchPreStageCommand.Add(a));
@@ -458,6 +464,10 @@ namespace SqlBuildManager.Console
                 {
                     if (context.ParseResult.Directives.Count() != 0 && context.ParseResult.Directives.Contains("debug"))
                     {
+                    }
+                    if (context.ParseResult.Directives.Count() != 0 && context.ParseResult.Directives.Contains("whatif"))
+                    {
+
                     }
                     await next(context);
                 });

@@ -2,7 +2,7 @@
   "profiles": {
     "SqlBuildManager.Console": {
       "commandName": "Project",
-      "commandLineArgs": "batch run --override azuredb.cfg --packagename SelectSample.sbm --username mmckechney --password Test1234!1234 --batchnodecount 2 --batchvmsize STANDARD_DS1_V2 --batchaccountname sqlbuildmanager --batchaccounturl https://sqlbuildmanager.eastus.batch.azure.com --batchaccountkey \"Nx0scfUnl5lu+YddEyPW2AwjYZSCBJvLzty+xPdsK9xPK2VCS4jl6fcdZSiqrM2F15Z214Jj5ajgl7RVAH9HqQ==\" --batchjobname \"Release #27\" --storageaccountname sqlbuildmanager --storageaccountkey \"1VT2/+3Xh2CYK6vSYCHHacbeRJth2/gEoy+buaGlq+oXvhQ19NQG9/D8sSgSCJ1Z+ICB/GrxJMvCI+xnaM5cQg==\" --deletebatchpool False --deletebatchjob False --rootloggingpath \"C:\\temp\" "
+      "commandLineArgs": "batch run --override azuredb.cfg --packagename SelectSample.sbm --settingsfile \"C:\\temp\\my_settings.json\""
     }
   }
 }

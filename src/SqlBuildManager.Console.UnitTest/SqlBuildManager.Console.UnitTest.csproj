@@ -2,10 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-
     <IsPackable>false</IsPackable>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo> 
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\dbconfig.cfg" />

@@ -3,8 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo> 
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
+  
+  
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\CreateTestTablesScript.sql" />

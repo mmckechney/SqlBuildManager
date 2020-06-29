@@ -3,7 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
-
+  
+  <ItemGroup>
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
+  </ItemGroup>
+  
   <ItemGroup>
     <EmbeddedResource Include="AdHocQuery\Xml\QueryResult_html.xslt" />
     <EmbeddedResource Include="SqlLogging\LoggingTable.sql" />
@@ -34,5 +38,6 @@
 
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
 </Project>

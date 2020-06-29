@@ -5,6 +5,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Templates\Audit\AuditColumnCharSize.sql">
@@ -61,6 +64,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo> 
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
 </Project>

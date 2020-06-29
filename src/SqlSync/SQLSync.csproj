@@ -9,6 +9,7 @@
 
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
     <ApplicationIcon>SqlBuildManager.ico</ApplicationIcon>
   </PropertyGroup>
 

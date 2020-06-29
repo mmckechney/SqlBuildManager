@@ -21,6 +21,8 @@ namespace SqlSync.SqlBuild
         }
         [JsonIgnore]
         public ActionType Action { get; set; }
+
+        #region Nested Object properties
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
         public Batch BatchArgs { get; set; } = new Batch();
         [JsonIgnore]
@@ -31,6 +33,7 @@ namespace SqlSync.SqlBuild
         public AutoScripting AutoScriptingArgs { get; set; } = new AutoScripting();
         [JsonIgnore]
         public StoredProcTesting StoredProcTestingArgs { get; set; } = new StoredProcTesting();
+        #endregion
 
         private string settingsFile = string.Empty;
         [JsonIgnore]
@@ -84,16 +87,6 @@ namespace SqlSync.SqlBuild
         [JsonIgnore]
         public virtual string ScriptSrcDir { get; set; } = string.Empty;
         [JsonIgnore]
-        public virtual string UserName
-        {
-            set { AuthenticationArgs.UserName = value; }
-        }
-        [JsonIgnore]
-        public virtual string Password
-        {
-            set { AuthenticationArgs.Password = value; }
-        }
-        [JsonIgnore]
         public virtual string LogToDatabaseName { get; set; } = string.Empty;
         [JsonIgnore]
         public virtual string Description { get; set; } = string.Empty;
@@ -105,46 +98,46 @@ namespace SqlSync.SqlBuild
         public virtual bool Transactional { get; set; } = true;
         public virtual int TimeoutRetryCount { get; set; } = 0;
         [JsonIgnore]
-        public virtual string GoldServer
-        {
-            set { SynchronizeArgs.GoldServer = value; }
-        }
-        [JsonIgnore]
-        public virtual string GoldDatabase
-        {
-            set { SynchronizeArgs.GoldDatabase = value; }
-        }
-        [JsonIgnore]
         public bool ContinueOnFailure { get; set; }
-        [JsonIgnore]
-        public virtual string PlatinumDacpac
-        {
-            set { DacPacArgs.PlatinumDacpac = value; }
-        }
-        [JsonIgnore]
-        public virtual string TargetDacpac
-        {
-            set { DacPacArgs.TargetDacpac = value; }
-        }
-        [JsonIgnore]
-        public virtual bool ForceCustomDacPac
-        {
-            set { DacPacArgs.ForceCustomDacPac = value; }
-        }
-        [JsonIgnore]
-        public virtual string PlatinumDbSource
-        {
-            set { DacPacArgs.PlatinumDbSource = value; }
-        }
-        [JsonIgnore]
-        public virtual string PlatinumServerSource
-        {
-            set { DacPacArgs.PlatinumServerSource = value; }
-        }
         [JsonIgnore]
         public string BuildRevision { get; set; }
         [JsonIgnore]
         public string OutputSbm { get; set; }
+        public virtual int DefaultScriptTimeout { get; set; } = 500;
+        public bool WhatIf { get; set; } = false;
+
+        #region Not direct (inferred) commandline options
+        [JsonIgnore]
+        public virtual bool OverrideDesignated { get; set; } = false;
+        [JsonIgnore]
+        public virtual string MultiDbRunConfigFileName { get; set; } = string.Empty;
+        [JsonIgnore]
+        public virtual string ManualOverRideSets { get; set; } = string.Empty;
+        #endregion
+
+        #region Authentication Nested Class and property setters
+        [JsonIgnore]
+        public virtual string UserName
+        {
+            set { AuthenticationArgs.UserName = value; }
+        }
+        [JsonIgnore]
+        public virtual string Password
+        {
+            set { AuthenticationArgs.Password = value; }
+        }
+        [Serializable]
+        public class Authentication
+        {
+            public virtual string UserName { get; set; } = string.Empty;
+            public virtual string Password { get; set; } = string.Empty;
+
+            [JsonIgnore]
+            public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = Connection.AuthenticationType.Password;
+        }
+        #endregion
+
+        #region Batch Nested Class and property setters
         [JsonIgnore]
         public virtual string OutputContainerSasUrl
         {
@@ -215,30 +208,6 @@ namespace SqlSync.SqlBuild
         {
             set { BatchArgs.PollBatchPoolStatus = value; }
         }
-        public virtual int DefaultScriptTimeout { get; set; } = 500;
-
-
-
-        #region Not direct commandline options
-        [JsonIgnore]
-        public virtual bool OverrideDesignated { get; set; } = false;
-        [JsonIgnore]
-        public virtual string MultiDbRunConfigFileName { get; set; } = string.Empty;
-        [JsonIgnore]
-        public virtual string ManualOverRideSets { get; set; } = string.Empty;
-        #endregion
-
-
-        [Serializable]
-        public class Authentication
-        {
-            public virtual string UserName { get; set; } = string.Empty;
-            public virtual string Password { get; set; } = string.Empty;
-
-            [JsonIgnore]
-            public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = Connection.AuthenticationType.Password;
-        }
-
         [Serializable]
         public class Batch
         {
@@ -260,14 +229,53 @@ namespace SqlSync.SqlBuild
             public string BatchPoolName { get; set; } = null;
             public string EventHubConnectionString { get; set; } = string.Empty;
         }
+        #endregion
 
+        #region Synchronize Nested Class and property setters
+        [JsonIgnore]
+        public virtual string GoldServer
+        {
+            set { SynchronizeArgs.GoldServer = value; }
+        }
+        [JsonIgnore]
+        public virtual string GoldDatabase
+        {
+            set { SynchronizeArgs.GoldDatabase = value; }
+        }
         [Serializable]
         public class Synchronize
         {
             public virtual string GoldDatabase { get; set; }
             public virtual string GoldServer { get; set; }
         }
+        #endregion
 
+        #region DacPac Nested Class and property setters
+        [JsonIgnore]
+        public virtual string PlatinumDacpac
+        {
+            set { DacPacArgs.PlatinumDacpac = value; }
+        }
+        [JsonIgnore]
+        public virtual string TargetDacpac
+        {
+            set { DacPacArgs.TargetDacpac = value; }
+        }
+        [JsonIgnore]
+        public virtual bool ForceCustomDacPac
+        {
+            set { DacPacArgs.ForceCustomDacPac = value; }
+        }
+        [JsonIgnore]
+        public virtual string PlatinumDbSource
+        {
+            set { DacPacArgs.PlatinumDbSource = value; }
+        }
+        [JsonIgnore]
+        public virtual string PlatinumServerSource
+        {
+            set { DacPacArgs.PlatinumServerSource = value; }
+        }
         [Serializable]
         public class DacPac
         {
@@ -277,7 +285,7 @@ namespace SqlSync.SqlBuild
             public string PlatinumServerSource { get; set; }
             public bool ForceCustomDacPac { get; set; }
         }
-
+        #endregion
         [Serializable]
         public class AutoScripting
         {
