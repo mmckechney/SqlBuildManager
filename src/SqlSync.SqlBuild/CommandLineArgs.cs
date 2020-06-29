@@ -126,6 +126,11 @@ namespace SqlSync.SqlBuild
         {
             set { AuthenticationArgs.Password = value; }
         }
+        [JsonIgnore]
+        public virtual SqlSync.Connection.AuthenticationType AuthenticationType
+        {
+            set { AuthenticationArgs.AuthenticationType = value; }
+        }
         [Serializable]
         public class Authentication
         {

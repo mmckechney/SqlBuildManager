@@ -53,213 +53,177 @@ namespace SqlBuildManager.Console
                 #region System.CommandLine options
                 var settingsfileOption = new Option(new string[] { "--settingsfile" }, "Saved settings file to load parameters from")
                 {
-                    Argument = new Argument<string>("settingsfile"),
-                    Required = false
+                    Argument = new Argument<string>("settingsfile")
                 };
                 var overrideOption = new Option(new string[] { "--override" }, "File containing the target database settings (usually a formatted .cfg file)")
                 {
-                    Argument = new Argument<string>("override"),
-                    Required = false
+                    Argument = new Argument<string>("override")
                 };
                 var serverOption = new Option(new string[] { "--server" }, "1) Name of a server for single database run or 2) source server for scripting or runtime configuration")
                 {
-                    Argument = new Argument<string>("server"),
-                    Required = false
+                    Argument = new Argument<string>("server")
                 };
                 var databaseOption = new Option(new string[] { "--database" }, "1) Name of a single database to run against or 2) source database for scripting or runtime configuration")
                 {
-                    Argument = new Argument<string>("database"),
-                    Required = false
+                    Argument = new Argument<string>("database")
                 };
                 var rootloggingpathOption = new Option(new string[] { "--rootloggingpath" }, "Directory to save execution logs (for threaded and remote executions)")
                 {
-                    Argument = new Argument<string>("rootloggingpath"),
-                    Required = false
+                    Argument = new Argument<string>("rootloggingpath")
                 };
                 var trialOption = new Option(new string[] { "--trial" }, "Whether or not to run in trial mode(default is false)")
                 {
-                    Argument = new Argument<bool>("trial"),
-                    Required = false
+                    Argument = new Argument<bool>("trial")
                 };
                 var scriptsrcdirOption = new Option(new string[] { "--scriptsrcdir" }, " [Not recommended] Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)")
                 {
-                    Argument = new Argument<string>("scriptsrcdir"),
-                    Required = false
+                    Argument = new Argument<string>("scriptsrcdir")
                 };
                 var usernameOption = new Option(new string[] { "--username" }, "The username to authenticate against the database if not using integrate auth")
                 {
-                    Argument = new Argument<string>("username"),
-                    Required = false
+                    Argument = new Argument<string>("username")
                 };
                 var passwordOption = new Option(new string[] { "--password" }, "The password to authenticate against the database if not using integrate auth")
                 {
-                    Argument = new Argument<string>("password"),
-                    Required = false
+                    Argument = new Argument<string>("password")
                 };
                 var logtodatabasenamedOption = new Option(new string[] { "--logtodatabasename" }, "[Not recommended] Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target).")
                 {
-                    Argument = new Argument<string>("logtodatabasename"),
-                    Required = false
+                    Argument = new Argument<string>("logtodatabasename")
                 };
                 var descriptionOption = new Option(new string[] { "--description" }, "Description of build (logged with build)")
                 {
-                    Argument = new Argument<string>("description"),
-                    Required = false
+                    Argument = new Argument<string>("description")
                 };
-                var packagenameOption = new Option(new string[] { "--packagename", "--buildfilename" }, "Name of the .sbm or .sbx file to execute")
+                var packagenameOption = new Option(new string[] {"--packagename", "--buildfilename" }, "Name of the .sbm or .sbx file to execute")
                 {
                     Argument = new Argument<string>("BuildFileName"),
-                    Required = false
+                    Required = true
                 };
                 var directoryOption = new Option(new string[] { "--directory" }, "Directory containing 1 or more SBX files to package into SBM zip files")
                 {
                     Argument = new Argument<string>("directory"),
-                    Required = false
+                    Required = true
                 };
                 var transactionalOption = new Option(new string[] { "--transactional" }, "Whether or not to run with a wrapping transaction (default is true)")
                 {
-                    Argument = new Argument<bool>("transactional"),
-                    Required = false
+                    Argument = new Argument<bool>("transactional")
                 };
                 var timeoutretrycountOption = new Option(new string[] { "--timeoutretrycount" }, "How many retries to attempt if a timeout exception occurs")
                 {
-                    Argument = new Argument<int>("timeoutretrycount"),
-                    Required = false
+                    Argument = new Argument<int>("timeoutretrycount")
                 };
                 var golddatabaseOption = new Option(new string[] { "--golddatabase" }, "The \"gold copy\" database that will serve as the model for what the target database should look like")
                 {
                     Argument = new Argument<string>("golddatabase"),
-                    Required = false
+                    Required = true
                 };
                 var goldserverOption = new Option(new string[] { "--goldserver" }, "The server that the \"gold copy\" database can be found")
                 {
                     Argument = new Argument<string>("goldserver"),
-                    Required = false
+                    Required = true
                 };
                 var continueonfailureOption = new Option(new string[] { "--continueonfailure" }, "Whether or not to continue on the failure of a package (default is false)")
                 {
-                    Argument = new Argument<bool>("continueonfailure"),
-                    Required = false
+                    Argument = new Argument<bool>("continueonfailure")
                 };
                 var platinumdacpacOption = new Option(new string[] { "--platinumdacpac" }, "Name of the dacpac containing the platinum schema")
                 {
-                    Argument = new Argument<string>("platinumdacpac"),
-                    Required = false
+                    Argument = new Argument<string>("platinumdacpac")
                 };
                 var targetdacpacOption = new Option(new string[] { "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated")
                 {
-                    Argument = new Argument<string>("targetdacpac"),
-                    Required = false
+                    Argument = new Argument<string>("targetdacpac")
                 };
                 var forcecustomdacpacOption = new Option(new string[] { "--forcecustomdacpac" }, "USE WITH CAUTION! This will force the dacpac extraction and creation of custom scripts for EVERY target database! Your execution will take much longer.")
                 {
-                    Argument = new Argument<bool>("forcecustomdacpac"),
-                    Required = false
+                    Argument = new Argument<bool>("forcecustomdacpac")
                 };
                 var platinumdbsourceOption = new Option(new string[] { "--platinumdbsource" }, "Instead of a formally built Platinum Dacpac, target this database as having the desired state schema")
                 {
-                    Argument = new Argument<string>("platinumdbsource"),
-                    Required = false
+                    Argument = new Argument<string>("platinumdbsource")
                 };
                 var platinumserversourceOption = new Option(new string[] { "--platinumserversource" }, "Instead of a formally built Platinum Dacpac, target a database on this server as having the desired state schema")
                 {
-                    Argument = new Argument<string>("platinumserversource"),
-                    Required = false
+                    Argument = new Argument<string>("platinumserversource")
                 };
                 var buildrevisionOption = new Option(new string[] { "--buildrevision" }, "If provided, the build will include an update to a \"Versions\" table and this will be the value used to add to a \"VersionNumber\" column (varchar(max))")
                 {
-                    Argument = new Argument<string>("buildrevision"),
-                    Required = false
+                    Argument = new Argument<string>("buildrevision")
                 };
                 var outputsbmOption = new Option(new string[] { "--outputsbm" }, "Name (and path) of the SBM package to create")
                 {
-                    Argument = new Argument<string>("outputsbm"),
-                    Required = false
+                    Argument = new Argument<string>("outputsbm")
                 };
                 var outputcontainersasurlOption = new Option(new string[] { "--outputcontainersasurl" }, "Override of default storage container for batch output")
                 {
-                    Argument = new Argument<string>("outputcontainersasurl"),
-                    Required = false
+                    Argument = new Argument<string>("outputcontainersasurl")
                 };
                 var deletebatchpoolOption = new Option(new string[] { "--deletebatchpool" }, "Whether or not to delete the batch pool servers after an execution (default is false)")
                 {
-                    Argument = new Argument<bool>("deletebatchpool"),
-                    Required = false
+                    Argument = new Argument<bool>("deletebatchpool")
                 };
                 var deletebatchjobOption = new Option(new string[] { "--deletebatchjob" }, "Whether or not to delete the batch job after an execution (default is true)")
                 {
-                    Argument = new Argument<bool>("deletebatchjob"),
-                    Required = false
+                    Argument = new Argument<bool>("deletebatchjob")
                 };
                 var batchnodecountOption = new Option(new string[] { "--batchnodecount" }, "Number of nodes to provision to run the batch job  (default is 10)")
                 {
-                    Argument = new Argument<int>("batchnodecount"),
-                    Required = false
+                    Argument = new Argument<int>("batchnodecount")
                 };
                 var batchjobnameOption = new Option(new string[] { "--batchjobname" }, "[Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed")
                 {
-                    Argument = new Argument<string>("batchjobname"),
-                    Required = false
+                    Argument = new Argument<string>("batchjobname")
                 };
                 var batchaccountnameOption = new Option(new string[] { "--batchaccountname" }, "String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]")
                 {
-                    Argument = new Argument<string>("batchaccountname"),
-                    Required = false
+                    Argument = new Argument<string>("batchaccountname")
                 };
                 var batchaccountkeyOption = new Option(new string[] { "--batchaccountkey" }, "Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]")
                 {
-                    Argument = new Argument<string>("batchaccountkey"),
-                    Required = false
+                    Argument = new Argument<string>("batchaccountkey")
                 };
                 var batchaccounturlOption = new Option(new string[] { "--batchaccounturl" }, "URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]")
                 {
-                    Argument = new Argument<string>("batchaccounturl"),
-                    Required = false
+                    Argument = new Argument<string>("batchaccounturl")
                 };
                 var storageaccountnameOption = new Option(new string[] { "--storageaccountname" }, "Name of storage account associated with the Azure Batch account  [can also be set via StorageAccountName app settings key]")
                 {
-                    Argument = new Argument<string>("storageaccountname"),
-                    Required = false
+                    Argument = new Argument<string>("storageaccountname")
                 };
                 var storageaccountkeyOption = new Option(new string[] { "--storageaccountkey" }, "Account Key for the storage account  [can also be set via StorageAccountKey app settings key]")
                 {
-                    Argument = new Argument<string>("storageaccountkey"),
-                    Required = false
+                    Argument = new Argument<string>("storageaccountkey")
                 };
                 var batchvmsizeOption = new Option(new string[] { "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]")
                 {
-                    Argument = new Argument<string>("batchvmsize"),
-                    Required = false
+                    Argument = new Argument<string>("batchvmsize")
                 };
                 var batchpoolnameOption = new Option(new string[] { "--batchpoolname" }, "Override for the default pool name of \"SqlBuildManagerPool\"")
                 {
-                    Argument = new Argument<string>("batchpoolname"),
-                    Required = false
+                    Argument = new Argument<string>("batchpoolname")
                 };
                 var eventhubconnectionOption = new Option(new string[] { "--eventhubconnection" }, "Event Hub connection string for Event Hub logging of batch execution")
                 {
-                    Argument = new Argument<string>("eventhubconnection"),
-                    Required = false
+                    Argument = new Argument<string>("eventhubconnection")
                 };
                 var pollbatchpoolstatusOption = new Option(new string[] { "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true, default) or fire and forget (false)")
                 {
-                    Argument = new Argument<bool>("pollbatchpoolstatus"),
-                    Required = false
+                    Argument = new Argument<bool>("pollbatchpoolstatus")
                 };
                 var defaultscripttimeoutOption = new Option(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC (default is 500)")
                 {
-                    Argument = new Argument<int>("defaultscripttimeout"),
-                    Required = false
+                    Argument = new Argument<int>("defaultscripttimeout")
                 };
                 var authtypeOption = new Option(new string[] { "--authtype" }, "Values: \"Windows\", \"AzureADIntegrated\", \"AzureADPassword\", \"Password\" (default)")
                 {
-                    Argument = new Argument<SqlSync.Connection.AuthenticationType>("authtype"),
-                    Required = false
+                    Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType",() => SqlSync.Connection.AuthenticationType.AzureADPassword),
+                    Name = "AuthenticationType"
+
                 };
                 var whatIfOption = new Option(new string[] { "--whatif" }, "Provides commandline validation and some authentication validation")
                 {
-                    Argument = new Argument<bool>("whatif"),
-                    Required = false
+                    Argument = new Argument<bool>("whatif")
                 };
                 List<Option> authOptions = new List<Option>()
                 {
@@ -269,7 +233,6 @@ namespace SqlBuildManager.Console
 
                 List<Option> generalbuildAndThreadOptions = new List<Option>()
                 {
-                    packagenameOption,
                     rootloggingpathOption,
                     trialOption,
                     transactionalOption,
@@ -329,17 +292,17 @@ namespace SqlBuildManager.Console
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(CreateBackout)
                 };
-                var getDifferenceCommand = new Command("getdifference", "Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between /Database and /GoldDatabase")
+                var getDifferenceCommand = new Command("getdifference", "Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between /Database and /GoldDatabase. Only supports Windows Auth")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(GetDifferences)
                 };
-                var synchronizeCommand = new Command("synchronize", "Performs a database syncronization between between /Database and /GoldDatabase")
+                var synchronizeCommand = new Command("synchronize", "Performs a database syncronization between between /Database and /GoldDatabase. Can only be used for Windows Auth database targets")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(SyncronizeDatabase)
                 };
                 var buildCommand = new Command("build", "Performs a standard, local SBM execution via command line")
                 {
-                    Handler = CommandHandler.Create<string[]>(StandardExecution)
+                    Handler = CommandHandler.Create<CommandLineArgs>(RunSingleBuildAsync)
                 };
                 var scriptExtractCommand = new Command("scriptextract", "Extract a SBM package from a source /PlatinumDacPac")
                 {
@@ -365,7 +328,6 @@ namespace SqlBuildManager.Console
 
                 
                 #endregion
-
                 rootCommand.Add(buildCommand);
                 rootCommand.Add(threadedCommand);
                 rootCommand.Add(batchCommand);
@@ -386,13 +348,16 @@ namespace SqlBuildManager.Console
                 //General Building options
                 authOptions.ForEach(a => buildCommand.Add(a));
                 buildCommand.Add(authtypeOption);
+                buildCommand.Add(packagenameOption.Copy(true));
+                buildCommand.Add(serverOption.Copy(true));
                 generalbuildAndThreadOptions.ForEach(a => buildCommand.Add(a));
-                buildCommand.Add(databaseOption);
-                buildCommand.Add(serverOption);
+               // buildCommand.Add(databaseOption);
+               // buildCommand.Add(serverOption);
 
                 //Threaded Building options
                 authOptions.ForEach(a => threadedCommand.Add(a));
                 threadedCommand.Add(authtypeOption);
+                threadedCommand.Add(packagenameOption);
                 generalbuildAndThreadOptions.ForEach(a => threadedCommand.Add(a));
                 threadedCommand.Add(platinumdacpacOption);
                 threadedCommand.Add(targetdacpacOption);
@@ -407,14 +372,13 @@ namespace SqlBuildManager.Console
                 generalBatchNodeOptions.ForEach(a => batchRunCommand.Add(a));
                 generalBatchExecutionOptions.ForEach(a => batchRunCommand.Add(a));
                 batchRunCommand.Add(platinumdacpacOption);
-                batchRunCommand.Add(packagenameOption);
+                batchRunCommand.Add(packagenameOption.Copy(false));
                 batchRunCommand.Add(batchjobnameOption);
                 batchRunCommand.Add(targetdacpacOption);
                 batchRunCommand.Add(forcecustomdacpacOption);
                 batchRunCommand.Add(platinumdbsourceOption);
                 batchRunCommand.Add(platinumserversourceOption);
                 
-
                 //Batch pre-stage
                 generalBatchAccountOptions.ForEach(a => batchPreStageCommand.Add(a));
                 generalBatchNodeOptions.ForEach(a => batchPreStageCommand.Add(a));
@@ -433,31 +397,40 @@ namespace SqlBuildManager.Console
                 saveSettingsCommand.Add(pollbatchpoolstatusOption);
 
 
-                scriptExtractCommand.Add(platinumdacpacOption);
-                scriptExtractCommand.Add(outputsbmOption);
+                scriptExtractCommand.Add(platinumdacpacOption.Copy(true));
+                scriptExtractCommand.Add(outputsbmOption.Copy(true));
+                scriptExtractCommand.Add(databaseOption.Copy(true));
+                scriptExtractCommand.Add(serverOption.Copy(true));
+                scriptExtractCommand.Add(usernameOption.Copy(true));
+                scriptExtractCommand.Add(passwordOption.Copy(true));
+
 
                 authOptions.ForEach(a => synchronizeCommand.Add(a));
                 synchronizeCommand.Add(golddatabaseOption);
                 synchronizeCommand.Add(goldserverOption);
+                synchronizeCommand.Add(databaseOption.Copy(true));
+                synchronizeCommand.Add(serverOption.Copy(true));
                 synchronizeCommand.Add(continueonfailureOption);
 
-                authOptions.ForEach(a => getDifferenceCommand.Add(a));
-                getDifferenceCommand.Add(authtypeOption);
+               // authOptions.ForEach(a => getDifferenceCommand.Add(a));
+               // getDifferenceCommand.Add(authtypeOption);
                 getDifferenceCommand.Add(golddatabaseOption);
                 getDifferenceCommand.Add(goldserverOption);
-                getDifferenceCommand.Add(continueonfailureOption);
+                getDifferenceCommand.Add(databaseOption.Copy(true));
+                getDifferenceCommand.Add(serverOption.Copy(true));
+
 
                 packageCommand.Add(directoryOption);
 
-                policyCheckCommand.Add(packagenameOption);
+                policyCheckCommand.Add(packagenameOption.Copy(true));
 
                 getHashCommand.Add(packagenameOption);
 
                 authOptions.ForEach(a => createBackoutCommand.Add(a));
                 createBackoutCommand.Add(authtypeOption);
                 createBackoutCommand.Add(packagenameOption);
-                createBackoutCommand.Add(serverOption);
-                createBackoutCommand.Add(databaseOption);
+                createBackoutCommand.Add(serverOption.Copy(true));
+                createBackoutCommand.Add(databaseOption.Copy(true));
 
                 CommandLineBuilder clb = new CommandLineBuilder(rootCommand);
                 clb.UseMiddleware(async (context, next) =>
@@ -871,7 +844,38 @@ namespace SqlBuildManager.Console
         //    }
         //}
         #endregion
+        private static async Task<int> RunSingleBuildAsync(CommandLineArgs cmdLine)
+        {
+            DateTime start = DateTime.Now;
+            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
+            log.Debug("Entering Single Build Execution");
+            log.Info("Running...");
 
+            var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
+            if(string.IsNullOrEmpty(cmdLine.RootLoggingPath))
+            {
+                cmdLine.RootLoggingPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+            }
+            var tmpName = Path.Combine(cmdLine.RootLoggingPath, $"Override-{Guid.NewGuid().ToString()}.cfg");
+            File.WriteAllText(tmpName, ovrRide);
+            cmdLine.Override = tmpName;
+            ThreadedExecution runner = new ThreadedExecution(cmdLine);
+            int retVal = runner.Execute();
+            if (retVal == (int)ExecutionReturn.Successful)
+            {
+                log.Info("Completed Successfully");
+            }
+            else
+            {
+                log.Warn("Completed with Errors - check log");
+            }
+            TimeSpan span = DateTime.Now - start;
+            string msg = "Total Run time: " + span.ToString();
+            log.Info(msg);
+            log.Debug("Exiting Single Build Execution");
+
+            return retVal;
+        }
         private static async Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine)
         {
             DateTime start = DateTime.Now;
