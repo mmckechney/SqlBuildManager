@@ -54,6 +54,8 @@ Example `SqlSyncBuildProject.xml` file. You can build this by hand to create you
 </SqlSyncBuildData>
 ```
 
+----
+
 ## Creating a Build Package
 
 ### Forms UI
@@ -62,31 +64,33 @@ While the focus of the app has changed to command line automation, the forms GUI
 
 ### Command line
 
-The command line utility is geared more toward executing a build vs. creating the package itself. You can however extract a build package file from a DACPAC file using the `Action=ScriptExtract` flag. This is useful if you are utilizing the recommended [data-tier application](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications?view=sql-server-2017)  method.
+The command line utility is geared more toward executing a build vs. creating the package itself. You can however extract a build package file from a DACPAC file using the `sbm scriptextract` command. This is useful if you are utilizing the recommended [data-tier application](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications?view=sql-server-2017)  method.
 
-A DACPAC can also be created directly from a target "Platinum Database" (why platinum? because it's even more precious than gold!). Using the `/Action={Threaded|Batch}` along with the flags `/PlatinumDbSource="<database name>"` and `/PlatinumServerSource="<server name>"` the app will generate a DACPAC from the source database then can then be used to run a build directly on your target(s).
+A DACPAC can also be created directly from a target "Platinum Database" (why platinum? because it's even more precious than gold!). Using the `sbm threaded` and `sbm batch run` commands along with the `--platinumdbsource="<database name>"` and `--platinumserversource="<server name>"` the app will generate a DACPAC from the source database then can then be used to run a build directly on your target(s).
+
+----
 
 ## Running Builds (command line)
 
-There are 4 ways to run your database update builds each with their target use case
+There are 3 ways to run your database update builds each with their target use case
 
-### Local
+### **Local**
 
-Leveraging the `/Action=Build` command, this runs the build on the current local machine. If you are targeting more than one database, the execution will be serial, only updating one database at a time and any transaction rollback will occur to all databases in the build.
+Leveraging the `sbm build` command, this runs the build on the current local machine. If you are targeting more than one database, the execution will be serial, only updating one database at a time and any transaction rollback will occur to all databases in the build.
 
-### Threaded
+### **Threaded**
 
-Using the `/Action=Threaded` command will allow for updating multiple databases in parallel, but still executed from the local machine. Any transaction rollbacks will occur per-database - meaning if 5 of 6 databases succeed, the build will be committed on the 5 and rolled back only on the 6th
+Using the `sbm threaded` command will allow for updating multiple databases in parallel, but still executed from the local machine. Any transaction rollbacks will occur per-database - meaning if 5 of 6 databases succeed, the build will be committed on the 5 and rolled back only on the 6th
 
-### Batch
+### **Batch**
 
-Using the `/Action=Batch` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](docs/AzureBatch.md).
-
+Using the `sbm batch` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](docs/AzureBatch.md).\
 An excellent tool for viewing and monitoring your Azure batch accounts and jobs can be found here [https://azure.github.io/BatchExplorer/](https://azure.github.io/BatchExplorer/)
 
+----
 
-### For full command line reference details, go [here](docs/commandline.md)
+## Additional Documentation
 
-### Detailed information on leveraging Azure Batch for massively parallel deployments, go [here](docs/AzureBatch.md)
-
-### For help on building and unit testing, go [here](docs/localbuild.md)
+- ### Full command line reference details: [here](docs/commandline.md)
+- ### Detailed information on leveraging Azure Batch for massively parallel deployments: [here](docs/AzureBatch.md)
+- ### For help on building and unit testing:  [here](docs/localbuild.md)

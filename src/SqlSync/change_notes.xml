@@ -1,5 +1,12 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="11" Minor="1" Revision="0">
+    <note>Now built against .NET Standard 2.1 and .NET Core 3.1</note>
+    <added>New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution</added>
+    <updated>Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not</updated>
+    <added>Shortened command line executable name `sbm.exe` leveraging the [System.CommmandLine](https://github.com/dotnet/command-line-api) command pattern and validation (`sbm [command] [options]`).
+      The old executable (`SqlBuildManager.Console.exe`) with the prior pattern of `/Action=verb` is still supported is still available</added>
+  </Version>
   <Version Major="11" Minor="0" Revision="0">
     <note>MAJOR CHANGE -- removed the legacy Azure Cloud Service deployment model. Please update to use the Azure Batch model instead!</note>
     <added>New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution</added>
@@ -25,7 +32,7 @@
   </Version>
   <Version Major="10" Minor="4" Revision="0">
     <added>Functionality to leverage Azure Batch as an execution engine</added>
-    <updated>Swaped out SharpZipLib to remove Zip Slip vulnerability </updated>
+    <updated>Swapped out SharpZipLib to remove Zip Slip vulnerability </updated>
    </Version>
   <Version Major="10" Minor="3" Revision="0">
     <added>New authentication types for Azure: Azure AD Password and Azure AD Integrated</added>
@@ -33,7 +40,7 @@
     <note>Also required is the Microsoft Active Directory Authentication Library for Microsoft SQL Server (https://www.microsoft.com/en-us/download/details.aspx?id=48742)</note>
   </Version>
    <Version Major="10" Minor="2" Revision="12">
-    <added>Added commandline to create an SBM package from a Platinum Dacpac and target database. New action /Action=ScriptExtract and /OutputSbm="&lt;filename&gt;"</added>
+    <added>Added command line to create an SBM package from a Platinum Dacpac and target database. New action /Action=ScriptExtract and /OutputSbm="&lt;filename&gt;"</added>
     <added>Now masking passwords on log messages</added>
      <note>Consolidating cloud storage locations</note>
      <note>Removing obsolete projects from solution</note>
@@ -73,7 +80,7 @@
   <Version Major="10" Minor="2" Revision="1">
     <added>Ability to use a SQL file as the source for a multi-database configuration source. The query must return 2 columns: 1)server name 2) database name</added>
     <added>Ability to specify a /PlatinumDbSource and /PlatinumServerSource as sources to generate the Platinum dacpac at runtime, vs using a pre-composed dacpac file</added>
-    <updated>Reworked commandline to use a single "/Action" argument that designates the basic functionality of the runtime instance</updated>
+    <updated>Reworked command line to use a single "/Action" argument that designates the basic functionality of the runtime instance</updated>
   </Version>
   <Version Major="10" Minor="1" Revision="1">
     <added>Added console argument /AzureRemoteStatus=true to list Azure remote execution machines and their readiness status</added>
@@ -100,8 +107,8 @@
   <Version Major="9" Minor="2" Revision="1">
     <!-- April 30, 2014 -->
     <added>New policy check status that warns you that code should be reviewed before release</added>
-    <added>Commandline abilty to check script policies. Usage: SqlBuildManager.Console.exe /PolicyCheck "&lt;Source Package Path and Name&gt;" </added>
-    <added>Commandline ability to create a default backout package. Usage: SqlBuildManager.Console.exe /CreateBackout "&lt;Source Package Path and Name&gt;" /server="&lt;Backout source server&gt;" /database="&lt;Backout source database&gt;"</added>
+    <added>command line abilty to check script policies. Usage: SqlBuildManager.Console.exe /PolicyCheck "&lt;Source Package Path and Name&gt;" </added>
+    <added>command line ability to create a default backout package. Usage: `SqlBuildManager.Console.exe /CreateBackout "&lt;Source Package Path and Name&gt;" /server="&lt;Backout source server&gt;" /database="&lt;Backout source database&gt;`"</added>
     <fixed>Script policy icons were getting set to &quot;Policy checks not run&quot; after a committed build</fixed>
     <fixed>Database login error for accounts that do not have code review database permissions</fixed>
     <updated>Added additional quick status update for the remote service to hopefully resolve issue on slower servers</updated>
@@ -115,7 +122,7 @@
   </Version>
   <Version Major="9" Minor="0" Revision="0">
     <!-- February 5, 2013 -->
-    <note>** New install requires .NET Framework 4.0 ** If you do not have this version installed (but you really should), please contact Mike to assist in making your current tool version forward compatible.</note>
+    <note>**New install requires .NET Framework 4.0** If you do not have this version installed (but you really should), please contact Mike to assist in making your current tool version forward compatible.</note>
     <added>Ability to track and manage code reviews of the SQL scripts</added>
     <added>Prohibited the use of the Ad Hoc query execution to perform INSERT, UPDATE or DELETE queries. A build package should be used instead to ensure proper logging and tracking</added>
     <added>Now logs an individual script start and end time in the SqlBuild_Logging table</added>
@@ -226,8 +233,8 @@
     <added>Ability to compare previously run versions of a script to each other (vs. just comparing to the existing current script). Available via the "View Run History Against Current Server" script context menu item. </added>
     <added>Shows script count at bottom of main window</added>
     <fixed>When retrieving the detailed database log from a remote service agent, the log for the specified run date is returned instead of just the newest file.</fixed>
-    <added>New commandline remote execution validation that will fail the request if any database servers are in the package but don't have a matching remote execution server</added>
-    <fixed>CommandLine builder now strips of trailing backslash (\) from root logging path to avoid incorrect arguments parsing</fixed>
+    <added>New command line remote execution validation that will fail the request if any database servers are in the package but don't have a matching remote execution server</added>
+    <fixed>command line builder now strips of trailing backslash (\) from root logging path to avoid incorrect arguments parsing</fixed>
     <fixed>Corrected SQL Server SMO scripting error - it was leaving off the schema designation on table defaults for the IF NOT EXISTS check.</fixed>
   </Version>
   <Version Major="8" Minor="6" Revision="6">
@@ -240,7 +247,7 @@
     <fixed>Package hash was not changing when scripts were reordered. It will now be different because the execution order can effect the final state of the database and as such the hash should be different</fixed>
   </Version>
   <Version Major="8" Minor="6" Revision="4">
-    <note>** ATTENTION! Due to a change in the parsing algorithm for scripts, hash values may differ between this version and prior versions of the tool! UPDATE AS SOON AS POSSIBLE. **</note>
+    <note>**ATTENTION! Due to a change in the parsing algorithm for scripts, hash values may differ between this version and prior versions of the tool! UPDATE AS SOON AS POSSIBLE.**</note>
     <updated>Changed the ad hoc query working directory from the user's temp folder to a hidden subfolder of the destination file. This is to avoid issues with lack of storage.</updated>
     <added>Ability to set script timeout for ad hoc queries.</added>
     <updated>Modified the batching of scripts to ignore "GO" delimiter in a comment block. This may effect the hash value of some scripts but 99% of the ones I have tested are unchanged. For the 1%, they may get a "changed" icon when in fact they were not changed.</updated>
@@ -483,7 +490,7 @@
     <added>Warning when scripts weren't successfully removed from a script list (still working on root cause of intermittent problem)</added>
     <updated>Default key for removing scripts is now "No" instead of "Yes" to help eliminate unwanted removals.</updated>
   </Version>
-  <Version Major="8" Minor="1" Revision="4">
+  <Version Major="8" Minor="1" Revision="3">
     <fixed>Error in script list background color updating under some scenarios</fixed>
     <fixed>Error blocking scripts when they were pre-run on the server, but not the specific database</fixed>
     <added>New script helper to automatically add "WITH (NOLOCK)" directives on all "FROM" type statements: FROM, INNER JOIN, OUTER JOIN, RIGHT JOIN, LEFT JOIN. This can be used to improve select performance when a lock is not required on the target data.</added>
@@ -497,8 +504,7 @@
     <added>Ability to add more than one update location for version checking. Can add delimited list for ProgramVersionCheckURL and ProgramUpdateFolderURL appsettings. They match up by array index, so make sure they're in order. </added>
   </Version>
   <Version Major="8" Minor="1" Revision="0">
-    <note>
-      Major Update!   Now allows for managing scripts in either a single file package (the original .sbm file) or via a "loose" file structure. This new mechanism consists of a build control XML file (.sbx) that contains the script run metadata for the scripts that co-resident in the same file system directory. When you're ready to put them all together, a "package" feature is there to put all the files into a new build .sbm package.
+    <note>Major Update!   Now allows for managing scripts in either a single file package (the original .sbm file) or via a "loose" file structure. This new mechanism consists of a build control XML file (.sbx) that contains the script run metadata for the scripts that co-resident in the same file system directory. When you're ready to put them all together, a "package" feature is there to put all the files into a new build .sbm package.
     </note>
     <added>Ability to create update/insert scripts from Data Extract file</added>
     <fixed>Added schema name to the table in database analysis page</fixed>
@@ -546,10 +552,10 @@
   <Version Major="7" Minor="6" Revision="9">
     <added>Automatically detects="" and strips our SQL "USE" statements (this should be handled by the tool)</added>
     <added>Project modifications to allow clean checkout/build/test process.</added>
-    <added>&lt;Ctrl&gt; key modifier to open project file temp directory when clicking on project file name in main window.</added>
+    <added>`&lt;Ctrl&gt;` key modifier to open project file temp directory when clicking on project file name in main window.</added>
     <added>  More robust schema validation to ensure build file load.</added>
   </Version>
-  <Version Major="7" Minor="6" Revision="9">
+  <Version Major="7" Minor="6" Revision="8">
     <added>Updated content checking</added>
   </Version>
   <Version Major="7" Minor="6" Revision="7">

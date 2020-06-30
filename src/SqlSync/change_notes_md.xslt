@@ -9,6 +9,8 @@
       <xsl:for-each select="Version">
 					
 ### Version <xsl:value-of select="@Major"/>.<xsl:value-of select="@Minor"/>.<xsl:value-of select="@Revision"/>
+        <xsl:text>&#xa;</xsl:text>
+        
 <xsl:for-each select="child::*">
 <xsl:choose>
 <xsl:when test="name() = 'note'">

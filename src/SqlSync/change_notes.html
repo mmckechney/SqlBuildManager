@@ -39,11 +39,26 @@
   </head>
   <body>
     <h1>SQL Build Manager Change Notes</h1>
+    <div class="version">Version 11.1.0</div>
+    <div>
+      <span class="note">NOTE: </span>Now built against .NET Standard 2.1 and .NET Core 3.1</div>
+    <div>
+      <span class="added">ADDED: </span>New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution</div>
+    <div>
+      <span class="updated">UPDATED: </span>Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not</div>
+    <div>
+      <span class="added">ADDED: </span>Shortened command line executable name `sbm.exe` leveraging the [System.CommmandLine](https://github.com/dotnet/command-line-api) command pattern and validation (`sbm [command] [options]`).
+      The old executable (`SqlBuildManager.Console.exe`) with the prior pattern of `/Action=verb` is still supported is still available</div>
+    <br />
     <div class="version">Version 11.0.0</div>
     <div>
       <span class="note">NOTE: </span>MAJOR CHANGE -- removed the legacy Azure Cloud Service deployment model. Please update to use the Azure Batch model instead!</div>
     <div>
       <span class="added">ADDED: </span>New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution</div>
+    <div>
+      <span class="updated">UPDATED: </span>Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not</div>
+    <div>
+      <span class="added">ADDED: </span>YML files for Azure DevOps builds (and changes to ensure they build successfully)</div>
     <br />
     <div class="version">Version 10.4.4</div>
     <div>

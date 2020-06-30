@@ -276,7 +276,7 @@ namespace SqlBuildManager.Console
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(RunThreadedExecutionAsync)
                 };
-                var packageCommand = new Command("package", "Creates an SBM package from an SBX configuraiton file and scripts")
+                var packageCommand = new Command("package", "Creates an SBM package from an SBX configuration file and scripts")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(PackageSbxFilesIntoSbmFiles)
                 };
@@ -296,7 +296,7 @@ namespace SqlBuildManager.Console
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(GetDifferences)
                 };
-                var synchronizeCommand = new Command("synchronize", "Performs a database syncronization between between --database and --golddatabase. Can only be used for Windows Auth database targets")
+                var synchronizeCommand = new Command("synchronize", "Performs a database synchronization between between --database and --golddatabase. Can only be used for Windows Auth database targets")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(SyncronizeDatabase)
                 };

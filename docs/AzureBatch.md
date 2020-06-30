@@ -20,7 +20,7 @@ _Note_: this method has the added benefit of also uploading the [latest release 
 Sample script
 
 ``` powershell
-.\deploy_batch.ps1 -subscriptionId <your sub GUID> -parametersFilePath azuredeploy.parameters.json -resourceGroupName myresourcegrp -resourceGroupLocation EastUs -sbmReleaseUrl https://github.com/mmckechney/SqlBuildManager/releases/download/v11.0.0/SqlBuildManager-v11.0.0.zip
+.\deploy_batch.ps1 -subscriptionId <your sub GUID> -parametersFilePath azuredeploy.parameters.json -resourceGroupName myresourcegrp -resourceGroupLocation EastUs -sbmReleaseUrl https://github.com/mmckechney/SqlBuildManager/releases/download/v11.1.0/SqlBuildManager-v11.1.0.zip
 
 ```
 
@@ -30,11 +30,11 @@ Assuming the script succeeds, the last few lines will provide pre-populated argu
 ```text
 Pre-populated command line arguments. Record these for use later:
 
-/BatchAccountName=mybatchaccountname
-/BatchAccountUrl=https://mybatchaccountname.eastus.batch.azure.com
-/BatchAccountKey=CLHvqpOqRW2X+z6Z2G/25zY9sQn/ePLMRknX1EbA79AJ74UVLV/7X1HqE91xV0UF24fPJYZfqDM/cfU6c1lPTA==
-/StorageAccountName=mystorageaccountname
-/StorageAccountKey=deDGkC2D3eOzI2BiVVmrxVpP1PPf7AdllA89HRYRAxD703iM/Me4D815aNYJTan8xiRypmfQ7QxCnZhM7QlYog==
+--batchaccountname=mybatchaccountname
+--batchaccounturl=https://mybatchaccountname.eastus.batch.azure.com
+--batchaccountkey=CLHvqpOqRW2X+z6Z2G/25zY9sQn/ePLMRknX1EbA79AJ74UVLV/7X1HqE91xV0UF24fPJYZfqDM/cfU6c1lPTA==
+--storageaccountname=mystorageaccountname
+--storageaccountkey=deDGkC2D3eOzI2BiVVmrxVpP1PPf7AdllA89HRYRAxD703iM/Me4D815aNYJTan8xiRypmfQ7QxCnZhM7QlYog==
 ```
 
 ### **Option 2: Direct ARM Template deployment**
@@ -97,18 +97,18 @@ Login to the Azure Portal at <http://portal.azure.com>
 
 (for a full end-to-end example, see [this document](./AzureBatchExample.md))
 
-Azure Batch builds are started locally via `SqlBuildManager.Console.exe`. This process communicates with the Azure Storage account and Azure Batch account to execute in  parallel across the pool of Batch compute nodes. The number of nodes that are provisioned is determined by your command line arguments.
+Azure Batch builds are started locally via `sbm.exe`. This process communicates with the Azure Storage account and Azure Batch account to execute in  parallel across the pool of Batch compute nodes. The number of nodes that are provisioned is determined by your command line arguments.
 
 ### Recommended order of execution:
  
- #### Pre-stage the Azure Batch pool VMs
+#### 1. Pre-stage the Azure Batch pool VMs
 
-Execute SqlBuildManager.Console.exe with the `/Action=BatchPreStage` directive. This will create the desired number of Azure Batch VM's ahead of time\
-(_NOTE:_ it can take 10-20 minutes for the VMs to be provisioned and ready). See the argument details [here](#azure-batch---pre-stage-batch-nodes-actionbatchprestage)
+Execute `sbm batch prestage [options]`. This will create the desired number of Azure Batch VM's ahead of time\
+(_NOTE:_ it can take 10-20 minutes for the VMs to be provisioned and ready). See the argument details [here](#azure-batch---pre-stage-batch-nodes)
 
-#### Execute batch build
+#### 2. Execute batch build
 
- Execute `SqlBuildManager.Console.exe` with the `/Action=batch` directive. See the argument details [here](#azure-batch-execution-actionbatch)
+ Execute `sbm batch run [options]`. See the argument details [here](#azure-batch-execution)
 
 This will start the following process:
 
@@ -117,87 +117,111 @@ This will start the following process:
 3. The resource files are uploaded to the Storage account 
 4. The workload tasks are send to each Batch node
 5. The local executable polls for node status, waiting for each to complete
-6. Once complete, the aggregate return code is used as the exit code for `SqlBuildManager.Console.exe` 
+6. Once complete, the aggregate return code is used as the exit code for `sbm` 
 7. The log files for each of the nodes is uploaded to the Storage account associated with the Batch
 8. A Sas token URL to get read-only access to the log files is included in the console output. You can also view these files via the Azure portal or the [Azure Batch Explorer](https://azure.github.io/BatchExplorer/)
 
-#### Inspect logs if an issue is reported
+#### 3. Inspect logs if an issue is reported
 
 If there is a issue with the execution - either with the SQL updates or something with the program, logs will be created. See the [log details](#Log-details) to see what files to expect.
 
-#### Cleanup post build
+#### 4. Cleanup post build
 
-1. Execute SqlBuildManager.Console.exe with the `/Action=BatchCleanup` directive. This will delete the Azure Batch VM's so you are no longer charged for the compute. See the argument details [here](#azure-batch-clean-up-delete-nodes-actionbatchcleanup)\
+1. Execute `sbm batch cleanup [options]`. This will delete the Azure Batch VM's so you are no longer charged for the compute. See the argument details [here](#azure-batch-clean-up-delete-nodes)\
 _NOTE:_ this will not delete the log files, these are generally needed more long term and they will stay in the storage account
 
 ### Alternative run options
 
-If you prefer a one step execution, you can run the command line to create and delete the pool VMs in-line with your execution. To do this, you would use the `/Action=Batch` action argument along with the [additional arguments](#Additional-arguments) to create and delete the pool
+If you prefer a one step execution, you can run the command line to create and delete the pool VMs in-line with your execution. To do this, you would use `sbm batch run` along with the [additional arguments](#Additional-arguments) to create and delete the pool
 
 ## Examples
 
 The following command contains all of the required arguments to run a Batch job:
 
-```
-SqlBuildManager.Console.exe /Action=Batch /override="C:\temp\override.cfg" /PackageName=c:\temp\mybuild.sbm /username=myname /password=P@ssw0rd! /DeleteBatchPool=false /BatchNodeCount=5 /BatchVmSize=STANDARD_DS1_V2 /BatchAccountName=mybatch /BatchAccountUrl=https://mybatch.eastus.batch.azure.com /BatchAccountKey=x1hGLIIrdd3rroqXpfc2QXubzzCYOAtrNf23d3dCtOL9cQ+WV6r/raNrsAdV7xTaAyNGsEagbF0VhsaOTxk6A== /StorageAccountName=mystorage /StorageAccountKey=lt2e2dr7JYVnaswZJiv1J5g8v2ser20B0pcO0PacPaVl33AAsuT2zlxaobdQuqs0GHr8+CtlE6DUi0AH+oUIeg==
+```bash
+sbm.exe batch run --override="C:\temp\override.cfg" --packagename="c:\temp\mybuild.sbm" --username=myname --password=P@ssw0rd! --deletebatchpool=false --batchnodecount=5 --batchvmsize=STANDARD_DS1_V2 --batchaccountname=mybatch --batchaccounturl=https://mybatch.eastus.batch.azure.com --batchaccountkey=x1hGLIIrdd3rroqXpfc2QXubzzCYOAtrNf23d3dCtOL9cQ+WV6r/raNrsAdV7xTaAyNGsEagbF0VhsaOTxk6A== --storageaccountname=mystorage --storageaccountkey=lt2e2dr7JYVnaswZJiv1J5g8v2ser20B0pcO0PacPaVl33AAsuT2zlxaobdQuqs0GHr8+CtlE6DUi0AH+oUIeg==
 ```
 
-The following command line uses a generated DACPAC and assumes that the Batch,  Storage and password settings are in the `/SettingsFile`:
+The following command line uses a generated DACPAC and assumes that the Batch,  Storage and password settings are in the [`--settingsfile`](#azure-batch-save-settings):
 
-```
-SqlBuildManager.Console.exe /Action=batch /SettingsFile="C:\temp\my_settings.json" /override="C:\temp\override.cfg" /PlatinumDbSource="platinumDb" /PlatinumServerSource="platinumdbserver" /database=targetDb /server="targetdbserber" 
+```bash
+sbm.exe batch run --settingsfile="C:\temp\my_settings.json" --override="C:\temp\override.cfg" --platinumdbsource="platinumDb" --platinumserversource="platinumdbserver" --database=targetDb --server="targetdbserver" 
 ```
 
 ----
-## Azure Batch - Pre-Stage Batch nodes (/Action=BatchPreStage)
 
-_Note:_ You can also leverage the [SettingsFile](commandline.md#save-settings-actionsavesettings) option to reuse most of the arguments
-- `/BatchNodeCount="##"` - Number of nodes to provision to run the batch job  (default is 10)
-- `/BatchVmSize="<size>"` - Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
-- `/BatchAccountName="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
-- `/BatchAccountKey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
-- `/BatchAccountUrl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
-- `/PollBatchPoolStatus=(true|false)` - Whether or not you want to get updated status (true, default) or fire and forget (false)
+## Azure Batch - Pre-Stage Batch nodes
+
+`sbm batch prestage [options]`\
+_Note:_ You can also leverage the [--settingsfile](#azure-batch-save-settings) option to reuse most of the arguments
+- `--batchnodecount="##"` - Number of nodes to provision to run the batch job  (default is 10)
+- `--batchvmsize="<size>"` - Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
+- `--batchaccountname="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
+- `--batchaccountkey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
+- `--batchaccounturl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
+- `--pollbatchpoolstatus=(true|false)` - Whether or not you want to get updated status (true, default) or fire and forget (false)
 
 ----
 
-## Azure Batch Execution (/Action=Batch)
+## Azure Batch Execution
 
+`sbm batch run [options]`\
 In addition to the [authentication](commandline.md#General-Authentication-settings) and [runtime](commandline.md#General-Runtime-settings) arguments above, these are specifically needed for Azure Batch executions.
 \
 _Note:_ 
-1. You can also leverage the [SettingsFile](commandline.md#save-settings-actionsavesettings) option to reuse most of the arguments
-2. either /PlatinumDacpac _or_ /PackageName are required. If both are given, then /PackageName will be used.
+1. You can also leverage the [--settingsfile](#azure-batch-save-settings) option to reuse most of the arguments
+2. either --platinumdacpac _or_ --packagename are required. If both are given, then --packagename will be used.
 
-- `/PlatinumDacpac="<filename>"` - Name of the dacpac containing the platinum schema
-- `/PackageName="<filename>"` - Name of the .sbm or .sbx file to execute save execution logs 
-- `/BatchAccountName="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
-- `/BatchAccountKey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
-- `/BatchAccountUrl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
-- `/StorageAccountName="<storage acct name>"` - Name of storage account associated with the Azure Batch account  [can also be set via StorageAccountName app settings key]
-- `/StorageAccountKey="<storage acct key>"` - Account Key for the storage account  [can also be set via StorageAccountKey app settings key]
-- `/BatchJobName="<name>"` - [Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed
+- `--platinumdacpac="<filename>"` - Name of the dacpac containing the platinum schema
+- `--packagename="<filename>"` - Name of the .sbm or .sbx file to execute save execution logs 
+- `--batchaccountname="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
+- `--batchaccountkey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
+- `--batchaccounturl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
+- `--storageaccountname="<storage acct name>"` - Name of storage account associated with the Azure Batch account  [can also be set via StorageAccountName app settings key]
+- `--storageaccountkey="<storage acct key>"` - Account Key for the storage account  [can also be set via StorageAccountKey app settings key]
+- `--batchjobname="<name>"` - [Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed
 
 #### Additional arguments 
 
-If you don't run the `/Action=BatchPreStage`  and `Action=BatchCleanup` command sequence you will need to use the following:
-- `/DeleteBatchPool=(true|false)` - Whether or not to delete the batch pool servers after an execution (default is `false`)
-- `/DeleteBatchJob=(true|false)` - Whether or not to delete the batch job after an execution (default is `true`)
-- `/BatchNodeCount="##"` - Number of nodes to provision to run the batch job  (default is 10)
-- `/BatchVmSize="<size>"` - Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
+If you don't run the `sbm batch prestage`  and `sbm batch cleanup [options]` command sequence you will need to use the following:
+
+- `--deletebatchpool=(true|false)` - Whether or not to delete the batch pool servers after an execution (default is `false`)
+- `--deletebatchjob=(true|false)` - Whether or not to delete the batch job after an execution (default is `true`)
+- `--batchnodecount="##"` - Number of nodes to provision to run the batch job  (default is 10)
+- `--batchvmsize="<size>"` - Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
 
 ----
 
-## Azure Batch Clean Up (delete) nodes (/Action=BatchCleanUp)
+## Azure Batch Clean Up (delete) nodes
 
-_Note:_ You can also leverage the [SettingsFile](commandline.md#save-settings-actionsavesettings) option to reuse most of the arguments
-- `/BatchAccountName="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
-- `/BatchAccountKey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
-- `/BatchAccountUrl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
-- `/PollBatchPoolStatus=(true|false)` - Whether or not you want to get updated status (true, default) or fire and forget (false)
+`sbm batch cleanup [options]`\
+_Note:_ You can also leverage the [--settingsfile](#azure-batch-save-settings) option to reuse most of the arguments
+
+- `--batchaccountname="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
+- `--batchaccountkey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
+- `--batchaccounturl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
+- `--pollbatchpoolstatus=(true|false)` - Whether or not you want to get updated status (true, default) or fire and forget (false)
 
 ----
 
+## Azure Batch Save Settings
+
+`sbm batch savesettings [options]`\
+This utility action will save a reusable Json file to make running the command line easier for Batch processing.
+
+The next time you run a build action, use the `--settingsfile="<file path>"` in place of the arguments below.
+
+- Authentication: `--username`, `--password`
+- Azure Batch: `--batchnodecount`, `--batchaccountname`, `--batchaccountkey`, `--batchaccounturl`, `--storageaccountname`, `--storageaccountkey`, `--batchvmsize`, `--deletebatchpool`, `--deletebatchjob`, `--pollbatchpoolstatus`, `--eventhubconnectionstring`
+- Run time settings: `--rootloggingpath`, `--logastext`
+
+_Note:_ 
+
+1. the values for `--username`, `--password`, `--batchaccountkey`, `--storageaccountkey` and  `--eventhubconnectionstring` will be encrypted.
+2. If there are duplicate values in the `--settingsfile` and the command line, the command line argument will take precedence. 
+3. You can hand-craft the Json yourself in the [format below](#settings-file-format) but the password and keys will not be encrypted (which may be OK depending on where you save the files)
+
+----
 ## Log Details
 
 The logs will be stored in the Azure Storage account associated with the Batch account. You can view the logs in several ways, including the the [Azure portal](http://portal.azure.com), [Azure Batch Explorer](https://azure.github.io/BatchExplorer/) and [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/). However you view the logs, you will find a set of files and folders:
@@ -205,8 +229,9 @@ The logs will be stored in the Azure Storage account associated with the Batch a
 ### Files
 
 _Note:_ All of these files are consolidated logs from across all of your Batch nodes.
-- `successdatabases.cfg` - this file contains a list of all datbases that were successfully updated. The file is in the format used as an `/Override` argument. If there were no successful updates, this file will not be created.
-- `failuredatabases.cfg` - this file contains a list of all datbases that were successfully updated. The file is in the format used as an `/Override` argument. If there were no failures, this file will not be created.
+
+- `successdatabases.cfg` - this file contains a list of all databases that were successfully updated. The file is in the format used as an `--override` argument. If there were no successful updates, this file will not be created.
+- `failuredatabases.cfg` - this file contains a list of all databases that were successfully updated. The file is in the format used as an `--override` argument. If there were no failures, this file will not be created.
 - `commits.log` - a log file showing successful updates with time stamps
 - `errors.log` -  a log file showing failed updates with time stamps, statuses and return codes
 
@@ -228,3 +253,35 @@ If you have SQL errors in your execution, you will probably want to figure out w
 2. Taking note of the server and database name, open the server folder then the database folder
 3. Open the `logfile` in the database folder. This file should contain an error message that will guide your troubleshooting should you need to correct some scripts
 4. Once you have determined the problem, use the `failuredatabases.cfg` file as your `/Override` argument to run your updates again - hopefully successfully this time!
+
+----
+
+## Settings File Format
+
+The format for the saved settings Json file is below. You can include or exclude any values that would like. Also as a reminder, for any duplicate keys found in the settings file and command line arguments, the command line argument's value will be used.
+
+```json
+{
+  "AuthenticationArgs": {
+    "UserName": "<database use name>",
+    "Password": "<database password>"
+  },
+  "BatchArgs": {
+    "BatchNodeCount": "<int value>",
+    "BatchAccountName": "<batch account name>",
+    "BatchAccountKey": "<key for batch account ",
+    "BatchAccountUrl": "<https URL for batch account>",
+    "StorageAccountName": "<storage account name>",
+    "StorageAccountKey": "<storage account key>",
+    "BatchVmSize": "<VM size designator>",
+    "DeleteBatchPool": "<true|false>",
+    "DeleteBatchJob": "<true|false>",
+    "PollBatchPoolStatus": "<true|false>",
+    "EventHubConnectionString": "<connection string to EventHub (optional)>"
+  },
+  "RootLoggingPath": "<valid folder path>",
+  "LogAsText": "<true|false>", 
+  "DefaultScriptTimeout" : "<int>",
+  "TimeoutRetryCount" : "<int>"
+}
+```

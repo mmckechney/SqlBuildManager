@@ -1,138 +1,48 @@
 
 # Command line Usage
 
-**NOTE:** For command line operations, you must use `SqlBuildManager.Console.exe`
+**NOTE:** For command line operations, you must use `sbm.exe`
 
 ----
 
-**Tip**: If you don't like typing the full name of the exe you can easily create an alias with the files in the [Utility](../utility) folder:
-- Edit the [alias.bat](../utility/alias.bat) file with the path to where you have the SqlBuildManager.Console.exe file. 
-- Edit the [command_alias.reg](../utility/command_alias.reg) file to the path where you save the *alias.bat* file.
-- Run th *command_alias.reg* file to add the key to your registry. 
-
-Now you can use shorthand *sbm* to run the command-line!
-
-------
-
 ## Getting started
 
-### Defining the Action
-The basics of running the command line is the /Action argument. This is required for all executions (except for `/?` or`/help` - which I hope are self explanatory)
+The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 
-#### Action value options (`/Action=<value>`)
+*For detailed information on the available and required options for teach command, leverage the self-generated documentation via `sbm [command] --help`*
 
-##### Build execution actions to update databases 
-- `Build` - Performs a standard, local execution via command line
-- `Threaded` - For updating multiple databases simultaneously. The threading is all run from the current machine
- - `Batch` - For massively parallel updating of databases simultaneously using Azure batch services
+### Build execution actions to update databases
 
-##### Utility actions 
-- `BatchPreStage` - Pre-stage Azure Batch VM nodes
-- `BatchCleanUp` - Deletes Azure Batch VM nodes
-- `SaveSettings` - Creates a Json file that will save your userName and password as well as your Batch settings so that you can reference them later.
-- `Package` - Create an SBM package from an SBX configuration file and scripts
-- `PolicyCheck` - Performs a script policy check on the specified SBM package
--  `GetHash` - Calculates the SHA-1 hash fingerprint value for the SBM package (scripts + run order)
-- `CreateBackout` - Generates a backout package (reversing stored procedure and scripted object changes)
-- `GetDifference` - Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between /Database and /GoldDatabase
-- `Synchronize` - Performs a database synchronization between between /Database and /GoldDatabase
-- `ScriptExtract` - Extract a SBM package from a source `/PlatinumDacPac`
+- `build` - Performs a standard, local SBM execution via command line
+- `threaded` - For updating multiple databases simultaneously from the current machine
+- `batch` - Commands for setting and executing a batch run
 
+### Utility actions
 
-#### General Authentication settings 
+- `package` - Creates an SBM package from an SBX configuration file and scripts
+- `policycheck` - Performs a script policy check on the specified SBM package
+- `gethash` - Calculates the SHA-1 hash fingerprint value for the SBM package(scripts + run order)
+- `createbackout` - Generates a backout package (reversing stored procedure and scripted object changes)
+- `getdifference` - Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between --database and --golddatabase. Only supports Windows Auth
+- `synchronize` - Performs a database synchronization between between --database and --golddatabase. Can only be used for Windows Auth database targets
+- `scriptextract` - Extract a SBM package from a source --platinumdacpac
 
-Used to provide authentication to databases during a build or for script extraction/ DACPAC creation\
-Applies to: `/Action={Build|Threaded|Batch|GetDifference|Synchronize`\
-_Note:_ Is using username/password authentication, you can also leverage the [SettingsFile](#save-settings-actionsavesettings) option
-- `/AuthType="<type>"` - Values: `AzureADIntegrated`, `AzureADPassword`, `Password` (default if Username/Password set), `Windows` (default if no Username/Password set), 
-- `/UserName="<username>"` - The username to authenticate against the database if not using integrate auth (required when `RemoteServers="azure"`)
-- `/Password="<password>"` - The password to authenticate against the database if not using integrate auth (required when `/RemoteServers="azure`")
-- `/Database="<database name>"` - 1) Name of a single database to run against or 2) source database for scripting or runtime configuration
-- `/Server="<server name>"` - 1) Name of a server for single database run or 2) source server for scripting or runtime configuration
+### Batch sub-commands (`sbm batch [command]`)
+- `savesettings` - Save a settings json file for Batch arguments (see Batch documentation)
+- `prestage` - Pre-stage the Azure Batch VM nodes
+- `cleanup` - Azure Batch Clean Up - remove VM nodes
+- `run` - For updating multiple databases simultaneously using Azure batch services
 
-#### General Runtime settings 
+#### For details information on running batch builds, see the Batch documentation:
 
-Arguments needed when performing a database update build\
-Applies to: `/Action={Build|Threaded|Batch}`
-- `/PackageName="<filename>"` - Name of the .sbm or .sbx file to execute
-- `/RootLoggingPath="<directory>` - Directory to save execution logs (for threaded, batch and remote executions)
-- `/Trial=(true|false)` - Whether or not to run in trial mode (i.e. will automatically rollback changes - default is `false`)
-- `/Transactional=(true|false)` - Whether or not to run with a wrapping transaction (default is `true`)
-- `/Override=("<filename>"|list)` - File containing the target database settings (usually a formatted .cfg file)
-- `/Description="<description>"` - A free form description for the execution run. Must be enclosed in quotes if it contains spaces
-- `/LogAsText=(true|false) ` - Whether to log as text or HTML. (default is `true` to log as text)
-- `/BuildRevision="<rev identifier>"`  - If provided, the build will include an update to a "Versions" table and this will be the value used to add to a "VersionNumber" column (varchar(max))
-- `/LogToDatabaseName="<db name>"` - [Not recommended] Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target). 
-- `/ScriptSrcDir="<directory>"` - [Not recommended] Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)
-- `/ScriptLogFile="<filename>"` - [Not recommended] Alternate name for the file containing the script run log
-- `/RootLoggingPath="<directory>"` - Directory to write the logs to 
-- `/TimeoutRetryCount=(integer)` - Number of times to retry os a script timeout is encountered (default is 0)
-- `/DefaultScriptTimeout=<int>` - default number of seconds to set the script timeout for for generated SBM packages (such as from a DACPAC)
+- [`sbm batch run` ](AzureBatch.md#azure-batch-execution)
+- [`sbm batch prestage`](AzureBatch.md#azure-batch---pre-stage-batch-nodes)
+- [`sbm batch cleanup`](AzureBatch.md#azure-batch-clean-up-delete-nodes)
+- [`sbm batch savesettings`](AzureBatch.md#azure-batch-savesettings)
 
-#### Azure Batch Execution (/Action=Batch)
-
-
-In addition to the authentication and runtime arguments above, these are arguments specifically needed for Azure Batch executions\
-See detailed Batch [documentation](AzureBatch.md#azure-batch-execution-actionbatch)
-
-
-#### Azure Batch Pre-Stage Batch nodes (/Action=BatchPreStage)
-
-See detailed Batch [documentation](AzureBatch.md#azure-batch---pre-stage-batch-nodes-actionbatchprestage)
-	
-#### Azure Batch Clean Up (delete) nodes (/Action=BatchCleanUp)
-
-See detailed Batch [documentation](AzureBatch.md#azure-batch-clean-up-delete-nodes-actionbatchcleanup)
-
-#### Dacpac Execution
-
-When using a source DACPAC file `/PlatinumDacpac` or creating one one at run time (`/PlatinumDbSource`, `/PlatinumServerSource` along with `/Server` and `/Database`).\
-Applies to: `/Action={Threaded|Batch|Remote}`
-- `/PlatinumDacpac="<filename>"` - Name of the dacpac containing the platinum schema
-- `/TargetDacpac="<filename>"` - Name of the dacpac containing the schema of the database to be updated
-- `/ForceCustomDacPac=(true|false)` - *USE WITH CAUTION! (`/Action={Threaded|Batch}` only) This will force the dacpac extraction and creation of custom scripts for EVERY target database! Your execution will take much longer.
-- `/PlatinumDbSource="<database name>"` - Instead of a formally built Platinum Dacpac, target this database as having the desired state schema
-- `/PlatinumServerSource="<server name>"` - Instead of a formally built Platinum Dacpac, target a database on this server as having the desired state schema
-
-#### Save Settings (/Action=SaveSettings)
-This utility action will save a reusable Json file to make running the command line easier (especially for Batch processing). To save the settings, create the command line as you normally would, and set the `/Action=SaveSettings` and add a `/SettingsFile="<file path>`" argument. 
-
-The next time you run a build action, use the `/SettingsFile="<file path>` in place of the arguments below.
-
-- Authentication: `/UserName`, `/Password`
-- Azure Batch: `BatchNodeCount`, `/BatchAccountName`, `/BatchAccountKey`, `/BatchAccountUrl`, `/StorageAccountName`, `/StorageAccountKey`, `/BatchVmSize`, `/DeleteBatchPool`, `/DeleteBatchJob`, `/PollBatchPoolStatus`, `/EventHubConnectionString`
-- Run time settings: `/RootLoggingPath`, `/LogAsText`
-
-_Note:_ 
-1. the values for `/UserName`, `/Password`, `/BatchAccountKey`, `/StorageAccountKey` and  `/EventHubConnectionString` will be encrypted. 
-2. If there are duplicate values in the `/SettingsFile` and the command line, the command line argument will take precedence. 
-3. You can hand-craft the Json yourself in the [format below](#settings-file-format) but the password and keys will not be encrypted (which may be OK depending on where you save the files)
-
-#### Script Extraction from Dacpac (/Action=ScriptExtract)
-- `/PlatinumDacpac="<filename>"` - Name of the dacpac containing the platinum schema
-- `/OutputSbm="<filename>"` - Name (and path) of the SBM package to create
-
-#### Database Synchronization (/Action={Synchronize|GetDifference})
-- `/GoldDatabase="<database name>"` - The "gold copy" database that will serve as the model for what the /Database should look like
-- `/GoldServer="<server name>"` - The server that the "gold copy" database can be found
-- `/ContinueOnFailure=(true|false)` - Whether or not to continue on the failure of a package. Default is false. 
-
-#### SBX to SBM packaging (/Action=Package)
-- `/Directory="<directory>"` - Directory containing 1 or more SBX files to package into SBM zip files
-   
-#### Policy checking (/Action=PolicyCheck)
-- `/PackageName="<filename>"` - Name of the SBM package to check policies on
-
-#### Calculate hash/fingerprint (/Action=GetHash)
-- `/PackageName="<filename>"` - Name of the SBM package to calculate SHA-1 hash value
-   
-#### Creating backout packages (/Action=CreateBackout)
-- `/PackageName="<filename>"` - Name of the SBM package to calculate a backout package for
-- `/Server=<servername>` - Name of the server that contains the desired state schema to "backout to"
-- `/Database=<databasename>` - Name of the database that contains the desired state schema to "backout to"
-
- # Logging
+----
+ ## Logging
 
 For general logging, the
 SqlBuildManager.Console.exe has its own local messages. This log file is
@@ -142,7 +52,7 @@ execution errors or problems.
 
 To accommodate the logging of the actual build, all of the output is
 saved to files and folders under the path specified in
-the `/RootLoggingPath` flag. For a simple threaded execution, this is a
+the `--rootloggingpath` flag. For a simple threaded execution, this is a
 single root folder. For a remote server execution, this folder is
 created for each execution server.
 
@@ -181,31 +91,3 @@ run order and results.
 meta-data on each script file that defined the run settings, script
 creation user ID's and the committed script record and hash for each.
 	
-# Settings File Format
-The format for the saved settings Json file is below. You can include or exclude any values that would like. Also as a reminder, for any duplicate keys found in the settings file and command line arguments, the command line argument's value will be used.
-
-```json
-{
-  "AuthenticationArgs": {
-    "UserName": "<database use name>",
-    "Password": "<database password>"
-  },
-  "BatchArgs": {
-    "BatchNodeCount": "<int value>",
-    "BatchAccountName": "<batch account name>",
-    "BatchAccountKey": "<key for batch account ",
-    "BatchAccountUrl": "<https URL for batch account>",
-    "StorageAccountName": "<storage account name>",
-    "StorageAccountKey": "<storage account key>",
-    "BatchVmSize": "<VM size designator>",
-    "DeleteBatchPool": "<true|false>",
-    "DeleteBatchJob": "<true|false>",
-    "PollBatchPoolStatus": "<true|false>",
-    "EventHubConnectionString": "<connection string to EventHub (optional)>"
-  },
-  "RootLoggingPath": "<valid folder path>",
-  "LogAsText": "<true|false>", 
-  "DefaultScriptTimeout" : "<int>",
-  "TimeoutRetryCount" : "<int>"
-}
-```
