@@ -473,7 +473,7 @@ namespace SqlBuildManager.Console
             Directory.CreateDirectory(this.workingDirectory);
 
             string result;
-            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sqlBuildProjectFileName, ref this.workingDirectory, ref this.projectFilePath, ref ThreadedExecution.projectFileName, false, out result))
+            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sqlBuildProjectFileName, ref this.workingDirectory, ref this.projectFilePath, ref ThreadedExecution.projectFileName, false, true, out result))
             {
                 var msg = new LogMsg()
                 {

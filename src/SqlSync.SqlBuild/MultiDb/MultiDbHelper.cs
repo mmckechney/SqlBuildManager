@@ -110,7 +110,7 @@ namespace SqlSync.SqlBuild.MultiDb
                     string[] over = arrDb[j].Split(',');
                     DatabaseOverride ovr;
                     if(over.Length > 1)
-                        ovr= new DatabaseOverride(over[0].Trim(), over[1].Trim());
+                        ovr= new DatabaseOverride(over[0].Trim().Replace("'",""), over[1].Trim());
                     else
                         ovr = new DatabaseOverride("", over[0].Trim());
 

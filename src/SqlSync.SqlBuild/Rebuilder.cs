@@ -121,7 +121,7 @@ namespace SqlSync.SqlBuild
                     return false;
                 }
 
-                if(!ZipHelper.UnpackZipPackage(tempPath, buildFileName))
+                if(!ZipHelper.UnpackZipPackage(tempPath, buildFileName,false))
                 {
                     return false;
                 }

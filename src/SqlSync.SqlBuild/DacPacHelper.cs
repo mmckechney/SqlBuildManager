@@ -291,7 +291,7 @@ namespace SqlSync.SqlBuild
             string result;
 
             log.InfoFormat("Preparing build package for processing");
-            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, out result))
+            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, false,out result))
             {
                 return DacpacDeltasStatus.SbmProcessingFailure;
             }

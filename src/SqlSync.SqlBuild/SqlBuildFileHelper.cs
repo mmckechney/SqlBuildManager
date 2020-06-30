@@ -65,9 +65,9 @@ namespace SqlSync.SqlBuild
 		}
         public static bool ExtractSqlBuildZipFile(string fileName, ref string workingDirectory, ref string projectFilePath, ref string projectFileName, out string result)
         {
-            return ExtractSqlBuildZipFile(fileName, ref workingDirectory, ref projectFilePath, ref projectFileName, true, out result);
+            return ExtractSqlBuildZipFile(fileName, ref workingDirectory, ref projectFilePath, ref projectFileName, true, false, out result);
         }
-        public static bool ExtractSqlBuildZipFile(string fileName, ref string workingDirectory, ref string projectFilePath, ref string projectFileName, bool resetWorkingDirectory,out string result)
+        public static bool ExtractSqlBuildZipFile(string fileName, ref string workingDirectory, ref string projectFilePath, ref string projectFileName, bool resetWorkingDirectory, bool overwriteExistingProjectFiles, out string result)
         {
             result = "";
             try
@@ -89,7 +89,7 @@ namespace SqlSync.SqlBuild
                 }
 
                 //Unpack the zip contents into the working directory
-                if (!ZipHelper.UnpackZipPackage(workingDirectory, fileName))
+                if (!ZipHelper.UnpackZipPackage(workingDirectory, fileName, overwriteExistingProjectFiles))
                 {
                     result = "Unable to unpack Sql Build Project File [" + fileName + "]";
                     log.ErrorFormat("ExtractSqlBuildZipFile error: {0}", result);
@@ -309,7 +309,7 @@ namespace SqlSync.SqlBuild
                 File.Copy(fileName, tmpZipFullName);
 
                 string result;
-                if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName,false, out result))
+                if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName,false, false, out result))
                 {
                     LoadSqlBuildProjectFile(out cleanedBuildData, tmpProjectFileName, false);
                     cleanedBuildData.CodeReview.Rows.Clear();

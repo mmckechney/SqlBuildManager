@@ -79,7 +79,7 @@ namespace SqlSync.SqlBuild
             return CreateZipPackage(fullPathFiles, zipFileName, keepPathInfo, retryCount);
         }
 
-        public static bool UnpackZipPackage(string destinationDir, string zipFileName)
+        public static bool UnpackZipPackage(string destinationDir, string zipFileName, bool overwriteExistingProjectFiles)
         {
             try
             {
@@ -97,9 +97,9 @@ namespace SqlSync.SqlBuild
                         //Identifies the destination file name and path
                         fileUnzipFullName = Path.Combine(destinationDir, file.Name);
 
-                        if (!System.IO.File.Exists(fileUnzipFullName))
+                        if (!System.IO.File.Exists(fileUnzipFullName) || overwriteExistingProjectFiles)
                         {
-                            file.ExtractToFile(fileUnzipFullName);
+                            file.ExtractToFile(fileUnzipFullName, overwriteExistingProjectFiles);
                         }
                     }
                 }
