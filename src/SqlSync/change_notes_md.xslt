@@ -6,11 +6,11 @@
 
     <xsl:template match="/SqlBuildManagerChangeNotes">
 # SQL Build Manager Change Notes
-      <xsl:for-each select="Version">
-					
+<xsl:for-each select="Version">
+<xsl:text>&#xa;</xsl:text>
 ### Version <xsl:value-of select="@Major"/>.<xsl:value-of select="@Minor"/>.<xsl:value-of select="@Revision"/>
-        <xsl:text>&#xa;</xsl:text>
-        
+<xsl:text>&#xa;</xsl:text>
+
 <xsl:for-each select="child::*">
 <xsl:choose>
 <xsl:when test="name() = 'note'">

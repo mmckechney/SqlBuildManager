@@ -1,0 +1,53 @@
+name: .NET Core Build
+
+on:
+  push:
+    branches: 
+      - master
+      - dotnetstandard
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+
+    - name: Restore dependencies
+      run: dotnet restore ./src/sqlsync.sln
+
+    - name: Build Main Solution
+      run: dotnet build ./src/sqlsync.sln--configuration Release --no-restore
+
+    - name: Publish the Windows desktop app
+      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64
+
+    - name: Publish the Console CLI desktop app
+      run: dotnet publish ./src/SqlBuldManager.Console/sbm.csproj -r win-x64
+
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+
+    - name: Install 7Zip PowerShell Module
+      shell: powershell
+      run: Install-Module 7Zip4PowerShell -Force -Verbose
+
+    - name: Create CLI Zip
+      shell: powershell
+      run: powershell Compress-7Zip "./src/SqlBuldManager.Console/bin/Release/netcore3.1/win-x64" -ArchiveFileName "sbm.zip" -Format Zip
+
+    - name: Create Desktop 7Zip
+      shell: powershell
+      run: powershell Compress-7Zip "./src/SqlSync/bin/Release/netcore3.1/win-x64" -ArchiveFileName "sqlbuildmanager.zip" -Format Zip
+
+
+    

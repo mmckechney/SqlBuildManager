@@ -12,7 +12,13 @@
     <Deterministic>false</Deterministic>
     <ApplicationIcon>SqlBuildManager.ico</ApplicationIcon>
   </PropertyGroup>
-
+  <ItemGroup>
+    <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
+      <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
   <ItemGroup>
     <Compile Remove="Controls\CodeReviewControl.cs" />
     <Compile Remove="Controls\CodeReviewControl.Designer.cs" />
