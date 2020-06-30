@@ -302,7 +302,7 @@ namespace SqlBuildManager.Console
                 };
                 var buildCommand = new Command("build", "Performs a standard, local SBM execution via command line")
                 {
-                    Handler = CommandHandler.Create<CommandLineArgs>(RunSingleBuildAsync)
+                    Handler = CommandHandler.Create<CommandLineArgs>(RunLocalBuildAsync)
                 };
                 var scriptExtractCommand = new Command("scriptextract", "Extract a SBM package from a source --platinumdacpac")
                 {
@@ -492,7 +492,7 @@ namespace SqlBuildManager.Console
                             SyncronizeDatabase(cmdLine);
                             break;
                         case CommandLineArgs.ActionType.Build:
-                            StandardExecution(args);
+                            retVal = await RunLocalBuildAsync(cmdLine);
                             break;
                         case CommandLineArgs.ActionType.ScriptExtract:
                             ScriptExtraction(cmdLine);
@@ -844,12 +844,18 @@ namespace SqlBuildManager.Console
         //    }
         //}
         #endregion
-        private static async Task<int> RunSingleBuildAsync(CommandLineArgs cmdLine)
+        private static async Task<int> RunLocalBuildAsync(CommandLineArgs cmdLine)
         {
             DateTime start = DateTime.Now;
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
-            log.Debug("Entering Single Build Execution");
-            log.Info("Running...");
+            log.Debug("Entering Local Build Execution");
+            log.Info("Running  Local Build...");
+
+            //We need an override setting. if not provided, we need to glean it from the SqlSyncBuildProject.xml file 
+            if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
+            {
+                cmdLine.ManualOverRideSets = SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName);
+            }
 
             var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
             if(string.IsNullOrEmpty(cmdLine.RootLoggingPath))
@@ -1013,42 +1019,42 @@ namespace SqlBuildManager.Console
             
         }
 
-        private static void StandardExecution(string[] args )
-        {
-            DateTime start = DateTime.Now;
-            log.Debug("Entering Standard Execution");
+        //private static void StandardExecution(string[] args )
+        //{
+        //    DateTime start = DateTime.Now;
+        //    log.Debug("Entering Standard Execution");
 
-            //Get the path of the Sql Build Manager executable - need to be co-resident
-            string sbmExe = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) +
-                            @"\Sql Build Manager.exe";
+        //    //Get the path of the Sql Build Manager executable - need to be co-resident
+        //    string sbmExe = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) +
+        //                    @"\Sql Build Manager.exe";
 
-            //Put any arguments that have spaces into quotes
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (args[i].IndexOf(" ") > -1)
-                    args[i] = "\"" + args[i] + "\"";
-            }
-            //Rejoin the args to pass over to Sql Build Manager
-            string arg = String.Join(" ", args);
-            ProcessHelper prcHelper = new ProcessHelper();
-            int exitCode = prcHelper.ExecuteProcess(sbmExe, arg);
+        //    //Put any arguments that have spaces into quotes
+        //    for (int i = 0; i < args.Length; i++)
+        //    {
+        //        if (args[i].IndexOf(" ") > -1)
+        //            args[i] = "\"" + args[i] + "\"";
+        //    }
+        //    //Rejoin the args to pass over to Sql Build Manager
+        //    string arg = String.Join(" ", args);
+        //    ProcessHelper prcHelper = new ProcessHelper();
+        //    int exitCode = prcHelper.ExecuteProcess(sbmExe, arg);
 
-            //Send the console output to the console window
-            if (prcHelper.Output.Length > 0)
-                System.Console.Out.WriteLine(prcHelper.Output);
+        //    //Send the console output to the console window
+        //    if (prcHelper.Output.Length > 0)
+        //        System.Console.Out.WriteLine(prcHelper.Output);
 
-            //Send the error output to the error stream
-            if (prcHelper.Error.Length > 0)
-                log.Error(prcHelper.Output);
+        //    //Send the error output to the error stream
+        //    if (prcHelper.Error.Length > 0)
+        //        log.Error(prcHelper.Output);
 
-            TimeSpan span = DateTime.Now - start;
-            string msg = "Total Run time: " + span.ToString();
-            log.Info(msg);
+        //    TimeSpan span = DateTime.Now - start;
+        //    string msg = "Total Run time: " + span.ToString();
+        //    log.Info(msg);
 
-            log.Debug("Exiting Standard Execution");
-            log4net.LogManager.Shutdown();
-            System.Environment.Exit(exitCode);
-        }
+        //    log.Debug("Exiting Standard Execution");
+        //    log4net.LogManager.Shutdown();
+        //    System.Environment.Exit(exitCode);
+        //}
 
         private static void PackageSbxFilesIntoSbmFiles(CommandLineArgs cmdLine)
         {
