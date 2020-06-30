@@ -172,7 +172,7 @@ namespace SqlSync.SqlBuild
         {
             log.InfoFormat("Generating scripts: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
 
-            string tmpFile = path + Path.GetFileName(targetDacPacFileName) + ".sql";
+            string tmpFile = Path.Combine(path, Path.GetFileName(targetDacPacFileName) + ".sql");
 
             ProcessHelper pHelper = new ProcessHelper();
             pHelper.AddArgument("/Action", "Script");

@@ -7,7 +7,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     [TestClass]
     public class DacPacHelperTest
     {
-        [TestMethod, Ignore("Need to troubleshoot")]
+        [TestMethod]
         public void ScriptDacPacDelta_Test()
         {
             string workingDir = @"C:\temp"; // SqlBuildManager.Logging.Configure.AppDataPath;

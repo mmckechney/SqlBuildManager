@@ -292,11 +292,11 @@ namespace SqlBuildManager.Console
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(CreateBackout)
                 };
-                var getDifferenceCommand = new Command("getdifference", "Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between /Database and /GoldDatabase. Only supports Windows Auth")
+                var getDifferenceCommand = new Command("getdifference", "Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between --database and --golddatabase. Only supports Windows Auth")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(GetDifferences)
                 };
-                var synchronizeCommand = new Command("synchronize", "Performs a database syncronization between between /Database and /GoldDatabase. Can only be used for Windows Auth database targets")
+                var synchronizeCommand = new Command("synchronize", "Performs a database syncronization between between --database and --golddatabase. Can only be used for Windows Auth database targets")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(SyncronizeDatabase)
                 };
@@ -304,7 +304,7 @@ namespace SqlBuildManager.Console
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(RunSingleBuildAsync)
                 };
-                var scriptExtractCommand = new Command("scriptextract", "Extract a SBM package from a source /PlatinumDacPac")
+                var scriptExtractCommand = new Command("scriptextract", "Extract a SBM package from a source --platinumdacpac")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(ScriptExtraction)
                 };

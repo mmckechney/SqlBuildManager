@@ -3820,7 +3820,7 @@ namespace SqlSync.SqlBuild
             }
             if (File.Exists(fileName))
             {
-                if (ZipHelper.UnpackZipPackage(workingDir, fileName) == false)
+                if (ZipHelper.UnpackZipPackage(workingDir, fileName,false) == false)
                 {
                     addedFileNames = new string[0];
                     return (double)ImportFileStatus.UnableToImport;
