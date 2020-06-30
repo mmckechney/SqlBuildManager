@@ -26,7 +26,7 @@ jobs:
       run: dotnet restore ./src/sqlsync.sln
 
     - name: Build Main Solution
-      run: dotnet build ./src/sqlsync.sln--configuration Release --no-restore
+      run: dotnet build ./src/sqlsync.sln --configuration Release --no-restore
 
     - name: Publish the Windows desktop app
       run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64
