@@ -50,4 +50,17 @@ jobs:
       run: powershell Compress-7Zip "./src/SqlSync/bin/Release/netcore3.1/win-x64" -ArchiveFileName "sqlbuildmanager.zip" -Format Zip
 
 
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: CLI Zip
+        path: "sbm.zip"
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Desktop Zip
+        path: "sqlbuildmanager.zip"        
+
+
     
