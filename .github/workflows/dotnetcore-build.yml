@@ -29,13 +29,13 @@ jobs:
       run: dotnet build ./src/sqlsync.sln --configuration Release --no-restore
 
     - name: Publish the Windows desktop app
-      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64
+      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release
 
     - name: Publish the Console CLI desktop app
-      run: dotnet publish ./src/SqlBuldManager.Console/sbm.csproj -r win-x64
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release
 
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
+    # - name: Test
+    #   run: dotnet test --no-restore --verbosity normal
 
     - name: Install 7Zip PowerShell Module
       shell: powershell
@@ -43,11 +43,11 @@ jobs:
 
     - name: Create CLI Zip
       shell: powershell
-      run: powershell Compress-7Zip "./src/SqlBuldManager.Console/bin/Release/netcore3.1/win-x64" -ArchiveFileName "sbm.zip" -Format Zip
+      run: powershell Compress-7Zip "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish" -ArchiveFileName "sbm.zip" -Format Zip
 
     - name: Create Desktop 7Zip
       shell: powershell
-      run: powershell Compress-7Zip "./src/SqlSync/bin/Release/netcore3.1/win-x64" -ArchiveFileName "sqlbuildmanager.zip" -Format Zip
+      run: powershell Compress-7Zip "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish" -ArchiveFileName "sqlbuildmanager.zip" -Format Zip
 
 
     - name: Upload a Build Artifact
