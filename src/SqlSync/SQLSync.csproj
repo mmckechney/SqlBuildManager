@@ -41,20 +41,21 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
-      <ProjectReference Include="..\SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj" /> 
-      <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" /> 
-      <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" /> 
-      <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" /> 
-      <ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj" /> 
-      <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" /> 
-      <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" /> 
-      <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" /> 
-      <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" /> 
-      <ProjectReference Include="..\SqlSync.SprocTest\SqlSync.SprocTest.csproj" /> 
-      <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" /> 
-      <ProjectReference Include="..\SqlSync.TableScript\SqlSync.TableScript.csproj" /> 
-      <ProjectReference Include="..\SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj" /> 
+    <ProjectReference Include="..\SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj" /> 
+    <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" /> 
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" /> 
+    <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" /> 
+    <ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj" /> 
+    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" /> 
+    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" /> 
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" /> 
+    <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" /> 
+    <ProjectReference Include="..\SqlSync.SprocTest\SqlSync.SprocTest.csproj" /> 
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" /> 
+    <ProjectReference Include="..\SqlSync.TableScript\SqlSync.TableScript.csproj" /> 
+    <ProjectReference Include="..\SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj" /> 
   </ItemGroup>
+  
   <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs">
       <Link>Properties\AssemblyVersioning.cs</Link>
