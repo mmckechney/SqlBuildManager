@@ -37,30 +37,30 @@ jobs:
     # - name: Test
     #   run: dotnet test --no-restore --verbosity normal
 
-    - name: Install 7Zip PowerShell Module
-      shell: powershell
-      run: Install-Module 7Zip4PowerShell -Force -Verbose
+    # - name: Install 7Zip PowerShell Module
+    #   shell: powershell
+    #   run: Install-Module 7Zip4PowerShell -Force -Verbose
 
-    - name: Create CLI Zip
-      shell: powershell
-      run: powershell Compress-7Zip "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish" -ArchiveFileName "sbm.zip" -Format Zip
+    # - name: Create CLI Zip
+    #   shell: powershell
+    #   run: powershell Compress-7Zip "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish" -ArchiveFileName "sbm.zip" -Format Zip
 
-    - name: Create Desktop 7Zip
-      shell: powershell
-      run: powershell Compress-7Zip "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish" -ArchiveFileName "sqlbuildmanager.zip" -Format Zip
+    # - name: Create Desktop 7Zip
+    #   shell: powershell
+    #   run: powershell Compress-7Zip "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish" -ArchiveFileName "sqlbuildmanager.zip" -Format Zip
 
-
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: CLI Zip
-        path: "sbm.zip"
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: Desktop Zip
-        path: "sqlbuildmanager.zip"        
+        name: SBM Command Line Interface
+        path: ""./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish""
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: SqlBuildManager Desktop
+        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"        
 
 
     
