@@ -9,6 +9,8 @@ using System.IO;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
 using System.Linq;
+using Microsoft.Win32;
+
 namespace SqlSync.SqlBuild
 {
     public class UtilityHelper
@@ -130,9 +132,12 @@ namespace SqlSync.SqlBuild
                 if (!anchor.StartsWith("#")) anchor = "#" + anchor;
             }
             System.Diagnostics.Process prc = new Process();
+            prc.StartInfo.UseShellExecute = true;
             prc.StartInfo.FileName = $"https://github.com/mmckechney/SqlBuildManager/blob/master/docs/SqlBuildManagerManual.md{anchor}"; // Utility.DefaultBrowser;
   
             prc.Start();
         }
+
+      
     }
 }

@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.TableScript", "SqlS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.Connection", "SqlSync.Connection\SqlSync.Connection.csproj", "{F3F1EFFF-265E-4995-958B-9763F947E5C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyntaxHighlightingTextBox", "SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj", "{93EC5C55-84BB-4FA4-8599-A6C85841E982}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyntaxHighlightingTextBox", "SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj", "{93EC5C55-84BB-4FA4-8599-A6C85841E982}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.ObjectScript", "SqlSync.ObjectScript\SqlSync.ObjectScript.csproj", "{CD09B7DB-851B-4321-9E21-16948DA7FA07}"
 EndProject
@@ -332,16 +332,16 @@ Global
 		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.Debug|x64.Build.0 = Debug|Any CPU
 		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|.NET.ActiveCfg = DevOpsBuild|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|.NET.Build.0 = DevOpsBuild|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|Any CPU.ActiveCfg = DevOpsBuild|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|Any CPU.Build.0 = DevOpsBuild|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|Mixed Platforms.ActiveCfg = DevOpsBuild|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|Mixed Platforms.Build.0 = DevOpsBuild|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|x64.ActiveCfg = DevOpsBuild|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|x64.Build.0 = DevOpsBuild|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|x86.ActiveCfg = DevOpsBuild|Any CPU
-		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|x86.Build.0 = DevOpsBuild|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|.NET.ActiveCfg = Debug|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|.NET.Build.0 = Debug|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|Any CPU.ActiveCfg = Debug|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|Any CPU.Build.0 = Debug|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|Mixed Platforms.Build.0 = Debug|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|x64.ActiveCfg = Debug|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|x64.Build.0 = Debug|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|x86.ActiveCfg = Debug|Any CPU
+		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DevOpsBuild|x86.Build.0 = Debug|Any CPU
 		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DVD-5|.NET.ActiveCfg = Debug|Any CPU
 		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
 		{93EC5C55-84BB-4FA4-8599-A6C85841E982}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
