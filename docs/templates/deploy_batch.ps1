@@ -55,7 +55,7 @@ param(
  $parametersFilePath = "azuredeploy.parameters.json",
 
  [string]
- $applicationId  = "SqlBuldManager"
+ $applicationId  = "SqlBuildManager"
 
 
 )

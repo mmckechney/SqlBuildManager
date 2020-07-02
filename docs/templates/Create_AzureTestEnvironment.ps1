@@ -17,25 +17,22 @@ param(
 
  [Parameter(Mandatory=$True)]
  [string]
- $DatabaseNameRoot = "SqlDemo",
-
- [Parameter(Mandatory=$True)]
- [string]
  $Batchprefix = "sbmmwm",
 
  [Parameter(Mandatory=$True)]
  [string]
  $SqlServerUserName,
 
- [int]
- $TestDatabaseCount = 10,
-
  [Parameter(Mandatory=$True)]
  [string]
- $SqlServerPassword
+ $SqlServerPassword,
+
+ [int]
+ $TestDatabaseCount = 10
 
 )
 
+$DatabaseNameRoot = "SqlBuildTest"
 $outputDbConfigFile = "..\..\src\TestConfig\databasetargets.cfg"
 
 # Create the resource Group for your test resources
@@ -86,12 +83,17 @@ if( (Test-Path $path) -eq $false)
     New-Item -Path $path  -ItemType Directory
 }
 
+#Clean out any existing cfg file
+if( (Test-Path $outputDbConfigFile) -eq $True)
+{
+    Remove-Item $outputDbConfigFile
+}
 
 foreach($db in $dbs)
 {
     if($db.DatabaseName -ne "master")
     {
-        $server.FullyQualifiedDomainName + ":client,"+$db.DatabaseName | Out-File -Append $outputDbConfigFile
+        $server.FullyQualifiedDomainName + ":SqlBuildTest,"+$db.DatabaseName | Out-File -Append $outputDbConfigFile
     }
 }
 

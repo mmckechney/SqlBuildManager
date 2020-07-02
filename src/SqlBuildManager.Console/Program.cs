@@ -216,7 +216,7 @@ namespace SqlBuildManager.Console
                 };
                 var authtypeOption = new Option(new string[] { "--authtype" }, "Values: \"Windows\", \"AzureADIntegrated\", \"AzureADPassword\", \"Password\" (default)")
                 {
-                    Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType",() => SqlSync.Connection.AuthenticationType.AzureADPassword),
+                    Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType",() => SqlSync.Connection.AuthenticationType.Password),
                     Name = "AuthenticationType"
 
                 };
