@@ -27,6 +27,7 @@ using System.CommandLine.Parsing;
 using System.CommandLine.Builder;
 using System.CommandLine.IO;
 using System.Runtime.Serialization;
+using BlueSkyDev.Logging;
 
 namespace SqlBuildManager.Console
 {
@@ -592,6 +593,7 @@ namespace SqlBuildManager.Console
 
         private static async Task<int> RunBatchExecution(CommandLineArgs cmdLine)
         {
+            SetEventHubAppenderConnection(cmdLine);
             cmdLine.CliVersion = Program.cliVersion;
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
@@ -884,6 +886,7 @@ namespace SqlBuildManager.Console
         #endregion
         private static async Task<int> RunLocalBuildAsync(CommandLineArgs cmdLine)
         {
+            SetEventHubAppenderConnection(cmdLine);
             DateTime start = DateTime.Now;
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Local Build Execution");
@@ -922,6 +925,7 @@ namespace SqlBuildManager.Console
         }
         private static async Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine)
         {
+            SetEventHubAppenderConnection(cmdLine);
             DateTime start = DateTime.Now;
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Threaded Execution");
@@ -1032,10 +1036,6 @@ namespace SqlBuildManager.Console
 
                 if (!string.IsNullOrEmpty(rootLoggingPath))
                 {
-                    //if (!cmdLine.RootLoggingPath.EndsWith("\\"))
-                    //{
-                    //    cmdLine.RootLoggingPath = cmdLine.RootLoggingPath + "\\";
-                    //}
                     if (!Directory.Exists(rootLoggingPath))
                     {
                         Directory.CreateDirectory(rootLoggingPath);
@@ -1055,6 +1055,23 @@ namespace SqlBuildManager.Console
             }
 
             
+        }
+        internal static void SetEventHubAppenderConnection(CommandLineArgs cmdLine)
+        {
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
+            {
+                Hierarchy hier = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly()) as Hierarchy;
+                if (hier != null)
+                {
+                    var ehAppender = (AzureEventHubAppender)LogManager.GetRepository(Assembly.GetEntryAssembly()).GetAppenders().Where(a => a.Name.Contains("AzureEventHubAppender")).FirstOrDefault();
+
+                    if (ehAppender != null)
+                    {
+                        ehAppender.ConnectionString = cmdLine.BatchArgs.EventHubConnectionString;
+                        ehAppender.ActivateOptions();
+                    }
+                }
+            }
         }
 
         //private static void StandardExecution(string[] args )
@@ -1207,6 +1224,8 @@ namespace SqlBuildManager.Console
                 System.Environment.Exit(739);
             }
         }
+
+       
         #endregion
     }
 

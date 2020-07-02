@@ -187,6 +187,9 @@ $settingsFile = [PSCustomObject]@{
     DefaultScriptTimeout = 500
 }
 
+Write-Host "Saving EventHub Connection string to environment variable"
+[System.Environment]::SetEnvironmentVariable("AzureEventHubAppenderConnectionString", "$($e.PrimaryConnectionString)",[System.EnvironmentVariableTarget]::User)
+
 $settingsFile | ConvertTo-Json | Set-Content -Path "..\..\src\TestConfig\settingsfile.json"
 Write-Host "Saved settings file to " + Resolve-Path "..\..\src\TestConfig\settingsfile.json"
 
