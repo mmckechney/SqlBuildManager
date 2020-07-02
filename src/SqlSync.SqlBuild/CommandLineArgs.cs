@@ -4,10 +4,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Transactions;
 using Newtonsoft.Json;
+using SqlSync.Constants;
 namespace SqlSync.SqlBuild
 {
 
@@ -19,6 +21,8 @@ namespace SqlSync.SqlBuild
         {
 
         }
+        [JsonIgnore]
+        public string CliVersion { get; set; }
         [JsonIgnore]
         public ActionType Action { get; set; }
 
@@ -34,7 +38,6 @@ namespace SqlSync.SqlBuild
         [JsonIgnore]
         public StoredProcTesting StoredProcTestingArgs { get; set; } = new StoredProcTesting();
         #endregion
-
         private string settingsFile = string.Empty;
         [JsonIgnore]
         public string SettingsFile
@@ -104,6 +107,11 @@ namespace SqlSync.SqlBuild
         [JsonIgnore]
         public string OutputSbm { get; set; }
         public virtual int DefaultScriptTimeout { get; set; } = 500;
+
+        [JsonIgnore]
+        public bool Silent { get; set; }
+
+        [JsonIgnore]
         public bool WhatIf { get; set; } = false;
 
         #region Not direct (inferred) commandline options
@@ -327,83 +335,190 @@ namespace SqlSync.SqlBuild
         
         public override string ToString()
         {
-            return this.ToStringExtension();
+            return this.ToStringExtension(this.CliVersion, false);
+        }
+        public string ToBatchThreadedExeString()
+        {
+            return this.ToStringExtension(this.CliVersion, true);
         }
     }
 
     public static class CommandLineExtensions
     {
-        public static string ToStringExtension(this object obj)
+        public static string ToStringExtension(this object obj, string cliVersion, bool forBatchThreadedExe)
         {
             StringBuilder sb = new StringBuilder();
             foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
             {
-                if (property.PropertyType == typeof(CommandLineArgs.Authentication) ||
-                    property.PropertyType == typeof(CommandLineArgs.Batch) ||
-                    property.PropertyType == typeof(CommandLineArgs.AutoScripting) ||
-                    property.PropertyType == typeof(CommandLineArgs.DacPac) ||
-                    property.PropertyType == typeof(CommandLineArgs.StoredProcTesting) ||
-                    property.PropertyType == typeof(CommandLineArgs.Synchronize)
-                    )
+                if(!property.CanRead || (property.GetValue(obj) == null || string.IsNullOrWhiteSpace(property.GetValue(obj).ToString())))
                 {
-                    if (property.CanRead &&  property.GetValue(obj) != null)
+                    continue;
+                }
+
+                if (property.PropertyType == typeof(CommandLineArgs.AutoScripting) ||
+                    property.PropertyType == typeof(CommandLineArgs.StoredProcTesting) ||
+                    property.PropertyType == typeof(CommandLineArgs.Synchronize))
+                {
+                    if (property.GetValue(obj) != null && !forBatchThreadedExe)
                     {
-                        sb.Append(property.GetValue(obj).ToStringExtension());
+                        sb.Append(property.GetValue(obj).ToStringExtension(cliVersion, forBatchThreadedExe));
+                    }
+                } 
+                else if (property.PropertyType == typeof(CommandLineArgs.Authentication) ||
+                         property.PropertyType == typeof(CommandLineArgs.DacPac) ||
+                         property.PropertyType == typeof(CommandLineArgs.Batch))
+                {
+                    if (property.GetValue(obj) != null)
+                    {
+                        sb.Append(property.GetValue(obj).ToStringExtension(cliVersion, forBatchThreadedExe));
                     }
                 }
                 else
                 {
-                    if (property.Name == "MultiDbRunConfigFileName") //special case
+                    switch (property.Name)
                     {
-                        if (property.GetValue(obj) != null && !string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
-                        {
-                            sb.Append("/Override=\"" + property.GetValue(obj).ToString() + "\" ");
-                        }
+                        case "AuthenticationType":
+                            if (cliVersion == CliVersion.NEW_CLI)
+                            {
+                                sb.Append("--authtype \"" + property.GetValue(obj).ToString() + "\" ");
+                            }
+                            else
+                            {
+                                sb.Append("/AuthType=\"" + property.GetValue(obj).ToString() + "\" ");
+                            }
+                            break;
+
+                        case "SettingsFile":
+                            if (!forBatchThreadedExe)
+                            {
+                                if (cliVersion == CliVersion.NEW_CLI)
+                                {
+                                    sb.Append("--settingsfile \"" + property.GetValue(obj).ToString() + "\" ");
+                                }
+                                else
+                                {
+                                    sb.Append("/SettingsFile=\"" + property.GetValue(obj).ToString() + "\" ");
+                                }
+                            }
+                            break;
+
+                        case "MultiDbRunConfigFileName":
+                        case "ManualOverRideSets":
+                            if (cliVersion == CliVersion.NEW_CLI)
+                            {
+                                sb.Append("--override \"" + property.GetValue(obj).ToString() + "\" ");
+                            }
+                            else
+                            {
+                                sb.Append("/Override=\"" + property.GetValue(obj).ToString() + "\" ");
+                            }
+                            break;
+
+                        case "BuildFileName":
+                            if (cliVersion == CliVersion.NEW_CLI)
+                            {
+                                sb.Append("--packagename \"" + property.GetValue(obj).ToString() + "\" ");
+                            }
+                            else
+                            {
+                                sb.Append("/PackageName=\"" + property.GetValue(obj).ToString() + "\" ");
+                            }
+                            break;
+
+                        case "EventHubConnectionString":
+                            if (cliVersion == CliVersion.NEW_CLI)
+                            {
+                                sb.Append("--eventhubconnection \"" + property.GetValue(obj).ToString() + "\" ");
+                            }
+                            else
+                            {
+                                sb.Append("/eventhubconnection=\"" + property.GetValue(obj).ToString() + "\" ");
+                            }
+                            break;
+
+                        case "Action":
+                            if (cliVersion == CliVersion.NEW_CLI)
+                            {
+                                if (forBatchThreadedExe)
+                                {
+                                    sb.Append("runthreaded ");
+                                }
+                                else
+                                {
+                                    sb.Append(property.GetValue(obj).ToString().ToLower() + " ");
+                                }
+                            }
+                            else
+                            {
+                                sb.Append("/Action=\"" + property.GetValue(obj).ToString() + "\" ");
+                            }
+                            break;
+
+                        case "OverrideDesignated":
+                        case "CliVersion":
+                        case "WhatIf":
+                            //ignore these
+                            break;
+
+                        default:
+                            if (property.PropertyType == typeof(bool))
+                            {
+                                if(property.Name == "PollBatchPoolStatus" && forBatchThreadedExe)
+                                {
+                                    continue;
+                                }
+                                if (bool.Parse(property.GetValue(obj).ToString()) == true) //ignore anything not set
+                                {
+                                    if (cliVersion == CliVersion.NEW_CLI)
+                                    {
+                                        sb.Append("--" + property.Name.ToLower() + " true ");
+                                    }
+                                    else
+                                    {
+                                        sb.Append("/" + property.Name + "=true ");
+                                    }
+                                }
+                            }
+                            else if (property.PropertyType == typeof(string))
+                            {
+                                if (cliVersion == CliVersion.NEW_CLI)
+                                {
+                                    sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
+                                }
+                                else
+                                {
+                                    sb.Append("/" + property.Name + "=\"" + property.GetValue(obj).ToString() + "\" ");
+                                }
+                            }
+                            else
+                            {
+                                double num;
+                                if (double.TryParse(property.GetValue(obj).ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out num))
+                                {
+                                    if (cliVersion == CliVersion.NEW_CLI)
+                                    {
+                                        sb.Append("--" + property.Name.ToLower() + " " + property.GetValue(obj).ToString() + " ");
+                                    }
+                                    else
+                                    {
+                                        sb.Append("/" + property.Name + "=" + property.GetValue(obj).ToString() + " ");
+                                    }
+                                }
+                                else
+                                {
+                                    if (cliVersion == CliVersion.NEW_CLI)
+                                    {
+                                        sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
+                                    }
+                                    else
+                                    {
+                                        sb.Append("/" + property.Name + "=\"" + property.GetValue(obj).ToString() + "\" ");
+                                    }
+                                }
+                            }
+                            break;
                     }
-                    else if (property.Name == "ManualOverRideSets") //special case
-                    {
-                        if (property.GetValue(obj) != null && !string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
-                        {
-                            sb.Append("/Override=\"" + property.GetValue(obj).ToString() + "\" ");
-                        }
-                    }
-                    else if (property.Name == "BuildFileName") //special case where commandline arg != propertyname
-                    {
-                        if (property.GetValue(obj) != null && !string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
-                        {
-                            sb.Append("/PackageName=\"" + property.GetValue(obj).ToString() + "\" ");
-                        }
-                    }
-                    else if (property.Name == "OverrideDesignated") //special case
-                    {
-                        //do nothing
-                    }
-                    else if (property.PropertyType == typeof(bool) && property.CanRead)
-                    {
-                        if (bool.Parse(property.GetValue(obj).ToString()) == true)
-                        {
-                            sb.Append("/" + property.Name + "=true ");
-                        }
-                    }
-                    else if (property.PropertyType == typeof(string) && property.CanRead)
-                    {
-                        if (property.GetValue(obj) != null && !string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
-                        {
-                            sb.Append("/" + property.Name + "=\"" + property.GetValue(obj).ToString() + "\" ");
-                        }
-                    }
-                    else if (property.CanRead && property.GetValue(obj) != null)
-                    {
-                        double num;
-                        if (double.TryParse(property.GetValue(obj).ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out num))
-                        {
-                            sb.Append("/" + property.Name + "=" + property.GetValue(obj).ToString() + " ");
-                        }
-                        else
-                        {
-                            sb.Append("/" + property.Name + "=\"" + property.GetValue(obj).ToString() + "\" ");
-                        }
-                    }
+                     
                 }
 
             }

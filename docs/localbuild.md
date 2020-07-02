@@ -27,65 +27,29 @@ In order to get some of the unit tests to succeed, you need to have a local inst
 
 ## Create Test Target databases
 
-To test against Azure databases, you will need some in Azure! The following PowerShell will create an Azure SQL Server, an Elastic Pool and "X" number of databases for that pool. This can be done locally or via the Azure Cloud Shell (http://shell.azure.com)
+To test against Azure databases, you will need some in Azure! The following PowerShell will create:
 
-1. Create the Resource Group and Server (change your values accordingly)
+- An Azure SQL Server
+- A SQL Azure Elastic Pool for cost effective use of the databases
+- "X" number of databases for that pool. ("x" is defined by the optional `TestDatabaseCount` parameter)
+- An Azure Batch account, with the latest build of the sbm.exe CLI uploaded and installed
 
-```PowerShell
-$ResourceGroupName = "SqlResourceGroup"
-$Location = "East US"
-$ServerName = "TestServer001"
+It is important to note that you can re-run this script at any time to ensure your environment is set up properly. It will not impact running resources if run multiple times. 
 
-New-AzResourceGroup  -ResourceGroupName $ResourceGroupName -Location $Location 
+## Steps
 
-New-AzSqlServer -ResourceGroupName $ResourceGroupName -Location $Location -ServerName $ServerName -ServerVersion "12.0" -SqlAdministratorCredentials (Get-Credential)
+1. In a PowerShell window, navigate to the `docs/templates` folder
+2. Run the `Login-AzAccount` command to connect to your Azure account
+3. Run the `Create_AzureTestEnvironment.ps1` file. You will be prompted for parameters:
 
-New-AzSqlServerFirewallRule -AllowAllAzureIPs -ResourceGroupName $ResourceGroupName -ServerName $ServerName
+    - `ResourceGroupName` - Azure resource group to create and put the resources into
+    - `Location` - the Azure region to deploy the resources
+    - `SqlServerName` - the name of the Azure SQL PaaS server to create
+    - `ElasticPoolName` - the name of the elastic pool to put your databases in
+    - `DatabaseNameRoot` - the prefix for you Azure SQL databases. This will be appended with sequence numbers (001, 002, etc)
+    - `Batchprefix` - the prefix for the Azure batch components. Must be less that 8 characters, all lowercase 
+    - `SqlServerUserName` - the SQL Admin name to use when creating the SQL server
+    - `SqlServerPassword` - the SQL Admin password to use. Upon re-running the script, it will reset the Admin password to this value
+    - `TestDatabaseCount` - an optional parameter. The default is 10
 
-```
-
-2. Create the elastic pool
-
-```PowerShell
-$ElasticPoolName="MyBasicPool2"
-New-AzSqlElasticPool -ResourceGroupName $ResourceGroupName -ServerName $ServerName -ElasticPoolName $ElasticPoolName -Edition "Basic" -Dtu 50 
-```
-
-3. Create databases within the pool for testing
-
-```PowerShell
-$DatabaseName="SqlDemo001"
-New-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $ServerName -ElasticPoolName $ElasticPoolName -DatabaseName $DatabaseName
-```
-
-4. Or to create a collection of databases you  can use
-
-```PowerShell
-$DatabaseName = "SqlDemo"
-
-For ($i=1; $i -lt 101; $i++) 
-{
-    $dbNumber = $DatabaseName + $i.ToString("000")
-    New-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $ServerName -ElasticPoolName $ElasticPoolName -DatabaseName $dbNumber
-}
-```
-
-## Creating a database target file
-To create database target files for a parallel test execution, you can use the following script. Note that this will get _every_ SQL Server and _every_ database. You may want to add some customization to get only those that you want.
-
-```PowerShell
-$outputFile = "C:\temp\databasetargets.cfg"
-$servers = Get-AzResourceGroup | Get-AzSqlServer
-foreach($server in $servers)
-{
-    $dbs = Get-AzSqlDatabase -ResourceGroupName $server.ResourceGroupName -ServerName $server.ServerName | Sort-Object -Property DatabaseName
-
-    foreach($db in $dbs)
-    {
-        if($db.DatabaseName -ne "master")
-        {
-            $server.FullyQualifiedDomainName + ":client,"+$db.DatabaseName | Out-File -Append $outputFile
-        }
-    }
-}
-```
+Once the script is done running, it will save

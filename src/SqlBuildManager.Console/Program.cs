@@ -26,12 +26,15 @@ using Microsoft.SqlServer.Management.Smo;
 using System.CommandLine.Parsing;
 using System.CommandLine.Builder;
 using System.CommandLine.IO;
+using System.Runtime.Serialization;
 
 namespace SqlBuildManager.Console
 {
 
     class Program
     {
+        internal static string cliVersion;
+
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
@@ -39,7 +42,7 @@ namespace SqlBuildManager.Console
         {
             var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             var currentPath = Path.GetDirectoryName(fn);
-            var exeName = Path.GetFileNameWithoutExtension(fn);
+            cliVersion = Path.GetFileNameWithoutExtension(fn).ToLower();
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
 
             log4net.Config.XmlConfigurator.Configure(logRepository, new FileInfo(Path.Combine(currentPath,"log4net.config")));
@@ -48,7 +51,7 @@ namespace SqlBuildManager.Console
             log.Debug("Received Command: " + String.Join(" | ", args));
            
 
-            if (exeName == "sbm")
+            if (cliVersion == SqlSync.Constants.CliVersion.NEW_CLI)
             {
                 #region System.CommandLine options
                 var settingsfileOption = new Option(new string[] { "--settingsfile" }, "Saved settings file to load parameters from")
@@ -155,10 +158,6 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<string>("outputsbm")
                 };
-                var outputcontainersasurlOption = new Option(new string[] { "--outputcontainersasurl" }, "Override of default storage container for batch output")
-                {
-                    Argument = new Argument<string>("outputcontainersasurl")
-                };
                 var deletebatchpoolOption = new Option(new string[] { "--deletebatchpool" }, "Whether or not to delete the batch pool servers after an execution (default is false)")
                 {
                     Argument = new Argument<bool>("deletebatchpool")
@@ -225,6 +224,17 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<bool>("whatif")
                 };
+                var silentOption = new Option(new string[] { "--silent" }, "Suppresses overwrite prompt if settings file already exists")
+                {
+                    Argument = new Argument<bool>("silent")
+                };
+
+                var outputcontainersasurlOption = new Option(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command")
+                {
+                    Argument = new Argument<string>("outputcontainersasurl")
+                };
+
+   
                 List<Option> authOptions = new List<Option>()
                 {
                     passwordOption,
@@ -324,9 +334,13 @@ namespace SqlBuildManager.Console
                 var batchCleanUpCommand = new Command("cleanup", "Azure Batch Clean Up - remove VM nodes")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(RunBatchCleanUp)
+                }; 
+                var batchRunThreaded = new Command("runthreaded", "[Internal use only] - this commmand is used by Azure batch to sent threaded commands to Batch Nodes")
+                {
+                    Handler = CommandHandler.Create<CommandLineArgs>(RunThreadedExecutionAsync)
                 };
 
-                
+
                 #endregion
                 rootCommand.Add(buildCommand);
                 rootCommand.Add(threadedCommand);
@@ -343,7 +357,7 @@ namespace SqlBuildManager.Console
                 batchCommand.Add(batchPreStageCommand);
                 batchCommand.Add(batchCleanUpCommand);
                 batchCommand.Add(batchRunCommand);
-                //batchCommand.Add(whatIfOption);
+                batchCommand.Add(batchRunThreaded);
 
                 //General Building options
                 authOptions.ForEach(a => buildCommand.Add(a));
@@ -364,6 +378,9 @@ namespace SqlBuildManager.Console
                 threadedCommand.Add(forcecustomdacpacOption);
                 threadedCommand.Add(platinumdbsourceOption);
                 threadedCommand.Add(platinumserversourceOption);
+                threadedCommand.Add(timeoutretrycountOption);
+                threadedCommand.Add(defaultscripttimeoutOption);
+
 
                 //Batch running
                 authOptions.ForEach(a => batchRunCommand.Add(a));
@@ -378,7 +395,26 @@ namespace SqlBuildManager.Console
                 batchRunCommand.Add(forcecustomdacpacOption);
                 batchRunCommand.Add(platinumdbsourceOption);
                 batchRunCommand.Add(platinumserversourceOption);
+
+                //Batch threading run
                 
+                authOptions.ForEach(a => batchRunThreaded.Add(a));
+                batchRunThreaded.Add(authtypeOption);
+                batchRunThreaded.Add(overrideOption);
+                generalBatchAccountOptions.ForEach(a => batchRunThreaded.Add(a));
+                generalBatchNodeOptions.ForEach(a => batchRunThreaded.Add(a));
+                generalBatchExecutionOptions.ForEach(a => batchRunThreaded.Add(a));
+                batchRunThreaded.Add(platinumdacpacOption);
+                batchRunThreaded.Add(packagenameOption.Copy(false));
+                batchRunThreaded.Add(batchjobnameOption);
+                batchRunThreaded.Add(targetdacpacOption);
+                batchRunThreaded.Add(forcecustomdacpacOption);
+                batchRunThreaded.Add(platinumdbsourceOption);
+                batchRunThreaded.Add(platinumserversourceOption);
+                batchRunThreaded.Add(outputcontainersasurlOption);
+                batchRunThreaded.Add(transactionalOption);
+                batchRunThreaded.Add(timeoutretrycountOption);
+
                 //Batch pre-stage
                 generalBatchAccountOptions.ForEach(a => batchPreStageCommand.Add(a));
                 generalBatchNodeOptions.ForEach(a => batchPreStageCommand.Add(a));
@@ -395,6 +431,7 @@ namespace SqlBuildManager.Console
                 generalBatchExecutionOptions.ForEach(a => saveSettingsCommand.Add(a));
                 saveSettingsCommand.Add(timeoutretrycountOption);
                 saveSettingsCommand.Add(pollbatchpoolstatusOption);
+                saveSettingsCommand.Add(silentOption);
 
 
                 scriptExtractCommand.Add(platinumdacpacOption.Copy(true));
@@ -555,6 +592,7 @@ namespace SqlBuildManager.Console
 
         private static async Task<int> RunBatchExecution(CommandLineArgs cmdLine)
         {
+            cmdLine.CliVersion = Program.cliVersion;
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
@@ -601,7 +639,7 @@ namespace SqlBuildManager.Console
             try
             {
                 string write = "y";
-                if(File.Exists(cmdLine.SettingsFile))
+                if(File.Exists(cmdLine.SettingsFile) && !cmdLine.Silent)
                 {
                     System.Console.WriteLine($"The settings file '{cmdLine.SettingsFile}' already exists. Overwrite (Y/N)?");
                     write = System.Console.ReadLine();

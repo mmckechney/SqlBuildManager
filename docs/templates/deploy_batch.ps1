@@ -43,16 +43,16 @@ param(
  $resourceGroupLocation,
 
  [string]
- $deploymentName = "batchaccount",
+ $batchprefix,
+
+ [string]
+ $deploymentName = "batchdeploy",
+
+ [string]
+ $templateFile = "azuredeploy.json",
 
  [string]
  $parametersFilePath = "azuredeploy.parameters.json",
-
-  [string]
- $sbmReleaseUrl = "https://github.com/mmckechney/SqlBuildManager/releases/download/v11.0.0/SqlBuildManager-v11.0.0.zip",
-
-  [string]
- $version= "11.0.0",
 
  [string]
  $applicationId  = "SqlBuldManager"
@@ -72,6 +72,21 @@ Function RegisterRP {
     Write-Host "Registering resource provider '$ResourceProviderNamespace'";
     Register-AzResourceProvider -ProviderNamespace $ResourceProviderNamespace -ErrorAction SilentlyContinue
 }
+
+#Build the solution, publish and create zip file for uploading to Azure Batch
+dotnet restore "..\..\src\sqlsync.sln" 
+dotnet build "..\..\src\sqlsync.sln" --configuration Debug
+dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r win-x64 --configuration Debug
+
+$source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\win-x64\publish"
+$buildOutputZip = "$(Resolve-Path "..\..\src\TestConfig")\sbm.zip"
+Add-Type -AssemblyName "system.io.compression.filesystem"
+If(Test-path $buildOutputZip) {Remove-item $buildOutputZip}
+[io.compression.zipfile]::CreateFromDirectory($source,$buildOutputZip)
+
+$version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion
+
+
 
 #******************************************************************************
 # Script body
@@ -96,6 +111,18 @@ if($resourceProviders.length) {
     }
 }
 
+$batchAcctName = $batchprefix + "batchacct"
+$storageAcctName = $batchprefix + "storage"
+$namespaceName = $batchprefix + "eventhubnamespace"
+$eventHubName =  $batchprefix + "eventhub"
+
+$params = @{}
+$params.Add("batchAccountName", $batchAcctName);
+$params.Add("storageAccountName", $storageAcctName);
+$params.Add("namespaceName", $batchprefix + "eventhubnamespace");
+$params.Add("eventhubSku", "Standard");
+$params.Add("eventHubName", $eventHubName );
+
 #Create or check for existing resource group
 $resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
 if(!$resourceGroup)
@@ -111,40 +138,19 @@ else{
     Write-Host "Using existing resource group '$resourceGroupName'";
 }
 
-$templateUri = "https://raw.githubusercontent.com/mmckechney/SqlBuildManager/master/docs/templates/azuredeploy.json"
-
 # Start the deployment
 Write-Host "Starting deployment...";
-if(Test-Path $parametersFilePath) {
-    New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateUri $templateUri -TemplateParameterFile $parametersFilePath; 
-} else {
-    New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateUri $templateUri;
-}
 
-# Create application
-$json = (Get-Content "$parametersFilePath" -Raw) | ConvertFrom-Json
-
-$batchAcctName = $json.parameters.batchAccountName.value
-$storageAcctName = $json.parameters.storageAccountName.value
-$namespaceName = $json.parameters.namespaceName.value
-$eventHubName = $json.parameters.eventHubName.value
+New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateFile $templateFile -TemplateParameterObject $params
+    #New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateFile $templateFile;
 
 #Create the application
 Write-Host "Creating new Azure Batch Application named $applicationId"
 New-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationId
 
-#download zip package locally
-Write-Host "Downloading release binaries from $sbmReleaseUrl"
-$tmp = $sbmReleaseUrl.Split('/');
-$localFileName = $tmp[$tmp.Count-1];
-$output = "$PSScriptRoot\$localFileName"
-
-$wc = New-Object System.Net.WebClient
-$wc.DownloadFile($sbmReleaseUrl, $output)
-
 #Add the package 
 Write-Host "Uploading application package to Azure Batch account"
-New-AzBatchApplicationPackage -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationId -ApplicationVersion $version -Format zip -FilePath $output
+New-AzBatchApplicationPackage -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationId -ApplicationVersion $version -Format zip -FilePath $buildOutputZip
 
 Write-Host "Setting default application version to $version"
 Set-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationId -DefaultVersion $version
@@ -153,12 +159,36 @@ Set-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceG
 $batch = Get-AzBatchAccountKey -AccountName $batchAcctName -ResourceGroupName $resourceGroupName
 $t = Get-AzBatchAccount -AccountName $batchAcctName -ResourceGroupName $resourceGroupName
 
-
 $storage = Get-AzStorageAccount -Name $storageAcctName -ResourceGroupName $resourceGroupName
 $s = Get-AzStorageAccountKey -Name $storageAcctName -ResourceGroupName $resourceGroupName
 
 $e = Get-AzEventHubKey -ResourceGroupName $resourceGroupName -NamespaceName $namespaceName -EventHubName $eventHubName -AuthorizationRuleName batchbuilder
 
+$settingsFile = [PSCustomObject]@{
+    AuthenticationArgs = @{
+        UserName = ""
+        Password = ""
+    }
+    BatchArgs = @{
+        BatchNodeCount = "2"
+        BatchAccountName = $batchAcctName
+        BatchAccountKey = "$($batch.PrimaryAccountKey)"
+        BatchAccountUrl = "https://$($t.AccountEndpoint)"
+        StorageAccountName = $storageAcctName
+        StorageAccountKey = "$($s.Value[0])"
+        BatchVmSize=  "STANDARD_DS1_V2"
+        DeleteBatchPool = $false
+        DeleteBatchJob = $false
+        PollBatchPoolStatus = $True
+        EventHubConnectionString = "$($e.PrimaryConnectionString)"
+    }
+    RootLoggingPath = "C:\temp"
+    TimeoutRetryCount = 0
+    DefaultScriptTimeout = 500
+}
+
+$settingsFile | ConvertTo-Json | Set-Content -Path "..\..\src\TestConfig\settingsfile.json"
+Write-Host "Saved settings file to " + Resolve-Path "..\..\src\TestConfig\settingsfile.json"
 
 Write-Host "Pre-populated command line arguments. Record these for use later: "
 Write-Host ""

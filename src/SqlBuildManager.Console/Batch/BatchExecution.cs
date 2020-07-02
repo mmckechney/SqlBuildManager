@@ -14,6 +14,7 @@ using System.Text;
 using SqlBuildManager.Interfaces.Console;
 using System.Text.RegularExpressions;
 
+
 namespace SqlBuildManager.Console.Batch
 {
     public class Execution
@@ -489,8 +490,16 @@ namespace SqlBuildManager.Console.Batch
                 //Set set the Sas URL
                 threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
 
-                StringBuilder sb = new StringBuilder("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe ");
-                sb.Append(threadCmdLine.ToString());
+                StringBuilder sb = new StringBuilder();
+                if (Program.cliVersion == SqlSync.Constants.CliVersion.NEW_CLI)
+                {
+                    sb.Append("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\sbm.exe batch ");
+                }
+                else
+                {
+                    sb.Append("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe ");
+                }
+                sb.Append(threadCmdLine.ToBatchThreadedExeString());
 
                 commandLines.Add(sb.ToString());
             }

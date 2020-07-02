@@ -21,6 +21,7 @@
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
+    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
     <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" />
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
