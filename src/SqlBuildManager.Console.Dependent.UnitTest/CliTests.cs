@@ -8,9 +8,17 @@ using System.IO;
 using Microsoft.SqlServer.Management.HadrData;
 using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Resources;
 using SqlSync.SqlBuild;
+using Microsoft.Azure.Batch;
+using System.Collections.Immutable;
+using Microsoft.SqlServer.Management.Smo;
+using Microsoft.Azure.Amqp.Framing;
 
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
+    /// <summary>
+    /// To run these tests, you will need to have an Azure environment set up.
+    /// You can easily do this by following the script instructions found in the /docs/localbuild.md file
+    /// </summary>
     [TestClass]
     public class CliTests
     {
@@ -69,6 +77,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             this.overrideFileContents = File.ReadAllLines(this.overrideFilePath).ToList();
         }
 
+        #region Helpers
         public int ExecuteProcess(List<string> args)
         {
             string arguments = string.Join(" ", args.Select(a => a).ToArray());
@@ -100,15 +109,32 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             return this.prc.ExitCode;
 
         }
-
         string StandardExecutionErrorMessage()
         {
-            return this.error + "\r\n" + this.output + "\r\n" + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections";
+            return this.error + "\r\n" + this.output + "\r\n" + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
         }
+        private string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
+        {
+            string fullname = Path.GetFullPath($"TestConfig/{database}.dacpac");
+            List<string> args = new List<string>();
+            args.Add("dacpac");
+            args.Add($"--username {cmdLine.AuthenticationArgs.UserName}");
+            args.Add($"--password {cmdLine.AuthenticationArgs.Password}");
+            args.Add($"--dacpacname {fullname}");
+            args.Add($"--database {database}");
+            args.Add($"--server {server}");
 
-        
+            if (ExecuteProcess(args) == 0)
+            {
+                return fullname;
+            }
+            else
+            {
+                return null;
+            }
 
-
+        }
+        #endregion
 
         [TestMethod]
         public void LocalThreaded_SBMSource_Success()
@@ -129,7 +155,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             var result = ExecuteProcess(args);
 
-            Assert.AreEqual(0, StandardExecutionErrorMessage());
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
             Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
         }
@@ -162,8 +188,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Assert.IsTrue(this.output.Contains("Total number of targets: 1"), "Should have run against a single database");
         }
 
-        [TestMethod]
-        public void AzureBatch_SBMSource_Succes()
+        [DataRow("runthreaded")]
+        [DataRow("run")]
+        [DataTestMethod]
+        public void Batch_SBMSource_Succes(string batchMethod)
         {
             string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
             if (!File.Exists(sbmFileName))
@@ -172,7 +200,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
 
             List<string> args = new List<string>();
-            args.Add("batch run");
+            args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {this.settingsFilePath}");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
@@ -183,14 +211,19 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             Assert.AreEqual(0, result, StandardExecutionErrorMessage());
             Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            if (batchMethod == "run")
+            {
+                Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            }
         }
 
-        [TestMethod]
-        public void LocalThreadedBatch_SBMSource_RunWithError_MissingPackage()
+        [DataRow("runthreaded")]
+        [DataRow("run")]
+        [DataTestMethod]
+        public void Batch_SBMSource_RunWithError_MissingPackage(string batchMethod)
         {
             List<string> args = new List<string>();
-            args.Add("batch runthreaded");
+            args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {this.settingsFilePath}");
             args.Add($"--override {this.overrideFilePath}");
 
@@ -201,8 +234,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Assert.IsTrue(this.output.Contains("Invalid command line set") && this.output.ToLower().Contains("packagename"), "This test should report a missing commandline");
         }
 
-        [TestMethod]
-        public void LocalThreadedBatch_SBMSource_Success()
+        [DataRow("runthreaded")]
+        [DataRow("run")]
+        [DataTestMethod]
+        public void Batch_SBMSource_Success(string batchMethod)
         {
             string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
             if (!File.Exists(sbmFileName))
@@ -211,7 +246,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
 
             List<string> args = new List<string>();
-            args.Add("batch runthreaded");
+            args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {this.settingsFilePath}");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
@@ -222,7 +257,199 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             Assert.AreEqual(0, result, StandardExecutionErrorMessage());
             Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            }
         }
+
+        [DataRow("runthreaded")]
+        [DataRow("run")]
+        [DataTestMethod]
+        public void LocalThreadedBatch_PlatinumDbSource_Success(string batchMethod)
+        {
+            int removeCount = 1;
+            string server, database;
+            string firstOverride = this.overrideFileContents.First();
+            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}");
+            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--override {minusFirst}");
+            args.Add($"--platinumdbsource {database}");
+            args.Add($"--platinumserversource {server}");
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+            }
+        }
+
+        [DataRow("runthreaded")]
+        [DataRow("run")]
+        [DataTestMethod]
+        public void Batch_PlatinumDbSource_FirstDbAlreadyInSync(string batchMethod)
+        {
+            int removeCount = 1;
+            string server, database;
+            string firstOverride = this.overrideFileContents.First();
+            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+            string server2, database2;
+            string secondOverride = this.overrideFileContents.ElementAt(1);
+            (server2, database2) = DatabaseHelper.ExtractServerAndDbFromLine(secondOverride);
+
+            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, secondOverride });
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}");
+            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--override {minusFirst}");
+            args.Add($"--platinumdbsource {database}");
+            args.Add($"--platinumserversource {server}");
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            Assert.IsTrue(this.output.Contains($"{database2}.dacpac are already in  sync.Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
+            Assert.IsTrue(this.output.Contains($"{database2}: Dacpac Databases In Sync"), "The second database should already be in sync with the first");
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+            }
+
+        }
+        
+        [DataRow("runthreaded")]
+        [DataRow("run")]
+        [DataTestMethod]
+        public void LocalThreadedBatch_PlatinumDbSource_ADbAlreadyInSync(string batchMethod)
+        {
+            int removeCount = 1;
+            string server, database;
+            string firstOverride = this.overrideFileContents.First();
+            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+            string server3, database3;
+            string thirdDbOverride = this.overrideFileContents.ElementAt(2);
+            (server3, database3) = DatabaseHelper.ExtractServerAndDbFromLine(thirdDbOverride);
+
+            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, thirdDbOverride });
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}");
+            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--override {minusFirst}");
+            args.Add($"--platinumdbsource {database}");
+            args.Add($"--platinumserversource {server}");
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Generating publish script for database '{database3}'."), "Should create a custom DACPAC for this database since the update would have failed b/c they are in sync.");
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+                Assert.IsTrue(this.output.Contains($"{database3}: Dacpac Databases In Sync"), "The third database should already be in sync with the first");
+            }
+
+
+        }
+
+        [DataRow("runthreaded")]
+        [DataRow("run")]
+        [DataTestMethod]
+        public void LocalThreadedBatch_DacpacSource_Success(string batchMethod)
+        {
+            int removeCount = 1;
+            string server, database;
+            string firstOverride = this.overrideFileContents.First();
+            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
+
+            string dacpacName = CreateDacpac(this.cmdLine, server, database);
+            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test\r\n{StandardExecutionErrorMessage()}");
+
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}"); 
+            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--override {minusFirst}");
+            args.Add($"--platinumdacpac {dacpacName}");
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            Assert.IsTrue(this.output.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+            }
+
+        }
+
+        [DataRow("runthreaded")]
+        [DataRow("run")]
+        [DataTestMethod]
+        public void LocalThreadedBatch_DacpacSource_FirstDbAlreadyInSync(string batchMethod)
+        {
+            int removeCount = 1;
+            string server, database;
+            string firstOverride = this.overrideFileContents.First();
+            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+            string server2, database2;
+            string secondOverride = this.overrideFileContents.ElementAt(1);
+            (server2, database2) = DatabaseHelper.ExtractServerAndDbFromLine(secondOverride);
+
+            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, secondOverride });
+
+            string dacpacName = CreateDacpac(this.cmdLine, server, database);
+            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test\r\n{StandardExecutionErrorMessage()}");
+
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}"); 
+            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--override {minusFirst}");
+            args.Add($"--platinumdacpac {dacpacName}");
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            Assert.IsTrue(this.output.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
+            Assert.IsTrue(this.output.Contains($"{database2}: Dacpac Databases In Sync"), "The second database should already be in sync with the first");
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+            }
+
+        }
+
+
+
+
     }
 }

@@ -134,7 +134,6 @@ namespace SqlBuildManager.Console
             {
                 cmdLine.RootLoggingPath = @"C:\tmp-sqlbuildlogging";
             }
-            Program.SetEventHubAppenderConnection(cmdLine);
 
             SetLoggingPaths(cmdLine.RootLoggingPath);
 

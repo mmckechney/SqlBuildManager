@@ -106,6 +106,26 @@ namespace SqlSync.SqlBuild
         public string BuildRevision { get; set; }
         [JsonIgnore]
         public string OutputSbm { get; set; }
+        [JsonIgnore]
+        public string DacpacName
+        {
+            get
+            {
+                return dacpacName;
+            }
+            set
+            {
+                if(Path.GetExtension(value) == string.Empty)
+                {
+                    dacpacName = value + ".dacpac";
+                }
+                else
+                {
+                    dacpacName = value;
+                }
+            }
+        }
+        private string dacpacName = string.Empty;
         public virtual int DefaultScriptTimeout { get; set; } = 500;
 
         [JsonIgnore]

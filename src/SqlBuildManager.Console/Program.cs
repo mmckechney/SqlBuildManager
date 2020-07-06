@@ -235,7 +235,13 @@ namespace SqlBuildManager.Console
                     Argument = new Argument<string>("outputcontainersasurl")
                 };
 
-   
+                var dacpacOutputOption = new Option(new string[] { "--dacpacname" }, "Name of the dacpac that you want to create")
+                {
+                    Argument = new Argument<string>("dacpacname"),
+                    Required = true
+                };
+
+
                 List<Option> authOptions = new List<Option>()
                 {
                     passwordOption,
@@ -336,9 +342,13 @@ namespace SqlBuildManager.Console
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(RunBatchCleanUp)
                 }; 
-                var batchRunThreaded = new Command("runthreaded", "[Internal use only] - this commmand is used by Azure batch to sent threaded commands to Batch Nodes")
+                var batchRunThreadedCommand = new Command("runthreaded", "[Internal use only] - this commmand is used by Azure batch to sent threaded commands to Batch Nodes")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(RunThreadedExecutionAsync)
+                };
+                var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
+                {
+                    Handler = CommandHandler.Create<CommandLineArgs>(CreateDacpac)
                 };
 
 
@@ -353,12 +363,19 @@ namespace SqlBuildManager.Console
                 rootCommand.Add(getDifferenceCommand);
                 rootCommand.Add(synchronizeCommand);
                 rootCommand.Add(scriptExtractCommand);
+                rootCommand.Add(dacpacCommand);
+
+                authOptions.ForEach(a => dacpacCommand.Add(a));
+                dacpacCommand.Add(authtypeOption);
+                dacpacCommand.Add(databaseOption.Copy(true));
+                dacpacCommand.Add(serverOption.Copy(true));
+                dacpacCommand.Add(dacpacOutputOption);
 
                 batchCommand.Add(saveSettingsCommand);
                 batchCommand.Add(batchPreStageCommand);
                 batchCommand.Add(batchCleanUpCommand);
                 batchCommand.Add(batchRunCommand);
-                batchCommand.Add(batchRunThreaded);
+                batchCommand.Add(batchRunThreadedCommand);
 
                 //General Building options
                 authOptions.ForEach(a => buildCommand.Add(a));
@@ -399,22 +416,22 @@ namespace SqlBuildManager.Console
 
                 //Batch threading run
                 
-                authOptions.ForEach(a => batchRunThreaded.Add(a));
-                batchRunThreaded.Add(authtypeOption);
-                batchRunThreaded.Add(overrideOption);
-                generalBatchAccountOptions.ForEach(a => batchRunThreaded.Add(a));
-                generalBatchNodeOptions.ForEach(a => batchRunThreaded.Add(a));
-                generalBatchExecutionOptions.ForEach(a => batchRunThreaded.Add(a));
-                batchRunThreaded.Add(platinumdacpacOption);
-                batchRunThreaded.Add(packagenameOption.Copy(false));
-                batchRunThreaded.Add(batchjobnameOption);
-                batchRunThreaded.Add(targetdacpacOption);
-                batchRunThreaded.Add(forcecustomdacpacOption);
-                batchRunThreaded.Add(platinumdbsourceOption);
-                batchRunThreaded.Add(platinumserversourceOption);
-                batchRunThreaded.Add(outputcontainersasurlOption);
-                batchRunThreaded.Add(transactionalOption);
-                batchRunThreaded.Add(timeoutretrycountOption);
+                authOptions.ForEach(a => batchRunThreadedCommand.Add(a));
+                batchRunThreadedCommand.Add(authtypeOption);
+                batchRunThreadedCommand.Add(overrideOption);
+                generalBatchAccountOptions.ForEach(a => batchRunThreadedCommand.Add(a));
+                generalBatchNodeOptions.ForEach(a => batchRunThreadedCommand.Add(a));
+                generalBatchExecutionOptions.ForEach(a => batchRunThreadedCommand.Add(a));
+                batchRunThreadedCommand.Add(platinumdacpacOption);
+                batchRunThreadedCommand.Add(packagenameOption.Copy(false));
+                batchRunThreadedCommand.Add(batchjobnameOption);
+                batchRunThreadedCommand.Add(targetdacpacOption);
+                batchRunThreadedCommand.Add(forcecustomdacpacOption);
+                batchRunThreadedCommand.Add(platinumdbsourceOption);
+                batchRunThreadedCommand.Add(platinumserversourceOption);
+                batchRunThreadedCommand.Add(outputcontainersasurlOption);
+                batchRunThreadedCommand.Add(transactionalOption);
+                batchRunThreadedCommand.Add(timeoutretrycountOption);
 
                 //Batch pre-stage
                 generalBatchAccountOptions.ForEach(a => batchPreStageCommand.Add(a));
@@ -563,6 +580,26 @@ namespace SqlBuildManager.Console
                 }
             }
 
+        }
+
+        private static int CreateDacpac(CommandLineArgs cmdLine)
+        {
+            string fullName = Path.GetFullPath(cmdLine.DacpacName);
+            string path = Path.GetDirectoryName(fullName);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            if (!DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName))
+            {
+                log.Error($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
+                return (int)ExecutionReturn.BuildFileExtractionError;
+            }else
+            {
+                log.Info($"DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {fullName}");
+            }
+            return 0;
         }
 
         private static async Task<int> RunBatchCleanUp(CommandLineArgs cmdLine)

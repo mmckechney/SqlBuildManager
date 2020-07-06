@@ -100,8 +100,16 @@ namespace SqlBuildManager.Console.Batch
                 cmdLine.DacPacArgs.PlatinumDacpac = dacpacName;
             }
             //Check for the platinum dacpac and configure it if necessary
-            var tmp = new MultiDbData();
-            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref tmp);
+            log.Info("Validating database overrides");
+            MultiDbData buildData;
+            int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out buildData, out errorMessages);
+            if (tmpVal != 0)
+            {
+                log.Error($"Unable to validate database config\r\n{string.Join("\r\n", errorMessages)}");
+                return tmpVal;
+            }
+
+            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref buildData);
             if (tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
             {
                 return (int)ExecutionReturn.DacpacDatabasesInSync;
