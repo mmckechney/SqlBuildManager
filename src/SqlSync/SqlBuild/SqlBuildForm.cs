@@ -40,7 +40,7 @@ using SqlSync.SqlBuild.Remote;
 using SqlSync.SqlBuild.Status;
 using SqlSync.TableScript;
 using SqlSync.Validator;
-using SqlBuildManager.Enterprise.CodeReview;
+//using SqlBuildManager.Enterprise.CodeReview;
 namespace SqlSync.SqlBuild
 
 {
@@ -69,7 +69,7 @@ namespace SqlSync.SqlBuild
         private const string selectDatabaseString = "<< Select Active Database >>";
         private SqlSync.ColumnSorter listSorter = new ColumnSorter();
         private MRUManager mruManager;
-        private System.Security.Principal.WindowsImpersonationContext impersonatedUser = null;
+        //private System.Security.Principal.ImpersonationLevel  impersonatedUser = null;
 
 
         Color colorMultipleRun;
@@ -363,13 +363,13 @@ namespace SqlSync.SqlBuild
         private SaveFileDialog savePolicyViolationCsv;
         private ToolStripSeparator toolStripSeparator9;
         private ToolStripMenuItem savePolicyResultsAsXMLToolStripMenuItem;
-        private ToolStripMenuItem sourceControlServerURLToolStripMenuItem;
-        private ToolStripTextBox sourceControlServerURLTextboxMenuItem;
+        //private ToolStripMenuItem sourceControlServerURLToolStripMenuItem;
+        //private ToolStripTextBox sourceControlServerURLTextboxMenuItem;
         private BackgroundWorker bgBulkAddStep2;
         private ToolStripMenuItem policyWarningActionMayBeRequiredToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator23;
         private ColumnHeader colCodeReviewIcon;
-        private ToolStripMenuItem codeReviewIconToolStripMenuItem;
+        //private ToolStripMenuItem codeReviewIconToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem1;
         private ToolStripMenuItem statusHelpToolStripMenuItem1;
         private ToolStripMenuItem reviewNotStartedToolStripMenuItem;
@@ -970,7 +970,7 @@ namespace SqlSync.SqlBuild
             this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.policyWarningActionMayBeRequiredToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.passesPolicyChecksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.codeReviewIconToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            //this.codeReviewIconToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.waitingOnStatusCheckToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reviewNotStartedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reviewInProgressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -1036,8 +1036,8 @@ namespace SqlSync.SqlBuild
             this.defaultScriptTimeoutsecondsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuDefaultScriptTimeout = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
-            this.sourceControlServerURLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.sourceControlServerURLTextboxMenuItem = new System.Windows.Forms.ToolStripTextBox();
+            //this.sourceControlServerURLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            //this.sourceControlServerURLTextboxMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.mnuMainAddSqlScript = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuMainAddNewFile = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -1613,7 +1613,7 @@ namespace SqlSync.SqlBuild
             this.statusHelpToolStripMenuItem1,
             this.iconLegendToolStripMenuItem,
             this.policyCheckIconHelpToolStripMenuItem,
-            this.codeReviewIconToolStripMenuItem,
+            //this.codeReviewIconToolStripMenuItem,
             this.backgrounLegendToolStripMenuItem,
             this.toolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(3, 513);
@@ -1777,17 +1777,17 @@ namespace SqlSync.SqlBuild
             this.passesPolicyChecksToolStripMenuItem.Text = "Policy checks passed";
             // 
             // codeReviewIconToolStripMenuItem
-            // 
-            this.codeReviewIconToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.waitingOnStatusCheckToolStripMenuItem,
-            this.reviewNotStartedToolStripMenuItem,
-            this.reviewInProgressToolStripMenuItem,
-            this.reviewAcceptedToolStripMenuItem,
-            this.reviewAcceptedByDBAToolStripMenuItem});
-            this.codeReviewIconToolStripMenuItem.ForeColor = System.Drawing.Color.Blue;
-            this.codeReviewIconToolStripMenuItem.Name = "codeReviewIconToolStripMenuItem";
-            this.codeReviewIconToolStripMenuItem.Size = new System.Drawing.Size(113, 20);
-            this.codeReviewIconToolStripMenuItem.Text = "Code Review Icon";
+            //// 
+            //this.codeReviewIconToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            //this.waitingOnStatusCheckToolStripMenuItem,
+            //this.reviewNotStartedToolStripMenuItem,
+            //this.reviewInProgressToolStripMenuItem,
+            //this.reviewAcceptedToolStripMenuItem,
+            //this.reviewAcceptedByDBAToolStripMenuItem});
+            //this.codeReviewIconToolStripMenuItem.ForeColor = System.Drawing.Color.Blue;
+            //this.codeReviewIconToolStripMenuItem.Name = "codeReviewIconToolStripMenuItem";
+            //this.codeReviewIconToolStripMenuItem.Size = new System.Drawing.Size(113, 20);
+            //this.codeReviewIconToolStripMenuItem.Text = "Code Review Icon";
             // 
             // waitingOnStatusCheckToolStripMenuItem
             // 
@@ -2304,9 +2304,9 @@ namespace SqlSync.SqlBuild
             this.toolStripSeparator15,
             this.defaultScriptTimeoutsecondsToolStripMenuItem,
             this.mnuDefaultScriptTimeout,
-            this.toolStripSeparator16,
-            this.sourceControlServerURLToolStripMenuItem,
-            this.sourceControlServerURLTextboxMenuItem});
+            this.toolStripSeparator16});
+            //this.sourceControlServerURLToolStripMenuItem,
+            //this.sourceControlServerURLTextboxMenuItem
             this.settingsToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Wizard;
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
@@ -2396,16 +2396,16 @@ namespace SqlSync.SqlBuild
             // 
             // sourceControlServerURLToolStripMenuItem
             // 
-            this.sourceControlServerURLToolStripMenuItem.Name = "sourceControlServerURLToolStripMenuItem";
-            this.sourceControlServerURLToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
-            this.sourceControlServerURLToolStripMenuItem.Text = "Source Control Server URL:";
+            //this.sourceControlServerURLToolStripMenuItem.Name = "sourceControlServerURLToolStripMenuItem";
+            //this.sourceControlServerURLToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
+            //this.sourceControlServerURLToolStripMenuItem.Text = "Source Control Server URL:";
             // 
             // sourceControlServerURLTextboxMenuItem
             // 
-            this.sourceControlServerURLTextboxMenuItem.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sourceControlServerURLTextboxMenuItem.Name = "sourceControlServerURLTextboxMenuItem";
-            this.sourceControlServerURLTextboxMenuItem.Size = new System.Drawing.Size(250, 23);
-            this.sourceControlServerURLTextboxMenuItem.TextChanged += new System.EventHandler(this.sourceControlServerURLTextboxMenuItem_TextChanged);
+            //this.sourceControlServerURLTextboxMenuItem.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            //this.sourceControlServerURLTextboxMenuItem.Name = "sourceControlServerURLTextboxMenuItem";
+            //this.sourceControlServerURLTextboxMenuItem.Size = new System.Drawing.Size(250, 23);
+            //this.sourceControlServerURLTextboxMenuItem.TextChanged += new System.EventHandler(this.sourceControlServerURLTextboxMenuItem_TextChanged);
             // 
             // mnuMainAddSqlScript
             // 
@@ -3598,11 +3598,11 @@ namespace SqlSync.SqlBuild
             // 
             // bgCodeReview
             // 
-            this.bgCodeReview.WorkerReportsProgress = true;
-            this.bgCodeReview.WorkerSupportsCancellation = true;
-            this.bgCodeReview.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgCodeReview_DoWork);
-            this.bgCodeReview.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgCodeReview_ProgressChanged);
-            this.bgCodeReview.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgCodeReview_RunWorkerCompleted);
+            //this.bgCodeReview.WorkerReportsProgress = true;
+            //this.bgCodeReview.WorkerSupportsCancellation = true;
+            //this.bgCodeReview.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgCodeReview_DoWork);
+            //this.bgCodeReview.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgCodeReview_ProgressChanged);
+            //this.bgCodeReview.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgCodeReview_RunWorkerCompleted);
             // 
             // SqlBuildForm
             // 
@@ -3820,7 +3820,7 @@ namespace SqlSync.SqlBuild
             }
             if (File.Exists(fileName))
             {
-                if (ZipHelper.UnpackZipPackage(workingDir, fileName) == false)
+                if (ZipHelper.UnpackZipPackage(workingDir, fileName,false) == false)
                 {
                     addedFileNames = new string[0];
                     return (double)ImportFileStatus.UnableToImport;
@@ -4089,7 +4089,7 @@ namespace SqlSync.SqlBuild
                     if (this.runPolicyCheckingOnLoad)
                         SetPolicyCheckStatusIcons();
 
-                    SetCodeReviewIcon(row);
+                    //SetCodeReviewIcon(row);
                 }
             }
             catch (Exception exe)
@@ -4363,7 +4363,7 @@ namespace SqlSync.SqlBuild
 
                 //Just set them to the current value now.. the async process will set them
                 SetPolicyCheckStatusIcons();
-                SetDefaultCodeReviewIcons();
+               // SetDefaultCodeReviewIcons();
                 if (this.runPolicyCheckingOnLoad && s.RunPolicyChecks && !bgPolicyCheck.IsBusy)
                 {
                     bgPolicyCheck.RunWorkerAsync(s);
@@ -4598,163 +4598,163 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Set Code Review Icon :.
-        private void SetDefaultCodeReviewIcons()
-        {
-            for (int x = 0; x < lstScriptFiles.Items.Count; x++)
-            {
-                OAKListView.LV_ITEM lvi = new OAKListView.LV_ITEM();
-                lvi.iItem = x;
-                // Column
-                lvi.iSubItem = (int)ScriptListIndex.CodeReviewStatusIconColumn;
-                lvi.mask = OAKListView.LVIF_IMAGE;
-                // Image index on imagelist
-                lvi.iImage = (int)ScriptStatusType.CodeReviewStatusWaiting;
-                OAKListView.SendMessage(lstScriptFiles.Handle, OAKListView.LVM_SETITEM, 0, ref lvi);
-            }
-        }
-        private void SetCodeReviewIcon(int listViewItemIndex)
-        {
-            SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)lstScriptFiles.Items[listViewItemIndex].Tag;
-            SetCodeReviewIcon(row);
-        }
-        private void SetCodeReviewIcon(SqlSyncBuildData.ScriptRow row)
-        {
-            if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null || !EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
-                return;
+        //private void SetDefaultCodeReviewIcons()
+        //{
+        //    for (int x = 0; x < lstScriptFiles.Items.Count; x++)
+        //    {
+        //        OAKListView.LV_ITEM lvi = new OAKListView.LV_ITEM();
+        //        lvi.iItem = x;
+        //        // Column
+        //        lvi.iSubItem = (int)ScriptListIndex.CodeReviewStatusIconColumn;
+        //        lvi.mask = OAKListView.LVIF_IMAGE;
+        //        // Image index on imagelist
+        //        lvi.iImage = (int)ScriptStatusType.CodeReviewStatusWaiting;
+        //        OAKListView.SendMessage(lstScriptFiles.Handle, OAKListView.LVM_SETITEM, 0, ref lvi);
+        //    }
+        //}
+        //private void SetCodeReviewIcon(int listViewItemIndex)
+        //{
+        //    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)lstScriptFiles.Items[listViewItemIndex].Tag;
+        //    SetCodeReviewIcon(row);
+        //}
+        //private void SetCodeReviewIcon(SqlSyncBuildData.ScriptRow row)
+        //{
+        //    if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null || !EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
+        //        return;
 
 
-            var item = (from s in this.lstScriptFiles.Items.Cast<ListViewItem>()
-                        where ((SqlSyncBuildData.ScriptRow)s.Tag).ScriptId == row.ScriptId
-                        select s).ToList();
+        //    var item = (from s in this.lstScriptFiles.Items.Cast<ListViewItem>()
+        //                where ((SqlSyncBuildData.ScriptRow)s.Tag).ScriptId == row.ScriptId
+        //                select s).ToList();
 
-            if (item.Count > 0)
-            {
-                ListViewItem firstItem = item[0];
-                OAKListView.LV_ITEM lvi = new OAKListView.LV_ITEM();
-                lvi.iItem = firstItem.Index;
-                // Column
-                lvi.iSubItem = (int)ScriptListIndex.CodeReviewStatusIconColumn;
-                lvi.mask = OAKListView.LVIF_IMAGE;
-                // Image index on imagelist
-                var cr = from c in row.GetCodeReviewRows()
-                         orderby c.ReviewDate descending 
-                         select c.ReviewStatus
-                ;
+        //    if (item.Count > 0)
+        //    {
+        //        ListViewItem firstItem = item[0];
+        //        OAKListView.LV_ITEM lvi = new OAKListView.LV_ITEM();
+        //        lvi.iItem = firstItem.Index;
+        //        // Column
+        //        lvi.iSubItem = (int)ScriptListIndex.CodeReviewStatusIconColumn;
+        //        lvi.mask = OAKListView.LVIF_IMAGE;
+        //        // Image index on imagelist
+        //        var cr = from c in row.GetCodeReviewRows()
+        //                 orderby c.ReviewDate descending 
+        //                 select c.ReviewStatus
+        //        ;
                           
 
-                //Has at least one accepted..
-                if (!cr.Any())
-                {
-                    //no reviews yet
-                    lvi.iImage = (int)ScriptStatusType.CodeReviewNotStarted;
-                }
-                else if (cr.Contains((short)CodeReviewStatus.Accepted) && cr.First() == (short)CodeReviewStatus.Accepted) //Is the latest one an accepted status?  // && !cr.Contains((short)CodeReviewStatus.Defect) && !cr.Contains((short)CodeReviewStatus.OutOfDate))
-                {
+        //        //Has at least one accepted..
+        //        if (!cr.Any())
+        //        {
+        //            //no reviews yet
+        //            lvi.iImage = (int)ScriptStatusType.CodeReviewNotStarted;
+        //        }
+        //        else if (cr.Contains((short)CodeReviewStatus.Accepted) && cr.First() == (short)CodeReviewStatus.Accepted) //Is the latest one an accepted status?  // && !cr.Contains((short)CodeReviewStatus.Defect) && !cr.Contains((short)CodeReviewStatus.OutOfDate))
+        //        {
                    
 
 
 
-                    //Accepted by DBA?
-                    var acceptedReviewers = from crr in row.GetCodeReviewRows()
-                                            where crr.ReviewStatus == (short)CodeReviewStatus.Accepted
-                                            select crr.ReviewBy;
+        //            //Accepted by DBA?
+        //            var acceptedReviewers = from crr in row.GetCodeReviewRows()
+        //                                    where crr.ReviewStatus == (short)CodeReviewStatus.Accepted
+        //                                    select crr.ReviewBy;
 
-                    if (acceptedReviewers.Any()) //it had better be, but just checking
-                    {
+        //            if (acceptedReviewers.Any()) //it had better be, but just checking
+        //            {
 
-                        var isDba = from c in row.GetCodeReviewRows()
-                                    join d in this.codeReviewDbaMembers
-                                    on c.ReviewBy equals d
-                                    where c.ReviewStatus == (short)CodeReviewStatus.Accepted
-                                    select d;
+        //                var isDba = from c in row.GetCodeReviewRows()
+        //                            join d in this.codeReviewDbaMembers
+        //                            on c.ReviewBy equals d
+        //                            where c.ReviewStatus == (short)CodeReviewStatus.Accepted
+        //                            select d;
 
-                        if (isDba.Any())
-                        {
-                            lvi.iImage = (int)ScriptStatusType.CodeReviewAcceptedDba;
-                        }
-                        else
-                        {
-                            lvi.iImage = (int)ScriptStatusType.CodeReviewAccepted;
-                        }
-                    }
-                    else
-                    {
-                        lvi.iImage = (int)ScriptStatusType.CodeReviewAccepted;
-                    }
+        //                if (isDba.Any())
+        //                {
+        //                    lvi.iImage = (int)ScriptStatusType.CodeReviewAcceptedDba;
+        //                }
+        //                else
+        //                {
+        //                    lvi.iImage = (int)ScriptStatusType.CodeReviewAccepted;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                lvi.iImage = (int)ScriptStatusType.CodeReviewAccepted;
+        //            }
 
 
-                }
-                else
-                {
-                    lvi.iImage = (int)ScriptStatusType.CodeReviewInProgress;
-                }
-                OAKListView.SendMessage(lstScriptFiles.Handle, OAKListView.LVM_SETITEM, 0, ref lvi);
-            }
-        }
-        private void SetCodeReviewIcons()
-        {
-            if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null || !EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
-                return;
+        //        }
+        //        else
+        //        {
+        //            lvi.iImage = (int)ScriptStatusType.CodeReviewInProgress;
+        //        }
+        //        OAKListView.SendMessage(lstScriptFiles.Handle, OAKListView.LVM_SETITEM, 0, ref lvi);
+        //    }
+        //}
+        //private void SetCodeReviewIcons()
+        //{
+        //    if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null || !EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
+        //        return;
 
-            //Find any codereview rows that fail their validation key (i.e.someone changed it in the database or in the file)
-            var fail = from c in this.buildData.CodeReview
-                       where c.ValidationKey != CodeReviewManager.GetValidationKey(c)
-                       select c;
+        //    //Find any codereview rows that fail their validation key (i.e.someone changed it in the database or in the file)
+        //    var fail = from c in this.buildData.CodeReview
+        //               where c.ValidationKey != CodeReviewManager.GetValidationKey(c)
+        //               select c;
 
-            if (fail.Any())
-            {
-                foreach (SqlSyncBuildData.CodeReviewRow r in fail)
-                    r.ReviewStatus = (short)CodeReviewStatus.OutOfDate;
-            }
+        //    if (fail.Any())
+        //    {
+        //        foreach (SqlSyncBuildData.CodeReviewRow r in fail)
+        //            r.ReviewStatus = (short)CodeReviewStatus.OutOfDate;
+        //    }
 
-            for (int x = 0; x < lstScriptFiles.Items.Count; x++)
-            {
-                SetCodeReviewIcon(x);
-            }
+        //    for (int x = 0; x < lstScriptFiles.Items.Count; x++)
+        //    {
+        //        SetCodeReviewIcon(x);
+        //    }
 
-        }
+        //}
 
-        private void bgCodeReview_DoWork(object sender, DoWorkEventArgs e)
-        {
-            BackgroundWorker bg = (BackgroundWorker)sender;
-            bg.ReportProgress(0);
-            bool databaseSuccess;
-            CodeReviewManager.LoadCodeReviewData(this.buildData, out databaseSuccess);
-            //CodeReviewManager.ValidateReviewCheckSum(this.buildData, this.projectFilePath);
+        //private void bgCodeReview_DoWork(object sender, DoWorkEventArgs e)
+        //{
+        //    BackgroundWorker bg = (BackgroundWorker)sender;
+        //    bg.ReportProgress(0);
+        //    bool databaseSuccess;
+        //   // CodeReviewManager.LoadCodeReviewData(this.buildData, out databaseSuccess);
+        //    //CodeReviewManager.ValidateReviewCheckSum(this.buildData, this.projectFilePath);
 
-            e.Result = databaseSuccess;
-        }
-        private void bgCodeReview_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            this.statGeneral.Text = "Checking on code review status...";
-            this.progressBuild.Style = ProgressBarStyle.Marquee;
-            this.Cursor = Cursors.AppStarting;
-        }
-        private void bgCodeReview_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Result is Boolean && !(bool)e.Result)
-            {
-                string text = "Unable to connect to code review database.\r\nResults are from local data only.\r\nUpdates will be sync'd when connection is available";
-                toolTip2.BackColor = Color.GhostWhite;
-                this.toolTip2.ToolTipIcon = ToolTipIcon.Warning;
-                this.toolTip2.Show(text, this.menuStrip1,7000);
+        //    e.Result = databaseSuccess;
+        //}
+        //private void bgCodeReview_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        //{
+        //    this.statGeneral.Text = "Checking on code review status...";
+        //    this.progressBuild.Style = ProgressBarStyle.Marquee;
+        //    this.Cursor = Cursors.AppStarting;
+        //}
+        //private void bgCodeReview_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        //{
+        //    if (e.Result is Boolean && !(bool)e.Result)
+        //    {
+        //        string text = "Unable to connect to code review database.\r\nResults are from local data only.\r\nUpdates will be sync'd when connection is available";
+        //        toolTip2.BackColor = Color.GhostWhite;
+        //        this.toolTip2.ToolTipIcon = ToolTipIcon.Warning;
+        //        this.toolTip2.Show(text, this.menuStrip1,7000);
 
-                codeReviewIconToolStripMenuItem.ToolTipText = text;
-                codeReviewIconToolStripMenuItem.ForeColor = Color.Red;
-            }
-            else
-            {
-                codeReviewIconToolStripMenuItem.ToolTipText = "";
-                codeReviewIconToolStripMenuItem.ForeColor = Color.Blue;
-                this.toolTip2.Hide(this.menuStrip1);
+        //        codeReviewIconToolStripMenuItem.ToolTipText = text;
+        //        codeReviewIconToolStripMenuItem.ForeColor = Color.Red;
+        //    }
+        //    else
+        //    {
+        //        codeReviewIconToolStripMenuItem.ToolTipText = "";
+        //        codeReviewIconToolStripMenuItem.ForeColor = Color.Blue;
+        //        this.toolTip2.Hide(this.menuStrip1);
 
-            }
-            this.SetCodeReviewIcons();
+        //    }
+        //    this.SetCodeReviewIcons();
 
-            this.Cursor = Cursors.Default;
-            this.statGeneral.Text = "Ready.";
-            this.progressBuild.Style = ProgressBarStyle.Blocks;
-        }
+        //    this.Cursor = Cursors.Default;
+        //    this.statGeneral.Text = "Ready.";
+        //    this.progressBuild.Style = ProgressBarStyle.Blocks;
+        //}
         #endregion
 
         private void RenameUnusedFiles()
@@ -7711,7 +7711,7 @@ namespace SqlSync.SqlBuild
             
             this.scriptTagsRequiredToolStripMenuItem.Checked = SqlSync.Properties.Settings.Default.RequireScriptTags;
 
-            this.sourceControlServerURLTextboxMenuItem.Text = SqlSync.Properties.Settings.Default.SourceControlServerUrl;
+           // this.sourceControlServerURLTextboxMenuItem.Text = SqlSync.Properties.Settings.Default.SourceControlServerUrl;
 
             
 
@@ -8154,9 +8154,9 @@ namespace SqlSync.SqlBuild
                             bool isBreaking = false;
                             if (verData.LastCompatableVersion != null)
                                 isBreaking = (verData.YourVersion < verData.LastCompatableVersion);
-                            NewVersion frmVersion = new NewVersion(verData, isBreaking, this.impersonatedUser);
+                            NewVersion frmVersion = new NewVersion(verData, isBreaking); //, this.impersonatedUser);
                             frmVersion.ShowDialog();
-                            this.impersonatedUser = frmVersion.impersonatedUser;
+                            //this.impersonatedUser = frmVersion.impersonatedUser;
                         }
                     }
                 }
@@ -8788,11 +8788,11 @@ namespace SqlSync.SqlBuild
         }
 
 
-        private void sourceControlServerURLTextboxMenuItem_TextChanged(object sender, EventArgs e)
-        {
-            SqlSync.Properties.Settings.Default.SourceControlServerUrl = this.sourceControlServerURLTextboxMenuItem.Text;
-            SqlSync.Properties.Settings.Default.Save();
-        }
+        //private void sourceControlServerURLTextboxMenuItem_TextChanged(object sender, EventArgs e)
+        //{
+        //    SqlSync.Properties.Settings.Default.SourceControlServerUrl = this.sourceControlServerURLTextboxMenuItem.Text;
+        //    SqlSync.Properties.Settings.Default.Save();
+        //}
 
         private void mnuListTop_DropDownOpening(object sender, EventArgs e)
         {

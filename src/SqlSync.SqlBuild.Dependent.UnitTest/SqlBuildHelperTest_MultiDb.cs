@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     class SqlBuildHelperTest_MultiDb
     {

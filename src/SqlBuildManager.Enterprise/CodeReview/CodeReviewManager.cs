@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using SqlSync.SqlBuild;
-using System.Data.EntityClient;
+using System.Data.Entity.Core.EntityClient;
 using System.Threading;
 using System.Threading.Tasks;
 namespace SqlBuildManager.Enterprise.CodeReview
@@ -370,7 +370,7 @@ namespace SqlBuildManager.Enterprise.CodeReview
                     buildData.AcceptChanges();
                     databaseSuccess = true;
                 }
-                catch (System.Data.EntityException exe)
+                catch (System.Data.Entity.Core.EntityException exe)
                 {
                     log.Error(
                         "Unable to connect to SqlCodeReview database. Code Reviews will not be sync'd with the database",

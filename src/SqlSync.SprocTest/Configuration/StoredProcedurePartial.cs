@@ -3,16 +3,16 @@ using System.Data;
 using System.Configuration;
 using System.Web;
 using System.Xml.Serialization;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 namespace SqlSync.SprocTest.Configuration
 {
     public partial class StoredProcedure
     {
         [System.Xml.Serialization.XmlIgnore]
-        private System.Data.SqlClient.SqlParameterCollection derivedParameters = null;
+        private Microsoft.Data.SqlClient.SqlParameterCollection derivedParameters = null;
 
         [System.Xml.Serialization.XmlIgnore]
-        public System.Data.SqlClient.SqlParameterCollection DerivedParameters
+        public Microsoft.Data.SqlClient.SqlParameterCollection DerivedParameters
         {
             get
             {

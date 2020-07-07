@@ -13,7 +13,7 @@ namespace SqlBuildManager.Console
     public class ThreadedExecution
     {
         private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static ILog logEvent = LogManager.GetLogger("AzureEventHubAppenderLogger");
+        private static ILog logEvent = LogManager.GetLogger(System.Reflection.Assembly.GetExecutingAssembly(), "AzureEventHubAppenderLogger");
 
         StringBuilder sbSuccessDatabasesCfg = new System.Text.StringBuilder();
         StringBuilder sbFailureDatabasesCfg = new System.Text.StringBuilder();
@@ -105,6 +105,10 @@ namespace SqlBuildManager.Console
             get { return buildData; }
         }
 
+        public ThreadedExecution(CommandLineArgs cmd)
+        {
+            this.cmdLine = cmd;
+        }
         public ThreadedExecution(string[] args)
         {
             this.args = args;
@@ -121,7 +125,10 @@ namespace SqlBuildManager.Console
             log.Debug("Entering Execute method of ThreadedExecution");
             string[] errorMessages;
             //Parse out the command line options
-            cmdLine = CommandLine.ParseCommandLineArg(args);
+            if (cmdLine == null)
+            {
+                cmdLine = CommandLine.ParseCommandLineArg(args);
+            }
 
             if(string.IsNullOrEmpty(cmdLine.RootLoggingPath))
             {
@@ -466,7 +473,7 @@ namespace SqlBuildManager.Console
             Directory.CreateDirectory(this.workingDirectory);
 
             string result;
-            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sqlBuildProjectFileName, ref this.workingDirectory, ref this.projectFilePath, ref ThreadedExecution.projectFileName, false, out result))
+            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sqlBuildProjectFileName, ref this.workingDirectory, ref this.projectFilePath, ref ThreadedExecution.projectFileName, false, true, out result))
             {
                 var msg = new LogMsg()
                 {

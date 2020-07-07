@@ -15,7 +15,6 @@ namespace SqlSync.DbInformation {
     [System.ComponentModel.ToolboxItem(true)]
     [System.ComponentModel.DesignerCategory("Component")]
     [System.ComponentModel.DesignTimeVisible(true)]
-    [System.Drawing.ToolboxBitmap(typeof(System.Data.DataSet))]
     public partial class DatabaseItem {
         
         private string _DatabaseName = string.Empty;

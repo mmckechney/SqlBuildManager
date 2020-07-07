@@ -15,9 +15,9 @@ namespace SqlSync.AutoScript
 		private AutoScriptingConfig config;
 		private int childCount = 0;
 		private int completedCount = 0;
-		private System.Windows.Forms.MainMenu mainMenu1;
-		private System.Windows.Forms.MenuItem menuItem1;
-		private System.Windows.Forms.MenuItem menuItem2;
+		private System.Windows.Forms.MenuStrip mainMenu1;
+		private System.Windows.Forms.ToolStripMenuItem menuItem1;
+		private System.Windows.Forms.ToolStripMenuItem menuItem2;
 		private string runStatus = "Completed {0} of {1} Database Scripting Tasks";
         private System.ComponentModel.IContainer components;
 		private bool closeOnComplete = false;
@@ -79,9 +79,9 @@ namespace SqlSync.AutoScript
             this.statusBar1 = new System.Windows.Forms.StatusBar();
             this.statOverall = new System.Windows.Forms.StatusBarPanel();
             this.statRunningCount = new System.Windows.Forms.StatusBarPanel();
-            this.mainMenu1 = new System.Windows.Forms.MainMenu(this.components);
-            this.menuItem1 = new System.Windows.Forms.MenuItem();
-            this.menuItem2 = new System.Windows.Forms.MenuItem();
+			this.mainMenu1 = new System.Windows.Forms.MenuStrip();
+            this.menuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.statOverall)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.statRunningCount)).BeginInit();
             this.SuspendLayout();
@@ -111,20 +111,20 @@ namespace SqlSync.AutoScript
             // 
             // mainMenu1
             // 
-            this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.mainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.menuItem1});
             // 
             // menuItem1
             // 
-            this.menuItem1.Index = 0;
-            this.menuItem1.MdiList = true;
-            this.menuItem1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            //this.menuItem1.Index = 0;
+            //this.menuItem1.IsMdiWindowListEntry = true;
+            this.menuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.menuItem2});
             this.menuItem1.Text = "&Window";
             // 
             // menuItem2
             // 
-            this.menuItem2.Index = 0;
+            //this.menuItem2.Index = 0;
             this.menuItem2.Text = "&Cascade";
             this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
             // 
@@ -135,7 +135,7 @@ namespace SqlSync.AutoScript
             this.Controls.Add(this.statusBar1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.IsMdiContainer = true;
-            this.Menu = this.mainMenu1;
+            this.MainMenuStrip = this.mainMenu1;
             this.Name = "AutoScriptMDI";
             this.Text = "Sql Build Manager :: Auto Scripting";
             this.Load += new System.EventHandler(this.AutoScriptMDI_Load);

@@ -1,10 +1,10 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using SqlSync.SqlBuild.Syncronizer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using SqlSync.Connection;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     
     

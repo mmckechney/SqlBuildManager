@@ -9,7 +9,7 @@ namespace SqlSync.BasicCompare
     using System.Drawing;
     using System.Text;
 
-    [Serializable, DesignerCategory("Component"), DesignTimeVisible(true), ToolboxBitmap(typeof(DataSet)), ToolboxItem(true)]
+    [Serializable, DesignerCategory("Component"), DesignTimeVisible(true), ToolboxItem(true)]
     public class FileDiff
     {
         private string _FileName = string.Empty;

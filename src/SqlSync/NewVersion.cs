@@ -10,14 +10,14 @@ namespace SqlSync
 {
     public partial class NewVersion : Form
     {
-        internal System.Security.Principal.WindowsImpersonationContext impersonatedUser = null;
+        //internal System.Security.Principal.WindowsImpersonationContext impersonatedUser = null;
         VersionData verData = null;
         bool isBreaking;
         Size startSize = new Size(0,0);
-        public NewVersion(VersionData verData, bool isBreaking, System.Security.Principal.WindowsImpersonationContext impersonatedUser)
+        public NewVersion(VersionData verData, bool isBreaking) //, System.Security.Principal.WindowsImpersonationContext impersonatedUser)
         {
             InitializeComponent();
-            this.impersonatedUser = impersonatedUser;
+            //this.impersonatedUser = impersonatedUser;
             this.verData = verData;
             this.isBreaking = isBreaking;
             
@@ -95,29 +95,29 @@ Please install the new version as soon as possible.";
 
         }
 
-        private void btnImpersonate_Click(object sender, System.EventArgs e)
-        {
-            try
-            {
-                this.impersonatedUser = ImpersonationManager.ImpersonateUser(txtUserId.Text, txtDomain.Text, txtPassword.Text);
-            }
-            catch { }
+        //private void btnImpersonate_Click(object sender, System.EventArgs e)
+        //{
+        //    try
+        //    {
+        //        this.impersonatedUser = ImpersonationManager.ImpersonateUser(txtUserId.Text, txtDomain.Text, txtPassword.Text);
+        //    }
+        //    catch { }
 
-            if (this.impersonatedUser != null)
-                MessageBox.Show("Impersonation Successful", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else
-                MessageBox.Show("Impersonation NOT Successful", "Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //    if (this.impersonatedUser != null)
+        //        MessageBox.Show("Impersonation Successful", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //    else
+        //        MessageBox.Show("Impersonation NOT Successful", "Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-            this.lblCurrentLogin.Text = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-        }
+        //    this.lblCurrentLogin.Text = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+        //}
 
-        private void btnUndo_Click(object sender, System.EventArgs e)
-        {
-            if (this.impersonatedUser != null)
-                this.impersonatedUser.Undo();
+        //private void btnUndo_Click(object sender, System.EventArgs e)
+        //{
+        //    if (this.impersonatedUser != null)
+        //        this.impersonatedUser.Undo();
 
-            this.lblCurrentLogin.Text = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-        }
+        //    this.lblCurrentLogin.Text = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+        //}
 
  
 

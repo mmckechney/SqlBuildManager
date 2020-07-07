@@ -17,7 +17,6 @@ namespace SqlSync.Compare {
     [System.ComponentModel.ToolboxItem(true)]
     [System.ComponentModel.DesignerCategory("Component")]
     [System.ComponentModel.DesignTimeVisible(true)]
-    [System.Drawing.ToolboxBitmap(typeof(System.Data.DataSet))]
     public class FileDiff {
         
         private string _FileName = String.Empty;

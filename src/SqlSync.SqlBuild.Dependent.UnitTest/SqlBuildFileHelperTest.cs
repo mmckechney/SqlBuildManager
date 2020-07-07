@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.IO;
 using System;
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
 
 

@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
+      <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
+    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
+    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
+    <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" />
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
+  </ItemGroup>
+
+<ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.7" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20303.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
+    <PackageReference Include="System.DirectoryServices" Version="5.0.0-preview.4.20251.6" />
+    <PackageReference Include="BlueSkyDev.Logging.AzureEventHubAppender" Version="1.2.1" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.4" />
+    <PackageReference Include="Microsoft.Azure.Batch" Version="13.0.0" />
+    <PackageReference Include="Microsoft.Azure.EventHubs" Version="4.2.0" />
+    <PackageReference Include="Microsoft.Azure.KeyVault.Core" Version="3.0.5" />
+    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.5.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.8" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.7.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="6.7.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.7.1" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="3.3.19" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+<ItemGroup>
+  <None Update="log4net.config">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+  
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+    <RootNamespace>SqlBuildManager.Console</RootNamespace>
+  </PropertyGroup>
+
+</Project>

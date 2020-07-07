@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using SqlSync.Connection;
@@ -40,10 +40,14 @@ namespace SqlSync.SqlBuild.Syncronizer
 
             //Get the most recent time that the two databases were in sync (ie had the same package run against it)
             var lastSyncDate = DateTime.MinValue;
-            if (toUpdate.Any())
+            
+            if (toUpdate.Any() && golden.Any())
             {
-                lastSyncDate = golden.Where(g => toUpdate.Any(t => t.BuildFileHash == g.BuildFileHash))
-                                       .Max(g => g.CommitDate);
+                var matchingHistory = golden.Where(g => toUpdate.Any(t => t.BuildFileHash == g.BuildFileHash));
+                if (matchingHistory.Any())
+                {
+                    lastSyncDate = matchingHistory.Max(g => g.CommitDate);
+                }
             }
 
 

@@ -7,7 +7,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using SqlSync.SqlBuild;
-using SqlBuildManager.Enterprise.CodeReview;
 using System.Linq;
 using System.Threading.Tasks;
 using SqlBuildManager.Enterprise;

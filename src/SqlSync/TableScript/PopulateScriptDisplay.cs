@@ -17,16 +17,16 @@ namespace SqlSync
 		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
 		private string scriptName = string.Empty;
 		private DataTable scriptDataTable = null;
-		private System.Windows.Forms.DataGrid dgTableView;
+		private System.Windows.Forms.DataGridView dgTableView;
 		private string _selectStatement;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label lblRecordsScripted;
-		private System.Windows.Forms.ToolBar toolBar1;
+		private System.Windows.Forms.ToolStrip toolBar1;
 		private System.Windows.Forms.ImageList imageList1;
-		private System.Windows.Forms.ToolBarButton tbbSwap;
-		private System.Windows.Forms.ToolBarButton tbbSyntax;
-		private System.Windows.Forms.ToolBarButton tbbCopy;
-		private System.Windows.Forms.ToolBarButton tbbSave;
+		private System.Windows.Forms.ToolStripButton tbbSwap;
+		private System.Windows.Forms.ToolStripButton tbbSyntax;
+		private System.Windows.Forms.ToolStripButton tbbCopy;
+		private System.Windows.Forms.ToolStripButton tbbSave;
 		private System.ComponentModel.IContainer components;
 		private bool showScriptExport;
 
@@ -38,7 +38,7 @@ namespace SqlSync
 				_selectStatement = value;
 				if(this._selectStatement.Length > 0)
 				{
-					this.dgTableView.CaptionText = this._selectStatement;
+					//this.dgTableView.CaptionText = this._selectStatement;
 				}
 			}
 		}
@@ -121,14 +121,14 @@ namespace SqlSync
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PopulateScriptDisplay));
             this.rtbScripts = new UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.dgTableView = new System.Windows.Forms.DataGrid();
+            this.dgTableView = new System.Windows.Forms.DataGridView();
             this.label1 = new System.Windows.Forms.Label();
             this.lblRecordsScripted = new System.Windows.Forms.Label();
-            this.toolBar1 = new System.Windows.Forms.ToolBar();
-            this.tbbSwap = new System.Windows.Forms.ToolBarButton();
-            this.tbbSyntax = new System.Windows.Forms.ToolBarButton();
-            this.tbbCopy = new System.Windows.Forms.ToolBarButton();
-            this.tbbSave = new System.Windows.Forms.ToolBarButton();
+            this.toolBar1 = new System.Windows.Forms.ToolStrip();
+            this.tbbSwap = new System.Windows.Forms.ToolStripButton();
+            this.tbbSyntax = new System.Windows.Forms.ToolStripButton();
+            this.tbbCopy = new System.Windows.Forms.ToolStripButton();
+            this.tbbSave = new System.Windows.Forms.ToolStripButton();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dgTableView)).BeginInit();
             this.SuspendLayout();
@@ -161,12 +161,12 @@ namespace SqlSync
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dgTableView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.dgTableView.CaptionFont = new System.Drawing.Font("Microsoft Sans Serif", 7F);
+            //this.dgTableView.CaptionFont = new System.Drawing.Font("Microsoft Sans Serif", 7F);
             this.dgTableView.DataMember = "";
-            this.dgTableView.HeaderForeColor = System.Drawing.SystemColors.ControlText;
+            //this.dgTableView.HeaderForeColor = System.Drawing.SystemColors.ControlText;
             this.dgTableView.Location = new System.Drawing.Point(8, 32);
             this.dgTableView.Name = "dgTableView";
-            this.dgTableView.PreferredColumnWidth = 80;
+            //this.dgTableView.PreferredColumnWidth = 80;
             this.dgTableView.ReadOnly = true;
             this.dgTableView.Size = new System.Drawing.Size(712, 472);
             this.dgTableView.TabIndex = 4;
@@ -189,27 +189,27 @@ namespace SqlSync
             // toolBar1
             // 
             this.toolBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.toolBar1.Appearance = System.Windows.Forms.ToolBarAppearance.Flat;
-            this.toolBar1.Buttons.AddRange(new System.Windows.Forms.ToolBarButton[] {
+            //this.toolBar1.Appearance = System.Windows.Forms.ToolBarAppearance.Flat;
+            this.toolBar1.Items.AddRange(new System.Windows.Forms.ToolStripButton[] {
             this.tbbSwap,
             this.tbbSyntax,
             this.tbbCopy,
             this.tbbSave});
             this.toolBar1.Dock = System.Windows.Forms.DockStyle.None;
-            this.toolBar1.DropDownArrows = true;
+            //this.toolBar1.DropDownArrows = true;
             this.toolBar1.ImageList = this.imageList1;
             this.toolBar1.Location = new System.Drawing.Point(618, 2);
             this.toolBar1.Name = "toolBar1";
-            this.toolBar1.ShowToolTips = true;
+            //this.toolBar1.ShowToolTips = true;
             this.toolBar1.Size = new System.Drawing.Size(100, 28);
             this.toolBar1.TabIndex = 8;
-            this.toolBar1.ButtonClick += new System.Windows.Forms.ToolBarButtonClickEventHandler(this.toolBar1_ButtonClick);
+            this.toolBar1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.toolBar1_ButtonClick);
             // 
             // tbbSwap
             // 
             this.tbbSwap.ImageIndex = 0;
             this.tbbSwap.Name = "tbbSwap";
-            this.tbbSwap.Style = System.Windows.Forms.ToolBarButtonStyle.ToggleButton;
+            //this.tbbSwap.Style = System.Windows.Forms.ToolBarButtonStyle.ToggleButton;
             this.tbbSwap.Tag = "Swap";
             this.tbbSwap.ToolTipText = "Swap View";
             // 
@@ -320,25 +320,27 @@ namespace SqlSync
 			}
 		}
 
-//		private void lnkSyntaxHighlight_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
-//		{
-//			this.Cursor = Cursors.WaitCursor;
-//			this.rtbScripts.RefreshHighlighting();
-//			this.Cursor = Cursors.Default;
-//		}
-
-		private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
+		//		private void lnkSyntaxHighlight_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
+		//		{
+		//			this.Cursor = Cursors.WaitCursor;
+		//			this.rtbScripts.RefreshHighlighting();
+		//			this.Cursor = Cursors.Default;
+		//		}
+		bool swapView = false;
+		private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolStripItemClickedEventArgs e)
 		{
-			switch(e.Button.Tag.ToString().ToLower())
+			switch(e.ClickedItem.Tag.ToString().ToLower())
 			{
 				case "swap":
-					if(e.Button.Pushed == false)
+					if(swapView == false)
 					{
 						dgTableView.BringToFront();
+						swapView = true;
 					}
 					else
 					{
 						rtbScripts.BringToFront();
+						swapView = false;
 					}
 					break;
 				case "save":

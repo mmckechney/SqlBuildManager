@@ -1,0 +1,53 @@
+name: .NET Core Build
+
+on:
+  push:
+    branches: 
+      - master
+      - dotnetstandard
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+
+    - name: Restore dependencies
+      run: dotnet restore ./src/sqlsync.sln
+
+    - name: Build Main Solution
+      run: dotnet build ./src/sqlsync.sln --configuration Release --no-restore
+
+    - name: Publish the Windows desktop app
+      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release
+
+    - name: Publish the legacy Console CLI desktop app
+      run: dotnet publish ./src/SqlBuildManager.Console/SqlBuildManager.Console.csproj -r win-x64 --configuration Release
+
+    - name: Publish the new Console CLI desktop app
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: SqlBuildManager CLI
+        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish"
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: SqlBuildManager Desktop
+        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"        
+
+
+    

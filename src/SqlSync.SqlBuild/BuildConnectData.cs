@@ -17,12 +17,11 @@ namespace SqlSync.SqlBuild {
     [System.ComponentModel.ToolboxItem(true)]
     [System.ComponentModel.DesignerCategory("Component")]
     [System.ComponentModel.DesignTimeVisible(true)]
-    [System.Drawing.ToolboxBitmap(typeof(System.Data.DataSet))]
     public class BuildConnectData {
         
-        private System.Data.SqlClient.SqlConnection _Connection = null;
+        private Microsoft.Data.SqlClient.SqlConnection _Connection = null;
         
-        private System.Data.SqlClient.SqlTransaction _Transaction = null;
+        private Microsoft.Data.SqlClient.SqlTransaction _Transaction = null;
         
         private string _DatabaseName = String.Empty;
         
@@ -52,7 +51,7 @@ namespace SqlSync.SqlBuild {
             }
         }
         
-        public virtual System.Data.SqlClient.SqlConnection Connection {
+        public virtual Microsoft.Data.SqlClient.SqlConnection Connection {
             get {
                 return this._Connection;
             }
@@ -62,7 +61,7 @@ namespace SqlSync.SqlBuild {
             }
         }
         
-        public virtual System.Data.SqlClient.SqlTransaction Transaction {
+        public virtual Microsoft.Data.SqlClient.SqlTransaction Transaction {
             get {
                 return this._Transaction;
             }
@@ -197,10 +196,10 @@ namespace SqlSync.SqlBuild {
         public virtual bool Fill(System.Collections.Specialized.NameValueCollection nameValueColl) {
             try {
                 if ((nameValueColl.GetValues("Connection") != null)) {
-                    this.Connection = ((System.Data.SqlClient.SqlConnection)(System.Convert.ChangeType(nameValueColl.GetValues("Connection")[0], typeof(System.Data.SqlClient.SqlConnection))));
+                    this.Connection = ((Microsoft.Data.SqlClient.SqlConnection)(System.Convert.ChangeType(nameValueColl.GetValues("Connection")[0], typeof(Microsoft.Data.SqlClient.SqlConnection))));
                 }
                 if ((nameValueColl.GetValues("Transaction") != null)) {
-                    this.Transaction = ((System.Data.SqlClient.SqlTransaction)(System.Convert.ChangeType(nameValueColl.GetValues("Transaction")[0], typeof(System.Data.SqlClient.SqlTransaction))));
+                    this.Transaction = ((Microsoft.Data.SqlClient.SqlTransaction)(System.Convert.ChangeType(nameValueColl.GetValues("Transaction")[0], typeof(Microsoft.Data.SqlClient.SqlTransaction))));
                 }
                 if ((nameValueColl.GetValues("DatabaseName") != null)) {
                     this.DatabaseName = ((string)(System.Convert.ChangeType(nameValueColl.GetValues("DatabaseName")[0], typeof(string))));
@@ -220,8 +219,8 @@ namespace SqlSync.SqlBuild {
         
         public virtual bool Fill(System.Array sourceArray) {
             try {
-                this.Connection = ((System.Data.SqlClient.SqlConnection)(System.Convert.ChangeType(sourceArray.GetValue(0), typeof(System.Data.SqlClient.SqlConnection))));
-                this.Transaction = ((System.Data.SqlClient.SqlTransaction)(System.Convert.ChangeType(sourceArray.GetValue(1), typeof(System.Data.SqlClient.SqlTransaction))));
+                this.Connection = ((Microsoft.Data.SqlClient.SqlConnection)(System.Convert.ChangeType(sourceArray.GetValue(0), typeof(Microsoft.Data.SqlClient.SqlConnection))));
+                this.Transaction = ((Microsoft.Data.SqlClient.SqlTransaction)(System.Convert.ChangeType(sourceArray.GetValue(1), typeof(Microsoft.Data.SqlClient.SqlTransaction))));
                 this.DatabaseName = ((string)(System.Convert.ChangeType(sourceArray.GetValue(2), typeof(string))));
                 this.ServerName = ((string)(System.Convert.ChangeType(sourceArray.GetValue(3), typeof(string))));
                 this.HasLoggingTable = ((bool)(System.Convert.ChangeType(sourceArray.GetValue(4), typeof(bool))));
@@ -236,8 +235,8 @@ namespace SqlSync.SqlBuild {
             string[] arrSplitString;
             arrSplitString = delimString.Split(delimiter);
             try {
-                this.Connection = ((System.Data.SqlClient.SqlConnection)(System.Convert.ChangeType(arrSplitString[0], typeof(System.Data.SqlClient.SqlConnection))));
-                this.Transaction = ((System.Data.SqlClient.SqlTransaction)(System.Convert.ChangeType(arrSplitString[1], typeof(System.Data.SqlClient.SqlTransaction))));
+                this.Connection = ((Microsoft.Data.SqlClient.SqlConnection)(System.Convert.ChangeType(arrSplitString[0], typeof(Microsoft.Data.SqlClient.SqlConnection))));
+                this.Transaction = ((Microsoft.Data.SqlClient.SqlTransaction)(System.Convert.ChangeType(arrSplitString[1], typeof(Microsoft.Data.SqlClient.SqlTransaction))));
                 this.DatabaseName = ((string)(System.Convert.ChangeType(arrSplitString[2], typeof(string))));
                 this.ServerName = ((string)(System.Convert.ChangeType(arrSplitString[3], typeof(string))));
                 this.HasLoggingTable = ((bool)(System.Convert.ChangeType(arrSplitString[4], typeof(bool))));

@@ -134,19 +134,6 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(true, actual.AutoScriptingArgs.AutoScriptDesignated);
             Assert.AreEqual("C:\test.sqlauto", actual.AutoScriptingArgs.AutoScriptFileName);
         }
-        /// <summary>
-        ///A test for ParseCommandLineArg
-        ///</summary>
-        [TestMethod()]
-        public void ParseCommandLineArgTest_SpTest()
-        {
-            string[] args = new string[]{@"C:\Program Files\McKechney.com\Sql Build Manager\SqlBuildManager.Console.exe", 
-                "/test=\"C:\test.sptest\""};
-            CommandLineArgs actual;
-            actual = CommandLine.ParseCommandLineArg(args);
-            Assert.AreEqual(true, actual.StoredProcTestingArgs.SprocTestDesignated);
-            Assert.AreEqual("C:\test.sptest", actual.StoredProcTestingArgs.SpTestFile);
-        }
 
         /// <summary>
         ///A test for CommandLine Constructor

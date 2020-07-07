@@ -1,224 +1,70 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.props" Condition="Exists('..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{0334A575-196C-470F-A2DF-75A599010FDC}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SqlSync.SqlBuild.UnitTest</RootNamespace>
-    <AssemblyName>SqlSync.SqlBuild.Dependent.UnitTest</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <PublishUrl>http://localhost/SqlSync.SqlBuild.UnitTest/</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Web</InstallFrom>
-    <UpdateEnabled>true</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>true</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo> 
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DevOpsBuild|AnyCPU'">
-    <OutputPath>bin\DevOpsBuild\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\MSTest.TestFramework.2.1.1\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\MSTest.TestFramework.2.1.1\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="DatabaseDifferTest.cs" />
-    <Compile Include="DatabaseSyncerTest.cs" />
-    <Compile Include="Initialization.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="SqlBuildFileHelperTest.cs" />
-    <Compile Include="SqlBuildHelperTest.cs" />
-    <Compile Include="SqlBuildHelperTest_MultiDb.cs" />
-    <Compile Include="SqlBuildHelperTest_ProcessBuild.cs" />
-    <Compile Include="DacPacHelperTest.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="AuthoringTests.txt" />
+    <EmbeddedResource Include="app.config" />
+    <EmbeddedResource Include="Resources\CleanLoggingTable.sql" />
+    <EmbeddedResource Include="Resources\CleanTestTable.sql" />
+    <EmbeddedResource Include="Resources\CreateDatabaseScript.sql" />
+    <EmbeddedResource Include="Resources\CreateTestTablesScript.sql" />
+    <EmbeddedResource Include="Resources\DBList.cfg" />
+    <EmbeddedResource Include="Resources\InsertPreRunScriptLogEntryScript.sql" />
     <EmbeddedResource Include="Resources\LoggingTable.sql" />
     <EmbeddedResource Include="Resources\LoggingTableCommitCheckIndex.sql" />
-    <Content Include="Resources\CleanLoggingTable.sql" />
-    <Content Include="Resources\CleanTestTable.sql" />
-    <Content Include="Resources\MultiDb_WithQueryRowData.xml" />
-    <Content Include="Resources\SyncScriptRaw.sql" />
-    <Content Include="Resources\TableLockingScript.sql" />
-    <Content Include="Resources\XmlWithNoNamespace.txt" />
-    <Content Include="Resources\XmlWithInvalidNamespace.txt" />
-    <Content Include="Resources\InsertPreRunScriptLogEntryScript.sql" />
-    <Content Include="Resources\CreateTestTablesScript.sql" />
-    <Content Include="Resources\CreateDatabaseScript.sql" />
-    <Content Include="Resources\remote_server_list.txt" />
-    <None Include="app.config" />
-    <None Include="packages.config" />
-    <None Include="Resources\PlatunumSchema.dacpac">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\remote_server_list_with_spaces_and_blank_lines.txt" />
-    <None Include="Resources\remote_server_list_with_spaces.txt" />
+    <EmbeddedResource Include="Resources\multi-query.MultiDbQ" />
+    <EmbeddedResource Include="Resources\MultiDb_WithQueryRowData.xml" />
+    <EmbeddedResource Include="Resources\NoTrans_MultiDb.multiDb" />
+    <EmbeddedResource Include="Resources\NoTrans_MultiDb.sbm" />
+    <EmbeddedResource Include="Resources\PlatunumSchema.dacpac" />
+    <EmbeddedResource Include="Resources\remote_server_list.txt" />
+    <EmbeddedResource Include="Resources\remote_server_list_with_spaces.txt" />
+    <EmbeddedResource Include="Resources\remote_server_list_with_spaces_and_blank_lines.txt" />
+    <EmbeddedResource Include="Resources\sbx_package_tester.sbx" />
+    <EmbeddedResource Include="Resources\SyncScriptRaw.sql" />
+    <EmbeddedResource Include="Resources\TableLockingScript.sql" />
+    <EmbeddedResource Include="Resources\TarnishedSchema.dacpac" />
+    <EmbeddedResource Include="Resources\XmlWithInvalidNamespace.txt" />
+    <EmbeddedResource Include="Resources\XmlWithNoNamespace.txt" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj">
-      <Project>{FDC576E6-ACC8-41D4-8A56-8E6E00221306}</Project>
-      <Name>SqlBuildManager.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj">
-      <Project>{c9de9821-ba13-4528-b149-a3e990530aad}</Project>
-      <Name>SqlBuildManager.Logging</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj">
-      <Project>{F3F1EFFF-265E-4995-958B-9763F947E5C8}</Project>
-      <Name>SqlSync.Connection</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj">
-      <Project>{D68699E6-B97C-4BC4-AD52-5F3C63DB24A7}</Project>
-      <Name>SqlSync.Constants</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj">
-      <Project>{37A22666-195A-4CBB-A541-CFFBFB9D7905}</Project>
-      <Name>SqlSync.DbInformation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj">
-      <Project>{9B495B5F-1578-482B-8CF7-615B04D3AE2A}</Project>
-      <Name>SqlSync.SqlBuild</Name>
-    </ProjectReference>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
+    <PackageReference Include="coverlet.collector" Version="1.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="Resources\DBList.cfg" />
-    <None Include="Resources\multi-query.MultiDbQ" />
-    <None Include="Resources\NoTrans_MultiDb.multiDb" />
-    <None Include="Resources\NoTrans_MultiDb.sbm" />
-    <None Include="Resources\sbx_package_tester.sbx" />
-    <None Include="Resources\TarnishedSchema.dacpac">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="SqlBuildHelper_ScriptRun.OrderedTest" />
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
+    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
-      <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Test References\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.props'))" />
-    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.targets'))" />
-  </Target>
-  <Import Project="..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

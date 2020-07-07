@@ -70,11 +70,7 @@ namespace SqlSync
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
 
-            try
-            {
-                InitServers(false);
-            }
-            catch { }
+         
 
 		}
 
@@ -233,19 +229,29 @@ namespace SqlSync
 
 		private void SettingsControl_Load(object sender, System.EventArgs e)
 		{
-			int startPosition = this.lblProjectLbl.Location.X+this.lblProjectLbl.Width;
-			if(startPosition > this.lblServer.Location.X)
-				this.lblServer.Location = new System.Drawing.Point(startPosition,this.lblServer.Location.Y);
-
-			this.lblProject.Location = new System.Drawing.Point(startPosition,this.lblProject.Location.Y);
-
-            if (this.ServerChanged == null)
+            try
             {
-                lblRecentServers.Visible = false;
-                ddRecentServers.Visible = false;
+                InitServers(false);
             }
+            catch { }
 
-            this.lblServer_TextChanged(null, EventArgs.Empty);
+            try
+            {
+                int startPosition = this.lblProjectLbl.Location.X + this.lblProjectLbl.Width;
+                if (startPosition > this.lblServer.Location.X)
+                    this.lblServer.Location = new System.Drawing.Point(startPosition, this.lblServer.Location.Y);
+
+                this.lblProject.Location = new System.Drawing.Point(startPosition, this.lblProject.Location.Y);
+
+                if (this.ServerChanged == null)
+                {
+                    lblRecentServers.Visible = false;
+                    ddRecentServers.Visible = false;
+                }
+
+                this.lblServer_TextChanged(null, EventArgs.Empty);
+            }
+            catch { }
 		}
 
 		private void panel1_Click(object sender, System.EventArgs e)

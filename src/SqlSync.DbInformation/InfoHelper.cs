@@ -1,6 +1,6 @@
 using System;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using SqlSync.Connection;
 using System.Collections;
 using System.Collections.Generic;
@@ -756,7 +756,9 @@ namespace SqlSync.DbInformation
                 connData.DatabaseName = overrides[i].OverrideDbTarget;
                 DatabaseObject routines = ChangeDates.DatabaseObjectChangeDates.Servers[serverName][connData.DatabaseName];
 
-                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout);
+                //Set the connection timeout to be short so that we are not waiting in the UI for a bad connection
+                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, 2);
+               
                 SqlCommand cmd = new SqlCommand(@"select routine_Name,  last_altered, routine_schema from information_schema.routines ORDER BY routine_Name ", conn);
                //Get the information for Stored Procedures and Functions
                 try

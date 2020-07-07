@@ -1,5 +1,5 @@
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Data.Common;
 using System.Collections.Generic;
 using log4net;
@@ -94,7 +94,7 @@ namespace SqlSync.Connection
                     builder.Password = pw;
                     break;
             }
-            return builder.ToString();
+            return builder.ConnectionString;
         }
 
         public static string GetTargetDatabase(string defaultDatabase, List<DatabaseOverride> overrides)

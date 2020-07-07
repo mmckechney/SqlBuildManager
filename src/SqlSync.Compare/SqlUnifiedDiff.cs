@@ -27,7 +27,7 @@ namespace SqlSync.Compare
             this.extractPathRightFile = tmpDir + @"SqlsyncCompare-" + System.Guid.NewGuid().ToString().Replace("-", "") + @"\";
             Directory.CreateDirectory(this.extractPathRightFile);
             rightFileTempDirectory = this.extractPathRightFile;
-            ZipHelper.UnpackZipPackage(this.extractPathRightFile, rightBuildZipPath);
+            ZipHelper.UnpackZipPackage(this.extractPathRightFile, rightBuildZipPath,false);
             SqlSync.SqlBuild.SqlSyncBuildData rightBuildData = new SqlSyncBuildData();
             rightBuildData.ReadXml(this.extractPathRightFile + XmlFileNames.MainProjectFile);
             //TODO: wrap load failure. 

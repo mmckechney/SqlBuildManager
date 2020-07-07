@@ -172,7 +172,7 @@ namespace SqlSync.SqlBuild
         {
             log.InfoFormat("Generating scripts: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
 
-            string tmpFile = path + Path.GetFileName(targetDacPacFileName) + ".sql";
+            string tmpFile = Path.Combine(path, Path.GetFileName(targetDacPacFileName) + ".sql");
 
             ProcessHelper pHelper = new ProcessHelper();
             pHelper.AddArgument("/Action", "Script");
@@ -291,7 +291,7 @@ namespace SqlSync.SqlBuild
             string result;
 
             log.InfoFormat("Preparing build package for processing");
-            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, out result))
+            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, false,out result))
             {
                 return DacpacDeltasStatus.SbmProcessingFailure;
             }

@@ -49,8 +49,8 @@ namespace SqlSync
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.lblCurrentLogin = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.btnUndo = new System.Windows.Forms.Button();
-            this.btnImpersonate = new System.Windows.Forms.Button();
+            //this.btnUndo = new System.Windows.Forms.Button();
+            //this.btnImpersonate = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
@@ -288,23 +288,23 @@ namespace SqlSync
             // 
             // btnUndo
             // 
-            this.btnUndo.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnUndo.Location = new System.Drawing.Point(144, 147);
-            this.btnUndo.Name = "btnUndo";
-            this.btnUndo.Size = new System.Drawing.Size(96, 23);
-            this.btnUndo.TabIndex = 7;
-            this.btnUndo.Text = "Undo";
-            this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
+            //this.btnUndo.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            //this.btnUndo.Location = new System.Drawing.Point(144, 147);
+            //this.btnUndo.Name = "btnUndo";
+            //this.btnUndo.Size = new System.Drawing.Size(96, 23);
+            //this.btnUndo.TabIndex = 7;
+            //this.btnUndo.Text = "Undo";
+            //this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
             // 
             // btnImpersonate
             // 
-            this.btnImpersonate.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnImpersonate.Location = new System.Drawing.Point(40, 147);
-            this.btnImpersonate.Name = "btnImpersonate";
-            this.btnImpersonate.Size = new System.Drawing.Size(96, 23);
-            this.btnImpersonate.TabIndex = 6;
-            this.btnImpersonate.Text = "Impersonate";
-            this.btnImpersonate.Click += new System.EventHandler(this.btnImpersonate_Click);
+            //this.btnImpersonate.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            //this.btnImpersonate.Location = new System.Drawing.Point(40, 147);
+            //this.btnImpersonate.Name = "btnImpersonate";
+            //this.btnImpersonate.Size = new System.Drawing.Size(96, 23);
+            //this.btnImpersonate.TabIndex = 6;
+            //this.btnImpersonate.Text = "Impersonate";
+            //this.btnImpersonate.Click += new System.EventHandler(this.btnImpersonate_Click);
             // 
             // label5
             // 

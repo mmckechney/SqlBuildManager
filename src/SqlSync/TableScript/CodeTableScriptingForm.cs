@@ -78,9 +78,9 @@ namespace SqlSync
 		private System.Windows.Forms.ToolStripMenuItem mnuFileMRU;
 		private System.Windows.Forms.ColumnHeader columnHeader2;
 		//private string[] updateDateTables;
-		private System.Windows.Forms.ToolBar toolBar1;
-		private System.Windows.Forms.ToolBarButton tbbSave;
-		private System.Windows.Forms.ToolBarButton tbbExportToBM;
+		private System.Windows.Forms.ToolStrip toolBar1;
+		private System.Windows.Forms.ToolStripButton tbbSave;
+		private System.Windows.Forms.ToolStripButton tbbExportToBM;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.ToolStripMenuItem menuItem7;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
@@ -177,9 +177,9 @@ namespace SqlSync
             this.chkSelectByDate = new System.Windows.Forms.CheckBox();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.tcTables = new System.Windows.Forms.TabControl();
-            this.toolBar1 = new System.Windows.Forms.ToolBar();
-            this.tbbSave = new System.Windows.Forms.ToolBarButton();
-            this.tbbExportToBM = new System.Windows.Forms.ToolBarButton();
+            this.toolBar1 = new System.Windows.Forms.ToolStrip();
+            this.tbbSave = new System.Windows.Forms.ToolStripButton();
+            this.tbbExportToBM = new System.Windows.Forms.ToolStripButton();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.ddDatabaseList = new System.Windows.Forms.ComboBox();
             this.contextDatabase = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -439,19 +439,19 @@ namespace SqlSync
             // toolBar1
             // 
             this.toolBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.toolBar1.Appearance = System.Windows.Forms.ToolBarAppearance.Flat;
-            this.toolBar1.Buttons.AddRange(new System.Windows.Forms.ToolBarButton[] {
+           // this.toolBar1.Appearance = System.Windows.Forms.ToolBarAppearance.Flat;
+            this.toolBar1.Items.AddRange(new System.Windows.Forms.ToolStripButton[] {
             this.tbbSave,
             this.tbbExportToBM});
             this.toolBar1.Dock = System.Windows.Forms.DockStyle.None;
-            this.toolBar1.DropDownArrows = true;
+           // this.toolBar1.DropDownArrows = true;
             this.toolBar1.ImageList = this.imageList1;
             this.toolBar1.Location = new System.Drawing.Point(561, 31);
             this.toolBar1.Name = "toolBar1";
-            this.toolBar1.ShowToolTips = true;
+            //this.toolBar1.ShowToolTips = true;
             this.toolBar1.Size = new System.Drawing.Size(56, 28);
             this.toolBar1.TabIndex = 22;
-            this.toolBar1.ButtonClick += new System.Windows.Forms.ToolBarButtonClickEventHandler(this.toolBar1_ButtonClick);
+            this.toolBar1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.toolBar1_ButtonClick);
             // 
             // tbbSave
             // 
@@ -1833,9 +1833,9 @@ namespace SqlSync
 				this.SqlBuildManagerFileExport(sender,e);
 		}
 
-		private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
-		{
-			switch(e.Button.Tag.ToString().ToLower())
+		private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolStripItemClickedEventArgs e)
+		{ 
+			switch(e.ClickedItem.Tag.ToString().ToLower())
 			{
 				case "saveall":
 					DialogResult result = folderBrowserDialog1.ShowDialog();

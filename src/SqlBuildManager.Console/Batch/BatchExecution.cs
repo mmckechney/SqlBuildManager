@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.Azure.Storage;
+using Microsoft.Azure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,6 +13,7 @@ using SqlSync.SqlBuild.MultiDb;
 using System.Text;
 using SqlBuildManager.Interfaces.Console;
 using System.Text.RegularExpressions;
+
 
 namespace SqlBuildManager.Console.Batch
 {
@@ -99,8 +100,16 @@ namespace SqlBuildManager.Console.Batch
                 cmdLine.DacPacArgs.PlatinumDacpac = dacpacName;
             }
             //Check for the platinum dacpac and configure it if necessary
-            var tmp = new MultiDbData();
-            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref tmp);
+            log.Info("Validating database overrides");
+            MultiDbData buildData;
+            int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out buildData, out errorMessages);
+            if (tmpVal != 0)
+            {
+                log.Error($"Unable to validate database config\r\n{string.Join("\r\n", errorMessages)}");
+                return tmpVal;
+            }
+
+            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref buildData);
             if (tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
             {
                 return (int)ExecutionReturn.DacpacDatabasesInSync;
@@ -489,8 +498,16 @@ namespace SqlBuildManager.Console.Batch
                 //Set set the Sas URL
                 threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
 
-                StringBuilder sb = new StringBuilder("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe ");
-                sb.Append(threadCmdLine.ToString());
+                StringBuilder sb = new StringBuilder();
+                if (Program.cliVersion == SqlSync.Constants.CliVersion.NEW_CLI)
+                {
+                    sb.Append("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\sbm.exe batch ");
+                }
+                else
+                {
+                    sb.Append("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe ");
+                }
+                sb.Append(threadCmdLine.ToBatchThreadedExeString());
 
                 commandLines.Add(sb.ToString());
             }

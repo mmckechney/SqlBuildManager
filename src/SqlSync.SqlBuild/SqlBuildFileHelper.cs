@@ -65,9 +65,9 @@ namespace SqlSync.SqlBuild
 		}
         public static bool ExtractSqlBuildZipFile(string fileName, ref string workingDirectory, ref string projectFilePath, ref string projectFileName, out string result)
         {
-            return ExtractSqlBuildZipFile(fileName, ref workingDirectory, ref projectFilePath, ref projectFileName, true, out result);
+            return ExtractSqlBuildZipFile(fileName, ref workingDirectory, ref projectFilePath, ref projectFileName, true, false, out result);
         }
-        public static bool ExtractSqlBuildZipFile(string fileName, ref string workingDirectory, ref string projectFilePath, ref string projectFileName, bool resetWorkingDirectory,out string result)
+        public static bool ExtractSqlBuildZipFile(string fileName, ref string workingDirectory, ref string projectFilePath, ref string projectFileName, bool resetWorkingDirectory, bool overwriteExistingProjectFiles, out string result)
         {
             result = "";
             try
@@ -89,7 +89,7 @@ namespace SqlSync.SqlBuild
                 }
 
                 //Unpack the zip contents into the working directory
-                if (!ZipHelper.UnpackZipPackage(workingDirectory, fileName))
+                if (!ZipHelper.UnpackZipPackage(workingDirectory, fileName, overwriteExistingProjectFiles))
                 {
                     result = "Unable to unpack Sql Build Project File [" + fileName + "]";
                     log.ErrorFormat("ExtractSqlBuildZipFile error: {0}", result);
@@ -193,6 +193,46 @@ namespace SqlSync.SqlBuild
             return successfulLoad;
         }
         #endregion
+
+        public static string InferOverridesFromPackage(string sbmFileName)
+        {
+            string tempWorkingDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            string projectFilePath = string.Empty;
+            string projectFileName = string.Empty;
+            string result;
+            SqlSyncBuildData buildData;
+            StringBuilder ovr = new StringBuilder();
+            try
+            {
+                ExtractSqlBuildZipFile(sbmFileName, ref tempWorkingDir, ref projectFilePath, ref projectFileName, out result);
+                LoadSqlBuildProjectFile(out buildData, projectFileName, false);
+                if(buildData != null)
+                {
+                   var targets =  buildData.Script.Select(s => s.Database).Distinct();
+                   if(targets != null && targets.Count() > 0)
+                    {
+                        foreach(var t in targets)
+                        {
+                            ovr.Append($"{t},{t};");
+                        }
+                        ovr.Length = ovr.Length - 1;
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+            finally
+            {
+                if(Directory.Exists(tempWorkingDir))
+                {
+                    Directory.Delete(tempWorkingDir, true);
+                }
+            }
+
+            return ovr.ToString();
+        }
 
 
         //#region .: Tfs Source Control integration :.
@@ -309,7 +349,7 @@ namespace SqlSync.SqlBuild
                 File.Copy(fileName, tmpZipFullName);
 
                 string result;
-                if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName,false, out result))
+                if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName,false, false, out result))
                 {
                     LoadSqlBuildProjectFile(out cleanedBuildData, tmpProjectFileName, false);
                     cleanedBuildData.CodeReview.Rows.Clear();

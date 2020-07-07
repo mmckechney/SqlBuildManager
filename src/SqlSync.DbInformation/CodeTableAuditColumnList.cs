@@ -15,7 +15,6 @@ namespace SqlSync.DbInformation {
     [System.ComponentModel.ToolboxItem(true)]
     [System.ComponentModel.DesignerCategory("Component")]
     [System.ComponentModel.DesignTimeVisible(true)]
-    [System.Drawing.ToolboxBitmap(typeof(System.Data.DataSet))]
     public class CodeTableAuditColumnList {
         
         private System.Collections.Generic.List<string> _UpdateDateColumns = new System.Collections.Generic.List<string>();

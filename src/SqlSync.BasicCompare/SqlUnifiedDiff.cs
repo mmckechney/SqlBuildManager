@@ -178,8 +178,8 @@ namespace SqlSync.BasicCompare
             Directory.CreateDirectory(this.extractPathOldFile);
             this.extractPathNewFile = tempPath + "SqlsyncCompare-" + Guid.NewGuid().ToString().Replace("-", "") + @"\";
             Directory.CreateDirectory(this.extractPathNewFile);
-            ZipHelper.UnpackZipPackage(this.extractPathOldFile, oldBuildFile);
-            ZipHelper.UnpackZipPackage(this.extractPathNewFile, newBuildFile);
+            ZipHelper.UnpackZipPackage(this.extractPathOldFile, oldBuildFile, false);
+            ZipHelper.UnpackZipPackage(this.extractPathNewFile, newBuildFile, false);
             Hashtable child = this.GetFileList(this.extractPathOldFile);
             Hashtable master = this.GetFileList(this.extractPathNewFile);
             Hashtable commonFiles = this.GetFileListDiff(master, child);

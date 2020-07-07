@@ -65,16 +65,6 @@ namespace SqlSync.SqlBuild
 
             switch (cmdLine.Action)
             {
-                case CommandLineArgs.ActionType.Remote:
-                    if (dict.ContainsKey("remoteservers"))
-                    {
-                        cmdLine.RemoteArgs.RemoteServers = dict["remoteservers"];
-                    }
-                    if (dict.ContainsKey("distributiontype"))
-                    {
-                        cmdLine.RemoteArgs.DistributionType = dict["distributiontype"];
-                    }
-                    break;
                 case CommandLineArgs.ActionType.Threaded:
                     break;
                 case CommandLineArgs.ActionType.Package:
@@ -116,20 +106,20 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("server"))
                 cmdLine.Server = dict["server"];
 
-            if (dict.ContainsKey("log"))
-                cmdLine.LogFileName = dict["log"];
+            //if (dict.ContainsKey("log"))
+            //    cmdLine.LogFileName = dict["log"];
 
-            if (dict.ContainsKey("test"))
-            {
-                cmdLine.StoredProcTestingArgs.SprocTestDesignated = true;
-                cmdLine.StoredProcTestingArgs.SpTestFile = dict["test"];
-            }
+            //if (dict.ContainsKey("test"))
+            //{
+            //    cmdLine.StoredProcTestingArgs.SprocTestDesignated = true;
+            //    cmdLine.StoredProcTestingArgs.SpTestFile = dict["test"];
+            //}
 
             if (dict.ContainsKey("database"))
                 cmdLine.Database = dict["database"];
 
-            if (dict.ContainsKey("scriptlogfile"))
-                cmdLine.ScriptLogFileName = dict["scriptlogfile"];
+            //if (dict.ContainsKey("scriptlogfile"))
+            //    cmdLine.ScriptLogFileName = dict["scriptlogfile"];
 
             if (dict.ContainsKey("rootloggingpath"))
                 cmdLine.RootLoggingPath = dict["rootloggingpath"].Trim();
@@ -206,20 +196,9 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("buildrevision"))
                 cmdLine.BuildRevision = dict["buildrevision"];
 
-            if (dict.ContainsKey("remotedberrorlist"))
-                cmdLine.RemoteArgs.RemoteDbErrorList = dict["remotedberrorlist"];
-
-            if (dict.ContainsKey("remoteerrordetail"))
-                cmdLine.RemoteArgs.RemoteErrorDetail = dict["remoteerrordetail"];
-
             if (dict.ContainsKey("outputsbm"))
                 cmdLine.OutputSbm = dict["outputsbm"];
 
-            if (dict.ContainsKey("testconnectivity"))
-                cmdLine.RemoteArgs.TestConnectivity = true;
-
-            if (dict.ContainsKey("azureremotestatus"))
-                cmdLine.RemoteArgs.AzureRemoteStatus = true;
 
             if (dict.ContainsKey("outputcontainersasurl"))
                 cmdLine.BatchArgs.OutputContainerSasUrl = dict["outputcontainersasurl"];

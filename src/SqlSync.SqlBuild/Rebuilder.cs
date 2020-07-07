@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SqlSync.Connection;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Data;
 using System.IO;
 using SqlSync.DbInformation;
@@ -121,7 +121,7 @@ namespace SqlSync.SqlBuild
                     return false;
                 }
 
-                if(!ZipHelper.UnpackZipPackage(tempPath, buildFileName))
+                if(!ZipHelper.UnpackZipPackage(tempPath, buildFileName,false))
                 {
                     return false;
                 }

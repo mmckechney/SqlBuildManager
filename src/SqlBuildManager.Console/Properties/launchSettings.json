@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SqlBuildManager.Console": {
+      "commandName": "Project",
+      "commandLineArgs": "build --packagename \"C:\\Users\\mimcke\\source\\repos\\SqlBuildManager-samples\\SelectSample2db.sbm\" --server (local)\\SQLExpress --authtype Windows --rootloggingpath \"c:\\temp\\today\" "
+    }
+  }
+}

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SqlBuildManager.Console.UnitTest.Properties {
+namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
     using System;
     
     
@@ -19,10 +19,10 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,10 +36,10 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SqlBuildManager.Console.UnitTest.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SqlBuildManager.Console.Dependent.UnitTest.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -51,7 +51,7 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] dbconfig {
+        public static byte[] dbconfig {
             get {
                 object obj = ResourceManager.GetObject("dbconfig", resourceCulture);
                 return ((byte[])(obj));
@@ -73,7 +73,7 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] InsertForThreadedTest {
+        public static byte[] InsertForThreadedTest {
             get {
                 object obj = ResourceManager.GetObject("InsertForThreadedTest", resourceCulture);
                 return ((byte[])(obj));
@@ -83,9 +83,9 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] NoTrans_MultiDb_multidb {
+        public static byte[] InsertForThreadedTest_ForceTimeout {
             get {
-                object obj = ResourceManager.GetObject("NoTrans_MultiDb_multidb", resourceCulture);
+                object obj = ResourceManager.GetObject("InsertForThreadedTest_ForceTimeout", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -93,9 +93,19 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] NoTrans_MultiDb_sbm {
+        public static byte[] NoTrans_MultiDb {
             get {
-                object obj = ResourceManager.GetObject("NoTrans_MultiDb_sbm", resourceCulture);
+                object obj = ResourceManager.GetObject("NoTrans_MultiDb", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] NoTrans_MultiDb1 {
+            get {
+                object obj = ResourceManager.GetObject("NoTrans_MultiDb1", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -110,7 +120,7 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         ///      &lt;TcpServiceEndpoint&gt;net.tcp://localhost:8676/SqlBuildManager.Services/BuildService&lt;/TcpServiceEndpoint&gt;
         ///      &lt;HttpServiceEndpoint&gt;http://localhost:8675/SqlBuildManager.Services/BuildService&lt;/HttpServiceE [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string remote_execution_file {
+        public static string remote_execution_file {
             get {
                 return ResourceManager.GetString("remote_execution_file", resourceCulture);
             }
@@ -126,7 +136,7 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         ///      &lt;TcpServiceEndpoint&gt;net.tcp://badServer_name:8676/SqlBuildManager.Services/BuildService&lt;/TcpServiceEndpoint&gt;
         ///      &lt;HttpServiceEndpoint&gt;http://badServer_name:8675/SqlBuildManager.Services/BuildServic [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string remote_execution_file_bad_exeserver {
+        public static string remote_execution_file_bad_exeserver {
             get {
                 return ResourceManager.GetString("remote_execution_file_bad_exeserver", resourceCulture);
             }
@@ -135,7 +145,7 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] SimpleSelect {
+        public static byte[] SimpleSelect {
             get {
                 object obj = ResourceManager.GetObject("SimpleSelect", resourceCulture);
                 return ((byte[])(obj));
@@ -145,7 +155,7 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] SimpleSelect_WithCodeReview {
+        public static byte[] SimpleSelect_WithCodeReview {
             get {
                 object obj = ResourceManager.GetObject("SimpleSelect_WithCodeReview", resourceCulture);
                 return ((byte[])(obj));
@@ -153,9 +163,24 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to BEGIN TRANSACTION
+        ///
+        ///SELECT * FROM dbo.TransactionTest WITH (TABLOCKX, HOLDLOCK) WHERE 1 = 1
+        ///
+        ///WAITFOR DELAY &apos;00:30&apos;
+        ///
+        ///ROLLBACK TRANSACTION.
+        /// </summary>
+        public static string sql_waitfor_createtimeout {
+            get {
+                return ResourceManager.GetString("sql_waitfor_createtimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] SyntaxError {
+        public static byte[] SyntaxError {
             get {
                 object obj = ResourceManager.GetObject("SyntaxError", resourceCulture);
                 return ((byte[])(obj));
@@ -174,9 +199,19 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         ///END  
         ///COMMIT TRANSACTION.
         /// </summary>
-        internal static string TableLockingScript {
+        public static string TableLockingScript {
             get {
                 return ResourceManager.GetString("TableLockingScript", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] ThreadedTest_OnePassOneFail {
+            get {
+                object obj = ResourceManager.GetObject("ThreadedTest_OnePassOneFail", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

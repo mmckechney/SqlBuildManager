@@ -22,8 +22,8 @@ namespace SqlSync.SqlBuild
 		private SqlBuild.SqlSyncBuildData importData = null;
 		private string importTempPath;
 		private System.Windows.Forms.ColumnHeader columnHeader4;
-		private System.Windows.Forms.ContextMenu contextMenu1;
-		private System.Windows.Forms.MenuItem mnuView;
+		private System.Windows.Forms.ContextMenuStrip contextMenu1;
+		private System.Windows.Forms.ToolStripMenuItem mnuView;
         private string[] preSelectedFiles = null;
 		public SqlSync.SqlBuild.SqlSyncBuildData ImportData
 		{
@@ -76,8 +76,8 @@ namespace SqlSync.SqlBuild
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-            this.mnuView = new System.Windows.Forms.MenuItem();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            this.mnuView = new System.Windows.Forms.ToolStripMenuItem();
             this.label1 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
@@ -94,7 +94,7 @@ namespace SqlSync.SqlBuild
             this.columnHeader2,
             this.columnHeader3,
             this.columnHeader4});
-            this.lstImport.ContextMenu = this.contextMenu1;
+            this.lstImport.ContextMenuStrip = this.contextMenu1;
             this.lstImport.GridLines = true;
             this.lstImport.Location = new System.Drawing.Point(16, 23);
             this.lstImport.Name = "lstImport";
@@ -125,12 +125,12 @@ namespace SqlSync.SqlBuild
             // 
             // contextMenu1
             // 
-            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.mnuView});
             // 
             // mnuView
             // 
-            this.mnuView.Index = 0;
+           //this.mnuView.Index = 0;
             this.mnuView.Text = "View File";
             this.mnuView.Click += new System.EventHandler(this.mnuView_Click);
             // 

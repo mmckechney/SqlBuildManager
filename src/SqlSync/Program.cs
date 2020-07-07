@@ -20,7 +20,8 @@ namespace SqlSync
         [STAThread]
         static int Main(string[] args)
         {
-            log4net.Config.XmlConfigurator.Configure();
+            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+            log4net.Config.XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
             SqlBuildManager.Logging.Configure.SetLoggingPath();
 
             log.Debug("Sql Build Manager Staring...");

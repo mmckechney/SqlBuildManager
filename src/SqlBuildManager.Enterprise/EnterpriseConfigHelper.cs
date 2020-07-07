@@ -65,10 +65,9 @@ namespace SqlBuildManager.Enterprise
             }
             else
             {
-                LoadEnterpriseConfiguration(@"C:\force_a_local_file_check");
+                return LoadEnterpriseConfiguration(@"C:\force_a_local_file_check");
             }
 
-            return null;
         }
         public static EnterpriseConfiguration LoadEnterpriseConfiguration(string configPath)
         {

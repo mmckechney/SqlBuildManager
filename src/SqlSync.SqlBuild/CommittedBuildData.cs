@@ -17,7 +17,6 @@ namespace SqlSync.SqlBuild {
     [System.ComponentModel.ToolboxItem(true)]
     [System.ComponentModel.DesignerCategory("Component")]
     [System.ComponentModel.DesignTimeVisible(true)]
-    [System.Drawing.ToolboxBitmap(typeof(System.Data.DataSet))]
     public class CommittedBuildData {
         
         private string _BuildFileName = String.Empty;
@@ -143,7 +142,7 @@ namespace SqlSync.SqlBuild {
             }
         }
         
-        public virtual bool Fill(System.Data.SqlClient.SqlDataReader reader, bool closeReader) {
+        public virtual bool Fill(Microsoft.Data.SqlClient.SqlDataReader reader, bool closeReader) {
             try {
                 if ((reader.Read() == false)) {
                     reader.Close();

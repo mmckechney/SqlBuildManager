@@ -41,26 +41,26 @@ namespace SqlSync
             string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
             string[] recentDbs = new string[6];
 
-            if (File.Exists(homePath + ConfigFileName))
-            {
-                try
-                {
-                    SqlSyncConfig config = new SqlSyncConfig();
-                    config.ReadXml(homePath + "SqlSync.cfg");
-                    DataView view = config.RecentDatabase.DefaultView;
-                    view.Sort = config.RecentDatabase.LastAccessedColumn.ColumnName;
-                    for (int i = 0; i < view.Count; i++)
-                    {
-                        if (i < 6)
-                            recentDbs[i] = ((SqlSyncConfig.RecentDatabaseRow)view[i].Row).Name;
-                    }
-                    Array.Sort(recentDbs);
-                }
-                catch
-                {
+            //if (File.Exists(homePath + ConfigFileName))
+            //{
+            //    try
+            //    {
+            //        SqlSyncConfig config = new SqlSyncConfig();
+            //        config.ReadXml(homePath + "SqlSync.cfg");
+            //        DataView view = config.RecentDatabase.DefaultView;
+            //        view.Sort = config.RecentDatabase.LastAccessedColumn.ColumnName;
+            //        for (int i = 0; i < view.Count; i++)
+            //        {
+            //            if (i < 6)
+            //                recentDbs[i] = ((SqlSyncConfig.RecentDatabaseRow)view[i].Row).Name;
+            //        }
+            //        Array.Sort(recentDbs);
+            //    }
+            //    catch
+            //    {
 
-                }
-            }
+            //    }
+            //}
             this.Items.AddRange(recentDbs);
         }
                

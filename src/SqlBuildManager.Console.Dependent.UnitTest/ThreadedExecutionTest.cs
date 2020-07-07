@@ -8,7 +8,7 @@ using SqlBuildManager.Interfaces.Console;
 using System.Data.SqlClient;
 using System.Threading;
 using System.Text.RegularExpressions;
-namespace SqlBuildManager.Console.UnitTest
+namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     
     
@@ -203,7 +203,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -279,7 +279,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -354,7 +354,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -446,7 +446,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
 
-                Assert.AreEqual(expected, actual);
+                Assert.AreEqual(expected, actual, "Run result was not the expected value of \"Success\"");
 
                 //SqlBuildTest should still committed with no timeout messages
                 string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
@@ -557,6 +557,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             {
                 THRInfinite = new Thread(StartInfiniteLockingThread);
                 THRInfinite.Start(10000000);
+              
 
                 actual = target.Execute();
 
@@ -583,14 +584,14 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Error Message: Timeout expired.") == -1, "SqlBuildTest1 Log contains a 'Timeout expired message'");
                 Assert.IsTrue(logContents.IndexOf("COMMIT TRANSACTION") == -1, "SqlBuildTest1 Log contains a'COMMIT' message");
-                Assert.IsTrue(logContents.IndexOf("Completed: No Transaction Set") > -1, "SqlBuildTest1 does not contain a 'ERROR: No Transaction Set' message");
+                Assert.IsTrue(logContents.IndexOf("Completed: No Transaction Set") > -1, "SqlBuildTest1 does not contain a 'Completed: No Transaction Set' message");
                 Assert.IsTrue(logContents.IndexOf("use SqlBuildTest1") > -1, "SqlBuildTest1 Log does not contain the proper database name");
 
             }
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -671,7 +672,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -748,7 +749,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             finally
             {
                 if (THRInfinite != null)
-                    THRInfinite.Abort();
+                    THRInfinite.Interrupt();
 
                 if (Directory.Exists(loggingPath))
                     Directory.Delete(loggingPath, true);
@@ -762,12 +763,31 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
         private void StartInfiniteLockingThread(object loopCount)
         {
+            try
+            {
             int loop = (int)loopCount;
             string connStr = string.Format(Initialization.ConnectionString, "SqlBuildTest");
             SqlConnection conn = new SqlConnection(connStr);
-            SqlCommand cmd = new SqlCommand(String.Format(Properties.Resources.TableLockingScript,loop.ToString()), conn);
+            SqlCommand cmd = new SqlCommand(string.Format(Properties.Resources.TableLockingScript, loop.ToString()), conn);
             conn.Open();
             cmd.ExecuteNonQuery();
+            }catch
+            {}
+        }
+
+        private void StartSqlTimeoutThread(object targetDatabase)
+        {
+            try
+            {
+                string connStr = string.Format(Initialization.ConnectionString, targetDatabase.ToString());
+                SqlConnection conn = new SqlConnection(connStr);
+                SqlCommand cmd = new SqlCommand(Properties.Resources.sql_waitfor_createtimeout, conn);
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            } catch
+            {
+
+            }
         }
     }
 }
