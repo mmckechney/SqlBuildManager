@@ -23,7 +23,7 @@ jobs:
         dotnet-version: 3.1.101
 
     - name: Set build config variable
-      run: "::set-env name=BUILD_CONFIG::Release"        
+      run: echo "::set-env name=BUILD_CONFIG::Release"        
 
     - name: Restore dependencies
       run: dotnet restore ./src/sqlsync.sln
