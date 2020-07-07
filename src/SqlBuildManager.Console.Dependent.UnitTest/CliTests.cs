@@ -323,10 +323,11 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             Assert.AreEqual(0, result, StandardExecutionErrorMessage());
             Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(this.output.Contains($"{database2}.dacpac are already in  sync.Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
-            Assert.IsTrue(this.output.Contains($"{database2}: Dacpac Databases In Sync"), "The second database should already be in sync with the first");
+            Assert.IsTrue(this.output.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
+            
             if (batchMethod == "runthreaded")
             {
+                Assert.IsTrue(this.output.Contains($"{database2}: Dacpac Databases In Sync"), "The second database should already be in sync with the first");
                 Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
             }
 
@@ -440,9 +441,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage());
             Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(this.output.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
-            Assert.IsTrue(this.output.Contains($"{database2}: Dacpac Databases In Sync"), "The second database should already be in sync with the first");
+            
             if (batchMethod == "runthreaded")
             {
+                Assert.IsTrue(this.output.Contains($"{database2}: Dacpac Databases In Sync"), "The second database should already be in sync with the first");
                 Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
             }
 

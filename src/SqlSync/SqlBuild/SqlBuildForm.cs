@@ -363,8 +363,8 @@ namespace SqlSync.SqlBuild
         private SaveFileDialog savePolicyViolationCsv;
         private ToolStripSeparator toolStripSeparator9;
         private ToolStripMenuItem savePolicyResultsAsXMLToolStripMenuItem;
-        private ToolStripMenuItem sourceControlServerURLToolStripMenuItem;
-        private ToolStripTextBox sourceControlServerURLTextboxMenuItem;
+        //private ToolStripMenuItem sourceControlServerURLToolStripMenuItem;
+        //private ToolStripTextBox sourceControlServerURLTextboxMenuItem;
         private BackgroundWorker bgBulkAddStep2;
         private ToolStripMenuItem policyWarningActionMayBeRequiredToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator23;
@@ -1036,8 +1036,8 @@ namespace SqlSync.SqlBuild
             this.defaultScriptTimeoutsecondsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuDefaultScriptTimeout = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
-            this.sourceControlServerURLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.sourceControlServerURLTextboxMenuItem = new System.Windows.Forms.ToolStripTextBox();
+            //this.sourceControlServerURLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            //this.sourceControlServerURLTextboxMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.mnuMainAddSqlScript = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuMainAddNewFile = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -2304,9 +2304,9 @@ namespace SqlSync.SqlBuild
             this.toolStripSeparator15,
             this.defaultScriptTimeoutsecondsToolStripMenuItem,
             this.mnuDefaultScriptTimeout,
-            this.toolStripSeparator16,
-            this.sourceControlServerURLToolStripMenuItem,
-            this.sourceControlServerURLTextboxMenuItem});
+            this.toolStripSeparator16});
+            //this.sourceControlServerURLToolStripMenuItem,
+            //this.sourceControlServerURLTextboxMenuItem
             this.settingsToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Wizard;
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
@@ -2396,16 +2396,16 @@ namespace SqlSync.SqlBuild
             // 
             // sourceControlServerURLToolStripMenuItem
             // 
-            this.sourceControlServerURLToolStripMenuItem.Name = "sourceControlServerURLToolStripMenuItem";
-            this.sourceControlServerURLToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
-            this.sourceControlServerURLToolStripMenuItem.Text = "Source Control Server URL:";
+            //this.sourceControlServerURLToolStripMenuItem.Name = "sourceControlServerURLToolStripMenuItem";
+            //this.sourceControlServerURLToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
+            //this.sourceControlServerURLToolStripMenuItem.Text = "Source Control Server URL:";
             // 
             // sourceControlServerURLTextboxMenuItem
             // 
-            this.sourceControlServerURLTextboxMenuItem.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sourceControlServerURLTextboxMenuItem.Name = "sourceControlServerURLTextboxMenuItem";
-            this.sourceControlServerURLTextboxMenuItem.Size = new System.Drawing.Size(250, 23);
-            this.sourceControlServerURLTextboxMenuItem.TextChanged += new System.EventHandler(this.sourceControlServerURLTextboxMenuItem_TextChanged);
+            //this.sourceControlServerURLTextboxMenuItem.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            //this.sourceControlServerURLTextboxMenuItem.Name = "sourceControlServerURLTextboxMenuItem";
+            //this.sourceControlServerURLTextboxMenuItem.Size = new System.Drawing.Size(250, 23);
+            //this.sourceControlServerURLTextboxMenuItem.TextChanged += new System.EventHandler(this.sourceControlServerURLTextboxMenuItem_TextChanged);
             // 
             // mnuMainAddSqlScript
             // 
@@ -7711,7 +7711,7 @@ namespace SqlSync.SqlBuild
             
             this.scriptTagsRequiredToolStripMenuItem.Checked = SqlSync.Properties.Settings.Default.RequireScriptTags;
 
-            this.sourceControlServerURLTextboxMenuItem.Text = SqlSync.Properties.Settings.Default.SourceControlServerUrl;
+           // this.sourceControlServerURLTextboxMenuItem.Text = SqlSync.Properties.Settings.Default.SourceControlServerUrl;
 
             
 
@@ -8788,11 +8788,11 @@ namespace SqlSync.SqlBuild
         }
 
 
-        private void sourceControlServerURLTextboxMenuItem_TextChanged(object sender, EventArgs e)
-        {
-            SqlSync.Properties.Settings.Default.SourceControlServerUrl = this.sourceControlServerURLTextboxMenuItem.Text;
-            SqlSync.Properties.Settings.Default.Save();
-        }
+        //private void sourceControlServerURLTextboxMenuItem_TextChanged(object sender, EventArgs e)
+        //{
+        //    SqlSync.Properties.Settings.Default.SourceControlServerUrl = this.sourceControlServerURLTextboxMenuItem.Text;
+        //    SqlSync.Properties.Settings.Default.Save();
+        //}
 
         private void mnuListTop_DropDownOpening(object sender, EventArgs e)
         {

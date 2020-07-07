@@ -65,6 +65,7 @@ namespace SqlSync
         private Button btnCancel;
         private CheckBox chkIncludeHeaders;
 		private System.Windows.Forms.ToolStripMenuItem mnuComparisons;
+        private Panel panel1;
 
 		public SyncForm()
 		{
@@ -176,6 +177,7 @@ namespace SqlSync
             this.mnuServerLogins = new System.Windows.Forms.ToolStripMenuItem();
             this.bgScripting = new System.ComponentModel.BackgroundWorker();
             this.settingsControl1 = new SqlSync.SettingsControl();
+            this.panel1 = new Panel();
             this.grpDirectory.SuspendLayout();
             this.grpScripting.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
@@ -370,6 +372,11 @@ namespace SqlSync
             this.mainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.menuItem2,
             this.mnuComparisons});
+            this.mainMenu1.Location = new System.Drawing.Point(0, 0);
+            this.mainMenu1.Name = "mainMenu1";
+            this.mainMenu1.Size = new System.Drawing.Size(896, 24);
+            this.mainMenu1.TabIndex = 0;
+            this.mainMenu1.Dock = System.Windows.Forms.DockStyle.Top;
             // 
             // menuItem2
             // 
@@ -497,8 +504,8 @@ namespace SqlSync
             // settingsControl1
             // 
             this.settingsControl1.BackColor = System.Drawing.Color.White;
-            this.settingsControl1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.settingsControl1.Location = new System.Drawing.Point(0, 0);
+            this.settingsControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            //this.settingsControl1.Location = new System.Drawing.Point(0, 0);
             this.settingsControl1.Name = "settingsControl1";
             this.settingsControl1.Project = "(Select Destination)";
             this.settingsControl1.ProjectLabelText = "Destination Folder:";
@@ -506,17 +513,26 @@ namespace SqlSync
             this.settingsControl1.Size = new System.Drawing.Size(775, 60);
             this.settingsControl1.TabIndex = 6;
             this.settingsControl1.ServerChanged += new SqlSync.ServerChangedEventHandler(this.settingsControl1_ServerChanged);
+
+            this.panel1.Dock = DockStyle.Top;
+            this.panel1.Controls.Add(this.mainMenu1);
+            this.panel1.Controls.Add(this.settingsControl1);
+            this.panel1.Size = new Size(775, 75);
             // 
             // SyncForm
             // 
+            this.MainMenuStrip = this.mainMenu1;
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(775, 333);
+            this.ClientSize = new System.Drawing.Size(800, 380);
+            
+            //this.Controls.Add(this.mainMenu1);
             this.Controls.Add(this.grpScripting);
             this.Controls.Add(this.grpDirectory);
-            this.Controls.Add(this.settingsControl1);
+            this.Controls.Add(this.panel1);
+            //this.Controls.Add(this.settingsControl1);
             this.Controls.Add(this.statusBar1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MainMenuStrip = this.mainMenu1;
+            
             this.Name = "SyncForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Sql Build Manager :: Schema Scripting";
@@ -524,6 +540,8 @@ namespace SqlSync
             this.grpDirectory.ResumeLayout(false);
             this.grpScripting.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
+            this.mainMenu1.ResumeLayout(false);
+            this.mainMenu1.PerformLayout();
             this.ResumeLayout(false);
 
 		}

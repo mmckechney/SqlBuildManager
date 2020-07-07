@@ -34,7 +34,7 @@ jobs:
     - name: Publish the legacy Console CLI desktop app
       run: dotnet publish ./src/SqlBuildManager.Console/SqlBuildManager.Console.csproj -r win-x64 --configuration Release
 
-      - name: Publish the new Console CLI desktop app
+    - name: Publish the new Console CLI desktop app
       run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release
 
     - name: Upload a Build Artifact

@@ -46,20 +46,24 @@ $password = $SqlServerPassword | ConvertTo-SecureString -AsPlainText -Force
 $SqlCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SqlServerUserName,  $password
 if($null -eq (Get-AzSqlServer -ResourceGroupName $ResourceGroupName  -ServerName $SqlServerName -ErrorAction SilentlyContinue))
 {
+    Write-Host "Creating new SQL Server: $SqlServerName"
     New-AzSqlServer -ResourceGroupName $ResourceGroupName -Location $Location -ServerName $SqlServerName -ServerVersion "12.0" -SqlAdministratorCredentials $SqlCredential
 }
 else 
 {
+    Write-Host "Updating admin password on SQL Server: $SqlServerName"
     Set-AzSqlServer -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -SqlAdministratorPassword $password
 }
 
 if($null -eq (Get-AzSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName.ToLower() -ErrorAction SilentlyContinue))
 {
+    Write-Host "Updating firewall rules on SQL Server: $SqlServerName"
     New-AzSqlServerFirewallRule -AllowAllAzureIPs -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName.ToLower()
 }
 
 if($null -eq (Get-AzSqlElasticPool -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -ElasticPoolName $ElasticPoolName -ErrorAction SilentlyContinue))
 {
+    Write-Host "Creating Elastic pool $ElasticPoolName for SQL Server: $SqlServerName"
     New-AzSqlElasticPool -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -ElasticPoolName $ElasticPoolName -Edition "Basic" -Dtu 50 
 }
 For ($i=1; $i -lt  $TestDatabaseCount+1; $i++) 
@@ -67,7 +71,12 @@ For ($i=1; $i -lt  $TestDatabaseCount+1; $i++)
     $dbNumber = $DatabaseNameRoot + $i.ToString("000")
     if($null -eq (Get-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -DatabaseName $dbNumber -ErrorAction SilentlyContinue))
     {
+        Write-Host "Creating database: $dbNumber"
         New-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -ElasticPoolName $ElasticPoolName -DatabaseName $dbNumber
+    }
+    else 
+    {
+        Write-Host "Database already exists: $dbNumber"
     }
 }
 
@@ -89,6 +98,7 @@ if( (Test-Path $outputDbConfigFile) -eq $True)
     Remove-Item $outputDbConfigFile
 }
 
+Write-Host "Creating database config file for unit testing: $outputDbConfigFile "
 foreach($db in $dbs)
 {
     if($db.DatabaseName -ne "master")
@@ -104,4 +114,5 @@ $SubscriptionId = (Get-AzContext).Subscription.Id
 
 #update the settings file with the SQL UserName and Password
 $tmpPath = Resolve-Path "..\..\src\TestConfig\settingsfile.json"
+Write-Output "Saving settings file to $tmpPath"
 ./..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent

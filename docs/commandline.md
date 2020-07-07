@@ -27,6 +27,7 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 - `getdifference` - Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between --database and --golddatabase. Only supports Windows Auth
 - `synchronize` - Performs a database synchronization between between --database and --golddatabase. Can only be used for Windows Auth database targets
 - `scriptextract` - Extract a SBM package from a source --platinumdacpac
+- `dacpac` - Create a DACPAC file from the source --database and --server
 
 ### Batch sub-commands (`sbm batch [command]`)
 - `savesettings` - Save a settings json file for Batch arguments (see Batch documentation)

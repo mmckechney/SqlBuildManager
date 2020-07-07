@@ -9,6 +9,7 @@
 - *UPDATED:* Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not
 - *ADDED:* Shortened command line executable name `sbm.exe` leveraging the [System.CommmandLine](https://github.com/dotnet/command-line-api) command pattern and validation (`sbm [command] [options]`).
       The old executable (`SqlBuildManager.Console.exe`) with the prior pattern of `/Action=verb` is still supported is still available
+- **NOTE:** The CLI and core UI components of the app have been throroughly tested. Some ancillary UI pieces have not. If you find an issue, please log it in GitHub
 
 ### Version 11.0.0
 
