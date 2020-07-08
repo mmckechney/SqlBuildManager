@@ -83,7 +83,10 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    if (!workingDirectory.EndsWith(@"\")) workingDirectory = workingDirectory + @"\";
+                    if (!workingDirectory.EndsWith(@"\") && !workingDirectory.EndsWith(@"/"))
+                    {
+                        workingDirectory = workingDirectory + @"/";
+                    }
                     projectFilePath = workingDirectory;
                     log.DebugFormat("ExtractSqlBuildZipFile projectFilePath set to: {0}", projectFilePath);
                 }
@@ -279,7 +282,10 @@ namespace SqlSync.SqlBuild
 
             ArrayList alFiles = new ArrayList();
             //Write the latest to the project dataset file
-            if(!projFilePath.EndsWith(@"\")) projFilePath = projFilePath + @"\";
+            if (!projFilePath.EndsWith(@"\") && !projFilePath.EndsWith(@"/"))
+            {
+                projFilePath = projFilePath + @"/";
+            }
             if (projData != null)
                 projData.WriteXml(projFilePath + XmlFileNames.MainProjectFile);
             else
@@ -339,13 +345,13 @@ namespace SqlSync.SqlBuild
             string tmpDir = string.Empty;
             try
             {
-                tmpDir = Path.GetDirectoryName(fileName)+@"\" + Guid.NewGuid().ToString();
+                tmpDir = Path.GetDirectoryName(fileName)+@"/" + Guid.NewGuid().ToString();
                 Directory.CreateDirectory(tmpDir);
 
                 string tmpZipShortName = "~" + Path.GetFileName(fileName);
-                string tmpProjectFileName = tmpDir + @"\" + XmlFileNames.MainProjectFile;
+                string tmpProjectFileName = tmpDir + @"/" + XmlFileNames.MainProjectFile;
 
-                string tmpZipFullName = tmpDir + @"\" + tmpZipShortName;
+                string tmpZipFullName = tmpDir + @"/" + tmpZipShortName;
                 File.Copy(fileName, tmpZipFullName);
 
                 string result;
@@ -404,7 +410,7 @@ namespace SqlSync.SqlBuild
 		public static void SaveSqlBuildProjectFile(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName)
 		{
 			buildData.WriteXml(projFileName);
-			PackageProjectFileIntoZip(buildData,Path.GetDirectoryName(projFileName)+@"\", buildZipFileName);
+			PackageProjectFileIntoZip(buildData,Path.GetDirectoryName(projFileName)+@"/", buildZipFileName);
 		}
 
         public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout)
@@ -422,7 +428,7 @@ namespace SqlSync.SqlBuild
             try
             {
                 SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-                string projFileName = directory + @"\" + XmlFileNames.MainProjectFile;
+                string projFileName = directory + @"/" + XmlFileNames.MainProjectFile;
                 int i = 0;
                 foreach (string file in fileNames)
                 {
@@ -510,7 +516,7 @@ namespace SqlSync.SqlBuild
         }
         public static string PackageSbxFileIntoSbmFile(string sbxBuildControlFileName)
         {
-            string sbmProjectFileName = Path.GetDirectoryName(sbxBuildControlFileName) + @"\"+ Path.GetFileNameWithoutExtension(sbxBuildControlFileName) + ".sbm";
+            string sbmProjectFileName = Path.GetDirectoryName(sbxBuildControlFileName) + @"/"+ Path.GetFileNameWithoutExtension(sbxBuildControlFileName) + ".sbm";
             if (PackageSbxFileIntoSbmFile(sbxBuildControlFileName, sbmProjectFileName))
                 return sbmProjectFileName;
             else
@@ -541,7 +547,7 @@ namespace SqlSync.SqlBuild
                 }
               
                 bool copied = false;
-                string path = Path.GetDirectoryName(sbxBuildControlFileName) + @"\";
+                string path = Path.GetDirectoryName(sbxBuildControlFileName) + @"/";
 
                 //Just in case that file already exists...
                 if (File.Exists(path + XmlFileNames.MainProjectFile))
@@ -618,7 +624,7 @@ namespace SqlSync.SqlBuild
             {
                 try
                 {
-                    fileName = Path.GetDirectoryName(projFileName) + @"\" + rows[i].FileName;
+                    fileName = Path.GetDirectoryName(projFileName) + @"/" + rows[i].FileName;
                     buildData.Script.RemoveScriptRow(rows[i]);
                     if (deleteFiles)
                         File.Delete(fileName);
@@ -719,11 +725,11 @@ namespace SqlSync.SqlBuild
             string executablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string defaultScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile);
 
-            string fullScriptPath = defaultScriptPath + @"\" + defaultScript.ScriptName;
+            string fullScriptPath = defaultScriptPath + @"/" + defaultScript.ScriptName;
             if (File.Exists(fullScriptPath) == false)
                 return DefaultScriptCopyStatus.DefaultNotFound;
 
-            string newLocalFile = Path.GetDirectoryName(projFileName) + @"\" + defaultScript.ScriptName;
+            string newLocalFile = Path.GetDirectoryName(projFileName) + @"/" + defaultScript.ScriptName;
 
             if (File.Exists(newLocalFile))
             {
@@ -797,7 +803,7 @@ namespace SqlSync.SqlBuild
 			string line = string.Empty;
 
 			//Open the populate script file
-			string localFile = Path.GetDirectoryName(projFileName)+@"\"+Path.GetFileName(baseFileName);
+			string localFile = Path.GetDirectoryName(projFileName)+@"/"+Path.GetFileName(baseFileName);
 			if(File.Exists(localFile) == false)
 				return null;
 
@@ -828,7 +834,7 @@ namespace SqlSync.SqlBuild
 						string fullquery = string.Empty;
 						while((queryLine = sr.ReadLine().Trim()) != "*/")
 						{
-							fullquery += queryLine+"\r\n";
+							fullquery += queryLine+ System.Environment.NewLine;
 						}
 						codeTableUpdate.Query = fullquery;
 						keepReading = false;
@@ -887,7 +893,7 @@ namespace SqlSync.SqlBuild
 		{
 			string line = string.Empty;
 			//Open the populate script file
-			string localFile = Path.GetDirectoryName(projFileName)+@"\"+Path.GetFileName(baseFilename);
+			string localFile = Path.GetDirectoryName(projFileName)+@"/"+Path.GetFileName(baseFilename);
 			if(File.Exists(localFile) == false)
 				return null;
 
@@ -946,7 +952,7 @@ namespace SqlSync.SqlBuild
 				{
 					try
 					{
-						File.Delete(basePath +@"\"+logFileName[i]);
+						File.Delete(basePath +@"/"+logFileName[i]);
 					}
 					catch{}
 				}
@@ -1028,7 +1034,11 @@ namespace SqlSync.SqlBuild
 	        
             if (buildData != null && !string.IsNullOrEmpty((projectFileExtractionPath)))
             {
-                if (!projectFileExtractionPath.EndsWith(@"\'")) projectFileExtractionPath = projectFileExtractionPath + @"\"; 
+                if (!projectFileExtractionPath.EndsWith(@"\") && !projectFileExtractionPath.EndsWith(@"/"))
+
+                {
+                    projectFileExtractionPath = projectFileExtractionPath + @"/";
+                }
 
                 IEnumerable<SqlSyncBuildData.ScriptRow> row = from x in buildData.Script.AsEnumerable()
                                                               orderby x.BuildOrder ascending
@@ -1382,9 +1392,9 @@ namespace SqlSync.SqlBuild
 						sb.Append(batch[j]+"\r\n");
 	
 					if(includeSequence)
-						fileName = destinationFolder+@"\"+(i+1).ToString().PadLeft(3,'0')+" "+row.FileName;
+						fileName = destinationFolder+@"/"+(i+1).ToString().PadLeft(3,'0')+" "+row.FileName;
 					else
-						fileName = destinationFolder+@"\"+row.FileName;
+						fileName = destinationFolder+@"/"+row.FileName;
 
 					
 					using(StreamWriter sw = File.CreateText(fileName))
@@ -1600,7 +1610,7 @@ namespace SqlSync.SqlBuild
                 {
                     CleanUpAndDeleteWorkingDirectory(workingDirectory);
                     string tmpDir = System.IO.Path.GetTempPath();
-                    workingDirectory = tmpDir + @"Sqlsync-" + System.Guid.NewGuid().ToString().Replace("-", "") + @"\";
+                    workingDirectory = tmpDir + @"Sqlsync-" + System.Guid.NewGuid().ToString().Replace("-", "") + @"/";
                 }
 
                 projectFilePath = workingDirectory;

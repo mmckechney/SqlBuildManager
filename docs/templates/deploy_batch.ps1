@@ -49,14 +49,7 @@ param(
  $deploymentName = "batchdeploy",
 
  [string]
- $templateFile = "azuredeploy.json",
-
- [string]
- $parametersFilePath = "azuredeploy.parameters.json",
-
- [string]
- $applicationId  = "SqlBuildManager"
-
+ $templateFile = "azuredeploy.json"
 
 )
 
@@ -73,25 +66,39 @@ Function RegisterRP {
     Register-AzResourceProvider -ProviderNamespace $ResourceProviderNamespace -ErrorAction SilentlyContinue
 }
 
-#Build the solution, publish and create zip file for uploading to Azure Batch
-dotnet restore "..\..\src\sqlsync.sln" 
-dotnet build "..\..\src\sqlsync.sln" --configuration Debug
-dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r win-x64 --configuration Debug
-
-$source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\win-x64\publish"
-$buildOutputZip = "$(Resolve-Path "..\..\src\TestConfig")\sbm.zip"
-Add-Type -AssemblyName "system.io.compression.filesystem"
-If(Test-path $buildOutputZip) {Remove-item $buildOutputZip}
-[io.compression.zipfile]::CreateFromDirectory($source,$buildOutputZip)
-
-$version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion
-
-
 
 #******************************************************************************
 # Script body
 # Execution begins here
 #******************************************************************************
+
+$applicationIdWindows  = "SqlBuildManager"
+$applicationIdLinux  = "SqlBuildManagerLinux"
+
+#Build the solution, publish and create zip file for uploading to Azure Batch
+dotnet restore "..\..\src\sqlsync.sln" 
+dotnet build "..\..\src\sqlsync.sln" --configuration Debug
+
+#Zip release for Windows 
+dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r win-x64 --configuration Debug
+$source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\win-x64\publish"
+$buildOutputZipWindows = "$(Resolve-Path "..\..\src\TestConfig")\sbm.zip"
+Add-Type -AssemblyName "system.io.compression.filesystem"
+If(Test-path $buildOutputZipWindows) {Remove-item $buildOutputZipWindows}
+[io.compression.zipfile]::CreateFromDirectory($source,$buildOutputZipWindows)
+
+#Get version for Batch application
+$version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion
+
+#Zip release for Linux 
+dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r linux-x64 --configuration Debug
+$source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\linux-x64\publish"
+$buildOutputZipLinux = "$(Resolve-Path "..\..\src\TestConfig")\sbm-linux.zip"
+Add-Type -AssemblyName "system.io.compression.filesystem"
+If(Test-path $buildOutputZipLinux) {Remove-item $buildOutputZipLinux}
+[io.compression.zipfile]::CreateFromDirectory($source,$buildOutputZipLinux)
+
+
 $ErrorActionPreference = "Stop"
 
 # sign in
@@ -141,19 +148,36 @@ else{
 # Start the deployment
 Write-Host "Starting deployment...";
 
+Write-Host "Creating batch, storage and eventhub accounts...";
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateFile $templateFile -TemplateParameterObject $params
     #New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateFile $templateFile;
 
-#Create the application
-Write-Host "Creating new Azure Batch Application named $applicationId"
-New-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationId
+
+####
+# Create the Windows application
+####
+Write-Host "Creating new Azure Batch Application named $applicationIdWindows"
+New-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationIdWindows
 
 #Add the package 
 Write-Host "Uploading application package to Azure Batch account"
-New-AzBatchApplicationPackage -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationId -ApplicationVersion $version -Format zip -FilePath $buildOutputZip
+New-AzBatchApplicationPackage -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationIdWindows -ApplicationVersion $version -Format zip -FilePath $buildOutputZipWindows
 
 Write-Host "Setting default application version to $version"
-Set-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationId -DefaultVersion $version
+Set-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationIdWindows -DefaultVersion $version
+
+####
+# Create the Linux application
+####
+Write-Host "Creating new Azure Batch Application named $applicationIdLinux"
+New-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationIdLinux
+
+#Add the package 
+Write-Host "Uploading application package to Azure Batch account"
+New-AzBatchApplicationPackage -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationIdLinux -ApplicationVersion $version -Format zip -FilePath $buildOutputZipLinux
+
+Write-Host "Setting default application version to $version"
+Set-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $applicationIdLinux -DefaultVersion $version
 
 
 $batch = Get-AzBatchAccountKey -AccountName $batchAcctName -ResourceGroupName $resourceGroupName
@@ -164,7 +188,7 @@ $s = Get-AzStorageAccountKey -Name $storageAcctName -ResourceGroupName $resource
 
 $e = Get-AzEventHubKey -ResourceGroupName $resourceGroupName -NamespaceName $namespaceName -EventHubName $eventHubName -AuthorizationRuleName batchbuilder
 
-$settingsFile = [PSCustomObject]@{
+$settingsFileWindows = [PSCustomObject]@{
     AuthenticationArgs = @{
         UserName = ""
         Password = ""
@@ -181,6 +205,31 @@ $settingsFile = [PSCustomObject]@{
         DeleteBatchJob = $false
         PollBatchPoolStatus = $True
         EventHubConnectionString = "$($e.PrimaryConnectionString)"
+        BatchPoolOs = "Windows"
+    }
+    RootLoggingPath = "C:\temp"
+    TimeoutRetryCount = 0
+    DefaultScriptTimeout = 500
+}
+
+$settingsFileLinux= [PSCustomObject]@{
+    AuthenticationArgs = @{
+        UserName = ""
+        Password = ""
+    }
+    BatchArgs = @{
+        BatchNodeCount = "2"
+        BatchAccountName = $batchAcctName
+        BatchAccountKey = "$($batch.PrimaryAccountKey)"
+        BatchAccountUrl = "https://$($t.AccountEndpoint)"
+        StorageAccountName = $storageAcctName
+        StorageAccountKey = "$($s.Value[0])"
+        BatchVmSize=  "STANDARD_DS1_V2"
+        DeleteBatchPool = $false
+        DeleteBatchJob = $false
+        PollBatchPoolStatus = $True
+        EventHubConnectionString = "$($e.PrimaryConnectionString)"
+        BatchPoolOs = "Windows"
     }
     RootLoggingPath = "C:\temp"
     TimeoutRetryCount = 0
@@ -190,8 +239,11 @@ $settingsFile = [PSCustomObject]@{
 Write-Host "Saving EventHub Connection string to environment variable"
 [System.Environment]::SetEnvironmentVariable("AzureEventHubAppenderConnectionString", "$($e.PrimaryConnectionString)",[System.EnvironmentVariableTarget]::User)
 
-$settingsFile | ConvertTo-Json | Set-Content -Path "..\..\src\TestConfig\settingsfile.json"
+$settingsFileWindows | ConvertTo-Json | Set-Content -Path "..\..\src\TestConfig\settingsfile.json"
 Write-Host "Saved settings file to " + Resolve-Path "..\..\src\TestConfig\settingsfile.json"
+
+$settingsFileWindows | ConvertTo-Json | Set-Content -Path "..\..\src\TestConfig\settingsfile-linux.json"
+Write-Host "Saved settings file to " + Resolve-Path "..\..\src\TestConfig\settingsfile-linux.json"
 
 Write-Host "Pre-populated command line arguments. Record these for use later: "
 Write-Host ""

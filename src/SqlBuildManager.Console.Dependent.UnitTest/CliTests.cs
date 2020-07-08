@@ -111,7 +111,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         string StandardExecutionErrorMessage()
         {
-            return this.error + "\r\n" + this.output + "\r\n" + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
+            return this.error + System.Environment.NewLine + this.output + System.Environment.NewLine + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
         }
         private string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
         {

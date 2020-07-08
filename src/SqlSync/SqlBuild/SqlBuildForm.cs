@@ -809,7 +809,7 @@ namespace SqlSync.SqlBuild
                         File.SetAttributes(fileName, FileAttributes.Normal);
                         if (fileName.EndsWith(".sbx", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            string xml = Path.GetDirectoryName(fileName) + @"\SqlSyncBuildHistory.xml";
+                            string xml = Path.GetDirectoryName(fileName) + @"/SqlSyncBuildHistory.xml";
                             if(File.Exists(xml))
                                 File.SetAttributes(xml,FileAttributes.Normal);
                         }
@@ -823,7 +823,7 @@ namespace SqlSync.SqlBuild
                 }
                 else if (fileName.EndsWith(".sbx", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    string xml = Path.GetDirectoryName(fileName) + @"\SqlSyncBuildHistory.xml";
+                    string xml = Path.GetDirectoryName(fileName) + @"/SqlSyncBuildHistory.xml";
                     if (File.Exists(xml))
                     {
                         attrib = File.GetAttributes(xml);

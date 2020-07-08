@@ -241,6 +241,11 @@ namespace SqlSync.SqlBuild
         {
             set { BatchArgs.PollBatchPoolStatus = value; }
         }
+        [JsonIgnore]
+        public virtual OsType BatchPoolOs
+        {
+            set { BatchArgs.BatchPoolOs = value; }
+        }
         [Serializable]
         public class Batch
         {
@@ -260,6 +265,7 @@ namespace SqlSync.SqlBuild
             public string BatchJobName { get; set; } = null;
             public bool PollBatchPoolStatus { get; set; } = true;
             public string BatchPoolName { get; set; } = null;
+            public OsType BatchPoolOs { get; set; }
             public string EventHubConnectionString { get; set; } = string.Empty;
         }
         #endregion
@@ -361,6 +367,13 @@ namespace SqlSync.SqlBuild
         {
             return this.ToStringExtension(this.CliVersion, true);
         }
+    }
+
+    [Serializable]
+    public enum OsType
+    {
+        Windows,
+        Linux
     }
 
     public static class CommandLineExtensions

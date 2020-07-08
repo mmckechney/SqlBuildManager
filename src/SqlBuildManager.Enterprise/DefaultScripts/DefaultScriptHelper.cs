@@ -34,7 +34,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 return false;
             }
 
-            string localScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile) + @"\";
+            string localScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile) + @"/";
             foreach (sb.DefaultScript item in reg.Items)
             {
                 if (!ValidateLocalToEnterprise(localScriptPath + item.ScriptName, defaultReg.Path + item.ScriptName))

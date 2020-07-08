@@ -16,7 +16,7 @@ namespace SqlSync.Connection
             {
                 if (RegisteredServerHelper.resisteredServerFileName == string.Empty)
                 {
-                    string homePath = SqlBuildManager.Logging.Configure.AppDataPath + @"\";
+                    string homePath = SqlBuildManager.Logging.Configure.AppDataPath + @"/";
                     return homePath + "RegisteredServers.xml";
                 }
                 else

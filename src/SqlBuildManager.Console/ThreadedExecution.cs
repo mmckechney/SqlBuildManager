@@ -132,7 +132,7 @@ namespace SqlBuildManager.Console
 
             if(string.IsNullOrEmpty(cmdLine.RootLoggingPath))
             {
-                cmdLine.RootLoggingPath = @"C:\tmp-sqlbuildlogging";
+                cmdLine.RootLoggingPath = @"C:/tmp-sqlbuildlogging";
             }
 
             SetLoggingPaths(cmdLine.RootLoggingPath);
@@ -441,16 +441,16 @@ namespace SqlBuildManager.Console
                 if (!Directory.Exists(ThreadedExecution.rootLoggingPath))
                     Directory.CreateDirectory(ThreadedExecution.rootLoggingPath);
 
-                this.workingDirectory = ThreadedExecution.rootLoggingPath + @"\Working";
+                this.workingDirectory = ThreadedExecution.rootLoggingPath + @"/Working";
                 if (!Directory.Exists(this.workingDirectory))
                     Directory.CreateDirectory(this.workingDirectory);
 
-                this.logFileName = rootLoggingPath + @"\Execution.log";
-                this.successDatabaseConfigLogName = rootLoggingPath + @"\SuccessDatabases.cfg";
-                this.failureDatabaseConfigLogName = rootLoggingPath + @"\FailureDatabases.cfg";
+                this.logFileName = rootLoggingPath + @"/Execution.log";
+                this.successDatabaseConfigLogName = rootLoggingPath + @"/SuccessDatabases.cfg";
+                this.failureDatabaseConfigLogName = rootLoggingPath + @"/FailureDatabases.cfg";
 
-                this.errorFileName = rootLoggingPath + @"\Errors.log";
-                this.commitLogName = rootLoggingPath + @"\Commits.log";
+                this.errorFileName = rootLoggingPath + @"/Errors.log";
+                this.commitLogName = rootLoggingPath + @"/Commits.log";
    
             }
             catch (Exception exe)
@@ -503,8 +503,8 @@ namespace SqlBuildManager.Console
         {
             log.Info("Constructing build file from script directory");
             string shortFileName = string.Empty;
-            ThreadedExecution.buildZipFileName = ThreadedExecution.rootLoggingPath +"\\"+ ThreadedExecution.RunID +".sbm";
-            string projFileName = this.workingDirectory + @"\"+SqlSync.SqlBuild.XmlFileNames.MainProjectFile;
+            ThreadedExecution.buildZipFileName = ThreadedExecution.rootLoggingPath +"/"+ ThreadedExecution.RunID +".sbm";
+            string projFileName = this.workingDirectory + @"/"+SqlSync.SqlBuild.XmlFileNames.MainProjectFile;
             SqlSyncBuildData localBuildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
             List<string> fileList = new List<string>(Directory.GetFiles(directoryName, "*.sql", SearchOption.TopDirectoryOnly));
             fileList.Sort();
@@ -512,7 +512,7 @@ namespace SqlBuildManager.Console
             for (int i = 0; i < fileList.Count; i++)
             {
                 shortFileName = Path.GetFileName(fileList[i]);
-                File.Copy(fileList[i], this.workingDirectory + @"\"+ shortFileName,true);
+                File.Copy(fileList[i], this.workingDirectory + @"/"+ shortFileName,true);
 
                 SqlBuildFileHelper.AddScriptFileToBuild(ref localBuildData,
                     projFileName,
@@ -526,7 +526,7 @@ namespace SqlBuildManager.Console
                     ThreadedExecution.buildZipFileName,
                     ((i<fileList.Count-1)? false : true),
                     false,
-                    System.Environment.UserDomainName +@"\"+ System.Environment.UserName,
+                    System.Environment.UserDomainName +@"/"+ System.Environment.UserName,
                     20,
                     "");
             }
@@ -539,7 +539,7 @@ namespace SqlBuildManager.Console
             string initLog = string.Empty;
             if (!haveWrittenToCommit || !haveWrittenToError)
             {
-                initLog = "[" + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff") + "]\t\t***Log for Run ID:" + ThreadedExecution.RunID + "\r\n";
+                initLog = "[" + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff") + "]\t\t***Log for Run ID:" + ThreadedExecution.RunID + System.Environment.NewLine;
             }
             string log = string.Empty;
             for (int i = 0; i < message.Length; i++)

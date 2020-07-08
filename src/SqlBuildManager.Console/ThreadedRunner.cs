@@ -132,7 +132,7 @@ namespace SqlBuildManager.Console
             DoWorkEventArgs e = null;
             SqlBuildRunData runData = new SqlBuildRunData();
             string targetDatabase = overrides[0].OverrideDbTarget;
-            string loggingDirectory = ThreadedExecution.RootLoggingPath + @"\" + server + @"\" + targetDatabase + @"\";
+            string loggingDirectory = ThreadedExecution.RootLoggingPath + @"/" + server + @"/" + targetDatabase + @"/";
             try
             {
                  //Start setting properties on the object that contains the run configuration data.
@@ -214,7 +214,7 @@ namespace SqlBuildManager.Console
                 connData.AuthenticationType = this.cmdArgs.AuthenticationArgs.AuthenticationType;
 
                 //Set the log file name
-                string logFile = loggingDirectory + @"\ExecutionLog.log";
+                string logFile = loggingDirectory + @"/ExecutionLog.log";
 
                 //Create the objects that will handle the event communication back.
                 bg = new BackgroundWorker();

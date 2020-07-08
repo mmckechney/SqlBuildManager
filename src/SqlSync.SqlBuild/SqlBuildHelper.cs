@@ -238,7 +238,7 @@ namespace SqlSync.SqlBuild
             this.buildDescription = runData.BuildDescription;
             this.startIndex = runData.StartIndex;
             this.projectFileName = runData.ProjectFileName;
-            this.projectFilePath = Path.GetDirectoryName(this.projectFileName) + @"\";
+            this.projectFilePath = Path.GetDirectoryName(this.projectFileName) + @"/";
             this.isTrialBuild = runData.IsTrial;
             this.runItemIndexes = runData.RunItemIndexes;
             this.runScriptOnly = runData.RunScriptOnly;
