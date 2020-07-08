@@ -75,6 +75,7 @@ namespace SqlBuildManager.Enterprise
             string configuration = string.Empty;
             try
             {
+                configPath = Path.GetFullPath(configPath);
                 System.Net.WebRequest req = System.Net.WebRequest.Create(configPath);
                 req.Proxy = System.Net.WebRequest.DefaultWebProxy;
                 req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;

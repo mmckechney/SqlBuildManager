@@ -22,53 +22,53 @@ jobs:
       with:
         dotnet-version: 3.1.101
 
-    - name: Set build config variable
-      run: "::set-env name=BUILD_CONFIG::Release"        
+    #- name: Set build config variable
+    #  run: echo "::set-env name=BUILD_CONFIG::Release"        
 
     - name: Restore dependencies
       run: dotnet restore ./src/sqlsync.sln
 
     - name: Build Main Solution
-      run: dotnet build ./src/sqlsync.sln --configuration $BUILD_CONFIG --no-restore
+      run: dotnet build ./src/sqlsync.sln --configuration Release --no-restore
 
     - name: Run SqlBuildManager.Console.UnitTest
-      run: dotnet test ./src/SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --configuration $BUILD_CONFIG
+      run: dotnet test ./src/SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --configuration Release
 
     - name: Run SqlBuildManager.Enterprise.UnitTest
-      run: dotnet test ./src/SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --configuration $BUILD_CONFIG
+      run: dotnet test ./src/SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --configuration Release
 
     - name: Run SqlBuildManager.ScriptHandling.UnitTest
-      run: dotnet test ./src/SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj --configuration $BUILD_CONFIG
+      run: dotnet test ./src/SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj --configuration Release
 
     - name: Run SqlSync.Connection.UnitTest
-      run: dotnet test ./src/SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --configuration $BUILD_CONFIG
+      run: dotnet test ./src/SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --configuration Release
 
     - name: Run SqlSync.ObjectScript.UnitTest
-      run: dotnet test ./src/SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --configuration $BUILD_CONFIG
+      run: dotnet test ./src/SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --configuration Release
 
     - name: Run SqlSync.SqlBuild.UnitTest
-      run: dotnet test ./src/SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --configuration $BUILD_CONFIG
+      run: dotnet test ./src/SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --configuration Release
 
     - name: Publish the Windows desktop app
-      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration $BUILD_CONFIG
+      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release
 
     - name: Publish the legacy Console CLI desktop app
-      run: dotnet publish ./src/SqlBuildManager.Console/SqlBuildManager.Console.csproj -r win-x64 --configuration $BUILD_CONFIG
+      run: dotnet publish ./src/SqlBuildManager.Console/SqlBuildManager.Console.csproj -r win-x64 --configuration Release
 
     - name: Publish the new Console CLI desktop app
-      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration $BUILD_CONFIG
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
         name: SqlBuildManager CLI
-        path: "./src/SqlBuildManager.Console/bin/$BUILD_CONFIG/netcoreapp3.1/win-x64/publish"
+        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish"
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
         name: SqlBuildManager Desktop
-        path: "./src/SqlSync/bin/$BUILD_CONFIG/netcoreapp3.1/win-x64/publish"        
+        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"        
 
 
     

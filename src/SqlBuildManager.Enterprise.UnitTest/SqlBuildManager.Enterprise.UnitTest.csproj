@@ -34,4 +34,17 @@
     <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" />
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="EnterpriseConfiguration.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+
+  <!-- START: This is a buildtime work around for https://github.com/dotnet/corefx/issues/22101 -->
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="App.config" DestinationFiles="$(OutDir)\testhost.dll.config" />
+  </Target>
+  <!-- END: This is a buildtime work around for https://github.com/dotnet/corefx/issues/22101 -->
 </Project>
