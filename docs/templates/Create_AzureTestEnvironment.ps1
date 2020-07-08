@@ -116,3 +116,9 @@ $SubscriptionId = (Get-AzContext).Subscription.Id
 $tmpPath = Resolve-Path "..\..\src\TestConfig\settingsfile.json"
 Write-Output "Saving settings file to $tmpPath"
 ./..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent
+
+
+#update the Linux settings file with the SQL UserName and Password
+$tmpPath = Resolve-Path "..\..\src\TestConfig\settingsfile-linux.json"
+Write-Output "Saving settings file to $tmpPath"
+./..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --BatchPoolOs Linux
