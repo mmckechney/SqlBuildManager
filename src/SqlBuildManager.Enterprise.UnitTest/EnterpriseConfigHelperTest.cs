@@ -16,30 +16,12 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for EnterpriseConfig
         ///</summary>
         [TestMethod()]
-        public void EnterpriseConfigTest()
+        public void EnterpriseConfigTest_NullConfig()
         {
             EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.EnterpriseConfig;
-            Assert.AreEqual(1, actual.TableWatch.Length);
-            Assert.AreEqual(2, actual.TableWatch[0].Notify.Length);
-            Assert.AreEqual(2, actual.TableWatch[0].Table.Length);
-
-        }
-
-
-        /// <summary>
-        ///A test for EnterpriseConfig
-        ///</summary>
-        [TestMethod()]
-        public void EnterpriseConfigTest_NullConfig()
-        {
-            EnterpriseConfigHelper.EnterpriseConfig = null;
-            EnterpriseConfiguration actual;
-            actual = EnterpriseConfigHelper.EnterpriseConfig;
-            Assert.AreEqual(1, actual.TableWatch.Length);
-            Assert.AreEqual(2, actual.TableWatch[0].Notify.Length);
-            Assert.AreEqual(2, actual.TableWatch[0].Table.Length);
+            Assert.IsNotNull(actual, "The Enterprise config object should have at least a default object value");
 
         }
 
@@ -49,6 +31,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LoadEnterpriseConfigurationTest_WithConfigPath()
         {
+            EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
             string configPath = System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"];
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.LoadEnterpriseConfiguration(configPath);
@@ -64,6 +47,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void LoadEnterpriseConfigurationTest_NoParameter()
         {
+            EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.LoadEnterpriseConfiguration();
             Assert.AreEqual(1, actual.TableWatch.Length);
