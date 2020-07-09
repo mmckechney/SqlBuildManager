@@ -32,10 +32,15 @@ param(
 
 )
 
+$outputPath = "..\..\src\TestConfig"
 $DatabaseNameRoot = "SqlBuildTest"
-$outputDbConfigFile = "..\..\src\TestConfig\databasetargets.cfg"
+$outputDbConfigFile = Join-Path $outputPath "databasetargets.cfg"
+$settingsJsonWindows = Join-Path $outputPath "settingsfile-windows.json"
+$settingsJsonLinux = Join-Path $outputPath "settingsfile-linux.json"
+
 
 # Create the resource Group for your test resources
+Write-Host "Creating Resourcegroup : $ResourceGroupName"
 if($null -eq (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName -Location $Location -ErrorAction SilentlyContinue))
 {
     New-AzResourceGroup  -ResourceGroupName $ResourceGroupName -Location $Location 
@@ -110,16 +115,16 @@ foreach($db in $dbs)
 
 ##Now create the batch 
 $SubscriptionId = (Get-AzContext).Subscription.Id
-./deploy_batch.ps1 -subscriptionId $SubscriptionId -resourceGroupName $ResourceGroupName -resourceGroupLocation $Location -batchprefix $batchprefix
+./deploy_batch.ps1 -subscriptionId $SubscriptionId -resourceGroupName $ResourceGroupName -resourceGroupLocation $Location -batchprefix $batchprefix -outputpath $outputPath
 
 #update the settings file with the SQL UserName and Password
-$tmpPath = Resolve-Path "..\..\src\TestConfig\settingsfile.json"
+$tmpPath = Resolve-Path $settingsJsonWindows
 Write-Output "Saving settings file to $tmpPath"
 ./..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent
 
 
 #update the Linux settings file with the SQL UserName and Password
-$tmpPath = Resolve-Path "..\..\src\TestConfig\settingsfile-linux.json"
+$tmpPath = Resolve-Path $settingsJsonLinux
 Write-Output "Saving settings file to $tmpPath"
 ./..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux
 

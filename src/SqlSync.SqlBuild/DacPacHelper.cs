@@ -209,42 +209,63 @@ namespace SqlSync.SqlBuild
                 return string.Empty;
             }
         }
+        /// <summary>
+        /// Tries to eliminate the header information that the DACPAC tooling adds 
+        /// </summary>
+        /// <param name="dacPacGeneratedScript"></param>
+        /// <param name="cleanedScript"></param>
+        /// <returns></returns>
         internal static DacpacDeltasStatus CleanDacPacScript(string dacPacGeneratedScript, out string cleanedScript)
         {
-            cleanedScript = string.Empty;
+            cleanedScript = dacPacGeneratedScript;
 
-            string matchString = Regex.Escape(@"USE [$(DatabaseName)];");
-            MatchCollection useMatches = Regex.Matches(dacPacGeneratedScript, matchString);
-            var lastMatch = useMatches.Cast<Match>().Select(m => m.Index).LastOrDefault();
+            //string matchString = Regex.Escape(@"USE [$(DatabaseName)];");
+            //MatchCollection useMatches = Regex.Matches(dacPacGeneratedScript, matchString);
+            //var lastMatch = useMatches.Cast<Match>().Select(m => m.Index).LastOrDefault();
 
 
-            if(lastMatch == -1) //Odd, there should be something, but oh well...
+            //if(lastMatch == -1) //Odd, there should be something, but oh well...
+            //{
+            //    return DacpacDeltasStatus.InSync;
+            //}
+
+            ////Get rid of the SQLCMD header scripts
+            //if (useMatches.Count < 3)
+            //{
+            //    int crAfter = dacPacGeneratedScript.IndexOf("GO", lastMatch);
+            //    cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
+            //}else
+            //{
+            //    int crAfter = dacPacGeneratedScript.IndexOf("GO", useMatches[1].Index);
+            //    cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
+            //    cleanedScript = cleanedScript.Replace("USE [$(DatabaseName)];", "--USE [$(DatabaseName)];");
+            //}
+
+            //string loginString = @"(CREATE USER)|(CREATE LOGIN)|(REVOKE CONNECT)|(EXECUTE sp_addrolemember)";
+            //while(Regex.Match(cleanedScript,loginString).Success)
+            //{
+            //    var mLogin = Regex.Matches(cleanedScript, loginString).Cast<Match>().Select(m => m.Index).FirstOrDefault();
+            //    int crAfter = cleanedScript.IndexOf("GO", mLogin);
+            //    cleanedScript = cleanedScript.Substring(0, mLogin) + cleanedScript.Substring(crAfter + 2);
+            //}
+
+            string endofHeader = Regex.Escape(@"Please run the below section of statements against the database");
+            MatchCollection endMatchs = Regex.Matches(dacPacGeneratedScript, endofHeader);
+            var endMatch = endMatchs.Cast<Match>().Select(m => m.Index).LastOrDefault();
+            if(endMatch == -1) //Odd, there should be something, but oh well...
             {
                 return DacpacDeltasStatus.InSync;
             }
+            else
+            {
+                var endOfLineIndex = cleanedScript.IndexOf("\n", endMatch);
+                cleanedScript = cleanedScript.Substring(endOfLineIndex + 1);
+               // var lineNumber = dacPacGeneratedScript.Take(endMatch).Count(c => c == '\n') + 1;
 
-            //Get rid of the SQLCMD header scripts
-            if (useMatches.Count < 3)
-            {
-                int crAfter = dacPacGeneratedScript.IndexOf("GO", lastMatch);
-                cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
-            }else
-            {
-                int crAfter = dacPacGeneratedScript.IndexOf("GO", useMatches[1].Index);
-                cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
-                cleanedScript = cleanedScript.Replace("USE [$(DatabaseName)];", "--USE [$(DatabaseName)];");
             }
 
-            string loginString = @"(CREATE USER)|(CREATE LOGIN)|(REVOKE CONNECT)|(EXECUTE sp_addrolemember)";
-            while(Regex.Match(cleanedScript,loginString).Success)
-            {
-                var mLogin = Regex.Matches(cleanedScript, loginString).Cast<Match>().Select(m => m.Index).FirstOrDefault();
-                int crAfter = cleanedScript.IndexOf("GO", mLogin);
-                cleanedScript = cleanedScript.Substring(0, mLogin) + cleanedScript.Substring(crAfter + 2);
-            }
-          
             //Look for the "Post-Deployment Script Template"
-            matchString = Regex.Escape(@"Post-Deployment Script Template");
+            string matchString = Regex.Escape(@"Post-Deployment Script Template");
             var postDeploy = Regex.Match(cleanedScript,matchString);
             if(postDeploy.Success)
             {

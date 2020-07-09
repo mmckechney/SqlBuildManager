@@ -207,6 +207,10 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<OsType>("batchpoolos")
                 };
+                var batchApplicationOption = new Option(new string[] { "--apppackage", "--applicationpackage" }, "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux")
+                {
+                    Argument = new Argument<OsType>("batchapplicationpackage")
+                };
                 var eventhubconnectionOption = new Option(new string[] { "--eventhubconnection" }, "Event Hub connection string for Event Hub logging of batch execution")
                 {
                     Argument = new Argument<string>("eventhubconnection")
@@ -271,7 +275,8 @@ namespace SqlBuildManager.Console
                     batchnodecountOption,
                     batchvmsizeOption,
                     batchpoolOsOption,
-                    batchpoolnameOption
+                    batchpoolnameOption,
+                    batchApplicationOption
                 };
                 List<Option> generalBatchExecutionOptions = new List<Option>()
                 {
