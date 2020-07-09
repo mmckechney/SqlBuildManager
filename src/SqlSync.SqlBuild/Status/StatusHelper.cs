@@ -30,7 +30,7 @@ namespace SqlSync.SqlBuild.Status
             // preRun = (committedScriptView.Find(row.ScriptId) > -1 || helper.HasBlockingSqlLog(new Guid(row.ScriptId), this.data, targetDatabase, out scriptHash, out scriptTextHash) == true);
             preRun = (SqlBuildHelper.HasBlockingSqlLog(new Guid(row.ScriptId), connData, targetDatabase, out scriptHash, out scriptTextHash, out commitDate) == true);
             //Check that the file exists
-            if (!File.Exists(projectFilePath + row.FileName))
+            if (!File.Exists(Path.Combine(projectFilePath, row.FileName))) ;
                 return ScriptStatusType.FileMissing;
 
             //Get the latest hash from the Db only (don't care if the build file is out of date!)
@@ -47,7 +47,7 @@ namespace SqlSync.SqlBuild.Status
                 {
                     string fileTextHash;
                     string fileHash;
-                    SqlBuildFileHelper.GetSHA1Hash(projectFilePath + row.FileName, out fileHash, out fileTextHash, row.StripTransactionText);
+                    SqlBuildFileHelper.GetSHA1Hash(Path.Combine(projectFilePath, row.FileName), out fileHash, out fileTextHash, row.StripTransactionText);
                     if (fileHash != scriptHash && fileTextHash != scriptHash && fileHash != scriptTextHash && fileTextHash != scriptTextHash)
                     {
                         if (fileHash == SqlBuildFileHelper.FileMissing)

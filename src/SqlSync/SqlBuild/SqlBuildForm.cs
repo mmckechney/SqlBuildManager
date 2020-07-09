@@ -793,7 +793,6 @@ namespace SqlSync.SqlBuild
         }
         private bool PassesReadOnlyProjectFileCheck(string fileName)
         {
-
             if (!String.IsNullOrEmpty(fileName))
             {
                 if(!File.Exists(fileName))
@@ -809,7 +808,7 @@ namespace SqlSync.SqlBuild
                         File.SetAttributes(fileName, FileAttributes.Normal);
                         if (fileName.EndsWith(".sbx", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            string xml = Path.GetDirectoryName(fileName) + @"/SqlSyncBuildHistory.xml";
+                            string xml = Path.Combine(Path.GetDirectoryName(fileName), "SqlSyncBuildHistory.xml");
                             if(File.Exists(xml))
                                 File.SetAttributes(xml,FileAttributes.Normal);
                         }
@@ -823,7 +822,7 @@ namespace SqlSync.SqlBuild
                 }
                 else if (fileName.EndsWith(".sbx", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    string xml = Path.GetDirectoryName(fileName) + @"/SqlSyncBuildHistory.xml";
+                    string xml = Path.Combine(Path.GetDirectoryName(fileName), "SqlSyncBuildHistory.xml");
                     if (File.Exists(xml))
                     {
                         attrib = File.GetAttributes(xml);
@@ -3794,7 +3793,7 @@ namespace SqlSync.SqlBuild
         private bool PackageExportIntoZip(SqlSyncBuildData exportData, string zipFileName)
         {
 
-            exportData.WriteXml(this.projectFilePath + XmlFileNames.ExportFile);
+            exportData.WriteXml(Path.Combine(this.projectFilePath, XmlFileNames.ExportFile));;
 
             string[] fileList = new string[exportData.Script.Rows.Count + 1];
             for (int i = 0; i < exportData.Script.Rows.Count; i++)
@@ -3803,7 +3802,7 @@ namespace SqlSync.SqlBuild
             }
             fileList[exportData.Script.Rows.Count] = XmlFileNames.ExportFile;
             bool val = ZipHelper.CreateZipPackage(fileList, this.projectFilePath, zipFileName);
-            File.Delete(this.projectFilePath + XmlFileNames.ExportFile);
+            File.Delete(Path.Combine(this.projectFilePath, XmlFileNames.ExportFile));
             return val;
 
         }
@@ -3813,7 +3812,7 @@ namespace SqlSync.SqlBuild
             double startBuildNumber = lastBuildNumber + 1;
             //bool haveImportedRows = false;
             string tmpDir = System.IO.Path.GetTempPath();
-            string workingDir = tmpDir + @"SqlsyncImport-" + System.Guid.NewGuid().ToString() + @"\";
+            string workingDir = Path.Combine(tmpDir, @"SqlsyncImport-" + System.Guid.NewGuid().ToString());
             if (Directory.Exists(workingDir) == false)
             {
                 Directory.CreateDirectory(workingDir);
@@ -3835,13 +3834,13 @@ namespace SqlSync.SqlBuild
                     string path = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
                     SchemaValidator validator = new SchemaValidator();
                     string importFileXml = string.Empty;
-                    if (File.Exists(workingDir + XmlFileNames.ExportFile))
+                    if (File.Exists(Path.Combine(workingDir, XmlFileNames.ExportFile)))
                     {
-                        importFileXml = workingDir + XmlFileNames.ExportFile;
+                        importFileXml = Path.Combine(workingDir, XmlFileNames.ExportFile);
                     }
-                    else if (File.Exists(workingDir + XmlFileNames.MainProjectFile))
+                    else if (File.Exists(Path.Combine(workingDir, XmlFileNames.MainProjectFile)))
                     {
-                        importFileXml = workingDir + XmlFileNames.MainProjectFile;
+                        importFileXml = Path.Combine(workingDir, XmlFileNames.MainProjectFile);
                     }
                     string valErrorMessage;
                     isValid = SqlBuildFileHelper.ValidateAgainstSchema(importFileXml, out valErrorMessage);
@@ -3870,59 +3869,6 @@ namespace SqlSync.SqlBuild
 
                     if (addedFileNames.Length > 0)
                         return startBuildNumber + 1;
-
-                    //    importData = frmImport.ImportData;
-                    //    importData.AcceptChanges();
-                    //    int increment = 0;
-                    //    DataView importView = importData.Script.DefaultView;
-                    //    importView.Sort = "BuildOrder  ASC";
-                    //    importView.RowStateFilter = DataViewRowState.OriginalRows;
-
-                    //    if(importView.Count > 0)
-                    //        haveImportedRows = true;
-
-                    //    for(int i=0;i<importView.Count;i++)
-                    //    {
-                    //        SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)importView[i].Row;
-
-                    //        row.BuildOrder = startBuildNumber + increment;
-                    //        row.DateAdded = DateTime.Now;
-                    //        list.Add(row.FileName);
-                    //        this.buildData.Script.ImportRow(row);
-                    //        if(File.Exists(this.projectFilePath+row.FileName))
-                    //            File.Delete(this.projectFilePath+row.FileName);
-
-                    //        File.Move(workingDir+row.FileName,this.projectFilePath+row.FileName);
-                    //        increment++;
-                    //    }
-
-                    //    this.buildData.AcceptChanges();
-                    //    SqlBuildFileHelper.SaveSqlBuildProjectFile(ref this.buildData,this.projectFileName, this.buildZipFileName);
-                    //    addedFileNames = new string[list.Count];
-                    //    list.CopyTo(addedFileNames);
-                    //    try
-                    //    {
-                    //        string[] files = Directory.GetFiles(workingDir);
-                    //        for(int i=0;i<files.Length;i++)
-                    //            File.Delete(files[i]);
-
-                    //        Directory.Delete(workingDir);
-                    //    }
-                    //    catch
-                    //    {
-                    //    }
-
-                    //    if(haveImportedRows)
-                    //        return startBuildNumber;
-                    //    else
-                    //        return (double)ImportFileStatus.NoRowsImported;
-
-                    //}
-                    //catch(Exception e)
-                    //{
-                    //    string error = e.ToString();
-                    //    this.buildData.RejectChanges();
-                    //}
 
                 }
                 catch { }
@@ -4109,7 +4055,7 @@ namespace SqlSync.SqlBuild
 
             try
             {
-                fileSize = new FileInfo(this.projectFilePath + row.FileName).Length;
+                fileSize = new FileInfo(Path.Combine(this.projectFilePath + row.FileName)).Length;
             }
             catch { }
 
@@ -4807,8 +4753,8 @@ namespace SqlSync.SqlBuild
         private void GenerateUtiltityItems()
         {
             string executablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string utilityPath = executablePath + @"\Utility";
-            string utiltityXmlFile = utilityPath + @"\UtilityRegistry.xml";
+            string utilityPath = Path.Combine( executablePath,"Utility");
+            string utiltityXmlFile = Path.Combine(utilityPath ,"UtilityRegistry.xml");
             if (File.Exists(utiltityXmlFile) == false)
                 return;
 
@@ -4835,8 +4781,7 @@ namespace SqlSync.SqlBuild
         {
             if (utilityRegItem.GetType() == typeof(Utility.UtilityQuery))
             {
-                ((Utility.UtilityQuery)utilityRegItem).FileName =
-                    utilityPath + @"\" + ((Utility.UtilityQuery)utilityRegItem).FileName;
+                ((Utility.UtilityQuery)utilityRegItem).FileName = Path.Combine(utilityPath, ((Utility.UtilityQuery)utilityRegItem).FileName);
             }
             else if (utilityRegItem.GetType() == typeof(Utility.SubMenu))
             {
@@ -4850,7 +4795,7 @@ namespace SqlSync.SqlBuild
         {
             this.mnuAutoScripting.DropDownItems.Clear();
             string executablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            this.autoXmlFile = executablePath + @"\AutoScriptList.xml";
+            this.autoXmlFile = Path.Combine(executablePath, "AutoScriptList.xml");
             if (File.Exists(autoXmlFile))
             {
                 using (StreamReader sr = new StreamReader(autoXmlFile))
@@ -5596,7 +5541,7 @@ namespace SqlSync.SqlBuild
                     {
                         foreach (DefaultScripts.DefaultScript defScript in defReg.Items)
                         {
-                            this.AddDefaultScript(defScript, this.projectFilePath + XmlFileNames.MainProjectFile, DefaultScriptCopyAction.Undefined);
+                            this.AddDefaultScript(defScript, Path.Combine(this.projectFilePath, XmlFileNames.MainProjectFile), DefaultScriptCopyAction.Undefined);
                         }
                     }
                 }
@@ -5779,7 +5724,7 @@ namespace SqlSync.SqlBuild
                 if (lstBuild.SelectedItems[0].Tag is BuildScriptEventArgs)
                 {
                     System.Guid buildScriptId = ((BuildScriptEventArgs)lstBuild.SelectedItems[0].Tag).BuildScriptId;
-                    string buildHistFile = this.projectFilePath + XmlFileNames.HistoryFile;
+                    string buildHistFile = Path.Combine(this.projectFilePath, XmlFileNames.HistoryFile);
                     SqlSyncBuildData buildHistData = new SqlSyncBuildData();
                     buildHistData.ReadXml(buildHistFile);
 
@@ -5801,7 +5746,7 @@ namespace SqlSync.SqlBuild
                 string fileName = lstBuild.SelectedItems[0].SubItems[(int)BuildListIndex.FileName].Text;
                 Process prc = new Process();
                 prc.StartInfo.FileName = "notepad.exe";
-                prc.StartInfo.Arguments = this.projectFilePath + fileName;
+                prc.StartInfo.Arguments = Path.Combine(this.projectFilePath, fileName);
                 prc.Start();
             }
         }
@@ -6035,7 +5980,7 @@ namespace SqlSync.SqlBuild
                 addEntry = false;
 
                 //Move the file to the build file folder
-                string newLocalFile = this.projectFilePath + Path.GetFileName(fileList[i]);
+                string newLocalFile = Path.Combine(this.projectFilePath, Path.GetFileName(fileList[i]));
                 bg.ReportProgress(0, "Adding " + Path.GetFileName(fileList[i]));
                 if (File.Exists(newLocalFile))
                     fileExists = true;
@@ -6345,8 +6290,10 @@ namespace SqlSync.SqlBuild
                         droppedItem.Tag = value.Key;
                         lstScriptFiles.Items.Add(droppedItem);
 
-                        if (!File.Exists(this.projectFilePath + value.Key.FileName))
-                            File.WriteAllText(this.projectFilePath + value.Key.FileName, value.Value);
+                        if (!File.Exists(Path.Combine(this.projectFilePath, value.Key.FileName)))
+                        {
+                            File.WriteAllText(Path.Combine(this.projectFilePath, value.Key.FileName), value.Value);
+                        }
 
                         this.buildData.Script.ImportRow(value.Key);
                     }
@@ -6567,7 +6514,7 @@ namespace SqlSync.SqlBuild
         {
             this.Cursor = Cursors.WaitCursor;
             SqlBuild.SqlBuildFileHelper.ConvertLegacyProjectHistory(ref this.buildData, this.projectFilePath, this.buildZipFileName);
-            string buildHistXml = this.projectFilePath + XmlFileNames.HistoryFile;
+            string buildHistXml = Path.Combine(this.projectFilePath, XmlFileNames.HistoryFile);
             if (!File.Exists(buildHistXml))
             {
                 MessageBox.Show("No Build Run History is Available", "No History", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -6601,7 +6548,7 @@ namespace SqlSync.SqlBuild
                         xmls.Serialize(sw, tbl);
                     }
 
-                    string fullFileName = this.projectFilePath + item.FileName;
+                    string fullFileName = Path.Combine(this.projectFilePath, item.FileName);
                     if (File.Exists(fullFileName))
                     {
                         string script = File.ReadAllText(fullFileName);
@@ -7034,7 +6981,7 @@ namespace SqlSync.SqlBuild
 
                     if (updatedScript.Length > 0)
                     {
-                        using (StreamWriter sw = File.CreateText(Path.GetDirectoryName(this.projectFileName) + @"\" + selectedUpdates[i].ShortFileName))
+                        using (StreamWriter sw = File.CreateText(Path.Combine(Path.GetDirectoryName(this.projectFileName), selectedUpdates[i].ShortFileName)))
                         {
                             sw.Write(updatedScript);
                         }
@@ -7144,7 +7091,7 @@ namespace SqlSync.SqlBuild
                     foreach (Objects.UpdatedObject obj in lstScripts)
                     {
 
-                        using (StreamWriter sw = File.CreateText(Path.GetDirectoryName(this.projectFileName) + @"\" + obj.ScriptName))
+                        using (StreamWriter sw = File.CreateText(Path.Combine(Path.GetDirectoryName(this.projectFileName), obj.ScriptName)))
                         {
                             sw.Write(obj.ScriptContents);
                         }
@@ -7247,7 +7194,7 @@ namespace SqlSync.SqlBuild
                 return;
 
             SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)lstScriptFiles.SelectedItems[0].Tag;
-            string baseFileWithPath = this.projectFilePath + row.FileName;
+            string baseFileWithPath = Path.Combine(this.projectFilePath, row.FileName);
             if (!File.Exists(baseFileWithPath))
             {
                 MessageBox.Show("Unable to find base file!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -7756,7 +7703,7 @@ namespace SqlSync.SqlBuild
 
                 //Make sure we can find the base file. 
                 row = (SqlSyncBuildData.ScriptRow)lstScriptFiles.SelectedItems[0].Tag;
-                string baseFileWithPath = this.projectFilePath + row.FileName;
+                string baseFileWithPath = Path.Combine(this.projectFilePath, row.FileName);
                 if (!File.Exists(baseFileWithPath))
                 {
                     MessageBox.Show("Unable to find base file!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -7792,7 +7739,7 @@ namespace SqlSync.SqlBuild
 
                 //Make sure we can find the base file. 
                 SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)lstScriptFiles.SelectedItems[0].Tag;
-                string baseFileWithPath = this.projectFilePath + row.FileName;
+                string baseFileWithPath = Path.Combine(this.projectFilePath, row.FileName);
                 if (!File.Exists(baseFileWithPath))
                 {
                     MessageBox.Show("Unable to find base file!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -7879,7 +7826,7 @@ namespace SqlSync.SqlBuild
 
         private void archiveBuildHistoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (!File.Exists(this.projectFilePath + XmlFileNames.HistoryFile))
+            if (!File.Exists(Path.Combine(this.projectFilePath , XmlFileNames.HistoryFile)))
             {
                 MessageBox.Show("No Build Run History is Available", "No History", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -7889,17 +7836,18 @@ namespace SqlSync.SqlBuild
                 try
                 {
                     string buildHistFileName = string.Empty;
-                    string newZipName = Path.GetDirectoryName(this.buildZipFileName) + @"\" + Path.GetFileNameWithoutExtension(this.buildZipFileName) + " - Build Archive.zip";
-                    if (File.Exists(this.projectFilePath + XmlFileNames.HistoryFile))
+                    string newZipName = Path.GetDirectoryName(Path.Combine(this.buildZipFileName, Path.GetFileNameWithoutExtension(this.buildZipFileName) + " - Build Archive.zip"));
+                    if (File.Exists(Path.Combine(this.projectFilePath , XmlFileNames.HistoryFile)))
                     {
-                        buildHistFileName = this.projectFilePath +
-                            DateTime.Now.Year.ToString() + "-" +
-                            DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" +
-                            DateTime.Now.Day.ToString().PadLeft(2, '0') + " at " +
-                            DateTime.Now.Hour.ToString().PadLeft(2, '0') +
-                            DateTime.Now.Minute.ToString().PadLeft(2, '0') + " " +
-                            XmlFileNames.HistoryFile;
-                        File.Move(this.projectFilePath + XmlFileNames.HistoryFile, buildHistFileName);
+                        buildHistFileName = Path.Combine(this.projectFilePath,
+                                                            DateTime.Now.Year.ToString() + "-" +
+                                                            DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" +
+                                                            DateTime.Now.Day.ToString().PadLeft(2, '0') + " at " +
+                                                            DateTime.Now.Hour.ToString().PadLeft(2, '0') +
+                                                            DateTime.Now.Minute.ToString().PadLeft(2, '0') + " " +
+                                                            XmlFileNames.HistoryFile);
+
+                        File.Move(Path.Combine(this.projectFilePath + XmlFileNames.HistoryFile), buildHistFileName);
 
                         if (ZipHelper.AppendZipPackage(new string[] { Path.GetFileName(buildHistFileName) }, this.projectFilePath, newZipName, false))
                         {
@@ -7910,7 +7858,7 @@ namespace SqlSync.SqlBuild
                         {
                             try
                             {
-                                File.Move(buildHistFileName, this.projectFilePath + XmlFileNames.HistoryFile);
+                                File.Move(buildHistFileName, Path.Combine(this.projectFilePath + XmlFileNames.HistoryFile));
                             }
                             catch { }
 
@@ -7942,19 +7890,19 @@ namespace SqlSync.SqlBuild
                 RenameScriptForm frmRename = new RenameScriptForm(ref row);
                 if (DialogResult.OK == frmRename.ShowDialog())
                 {
-                    if (!File.Exists(this.projectFilePath + frmRename.OldName))
+                    if (!File.Exists(Path.Combine(this.projectFilePath , frmRename.OldName)))
                     {
                         MessageBox.Show("Unable to find old file!", "Whoops", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         return;
                     }
-                    if (File.Exists(this.projectFilePath + frmRename.NewName))
+                    if (File.Exists(Path.Combine(this.projectFilePath, frmRename.NewName)))
                     {
                         MessageBox.Show("A file be the name of " + frmRename.NewName + " was already found!\r\nRename can not proceed.", "Sorry, can't overwrite", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
                     //Rename the File
-                    File.Move(this.projectFilePath + frmRename.OldName, this.projectFilePath + frmRename.NewName);
+                    File.Move(Path.Combine(this.projectFilePath, frmRename.OldName), Path.Combine(this.projectFilePath, frmRename.NewName));
 
                     //Rename in the config
                     ((SqlSyncBuildData.ScriptRow)lstScriptFiles.SelectedItems[0].Tag).FileName = frmRename.NewName;
@@ -8048,10 +7996,12 @@ namespace SqlSync.SqlBuild
                 verData.ContactEMail = (string)appReader.GetValue("ProgramUpdateContactEMail", typeof(string));
                 verData.YourVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
-                string homePath = SqlBuildManager.Logging.Configure.AppDataPath + @"\";
+                string configFileFullPath = Path.Combine(SqlBuildManager.Logging.Configure.AppDataPath, SqlSync.SqlBuild.UtilityHelper.ConfigFileName);
                 ServerConnectConfig config = new ServerConnectConfig();
-                if (File.Exists(homePath + SqlSync.SqlBuild.UtilityHelper.ConfigFileName))
-                    config.ReadXml(homePath + SqlSync.SqlBuild.UtilityHelper.ConfigFileName);
+                if (File.Exists(configFileFullPath))
+                {
+                    config.ReadXml(configFileFullPath);
+                }
 
                 if (config.LastProgramUpdateCheck != null)
                 {
@@ -8116,7 +8066,7 @@ namespace SqlSync.SqlBuild
                             config.LastProgramUpdateCheck[0].CheckTime = DateTime.Now;
 
                         config.AcceptChanges();
-                        config.WriteXml(homePath + SqlSync.SqlBuild.UtilityHelper.ConfigFileName);
+                        config.WriteXml(configFileFullPath);
                     }
                     else
                     {
@@ -8192,98 +8142,6 @@ namespace SqlSync.SqlBuild
             Test.SprocTestConfigForm frmTest = new SqlSync.Test.SprocTestConfigForm(this.connData);
             frmTest.Show();
         }
-
-        #region .: Tracking :.
-        //private void bgUsageTrack_DoWork(object sender, DoWorkEventArgs e)
-        //{
-        //    string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
-        //    SqlSync.SqlSyncUsageMeter.UsageRecord rec = null;
-        //    try
-        //    {
-        //        List<SqlSync.SqlSyncUsageMeter.UsageRecord> usage = this.GetUsageRecords(homePath);
-        //        SqlSync.SqlSyncUsageMeter.UsageMeter meterWs = new SqlSync.SqlSyncUsageMeter.UsageMeter();
-        //        rec = new SqlSync.SqlSyncUsageMeter.UsageRecord();
-        //        usage.Add(rec);
-        //        rec.BuildFileName = this.buildZipFileName;
-        //        rec.FileOpenUTC = DateTime.Now.ToUniversalTime();
-        //        rec.HostMachineName = System.Environment.MachineName;
-        //        rec.SqlSyncVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        //        rec.User = System.Environment.UserName;
-        //        meterWs.RecordUsageRecord(usage.ToArray());
-        //        this.DeleteRecordedUsageFiles(homePath);
-        //    }
-        //    catch (Exception exe)
-        //    {
-        //        string fileName = homePath + System.Guid.NewGuid().ToString() + ".trk";
-        //        System.Xml.XmlTextWriter tw = null;
-        //        try
-        //        {
-        //            XmlSerializer xmlS = new XmlSerializer(typeof(SqlSync.SqlSyncUsageMeter.UsageRecord));
-        //            tw = new System.Xml.XmlTextWriter(fileName, Encoding.UTF8);
-        //            tw.Formatting = System.Xml.Formatting.Indented;
-        //            tw.Indentation = 3;
-        //            xmlS.Serialize(tw, rec);
-        //            if (File.Exists(fileName))
-        //                File.SetAttributes(fileName, File.GetAttributes(fileName) | FileAttributes.Hidden);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //        }
-        //        finally
-        //        {
-        //            if (tw != null)
-        //                tw.Close();
-        //        }
-        //    }
-        //}
-        //private List<SqlSync.SqlSyncUsageMeter.UsageRecord> GetUsageRecords(string homePath)
-        //{
-        //    List<SqlSync.SqlSyncUsageMeter.UsageRecord> usage = new List<SqlSync.SqlSyncUsageMeter.UsageRecord>();
-        //    if (Directory.Exists(homePath))
-        //    {
-        //        DirectoryInfo inf = new DirectoryInfo(homePath);
-        //        FileInfo[] files = inf.GetFiles("*.trk");
-        //        if (files.Length > 0)
-        //        {
-        //            for (int i = 0; i < files.Length; i++)
-        //            {
-        //                using (StreamReader sr = new StreamReader(files[i].Name))
-        //                {
-        //                    try
-        //                    {
-        //                        SqlSync.SqlSyncUsageMeter.UsageRecord cfg = null;
-        //                        XmlSerializer serializer = new XmlSerializer(typeof(SqlSync.SqlSyncUsageMeter.UsageRecord));
-        //                        object obj = serializer.Deserialize(sr);
-        //                        cfg = (SqlSync.SqlSyncUsageMeter.UsageRecord)obj;
-        //                        if (cfg != null) usage.Add(cfg);
-        //                    }
-        //                    catch (Exception exe)
-        //                    { }
-
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return usage;
-        //}
-        //private void DeleteRecordedUsageFiles(string homePath)
-        //{
-        //    if (Directory.Exists(homePath))
-        //    {
-        //        DirectoryInfo inf = new DirectoryInfo(homePath);
-        //        FileInfo[] files = inf.GetFiles("*.trk");
-        //        for (int i = 0; i < files.Length; i++)
-        //        {
-        //            try
-        //            {
-        //                files[i].Delete();
-        //            }
-        //            catch { }
-        //        }
-        //    }
-
-        //}
-        #endregion
 
         private void maintainManualDatabaseEntriesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -8433,29 +8291,6 @@ namespace SqlSync.SqlBuild
             if (DialogResult.OK == saveScriptsToPackage.ShowDialog())
             {
                 bool success = SqlBuildFileHelper.PackageSbxFileIntoSbmFile(this.sbxBuildControlFileName, saveScriptsToPackage.FileName);
-                //bool copied = false;
-                //string path = Path.GetDirectoryName(this.sbxBuildControlFileName) +@"\";
-                ////Just in case that file already exists...
-                //if(File.Exists(path+XmlFileNames.MainProjectFile))
-                //{
-                //    File.Copy(path+XmlFileNames.MainProjectFile,path+"~~"+XmlFileNames.MainProjectFile,true);
-                //    copied = true;
-                //}
-
-                //File.Copy(this.sbxBuildControlFileName,path+XmlFileNames.MainProjectFile,true);
-
-                //SqlBuildFileHelper.SaveSqlBuildProjectFile(ref this.buildData, path + XmlFileNames.MainProjectFile, saveScriptsToPackage.FileName);
-
-
-                //if (copied)
-                //{
-                //    File.Copy(path + "~~" + XmlFileNames.MainProjectFile, path + XmlFileNames.MainProjectFile, true);
-                //    File.Delete(path + "~~" + XmlFileNames.MainProjectFile);
-                //}
-                //else
-                //{
-                //    File.Delete(path + XmlFileNames.MainProjectFile);
-                //}
 
                 if (success)
                 {
@@ -8498,7 +8333,7 @@ namespace SqlSync.SqlBuild
             for (int i = 0; i < lstScriptFiles.SelectedItems.Count; i++)
             {
                 SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)lstScriptFiles.SelectedItems[i].Tag;
-                string fileName = this.projectFilePath + row.FileName;
+                string fileName = Path.Combine(this.projectFilePath, row.FileName);
 
                 if (!SqlBuildFileHelper.MakeFileWriteable(fileName))
                 {

@@ -203,7 +203,7 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<string>("batchpoolname")
                 };
-                var batchpoolOsOption = new Option(new string[] { "--poolos", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default")
+                var batchpoolOsOption = new Option(new string[] { "--os", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default")
                 {
                     Argument = new Argument<OsType>("batchpoolos")
                 };
@@ -224,20 +224,14 @@ namespace SqlBuildManager.Console
                     Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType",() => SqlSync.Connection.AuthenticationType.Password),
                     Name = "AuthenticationType"
                 };
-                var whatIfOption = new Option(new string[] { "--whatif" }, "Provides commandline validation and some authentication validation")
-                {
-                    Argument = new Argument<bool>("whatif")
-                };
                 var silentOption = new Option(new string[] { "--silent" }, "Suppresses overwrite prompt if settings file already exists")
                 {
                     Argument = new Argument<bool>("silent")
                 };
-
                 var outputcontainersasurlOption = new Option(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command")
                 {
                     Argument = new Argument<string>("outputcontainersasurl")
                 };
-
                 var dacpacOutputOption = new Option(new string[] { "--dacpacname" }, "Name of the dacpac that you want to create")
                 {
                     Argument = new Argument<string>("dacpacname"),
@@ -1018,7 +1012,7 @@ namespace SqlBuildManager.Console
                 {
                     try
                     {
-                        var tmp = f.Replace(rootLoggingPath + @"\", "");
+                        var tmp = Path.GetRelativePath(rootLoggingPath, f);
 
                         if (Program.AppendLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
                         {
@@ -1115,43 +1109,6 @@ namespace SqlBuildManager.Console
                 }
             }
         }
-
-        //private static void StandardExecution(string[] args )
-        //{
-        //    DateTime start = DateTime.Now;
-        //    log.Debug("Entering Standard Execution");
-
-        //    //Get the path of the Sql Build Manager executable - need to be co-resident
-        //    string sbmExe = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) +
-        //                    @"\Sql Build Manager.exe";
-
-        //    //Put any arguments that have spaces into quotes
-        //    for (int i = 0; i < args.Length; i++)
-        //    {
-        //        if (args[i].IndexOf(" ") > -1)
-        //            args[i] = "\"" + args[i] + "\"";
-        //    }
-        //    //Rejoin the args to pass over to Sql Build Manager
-        //    string arg = String.Join(" ", args);
-        //    ProcessHelper prcHelper = new ProcessHelper();
-        //    int exitCode = prcHelper.ExecuteProcess(sbmExe, arg);
-
-        //    //Send the console output to the console window
-        //    if (prcHelper.Output.Length > 0)
-        //        System.Console.Out.WriteLine(prcHelper.Output);
-
-        //    //Send the error output to the error stream
-        //    if (prcHelper.Error.Length > 0)
-        //        log.Error(prcHelper.Output);
-
-        //    TimeSpan span = DateTime.Now - start;
-        //    string msg = "Total Run time: " + span.ToString();
-        //    log.Info(msg);
-
-        //    log.Debug("Exiting Standard Execution");
-        //    log4net.LogManager.Shutdown();
-        //    System.Environment.Exit(exitCode);
-        //}
 
         private static void PackageSbxFilesIntoSbmFiles(CommandLineArgs cmdLine)
         {

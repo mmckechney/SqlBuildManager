@@ -277,8 +277,8 @@ namespace SqlSync
 //		}
 		public string SaveScript(string directoryPath)
 		{
-			string name = directoryPath +@"\"+this.scriptName+SqlSync.Constants.DbObjectType.PopulateScript.ToLower();
-			//string name = directoryPath +@"\"+this.scriptName+".sql";
+			string name = Path.Combine(directoryPath, this.scriptName + SqlSync.Constants.DbObjectType.PopulateScript.ToLower());
+
 			if( SaveScriptToDisk(name))
 				return name;
 			else

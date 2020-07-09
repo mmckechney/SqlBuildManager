@@ -174,9 +174,9 @@ namespace SqlSync.BasicCompare
         public void GetUnifiedDiff(string oldBuildFile, string newBuildFile, out Hashtable added, out Hashtable removed, out Hashtable modified)
         {
             string tempPath = Path.GetTempPath();
-            this.extractPathOldFile = tempPath + "SqlsyncCompare-" + Guid.NewGuid().ToString().Replace("-", "") + @"\";
+            this.extractPathOldFile = tempPath + "SqlsyncCompare-" + Guid.NewGuid().ToString().Replace("-", "");
             Directory.CreateDirectory(this.extractPathOldFile);
-            this.extractPathNewFile = tempPath + "SqlsyncCompare-" + Guid.NewGuid().ToString().Replace("-", "") + @"\";
+            this.extractPathNewFile = tempPath + "SqlsyncCompare-" + Guid.NewGuid().ToString().Replace("-", "");
             Directory.CreateDirectory(this.extractPathNewFile);
             ZipHelper.UnpackZipPackage(this.extractPathOldFile, oldBuildFile, false);
             ZipHelper.UnpackZipPackage(this.extractPathNewFile, newBuildFile, false);
@@ -236,8 +236,8 @@ namespace SqlSync.BasicCompare
                 StringBuilder sb = new StringBuilder();
                 StringWriter writer = new StringWriter(sb);
                 string key = enumerator.Key.ToString();
-                string path = oldPath + key;
-                string text3 = newPath + key;
+                string path = Path.Combine(oldPath, key);
+                string text3 = Path.Combine(newPath + key);
                 string[] leftLines = new string[0];
                 string[] rightLines = new string[0];
                 if (File.Exists(text3))

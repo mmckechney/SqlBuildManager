@@ -69,7 +69,7 @@ namespace SqlSync
             if (highlightingType == SyntaxHightlightType.RemoteServiceLog)
             {
                 this.richTextBox1.LinkClicked += new LinkClickedEventHandler(richTextBox1_LinkClicked);
-                this.richTextBox1.Text = script; //script.Replace(@"\", "_");
+                this.richTextBox1.Text = script; 
             }
             else
             {

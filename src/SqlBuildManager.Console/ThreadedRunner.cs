@@ -132,7 +132,7 @@ namespace SqlBuildManager.Console
             DoWorkEventArgs e = null;
             SqlBuildRunData runData = new SqlBuildRunData();
             string targetDatabase = overrides[0].OverrideDbTarget;
-            string loggingDirectory = ThreadedExecution.RootLoggingPath + @"/" + server + @"/" + targetDatabase + @"/";
+            string loggingDirectory = Path.Combine(ThreadedExecution.RootLoggingPath, server, targetDatabase); 
             try
             {
                  //Start setting properties on the object that contains the run configuration data.
@@ -157,7 +157,9 @@ namespace SqlBuildManager.Console
 
                 //Initilize the logging directory for this run
                 if (!Directory.Exists(loggingDirectory))
+                {
                     Directory.CreateDirectory(loggingDirectory);
+                }
 
                 if (forceCustomDacpac)
                 {
@@ -198,7 +200,7 @@ namespace SqlBuildManager.Console
                     
                     
                     runData.BuildData = buildData;
-                    runData.ProjectFileName = loggingDirectory + Path.GetFileName(ThreadedExecution.ProjectFileName);
+                    runData.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedExecution.ProjectFileName));
                     runData.BuildFileName = ThreadedExecution.BuildZipFileName;
                 }
 
@@ -214,7 +216,7 @@ namespace SqlBuildManager.Console
                 connData.AuthenticationType = this.cmdArgs.AuthenticationArgs.AuthenticationType;
 
                 //Set the log file name
-                string logFile = loggingDirectory + @"/ExecutionLog.log";
+                string logFile = Path.Combine(loggingDirectory, "ExecutionLog.log");
 
                 //Create the objects that will handle the event communication back.
                 bg = new BackgroundWorker();

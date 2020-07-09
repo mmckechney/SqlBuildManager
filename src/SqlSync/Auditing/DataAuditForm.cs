@@ -1557,7 +1557,7 @@ namespace SqlSync
             try
             {
                 this.tempBuildFileName = suggestedProjectName;
-                this.tempFolderName = Path.GetTempPath() + @"\SqlBuildManagerAudit_" + System.Guid.NewGuid().ToString();
+                this.tempFolderName = Path.Combine(Path.GetTempPath() ,"SqlBuildManagerAudit_" + System.Guid.NewGuid().ToString());
                 System.IO.Directory.CreateDirectory(this.tempFolderName);
 
                 this.createdScriptFiles.Clear();
@@ -1684,7 +1684,7 @@ namespace SqlSync
 			else
 			{
 				SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-				string projFileName = directory+@"\"+XmlFileNames.MainProjectFile;
+                string projFileName = Path.Combine(directory, XmlFileNames.MainProjectFile);
                 for (int i = 0; i < this.createdScriptFiles.Count; i++)
 				{
                     string shortFileName = Path.GetFileName(this.createdScriptFiles[i]);

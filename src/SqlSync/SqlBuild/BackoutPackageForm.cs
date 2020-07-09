@@ -206,9 +206,9 @@ namespace SqlSync.SqlBuild
 
             string fileName = callingListView.SelectedItems[0].Text;
 
-            if (File.Exists(this.extractedPath + fileName))
+            if (File.Exists(Path.Combine(this.extractedPath , fileName)))
             {
-                string scriptContents = File.ReadAllText(this.extractedPath + fileName);
+                string scriptContents = File.ReadAllText(Path.Combine(this.extractedPath , fileName));
                 ScriptDisplayForm frmDisp = new ScriptDisplayForm(scriptContents, "", fileName, Highlighting.SyntaxHightlightType.Sql);
                 frmDisp.ShowDialog();
             }

@@ -30,8 +30,8 @@ namespace SqlSync.SqlBuild.Default_Scripts
         {
 
             this.executablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            this.defaultScriptPath = executablePath + @"\Default Scripts\";
-            this.defaultScriptXmlFile = defaultScriptPath + @"DefaultScriptRegistry.xml";
+            this.defaultScriptPath = Path.Combine(executablePath ,"Default Scripts");
+            this.defaultScriptXmlFile = Path.Combine(defaultScriptPath ,"DefaultScriptRegistry.xml");
 
             this.lnkScriptPath.Text = this.defaultScriptPath;
             
@@ -100,7 +100,7 @@ namespace SqlSync.SqlBuild.Default_Scripts
             try
             {
                 string shortName = Path.GetFileName(fileName);
-                File.Copy(fileName, this.defaultScriptPath + shortName,true);
+                File.Copy(fileName, Path.Combine(this.defaultScriptPath, shortName), true);
                 return true;
             }
             catch

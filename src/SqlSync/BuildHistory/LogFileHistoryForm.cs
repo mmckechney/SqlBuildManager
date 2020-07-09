@@ -225,7 +225,7 @@ namespace SqlSync.BuildHistory
 				string fileName = this.lstLogFiles.SelectedItems[0].Text;
 				Process prc = new Process();
 				prc.StartInfo.FileName = "notepad.exe";
-				prc.StartInfo.Arguments = this.basePath+ fileName;
+				prc.StartInfo.Arguments = Path.Combine(this.basePath, fileName);
 				prc.Start();
 			}
 
@@ -237,7 +237,7 @@ namespace SqlSync.BuildHistory
 				string fileName = this.lstLogFiles.SelectedItems[0].Text;
 				Process prc = new Process();
 				prc.StartInfo.FileName = queryAnalyzerPath;
-				prc.StartInfo.Arguments = "\""+this.basePath+ fileName+"\"";
+				prc.StartInfo.Arguments = "\"" + Path.Combine(this.basePath, fileName) + "\"";
 				prc.Start();
 			}
 

@@ -85,7 +85,7 @@ namespace SqlSync.SqlBuild
         public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, out string buildPackageName)
         {
             log.InfoFormat("Generating SBM build from dacpac differences: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
-            string path = Path.GetDirectoryName(targetDacPacFileName) + @"\";
+            string path = Path.GetDirectoryName(targetDacPacFileName);
             buildPackageName = string.Empty;
             string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path);
             if (!string.IsNullOrEmpty(rawScript))
@@ -102,7 +102,7 @@ namespace SqlSync.SqlBuild
                         return cleanStatus;
                 }
 
-                string baseFileName = path + string.Format("{0}_to_{1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName));
+                string baseFileName = Path.Combine(path, string.Format("{0}_to_{1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName)));
                 
                 List<string> files = new List<string>();
                 if (batchScripts)
@@ -271,7 +271,7 @@ namespace SqlSync.SqlBuild
 
         public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout)
         {
-            string tmpDacPacName = workingDirectory + targetDatabase + ".dacpac";
+            string tmpDacPacName = Path.Combine(workingDirectory,targetDatabase + ".dacpac");
             if(!ExtractDacPac(targetDatabase, targetServerName, userName, password, tmpDacPacName))
             {
                 return DacpacDeltasStatus.ExtractionFailure;
@@ -313,10 +313,8 @@ namespace SqlSync.SqlBuild
         public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, string username, string password, string buildRevision, int defaultScriptTimeout,  MultiDbData multiDb, out string sbmName)
         {
             string workingFolder = (!string.IsNullOrEmpty(rootLoggingPath) ? rootLoggingPath : Path.GetTempPath());
-            if (!workingFolder.EndsWith("\\"))
-                workingFolder = workingFolder + "\\";
-
-            workingFolder = workingFolder + "Dacpac\\";
+   
+            workingFolder = Path.Combine(workingFolder, "Dacpac");
             if (!Directory.Exists(workingFolder))
             {
                 Directory.CreateDirectory(workingFolder);
@@ -332,7 +330,7 @@ namespace SqlSync.SqlBuild
             }
             else if (!string.IsNullOrEmpty(database) && !string.IsNullOrEmpty(server))
             {
-                string targetDacPac = workingFolder + database + ".dacpac";
+                string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
                 if (!DacPacHelper.ExtractDacPac(database, server, username, password, targetDacPac))
                 {
                     log.Error(string.Format("Error extracting dacpac from {0} : {1}", database, server));
@@ -350,7 +348,7 @@ namespace SqlSync.SqlBuild
                     {
                         database = serv.OverrideSequence.ElementAt(i).Value[0].OverrideDbTarget;
 
-                        string targetDacPac = workingFolder + database + ".dacpac"; ;
+                        string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
                         if (!DacPacHelper.ExtractDacPac(database, server, username, password, targetDacPac))
                         {
                             log.Error(string.Format("Error extracting dacpac from {0} : {1}", server, database));

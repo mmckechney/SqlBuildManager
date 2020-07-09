@@ -16,9 +16,9 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             if (defaultReg == null)
                 return false;
 
-            if (!ValidateLocalToEnterprise(SqlBuildFileHelper.DefaultScriptXmlFile, defaultReg.Path + defaultReg.FileName))
+            if (!ValidateLocalToEnterprise(SqlBuildFileHelper.DefaultScriptXmlFile, Path.Combine(defaultReg.Path, defaultReg.FileName)))
             {
-                if (!CopyEnterpriseToLocal(SqlBuildFileHelper.DefaultScriptXmlFile, defaultReg.Path + defaultReg.FileName))
+                if (!CopyEnterpriseToLocal(SqlBuildFileHelper.DefaultScriptXmlFile, Path.Combine(defaultReg.Path, defaultReg.FileName)))
                 {
                     return false;
                 }
@@ -30,15 +30,17 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
 
             if (reg.Items == null)
             {
-                log.WarnFormat("The enterprise default script registry file contains no default script items! ({0})", defaultReg.Path + defaultReg.FileName);
+                log.WarnFormat("The enterprise default script registry file contains no default script items! ({0})", Path.Combine(defaultReg.Path, defaultReg.FileName));
                 return false;
             }
 
-            string localScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile) + @"/";
+            string localScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile);
             foreach (sb.DefaultScript item in reg.Items)
             {
-                if (!ValidateLocalToEnterprise(localScriptPath + item.ScriptName, defaultReg.Path + item.ScriptName))
-                    CopyEnterpriseToLocal(localScriptPath + item.ScriptName, defaultReg.Path + item.ScriptName);
+                if (!ValidateLocalToEnterprise(Path.Combine(localScriptPath, item.ScriptName), Path.Combine(defaultReg.Path, item.ScriptName)))
+                {
+                    CopyEnterpriseToLocal(Path.Combine(localScriptPath, item.ScriptName), Path.Combine(defaultReg.Path, item.ScriptName));
+                }
             }
 
 
@@ -166,8 +168,6 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 {
                     DefaultScriptRegistryFile tmp = myDefaults.ToList()[0].defReg;
                     log.DebugFormat("Matched default script registry: {0} to {1}", tmp.FileName, myDefaults.ToList()[0].grp);
-                    if(!tmp.Path.EndsWith(@"\"))
-                        tmp.Path = tmp.Path + @"\";
 
                     return tmp;
                 }

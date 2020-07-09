@@ -205,7 +205,7 @@ namespace SqlSync.SqlBuild
 
                 bool inProject = (val != null && val.Count() > 0);
                           
-				string newLocalFile = this.projectFilePath + Path.GetFileName(incommingFileList[i]);
+				string newLocalFile = Path.Combine(this.projectFilePath,Path.GetFileName(incommingFileList[i]));
                 if (File.Exists(newLocalFile) && inProject)
 					bgColor = Color.PeachPuff;
 

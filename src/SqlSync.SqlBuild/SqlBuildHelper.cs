@@ -238,7 +238,7 @@ namespace SqlSync.SqlBuild
             this.buildDescription = runData.BuildDescription;
             this.startIndex = runData.StartIndex;
             this.projectFileName = runData.ProjectFileName;
-            this.projectFilePath = Path.GetDirectoryName(this.projectFileName) + @"/";
+            this.projectFilePath = Path.GetDirectoryName(this.projectFileName);
             this.isTrialBuild = runData.IsTrial;
             this.runItemIndexes = runData.RunItemIndexes;
             this.runScriptOnly = runData.RunScriptOnly;
@@ -362,12 +362,12 @@ namespace SqlSync.SqlBuild
 
 			//Set the file name for the script log
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
-			this.scriptLogFileName = this.projectFilePath+"LogFile-"+DateTime.Now.Year.ToString()+"-"+DateTime.Now.Month.ToString().PadLeft(2,'0')+"-"+DateTime.Now.Day.ToString().PadLeft(2,'0')+" at "+DateTime.Now.Hour.ToString().PadLeft(2,'0')+"_"+DateTime.Now.Minute.ToString().PadLeft(2,'0')+"_"+DateTime.Now.Second.ToString().PadLeft(2,'0')+".log";
+            this.scriptLogFileName = Path.Combine(this.projectFilePath, "LogFile-" + DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" + DateTime.Now.Day.ToString().PadLeft(2, '0') + " at " + DateTime.Now.Hour.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Minute.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Second.ToString().PadLeft(2, '0') + ".log");
 			
 			//Get a new build row
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Generating Build Record"));
 
-			this.buildHistoryXmlFile = this.projectFilePath+SqlBuild.XmlFileNames.HistoryFile;
+            this.buildHistoryXmlFile = Path.Combine(this.projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
 			myBuild = GetNewBuildRow(serverName);
 			myBuild.UserId = System.Environment.UserName;
 
@@ -454,7 +454,7 @@ namespace SqlSync.SqlBuild
                         
                     //If not pre-batched script found, read the script file contents as a batch array
                     if (batchScripts == null || batchScripts.Length == 0)
-                        batchScripts = ReadBatchFromScriptFile(this.projectFilePath + myRow.FileName, myRow.StripTransactionText, false);
+                        batchScripts = ReadBatchFromScriptFile(Path.Combine(this.projectFilePath, myRow.FileName), myRow.StripTransactionText, false);
 
                     //Check for database override setting...
                     string targetDatabase = GetTargetDatabase(myRow.Database);
@@ -1851,7 +1851,7 @@ namespace SqlSync.SqlBuild
             for (int i = 0; i < view.Count; i++)
             {
                 SqlSyncBuildData.ScriptRow myRow = (SqlSyncBuildData.ScriptRow)view[i].Row;
-                string[] batchScripts = SqlBuildHelper.ReadBatchFromScriptFile(projectFilePath + myRow.FileName, myRow.StripTransactionText, false);
+                string[] batchScripts = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, myRow.FileName), myRow.StripTransactionText, false);
 
                 ScriptBatch batch = new ScriptBatch(myRow.FileName, batchScripts, myRow.ScriptId);
                 coll.Add(batch);

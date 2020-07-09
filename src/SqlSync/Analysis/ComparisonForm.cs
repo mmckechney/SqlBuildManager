@@ -549,8 +549,8 @@ namespace SqlSync.Analysis
             {
                 this.linkedBoxes.BringToFront();
                 this.linkedBoxes.UnifiedDiffText = results.UnifiedDiffText;
-                this.linkedBoxes.LeftFileName = leftTempFilePath + results.LeftScriptRow.FileName;
-                this.linkedBoxes.RightFileName = rightTempFilePath + results.RightScriptRow.FileName;
+                this.linkedBoxes.LeftFileName = Path.Combine(leftTempFilePath, results.LeftScriptRow.FileName);
+                this.linkedBoxes.RightFileName = Path.Combine(rightTempFilePath, results.RightScriptRow.FileName);
                 this.linkedBoxes.SplitUnifiedDiffText();
                 return;
 
@@ -843,7 +843,7 @@ namespace SqlSync.Analysis
                 rows[i] = results.LeftScriptRow;
             }
             //TODO: Check for delete from an SBX file
-            if(!SqlBuildFileHelper.RemoveScriptFilesFromBuild(ref this.buildData, this.leftTempFilePath + XmlFileNames.MainProjectFile, this.leftZipFilePath, rows, true))
+            if(!SqlBuildFileHelper.RemoveScriptFilesFromBuild(ref this.buildData, Path.Combine(this.leftTempFilePath , XmlFileNames.MainProjectFile), this.leftZipFilePath, rows, true))
             {
                 MessageBox.Show("Unable to remove file from list. Please try again", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

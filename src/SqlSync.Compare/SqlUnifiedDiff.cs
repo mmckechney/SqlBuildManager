@@ -24,12 +24,12 @@ namespace SqlSync.Compare
         {
             this.extractPathLeftFile = leftTempFilePath;
             string tmpDir = System.IO.Path.GetTempPath();
-            this.extractPathRightFile = tmpDir + @"SqlsyncCompare-" + System.Guid.NewGuid().ToString().Replace("-", "") + @"\";
+            this.extractPathRightFile = tmpDir + @"SqlsyncCompare-" + System.Guid.NewGuid().ToString().Replace("-", "");
             Directory.CreateDirectory(this.extractPathRightFile);
             rightFileTempDirectory = this.extractPathRightFile;
             ZipHelper.UnpackZipPackage(this.extractPathRightFile, rightBuildZipPath,false);
             SqlSync.SqlBuild.SqlSyncBuildData rightBuildData = new SqlSyncBuildData();
-            rightBuildData.ReadXml(this.extractPathRightFile + XmlFileNames.MainProjectFile);
+            rightBuildData.ReadXml(Path.Combine(this.extractPathRightFile, XmlFileNames.MainProjectFile));
             //TODO: wrap load failure. 
 
             List<FileCompareResults> filesOnlyInLeft = GetFileListDiff(leftBuildData, rightBuildData, true);
@@ -48,11 +48,18 @@ namespace SqlSync.Compare
             List<FileCompareResults> tmpLst = new List<FileCompareResults>();
             for (int i = 0; i < fileList.Count; i++)
             {
-                if (fileList[i].LeftScriptRow != null && File.Exists(basePath + fileList[i].LeftScriptRow.FileName))
-                    fileList[i].LeftScriptText = File.ReadAllText(basePath + fileList[i].LeftScriptRow.FileName);
+                string leftFullPath = Path.Combine(basePath , fileList[i].LeftScriptRow.FileName);
+                string rightFullPath  = Path.Combine(basePath, fileList[i].RightScriptRow.FileName);
 
-                if (fileList[i].RightScriptRow != null && File.Exists(basePath + fileList[i].RightScriptRow.FileName))
-                    fileList[i].RightSciptText = File.ReadAllText(basePath + fileList[i].RightScriptRow.FileName);
+                if (fileList[i].LeftScriptRow != null && File.Exists(leftFullPath))
+                {
+                    fileList[i].LeftScriptText = File.ReadAllText(leftFullPath);
+                }
+
+                if (fileList[i].RightScriptRow != null && File.Exists(rightFullPath))
+                {
+                    fileList[i].RightSciptText = File.ReadAllText(rightFullPath);
+                }
 
                 tmpLst.Add(fileList[i]);
             }
@@ -76,8 +83,8 @@ namespace SqlSync.Compare
                 StringBuilder sb = new StringBuilder();
                 StringWriter sw = new StringWriter(sb);
                 fileName = commonFiles[j].LeftScriptRow.FileName;
-                leftFile = leftPath + fileName;
-                rightFile = rightPath + fileName;
+                leftFile = Path.Combine(leftPath , fileName);
+                rightFile = Path.Combine(rightPath, fileName);
                 commonFiles[j].LeftScriptPath = leftFile;
                 commonFiles[j].RightScriptPath = rightFile;
 
@@ -209,102 +216,5 @@ namespace SqlSync.Compare
 
 		#endregion
 		
-        //#region .: HTML Processing :.
-        //public string GetHTMLDiff(string oldBuildFile, string newBuildFile, bool includeCSS)
-        //{
-        //    Hashtable added;
-        //    Hashtable removed;
-        //    Hashtable modified;
-        //    GetUnifiedDiff(oldBuildFile, newBuildFile, out added, out removed, out modified);
-        //    string html = HTMLTransformDiff(added, removed, modified);
-        //    if (includeCSS)
-        //    {
-        //        string css = new SqlSync.Compare.ResourceHelper().GetFromResources("SqlSync.Compare.Default.css");
-        //        return "<STYLE  type=\"text/css\">\r\n" + css + "\r\n</STYLE>\r\n" + html;
-        //    }
-        //    else
-        //        return html;
-        //}
-        //private string HTMLTransformDiff(Hashtable added, Hashtable removed, Hashtable modified)
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    sb.Append("<DIV id=patch>\r\n");
-        //    IDictionaryEnumerator enumer = added.GetEnumerator();
-        //    while (enumer.MoveNext())
-        //    {
-        //        sb.Append(BuildHTMLFileDiff(enumer.Value.ToString(), enumer.Key.ToString(), "Added") + "\r\n");
-        //    }
-
-        //    enumer = modified.GetEnumerator();
-        //    while (enumer.MoveNext())
-        //    {
-        //        sb.Append(BuildHTMLFileDiff(enumer.Value.ToString(), enumer.Key.ToString(), "Modified") + "\r\n");
-        //    }
-
-        //    enumer = removed.GetEnumerator();
-        //    while (enumer.MoveNext())
-        //    {
-        //        sb.Append(BuildHTMLFileDiff(enumer.Value.ToString(), enumer.Key.ToString(), "Deleted") + "\r\n");
-        //    }
-
-        //    sb.Append("\r\n</DIV>");
-        //    return sb.ToString();
-        //}
-        //private string FileNameAnchor(string input)
-        //{
-        //    input = input.Replace(" ", "");
-        //    input = input.Replace("/", "");
-        //    input = input.Replace(".", "");
-        //    input = input.Replace("Modified:", "");
-        //    input = input.Replace("Added:", "");
-        //    input = input.Replace("Deleted:", "");
-        //    return input.Trim();
-        //}
-        //private string BuildHTMLFileDiff(string unifiedDiffFormat,string fileName, string changeType)
-        //{
-        //    string[] lines = unifiedDiffFormat.Trim().Split('\n');
-        //    if(lines.Length == 2)
-        //        return string.Empty;
-
-        //    StringBuilder diffLines = new StringBuilder();
-        //    string template = SqlSync.Compare.Templates.FileDiffHTML;
-        //    template = template.Replace("#fileDesc#", SqlSync.Compare.Templates.fileDesc.Replace("#fileDesc#", changeType+": "+fileName));
-        //    template = template.Replace("#anchor#", FileNameAnchor(fileName));
-
-        //    for (int i = 0; i < lines.Length; i++)
-        //    {
-        //        if (lines[i].StartsWith("---"))
-        //        {
-        //            //template = template.Replace("#prePost#", SqlSync.Compare.Templates.prePostVersion.Replace("#prePost#", lines[i].TrimEnd() + "<BR/>" + lines[i + 1].TrimEnd()));
-        //            template = template.Replace("#prePost#", "");
-        //            i++;
-        //        }
-        //        else if (lines[i].StartsWith("@@"))
-        //            diffLines.Append("\r\n" + SqlSync.Compare.Templates.linesIndex.Replace("#index#", System.Web.HttpUtility.HtmlEncode(lines[i].TrimEnd())));
-        //        else if (lines[i].StartsWith("+"))
-        //            diffLines.Append(SqlSync.Compare.Templates.addLine.Replace("#line#", System.Web.HttpUtility.HtmlEncode(lines[i].TrimEnd())));
-        //        else if (lines[i].StartsWith("-"))
-        //            diffLines.Append(SqlSync.Compare.Templates.deleteLine.Replace("#line#", System.Web.HttpUtility.HtmlEncode(lines[i].TrimEnd())));
-        //        else if (lines[i].StartsWith(" ") || lines[i].Trim().Length == 0)
-        //            diffLines.Append(SqlSync.Compare.Templates.contextLine.Replace("#line#", System.Web.HttpUtility.HtmlEncode(lines[i].TrimEnd())));
-        //        else if (lines[i].StartsWith("=="))
-        //            continue;
-        //        else
-        //        {
-        //            break;
-        //        }
-        //    }
-        //    template = template.Replace("#changeLines#", diffLines.ToString());
-        //    template = template.Replace("#prePost#", ""); // just in case (for deleted files)
-
-        //    template = template.Replace("</DEL><DEL>", "\r\n");
-        //    template = template.Replace("</INS><INS>", "\r\n");
-        //    template = template.Replace("<SPAN class=cx></SPAN>", "");
-
-        //    return template;
-        //}
-        //    #endregion
-        
-
 	}
 }

@@ -82,7 +82,7 @@ dotnet build "..\..\src\sqlsync.sln" --configuration Debug
 #Zip release for Windows 
 dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r win-x64 --configuration Debug
 $source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\win-x64\publish"
-$buildOutputZipWindows = "$(Resolve-Path "..\..\src\TestConfig")\sbm.zip"
+$buildOutputZipWindows = "$(Resolve-Path "..\..\src\TestConfig")\sbm-$($version)..zip"
 Add-Type -AssemblyName "system.io.compression.filesystem"
 If(Test-path $buildOutputZipWindows) {Remove-item $buildOutputZipWindows}
 [io.compression.zipfile]::CreateFromDirectory($source,$buildOutputZipWindows)
@@ -93,7 +93,7 @@ $version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion
 #Zip release for Linux 
 dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r linux-x64 --configuration Debug
 $source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\linux-x64\publish"
-$buildOutputZipLinux = "$(Resolve-Path "..\..\src\TestConfig")\sbm-linux.zip"
+$buildOutputZipLinux = "$(Resolve-Path "..\..\src\TestConfig")\sbm-linux-$($version).zip"
 Add-Type -AssemblyName "system.io.compression.filesystem"
 If(Test-path $buildOutputZipLinux) {Remove-item $buildOutputZipLinux}
 [io.compression.zipfile]::CreateFromDirectory($source,$buildOutputZipLinux)

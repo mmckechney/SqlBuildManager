@@ -21,8 +21,6 @@ namespace SqlSync.TableScript
 			this.tableList = tableList;
 			this.basePath = basePath;
 
-			if(this.basePath.EndsWith("/") == false)
-				this.basePath = this.basePath +"/";
 		}
 
 		public void ExtractAndWriteData()
@@ -116,7 +114,7 @@ namespace SqlSync.TableScript
 				StringBuilder sb = new StringBuilder();
 				int colCount = columns.Length;
 
-				string fileName = this.basePath+tableName+".data";
+				string fileName = Path.Combine(this.basePath,tableName+".data");
 
 				if(this.ProcessingTableData != null)
 					this.ProcessingTableData(null,new ProcessingTableDataEventArgs(tableName,"Writing Data to "+Path.GetFileName(fileName),false));

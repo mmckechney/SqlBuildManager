@@ -48,7 +48,7 @@ namespace SqlSync.SqlBuild.Remote
                 throw new ArgumentException("A value is needed for either the build package file or the platinum dacpac", "sbmFileName");
             }
 
-            string exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\SqlBuildManager.Console.exe";
+            string exePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) , "SqlBuildManager.Console.exe");
             StringBuilder sb = new StringBuilder();
 
             sb.Append("\"" + exePath + "\" ");
