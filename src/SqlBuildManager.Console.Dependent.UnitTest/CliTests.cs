@@ -64,11 +64,13 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         private string overrideFilePath;
         private string settingsFilePath;
+        private string linuxSettingsFilePath;
 
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
-            this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile.json");
+            this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-windows.json");
+            this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-linux.json");
             this.overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
             this.cmdLine = new CommandLineArgs();
@@ -111,7 +113,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         string StandardExecutionErrorMessage()
         {
-            return this.error + "\r\n" + this.output + "\r\n" + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
+            return this.error + System.Environment.NewLine + this.output + System.Environment.NewLine + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
         }
         private string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
         {
@@ -188,10 +190,11 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Assert.IsTrue(this.output.Contains("Total number of targets: 1"), "Should have run against a single database");
         }
 
-        [DataRow("runthreaded")]
-        [DataRow("run")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void Batch_SBMSource_Succes(string batchMethod)
+        public void Batch_SBMSource_Success(string batchMethod, string settingsFile)
         {
             string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
             if (!File.Exists(sbmFileName))
@@ -201,7 +204,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--settingsfile {settingsFile}");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
 
@@ -215,16 +218,21 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             {
                 Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
             }
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            }
         }
 
-        [DataRow("runthreaded")]
-        [DataRow("run")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void Batch_SBMSource_RunWithError_MissingPackage(string batchMethod)
+        public void Batch_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
         {
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--settingsfile {settingsFile}");
             args.Add($"--override {this.overrideFilePath}");
 
             var result = ExecuteProcess(args);
@@ -233,40 +241,13 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Assert.IsTrue(this.output.Contains("Completed with Errors"), "This test was supposed to have errors in the run");
             Assert.IsTrue(this.output.Contains("Invalid command line set") && this.output.ToLower().Contains("packagename"), "This test should report a missing commandline");
         }
+        
 
-        [DataRow("runthreaded")]
-        [DataRow("run")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void Batch_SBMSource_Success(string batchMethod)
-        {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
-
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {this.settingsFilePath}");
-            args.Add($"--override {this.overrideFilePath}");
-            args.Add($"--packagename {sbmFileName}");
-
-
-
-            var result = ExecuteProcess(args);
-
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            if (batchMethod == "runthreaded")
-            {
-                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
-            }
-        }
-
-        [DataRow("runthreaded")]
-        [DataRow("run")]
-        [DataTestMethod]
-        public void LocalThreadedBatch_PlatinumDbSource_Success(string batchMethod)
+        public void LocalThreadedBatch_PlatinumDbSource_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -279,7 +260,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--settingsfile {settingsFile}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -294,10 +275,11 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
         }
 
-        [DataRow("runthreaded")]
-        [DataRow("run")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void Batch_PlatinumDbSource_FirstDbAlreadyInSync(string batchMethod)
+        public void Batch_PlatinumDbSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -314,7 +296,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, secondOverride });
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--settingsfile {settingsFile}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -332,11 +314,12 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
 
         }
-        
-        [DataRow("runthreaded")]
-        [DataRow("run")]
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedBatch_PlatinumDbSource_ADbAlreadyInSync(string batchMethod)
+        public void LocalThreadedBatch_PlatinumDbSource_ADbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -353,7 +336,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, thirdDbOverride });
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--settingsfile {settingsFile}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -372,10 +355,11 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         }
 
-        [DataRow("runthreaded")]
-        [DataRow("run")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedBatch_DacpacSource_Success(string batchMethod)
+        public void LocalThreadedBatch_DacpacSource_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -392,7 +376,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}"); 
-            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--settingsfile {settingsFile}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdacpac {dacpacName}");
 
@@ -408,10 +392,11 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         }
 
-        [DataRow("runthreaded")]
-        [DataRow("run")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedBatch_DacpacSource_FirstDbAlreadyInSync(string batchMethod)
+        public void LocalThreadedBatch_DacpacSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -432,7 +417,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}"); 
-            args.Add($"--settingsfile {this.settingsFilePath}");
+            args.Add($"--settingsfile {settingsFile}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdacpac {dacpacName}");
 

@@ -762,7 +762,7 @@ END
             string zipFileName = init.GetTrulyUniqueFile();
 
             string path = Path.GetDirectoryName(zipFileName);
-            string projectFileName = path + @"\" + XmlFileNames.MainProjectFile;
+            string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
             buildData.WriteXml(projectFileName);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
 
@@ -807,7 +807,7 @@ END
             string zipFileName = init.GetTrulyUniqueFile();
 
             string path = Path.GetDirectoryName(zipFileName);
-            string projectFileName = path + @"\" + XmlFileNames.MainProjectFile;
+            string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
             buildData.WriteXml(projectFileName);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
 
@@ -855,7 +855,7 @@ END
             string zipFileName = init.GetTrulyUniqueFile();
 
             string path = Path.GetDirectoryName(zipFileName);
-            string projectFileName = path + @"\" + XmlFileNames.MainProjectFile;
+            string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
             buildData.WriteXml(projectFileName);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
 

@@ -1000,7 +1000,7 @@ namespace SqlSync
 			this.Cursor = Cursors.WaitCursor;
 			try
 			{
-				string configFile = fileName; //Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) +@"\LookUpTables.xml";
+				string configFile = fileName; 
 				this.tableList = new SqlSync.TableScript.SQLSyncData();
 				if(File.Exists(configFile))
 				{
@@ -1013,7 +1013,7 @@ namespace SqlSync
 							string path = Path.GetDirectoryName( System.Reflection.Assembly.GetEntryAssembly().Location );
 							SchemaValidator validator = new SchemaValidator();
 							isValid =  validator.ValidateAgainstSchema(fileName,
-								path + @"\"+ SchemaEnums.LookUpTableProjectXsd,
+								Path.Combine(path, SchemaEnums.LookUpTableProjectXsd),
 								SchemaEnums.LookUpTableProjectNamespace);
 						}
 
@@ -1539,7 +1539,7 @@ namespace SqlSync
 			if(result == DialogResult.OK)
 			{
 				string buildFileName = this.openBuildManager.FileName;
-				string directory = Path.GetDirectoryName(this.openBuildManager.FileName)+@"\~sts";
+                string directory = Path.Combine(Path.GetDirectoryName(this.openBuildManager.FileName), "~sts");
 				Directory.CreateDirectory(directory);
 
 				foreach(TabPage page in tcTables.TabPages)
@@ -1618,12 +1618,12 @@ namespace SqlSync
 						continue;
 
                     statStatus.Text = "Creating default reset scripts for " + codeTable.TableName;
-                    using (StreamWriter sw = File.CreateText(folder + @"\" + codeTable.TableName + " - Default Reset.sql"))
-					{
-						sw.WriteLine(script);
-						sw.Flush();
-						sw.Close();
-					}
+                    using (StreamWriter sw = File.CreateText(Path.Combine(folder, codeTable.TableName + " - Default Reset.sql")))
+                    {
+                        sw.WriteLine(script);
+                        sw.Flush();
+                        sw.Close();
+                    }
 				}
 				statStatus.Text = "Complete";
 			}
@@ -1654,12 +1654,12 @@ namespace SqlSync
 						continue;
 
                     statStatus.Text = "Creating alter table scripts for " + codeTable.TableName;
-                    using (StreamWriter sw = File.CreateText(folder + @"\" + codeTable.TableName + " - Update Columns.sql"))
-					{
-						sw.WriteLine(script);
-						sw.Flush();
-						sw.Close();
-					}
+                    using (StreamWriter sw = File.CreateText(Path.Combine(folder, codeTable.TableName + " - Update Columns.sql")))
+                    {
+                        sw.WriteLine(script);
+                        sw.Flush();
+                        sw.Close();
+                    }
 				}
 				statStatus.Text = "Complete";
 			}
@@ -1911,53 +1911,18 @@ namespace SqlSync
 						continue;
 
 					statStatus.Text = "Creating audit table scripts for "+table;
-					using(StreamWriter sw = File.CreateText(folder + @"\"+table+" - Audit Table.sql"))
-					{
-						sw.WriteLine(script);
-						sw.Flush();
-						sw.Close();
-					}
+                    using (StreamWriter sw = File.CreateText(Path.Combine(folder, table + " - Audit Table.sql")))
+                    {
+                        sw.WriteLine(script);
+                        sw.Flush();
+                        sw.Close();
+                    }
 				}
 				statStatus.Text = "Complete";
 			}
 		}
 
-        //private void mnuAuditTrigger_Click(object sender, System.EventArgs e)
-        //{
-        //    if(DialogResult.OK == folderBrowserDialog1.ShowDialog())
-        //    {
-        //        string script;
-        //        string table;
-        //        string folder = folderBrowserDialog1.SelectedPath;
-        //        for(int i=0;i<this.lstTables.Items.Count;i++)
-        //        {
-        //            table = this.lstTables.Items[i].Text;
-        //            script = SqlSync.TableScript.Audit.AuditHelper.ScriptForAuditTriggers(table,this.data,this.use);
-        //            if(script.Length == 0)
-        //                continue;
-
-        //            statStatus.Text = "Creating audit trigger scripts for "+table;
-        //            using(StreamWriter sw = File.CreateText(folder + @"\"+table+" - Audit Trigger.sql"))
-        //            {
-        //                sw.WriteLine(script);
-        //                sw.Flush();
-        //                sw.Close();
-        //            }
-        //        }
-        //        statStatus.Text = "Complete";
-        //    }
-        //}
-
-        //private void mnuSingleAuditTrigger_Click(object sender, System.EventArgs e)
-        //{
-        //    if(this.lstTables.SelectedItems.Count > 0)
-        //    {
-        //        string table = this.lstTables.SelectedItems[0].Text;
-        //        string script = AuditHelper.ScriptForAuditTriggers(table,this.data);
-        //        if(DialogResult.Yes == MessageBox.Show(script+"\r\nCopy to Clipboard?","Copy?",MessageBoxButtons.YesNo,MessageBoxIcon.Question))
-        //            Clipboard.SetDataObject(script,true);
-        //    }
-        //}
+      
 
 		private void mnuCompleteAudit_Click(object sender, System.EventArgs e)
 		{
@@ -2202,7 +2167,7 @@ namespace SqlSync
             List<CodeTableAudit> codeTables = args.CodeTables;
             StringBuilder sb = new StringBuilder();
             string destination = args.Destination;
-            string folder = Path.GetTempPath() + @"\" + System.Guid.NewGuid().ToString();
+            string folder = Path.Combine(Path.GetTempPath(), System.Guid.NewGuid().ToString());
             if (args.ScriptType == TriggerScriptType.NewSqlBuildFile)
                 Directory.CreateDirectory(folder);
             string fileName;
@@ -2223,9 +2188,9 @@ namespace SqlSync
                     case TriggerScriptType.FilePerScript:
                     case TriggerScriptType.NewSqlBuildFile:
                         if (args.ScriptType == TriggerScriptType.NewSqlBuildFile)
-                            fileName = folder + @"\" + codeTables[i].TableName + " - Update Trigger.sql";
+                            fileName = Path.Combine(folder, codeTables[i].TableName + " - Update Trigger.sql");
                         else
-                            fileName = destination + @"\" + codeTables[i].TableName + " - Update Trigger.sql";
+                            fileName = Path.Combine(destination, codeTables[i].TableName + " - Update Trigger.sql");
 
                         bg.ReportProgress(10, "Writing file  " + codeTables[i].TableName + " - Update Trigger.sql");
                         using (StreamWriter sw = File.CreateText(fileName))

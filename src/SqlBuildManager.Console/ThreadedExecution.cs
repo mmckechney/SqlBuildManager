@@ -132,7 +132,7 @@ namespace SqlBuildManager.Console
 
             if(string.IsNullOrEmpty(cmdLine.RootLoggingPath))
             {
-                cmdLine.RootLoggingPath = @"C:\tmp-sqlbuildlogging";
+                cmdLine.RootLoggingPath = @"C:/tmp-sqlbuildlogging";
             }
 
             SetLoggingPaths(cmdLine.RootLoggingPath);
@@ -271,10 +271,12 @@ namespace SqlBuildManager.Console
                     this.cmdLine.BuildRevision = multiData.BuildRevision;
                 }
 
-               // log.DebugFormat("Commandline configuration created:\r\n{0}", cmdLine.ToString());
+                // log.DebugFormat("Commandline configuration created:\r\n{0}", cmdLine.ToString());
 
                 if (!this.loggingPathsInitialized)
+                {
                     SetLoggingPaths(rootLoggingPath);
+                }
 
                 string error;
                 //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
@@ -439,18 +441,22 @@ namespace SqlBuildManager.Console
                 log.InfoFormat("Logging path expanded to: {0}", ThreadedExecution.rootLoggingPath);
 
                 if (!Directory.Exists(ThreadedExecution.rootLoggingPath))
+                {
                     Directory.CreateDirectory(ThreadedExecution.rootLoggingPath);
+                }
 
-                this.workingDirectory = ThreadedExecution.rootLoggingPath + @"\Working";
+                this.workingDirectory = Path.Combine(ThreadedExecution.rootLoggingPath, "Working");
                 if (!Directory.Exists(this.workingDirectory))
+                {
                     Directory.CreateDirectory(this.workingDirectory);
+                }
 
-                this.logFileName = rootLoggingPath + @"\Execution.log";
-                this.successDatabaseConfigLogName = rootLoggingPath + @"\SuccessDatabases.cfg";
-                this.failureDatabaseConfigLogName = rootLoggingPath + @"\FailureDatabases.cfg";
+                this.logFileName = Path.Combine(rootLoggingPath,"Execution.log");
+                this.successDatabaseConfigLogName = Path.Combine(rootLoggingPath, "SuccessDatabases.cfg");
+                this.failureDatabaseConfigLogName = Path.Combine(rootLoggingPath, "FailureDatabases.cfg");
 
-                this.errorFileName = rootLoggingPath + @"\Errors.log";
-                this.commitLogName = rootLoggingPath + @"\Commits.log";
+                this.errorFileName = Path.Combine(rootLoggingPath, "Errors.log");
+                this.commitLogName = Path.Combine(rootLoggingPath, "Commits.log");
    
             }
             catch (Exception exe)
@@ -503,8 +509,8 @@ namespace SqlBuildManager.Console
         {
             log.Info("Constructing build file from script directory");
             string shortFileName = string.Empty;
-            ThreadedExecution.buildZipFileName = ThreadedExecution.rootLoggingPath +"\\"+ ThreadedExecution.RunID +".sbm";
-            string projFileName = this.workingDirectory + @"\"+SqlSync.SqlBuild.XmlFileNames.MainProjectFile;
+            ThreadedExecution.buildZipFileName = Path.Combine(ThreadedExecution.rootLoggingPath, ThreadedExecution.RunID +".sbm");
+            string projFileName = Path.Combine(this.workingDirectory, SqlSync.SqlBuild.XmlFileNames.MainProjectFile);
             SqlSyncBuildData localBuildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
             List<string> fileList = new List<string>(Directory.GetFiles(directoryName, "*.sql", SearchOption.TopDirectoryOnly));
             fileList.Sort();
@@ -512,7 +518,7 @@ namespace SqlBuildManager.Console
             for (int i = 0; i < fileList.Count; i++)
             {
                 shortFileName = Path.GetFileName(fileList[i]);
-                File.Copy(fileList[i], this.workingDirectory + @"\"+ shortFileName,true);
+                File.Copy(fileList[i], Path.Combine(this.workingDirectory, shortFileName),true);
 
                 SqlBuildFileHelper.AddScriptFileToBuild(ref localBuildData,
                     projFileName,
@@ -526,7 +532,7 @@ namespace SqlBuildManager.Console
                     ThreadedExecution.buildZipFileName,
                     ((i<fileList.Count-1)? false : true),
                     false,
-                    System.Environment.UserDomainName +@"\"+ System.Environment.UserName,
+                    System.Environment.UserDomainName +@"/"+ System.Environment.UserName,
                     20,
                     "");
             }
@@ -539,7 +545,7 @@ namespace SqlBuildManager.Console
             string initLog = string.Empty;
             if (!haveWrittenToCommit || !haveWrittenToError)
             {
-                initLog = "[" + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff") + "]\t\t***Log for Run ID:" + ThreadedExecution.RunID + "\r\n";
+                initLog = "[" + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff") + "]\t\t***Log for Run ID:" + ThreadedExecution.RunID + System.Environment.NewLine;
             }
             string log = string.Empty;
             for (int i = 0; i < message.Length; i++)
@@ -611,32 +617,6 @@ namespace SqlBuildManager.Console
         }
 
     }
-
-
-    //private void QueueThreadedRunners(ref List<DatabaseOverride> overrides, int serverStartIndex,int overrideStartIndex, int numberToQueue)
-    //{
-    //    for(int iSrv = serverStartIndex; iSrv< this.multiData.Count;iSrv++)
-    //    {
-    //        ServerData srv = this.multiData[iSrv];
-    //        for(int iOvr = overrideStartIndex; iOvr < srv.OverrideSequence.Values.Count;iOvr++)
-    //        foreach (List<DatabaseOverride> ovr in srv.OverrideSequence.Values)
-    //        {
-    //            Dictionary<string,List<DatabaseOverride>>.KeyCollection.Enumerator enumer = srv.OverrideSequence.Keys.GetEnumerator();
-    //            enumer.
-    //            keys.
-    //            List<DatabaseOverride> ovr = srv.OverrideSequence.Keys
-    //            threadTotal++;
-    //            lock (ThreadedExecution.SyncObj)
-    //            {
-    //                ThreadedExecution.SyncObj.WorkingRunners++;
-    //            }
-    //            ThreadedRunner runner = new ThreadedRunner(srv.ServerName, ovr, cmdLine);
-    //            WriteToLog("Queuing up thread for " + runner.Server + "." + runner.TargetDatabases, LogType.Message);
-    //            System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedBuild, runner);
-    //        }
-    //    }
-    //}
-
 
     public class SyncObject
     {

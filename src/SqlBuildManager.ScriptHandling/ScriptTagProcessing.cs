@@ -165,9 +165,6 @@ namespace SqlBuildManager.ScriptHandling
 
             try
             {
-                if (!scriptPath.EndsWith(@"\"))
-                    scriptPath = scriptPath + @"\";
-
                 scriptName = Path.GetFileName(scriptName);
 
                 string tmpTag;
@@ -185,13 +182,13 @@ namespace SqlBuildManager.ScriptHandling
                
                     
                 //If we get here, we will need to get the file contents...
-                if (!File.Exists(scriptPath + scriptName))
+                if (!File.Exists(Path.Combine(scriptPath , scriptName)))
                 {
                     log.WarnFormat("Unable to find file for Script Tag Inference for file {0} in path {1}", scriptName, scriptPath);
                     return string.Empty;
                 }
 
-                string contents = File.ReadAllText(scriptPath + scriptName);
+                string contents = File.ReadAllText(Path.Combine(scriptPath, scriptName));
                 tmpTag = InferScriptTag(scriptName,contents, regexFormats, source);
                 if (tmpTag.Length > 0)
                 {

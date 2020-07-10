@@ -825,12 +825,15 @@ namespace SqlSync
                 if (((ToolStripMenuItem)sender).Tag is RegisteredServerListFile)
                 {
                     RegisteredServerListFile tmp = (RegisteredServerListFile)((ToolStripMenuItem)sender).Tag;
-                    tmp.Path = (tmp.Path.EndsWith("\\") ? tmp.Path : tmp.Path + "\\");
 
-                    if (!RegisteredServerHelper.ReloadRegisteredServerData(tmp.Path + tmp.FileName))
+                    if (!RegisteredServerHelper.ReloadRegisteredServerData(Path.Combine(tmp.Path, tmp.FileName)))
+                    {
                         MessageBox.Show("Unable to load the registered server list \"" + tmp.Description + "\" from " + tmp.Path + "\\" + tmp.FileName, "Can't load the file", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                     else
+                    {
                         PopulateRegisteredServerTree();
+                    }
                 }
             }
         }

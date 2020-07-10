@@ -201,7 +201,7 @@ namespace SqlSync.SqlBuild
             {
                 SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)importView[i].Row;
 
-                ListViewItem item = new ListViewItem(new string[] { row.FileName, row.Database, row.ScriptId, this.importTempPath + row.FileName });
+                ListViewItem item = new ListViewItem(new string[] { row.FileName, row.Database, row.ScriptId, System.IO.Path.Combine(this.importTempPath, row.FileName) }) ;
                 item.Checked = false;
 
                 if (this.buildData.Script.Select(

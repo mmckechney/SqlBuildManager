@@ -175,7 +175,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// </summary>
         private void DumpResults()
         {
-            string tmpDump = this.tempWorkingDirectory + String.Format("Dump-{0}.txt", Guid.NewGuid().ToString());
+            string tmpDump = Path.Combine(this.tempWorkingDirectory , String.Format("Dump-{0}.txt", Guid.NewGuid().ToString()));
             if (this.reportType == ReportType.CSV)
             {
                 File.WriteAllText(tmpDump, this.results.GetRowValuesCsvString());
@@ -200,7 +200,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <returns></returns>
         private string MergeDumpFiles()
         {
-            string tmpCombined = this.tempWorkingDirectory + String.Format("Merge-{0}.txt", Guid.NewGuid().ToString());
+            string tmpCombined = Path.Combine(this.tempWorkingDirectory , String.Format("Merge-{0}.txt", Guid.NewGuid().ToString()));
             if (this.reportType == ReportType.CSV)
             {
                 File.WriteAllText(tmpCombined, this.results.GetColumnsCsvString() + "\r\n");
@@ -257,7 +257,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 return;
             }
             //Write the results shell to a file... but remember, we've dumped all the data, that needs to be re-integrated...
-            string tmpShell = this.tempWorkingDirectory + String.Format("Shell-{0}.txt", Guid.NewGuid().ToString());
+            string tmpShell = Path.Combine(this.tempWorkingDirectory, String.Format("Shell-{0}.txt", Guid.NewGuid().ToString()));
             using (XmlTextWriter sw = new XmlTextWriter(tmpShell, Encoding.UTF8))
             {
                 sw.Formatting = Formatting.Indented;
@@ -267,7 +267,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 sw.Close();
             }
 
-            this.ResultsTempFile = this.tempWorkingDirectory + String.Format("Combined-{0}.txt", Guid.NewGuid().ToString());
+            this.ResultsTempFile = Path.Combine(this.tempWorkingDirectory , String.Format("Combined-{0}.txt", Guid.NewGuid().ToString()));
             string tmpLine = null;
             using (StreamWriter sw = new StreamWriter(this.ResultsTempFile))
             {

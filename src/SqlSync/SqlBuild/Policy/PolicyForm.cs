@@ -84,7 +84,7 @@ namespace SqlSync.SqlBuild.Policy
             bool passed;
             foreach (SqlSyncBuildData.ScriptRow row in this.buildData.Script)
             {
-                fileName = this.projectFilePath + row.FileName;
+                fileName = Path.Combine(this.projectFilePath + row.FileName);
                 if (File.Exists(fileName))
                 {
                     script = File.ReadAllText(fileName);

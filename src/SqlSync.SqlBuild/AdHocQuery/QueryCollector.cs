@@ -51,7 +51,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="scriptTimeout">SQL timeout per connection</param>
         public void GetQueryResults(ref BackgroundWorker bgWorker, string fileName, ReportType reportType, string query, int scriptTimeout)
         {
-            this.resultsFilePath = Path.GetDirectoryName(fileName) + @"\" + Guid.NewGuid().ToString() + @"\";
+            this.resultsFilePath = Path.Combine(Path.GetDirectoryName(fileName), Guid.NewGuid().ToString());
 
             try
             {

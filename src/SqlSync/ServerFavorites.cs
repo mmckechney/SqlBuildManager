@@ -38,7 +38,7 @@ namespace SqlSync
             if (this.Items.Count != 0 && !forceRefresh)
                 return;
 
-            string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\";
+            string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string[] recentDbs = new string[6];
 
             //if (File.Exists(homePath + ConfigFileName))

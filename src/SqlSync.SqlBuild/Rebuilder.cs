@@ -106,11 +106,11 @@ namespace SqlSync.SqlBuild
             Directory.CreateDirectory(tempPath);
             try
             {
-                string projFileName = tempPath + @"\" + SqlSync.SqlBuild.XmlFileNames.MainProjectFile;
+                string projFileName = Path.Combine(tempPath, SqlSync.SqlBuild.XmlFileNames.MainProjectFile);
                 
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
-                    File.WriteAllText(tempPath + @"\" + rebuildData[i].ScriptFileName, rebuildData[i].ScriptText);
+                    File.WriteAllText( Path.Combine(tempPath , rebuildData[i].ScriptFileName), rebuildData[i].ScriptText);
                 }
 
                 SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();

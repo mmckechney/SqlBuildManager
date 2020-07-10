@@ -63,11 +63,11 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<string>("override")
                 };
-                var serverOption = new Option(new string[] { "--server" }, "1) Name of a server for single database run or 2) source server for scripting or runtime configuration")
+                var serverOption = new Option(new string[] { "-s", "--server" }, "1) Name of a server for single database run or 2) source server for scripting or runtime configuration")
                 {
                     Argument = new Argument<string>("server")
                 };
-                var databaseOption = new Option(new string[] { "--database" }, "1) Name of a single database to run against or 2) source database for scripting or runtime configuration")
+                var databaseOption = new Option(new string[] { "-d", "--database" }, "1) Name of a single database to run against or 2) source database for scripting or runtime configuration")
                 {
                     Argument = new Argument<string>("database")
                 };
@@ -83,11 +83,11 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<string>("scriptsrcdir")
                 };
-                var usernameOption = new Option(new string[] { "--username" }, "The username to authenticate against the database if not using integrate auth")
+                var usernameOption = new Option(new string[] { "-u", "--username" }, "The username to authenticate against the database if not using integrate auth")
                 {
                     Argument = new Argument<string>("username")
                 };
-                var passwordOption = new Option(new string[] { "--password" }, "The password to authenticate against the database if not using integrate auth")
+                var passwordOption = new Option(new string[] { "-p", "--password" }, "The password to authenticate against the database if not using integrate auth")
                 {
                     Argument = new Argument<string>("password")
                 };
@@ -167,11 +167,11 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<bool>("deletebatchjob")
                 };
-                var batchnodecountOption = new Option(new string[] { "--batchnodecount" }, "Number of nodes to provision to run the batch job  (default is 10)")
+                var batchnodecountOption = new Option(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job  (default is 10)")
                 {
                     Argument = new Argument<int>("batchnodecount")
                 };
-                var batchjobnameOption = new Option(new string[] { "--batchjobname" }, "[Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed")
+                var batchjobnameOption = new Option(new string[] { "--jobname", "--batchjobname" }, "[Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed")
                 {
                     Argument = new Argument<string>("batchjobname")
                 };
@@ -195,13 +195,21 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<string>("storageaccountkey")
                 };
-                var batchvmsizeOption = new Option(new string[] { "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]")
+                var batchvmsizeOption = new Option(new string[] { "--vmsize", "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]")
                 {
                     Argument = new Argument<string>("batchvmsize")
                 };
-                var batchpoolnameOption = new Option(new string[] { "--batchpoolname" }, "Override for the default pool name of \"SqlBuildManagerPool\"")
+                var batchpoolnameOption = new Option(new string[] { "--poolname", "--batchpoolname" }, "Override for the default pool name of \"SqlBuildManagerPool\"")
                 {
                     Argument = new Argument<string>("batchpoolname")
+                };
+                var batchpoolOsOption = new Option(new string[] { "--os", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default")
+                {
+                    Argument = new Argument<OsType>("batchpoolos")
+                };
+                var batchApplicationOption = new Option(new string[] { "--apppackage", "--applicationpackage" }, "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux")
+                {
+                    Argument = new Argument<OsType>("applicationpackage")
                 };
                 var eventhubconnectionOption = new Option(new string[] { "--eventhubconnection" }, "Event Hub connection string for Event Hub logging of batch execution")
                 {
@@ -219,22 +227,15 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType",() => SqlSync.Connection.AuthenticationType.Password),
                     Name = "AuthenticationType"
-
-                };
-                var whatIfOption = new Option(new string[] { "--whatif" }, "Provides commandline validation and some authentication validation")
-                {
-                    Argument = new Argument<bool>("whatif")
                 };
                 var silentOption = new Option(new string[] { "--silent" }, "Suppresses overwrite prompt if settings file already exists")
                 {
                     Argument = new Argument<bool>("silent")
                 };
-
                 var outputcontainersasurlOption = new Option(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command")
                 {
                     Argument = new Argument<string>("outputcontainersasurl")
                 };
-
                 var dacpacOutputOption = new Option(new string[] { "--dacpacname" }, "Name of the dacpac that you want to create")
                 {
                     Argument = new Argument<string>("dacpacname"),
@@ -272,7 +273,10 @@ namespace SqlBuildManager.Console
                 List<Option> generalBatchNodeOptions = new List<Option>()
                 {
                     batchnodecountOption,
-                    batchvmsizeOption
+                    batchvmsizeOption,
+                    batchpoolOsOption,
+                    batchpoolnameOption,
+                    batchApplicationOption
                 };
                 List<Option> generalBatchExecutionOptions = new List<Option>()
                 {
@@ -1013,7 +1017,7 @@ namespace SqlBuildManager.Console
                 {
                     try
                     {
-                        var tmp = f.Replace(rootLoggingPath + @"\", "");
+                        var tmp = Path.GetRelativePath(rootLoggingPath, f);
 
                         if (Program.AppendLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
                         {
@@ -1110,43 +1114,6 @@ namespace SqlBuildManager.Console
                 }
             }
         }
-
-        //private static void StandardExecution(string[] args )
-        //{
-        //    DateTime start = DateTime.Now;
-        //    log.Debug("Entering Standard Execution");
-
-        //    //Get the path of the Sql Build Manager executable - need to be co-resident
-        //    string sbmExe = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) +
-        //                    @"\Sql Build Manager.exe";
-
-        //    //Put any arguments that have spaces into quotes
-        //    for (int i = 0; i < args.Length; i++)
-        //    {
-        //        if (args[i].IndexOf(" ") > -1)
-        //            args[i] = "\"" + args[i] + "\"";
-        //    }
-        //    //Rejoin the args to pass over to Sql Build Manager
-        //    string arg = String.Join(" ", args);
-        //    ProcessHelper prcHelper = new ProcessHelper();
-        //    int exitCode = prcHelper.ExecuteProcess(sbmExe, arg);
-
-        //    //Send the console output to the console window
-        //    if (prcHelper.Output.Length > 0)
-        //        System.Console.Out.WriteLine(prcHelper.Output);
-
-        //    //Send the error output to the error stream
-        //    if (prcHelper.Error.Length > 0)
-        //        log.Error(prcHelper.Output);
-
-        //    TimeSpan span = DateTime.Now - start;
-        //    string msg = "Total Run time: " + span.ToString();
-        //    log.Info(msg);
-
-        //    log.Debug("Exiting Standard Execution");
-        //    log4net.LogManager.Shutdown();
-        //    System.Environment.Exit(exitCode);
-        //}
 
         private static void PackageSbxFilesIntoSbmFiles(CommandLineArgs cmdLine)
         {

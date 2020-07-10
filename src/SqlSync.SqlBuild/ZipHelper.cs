@@ -32,7 +32,7 @@ namespace SqlSync.SqlBuild
 
             try
             {
-                string tempName = Path.GetDirectoryName(zipFileName) + @"\~" + retryCount.ToString() + "~" + Path.GetFileName(zipFileName);
+                string tempName = Path.Combine( Path.GetDirectoryName(zipFileName), @"~" + retryCount.ToString() + "~" + Path.GetFileName(zipFileName));
                 using (ZipArchive newFile = ZipFile.Open(tempName, ZipArchiveMode.Create))
                 {
                     foreach (string file in fullPathFilesToZip)
@@ -68,13 +68,11 @@ namespace SqlSync.SqlBuild
 
         private static bool CreateZipPackage(string[] filesToZip, string basePath, string zipFileName, bool keepPathInfo, int retryCount)
         {
-            if (basePath.Trim().Length > 0 && !basePath.EndsWith(@"\"))
-                basePath = basePath + @"\";
 
             List<string> fullPathFiles = new List<string>();
             foreach (string file in filesToZip)
             {
-                fullPathFiles.Add(basePath + file);
+                fullPathFiles.Add( Path.Combine(basePath,file));
             }
             return CreateZipPackage(fullPathFiles, zipFileName, keepPathInfo, retryCount);
         }

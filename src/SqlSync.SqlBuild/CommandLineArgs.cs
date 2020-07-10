@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Transactions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using SqlSync.Constants;
 namespace SqlSync.SqlBuild
 {
@@ -241,6 +242,16 @@ namespace SqlSync.SqlBuild
         {
             set { BatchArgs.PollBatchPoolStatus = value; }
         }
+        [JsonIgnore]
+        public virtual OsType BatchPoolOs
+        {
+            set { BatchArgs.BatchPoolOs = value; }
+        }
+        [JsonIgnore]
+        public virtual string ApplicationPackage
+        {
+            set { BatchArgs.ApplicationPackage = value; }
+        }
         [Serializable]
         public class Batch
         {
@@ -260,7 +271,10 @@ namespace SqlSync.SqlBuild
             public string BatchJobName { get; set; } = null;
             public bool PollBatchPoolStatus { get; set; } = true;
             public string BatchPoolName { get; set; } = null;
+            [JsonConverter(typeof(StringEnumConverter))]
+            public OsType BatchPoolOs { get; set; }
             public string EventHubConnectionString { get; set; } = string.Empty;
+            public string ApplicationPackage { get; set; } = string.Empty;
         }
         #endregion
 
@@ -361,6 +375,13 @@ namespace SqlSync.SqlBuild
         {
             return this.ToStringExtension(this.CliVersion, true);
         }
+    }
+
+    [Serializable]
+    public enum OsType
+    {
+        Windows,
+        Linux
     }
 
     public static class CommandLineExtensions

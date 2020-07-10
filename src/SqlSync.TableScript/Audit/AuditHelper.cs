@@ -4,6 +4,7 @@ using SqlSync.Connection;
 using SqlSync.DbInformation;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 namespace SqlSync.TableScript.Audit
 {
 	/// <summary>
@@ -203,36 +204,36 @@ namespace SqlSync.TableScript.Audit
 		public static bool ScriptForCompleteAudit(List<TableConfig> tables, ConnectionData connData, string destFolder, bool useDS)
 		{
             string master = ScriptForAuditMasterTable(useDS);
-			using(System.IO.StreamWriter sw = System.IO.File.CreateText(destFolder+@"\Audit Master Table.sql"))
-			{
-				sw.WriteLine(master);
-				sw.Flush();
-				sw.Close();
-			}
+            using (System.IO.StreamWriter sw = System.IO.File.CreateText(Path.Combine(destFolder, "Audit Master Table.sql")))
+            {
+                sw.WriteLine(master);
+                sw.Flush();
+                sw.Close();
+            }
 
             string audTable;
 			string sudTrig;
 			for(int i=0;i<tables.Count;i++)
 			{
 				audTable = ScriptForAuditTableCreation(tables[i],connData);
-				
-				using(System.IO.StreamWriter sw = System.IO.File.CreateText(destFolder+@"\"+tables[i].TableName +" Audit Table.sql"))
-				{
-					sw.WriteLine(audTable);
-					sw.Flush();
-					sw.Close();
-				}
+
+                using (System.IO.StreamWriter sw = System.IO.File.CreateText(Path.Combine(destFolder, tables[i].TableName + " Audit Table.sql")))
+                {
+                    sw.WriteLine(audTable);
+                    sw.Flush();
+                    sw.Close();
+                }
 
                 sudTrig = ScriptForAuditTriggers(tables[i], connData, AuditScriptType.CreateInsertTrigger, useDS);
-				using(System.IO.StreamWriter sw = System.IO.File.CreateText(destFolder+@"\"+tables[i].TableName +" Audit Insert Trigger.sql"))
-				{
-					sw.WriteLine(sudTrig);
-					sw.Flush();
-					sw.Close();
-				}
+                using (System.IO.StreamWriter sw = System.IO.File.CreateText(Path.Combine(destFolder, tables[i].TableName + " Audit Insert Trigger.sql")))
+                {
+                    sw.WriteLine(sudTrig);
+                    sw.Flush();
+                    sw.Close();
+                }
 
                 sudTrig = ScriptForAuditTriggers(tables[i], connData, AuditScriptType.CreateUpdateTrigger, useDS);
-                using (System.IO.StreamWriter sw = System.IO.File.CreateText(destFolder + @"\" + tables[i].TableName + " Audit Update Trigger.sql"))
+                using (System.IO.StreamWriter sw = System.IO.File.CreateText(Path.Combine(destFolder, tables[i].TableName + " Audit Update Trigger.sql")))
                 {
                     sw.WriteLine(sudTrig);
                     sw.Flush();
@@ -240,7 +241,7 @@ namespace SqlSync.TableScript.Audit
                 }
 
                 sudTrig = ScriptForAuditTriggers(tables[i], connData, AuditScriptType.CreateDeleteTrigger, useDS);
-                using (System.IO.StreamWriter sw = System.IO.File.CreateText(destFolder + @"\" + tables[i].TableName + " Audit Delete Trigger.sql"))
+                using (System.IO.StreamWriter sw = System.IO.File.CreateText(Path.Combine(destFolder, tables[i].TableName + " Audit Delete Trigger.sql")))
                 {
                     sw.WriteLine(sudTrig);
                     sw.Flush();
@@ -262,13 +263,13 @@ namespace SqlSync.TableScript.Audit
 					fileName = tables[i] +" Enable Triggers.sql";
 				else
 					fileName = tables[i] +" Disable Triggers.sql";
-				
-				using(System.IO.StreamWriter sw = System.IO.File.CreateText(destFolder +@"\"+fileName))
-				{
-					sw.WriteLine(aud);
-					sw.Flush();
-					sw.Close();
-				}
+
+                using (System.IO.StreamWriter sw = System.IO.File.CreateText(Path.Combine(destFolder, fileName)))
+                {
+                    sw.WriteLine(aud);
+                    sw.Flush();
+                    sw.Close();
+                }
 			}
 			return true;
 		}

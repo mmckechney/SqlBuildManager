@@ -71,18 +71,18 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFileIntoSbmFileTest_Success()
         {
-            string folder = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(folder);
 
-            string sbxFile = folder + "sbx_package_tester.sbx";
-            string script1 = folder + "CreateTestTablesScript.sql";
-            string script2 = folder + "LoggingTable.sql";
+            string sbxFile = Path.Combine(folder, "sbx_package_tester.sbx");
+            string script1 = Path.Combine(folder, "CreateTestTablesScript.sql");
+            string script2 = Path.Combine(folder, "LoggingTable.sql");
             File.WriteAllBytes(sbxFile, Properties.Resources.sbx_package_tester);
             File.WriteAllText(script1, Properties.Resources.CreateTestTablesScript);
             File.WriteAllText(script2, Properties.Resources.LoggingTable);
 
 
-            string sbmProjectFileName = folder + @"test.sbm";
+            string sbmProjectFileName = Path.Combine(folder, "test.sbm");
             bool expected = true;
             bool actual;
             actual = SqlBuildFileHelper.PackageSbxFileIntoSbmFile(sbxFile, sbmProjectFileName);
@@ -99,20 +99,20 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFileIntoSbmFileTest_SuccessWithPreExistingXmlFile()
         {
-            string folder = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string folder = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(folder);
 
-            string sbxFile = folder + "sbx_package_tester.sbx";
-            string script1 = folder + "CreateTestTablesScript.sql";
-            string script2 = folder + "LoggingTable.sql";
-            string preExistingXml = folder + XmlFileNames.MainProjectFile;
+            string sbxFile = Path.Combine(folder, "sbx_package_tester.sbx");
+            string script1 = Path.Combine(folder, "CreateTestTablesScript.sql");
+            string script2 = Path.Combine(folder, "LoggingTable.sql");
+            string preExistingXml = Path.Combine(folder , XmlFileNames.MainProjectFile);
             File.WriteAllBytes(sbxFile, Properties.Resources.sbx_package_tester);
             File.WriteAllText(script1, Properties.Resources.CreateTestTablesScript);
             File.WriteAllText(script2, Properties.Resources.LoggingTable);
             File.WriteAllText(preExistingXml,"just want some text");
 
 
-            string sbmProjectFileName = folder + @"test.sbm";
+            string sbmProjectFileName = Path.Combine(folder, @"test.sbm");
             bool expected = true;
             bool actual;
             actual = SqlBuildFileHelper.PackageSbxFileIntoSbmFile(sbxFile, sbmProjectFileName);
@@ -129,14 +129,14 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFileIntoSbmFileTest_SuccessWithPreExistingSbmFile()
         {
-            string folder = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string folder = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(folder);
 
-            string sbxFile = folder + "sbx_package_tester.sbx";
-            string script1 = folder + "CreateTestTablesScript.sql";
-            string script2 = folder + "LoggingTable.sql";
-            string sbmProjectFileName = folder + @"test.sbm";
-            string preExistingXml = folder + XmlFileNames.MainProjectFile;
+            string sbxFile = Path.Combine(folder, "sbx_package_tester.sbx");
+            string script1 = Path.Combine(folder, "CreateTestTablesScript.sql");
+            string script2 = Path.Combine(folder, "LoggingTable.sql");
+            string sbmProjectFileName = Path.Combine(folder, @"test.sbm");
+            string preExistingXml = Path.Combine(folder, XmlFileNames.MainProjectFile);
             File.WriteAllBytes(sbxFile, Properties.Resources.sbx_package_tester);
             File.WriteAllText(script1, Properties.Resources.CreateTestTablesScript);
             File.WriteAllText(script2, Properties.Resources.LoggingTable);
@@ -160,15 +160,15 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFileIntoSbmFileTest_GoodSbxNoScripts()
         {
-            string folder = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string folder = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(folder);
 
-            string sbxFile = folder + "sbx_package_tester.sbx";
+            string sbxFile = Path.Combine(folder , "sbx_package_tester.sbx");
 
             File.WriteAllBytes(sbxFile, Properties.Resources.sbx_package_tester);
  
 
-            string sbmProjectFileName = folder + @"test.sbm";
+            string sbmProjectFileName = Path.Combine(folder , @"test.sbm");
             bool expected = false ;
             bool actual;
             actual = SqlBuildFileHelper.PackageSbxFileIntoSbmFile(sbxFile, sbmProjectFileName);
@@ -187,17 +187,18 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFileIntoSbmFileTest_DontPassSbmName_Success()
         {
-            string folder = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string folder = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(folder);
 
-            string sbxBuildControlFileName = folder + "sbx_package_tester.sbx";
-            string script1 = folder + "CreateTestTablesScript.sql";
-            string script2 = folder + "LoggingTable.sql";
+            string sbxBuildControlFileName = Path.Combine(folder, "sbx_package_tester.sbx");
+            string script1 = Path.Combine(folder, "CreateTestTablesScript.sql");
+            string script2 = Path.Combine(folder, "LoggingTable.sql");
+
             File.WriteAllBytes(sbxBuildControlFileName, Properties.Resources.sbx_package_tester);
             File.WriteAllText(script1, Properties.Resources.CreateTestTablesScript);
             File.WriteAllText(script2, Properties.Resources.LoggingTable);
 
-            string expected = Path.GetDirectoryName(sbxBuildControlFileName) + @"\" + Path.GetFileNameWithoutExtension(sbxBuildControlFileName) + ".sbm";
+            string expected = Path.Combine(Path.GetDirectoryName(sbxBuildControlFileName), Path.GetFileNameWithoutExtension(sbxBuildControlFileName) + ".sbm");
             string actual;
             actual = SqlBuildFileHelper.PackageSbxFileIntoSbmFile(sbxBuildControlFileName);
             Directory.Delete(folder, true);
@@ -208,10 +209,10 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFileIntoSbmFileTest_DontPassSbmName_Fail()
         {
-            string folder = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string folder = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(folder);
 
-            string sbxBuildControlFileName = folder + "sbx_package_tester.sbx";
+            string sbxBuildControlFileName = Path.Combine(folder,"sbx_package_tester.sbx");
             File.WriteAllBytes(sbxBuildControlFileName, Properties.Resources.sbx_package_tester);
 
             string expected = string.Empty;
@@ -231,12 +232,12 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFilesIntoSbmFilesTest_SingleSbx()
         {
-            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(directoryName);
 
-            string sbxBuildControlFileName = directoryName + "sbx_package_tester.sbx";
-            string script1 = directoryName + "CreateTestTablesScript.sql";
-            string script2 = directoryName + "LoggingTable.sql";
+            string sbxBuildControlFileName = Path.Combine(directoryName, "sbx_package_tester.sbx");
+            string script1 = Path.Combine(directoryName, "CreateTestTablesScript.sql");
+            string script2 = Path.Combine(directoryName, "LoggingTable.sql");
             File.WriteAllBytes(sbxBuildControlFileName, Properties.Resources.sbx_package_tester);
             File.WriteAllText(script1, Properties.Resources.CreateTestTablesScript);
             File.WriteAllText(script2, Properties.Resources.LoggingTable);
@@ -249,7 +250,7 @@ namespace SqlSync.SqlBuild.UnitTest
             Directory.Delete(directoryName, true);
             Assert.AreEqual(messageExpected, message);
             Assert.AreEqual(1, actual.Count);
-            Assert.IsTrue(actual[0] == directoryName + "sbx_package_tester.sbm"); 
+            Assert.IsTrue(actual[0] == Path.Combine(directoryName , "sbx_package_tester.sbm")); 
             
         }
         /// <summary>
@@ -258,22 +259,23 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFilesIntoSbmFilesTest_SbxInMainAndSubFolder()
         {
-            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(directoryName);
 
-            string sbxBuildControlFileName = directoryName + "sbx_package_tester.sbx";
-            string script1 = directoryName + "CreateTestTablesScript.sql";
-            string script2 = directoryName + "LoggingTable.sql";
+            string sbxBuildControlFileName = Path.Combine(directoryName, "sbx_package_tester.sbx");
+            string script1 = Path.Combine(directoryName, "CreateTestTablesScript.sql");
+            string script2 = Path.Combine(directoryName, "LoggingTable.sql");
+
             File.WriteAllBytes(sbxBuildControlFileName, Properties.Resources.sbx_package_tester);
             File.WriteAllText(script1, Properties.Resources.CreateTestTablesScript);
             File.WriteAllText(script2, Properties.Resources.LoggingTable);
 
 
-            string subDirectory = directoryName + Guid.NewGuid().ToString() + @"\";
+            string subDirectory = Path.Combine(directoryName, Guid.NewGuid().ToString());
             Directory.CreateDirectory(subDirectory);
-            string subSbxBuildControlFileName = subDirectory + "sub_sbx_package_tester.sbx";
-            string subScript1 = subDirectory + "CreateTestTablesScript.sql";
-            string subScript2 = subDirectory + "LoggingTable.sql";
+            string subSbxBuildControlFileName = Path.Combine(subDirectory, "sub_sbx_package_tester.sbx");
+            string subScript1 = Path.Combine(subDirectory, "CreateTestTablesScript.sql");
+            string subScript2 = Path.Combine(subDirectory, "LoggingTable.sql");
             File.WriteAllBytes(subSbxBuildControlFileName, Properties.Resources.sbx_package_tester);
             File.WriteAllText(subScript1, Properties.Resources.CreateTestTablesScript);
             File.WriteAllText(subScript2, Properties.Resources.LoggingTable);
@@ -287,8 +289,8 @@ namespace SqlSync.SqlBuild.UnitTest
             
             Assert.AreEqual(messageExpected, message);
             Assert.AreEqual(2, actual.Count);
-            Assert.IsTrue(actual[0] == directoryName + "sbx_package_tester.sbm");
-            Assert.IsTrue(actual[1] == subDirectory + "sub_sbx_package_tester.sbm");
+            Assert.IsTrue(actual[0] == Path.Combine(directoryName, "sbx_package_tester.sbm"));
+            Assert.IsTrue(actual[1] == Path.Combine(subDirectory, "sub_sbx_package_tester.sbm"));
 
             Assert.IsTrue(File.Exists(actual[0]));
             Assert.IsTrue(File.Exists(actual[1]));
@@ -300,7 +302,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFilesIntoSbmFilesTest_FailNoSbx()
         {
-            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(directoryName);
 
             string message = string.Empty;
@@ -317,10 +319,10 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void PackageSbxFilesIntoSbmFilesTest_FailBadSbx()
         {
-            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString() + @"\";
+            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(directoryName);
 
-            string sbxBuildControlFileName = directoryName + "sbx_package_tester.sbx";
+            string sbxBuildControlFileName = Path.Combine(directoryName, "sbx_package_tester.sbx");
             File.WriteAllText(sbxBuildControlFileName, "bad contents");
             string message = string.Empty;
             string messageExpected = string.Empty;

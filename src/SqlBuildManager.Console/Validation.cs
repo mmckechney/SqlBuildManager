@@ -184,7 +184,7 @@ namespace SqlBuildManager.Console
                 if(string.IsNullOrWhiteSpace(cmdLine.Database) || string.IsNullOrWhiteSpace(cmdLine.Server) || 
                     string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
-                    error = "Invalid command line set. When the /Override setting specifies a SQL file, the following are also required:\r\n /Database, /Server - will be used as source to run scripts \r\n /Username, /Password - provide authentication to that database";
+                    error = $"Invalid command line set. When the /Override setting specifies a SQL file, the following are also required:{System.Environment.NewLine} /Database, /Server - will be used as source to run scripts {System.Environment.NewLine} /Username, /Password - provide authentication to that database";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
                     log.Error(error);
                     return (int)ExecutionReturn.InvalidOverrideFlag;

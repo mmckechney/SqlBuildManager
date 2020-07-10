@@ -314,7 +314,7 @@ namespace SqlSync
                 string message;
 				if(item.SubItems[5].Text.Length == 0)
 				{
-					longName= this.defaultSavePath+@"\"+shortName;
+					longName = Path.Combine(this.defaultSavePath, shortName);
 				}else
 				 {
 					longName= item.SubItems[5].Text;

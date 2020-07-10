@@ -463,7 +463,7 @@ namespace SqlSync.ObjectScript
 
             //Script Tables
             bgWorker.ReportProgress(0, new StatusEventArgs("Scripting Tables"));
-            string dir = this.data.StartingDirectory + DbObjectFilePath.Table;
+            string dir = Path.Combine(this.data.StartingDirectory, DbObjectFilePath.Table);
             for (int i = 1; i < this.smoDatabase.Tables.Count; i++)
             {
                 if (bgWorker.CancellationPending)
@@ -473,7 +473,7 @@ namespace SqlSync.ObjectScript
                 }
                 Table obj = this.smoDatabase.Tables[i];
                 fileName = obj.Schema +"." + obj.Name + DbObjectType.Table;
-                fullPath = dir + @"\" + fileName;
+                fullPath = Path.Combine(dir, fileName);
                 if (obj.IsSystemObject)
                 {
                     bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(obj.Name, "Skipping SysObj", fullPath, true));
@@ -497,7 +497,7 @@ namespace SqlSync.ObjectScript
                 if (this.combineTableObjects == false)
                 {
                     fileName = obj.Schema + "." + obj.Name + DbObjectType.KeysAndIndexes;
-                    fullPath = dir + @"\" + fileName;
+                    fullPath = Path.Combine(dir,fileName);
                     bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(fileName, "Scripting", fullPath, true));
                     if (this.ScriptDatabaseObject(DbObjectType.KeysAndIndexes, obj.Name, obj.Schema, ref tmpScript, ref unused,out message))
                     {
@@ -514,7 +514,7 @@ namespace SqlSync.ObjectScript
 
 
                     fileName = obj.Schema + "." + obj.Name + DbObjectType.ForeignKey;
-                    fullPath = dir + @"\" + fileName;
+                    fullPath = Path.Combine(dir, fileName);
                     bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(fileName, "Scripting", fullPath, true));
                     if (this.ScriptDatabaseObject(DbObjectType.ForeignKey, obj.Name,obj.Schema, ref tmpScript, ref unused, out message))
                     {
@@ -534,7 +534,7 @@ namespace SqlSync.ObjectScript
 
             //Script user defined functions
             bgWorker.ReportProgress(0, new StatusEventArgs("Scripting User Defined Functions"));
-            dir = this.data.StartingDirectory + DbObjectFilePath.UserDefinedFunction;
+            dir = Path.Combine(this.data.StartingDirectory ,DbObjectFilePath.UserDefinedFunction);
             for (int i = 1; i < this.smoDatabase.UserDefinedFunctions.Count; i++)
             {
                 if (bgWorker.CancellationPending)
@@ -544,7 +544,7 @@ namespace SqlSync.ObjectScript
                 }
                 UserDefinedFunction obj = this.smoDatabase.UserDefinedFunctions[i];
                 fileName = obj.Schema + "." + obj.Name + DbObjectType.UserDefinedFunction;
-                fullPath = dir + @"\" + fileName;
+                fullPath = Path.Combine(dir, fileName);
                 if (obj.IsSystemObject)
                 {
                     bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(obj.Name, "Skipping SysObj", fullPath, true));
@@ -570,7 +570,7 @@ namespace SqlSync.ObjectScript
 
             //Script Stored Procedures
             bgWorker.ReportProgress(0, new StatusEventArgs("Scripting Stored Procedures"));
-            dir = this.data.StartingDirectory + DbObjectFilePath.StoredProcedure;
+            dir = Path.Combine(this.data.StartingDirectory, DbObjectFilePath.StoredProcedure);
             for (int i = 1; i < this.smoDatabase.StoredProcedures.Count; i++)
             {
                 if (bgWorker.CancellationPending)
@@ -580,7 +580,7 @@ namespace SqlSync.ObjectScript
                 }
                 StoredProcedure obj = this.smoDatabase.StoredProcedures[i];
                 fileName = obj.Schema + "." + obj.Name + DbObjectType.StoredProcedure;
-                fullPath = dir + @"\" + fileName;
+                fullPath = Path.Combine(dir, fileName);
                 if (obj.IsSystemObject)
                 {
                     bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(obj.Name, "Skipping SysObj", fullPath, true));
@@ -605,7 +605,7 @@ namespace SqlSync.ObjectScript
 
             //Script views
             bgWorker.ReportProgress(0, new StatusEventArgs("Scripting Views"));
-            dir = this.data.StartingDirectory + DbObjectFilePath.View;
+            dir = Path.Combine(this.data.StartingDirectory, DbObjectFilePath.View);
             for (int i = 1; i < this.smoDatabase.Views.Count; i++)
             {
                 if (bgWorker.CancellationPending)
@@ -615,7 +615,7 @@ namespace SqlSync.ObjectScript
                 }
                 View obj = this.smoDatabase.Views[i];
                 fileName = obj.Schema + "." + obj.Name + DbObjectType.View;
-                fullPath = dir + @"\" + fileName;
+                fullPath = Path.Combine(dir, fileName);
                 if (obj.IsSystemObject)
                 {
                     bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(obj.Name, "Skipping SysObj", fullPath, true));
@@ -639,7 +639,7 @@ namespace SqlSync.ObjectScript
 
             //Script database users
             bgWorker.ReportProgress(0, new StatusEventArgs("Scripting Database Users"));
-            dir = this.data.StartingDirectory + DbObjectFilePath.DatabaseUser;
+            dir = Path.Combine(this.data.StartingDirectory, DbObjectFilePath.DatabaseUser);
             for (int i = 1; i < this.smoDatabase.Users.Count; i++)
             {
                 if (bgWorker.CancellationPending)
@@ -649,7 +649,7 @@ namespace SqlSync.ObjectScript
                 }
                 User obj = this.smoDatabase.Users[i];
                 fileName = obj.Name.Replace(@"\", "-") + DbObjectType.DatabaseUser;
-                fullPath = dir + @"\" + fileName;
+                fullPath = Path.Combine(dir, fileName);
                 if (obj.IsSystemObject)
                 {
                     bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(obj.Name, "Skipping SysObj", fullPath, true));
@@ -673,7 +673,7 @@ namespace SqlSync.ObjectScript
 
             //Script server logins
             bgWorker.ReportProgress(0, new StatusEventArgs("Scripting Server Logins"));
-            dir = this.data.StartingDirectory + DbObjectFilePath.ServerLogin;
+            dir = Path.Combine(this.data.StartingDirectory, DbObjectFilePath.ServerLogin);
             for (int i = 1; i < this.smoServer.Logins.Count; i++)
             {
                 if (bgWorker.CancellationPending)
@@ -683,7 +683,7 @@ namespace SqlSync.ObjectScript
                 }
                 Login obj = this.smoServer.Logins[i];
                 fileName = obj.Name.Replace(@"\", "-") + DbObjectType.ServerLogin;
-                fullPath = dir + @"\" + fileName;
+                fullPath = Path.Combine(dir, fileName);
                 if (obj.IsSystemObject)
                 {
                     bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(obj.Name, "Skipping SysObj", fullPath, true));
@@ -707,12 +707,12 @@ namespace SqlSync.ObjectScript
 
             //Script database roles
             bgWorker.ReportProgress(0, new StatusEventArgs("Scripting Database Roles"));
-            dir = this.data.StartingDirectory + DbObjectFilePath.DatabaseRoles;
+            dir = Path.Combine(this.data.StartingDirectory, DbObjectFilePath.DatabaseRoles);
             for (int i = 0; i < this.smoDatabase.Roles.Count; i++)
             {
                 DatabaseRole obj = this.smoDatabase.Roles[i];
                 fileName = obj.Name.Replace(@"\", "-") + DbObjectType.DatabaseRole;
-                fullPath = dir + @"\" + fileName;
+                fullPath = Path.Combine(dir, fileName);
                 bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(fileName, "Scripting", fullPath, true));
                 if (this.ScriptDatabaseObject(DbObjectType.DatabaseRole, obj.Name, "", ref tmpScript, ref unused, out message))
                 {
@@ -731,12 +731,12 @@ namespace SqlSync.ObjectScript
 
             //Script database schema
             bgWorker.ReportProgress(0, new StatusEventArgs("Scripting Database Schemas"));
-            dir = this.data.StartingDirectory + DbObjectFilePath.DatabaseSchemas;
+            dir = Path.Combine(this.data.StartingDirectory, DbObjectFilePath.DatabaseSchemas);
             for (int i = 0; i < this.smoDatabase.Schemas.Count; i++)
             {
                 Schema obj = this.smoDatabase.Schemas[i];
                 fileName = obj.Name.Replace(@"\", "-") + DbObjectType.DatabaseSchema;
-                fullPath = dir + @"\" + fileName;
+                fullPath = Path.Combine(dir, fileName);
                 bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(fileName, "Scripting", fullPath, true));
                 if (this.ScriptDatabaseObject(DbObjectType.DatabaseSchema, obj.Name, "", ref tmpScript, ref unused, out message))
                 {
@@ -778,7 +778,7 @@ namespace SqlSync.ObjectScript
 			string[] files = new string[fileList.Count];
 			fileList.CopyTo(files);
 
-			SqlBuild.ZipHelper.CreateZipPackage(files,this.data.StartingDirectory,this.data.StartingDirectory+@"\"+sb.ToString());
+			SqlBuild.ZipHelper.CreateZipPackage(files,this.data.StartingDirectory, Path.Combine(this.data.StartingDirectory,sb.ToString()));
 
 
 		}
@@ -801,30 +801,39 @@ namespace SqlSync.ObjectScript
 		private void InitializeDirectories(bool withDelete)
 		{
 			bgWorker.ReportProgress(0, new StatusEventArgs("Initializing Directories"));
-			if(Directory.Exists(data.StartingDirectory+DbObjectFilePath.Table) == false)
-				Directory.CreateDirectory(data.StartingDirectory+DbObjectFilePath.Table);
+            if (Directory.Exists(Path.Combine(data.StartingDirectory,DbObjectFilePath.Table)) == false)
+            {
+                Directory.CreateDirectory(Path.Combine(data.StartingDirectory, DbObjectFilePath.Table));
+            }
 
-			if(Directory.Exists(data.StartingDirectory+DbObjectFilePath.View) == false)
-				Directory.CreateDirectory(data.StartingDirectory+DbObjectFilePath.View);
-
-			if(Directory.Exists(data.StartingDirectory+DbObjectFilePath.StoredProcedure) == false)
-				Directory.CreateDirectory(data.StartingDirectory+DbObjectFilePath.StoredProcedure);
-
-			if(Directory.Exists(data.StartingDirectory+DbObjectFilePath.UserDefinedFunction) == false)
-				Directory.CreateDirectory(data.StartingDirectory+DbObjectFilePath.UserDefinedFunction);
-
-			if(Directory.Exists(data.StartingDirectory+DbObjectFilePath.DatabaseUser) == false)
-				Directory.CreateDirectory(data.StartingDirectory+DbObjectFilePath.DatabaseUser);
-
-			if(Directory.Exists(data.StartingDirectory+DbObjectFilePath.ServerLogin) == false)
-				Directory.CreateDirectory(data.StartingDirectory+DbObjectFilePath.ServerLogin);
-
-            if (Directory.Exists(data.StartingDirectory + DbObjectFilePath.DatabaseRoles) == false)
-                Directory.CreateDirectory(data.StartingDirectory + DbObjectFilePath.DatabaseRoles);
-
-            if (Directory.Exists(data.StartingDirectory + DbObjectFilePath.DatabaseSchemas) == false)
-                Directory.CreateDirectory(data.StartingDirectory + DbObjectFilePath.DatabaseSchemas);
-	
+            if (Directory.Exists(Path.Combine(data.StartingDirectory, DbObjectFilePath.View)) == false)
+            {
+                Directory.CreateDirectory(Path.Combine(data.StartingDirectory, DbObjectFilePath.View));
+            }
+            if (Directory.Exists(Path.Combine(data.StartingDirectory, DbObjectFilePath.StoredProcedure)) == false)
+            {
+                Directory.CreateDirectory(Path.Combine(data.StartingDirectory, DbObjectFilePath.StoredProcedure));
+            }
+            if (Directory.Exists(Path.Combine(data.StartingDirectory, DbObjectFilePath.UserDefinedFunction)) == false)
+            {
+                Directory.CreateDirectory(Path.Combine(data.StartingDirectory, DbObjectFilePath.UserDefinedFunction));
+            }
+            if (Directory.Exists(Path.Combine(data.StartingDirectory, DbObjectFilePath.DatabaseUser)) == false)
+            {
+                Directory.CreateDirectory(Path.Combine(data.StartingDirectory, DbObjectFilePath.DatabaseUser));
+            }
+            if (Directory.Exists(Path.Combine(data.StartingDirectory, DbObjectFilePath.ServerLogin)) == false)
+            {
+                Directory.CreateDirectory(Path.Combine(data.StartingDirectory, DbObjectFilePath.ServerLogin));
+            }
+            if (Directory.Exists(Path.Combine(data.StartingDirectory, DbObjectFilePath.DatabaseRoles)) == false)
+            {
+                Directory.CreateDirectory(Path.Combine(data.StartingDirectory, DbObjectFilePath.DatabaseRoles));
+            }
+            if (Directory.Exists(Path.Combine(data.StartingDirectory, DbObjectFilePath.DatabaseSchemas)) == false)
+            {
+                Directory.CreateDirectory(Path.Combine(data.StartingDirectory, DbObjectFilePath.DatabaseSchemas));
+            }
 			if(withDelete)
 			{
 				DeletePreExistingScriptFiles(data.StartingDirectory);

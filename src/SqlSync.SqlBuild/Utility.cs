@@ -20,15 +20,15 @@ namespace SqlSync.SqlBuild
         public static List<string> GetRecentServers(out ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl)
         {
             serverConfigTbl = null;
-            string homePath = SqlBuildManager.Logging.Configure.AppDataPath + @"\";
+            string homePath = SqlBuildManager.Logging.Configure.AppDataPath;
             List<string> recentDbs = new List<string>();
 
-            if (System.IO.File.Exists(homePath + ConfigFileName))
+            if (System.IO.File.Exists(Path.Combine( homePath ,ConfigFileName)))
             {
                 try
                 {
                     ServerConnectConfig config = new ServerConnectConfig();
-                    config.ReadXml(homePath + ConfigFileName);
+                    config.ReadXml(Path.Combine(homePath, ConfigFileName));
                     serverConfigTbl = config.ServerConfiguration;
                     DataView view = config.ServerConfiguration.DefaultView;
                     view.Sort = config.ServerConfiguration.LastAccessedColumn.ColumnName + " DESC";
@@ -48,10 +48,10 @@ namespace SqlSync.SqlBuild
             {
                 userName = Cryptography.EncryptText(userName, ConnectionHelper.ConnectCryptoKey);
                 password = Cryptography.EncryptText(password, ConnectionHelper.ConnectCryptoKey);
-                string homePath = SqlBuildManager.Logging.Configure.AppDataPath + @"\";
+                string configFileFullPath = Path.Combine(SqlBuildManager.Logging.Configure.AppDataPath, ConfigFileName);
                 ServerConnectConfig config = new ServerConnectConfig();
-                if (File.Exists(homePath + ConfigFileName))
-                    config.ReadXml(homePath + ConfigFileName);
+                if (File.Exists(configFileFullPath))
+                    config.ReadXml(configFileFullPath);
 
                 DataRow[] row = config.ServerConfiguration.Select(config.ServerConfiguration.NameColumn.ColumnName + " ='" + databaseName + "'");
                 if (row.Length == 0)
@@ -67,7 +67,7 @@ namespace SqlSync.SqlBuild
                     r.AuthenticationType = authType.ToString();
                     r.AcceptChanges();
                 }
-                config.WriteXml(homePath + ConfigFileName);
+                config.WriteXml(configFileFullPath);
             }
             catch (Exception exe)
             {

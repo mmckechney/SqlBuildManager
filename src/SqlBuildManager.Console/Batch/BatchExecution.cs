@@ -23,8 +23,8 @@ namespace SqlBuildManager.Console.Batch
         private CommandLineArgs cmdLine;
 
         // Batch resource settings
-        private string PoolName = "SqlBuildManagerPool";
-        private const string JobIdFormat = "SqlBuildManagerJob_{0}";
+        private string PoolName = "SqlBuildManagerPoolWindows";
+        private const string JobIdFormat = "SqlBuildManagerJob{0}_{1}";
 
         private const string baseTargetFormat = "target_{0}.cfg";
 
@@ -40,6 +40,26 @@ namespace SqlBuildManager.Console.Batch
 
         public int StartBatch()
         {
+            string applicationPackage = string.Empty;
+            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ApplicationPackage))
+            {
+                switch (cmdLine.BatchArgs.BatchPoolOs)
+                {
+                    case OsType.Linux:
+                        applicationPackage = "SqlBuildManagerLinux";
+                        break;
+                    case OsType.Windows:
+                    default:
+                        applicationPackage = "SqlBuildManagerWindows";
+                        break;
+                }
+            }
+            else
+            {
+                applicationPackage = cmdLine.BatchArgs.ApplicationPackage;
+            }
+            
+
             string jobId, poolId, storageContainerName;
             string jobToken = DateTime.Now.ToString("yyyy-MM-dd-HHmm");
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
@@ -56,11 +76,13 @@ namespace SqlBuildManager.Console.Batch
             }
             else
             {
-                jobId = string.Format(JobIdFormat, jobToken);
+                jobId = string.Format(JobIdFormat, cmdLine.BatchArgs.BatchPoolOs, jobToken);
                 poolId = PoolName;
                 storageContainerName = jobToken;
             }
 
+
+            log.Info($"Setting job id to: {jobId}"); 
             int? myExitCode = 0;
 
 
@@ -141,7 +163,7 @@ namespace SqlBuildManager.Console.Batch
                 batchClient = BatchClient.Open(cred);
 
                 // Create a Batch pool, VM configuration, Windows Server image
-                bool success = CreateBatchPool(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize);
+                bool success = CreateBatchPool(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize, cmdLine.BatchArgs.BatchPoolOs);
 
 
                 // The collection of data files that are to be processed by the tasks
@@ -188,7 +210,7 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId);
+                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, applicationPackage);
                 foreach (var s in commandLines)
                     log.Debug(s);
 
@@ -229,7 +251,7 @@ namespace SqlBuildManager.Console.Batch
                     task.ResourceFiles = inputFiles;
                     task.ApplicationPackageReferences = new List<ApplicationPackageReference>
                         {
-                            new ApplicationPackageReference { ApplicationId = "sqlbuildmanager" }
+                            new ApplicationPackageReference { ApplicationId = applicationPackage }
                         };
                     task.OutputFiles = new List<OutputFile>
                         {
@@ -283,7 +305,8 @@ namespace SqlBuildManager.Console.Batch
                 log.InfoFormat("Batch job end: {0}", DateTime.Now);
                 log.InfoFormat("Elapsed time: {0}", timer.Elapsed);
 
-                // Clean up Batch resources
+
+               // Clean up Batch resources
                 if (cmdLine.BatchArgs.DeleteBatchJob)
                 {
                     batchClient.JobOperations.DeleteJob(jobId);
@@ -296,6 +319,21 @@ namespace SqlBuildManager.Console.Batch
                 log.Info("Consolidating log files");
                 ConsolidateLogFiles(blobClient, storageContainerName, inputFilePaths);
 
+                //Finish the job out
+                if (myExitCode == 0)
+                {
+                    log.Info($"Setting job {jobId} status to Finished");
+                    CloudJob j = batchClient.JobOperations.GetJob(jobId);
+                    j.Terminate("Finished");
+                }
+                else
+                {
+                    log.Info($"Setting job {jobId} status to exit code: {myExitCode}");
+                    CloudJob j = batchClient.JobOperations.GetJob(jobId);
+                    j.Terminate("Error");
+                }                    
+
+
                 string readOnlySasToken = GetOutputContainerSasUrl(blobClient, storageContainerName, true);
                 log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
                 log.Info("The read-only SAS token URL is valid for 7 days.");
@@ -306,6 +344,11 @@ namespace SqlBuildManager.Console.Batch
             catch(Exception exe)
             {
                 log.ErrorFormat($"Exception when running batch job\r\n{exe.ToString()}");
+                log.Info($"Setting job {jobId} status to Failed");
+                CloudJob j = batchClient.JobOperations.GetJob(jobId);
+                j.Terminate("Failed");
+                myExitCode = 486;
+
             }
             finally
             {
@@ -318,6 +361,7 @@ namespace SqlBuildManager.Console.Batch
 
             if (myExitCode.HasValue)
             {
+
                 log.InfoFormat("Exit Code: {0}", myExitCode.Value);
                 return myExitCode.Value;
             }
@@ -378,15 +422,27 @@ namespace SqlBuildManager.Console.Batch
         }
         
 
-        private bool CreateBatchPool(BatchClient batchClient, string poolId, int nodeCount, string vmSize)
+        private bool CreateBatchPool(BatchClient batchClient, string poolId, int nodeCount, string vmSize, OsType os)
         {
             log.InfoFormat("Creating pool [{0}]...", poolId);
 
-            ImageReference imageReference = new ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer",
-                sku: "2016-Datacenter-with-containers", version: "latest");
+            ImageReference imageReference;
+            VirtualMachineConfiguration virtualMachineConfiguration;
+            switch (os)
+            {
+                
+                case OsType.Linux:
+                    imageReference = new ImageReference(publisher: "Canonical", offer: "UbuntuServer", sku: "18.04-lts", version: "latest");
+                    virtualMachineConfiguration = new VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 18.04");
+                    break;
 
-            VirtualMachineConfiguration virtualMachineConfiguration = new VirtualMachineConfiguration(
-                imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
+                case OsType.Windows:
+                default:
+                    imageReference = new ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer", sku: "2016-Datacenter-with-containers", version: "latest");
+                    virtualMachineConfiguration = new VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
+
+                    break;
+            }
 
             try
             {
@@ -396,6 +452,7 @@ namespace SqlBuildManager.Console.Batch
                     virtualMachineSize: vmSize,
                     virtualMachineConfiguration: virtualMachineConfiguration);
                 pool.Commit();
+
             }
             catch (BatchException be)
             {
@@ -434,6 +491,13 @@ namespace SqlBuildManager.Console.Batch
                     throw; // Any other exception is unexpected
                 }
             }
+            //if (os == OsType.Linux)
+            //{
+           // string shellScript = $"$AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/ install_sqlpackage.sh";
+            //    CloudPool pool = batchClient.PoolOperations.GetPool(poolId);
+            //    pool.StartTask.CommandLine =
+            //}                    
+
             return true;
         }
 
@@ -461,7 +525,7 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        private IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount,  string jobId)
+        private IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount,  string jobId, OsType os, string applicationPackage)
         {
            // var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
 
@@ -486,9 +550,7 @@ namespace SqlBuildManager.Console.Batch
                     var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac.ToLower()))).FirstOrDefault();
                     threadCmdLine.DacPacArgs.PlatinumDacpac = dac.FilePath;
                 }
-
-                //Set root logging path to the jobId
-                threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
+             
 
                 //Set the override file for this node.
                 var tmp = string.Format(baseTargetFormat, i);
@@ -501,13 +563,30 @@ namespace SqlBuildManager.Console.Batch
                 StringBuilder sb = new StringBuilder();
                 if (Program.cliVersion == SqlSync.Constants.CliVersion.NEW_CLI)
                 {
-                    sb.Append("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\sbm.exe batch ");
+                    switch(os)
+                    {
+                        case OsType.Windows:
+                            threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
+                            //threadCmdLine.RootLoggingPath = "%AZ_BATCH_TASK_WORKING_DIR%";
+                            sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe batch ");
+                            sb.Append(threadCmdLine.ToBatchThreadedExeString());
+                            break;
+                        case OsType.Linux:
+                            threadCmdLine.RootLoggingPath = "$AZ_BATCH_TASK_WORKING_DIR";
+                            sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm batch ");
+                            //sb.Append("/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_sqlbuildmanagerlinux/sbm batch ");
+                            sb.Append(threadCmdLine.ToBatchThreadedExeString() + "'");
+                            break;
+                    }
+ 
                 }
                 else
                 {
+                    threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
                     sb.Append("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe ");
+                    sb.Append(threadCmdLine.ToBatchThreadedExeString());
                 }
-                sb.Append(threadCmdLine.ToBatchThreadedExeString());
+       
 
                 commandLines.Add(sb.ToString());
             }
@@ -632,7 +711,7 @@ namespace SqlBuildManager.Console.Batch
             var batchClient = BatchClient.Open(cred);
 
             // Create a Batch pool, VM configuration, Windows Server image
-            bool success = CreateBatchPool(batchClient, PoolName, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize);
+            bool success = CreateBatchPool(batchClient, PoolName, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize, cmdLine.BatchArgs.BatchPoolOs);
 
             if (cmdLine.BatchArgs.PollBatchPoolStatus)
             {
