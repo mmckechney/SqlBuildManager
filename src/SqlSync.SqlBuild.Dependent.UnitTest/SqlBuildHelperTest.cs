@@ -445,7 +445,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             DataView view = buildData.Script.DefaultView;
 
             bool isMultiDbRun = false;
-            ScriptBatchCollection scriptBatchColl = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, init.projectFileName);
+            ScriptBatchCollection scriptBatchColl = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, string.Empty);
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             SqlSyncBuildData.BuildRow actual;
 
@@ -1612,7 +1612,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             init.AddBatchInsertScripts(ref buildData, true);
 
             ScriptBatchCollection actual;
-            actual = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, init.projectFileName);
+            actual = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, string.Empty);
             Assert.IsTrue(2 == actual.Count, "Invalid Batch Count " + actual.Count.ToString() + " vs 2");
             Assert.IsTrue(2 == actual[0].ScriptBatchContents.Length, "Invalid Batch Length " + actual.Count.ToString() + " vs 2");
         }

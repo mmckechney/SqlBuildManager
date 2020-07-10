@@ -71,7 +71,7 @@ namespace SqlSync.SqlBuild
 		/// <summary>
 		/// Path to the Sql Build project (sbm) file
 		/// </summary>
-		private string projectFilePath;
+		private string projectFilePath = string.Empty;
 		/// <summary>
 		/// Current run for 
 		/// </summary>
@@ -356,9 +356,15 @@ namespace SqlSync.SqlBuild
         internal void PrepareBuildForRun(string serverName, bool isMultiDbRun,ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
 		{
 
-			//Make sure the project file is not read-only
-            if(File.Exists(this.projectFileName))
-			    File.SetAttributes(this.projectFileName, System.IO.FileAttributes.Normal);
+            //Make sure the project file is not read-only
+            if (File.Exists(this.projectFileName))
+            {
+                File.SetAttributes(this.projectFileName, System.IO.FileAttributes.Normal);
+            }
+            if (this.projectFilePath == null && !string.IsNullOrWhiteSpace(this.projectFileName))
+            {
+                this.projectFilePath = Path.GetDirectoryName(this.projectFileName);
+            }
 
 			//Set the file name for the script log
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
