@@ -209,7 +209,7 @@ namespace SqlBuildManager.Console
                 };
                 var batchApplicationOption = new Option(new string[] { "--apppackage", "--applicationpackage" }, "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux")
                 {
-                    Argument = new Argument<OsType>("batchapplicationpackage")
+                    Argument = new Argument<OsType>("applicationpackage")
                 };
                 var eventhubconnectionOption = new Option(new string[] { "--eventhubconnection" }, "Event Hub connection string for Event Hub logging of batch execution")
                 {

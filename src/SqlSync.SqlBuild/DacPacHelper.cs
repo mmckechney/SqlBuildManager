@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild;
+using System.Runtime.InteropServices;
 namespace SqlSync.SqlBuild
 {
     public class DacPacHelper
@@ -15,35 +16,45 @@ namespace SqlSync.SqlBuild
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string sqlPack = null;
         private static List<string> appRoots = new List<string> (new string[] { @"E:\approot", @"F:\approot", @"G:\approot" }); //This really should be dynamic, but we can see it now. 
+        private static bool sqlPackageChmod = false;
         private static string sqlPackageExe
         {
             get
             {
-                if(string.IsNullOrWhiteSpace(sqlPack) || !File.Exists(sqlPack))
+                var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+                if (isWindows)
                 {
-                    lock (appRoots)
+                    if (string.IsNullOrWhiteSpace(sqlPack) || !File.Exists(sqlPack))
                     {
-                        appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                        appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\Microsoft_SqlDB_DAC"); 
-                        appRoots.Add(@"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\Microsoft");
-                        appRoots.Add(@"C:\Program Files\Microsoft SQL Server\150\DAC\bin");
-                    }
-                    foreach(var dir in appRoots)
-                    {
-                        if(Directory.Exists(dir))
+                        lock (appRoots)
                         {
-                            var files = Directory.GetFiles(dir, "sqlpackage.exe",SearchOption.AllDirectories);
-                            if(files.Any())
+                            appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                            appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\Microsoft_SqlDB_DAC");
+                            appRoots.Add(@"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\Microsoft");
+                            appRoots.Add(@"C:\Program Files\Microsoft SQL Server\150\DAC\bin");
+                        }
+                        foreach (var dir in appRoots)
+                        {
+                            if (Directory.Exists(dir))
                             {
-                                sqlPack = files.First();
-                                return sqlPack;
+                                var files = Directory.GetFiles(dir, "sqlpackage.exe", SearchOption.AllDirectories);
+                                if (files.Any())
+                                {
+                                    sqlPack = files.First();
+                                    return sqlPack;
+                                }
                             }
                         }
+                        log.ErrorFormat("Unable to find sqlpackage.exe in directories: {0}", string.Join(" | ", appRoots.ToArray()));
+                        throw new ArgumentException("Can not file sqlpackage.exe");
                     }
-                    log.ErrorFormat("Unable to find sqlpackage.exe in directories: {0}", string.Join(" | ", appRoots.ToArray()));
-                    throw new ArgumentException("Can not file sqlpackage.exe");
+                    return sqlPack;
                 }
-                return sqlPack;
+                else
+                {
+                    return "microsoft-sqlpackage-linux/sqlpackage";
+                }
             }
         }
         public static bool ExtractDacPac(string sourceDatabase, string sourceServer, string userName, string password, string dacPacFileName)
@@ -249,7 +260,7 @@ namespace SqlSync.SqlBuild
             //    cleanedScript = cleanedScript.Substring(0, mLogin) + cleanedScript.Substring(crAfter + 2);
             //}
 
-            string endofHeader = Regex.Escape(@"Please run the below section of statements against the database");
+           string endofHeader = Regex.Escape(@"Please run the below section of statements against the database");
             MatchCollection endMatchs = Regex.Matches(dacPacGeneratedScript, endofHeader);
             var endMatch = endMatchs.Cast<Match>().Select(m => m.Index).LastOrDefault();
             if(endMatch == -1) //Odd, there should be something, but oh well...

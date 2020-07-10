@@ -28,7 +28,7 @@ param(
  $SqlServerPassword,
 
  [int]
- $TestDatabaseCount = 10
+ $TestDatabaseCount = 10,
 
 )
 
@@ -38,15 +38,18 @@ $outputDbConfigFile = Join-Path $outputPath "databasetargets.cfg"
 $settingsJsonWindows = Join-Path $outputPath "settingsfile-windows.json"
 $settingsJsonLinux = Join-Path $outputPath "settingsfile-linux.json"
 
-
+###################################################
 # Create the resource Group for your test resources
+###################################################
 Write-Host "Creating Resourcegroup : $ResourceGroupName"
 if($null -eq (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName -Location $Location -ErrorAction SilentlyContinue))
 {
     New-AzResourceGroup  -ResourceGroupName $ResourceGroupName -Location $Location 
 }
 
+########################################################
 # Create the SQL server, Elastic pool and test databases
+########################################################
 $password = $SqlServerPassword | ConvertTo-SecureString -AsPlainText -Force
 $SqlCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SqlServerUserName,  $password
 if($null -eq (Get-AzSqlServer -ResourceGroupName $ResourceGroupName  -ServerName $SqlServerName -ErrorAction SilentlyContinue))
@@ -85,7 +88,9 @@ For ($i=1; $i -lt  $TestDatabaseCount+1; $i++)
     }
 }
 
-#Output the target database configuration file
+########################################################
+# Output the target database configuration file
+########################################################
 $server = Get-AzSqlServer -ResourceGroupName $ResourceGroupName  -ServerName $SqlServerName
 $dbs = Get-AzSqlDatabase -ResourceGroupName $server.ResourceGroupName -ServerName $server.ServerName | Sort-Object -Property DatabaseName
 
@@ -113,17 +118,20 @@ foreach($db in $dbs)
 }
 
 
-##Now create the batch 
+############################################################
+# Call to deploy_batch.ps to create the batch infrastructure
+############################################################
 $SubscriptionId = (Get-AzContext).Subscription.Id
 ./deploy_batch.ps1 -subscriptionId $SubscriptionId -resourceGroupName $ResourceGroupName -resourceGroupLocation $Location -batchprefix $batchprefix -outputpath $outputPath
 
-#update the settings file with the SQL UserName and Password
+
+#############################################################
+# update the settings file with the SQL UserName and Password
+#############################################################
 $tmpPath = Resolve-Path $settingsJsonWindows
 Write-Output "Saving settings file to $tmpPath"
 ./..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent
 
-
-#update the Linux settings file with the SQL UserName and Password
 $tmpPath = Resolve-Path $settingsJsonLinux
 Write-Output "Saving settings file to $tmpPath"
 ./..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux

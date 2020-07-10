@@ -174,7 +174,7 @@ foreach ($env in $vars)
     Write-Host "Creating new Azure Batch Application named $($env.ApplicationName)"
     New-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $env.ApplicationName
     
-    Write-Host "Uploading application package $($env.ApplicationName) to Azure Batch account"
+    Write-Host "Uploading application package $($env.ApplicationName) [$($env.BuildOutputZip)] to Azure Batch account"
     New-AzBatchApplicationPackage -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $env.ApplicationName -ApplicationVersion $version -Format zip -FilePath $env.BuildOutputZip
     
     Write-Host "Setting default application for  $($env.ApplicationName) version to $version"

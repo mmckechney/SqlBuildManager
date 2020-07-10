@@ -248,9 +248,9 @@ namespace SqlSync.SqlBuild
             set { BatchArgs.BatchPoolOs = value; }
         }
         [JsonIgnore]
-        public virtual string BatchApplicationPackage
+        public virtual string ApplicationPackage
         {
-            set { BatchArgs.BatchApplicationPackage = value; }
+            set { BatchArgs.ApplicationPackage = value; }
         }
         [Serializable]
         public class Batch
@@ -274,7 +274,7 @@ namespace SqlSync.SqlBuild
             [JsonConverter(typeof(StringEnumConverter))]
             public OsType BatchPoolOs { get; set; }
             public string EventHubConnectionString { get; set; } = string.Empty;
-            public string BatchApplicationPackage { get; set; } = string.Empty;
+            public string ApplicationPackage { get; set; } = string.Empty;
         }
         #endregion
 

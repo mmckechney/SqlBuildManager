@@ -41,7 +41,7 @@ namespace SqlBuildManager.Console.Batch
         public int StartBatch()
         {
             string applicationPackage = string.Empty;
-            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchApplicationPackage))
+            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ApplicationPackage))
             {
                 switch (cmdLine.BatchArgs.BatchPoolOs)
                 {
@@ -53,6 +53,10 @@ namespace SqlBuildManager.Console.Batch
                         applicationPackage = "SqlBuildManagerWindows";
                         break;
                 }
+            }
+            else
+            {
+                applicationPackage = cmdLine.BatchArgs.ApplicationPackage;
             }
             
 
@@ -77,6 +81,8 @@ namespace SqlBuildManager.Console.Batch
                 storageContainerName = jobToken;
             }
 
+
+            log.Info($"Setting job id to: {jobId}"); 
             int? myExitCode = 0;
 
 
@@ -314,8 +320,18 @@ namespace SqlBuildManager.Console.Batch
                 ConsolidateLogFiles(blobClient, storageContainerName, inputFilePaths);
 
                 //Finish the job out
-                CloudJob j = batchClient.JobOperations.GetJob(jobId);
-                j.Terminate("Finished");
+                if (myExitCode == 0)
+                {
+                    log.Info($"Setting job {jobId} status to Finished");
+                    CloudJob j = batchClient.JobOperations.GetJob(jobId);
+                    j.Terminate("Finished");
+                }
+                else
+                {
+                    log.Info($"Setting job {jobId} status to exit code: {myExitCode}");
+                    CloudJob j = batchClient.JobOperations.GetJob(jobId);
+                    j.Terminate("Error");
+                }                    
 
 
                 string readOnlySasToken = GetOutputContainerSasUrl(blobClient, storageContainerName, true);
@@ -328,6 +344,11 @@ namespace SqlBuildManager.Console.Batch
             catch(Exception exe)
             {
                 log.ErrorFormat($"Exception when running batch job\r\n{exe.ToString()}");
+                log.Info($"Setting job {jobId} status to Failed");
+                CloudJob j = batchClient.JobOperations.GetJob(jobId);
+                j.Terminate("Failed");
+                myExitCode = 486;
+
             }
             finally
             {
@@ -340,6 +361,7 @@ namespace SqlBuildManager.Console.Batch
 
             if (myExitCode.HasValue)
             {
+
                 log.InfoFormat("Exit Code: {0}", myExitCode.Value);
                 return myExitCode.Value;
             }
@@ -430,6 +452,7 @@ namespace SqlBuildManager.Console.Batch
                     virtualMachineSize: vmSize,
                     virtualMachineConfiguration: virtualMachineConfiguration);
                 pool.Commit();
+
             }
             catch (BatchException be)
             {
@@ -468,6 +491,13 @@ namespace SqlBuildManager.Console.Batch
                     throw; // Any other exception is unexpected
                 }
             }
+            //if (os == OsType.Linux)
+            //{
+           // string shellScript = $"$AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/ install_sqlpackage.sh";
+            //    CloudPool pool = batchClient.PoolOperations.GetPool(poolId);
+            //    pool.StartTask.CommandLine =
+            //}                    
+
             return true;
         }
 
