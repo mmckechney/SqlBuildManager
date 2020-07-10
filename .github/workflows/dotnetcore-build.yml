@@ -61,23 +61,23 @@ jobs:
     - name: Publish the new Linux CLI app
       run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release
 
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: SqlBuildManager CLI
-        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish"
-
-    - name: Upload a Build Artifact
+    - name: Upload a Build Artifact sbm-windows
       uses: actions/upload-artifact@v2
       with:
         name: sbm-windows
-        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"     
-        
-    - name: Upload a Build Artifact
+        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish"
+
+    - name: Upload a Build Artifact sbm-linux
       uses: actions/upload-artifact@v2
       with:
         name: sbm-linux
-        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"     
+        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/linux-x64/publish"
 
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: SqlBuildManager Desktop
+        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"     
+        
 
     
