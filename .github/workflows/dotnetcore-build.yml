@@ -52,11 +52,14 @@ jobs:
     - name: Publish the Windows desktop app
       run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release
 
-    - name: Publish the legacy Console CLI desktop app
+    - name: Publish the legacy Console CLI app
       run: dotnet publish ./src/SqlBuildManager.Console/SqlBuildManager.Console.csproj -r win-x64 --configuration Release
 
-    - name: Publish the new Console CLI desktop app
+    - name: Publish the new Windows CLI app 
       run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release
+
+    - name: Publish the new Linux CLI app
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
@@ -67,8 +70,14 @@ jobs:
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: SqlBuildManager Desktop
-        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"        
+        name: sbm-windows
+        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"     
+        
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: sbm-linux
+        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"     
 
 
     
