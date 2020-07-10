@@ -98,7 +98,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy ..\SqlBuildManager.Console\bin\debug\netcoreapp3.1\sbm.runtimeconfig.json $(OutDir)sbm.runtimeconfig.json&#xD;&#xA;copy ..\SqlBuildManager.Console\bin\debug\netcoreapp3.1\sbm.deps.json $(OutDir)sbm.deps.json" />
+    <Exec Command="copy ..\SqlBuildManager.Console\bin\$(ConfigurationName)\netcoreapp3.1\sbm.runtimeconfig.json $(OutDir)sbm.runtimeconfig.json&#xD;&#xA;copy ..\SqlBuildManager.Console\bin\$(ConfigurationName)\netcoreapp3.1\sbm.deps.json $(OutDir)sbm.deps.json&#xD;&#xA;" />
   </Target>
 
 </Project>
