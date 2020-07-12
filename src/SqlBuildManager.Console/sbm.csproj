@@ -39,7 +39,7 @@
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.7" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20303.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
-    <PackageReference Include="System.DirectoryServices" Version="5.0.0-preview.4.20251.6" />
+    <PackageReference Include="System.DirectoryServices" Version="5.0.0-preview.6.20305.6" />
     <PackageReference Include="BlueSkyDev.Logging.AzureEventHubAppender" Version="1.2.1" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.4" />
     <PackageReference Include="Microsoft.Azure.Batch" Version="13.0.0" />
