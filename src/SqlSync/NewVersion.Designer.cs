@@ -252,8 +252,6 @@ namespace SqlSync
             // 
             this.groupBox1.Controls.Add(this.lblCurrentLogin);
             this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.btnUndo);
-            this.groupBox1.Controls.Add(this.btnImpersonate);
             this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.label8);
@@ -454,8 +452,6 @@ namespace SqlSync
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label lblCurrentLogin;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button btnUndo;
-        private System.Windows.Forms.Button btnImpersonate;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;

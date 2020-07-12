@@ -195,7 +195,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 }
                 return true;
             }
-            catch(Exception exe)
+            catch
             {
                 return false;
             }

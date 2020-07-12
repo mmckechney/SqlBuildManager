@@ -70,7 +70,7 @@ namespace SqlSync.SqlBuild.MultiDb
         {
         }
 
-        protected new void btnGenerate_Click_1(object sender, EventArgs e)
+        protected void btnGenerate_Click_1(object sender, EventArgs e)
         {
             Regex noNo = new Regex(@"(UPDATE\s)|(INSERT\s)|(DELETE\s)", RegexOptions.IgnoreCase);
             //if (noNo.Match(rtbSqlScript.Text).Success)

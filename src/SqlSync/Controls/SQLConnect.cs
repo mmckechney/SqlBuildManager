@@ -611,7 +611,7 @@ namespace SqlSync
                     }
                     e.Result = servers;
                 }
-                catch (Exception exe)
+                catch
                 {
                    // MessageBox.Show("Unable to get server list."); //\r\n" + exe.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     e.Result = null;

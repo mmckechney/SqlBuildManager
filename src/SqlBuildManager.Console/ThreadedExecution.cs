@@ -278,7 +278,6 @@ namespace SqlBuildManager.Console
                     SetLoggingPaths(rootLoggingPath);
                 }
 
-                string error;
                 //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
 
                 if (forceCustomDacpac == false)
@@ -286,7 +285,6 @@ namespace SqlBuildManager.Console
                     ExtractAndLoadBuildFile(ThreadedExecution.buildZipFileName, out ThreadedExecution.buildData);
                     if (buildData == null)
                     {
-                        error = "Unable to procees. SqlSyncBuild data object is null";
                         var msg = new LogMsg()
                         {
                             Message = "Unable to procees. SqlSyncBuild data object is null, Returning error code: " + (int)ExecutionReturn.NullBuildData,

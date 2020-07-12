@@ -292,7 +292,6 @@ namespace SqlSync.SqlBuild
         private ToolStripSeparator toolStripSeparator7;
         private ToolStripMenuItem projectSiteToolStripMenuItem;
 
-        DataView committedScriptView = null;
         private ToolStripMenuItem createToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator8;
         private OpenFileDialog openFileDataExtract;

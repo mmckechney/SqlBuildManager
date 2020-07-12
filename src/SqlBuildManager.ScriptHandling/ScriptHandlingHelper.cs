@@ -78,48 +78,7 @@ namespace SqlBuildManager.ScriptHandling
 
         #endregion
 
-        [Obsolete("Should be using IsInComment(int, List<Match>)",false)]
-        public static bool IsInComment(string rawScript, int index)
-        {
-            List<Match> commentScriptBlock = GetScriptCommentBlocks(rawScript);
-            return IsInComment(index, commentScriptBlock);
-            //Regex regDoubleDash = new Regex(@"(--.*\n)", RegexOptions.IgnoreCase);
-            //Regex regMultiLineComment = new Regex(@"(/\*.+?\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-            //MatchCollection comment = regDoubleDash.Matches(rawScript);
-            //if (comment.Count > 0)
-            //{
-            //    var inComment = (from Match m in comment
-            //                     where comment.Count > 0
-            //                     where index > m.Index && index < m.Index + m.Length
-            //                     select m);
-            //    if (inComment.Count() > 0)
-            //        return true;
-            //}
-            ////for (int i = 0; i < comment.Count; i++)
-            ////{
-            ////    if (index > comment[i].Index && index <= comment[i].Index + comment[i].Length)
-            ////        return true;
-            ////}
-
-            //MatchCollection multiLineComment = regMultiLineComment.Matches(rawScript);
-            //if (multiLineComment.Count > 0)
-            //{
-            //    var inMultiLineComment = (from Match m in multiLineComment
-            //                              where index > m.Index && index < m.Index + m.Length
-            //                              select m);
-            //    if (inMultiLineComment.Count() > 0)
-            //        return true;
-            //}
-
-            ////for (int i = 0; i < comment.Count; i++)
-            ////{
-            ////    if (index > comment[i].Index && index <= comment[i].Index + comment[i].Length)
-            ////        return true;
-            ////}
-            //return false;
-        }
-
+     
         public static bool IsInLargeCommentHeader(string rawScript, int index)
         {
             Regex regCommentHeader = new Regex(@"(/\*\*.*\*\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline);

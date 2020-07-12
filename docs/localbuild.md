@@ -59,5 +59,5 @@ In order to get some of the unit tests to succeed, you need to have a local inst
 
 ## SQL Package
 
-`sqlpackage.exe` is needed for the use of the DACPAC features of the tool. It should already be available in the `Microsoft_SqlDB_DAC` subfolder where you are running your tests. If not, you can install the package from here [https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download?view=sql-server-2017](https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download?view=sql-server-2017). The unit tests should find the executable but if not, you may need to add the path to `\SqlBuildManager\SqlSync.SqlBuild\DacPacHelper.cs` in the getter for `sqlPackageExe`.
+`sqlpackage` is needed for the use of the DACPAC features of the tool. It should already be available in the `Microsoft_SqlDB_DAC` subfolder (Windows) or the `microsoft-sqlpackage-linux` subfolder (Linux) where you are running your tests. If not, you can install the package from here [https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download](https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download). The unit tests should find the executable but if not, you may need to add the path to `\SqlBuildManager\SqlSync.SqlBuild\DacPacHelper.cs` in the getter for `sqlPackageExe`.
 

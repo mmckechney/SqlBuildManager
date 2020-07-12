@@ -18,13 +18,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\microsoft-sqlpackage-linux\**\*.*">
-      <Link>microsoft-sqlpackage-linux\%(RecursiveDir)%(FileName)%(Extension)</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   
   <ItemGroup>
     <Compile Remove="Controls\CodeReviewControl.cs" />
