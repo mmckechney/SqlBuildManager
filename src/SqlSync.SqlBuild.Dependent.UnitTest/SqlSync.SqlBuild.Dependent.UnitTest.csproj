@@ -7,6 +7,10 @@
     <Deterministic>false</Deterministic>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CA2100;CS0618</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="app.config" />
     <EmbeddedResource Include="Resources\CleanLoggingTable.sql" />

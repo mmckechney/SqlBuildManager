@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Text;
 
 //using IntList = System.Collections.Generic.List<int>;
@@ -66,8 +67,7 @@ namespace Algorithm.Diff {
 	public class Diff : IDiff {
 		internal IList left, right;
 		internal IList leftRaw, rightRaw;
-		IComparer comparer;
-		IHashCodeProvider hashcoder;
+		IEqualityComparer hashcoder;
 		
 		public IList Left { get { return left; } }
 		public  IList Right { get { return right; } }
@@ -187,10 +187,9 @@ namespace Algorithm.Diff {
 			}
 		}
 	
-		public Diff(IList left, IList right, IComparer comparer, IHashCodeProvider hashcoder) {
+		public Diff(IList left, IList right, IEqualityComparer hashcoder) {
 			this.left = left;
 			this.right = right;
-			this.comparer = comparer;
 			this.hashcoder = hashcoder;
 			init();
 		}
@@ -203,8 +202,7 @@ namespace Algorithm.Diff {
 			: this(
 				StripWhitespace(left, !compareWhitespace),
 				StripWhitespace(right, !compareWhitespace),
-				caseSensitive ? (IComparer)Comparer.Default : (IComparer)CaseInsensitiveComparer.Default,
-				caseSensitive ? null : CaseInsensitiveHashCodeProvider.Default
+				caseSensitive ? (IEqualityComparer)StringComparer.Create(CultureInfo.InvariantCulture, false) : (IEqualityComparer)StringComparer.Create(CultureInfo.InvariantCulture, true)
 				) {
 			this.leftRaw = left;
 			this.rightRaw = right;
@@ -281,7 +279,7 @@ namespace Algorithm.Diff {
 		*/
 
 		Hashtable _withPositionsOfInInterval(IList aCollection, int start, int end) {
-			Hashtable d = new Hashtable(hashcoder, comparer);
+			Hashtable d = new Hashtable(hashcoder);
 			for (int index = start; index <= end; index++) {
 				object element = aCollection[index];
 				if (d.ContainsKey(element)) {
@@ -360,8 +358,10 @@ namespace Algorithm.Diff {
 		*/
 		
 		bool compare(object a, object b) {
-			if (comparer == null) return a.Equals(b);
-			return comparer.Compare(a, b) == 0;
+
+			return hashcoder.Equals(a, b);
+			//if (comparer == null) return a.Equals(b);
+			//return comparer.Compare(a, b) == 0;
 		}
 		
 		bool IsPrepared(out Hashtable bMatches) {

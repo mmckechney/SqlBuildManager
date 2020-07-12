@@ -420,7 +420,6 @@ namespace SqlBuildManager.Enterprise.Policy
                     break;
                 default:
                     return policyReturns;
-                    break;
             }
 
             if (buildData != null)

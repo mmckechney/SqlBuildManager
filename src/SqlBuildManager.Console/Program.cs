@@ -551,7 +551,7 @@ namespace SqlBuildManager.Console
                             SyncronizeDatabase(cmdLine);
                             break;
                         case CommandLineArgs.ActionType.Build:
-                            retVal = await RunLocalBuildAsync(cmdLine);
+                            retVal = RunLocalBuildAsync(cmdLine);
                             break;
                         case CommandLineArgs.ActionType.ScriptExtract:
                             ScriptExtraction(cmdLine);
@@ -560,13 +560,13 @@ namespace SqlBuildManager.Console
                             SaveAndEncryptSettings(cmdLine);
                             break;
                         case CommandLineArgs.ActionType.Batch:
-                            retVal = await RunBatchExecution(cmdLine);
+                            retVal =  RunBatchExecution(cmdLine);
                             break;
                         case CommandLineArgs.ActionType.BatchPreStage:
-                            retVal = await RunBatchPreStage(cmdLine);
+                            retVal = RunBatchPreStage(cmdLine);
                             break;
                         case CommandLineArgs.ActionType.BatchCleanUp:
-                            retVal = await RunBatchCleanUp(cmdLine);
+                            retVal = RunBatchCleanUp(cmdLine);
                             break;
                         default:
                             log.Error("A valid /Action arument was not found. Please check the help documentation for valid settings (/help or /?)");
@@ -606,7 +606,7 @@ namespace SqlBuildManager.Console
             return 0;
         }
 
-        private static async Task<int> RunBatchCleanUp(CommandLineArgs cmdLine)
+        private static int RunBatchCleanUp(CommandLineArgs cmdLine)
         {
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
@@ -619,7 +619,7 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        private static async Task<int> RunBatchPreStage(CommandLineArgs cmdLine)
+        private static int RunBatchPreStage(CommandLineArgs cmdLine)
         {
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
@@ -632,7 +632,7 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        private static async Task<int> RunBatchExecution(CommandLineArgs cmdLine)
+        private static int RunBatchExecution(CommandLineArgs cmdLine)
         {
             SetEventHubAppenderConnection(cmdLine);
             cmdLine.CliVersion = Program.cliVersion;
@@ -925,7 +925,7 @@ namespace SqlBuildManager.Console
         //    }
         //}
         #endregion
-        private static async Task<int> RunLocalBuildAsync(CommandLineArgs cmdLine)
+        private static int RunLocalBuildAsync(CommandLineArgs cmdLine)
         {
             SetEventHubAppenderConnection(cmdLine);
             DateTime start = DateTime.Now;

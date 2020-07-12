@@ -16,7 +16,7 @@ using System.Security.Permissions;
 [assembly: AssemblyCulture("")]
 //[assembly: CLSCompliantAttribute(true)]
 [assembly: ComVisible(false)]
-[assembly: EnvironmentPermissionAttribute(SecurityAction.RequestMinimum)]
+
 
 //
 // In order to sign your assembly you must specify a key to use. Refer to the

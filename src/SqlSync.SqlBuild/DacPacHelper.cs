@@ -16,7 +16,6 @@ namespace SqlSync.SqlBuild
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string sqlPack = null;
         private static List<string> appRoots = new List<string> (new string[] { @"E:\approot", @"F:\approot", @"G:\approot" }); //This really should be dynamic, but we can see it now. 
-        private static bool sqlPackageChmod = false;
         private static string sqlPackageExe
         {
             get

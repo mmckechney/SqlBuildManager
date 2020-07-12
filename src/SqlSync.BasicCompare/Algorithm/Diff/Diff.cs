@@ -2,6 +2,7 @@ namespace Algorithm.Diff
 {
     using System;
     using System.Collections;
+    using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
@@ -11,28 +12,30 @@ namespace Algorithm.Diff
         private int _End;
         private bool _Same;
         private IntList cdif;
-        private IComparer comparer;
-        private IHashCodeProvider hashcoder;
+        //private IComparer comparer;
+        private IEqualityComparer hashcoder;
         internal IList left;
         internal IList leftRaw;
         internal IList right;
         internal IList rightRaw;
 
-        public Diff(IList left, IList right, IComparer comparer, IHashCodeProvider hashcoder)
+        public Diff(IList left, IList right, IEqualityComparer hashcoder)
         {
             this.cdif = null;
             this.left = left;
             this.right = right;
-            this.comparer = comparer;
+           // this.comparer = comparer;
             this.hashcoder = hashcoder;
             this.init();
         }
 
-        public Diff(string leftFile, string rightFile, bool caseSensitive, bool compareWhitespace) : this(UnifiedDiff.LoadFileLines(leftFile), UnifiedDiff.LoadFileLines(rightFile), caseSensitive, compareWhitespace)
+        public Diff(string leftFile, string rightFile, bool caseSensitive, bool compareWhitespace) :
+            this(UnifiedDiff.LoadFileLines(leftFile), UnifiedDiff.LoadFileLines(rightFile), caseSensitive, compareWhitespace)
         {
         }
 
-        public Diff(string[] left, string[] right, bool caseSensitive, bool compareWhitespace) : this(StripWhitespace(left, !compareWhitespace), StripWhitespace(right, !compareWhitespace), caseSensitive ? ((IComparer) Comparer.Default) : ((IComparer) CaseInsensitiveComparer.Default), caseSensitive ? null : ((IHashCodeProvider) CaseInsensitiveHashCodeProvider.Default))
+        public Diff(string[] left, string[] right, bool caseSensitive, bool compareWhitespace) : 
+            this(StripWhitespace(left, !compareWhitespace), StripWhitespace(right, !compareWhitespace), caseSensitive ? (IEqualityComparer)StringComparer.Create(CultureInfo.InvariantCulture, false) : (IEqualityComparer) StringComparer.Create(CultureInfo.InvariantCulture,true))
         {
             this.leftRaw = left;
             this.rightRaw = right;
@@ -141,7 +144,7 @@ namespace Algorithm.Diff
 
         private Hashtable _withPositionsOfInInterval(IList aCollection, int start, int end)
         {
-            Hashtable hashtable = new Hashtable(this.hashcoder, this.comparer);
+            Hashtable hashtable = new Hashtable(this.hashcoder);
             for (int i = start; i <= end; i++)
             {
                 object key = aCollection[i];
@@ -203,11 +206,13 @@ namespace Algorithm.Diff
 
         private bool compare(object a, object b)
         {
-            if (this.comparer == null)
-            {
-                return a.Equals(b);
-            }
-            return (this.comparer.Compare(a, b) == 0);
+            return this.hashcoder.Equals(a, b);
+            //if (this.comparer == null)
+            //{
+            //    return a.Equals(b);
+            //}
+           
+            //return (this.comparer.Compare(a, b) == 0);
         }
 
         public Patch CreatePatch()

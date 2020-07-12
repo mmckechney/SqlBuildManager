@@ -35,4 +35,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo> 
     <Deterministic>false</Deterministic>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CS0108</NoWarn>
+  </PropertyGroup>
 </Project>

@@ -55,44 +55,5 @@ will be in the comment header
 
         }
 
-        /// <summary>
-        ///A test for IsInComment
-        ///</summary>
-        [TestMethod()]
-        public void IsInCommentTest_InBlockComment()
-        {
-            string rawScript = @"This is my script
-and the results of my search
-will be in the comment header
-/****************
-*  I'm here!!
-*****************/";
-            int index = 85; 
-            bool expected = true; 
-            bool actual;
-            actual = ScriptHandlingHelper.IsInComment(rawScript, index);
-            Assert.AreEqual(expected, actual);
-
-        }
-
-        /// <summary>
-        ///A test for IsInComment
-        ///</summary>
-        [TestMethod()]
-        public void IsInCommentTest_NotInBlockComment()
-        {
-            string rawScript = @"This is my script
-and the results of my search
-will not be in a comment header
-/****************
-*  not here 
-*****************/";
-            int index = 36;
-            bool expected = false;
-            bool actual;
-            actual = ScriptHandlingHelper.IsInComment(rawScript, index);
-            Assert.AreEqual(expected, actual);
-
-        }
     }
 }

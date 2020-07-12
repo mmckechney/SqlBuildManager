@@ -1,6 +1,8 @@
 using System;
 using System.Xml.Schema;
 using System.Xml;
+using System.Net.Http.Headers;
+
 namespace SqlSync.Validator
 {
 	/// <summary>
@@ -39,44 +41,69 @@ namespace SqlSync.Validator
 		public bool ValidateAgainstSchema(string fileName, string schemaFileName, string schemaNamespace)
 		{
 			this.isValid = true;
-			//Check to see if this file matches the set schema
-			XmlTextReader reader = new XmlTextReader(fileName);
-			XmlValidatingReader validator = new XmlValidatingReader(reader);
-			validator.ValidationEventHandler += new ValidationEventHandler(CheckValidity);
-			validator.ValidationType = ValidationType.Schema;
+
+			XmlReaderSettings settings = new XmlReaderSettings();
+			settings.ValidationType = ValidationType.Schema;
+			settings.Schemas.Add(GetSchema(schemaNamespace, schemaFileName));
+			settings.Schemas.Compile();
+			settings.ValidationEventHandler += new ValidationEventHandler(CheckValidity);
+			XmlTextReader r = new XmlTextReader(fileName);
 			try
 			{
-				validator.Schemas.Add(GetSchema(schemaNamespace,schemaFileName) );
-				while(validator.Read())
+				using (XmlReader validator = XmlReader.Create(r, settings))
 				{
-                    //Break out once it is determined the Xml is invalid
-                    if (!this.isValid)
-                        return this.isValid;
+					while (validator.Read())
+					{
+						//Break out once it is determined the Xml is invalid
+						if (!this.isValid)
+							return this.isValid;
+					}
 				}
-				
 			}
-			catch(Exception exe)
+			catch (Exception exe)
 			{
-                string error = exe.ToString();
+				string error = exe.ToString();
 				isValid = false;
-			}
-			finally
-			{
-				validator.Close();
 			}
 
 			return this.isValid;
+
+			////Check to see if this file matches the set schema
+			//XmlTextReader reader = new XmlTextReader(fileName);
+			//XmlReader validator = new XmlReader.cre(reader);
+			//validator.ValidationEventHandler += new ValidationEventHandler(CheckValidity);
+			//validator.ValidationType = ValidationType.Schema;
+			//try
+			//{
+			//	validator.Schemas.Add(GetSchema(schemaNamespace,schemaFileName) );
+			//	while(validator.Read())
+			//	{
+                   
+			//	}
+				
+			//}
+			//catch(Exception exe)
+			//{
+   //             string error = exe.ToString();
+			//	isValid = false;
+			//}
+			//finally
+			//{
+			//	validator.Close();
+			//}
+
+			//return this.isValid;
 		}
 		/// <summary>
 		/// Loads the generator XSD schema 
 		/// </summary>
 		/// <param name="schemaLocation"></param>
 		/// <returns></returns>
-		private XmlSchemaCollection GetSchema(string schemaNamespace, string schemaLocation)
+		private XmlSchemaSet GetSchema(string schemaNamespace, string schemaLocation)
 		{
 			try
 			{
-				XmlSchemaCollection schemaCache = new XmlSchemaCollection();
+				XmlSchemaSet schemaCache = new XmlSchemaSet();
 				schemaCache.Add(schemaNamespace,schemaLocation);
 
 				return schemaCache;

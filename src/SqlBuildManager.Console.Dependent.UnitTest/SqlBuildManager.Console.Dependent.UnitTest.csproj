@@ -7,6 +7,10 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo> 
     <Deterministic>false</Deterministic>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702</NoWarn>
+  </PropertyGroup>
   
    <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
