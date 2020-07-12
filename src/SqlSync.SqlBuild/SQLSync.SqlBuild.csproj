@@ -41,7 +41,7 @@
     <Deterministic>false</Deterministic>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <PropertyGroup>
     <NoWarn>1701;1702;CA2100</NoWarn>
   </PropertyGroup>
 </Project>
