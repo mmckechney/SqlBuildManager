@@ -28,6 +28,11 @@ using System.CommandLine.Builder;
 using System.CommandLine.IO;
 using System.Runtime.Serialization;
 using BlueSkyDev.Logging;
+using Microsoft.SqlServer.Management.Sdk.Sfc;
+using SqlSync.SqlBuild.AdHocQuery;
+using SqlSync.SqlBuild.MultiDb;
+using SqlSync.Connection;
+using System.ComponentModel;
 
 namespace SqlBuildManager.Console
 {
@@ -223,12 +228,12 @@ namespace SqlBuildManager.Console
                 {
                     Argument = new Argument<int>("defaultscripttimeout")
                 };
-                var authtypeOption = new Option(new string[] { "--authtype" }, "Values: \"Windows\", \"AzureADIntegrated\", \"AzureADPassword\", \"Password\" (default)")
+                var authtypeOption = new Option(new string[] { "--authtype" }, "SQL Authentication type to use.")
                 {
                     Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType",() => SqlSync.Connection.AuthenticationType.Password),
                     Name = "AuthenticationType"
                 };
-                var silentOption = new Option(new string[] { "--silent" }, "Suppresses overwrite prompt if settings file already exists")
+                var silentOption = new Option(new string[] { "--silent" }, "Suppresses overwrite prompt if file already exists")
                 {
                     Argument = new Argument<bool>("silent")
                 };
@@ -241,7 +246,18 @@ namespace SqlBuildManager.Console
                     Argument = new Argument<string>("dacpacname"),
                     Required = true
                 };
-
+                var cleartextOption = new Option(new string[] { "--cleartext" }, "Flag to save settings file in clear text (vs. encrypted)")
+                {
+                    Argument = new Argument<bool>("cleartext")
+                };
+                var queryFileOption = new Option(new string[] { "--queryfile" }, "File containing the SELECT query to run across the databases")
+                {
+                    Argument = new Argument<FileInfo>("queryfile")
+                };
+                var outputFileOption = new Option(new string[] { "--outputfile" }, "Results output file to create")
+                {
+                    Argument = new Argument<FileInfo>("outputfile")
+                };
 
                 List<Option> authOptions = new List<Option>()
                 {
@@ -331,7 +347,7 @@ namespace SqlBuildManager.Console
                 };
                 var saveSettingsCommand = new Command("savesettings", "Save a settings json file for Batch arguments (see Batch documentation)")
                 {
-                    Handler = CommandHandler.Create<CommandLineArgs>(SaveAndEncryptSettings)
+                    Handler = CommandHandler.Create<CommandLineArgs, bool>(SaveAndEncryptSettings)
                 };
                 var batchCommand = new Command("batch", "Commands for setting and executing a batch run");
                 var batchRunCommand = new Command("run", "For updating multiple databases simultaneously using Azure batch services")
@@ -353,6 +369,14 @@ namespace SqlBuildManager.Console
                 var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(CreateDacpac)
+                };
+                var threadedQueryCommand = new Command("query", "Run a SELECT query across multiple databases")
+                {
+                    Handler = CommandHandler.Create<QueryCmdLine>(QueryDatabases)
+                };
+                var threadedRunCommand = new Command("run", "For updating multiple databases simultaneously from the current machine")
+                {
+                    Handler = CommandHandler.Create<CommandLineArgs>(RunThreadedExecutionAsync)
                 };
 
 
@@ -387,21 +411,34 @@ namespace SqlBuildManager.Console
                 buildCommand.Add(packagenameOption.Copy(true));
                 buildCommand.Add(serverOption.Copy(true));
                 generalbuildAndThreadOptions.ForEach(a => buildCommand.Add(a));
-               // buildCommand.Add(databaseOption);
-               // buildCommand.Add(serverOption);
 
-                //Threaded Building options
-                authOptions.ForEach(a => threadedCommand.Add(a));
-                threadedCommand.Add(authtypeOption);
-                threadedCommand.Add(packagenameOption);
-                generalbuildAndThreadOptions.ForEach(a => threadedCommand.Add(a));
-                threadedCommand.Add(platinumdacpacOption);
-                threadedCommand.Add(targetdacpacOption);
-                threadedCommand.Add(forcecustomdacpacOption);
-                threadedCommand.Add(platinumdbsourceOption);
-                threadedCommand.Add(platinumserversourceOption);
-                threadedCommand.Add(timeoutretrycountOption);
-                threadedCommand.Add(defaultscripttimeoutOption);
+
+                //Threaded base commands
+                threadedCommand.Add(threadedQueryCommand);
+                threadedCommand.Add(threadedRunCommand);
+
+
+                //Threaded Building (run) options
+                authOptions.ForEach(a => threadedRunCommand.Add(a));
+                threadedRunCommand.Add(authtypeOption);
+                threadedRunCommand.Add(packagenameOption);
+                generalbuildAndThreadOptions.ForEach(a => threadedRunCommand.Add(a));
+                threadedRunCommand.Add(platinumdacpacOption);
+                threadedRunCommand.Add(targetdacpacOption);
+                threadedRunCommand.Add(forcecustomdacpacOption);
+                threadedRunCommand.Add(platinumdbsourceOption);
+                threadedRunCommand.Add(platinumserversourceOption);
+                threadedRunCommand.Add(timeoutretrycountOption);
+                threadedRunCommand.Add(defaultscripttimeoutOption);
+
+                //Threaded query options
+                authOptions.ForEach(a => threadedQueryCommand.Add(a));
+                threadedQueryCommand.Add(authtypeOption);
+                threadedQueryCommand.Add(queryFileOption.Copy(true));
+                threadedQueryCommand.Add(overrideOption.Copy(true));
+                threadedQueryCommand.Add(outputFileOption.Copy(true));
+                threadedQueryCommand.Add(defaultscripttimeoutOption);
+                threadedQueryCommand.Add(silentOption);
 
 
                 //Batch running
@@ -454,6 +491,7 @@ namespace SqlBuildManager.Console
                 saveSettingsCommand.Add(timeoutretrycountOption);
                 saveSettingsCommand.Add(pollbatchpoolstatusOption);
                 saveSettingsCommand.Add(silentOption);
+                saveSettingsCommand.Add(cleartextOption);
 
 
                 scriptExtractCommand.Add(platinumdacpacOption.Copy(true));
@@ -512,7 +550,7 @@ namespace SqlBuildManager.Console
             }
             else
             {
-
+                #region Legacy commandline
                 DateTime start = DateTime.Now;
                 int retVal = 0;
                 try
@@ -557,7 +595,7 @@ namespace SqlBuildManager.Console
                             ScriptExtraction(cmdLine);
                             break;
                         case CommandLineArgs.ActionType.SaveSettings:
-                            SaveAndEncryptSettings(cmdLine);
+                            SaveAndEncryptSettings(cmdLine, false);
                             break;
                         case CommandLineArgs.ActionType.Batch:
                             retVal =  RunBatchExecution(cmdLine);
@@ -582,8 +620,85 @@ namespace SqlBuildManager.Console
                 {
                     log.ErrorFormat($"Something went wrong!\r\n{exe.ToString()}");
                 }
+                #endregion
             }
 
+        }
+
+        private static int QueryDatabases(QueryCmdLine cmdLine)
+        {
+            return QueryDatabases(cmdLine.authType, cmdLine.username, cmdLine.password, cmdLine.queryFile, cmdLine.Override, cmdLine.outputFile, cmdLine.silent, cmdLine.timeout);
+        }
+        private static int QueryDatabases(SqlSync.Connection.AuthenticationType authType, string username, string password, FileInfo queryFile, FileInfo Override, FileInfo outputFile, bool silent, int timeout)
+        {
+            if(!queryFile.Exists)
+            {
+                log.Error("The --queryfile file was not found. Please check the name or path and try again");
+                return 2;
+            }
+            var query = File.ReadAllText(queryFile.FullName);
+
+            Regex noNo = new Regex(@"(UPDATE\s)|(INSERT\s)|(DELETE\s)", RegexOptions.IgnoreCase);
+            if (noNo.Match(query).Success)
+            {
+                log.Error($"{Environment.NewLine}An INSERT, UPDATE or DELETE keyword was found. You can not use the query function to modify data.{Environment.NewLine}Instead, please run your data modification script as a SQL Build Package or DACPAC update");
+                return 5;
+            }
+            if (!Override.Exists)
+            {
+                log.Error("The --override file was not found. Please check the name or path and try again");
+                return 3;
+            }
+            if(outputFile.Exists && !silent)
+            {
+                System.Console.WriteLine("The output file already exists. Do you want to overwrite it (Y/N)?");
+                var keypressed = System.Console.ReadKey();
+                if(keypressed.Key != ConsoleKey.Y)
+                {
+                    log.Info("Exiting");
+                    return 1;
+                }
+            }
+            
+            var multiData = MultiDbHelper.ImportMultiDbTextConfig(Override.FullName);
+            var connData = new ConnectionData() { UserId = username, Password = password, AuthenticationType = authType };
+            
+
+            BackgroundWorker bg = new BackgroundWorker();
+            bg.WorkerReportsProgress = true;
+            bg.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(ThreadedQuery_ProgressChanged);
+            var collector = new QueryCollector(multiData, connData);
+
+            var serverCount = multiData.Count();
+            var dbCount = multiData.Sum(d => d.OverrideSequence.Count);
+
+            log.Info($"Running query across {serverCount} servers and {dbCount} databases...");
+            bool success = collector.GetQueryResults(ref bg, outputFile.FullName, SqlSync.SqlBuild.Status.ReportType.CSV, query, timeout);
+
+            if(success)
+            {
+                log.Info($"Query complete. The results are in the output file: {outputFile.FullName}");
+            }
+            else
+            {
+                log.Error("There was an issue collecting and aggregating the query results");
+                return 6;
+            }    
+
+            return 0;
+        }
+
+        private static void ThreadedQuery_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            if (e.UserState is string)
+            {
+                log.Info(e.UserState);
+            }
+            else if(e.UserState is QueryCollectionRunnerUpdateEventArgs)
+            {
+               // var x = (QueryCollectionRunnerUpdateEventArgs)e.UserState;
+                //log.Info($"{x.Server}:{x.Database} -- {x.Message}");
+            }
         }
 
         private static int CreateDacpac(CommandLineArgs cmdLine)
@@ -665,7 +780,7 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        private static void SaveAndEncryptSettings(CommandLineArgs cmdLine)
+        private static void SaveAndEncryptSettings(CommandLineArgs cmdLine, bool clearText)
         {
 
             if(string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
@@ -673,7 +788,11 @@ namespace SqlBuildManager.Console
                 log.Error("When /Action=SaveSettings or 'sbm batch savesettings' is specified the /SettingsFile argument is also required");
             }
 
-            cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);
+            if (!clearText)
+            {
+                cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);
+            }
+
             var mystuff = JsonConvert.SerializeObject(cmdLine, Formatting.Indented, new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore

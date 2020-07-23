@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="11" Minor="2" Revision="2">
+    <added>New querying across databases from command line for threaded and batch. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  </added>
+  </Version>
   <Version Major="11" Minor="2" Revision="0">
     <added>The Batch processors now work on Linux worker nodes!</added>
     <updated>New batch command option to support Linux: --os [Windows,Linux]. Note also that the --batchpoolname option now has important relevence for Batch accounts that have both Linux and Windows pools</updated>

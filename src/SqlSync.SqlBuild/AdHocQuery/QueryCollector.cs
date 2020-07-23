@@ -49,7 +49,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="reportType">The report type that the user wants</param>
         /// <param name="query">The SQL query to execute across the databases.</param>
         /// <param name="scriptTimeout">SQL timeout per connection</param>
-        public void GetQueryResults(ref BackgroundWorker bgWorker, string fileName, ReportType reportType, string query, int scriptTimeout)
+        public bool GetQueryResults(ref BackgroundWorker bgWorker, string fileName, ReportType reportType, string query, int scriptTimeout)
         {
             this.resultsFilePath = Path.Combine(Path.GetDirectoryName(fileName), Guid.NewGuid().ToString());
 
@@ -63,8 +63,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
             {
                 string message = String.Format("Unable to create working temp directory at {0}: {1}", this.resultsFilePath, exe.Message);
                 log.Error(message, exe);
-                bgWorker.ReportProgress(-1, message);
-                return;
+                if (bgWorker != null && bgWorker.WorkerReportsProgress)
+                {
+                    bgWorker.ReportProgress(-1, message);
+                }
+                return false;
             }
 
             this.bgWorker = bgWorker;
@@ -94,29 +97,37 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 }
             }
 
-        
-                int counter = 0;
-                while (QueryCollector.SyncObj.WorkingRunners > 0)
-                {
-                    System.Threading.Thread.Sleep(100);
-                    counter++;
 
-                    if (bgWorker != null && (counter % 2 == 0))
-                        bgWorker.ReportProgress(QueryCollector.SyncObj.WorkingRunners, String.Format("Threads remaining: {0}", QueryCollector.SyncObj.WorkingRunners.ToString()));
+            int counter = 0;
+            while (QueryCollector.SyncObj.WorkingRunners > 0)
+            {
+                System.Threading.Thread.Sleep(1000);
+                counter++;
+
+                if (bgWorker != null && bgWorker.WorkerReportsProgress && (counter % 2 == 0))
+                {
+                    bgWorker.ReportProgress(QueryCollector.SyncObj.WorkingRunners, String.Format("Databases remaining: {0}", QueryCollector.SyncObj.WorkingRunners.ToString()));
                 }
-            
-            if (bgWorker != null)
+            }
+
+            if (bgWorker != null && bgWorker.WorkerReportsProgress)
+            {
                 bgWorker.ReportProgress(0, "Collating Results...");
+            }
 
             List<string> queryResultFiles = new List<string>();
             foreach (QueryCollectionRunner runner in runners)
+            {
                 queryResultFiles.Add(runner.ResultsTempFile);
+            }
+            
 
-            if (bgWorker.WorkerReportsProgress)
+            if (bgWorker != null && bgWorker.WorkerReportsProgress)
+            {
                 bgWorker.ReportProgress(-1, "Generating combined data report...");
+            }
 
-            GenerateReport(fileName, reportType, queryResultFiles);
-            return; // queryResults;
+            return GenerateReport(fileName, reportType, queryResultFiles);
 
         }
 
@@ -127,7 +138,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="e"></param>
         void runner_HashCollectionRunnerUpdate(object sender, QueryCollectionRunnerUpdateEventArgs e)
         {
-            this.bgWorker.ReportProgress(0, e);
+
+            if (bgWorker != null && bgWorker.WorkerReportsProgress)
+            {
+                this.bgWorker.ReportProgress(0, e);
+            }
         }
         /// <summary>
         /// Method called by ThreadPool to kick off data collection
@@ -142,7 +157,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (Exception exe)
             {
-                log.Error("Error with QueryCollectionRunner", exe);
+                log.Error($"Error with QueryCollectionRunner{Environment.NewLine}{exe.ToString()}");
             }
             finally
             {
@@ -158,15 +173,14 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="fileName">Name of the final report file</param>
         /// <param name="reportType">The output report type requested</param>
         /// <param name="queryResultFiles">The list of report files created by the runner objects</param>
-        public void GenerateReport(string fileName, ReportType reportType, List<string> queryResultFiles)
+        public bool GenerateReport(string fileName, ReportType reportType, List<string> queryResultFiles)
         {
             string tmpCombined = string.Empty;
             try
             {
                 if (reportType == ReportType.CSV)
                 {
-                    CreateCombinedCsvFile(fileName, queryResultFiles);
-                    return;
+                    return CreateCombinedCsvFile(fileName, queryResultFiles);
                 }
                 tmpCombined = CombineQueryResultsFiles(queryResultFiles);
 
@@ -202,15 +216,18 @@ namespace SqlSync.SqlBuild.AdHocQuery
                             break;
                     }
                 }
+                return true;
 
             }
             catch (IOException ioEXe)
             {
                 log.Error("IO Error in GenerateReport", ioEXe);
+                return false;
             }
             catch (Exception exe)
             {
                 log.Error("Error in GenerateReport", exe);
+                return false;
             }
             finally
             {
@@ -225,9 +242,6 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
                 this.runners = null;
             }
-        
-           
-            return; // sb.ToString();
         }
         /// <summary>
         /// Combines the raw result files from the runners in to a single raw file
@@ -277,7 +291,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// </summary>
         /// <param name="fileName">The filename of the final report output file</param>
         /// <param name="queryResultFiles">List of raw report files from the runner objects</param>
-        private void CreateCombinedCsvFile(string fileName, List<string> queryResultsFiles)
+        private bool CreateCombinedCsvFile(string fileName, List<string> queryResultsFiles)
         {
             try
             {
@@ -287,7 +301,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                         File.Delete(fileName);
 
                     File.Move(queryResultsFiles[0], fileName);
-                    return;
+                    return true;
                 }
 
                 File.WriteAllLines(fileName, File.ReadAllLines(queryResultsFiles[0]));
@@ -308,14 +322,17 @@ namespace SqlSync.SqlBuild.AdHocQuery
                     sw.Flush();
                     sw.Close();
                 }
+                return true;
             }
             catch (IOException ioExe)
             {
-                log.Error("IO Error in CreateCombinedCsvFile", ioExe);
+                log.Error($"IO Error in CreateCombinedCsvFile{Environment.NewLine}{ioExe.ToString()}");
+                return false;
             }
             catch (Exception exe)
             {
-                log.Error("Error in CreateCombinedCsvFile", exe);
+                log.Error($"Error in CreateCombinedCsvFile{Environment.NewLine}{exe.ToString()}");
+                return false;
             }
         
         }

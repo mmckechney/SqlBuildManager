@@ -11,6 +11,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
     <ApplicationIcon>SqlBuildManager.ico</ApplicationIcon>
+    <AssemblyName>SqlBuildManager</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">

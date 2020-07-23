@@ -50,7 +50,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         private void ConfigurePollyRetryPolicies()
         {
             pollyRetryPolicy = Policy.Handle<Exception>().WaitAndRetry(
-                                                        5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+                                                        5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
 
         }
         public QueryCollectionRunner(string serverName, string databaseName, string query, IList<QueryRowItem> appendData, ReportType reportType, string tempWorkingDirectory, int scriptTimeout, ConnectionData masterConnData)

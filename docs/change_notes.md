@@ -2,6 +2,10 @@
 # SQL Build Manager Change Notes
 
 
+### Version 11.2.2
+
+- *ADDED:* New querying across databases from command line for threaded and batch. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  
+
 ### Version 11.2.0
 
 - *ADDED:* The Batch processors now work on Linux worker nodes!

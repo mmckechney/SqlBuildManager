@@ -28,13 +28,14 @@ param(
  $SqlServerPassword,
 
  [int]
- $TestDatabaseCount = 10,
+ $TestDatabaseCount = 10
 
 )
 
 $outputPath = "..\..\src\TestConfig"
 $DatabaseNameRoot = "SqlBuildTest"
 $outputDbConfigFile = Join-Path $outputPath "databasetargets.cfg"
+$clientDbConfigFile = Join-Path $outputPath "clientdbtargets.cfg"
 $settingsJsonWindows = Join-Path $outputPath "settingsfile-windows.json"
 $settingsJsonLinux = Join-Path $outputPath "settingsfile-linux.json"
 
@@ -107,6 +108,11 @@ if( (Test-Path $outputDbConfigFile) -eq $True)
 {
     Remove-Item $outputDbConfigFile
 }
+if( (Test-Path $clientDbConfigFile) -eq $True)
+{
+    Remove-Item $clientDbConfigFile
+}
+
 
 Write-Host "Creating database config file for unit testing: $outputDbConfigFile "
 foreach($db in $dbs)
@@ -114,6 +120,7 @@ foreach($db in $dbs)
     if($db.DatabaseName -ne "master")
     {
         $server.FullyQualifiedDomainName + ":SqlBuildTest,"+$db.DatabaseName | Out-File -Append $outputDbConfigFile
+        $server.FullyQualifiedDomainName + ":client,"+$db.DatabaseName | Out-File -Append $clientDbConfigFile
     }
 }
 

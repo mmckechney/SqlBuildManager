@@ -5,15 +5,9 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using Microsoft.SqlServer.Management.HadrData;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Resources;
 using SqlSync.SqlBuild;
-using Microsoft.Azure.Batch;
-using System.Collections.Immutable;
-using Microsoft.SqlServer.Management.Smo;
-using Microsoft.Azure.Amqp.Framing;
 
-namespace SqlBuildManager.Console.Dependent.UnitTest
+namespace SqlBuildManager.Console.ExternalTest
 {
     /// <summary>
     /// To run these tests, you will need to have an Azure environment set up.

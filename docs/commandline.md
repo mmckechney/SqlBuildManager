@@ -10,7 +10,7 @@
 The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 
-*For detailed information on the available and required options for teach command, leverage the self-generated documentation via `sbm [command] --help`*
+*For detailed information on the available and required options for each command, leverage the self-generated documentation via `sbm [command] --help`*
 
 ### Build execution actions to update databases
 
