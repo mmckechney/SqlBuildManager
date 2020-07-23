@@ -15,7 +15,7 @@ namespace SqlSync.SqlBuild
 {
 
     [Serializable]
-    public partial class CommandLineArgs 
+    public partial class CommandLineArgs : ICloneable
     {
 
         public CommandLineArgs()
@@ -131,6 +131,10 @@ namespace SqlSync.SqlBuild
 
         [JsonIgnore]
         public bool Silent { get; set; }
+        [JsonIgnore]
+        public FileInfo QueryFile { get; set; }
+        [JsonIgnore]
+        public FileInfo OutputFile { get; set; }
 
         [JsonIgnore]
         public bool WhatIf { get; set; } = false;
@@ -369,12 +373,28 @@ namespace SqlSync.SqlBuild
         
         public override string ToString()
         {
-            return this.ToStringExtension(this.CliVersion, false);
+            return this.ToStringExtension(this.CliVersion, StringType.Basic);
         }
         public string ToBatchThreadedExeString()
         {
-            return this.ToStringExtension(this.CliVersion, true);
+            return this.ToStringExtension(this.CliVersion, StringType.BatchThreaded);
         }
+        public string ToBatchQueryThreadedExeString()
+        {
+            return this.ToStringExtension(this.CliVersion, StringType.BatchQuery);
+        }
+
+        public object Clone()
+        {
+            return (CommandLineArgs) this.MemberwiseClone();
+        }
+    }
+
+    public enum StringType
+    {
+        BatchThreaded,
+        BatchQuery,
+        Basic
     }
 
     [Serializable]
@@ -386,7 +406,7 @@ namespace SqlSync.SqlBuild
 
     public static class CommandLineExtensions
     {
-        public static string ToStringExtension(this object obj, string cliVersion, bool forBatchThreadedExe)
+        public static string ToStringExtension(this object obj, string cliVersion, StringType toStringType)
         {
             StringBuilder sb = new StringBuilder();
             foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
@@ -400,9 +420,9 @@ namespace SqlSync.SqlBuild
                     property.PropertyType == typeof(CommandLineArgs.StoredProcTesting) ||
                     property.PropertyType == typeof(CommandLineArgs.Synchronize))
                 {
-                    if (property.GetValue(obj) != null && !forBatchThreadedExe)
+                    if (property.GetValue(obj) != null && toStringType == StringType.Basic)
                     {
-                        sb.Append(property.GetValue(obj).ToStringExtension(cliVersion, forBatchThreadedExe));
+                        sb.Append(property.GetValue(obj).ToStringExtension(cliVersion, toStringType));
                     }
                 } 
                 else if (property.PropertyType == typeof(CommandLineArgs.Authentication) ||
@@ -411,7 +431,7 @@ namespace SqlSync.SqlBuild
                 {
                     if (property.GetValue(obj) != null)
                     {
-                        sb.Append(property.GetValue(obj).ToStringExtension(cliVersion, forBatchThreadedExe));
+                        sb.Append(property.GetValue(obj).ToStringExtension(cliVersion, toStringType));
                     }
                 }
                 else
@@ -430,7 +450,7 @@ namespace SqlSync.SqlBuild
                             break;
 
                         case "SettingsFile":
-                            if (!forBatchThreadedExe)
+                            if (toStringType == StringType.Basic)
                             {
                                 if (cliVersion == CliVersion.NEW_CLI)
                                 {
@@ -480,13 +500,18 @@ namespace SqlSync.SqlBuild
                         case "Action":
                             if (cliVersion == CliVersion.NEW_CLI)
                             {
-                                if (forBatchThreadedExe)
+                                switch (toStringType)
                                 {
-                                    sb.Append("runthreaded ");
-                                }
-                                else
-                                {
-                                    sb.Append(property.GetValue(obj).ToString().ToLower() + " ");
+                                    case StringType.BatchThreaded:
+                                        sb.Append("runthreaded ");
+                                        break;
+                                    case StringType.BatchQuery:
+                                        sb.Append("querythreaded ");
+                                        break;
+                                    case StringType.Basic:
+                                    default:
+                                        sb.Append(property.GetValue(obj).ToString().ToLower() + " ");
+                                        break;
                                 }
                             }
                             else
@@ -504,7 +529,7 @@ namespace SqlSync.SqlBuild
                         default:
                             if (property.PropertyType == typeof(bool))
                             {
-                                if(property.Name == "PollBatchPoolStatus" && forBatchThreadedExe)
+                                if(property.Name == "PollBatchPoolStatus" && (toStringType == StringType.BatchQuery || toStringType == StringType.BatchThreaded))
                                 {
                                     continue;
                                 }

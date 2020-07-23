@@ -19,6 +19,11 @@ namespace SqlBuildManager.Console.Batch
 {
     public class Execution
     {
+        private enum BatchType
+        {
+            Run,
+            Query
+        }
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private CommandLineArgs cmdLine;
 
@@ -26,6 +31,9 @@ namespace SqlBuildManager.Console.Batch
         private string PoolName = "SqlBuildManagerPoolWindows";
         private const string JobIdFormat = "SqlBuildManagerJob{0}_{1}";
 
+        private string queryFile = string.Empty;
+        private string outputFile = string.Empty;
+        private BatchType batchType = BatchType.Run;
         private const string baseTargetFormat = "target_{0}.cfg";
 
         public Execution(CommandLineArgs cmdLine)
@@ -37,8 +45,14 @@ namespace SqlBuildManager.Console.Batch
                 this.PoolName = cmdLine.BatchArgs.BatchPoolName;
             }
         }
+        public Execution(CommandLineArgs cmdLine, string queryFile, string outputFile) : this(cmdLine)
+        {
+            this.queryFile = queryFile;
+            this.outputFile = outputFile;
+            this.batchType = BatchType.Query;
+        }
 
-        public int StartBatch()
+        public (int retval, string readOnlySas) StartBatch()
         {
             string applicationPackage = string.Empty;
             if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ApplicationPackage))
@@ -59,55 +73,12 @@ namespace SqlBuildManager.Console.Batch
                 applicationPackage = cmdLine.BatchArgs.ApplicationPackage;
             }
             
-
-            string jobId, poolId, storageContainerName;
-            string jobToken = DateTime.Now.ToString("yyyy-MM-dd-HHmm");
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
+            int cmdValid = ValidateBatchArgs(cmdLine, batchType);
+            if(cmdValid != 0)
             {
-                cmdLine.BatchArgs.BatchJobName  = Regex.Replace(cmdLine.BatchArgs.BatchJobName, "[^a-zA-Z0-9]", "");
-                cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.ToLower();
-                if(cmdLine.BatchArgs.BatchJobName.Length > 47)
-                {
-                    cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.Substring(0, 47);
-                }
-                jobId = cmdLine.BatchArgs.BatchJobName + "-" + jobToken;
-                poolId = PoolName;
-                storageContainerName = cmdLine.BatchArgs.BatchJobName;
-            }
-            else
-            {
-                jobId = string.Format(JobIdFormat, cmdLine.BatchArgs.BatchPoolOs, jobToken);
-                poolId = PoolName;
-                storageContainerName = jobToken;
+                return (cmdValid, string.Empty);
             }
 
-
-            log.Info($"Setting job id to: {jobId}"); 
-            int? myExitCode = 0;
-
-
-            log.Info("Validating general command parameters");
-            string[] errorMessages;
-            int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
-            if (tmpReturn != 0)
-            {
-                foreach(var msg in errorMessages)
-                {
-                    log.Error(msg);
-                }
-                return tmpReturn;
-            }
-
-            log.Info("Validating batch command parameters");
-            tmpReturn = Validation.ValidateBatchArguments(ref cmdLine, out errorMessages);
-            if (tmpReturn != 0)
-            {
-                foreach (var msg in errorMessages)
-                {
-                    log.Error(msg);
-                }
-                return tmpReturn;
-            }
 
             //if extracting scripts from a platinum copy.. create the DACPAC here
             if(!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource)) //using a platinum database as the source
@@ -121,27 +92,41 @@ namespace SqlBuildManager.Console.Batch
                 }
                 cmdLine.DacPacArgs.PlatinumDacpac = dacpacName;
             }
+
             //Check for the platinum dacpac and configure it if necessary
             log.Info("Validating database overrides");
             MultiDbData buildData;
+            int? myExitCode = 0;
+
+            //Validate the override settings
+            int tmpReturn = 0;
+            string[] errorMessages;
             int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out buildData, out errorMessages);
             if (tmpVal != 0)
             {
                 log.Error($"Unable to validate database config\r\n{string.Join("\r\n", errorMessages)}");
-                return tmpVal;
+                return (tmpVal, string.Empty); 
             }
 
+            //Validate the platinum dacpac
             var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref buildData);
             if (tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
             {
-                return (int)ExecutionReturn.DacpacDatabasesInSync;
+                return ((int)ExecutionReturn.DacpacDatabasesInSync, string.Empty);
             }
             else if (tmpReturn != 0)
             {
-                return tmpValReturn;
+                return (tmpValReturn, string.Empty);
             }
 
             BatchClient batchClient = null;
+
+            //Get the batch and storage values
+            string jobId, poolId, storageContainerName;
+            (jobId, poolId, storageContainerName) = SetBatchJobAndStorageNames(cmdLine);
+            log.Info($"Setting job id to: {jobId}");
+
+            string readOnlySasToken = string.Empty;
             try
             {
 
@@ -180,6 +165,11 @@ namespace SqlBuildManager.Console.Batch
                 {
                     inputFilePaths.Add(cmdLine.MultiDbRunConfigFileName);
                 }
+                if (!string.IsNullOrEmpty(this.queryFile))
+                {
+                    inputFilePaths.Add(this.queryFile);
+                }
+
 
                 //Get the list of DB targets and distribute across batch count
                 var allTargets = GetTargetConfigValues(cmdLine.MultiDbRunConfigFileName);
@@ -189,7 +179,6 @@ namespace SqlBuildManager.Console.Batch
                     log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.BatchArgs.BatchNodeCount);
                     cmdLine.BatchArgs.BatchNodeCount = splitTargets.Count;
                 }
-
 
                 //Write out each split file
                 string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
@@ -210,7 +199,7 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, applicationPackage);
+                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, applicationPackage, this.batchType);
                 foreach (var s in commandLines)
                     log.Debug(s);
 
@@ -319,6 +308,11 @@ namespace SqlBuildManager.Console.Batch
                 log.Info("Consolidating log files");
                 ConsolidateLogFiles(blobClient, storageContainerName, inputFilePaths);
 
+                if(batchType == BatchType.Query)
+                {
+                    CombineBatchQueryOutputfiles(blobClient, storageContainerName, this.outputFile);
+                }
+
                 //Finish the job out
                 if (myExitCode == 0)
                 {
@@ -334,7 +328,7 @@ namespace SqlBuildManager.Console.Batch
                 }                    
 
 
-                string readOnlySasToken = GetOutputContainerSasUrl(blobClient, storageContainerName, true);
+                readOnlySasToken = GetOutputContainerSasUrl(blobClient, storageContainerName, true);
                 log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
                 log.Info("The read-only SAS token URL is valid for 7 days.");
                 log.Info("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
@@ -345,8 +339,12 @@ namespace SqlBuildManager.Console.Batch
             {
                 log.ErrorFormat($"Exception when running batch job\r\n{exe.ToString()}");
                 log.Info($"Setting job {jobId} status to Failed");
-                CloudJob j = batchClient.JobOperations.GetJob(jobId);
-                j.Terminate("Failed");
+                try
+                {
+                    CloudJob j = batchClient.JobOperations.GetJob(jobId);
+                    j.Terminate("Failed");
+                }
+                catch { }
                 myExitCode = 486;
 
             }
@@ -363,17 +361,100 @@ namespace SqlBuildManager.Console.Batch
             {
 
                 log.InfoFormat("Exit Code: {0}", myExitCode.Value);
-                return myExitCode.Value;
+                return (myExitCode.Value, readOnlySasToken);
             }
             else
             {
                 log.InfoFormat("Exit Code: {0}", -100009);
-                return -100009;
+                return (-100009, readOnlySasToken);
             }
 
         }
 
-      
+        private void CombineBatchQueryOutputfiles(CloudBlobClient blobClient, string storageContainerName, string outputFile)
+        {
+            outputFile = Path.GetFileName(outputFile);
+            var container = blobClient.GetContainerReference(storageContainerName);
+            var blobs = container.ListBlobs(outputFile);
+
+            var destinationBlob = container.GetAppendBlobReference(outputFile);
+            try
+            {
+                destinationBlob.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition(), null, null);
+            }
+            catch { }
+
+            foreach(var b in blobs)
+            {
+                if (b is CloudBlockBlob)
+                {
+                    using (var stream = ((CloudBlockBlob)b).OpenRead())
+                    {
+                        destinationBlob.AppendFromStream(stream);
+                    }
+                }
+            }
+
+        }
+
+        private int ValidateBatchArgs(CommandLineArgs cmdLine, BatchType batchType)
+        {
+            int tmpReturn;
+            string[] errorMessages;
+            if (batchType == BatchType.Run)
+            {
+                log.Info("Validating general command parameters");
+
+                tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
+                if (tmpReturn != 0)
+                {
+                    foreach (var msg in errorMessages)
+                    {
+                        log.Error(msg);
+                    }
+                    return tmpReturn;
+                }
+            }
+
+            log.Info("Validating batch command parameters");
+            tmpReturn = Validation.ValidateBatchArguments(ref cmdLine, out errorMessages);
+            if (tmpReturn != 0)
+            {
+                foreach (var msg in errorMessages)
+                {
+                    log.Error(msg);
+                }
+                return tmpReturn;
+            }
+
+            return 0;
+        }
+
+        private (string jobId, string poolId, string storageContainerName) SetBatchJobAndStorageNames(CommandLineArgs cmdLine)
+        {
+            string jobId, poolId, storageContainerName;
+            string jobToken = DateTime.Now.ToString("yyyy-MM-dd-HHmm");
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
+            {
+                cmdLine.BatchArgs.BatchJobName = Regex.Replace(cmdLine.BatchArgs.BatchJobName, "[^a-zA-Z0-9]", "");
+                cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.ToLower();
+                if (cmdLine.BatchArgs.BatchJobName.Length > 47)
+                {
+                    cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.Substring(0, 47);
+                }
+                jobId = cmdLine.BatchArgs.BatchJobName + "-" + jobToken;
+                poolId = PoolName;
+                storageContainerName = cmdLine.BatchArgs.BatchJobName;
+            }
+            else
+            {
+                jobId = string.Format(JobIdFormat, cmdLine.BatchArgs.BatchPoolOs, jobToken);
+                poolId = PoolName;
+                storageContainerName = jobToken;
+            }
+
+            return (jobId, poolId, storageContainerName);
+        }
 
         private void ConsolidateLogFiles(CloudBlobClient blobClient, string outputContainerName, List<string> workerFiles)
         {
@@ -525,7 +606,7 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        private IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount,  string jobId, OsType os, string applicationPackage)
+        private IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles,string containerSasToken,  int poolNodeCount,  string jobId, OsType os, string applicationPackage, BatchType bType)
         {
            // var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
 
@@ -533,9 +614,9 @@ namespace SqlBuildManager.Console.Batch
             //Need to replace the paths to 
             for (int i=0; i< poolNodeCount; i++)
             {
+                var threadCmdLine = (CommandLineArgs)cmdLine.Clone(); 
 
-                var threadCmdLine = cmdLine.DeepClone<CommandLineArgs>();
-                threadCmdLine.Action = CommandLineArgs.ActionType.Threaded; // set action to threaded
+                threadCmdLine.Action = CommandLineArgs.ActionType.Threaded; // set action to threaded (used only in classic command line)
 
                 //Set package name to the path on the node (if set)
                 if (!string.IsNullOrWhiteSpace(threadCmdLine.BuildFileName))
@@ -549,6 +630,36 @@ namespace SqlBuildManager.Console.Batch
                 {
                     var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac.ToLower()))).FirstOrDefault();
                     threadCmdLine.DacPacArgs.PlatinumDacpac = dac.FilePath;
+                }
+
+                //Set the queryfile name to the path on the node (if set)
+                if (!string.IsNullOrWhiteSpace(threadCmdLine.QueryFile.Name))
+                {
+                    var qu = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(threadCmdLine.QueryFile.Name.ToLower()))).FirstOrDefault();
+                    threadCmdLine.QueryFile = new FileInfo(qu.FilePath);
+                }
+
+                //Update the RootLoggingPath as appropriate
+                if (Program.cliVersion == SqlSync.Constants.CliVersion.NEW_CLI)
+                {
+                    switch (os)
+                    {
+                        case OsType.Windows:
+                            threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
+                            break;
+
+                        case OsType.Linux:
+                            threadCmdLine.RootLoggingPath = "$AZ_BATCH_TASK_WORKING_DIR";
+                            break;
+                    }
+                }
+
+
+                //Set the name of the output file (if set)
+                if (threadCmdLine.OutputFile != null)
+                {
+                    var tmpName = Path.Combine(threadCmdLine.RootLoggingPath, $"{threadCmdLine.OutputFile.Name}{i}.csv");
+                    threadCmdLine.OutputFile = new FileInfo(tmpName);
                 }
              
 
@@ -566,16 +677,29 @@ namespace SqlBuildManager.Console.Batch
                     switch(os)
                     {
                         case OsType.Windows:
-                            threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
-                            //threadCmdLine.RootLoggingPath = "%AZ_BATCH_TASK_WORKING_DIR%";
                             sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe batch ");
-                            sb.Append(threadCmdLine.ToBatchThreadedExeString());
+                            switch (bType)
+                            {
+                                case BatchType.Run:
+                                    sb.Append(threadCmdLine.ToBatchThreadedExeString());
+                                    break;
+                                case BatchType.Query:
+                                    sb.Append(threadCmdLine.ToBatchQueryThreadedExeString());
+                                    break;
+                            }
                             break;
+
                         case OsType.Linux:
-                            threadCmdLine.RootLoggingPath = "$AZ_BATCH_TASK_WORKING_DIR";
                             sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm batch ");
-                            //sb.Append("/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_sqlbuildmanagerlinux/sbm batch ");
-                            sb.Append(threadCmdLine.ToBatchThreadedExeString() + "'");
+                            switch (bType)
+                            {
+                                case BatchType.Run:
+                                    sb.Append(threadCmdLine.ToBatchThreadedExeString() + "'");
+                                    break;
+                                case BatchType.Query:
+                                    sb.Append(threadCmdLine.ToBatchQueryThreadedExeString() + "'");
+                                    break;
+                            }
                             break;
                     }
  

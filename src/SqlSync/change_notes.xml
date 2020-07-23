@@ -1,6 +1,7 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
   <Version Major="11" Minor="2" Revision="2">
+    <note>**The old style commandline (leveraging the /Action=verb flag etc.) will be deprecated soon!**</note>
     <added>New querying across databases from command line for threaded and batch. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  </added>
   </Version>
   <Version Major="11" Minor="2" Revision="0">

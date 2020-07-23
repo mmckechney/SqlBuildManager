@@ -33,6 +33,7 @@ using SqlSync.SqlBuild.AdHocQuery;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.Connection;
 using System.ComponentModel;
+using Microsoft.Azure.Storage.Blob.Protocol;
 
 namespace SqlBuildManager.Console
 {
@@ -309,10 +310,7 @@ namespace SqlBuildManager.Console
                 #region System.Commandline commands
                 //Build root and sub commands
                 RootCommand rootCommand = new RootCommand(description: "Tool to manage your SQL server database updates and releases");
-                var threadedCommand = new Command("threaded", "For updating multiple databases simultaneously from the current machine")
-                {
-                    Handler = CommandHandler.Create<CommandLineArgs>(RunThreadedExecutionAsync)
-                };
+                var threadedCommand = new Command("threaded", "For updating multiple databases simultaneously from the current machine");
                 var packageCommand = new Command("package", "Creates an SBM package from an SBX configuration file and scripts")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(PackageSbxFilesIntoSbmFiles)
@@ -362,7 +360,7 @@ namespace SqlBuildManager.Console
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(RunBatchCleanUp)
                 }; 
-                var batchRunThreadedCommand = new Command("runthreaded", "[Internal use only] - this commmand is used by Azure batch to sent threaded commands to Batch Nodes")
+                var batchRunThreadedCommand = new Command("runthreaded", "[Internal use only] - this commmand is used to send threaded commands to Azure Batch Nodes")
                 {
                     Handler = CommandHandler.Create<CommandLineArgs>(RunThreadedExecutionAsync)
                 };
@@ -372,7 +370,15 @@ namespace SqlBuildManager.Console
                 };
                 var threadedQueryCommand = new Command("query", "Run a SELECT query across multiple databases")
                 {
-                    Handler = CommandHandler.Create<QueryCmdLine>(QueryDatabases)
+                    Handler = CommandHandler.Create<CommandLineArgs>(QueryDatabases)
+                };
+                var batchQueryCommand = new Command("query", "Run a SELECT query across multiple databases using Azure Batch")
+                {
+                    Handler = CommandHandler.Create<CommandLineArgs>(RunBatchQuery)
+                };
+                var batchQueryThreadedCommand = new Command("querythreaded", "[Internal use only] - this commmand is used to send query commands to Azure Batch Nodes")
+                {
+                    Handler = CommandHandler.Create<CommandLineArgs>(QueryDatabases)
                 };
                 var threadedRunCommand = new Command("run", "For updating multiple databases simultaneously from the current machine")
                 {
@@ -393,19 +399,14 @@ namespace SqlBuildManager.Console
                 rootCommand.Add(scriptExtractCommand);
                 rootCommand.Add(dacpacCommand);
 
+                //Create DACPAC from target
                 authOptions.ForEach(a => dacpacCommand.Add(a));
                 dacpacCommand.Add(authtypeOption);
                 dacpacCommand.Add(databaseOption.Copy(true));
                 dacpacCommand.Add(serverOption.Copy(true));
                 dacpacCommand.Add(dacpacOutputOption);
 
-                batchCommand.Add(saveSettingsCommand);
-                batchCommand.Add(batchPreStageCommand);
-                batchCommand.Add(batchCleanUpCommand);
-                batchCommand.Add(batchRunCommand);
-                batchCommand.Add(batchRunThreadedCommand);
-
-                //General Building options
+                //General Local building options
                 authOptions.ForEach(a => buildCommand.Add(a));
                 buildCommand.Add(authtypeOption);
                 buildCommand.Add(packagenameOption.Copy(true));
@@ -440,10 +441,18 @@ namespace SqlBuildManager.Console
                 threadedQueryCommand.Add(defaultscripttimeoutOption);
                 threadedQueryCommand.Add(silentOption);
 
+                //Azure Batch base command
+                batchCommand.Add(saveSettingsCommand);
+                batchCommand.Add(batchPreStageCommand);
+                batchCommand.Add(batchCleanUpCommand);
+                batchCommand.Add(batchRunCommand);
+                batchCommand.Add(batchQueryCommand);
+                batchCommand.Add(batchRunThreadedCommand);
+                batchCommand.Add(batchQueryThreadedCommand);
 
                 //Batch running
                 authOptions.ForEach(a => batchRunCommand.Add(a));
-                batchRunCommand.Add(overrideOption);
+                batchRunCommand.Add(overrideOption.Copy(true));
                 generalBatchAccountOptions.ForEach(a => batchRunCommand.Add(a));
                 generalBatchNodeOptions.ForEach(a => batchRunCommand.Add(a));
                 generalBatchExecutionOptions.ForEach(a => batchRunCommand.Add(a));
@@ -455,8 +464,7 @@ namespace SqlBuildManager.Console
                 batchRunCommand.Add(platinumdbsourceOption);
                 batchRunCommand.Add(platinumserversourceOption);
 
-                //Batch threading run
-                
+                //Batch threading run -- used to run on Batch node
                 authOptions.ForEach(a => batchRunThreadedCommand.Add(a));
                 batchRunThreadedCommand.Add(authtypeOption);
                 batchRunThreadedCommand.Add(overrideOption);
@@ -492,6 +500,31 @@ namespace SqlBuildManager.Console
                 saveSettingsCommand.Add(pollbatchpoolstatusOption);
                 saveSettingsCommand.Add(silentOption);
                 saveSettingsCommand.Add(cleartextOption);
+
+                //Batch query 
+                authOptions.ForEach(a => batchQueryCommand.Add(a));
+                batchQueryCommand.Add(authtypeOption);
+                batchQueryCommand.Add(overrideOption.Copy(true));
+                batchQueryCommand.Add(queryFileOption.Copy(true));
+                batchQueryCommand.Add(outputFileOption.Copy(true));
+                batchQueryCommand.Add(silentOption);
+                generalBatchAccountOptions.ForEach(a => batchQueryCommand.Add(a));
+                generalBatchNodeOptions.ForEach(a => batchQueryCommand.Add(a));
+                generalBatchExecutionOptions.ForEach(a => batchQueryCommand.Add(a));
+
+                // Batch query -- threaded
+                authOptions.ForEach(a => batchQueryThreadedCommand.Add(a));
+                batchQueryThreadedCommand.Add(authtypeOption);
+                batchQueryThreadedCommand.Add(overrideOption.Copy(true));
+                batchQueryThreadedCommand.Add(queryFileOption.Copy(true));
+                batchQueryThreadedCommand.Add(outputFileOption.Copy(true));
+                generalBatchAccountOptions.ForEach(a => batchQueryThreadedCommand.Add(a));
+                generalBatchNodeOptions.ForEach(a => batchQueryThreadedCommand.Add(a));
+                generalBatchExecutionOptions.ForEach(a => batchQueryThreadedCommand.Add(a));
+                batchQueryThreadedCommand.Add(outputcontainersasurlOption);
+                batchQueryThreadedCommand.Add(transactionalOption);
+                batchQueryThreadedCommand.Add(timeoutretrycountOption);
+                batchQueryThreadedCommand.Add(silentOption);
 
 
                 scriptExtractCommand.Add(platinumdacpacOption.Copy(true));
@@ -625,18 +658,30 @@ namespace SqlBuildManager.Console
 
         }
 
-        private static int QueryDatabases(QueryCmdLine cmdLine)
+        private static void RunQueryExecution(CommandLineArgs arg1, string arg2, string arg3)
         {
-            return QueryDatabases(cmdLine.authType, cmdLine.username, cmdLine.password, cmdLine.queryFile, cmdLine.Override, cmdLine.outputFile, cmdLine.silent, cmdLine.timeout);
+            throw new NotImplementedException();
         }
-        private static int QueryDatabases(SqlSync.Connection.AuthenticationType authType, string username, string password, FileInfo queryFile, FileInfo Override, FileInfo outputFile, bool silent, int timeout)
+
+        private static async Task<int> QueryDatabases(CommandLineArgs cmdLine)
         {
-            if(!queryFile.Exists)
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
+            {
+                SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
+            {
+                SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
+            }
+
+
+            if (!cmdLine.QueryFile.Exists)
             {
                 log.Error("The --queryfile file was not found. Please check the name or path and try again");
                 return 2;
             }
-            var query = File.ReadAllText(queryFile.FullName);
+            var query = File.ReadAllText(cmdLine.QueryFile.FullName);
 
             Regex noNo = new Regex(@"(UPDATE\s)|(INSERT\s)|(DELETE\s)", RegexOptions.IgnoreCase);
             if (noNo.Match(query).Success)
@@ -644,25 +689,25 @@ namespace SqlBuildManager.Console
                 log.Error($"{Environment.NewLine}An INSERT, UPDATE or DELETE keyword was found. You can not use the query function to modify data.{Environment.NewLine}Instead, please run your data modification script as a SQL Build Package or DACPAC update");
                 return 5;
             }
-            if (!Override.Exists)
+            if (!File.Exists(cmdLine.MultiDbRunConfigFileName))
             {
                 log.Error("The --override file was not found. Please check the name or path and try again");
                 return 3;
             }
-            if(outputFile.Exists && !silent)
+            if (cmdLine.OutputFile.Exists && !cmdLine.Silent)
             {
                 System.Console.WriteLine("The output file already exists. Do you want to overwrite it (Y/N)?");
                 var keypressed = System.Console.ReadKey();
-                if(keypressed.Key != ConsoleKey.Y)
+                if (keypressed.Key != ConsoleKey.Y)
                 {
                     log.Info("Exiting");
                     return 1;
                 }
             }
-            
-            var multiData = MultiDbHelper.ImportMultiDbTextConfig(Override.FullName);
-            var connData = new ConnectionData() { UserId = username, Password = password, AuthenticationType = authType };
-            
+
+            var multiData = MultiDbHelper.ImportMultiDbTextConfig(cmdLine.MultiDbRunConfigFileName);
+            var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType };
+
 
             BackgroundWorker bg = new BackgroundWorker();
             bg.WorkerReportsProgress = true;
@@ -673,21 +718,28 @@ namespace SqlBuildManager.Console
             var dbCount = multiData.Sum(d => d.OverrideSequence.Count);
 
             log.Info($"Running query across {serverCount} servers and {dbCount} databases...");
-            bool success = collector.GetQueryResults(ref bg, outputFile.FullName, SqlSync.SqlBuild.Status.ReportType.CSV, query, timeout);
+            bool success = collector.GetQueryResults(ref bg, cmdLine.OutputFile.FullName, SqlSync.SqlBuild.Status.ReportType.CSV, query, cmdLine.DefaultScriptTimeout);
 
-            if(success)
+            if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
-                log.Info($"Query complete. The results are in the output file: {outputFile.FullName}");
+                log.Info("Writing log files to storage...");
+                bool storageSuccess = await WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
+            }
+
+
+            if (success)
+            {
+                log.Info($"Query complete. The results are in the output file: {cmdLine.OutputFile.FullName}");
             }
             else
             {
                 log.Error("There was an issue collecting and aggregating the query results");
                 return 6;
-            }    
+            }
 
             return 0;
-        }
 
+        }
         private static void ThreadedQuery_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             if (e.UserState is string)
@@ -701,25 +753,6 @@ namespace SqlBuildManager.Console
             }
         }
 
-        private static int CreateDacpac(CommandLineArgs cmdLine)
-        {
-            string fullName = Path.GetFullPath(cmdLine.DacpacName);
-            string path = Path.GetDirectoryName(fullName);
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            if (!DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName))
-            {
-                log.Error($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
-                return (int)ExecutionReturn.BuildFileExtractionError;
-            }else
-            {
-                log.Info($"DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {fullName}");
-            }
-            return 0;
-        }
 
         private static int RunBatchCleanUp(CommandLineArgs cmdLine)
         {
@@ -749,14 +782,16 @@ namespace SqlBuildManager.Console
 
         private static int RunBatchExecution(CommandLineArgs cmdLine)
         {
-            SetEventHubAppenderConnection(cmdLine);
+            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
             cmdLine.CliVersion = Program.cliVersion;
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Batch Execution");
             log.Info("Running...");
-            int retVal =  batchExe.StartBatch();
+            int retVal;
+            string readOnlySas;
+            (retVal,readOnlySas) =  batchExe.StartBatch();
             if (retVal == (int)ExecutionReturn.Successful)
             {
                 log.Info("Completed Successfully");
@@ -779,6 +814,54 @@ namespace SqlBuildManager.Console
 
             return retVal;
         }
+
+        private static int RunBatchQuery(CommandLineArgs cmdLine)
+        {
+            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
+            cmdLine.CliVersion = Program.cliVersion;
+            //Always run the remote Batch as silent or it will get hung up
+            if (cmdLine.Silent == false)
+            {
+                cmdLine.Silent = true;
+            }
+            DateTime start = DateTime.Now;
+            Batch.Execution batchExe = new Batch.Execution(cmdLine, cmdLine.QueryFile.FullName, Path.Combine(cmdLine.RootLoggingPath, cmdLine.OutputFile.Name));
+            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
+            log.Debug("Entering Batch Query Execution");
+            log.Info("Running...");
+            int retVal;
+            string readOnlySas;
+            
+            (retVal,readOnlySas) = batchExe.StartBatch();
+
+            if(!string.IsNullOrWhiteSpace(readOnlySas))
+            {
+                var cloudBlobContainer = new CloudBlobContainer(new Uri(readOnlySas));
+                var blob = cloudBlobContainer.GetBlobReference(cmdLine.OutputFile.Name);
+                blob.DownloadToFile(cmdLine.OutputFile.FullName,FileMode.Create);
+                log.Info($"Output file copied locally to {cmdLine.OutputFile.FullName}");
+            }
+
+
+            if (retVal == (int)ExecutionReturn.Successful)
+            {
+                log.Info("Completed Successfully");
+            }
+            else
+            {
+                log.Warn("Completed with Errors - check log");
+            }
+
+            TimeSpan span = DateTime.Now - start;
+            string msg = "Total Run time: " + span.ToString();
+            log.Info(msg);
+
+            log.Debug("Exiting Batch Execution");
+
+            return retVal;
+        }
+
+
 
         private static void SaveAndEncryptSettings(CommandLineArgs cmdLine, bool clearText)
         {
@@ -883,170 +966,9 @@ namespace SqlBuildManager.Console
             }
         }
 
-
-        #region Deprecated -- Remote Exectution via Azure Cloud Service deployment
-        //private static void RunRemoteExecution(string[] args, CommandLineArgs cmdLine, DateTime start)
-        //{
-        //    try
-        //    {
-        //        //string joinedArgs = string.Join(",", args).ToLower();
-
-        //        if(cmdLine.RemoteArgs.TestConnectivity == true)
-        //        {
-        //            RemoteExecutionTestConnectivity(args);
-        //        }
-        //        else if(cmdLine.RemoteArgs.AzureRemoteStatus == true)
-        //        {
-        //            GetAzureRemoteStatus(args);
-        //        }
-        //        else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteDbErrorList))
-        //        {
-        //            var dbsInError = RemoteAzureHealth.GetDatabaseErrorList(cmdLine.RemoteArgs.RemoteDbErrorList);
-        //           if (dbsInError != null)
-        //           {
-        //               log.Info("\r\n" + string.Join("\r\n", dbsInError.ToArray()));
-        //           }
-        //        }
-        //        else if (!string.IsNullOrWhiteSpace(cmdLine.RemoteArgs.RemoteErrorDetail))
-        //        {
-        //            var errorMessages = RemoteAzureHealth.GetErrorDetail(cmdLine.RemoteArgs.RemoteErrorDetail);
-        //            log.Info("Returned error messages:");
-        //            log.Info("\r\n" + errorMessages);
-        //        }
-        //        else if(cmdLine.DacPacArgs.ForceCustomDacPac == true)
-        //        {
-        //            log.Error("The /ForceCustomDacPac flag is not compatible with the /Action=Remote action");
-        //            System.Environment.Exit(681);
-        //        }
-        //        else
-        //        {
-
-
-        //            log.Info("Entering Remote Server Execution - command flag option");
-        //            log.Info("Running remote execution...");
-        //            RemoteExecution remote = new RemoteExecution(args);
-
-        //            int retVal = remote.Execute();
-        //            if (retVal != 0)
-        //                log.Warn("Completed with Errors - check log. Exiting with code: " + retVal.ToString());
-        //            else
-        //                log.Info("Completed Successfully. Exiting with code: " + retVal.ToString());
-
-        //            TimeSpan span = DateTime.Now - start;
-        //            string msg = "Total Run time: " + span.ToString();
-        //            log.Info(msg);
-
-        //            log.Info("Exiting Remote Execution");
-        //            System.Environment.Exit(retVal);
-
-        //        }
-        //    }
-        //    catch (Exception exe)
-        //    {
-        //        log.Warn("Exiting Remote Execution with 603: " + exe.ToString());
-
-        //        log.Error("Execution error - check logs");
-        //        System.Environment.Exit(603);
-        //    }
-        //}
-
-        //#region .: Remote Health Check :.
-        //private static void RemoteExecutionTestConnectivity(string[] args)
-        //{
-        //    log.Info("Entering Remote Server Connectivity Testing: agent and database connectivity");
-        //    log.Info("Entering Remote Server Connectivity Testing...");
-        //    RemoteExecution remote = new RemoteExecution(args);
-
-        //    int retVal = remote.TestConnectivity();
-        //    if (retVal != 0)
-        //        log.Error(
-        //            string.Format("Test Connectivity Failed for {0} server/databases. - check log.",
-        //                          retVal.ToString()));
-        //    else
-        //        log.Info("Test Connectivity Completed Successfully. Exiting with code: " + retVal.ToString());
-        //}
-        //private static void GetAzureRemoteStatus(string[] args)
-        //{
-        //    try
-        //    {
-        //        string format = "{0}{1}{2}{3}";
-        //        log.Info("Getting list of Azure instances...");
-        //        BuildServiceManager manager = new BuildServiceManager();
-        //        List<ServerConfigData> serverData = manager.GetListOfAzureInstancePublicUrls();
-        //        var remote = serverData.Select(s => s.ServerName).ToList();
-        //        if (remote.Count() > 0)
-        //        {
-        //            log.InfoFormat("{0} instances available at {1}", remote.Count(), Regex.Replace(serverData[0].ActiveServiceEndpoint, @":\d{5}", ""));
-        //        }
-        //        List<ServerConfigData> remoteServer = null;
-        //        string[] errorMessages;
-        //        log.Info("Retrieving status of each instance...");
-
-
-
-        //        int statReturn = RemoteExecution.ValidateRemoteServerAvailability(remote, Protocol.AzureHttp, out remoteServer, out errorMessages);
-
-        //        int serverPad = remoteServer.Max(s => s.ServerName.Length) + 2;
-        //        int statusPad = remoteServer.Max(s => s.ServiceReadiness.ToString().Length) + 2;
-        //        int exePad = remoteServer.Max(s => s.ExecutionReturn.ToString().Length) + 2;
-        //        if (exePad < "Last Status".Length + 2)
-        //            exePad = "Last Status".Length + 2;
-        //        int versionPad = remoteServer.Max(s => s.ServiceVersion.ToString().Length) + 2;
-
-        //        log.InfoFormat(format, "Service".PadRight(serverPad, ' '), "Status".PadRight(statusPad, ' '), "Last Status".PadRight(exePad, ' '), "Version".PadRight(versionPad, ' '));
-        //        log.InfoFormat(format, "-".PadRight(serverPad-2, '-'), "-".PadRight(statusPad-2, '-'), "-".PadRight(exePad-2, '-'), "--".PadRight(versionPad-2, '-'));
-        //        remoteServer.ForEach(s =>
-        //            log.InfoFormat(format, s.ServerName.PadRight(serverPad, ' '), s.ServiceReadiness.ToString().PadRight(statusPad, ' '), s.ExecutionReturn.ToString().PadRight(exePad, ' '), s.ServiceVersion.PadRight(versionPad, ' ')));
-
-        //        if(errorMessages.Length > 0)
-        //        {
-        //            errorMessages.ToList().ForEach(e => log.Error(e));
-        //        }
-
-        //    }
-        //    catch (Exception exe)
-        //    {
-        //        log.Error("Unable to get list of Azure instances", exe);
-        //    }
-        //}
-
-        //#endregion
-
-        //private static void RemoteExecutionWithRespFile(string[] args, DateTime start)
-        //{
-        //    log.Info("Entering Remote Server Execution - single config file option.");
-        //    try
-        //    {
-        //        log.Info("Starting Remote Execution...");
-
-        //        RemoteExecution remote = new RemoteExecution(args[0]);
-        //        int retVal = remote.Execute();
-        //        if (retVal != 0)
-        //            log.Warn("Completed with Errors - check logs");
-        //        else
-        //            log.Info("Completed Successfully");
-
-
-        //        TimeSpan span = DateTime.Now - start;
-        //        string msg = "Total Run time: " + span.ToString();
-        //        log.Info(msg);
-
-        //        log.Debug("Exiting Remote Execution with " + retVal.ToString());
-
-        //        System.Environment.Exit(retVal);
-        //    }
-        //    catch (Exception exe)
-        //    {
-        //        log.Debug("Exiting Remote Execution with 602: " + exe.ToString());
-
-        //        log.Error("Execution error - check logs");
-        //        System.Environment.Exit(602);
-        //    }
-        //}
-        #endregion
         private static int RunLocalBuildAsync(CommandLineArgs cmdLine)
         {
-            SetEventHubAppenderConnection(cmdLine);
+            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
             DateTime start = DateTime.Now;
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Local Build Execution");
@@ -1083,9 +1005,10 @@ namespace SqlBuildManager.Console
 
             return retVal;
         }
+
         private static async Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine)
         {
-            SetEventHubAppenderConnection(cmdLine);
+            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
             DateTime start = DateTime.Now;
             SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.Debug("Entering Threaded Execution");
@@ -1122,13 +1045,14 @@ namespace SqlBuildManager.Console
 
         }
 
+
         private static async Task<bool> WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
         {
             try
             {
                 var writeTasks = new List<Task>();
                 
-                var renameLogFiles = new string[] { "execution.log" };
+                var renameLogFiles = new string[] { "sqlbuildmanager" };
                 CloudBlobContainer container = new CloudBlobContainer(new Uri(outputContainerSasUrl));
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
                 string machine = Environment.MachineName;
@@ -1138,7 +1062,7 @@ namespace SqlBuildManager.Console
                     {
                         var tmp = Path.GetRelativePath(rootLoggingPath, f);
 
-                        if (Program.AppendLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
+                        if (Program.AppendLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
 
                             tmp = machine + "-" + tmp;
@@ -1151,14 +1075,16 @@ namespace SqlBuildManager.Console
                                 new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
 
                         }
-                        else if (renameLogFiles.Any(a => f.ToLower().IndexOf(a) > -1))
+                        else if (renameLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
                             tmp = machine + "-" + tmp;
+                            var localTemp = Path.Combine(Path.GetDirectoryName(f), tmp);
+                            File.Copy(f, localTemp);
                             log.InfoFormat($"Saving File '{f}' as '{tmp}'");
                             var rename = container.GetBlockBlobReference(tmp);
 
                             writeTasks.Add(
-                                rename.UploadFromFileAsync(f,
+                                rename.UploadFromFileAsync(localTemp,
                                 AccessCondition.GenerateIfNotExistsCondition(),
                                 new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
                         }
@@ -1174,7 +1100,7 @@ namespace SqlBuildManager.Console
                     }
                     catch (Exception e)
                     {
-                        log.ErrorFormat($"Unable to upload log file '{f}' to blob storage: {e.ToString()}");
+                        log.ErrorFormat($"Unable to upload log file '{f}' to blob storage: {e.Message}");
                     }
                 });
 
@@ -1183,7 +1109,7 @@ namespace SqlBuildManager.Console
             }
             catch (Exception exe)
             {
-                log.Error("Unable to upload log files to blob storage", exe);
+                log.Error($"Unable to upload log files to blob storage.{Environment.NewLine}{exe.Message}");
                 return false;
             }
         }
@@ -1201,12 +1127,16 @@ namespace SqlBuildManager.Console
                         Directory.CreateDirectory(rootLoggingPath);
                     }
 
-                    var appender = LogManager.GetRepository(Assembly.GetEntryAssembly()).GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender").FirstOrDefault();
+                    var appender = LogManager.GetRepository(Assembly.GetEntryAssembly()).GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender" || a.Name == "StandardRollingLogFileAppender");
                     if (appender != null)
                     {
-                        var thr = appender as log4net.Appender.FileAppender;
-                        thr.File = Path.Combine(rootLoggingPath, Path.GetFileName(thr.File));
-                        thr.ActivateOptions();
+                        foreach(var app in appender)
+                        {
+                            var thr = app as log4net.Appender.FileAppender;
+                            thr.File = Path.Combine(rootLoggingPath, Path.GetFileName(thr.File));
+                            thr.ActivateOptions();
+                        }
+                        
                     }
                 }
             }catch(Exception exe)
@@ -1216,9 +1146,9 @@ namespace SqlBuildManager.Console
 
             
         }
-        internal static void SetEventHubAppenderConnection(CommandLineArgs cmdLine)
+        internal static void SetEventHubAppenderConnection(string connectionString)
         {
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
+            if (!string.IsNullOrWhiteSpace(connectionString))
             {
                 Hierarchy hier = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly()) as Hierarchy;
                 if (hier != null)
@@ -1227,45 +1157,40 @@ namespace SqlBuildManager.Console
 
                     if (ehAppender != null)
                     {
-                        ehAppender.ConnectionString = cmdLine.BatchArgs.EventHubConnectionString;
+                        ehAppender.ConnectionString = connectionString;
                         ehAppender.ActivateOptions();
                     }
                 }
             }
         }
 
-        private static void PackageSbxFilesIntoSbmFiles(CommandLineArgs cmdLine)
-        {
-            if(string.IsNullOrWhiteSpace(cmdLine.Directory))
-            {
-                log.Error("The /Directory argument is required for /Action=Package");
-                System.Environment.Exit(9835);
-            }
-            string directory = cmdLine.Directory;
-            string message;
-            List<string> sbmFiles = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directory, out message);
-            if (sbmFiles.Count > 0)
-            {
-                foreach (string sbm in sbmFiles)
-                    log.Info(sbm);
 
-                System.Environment.Exit(0);
-            }
-            else if (message.Length > 0)
-            {
-                log.Warn (message);
-                System.Environment.Exit(604);
-            }
-            else
-            {
-                System.Environment.Exit(0);
-            }
-        }
 
-   
+
 
 
         #region .: Helper Processes :.
+        private static int CreateDacpac(CommandLineArgs cmdLine)
+        {
+            string fullName = Path.GetFullPath(cmdLine.DacpacName);
+            string path = Path.GetDirectoryName(fullName);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            if (!DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName))
+            {
+                log.Error($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
+                return (int)ExecutionReturn.BuildFileExtractionError;
+            }
+            else
+            {
+                log.Info($"DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {fullName}");
+            }
+            return 0;
+        }
+
         private static void SyncronizeDatabase(CommandLineArgs cmdLine)
         {
             bool success = Synchronize.SyncDatabases(cmdLine);
@@ -1348,7 +1273,35 @@ namespace SqlBuildManager.Console
             }
         }
 
-       
+        private static void PackageSbxFilesIntoSbmFiles(CommandLineArgs cmdLine)
+        {
+            if (string.IsNullOrWhiteSpace(cmdLine.Directory))
+            {
+                log.Error("The /Directory argument is required for /Action=Package");
+                System.Environment.Exit(9835);
+            }
+            string directory = cmdLine.Directory;
+            string message;
+            List<string> sbmFiles = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directory, out message);
+            if (sbmFiles.Count > 0)
+            {
+                foreach (string sbm in sbmFiles)
+                    log.Info(sbm);
+
+                System.Environment.Exit(0);
+            }
+            else if (message.Length > 0)
+            {
+                log.Warn(message);
+                System.Environment.Exit(604);
+            }
+            else
+            {
+                System.Environment.Exit(0);
+            }
+        }
+
+
         #endregion
     }
 

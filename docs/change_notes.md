@@ -4,6 +4,7 @@
 
 ### Version 11.2.2
 
+- **NOTE:** **The old style commandline (leveraging the /Action=verb flag etc.) will be deprecated soon!**
 - *ADDED:* New querying across databases from command line for threaded and batch. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  
 
 ### Version 11.2.0
