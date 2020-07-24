@@ -730,7 +730,6 @@ namespace SqlBuildManager.Console
             }
         }
 
-
         private static int RunBatchCleanUp(CommandLineArgs cmdLine)
         {
             DateTime start = DateTime.Now;
