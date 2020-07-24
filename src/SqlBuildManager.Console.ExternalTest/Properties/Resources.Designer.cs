@@ -61,12 +61,52 @@ namespace SqlBuildManager.Console.ExternalTest.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DELETE FROM Test
+        ///.
+        /// </summary>
+        internal static string deletequery {
+            get {
+                return ResourceManager.GetString("deletequery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO Test (Col1) VALUES &quot;Test&quot;
+        ///.
+        /// </summary>
+        internal static string insertquery {
+            get {
+                return ResourceManager.GetString("insertquery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SELECT @@VERSION
+        ///.
+        /// </summary>
+        internal static string selectquery {
+            get {
+                return ResourceManager.GetString("selectquery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] SimpleSelect {
             get {
                 object obj = ResourceManager.GetObject("SimpleSelect", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE Test SET Col1=&quot;hello&quot;
+        ///.
+        /// </summary>
+        internal static string updatequery {
+            get {
+                return ResourceManager.GetString("updatequery", resourceCulture);
             }
         }
     }

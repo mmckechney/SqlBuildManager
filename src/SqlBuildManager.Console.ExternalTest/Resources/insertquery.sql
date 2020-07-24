@@ -1,0 +1,1 @@
+INSERT INTO Test (Col1) VALUES "Test"

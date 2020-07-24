@@ -675,36 +675,13 @@ namespace SqlBuildManager.Console
                 SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             }
 
-
-            if (!cmdLine.QueryFile.Exists)
+            var outpt = Validation.ValidateQueryArguments(ref cmdLine);
+            if(outpt != 0)
             {
-                log.Error("The --queryfile file was not found. Please check the name or path and try again");
-                return 2;
+                return outpt;
             }
+
             var query = File.ReadAllText(cmdLine.QueryFile.FullName);
-
-            Regex noNo = new Regex(@"(UPDATE\s)|(INSERT\s)|(DELETE\s)", RegexOptions.IgnoreCase);
-            if (noNo.Match(query).Success)
-            {
-                log.Error($"{Environment.NewLine}An INSERT, UPDATE or DELETE keyword was found. You can not use the query function to modify data.{Environment.NewLine}Instead, please run your data modification script as a SQL Build Package or DACPAC update");
-                return 5;
-            }
-            if (!File.Exists(cmdLine.MultiDbRunConfigFileName))
-            {
-                log.Error("The --override file was not found. Please check the name or path and try again");
-                return 3;
-            }
-            if (cmdLine.OutputFile.Exists && !cmdLine.Silent)
-            {
-                System.Console.WriteLine("The output file already exists. Do you want to overwrite it (Y/N)?");
-                var keypressed = System.Console.ReadKey();
-                if (keypressed.Key != ConsoleKey.Y)
-                {
-                    log.Info("Exiting");
-                    return 1;
-                }
-            }
-
             var multiData = MultiDbHelper.ImportMultiDbTextConfig(cmdLine.MultiDbRunConfigFileName);
             var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType };
 
@@ -817,6 +794,12 @@ namespace SqlBuildManager.Console
 
         private static int RunBatchQuery(CommandLineArgs cmdLine)
         {
+            var outpt = Validation.ValidateQueryArguments(ref cmdLine);
+            if (outpt != 0)
+            {
+                return outpt;
+            }
+
             SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
             cmdLine.CliVersion = Program.cliVersion;
             //Always run the remote Batch as silent or it will get hung up
@@ -842,7 +825,6 @@ namespace SqlBuildManager.Console
                 blob.DownloadToFile(cmdLine.OutputFile.FullName,FileMode.Create);
                 log.Info($"Output file copied locally to {cmdLine.OutputFile.FullName}");
             }
-
 
             if (retVal == (int)ExecutionReturn.Successful)
             {
