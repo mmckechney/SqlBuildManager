@@ -836,6 +836,7 @@ namespace SqlBuildManager.Console
 
             if(!string.IsNullOrWhiteSpace(readOnlySas))
             {
+                log.Info("Downloading the consolidated output file,,,");
                 var cloudBlobContainer = new CloudBlobContainer(new Uri(readOnlySas));
                 var blob = cloudBlobContainer.GetBlobReference(cmdLine.OutputFile.Name);
                 blob.DownloadToFile(cmdLine.OutputFile.FullName,FileMode.Create);

@@ -384,14 +384,34 @@ namespace SqlBuildManager.Console.Batch
             }
             catch { }
 
+            var counter = 0;
             foreach(var b in blobs)
             {
                 if (b is CloudBlockBlob)
                 {
-                    using (var stream = ((CloudBlockBlob)b).OpenRead())
+                    if (counter == 0)
                     {
-                        destinationBlob.AppendFromStream(stream);
+                        using (var stream = ((CloudBlockBlob)b).OpenRead())
+                        {
+                            destinationBlob.AppendFromStream(stream);
+                        }
                     }
+                    else
+                    {
+                        using (var stream = ((CloudBlockBlob)b).OpenRead())
+                        {
+                            using (StreamReader sr = new StreamReader(stream))
+                            {
+                                sr.ReadLine();
+                                while (sr.Peek() > 0)
+                                {
+                                    destinationBlob.AppendText(sr.ReadLine() + Environment.NewLine);
+                                }
+                               
+                            }
+                        }
+                    }
+                    counter++;
                 }
             }
 
