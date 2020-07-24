@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "SqlBuildManager.Console": {
-      "commandName": "Project",
-      "commandLineArgs": "threaded query --queryfile C:\\Users\\mimcke\\source\\repos\\SqlBuildManager\\src\\TestConfig\\selectquery.sql --override C:\\Users\\mimcke\\source\\repos\\SqlBuildManager\\src\\TestConfig\\azuredb.cfg --outputfile C:\\Users\\mimcke\\source\\repos\\SqlBuildManager\\src\\TestConfig\\output.csv --username mmckechney --password Test1234!1234"
-    }
-  }
-}

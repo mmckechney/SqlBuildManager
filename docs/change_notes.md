@@ -2,10 +2,11 @@
 # SQL Build Manager Change Notes
 
 
-### Version 11.2.2
+### Version 11.3.0
 
 - **NOTE:** **The old style commandline (leveraging the /Action=verb flag etc.) will be deprecated soon!**
-- *ADDED:* New querying across databases from command line for threaded and batch. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  
+- *ADDED:* New querying across databases from command line for threaded and batch [sbm batch query] and [sbm threaded query]. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  
+- *UPDATED:* Running a threaded update is now performed via [sbm threaded run] (vs just [sbm threaded]}, now that there is also a query option for threaded runs
 
 ### Version 11.2.0
 

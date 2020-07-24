@@ -678,7 +678,7 @@ namespace SqlBuildManager.Console.Batch
                 //Set the name of the output file (if set)
                 if (threadCmdLine.OutputFile != null)
                 {
-                    var tmpName = Path.Combine(threadCmdLine.RootLoggingPath, $"{threadCmdLine.OutputFile.Name}{i}.csv");
+                    var tmpName = $"{threadCmdLine.RootLoggingPath}/{threadCmdLine.OutputFile.Name}{i}.csv"; //use forward slash for Linux compat.
                     threadCmdLine.OutputFile = new FileInfo(tmpName);
                 }
              
