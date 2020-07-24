@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "SqlBuildManager.Console": {
-      "commandName": "Project",
-      "commandLineArgs": "batch run --settingsfile C:\\Users\\mimcke\\source\\repos\\SqlBuildManager\\src\\SqlBuildManager.Console.Dependent.UnitTest\\bin\\Debug\\netcoreapp3.1\\TestConfig\\settingsfile.json --override C:\\Users\\mimcke\\source\\repos\\SqlBuildManager\\src\\SqlBuildManager.Console.Dependent.UnitTest\\bin\\Debug\\netcoreapp3.1\\TestConfig\\databasetargets.cfg --packagename C:\\Users\\mimcke\\source\\repos\\SqlBuildManager\\src\\SqlBuildManager.Console.Dependent.UnitTest\\bin\\Debug\\netcoreapp3.1\\SimpleSelect.sbm"
-    }
-  }
-}

@@ -5,15 +5,9 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using Microsoft.SqlServer.Management.HadrData;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Resources;
 using SqlSync.SqlBuild;
-using Microsoft.Azure.Batch;
-using System.Collections.Immutable;
-using Microsoft.SqlServer.Management.Smo;
-using Microsoft.Azure.Amqp.Framing;
 
-namespace SqlBuildManager.Console.Dependent.UnitTest
+namespace SqlBuildManager.Console.ExternalTest
 {
     /// <summary>
     /// To run these tests, you will need to have an Azure environment set up.
@@ -433,6 +427,148 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
             }
 
+        }
+
+        [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-linux.json")]
+        [DataTestMethod]
+        public void BatchQuery_SelectSuccess(string batchMethod, string settingsFile)
+        {
+
+            string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            try
+            {
+                string selectquery = Path.GetFullPath("selectquery.sql");
+                if (!File.Exists(selectquery))
+                {
+                    File.WriteAllText(selectquery, Properties.Resources.selectquery);
+                }
+
+                List<string> args = new List<string>();
+                args.Add($"batch {batchMethod}");
+                args.Add($"--settingsfile {settingsFile}");
+                args.Add($"--override {overrideFile}");
+                args.Add($"--outputfile {outputFile}");
+                args.Add($"--queryfile {selectquery}");
+                args.Add($"--silent");
+
+                var result = ExecuteProcess(args);
+
+                Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+                switch (batchMethod)
+                {
+                    case "querythreaded":
+                        Assert.IsTrue(this.output.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                        break;
+
+                    case "query":
+                        Assert.IsTrue(this.output.Contains("Output file copied locally to"), "Should have copied output file locally");
+                        break;
+                }
+                Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
+                var outputLength = File.ReadAllLines(outputFile).Length;
+                var overrideLength = File.ReadAllLines(overrideFile).Length;
+
+                Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+            }
+            finally
+            {
+                if(File.Exists(outputFile))
+                {
+                    File.Delete(outputFile);
+                }
+            }
+
+            
+        }
+
+        [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-linux.json")]
+        [DataTestMethod]
+        public void BatchQuery_InsertFail(string batchMethod, string settingsFile)
+        {
+
+            string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            string insertquery = Path.GetFullPath("insertquery.sql");
+            if (!File.Exists(insertquery))
+            {
+                File.WriteAllText(insertquery, Properties.Resources.insertquery);
+            }
+
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}");
+            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--override {overrideFile}");
+            args.Add($"--outputfile {outputFile}");
+            args.Add($"--queryfile {insertquery}");
+            args.Add($"--silent");
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(5, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An INSERT statement should have been found");
+        }
+
+        [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-linux.json")]
+        [DataTestMethod]
+        public void BatchQuery_DeleteFail(string batchMethod, string settingsFile)
+        {
+
+            string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            string deletequery = Path.GetFullPath("deletequery.sql");
+            if (!File.Exists(deletequery))
+            {
+                File.WriteAllText(deletequery, Properties.Resources.deletequery);
+            }
+
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}");
+            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--override {overrideFile}");
+            args.Add($"--outputfile {outputFile}");
+            args.Add($"--queryfile {deletequery}");
+            args.Add($"--silent");
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(5, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("An INSERT, UPDATE or DELETE keyword was found"), "A DELETE statement should have been found");
+        }
+
+        [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-linux.json")]
+        [DataTestMethod]
+        public void BatchQuery_UpdateFail(string batchMethod, string settingsFile)
+        {
+
+            string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            string updatequery = Path.GetFullPath("updatequery.sql");
+            if (!File.Exists(updatequery))
+            {
+                File.WriteAllText(updatequery, Properties.Resources.updatequery);
+            }
+
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}");
+            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--override {overrideFile}");
+            args.Add($"--outputfile {outputFile}");
+            args.Add($"--queryfile {updatequery}");
+            args.Add($"--silent");
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(5, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An UPDATE statement should have been found");
         }
 
 

@@ -7,7 +7,7 @@ using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.Connection;
-
+using System.Text.RegularExpressions;
 namespace SqlBuildManager.Console
 {
     class Validation
@@ -418,6 +418,41 @@ namespace SqlBuildManager.Console
             
             errorMessages = messages.ToArray();
             return returnVal;
+        }
+
+        public static int ValidateQueryArguments(ref CommandLineArgs cmdLine)
+        {
+
+            if (!cmdLine.QueryFile.Exists)
+            {
+                log.Error("The --queryfile file was not found. Please check the name or path and try again");
+                return 2;
+            }
+
+            Regex noNo = new Regex(@"(UPDATE\s)|(INSERT\s)|(DELETE\s)", RegexOptions.IgnoreCase);
+            var query = File.ReadAllText(cmdLine.QueryFile.FullName);
+            if (noNo.Match(query).Success)
+            {
+                log.Error($"{Environment.NewLine}An INSERT, UPDATE or DELETE keyword was found. You can not use the query function to modify data.{Environment.NewLine}Instead, please run your data modification script as a SQL Build Package or DACPAC update");
+                return 5;
+            }
+            if (!File.Exists(cmdLine.MultiDbRunConfigFileName))
+            {
+                log.Error("The --override file was not found. Please check the name or path and try again");
+                return 3;
+            }
+            if (cmdLine.OutputFile.Exists && !cmdLine.Silent)
+            {
+                System.Console.WriteLine("The output file already exists. Do you want to overwrite it (Y/N)?");
+                var keypressed = System.Console.ReadKey();
+                if (keypressed.Key != ConsoleKey.Y)
+                {
+                    log.Info("Exiting");
+                    return 1;
+                }
+            }
+
+            return 0;
         }
 
     }

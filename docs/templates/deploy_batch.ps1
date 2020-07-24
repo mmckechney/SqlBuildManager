@@ -221,7 +221,7 @@ foreach ($env in $vars)
 
     $tmpPath = Join-Path $outputPath "settingsfile-$($env.OSName.ToLower()).json"
     $settingsFile | ConvertTo-Json | Set-Content -Path $tmpPath
-    Write-Host "Saved settings file to " + $tmpPath
+    Write-Host "Saved settings file to " $tmpPath
 }
 
 ##################################################

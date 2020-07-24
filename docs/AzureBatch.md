@@ -10,7 +10,7 @@ _Note_: this method has the added benefit of also uploading the [latest release 
 0. _Prerequisite_: Make sure you have the [Azure PowerShell Modules installed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 1. Download the files `deploy_batch.ps1` and `azuredeploy.parameters.json` files from the [templates](templates) folder
 2. Edit the `azuredeploy.parameters.json` file, giving your Azure Batch and Azure Storage account names (keep in mind the [rules for naming storage accounts](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#naming-storage-accounts))
-3. Copy the URL for the [latest release package](https://github.com/mmckechney/SqlBuildManager/releases/tag/v11.0.0) `SqlBuildManager-vX.X.X.zip`
+3. Copy the URL for the [latest release package](https://github.com/mmckechney/SqlBuildManager/releases/tag/latest) `sbm-windows-vX.X.X.zip` or `sbm-linux-vX.X.X.zip`
 4. Run the `deploy_batch.ps1` file, providing values for:
     - `-subscriptionId` - Guid for the subscription to deploy to
     - `-resourceGroupName` - Resource group name to put the Batch and storage accounts into

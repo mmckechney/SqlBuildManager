@@ -43,6 +43,7 @@ local.properties
 *.ide/
 .vs/
 .vscode/
+launchsettings.json
 
 # Build results
 
