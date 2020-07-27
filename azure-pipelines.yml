@@ -50,7 +50,7 @@ steps:
 - task: ArchiveFiles@2
   displayName: Archive Windows command line version
   inputs:
-    rootFolderOrFile: '/src/SqlBuildManager.Console/bin/$(BuildConfiguration)netcoreapp3.1/win-x64/publish'
+    rootFolderOrFile: '/src/SqlBuildManager.Console/bin/$(BuildConfiguration)/netcoreapp3.1/win-x64/publish'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: sbm-windows-$(Build.BuildNumber).zip'
@@ -59,7 +59,7 @@ steps:
 - task: ArchiveFiles@2
   displayName: Archive Linux command line version
   inputs:
-    rootFolderOrFile: '/src/SqlBuildManager.Console/bin/$(BuildConfiguration)netcoreapp3.1/Linux-x64/publish'
+    rootFolderOrFile: '/src/SqlBuildManager.Console/bin/$(BuildConfiguration)/netcoreapp3.1/Linux-x64/publish'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: sbm-linux-$(Build.BuildNumber).zip'
@@ -68,7 +68,7 @@ steps:
 - task: ArchiveFiles@2
   displayName: Archive Windows Desktop version
   inputs:
-    rootFolderOrFile: '/src/SqlSync/bin/$(BuildConfiguration)netcoreapp3.1/Win-x64/publish'
+    rootFolderOrFile: '/src/SqlSync/bin/$(BuildConfiguration)/netcoreapp3.1/Win-x64/publish'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: sbm-linux-$(Build.BuildNumber).zip'
