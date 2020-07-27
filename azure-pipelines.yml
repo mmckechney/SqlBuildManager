@@ -32,26 +32,20 @@ steps:
     arguments:  --configuration $(BuildConfiguration)
     projects: './src/sqlsync.sln'
 
-- task: DotNetCoreCLI@2
+- task: CmdLine@2
   displayName: Publish Windows command line version
   inputs:
-    command: publish 
-    arguments:  --configuration $(BuildConfiguration)  -r win-x64 
-    projects: ./src/SqlBuildManager.Console/sbm.csproj 
+    script: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration $(BuildConfiguration)
 
-- task: DotNetCoreCLI@2
+- task: CmdLine@2
   displayName: Publish Linux command line version
   inputs:
-    command: publish 
-    arguments:  --configuration $(BuildConfiguration)  -r linux-x64 
-    projects: ./src/SqlBuildManager.Console/sbm.csproj 
+    script: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration $(BuildConfiguration)
 
-- task: DotNetCoreCLI@2
+- task: CmdLine@2
   displayName: Publish SQL Build Manager Desktop
   inputs:
-    command: publish 
-    arguments:  --configuration $(BuildConfiguration)  -r win-x64 
-    projects: ./src/SqlSync/SqlSync.csproj     
+    script: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration $(BuildConfiguration)
 
 - task: ArchiveFiles@2
   displayName: Archive Windows command line version
