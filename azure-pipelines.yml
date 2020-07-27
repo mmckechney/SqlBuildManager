@@ -53,7 +53,7 @@ steps:
     rootFolderOrFile: './src/SqlBuildManager.Console/bin/$(BuildConfiguration)/netcoreapp3.1/win-x64/publish'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: sbm-windows-$(Build.BuildNumber).zip'
+    archiveFile: sbm-windows-$(Build.BuildNumber).zip
     replaceExistingArchive: true
 
 - task: ArchiveFiles@2
@@ -62,7 +62,7 @@ steps:
     rootFolderOrFile: './src/SqlBuildManager.Console/bin/$(BuildConfiguration)/netcoreapp3.1/Linux-x64/publish'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: sbm-linux-$(Build.BuildNumber).zip'
+    archiveFile: sbm-linux-$(Build.BuildNumber).zip
     replaceExistingArchive: true
 
 - task: ArchiveFiles@2
@@ -71,7 +71,29 @@ steps:
     rootFolderOrFile: './src/SqlSync/bin/$(BuildConfiguration)/netcoreapp3.1/Win-x64/publish'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: sbm-linux-$(Build.BuildNumber).zip'
+    archiveFile: sbm-desktop-$(Build.BuildNumber).zip
     replaceExistingArchive: true    
+
+
+- task: PublishBuildArtifacts@1
+  displayName: Saving Windows CLI artifact
+  inputs:
+    PathtoPublish: sbm-windows-$(Build.BuildNumber).zip
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: Saving Linux CLI artifact
+  inputs:
+    PathtoPublish: sbm-linux-$(Build.BuildNumber).zip
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: Saving windows Desktop artifact
+  inputs:
+    PathtoPublish: sbm-desktop-$(Build.BuildNumber).zip
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
 
 
