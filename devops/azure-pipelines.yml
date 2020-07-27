@@ -78,21 +78,21 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: Saving Windows CLI artifact
   inputs:
-    PathtoPublish: sbm-windows-$(Build.BuildNumber).zip
+    PathtoPublish: sbm-windows.zip
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
 - task: PublishBuildArtifacts@1
   displayName: Saving Linux CLI artifact
   inputs:
-    PathtoPublish: sbm-linux-$(Build.BuildNumber).zip
+    PathtoPublish: sbm-linux.zip
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
 - task: PublishBuildArtifacts@1
   displayName: Saving windows Desktop artifact
   inputs:
-    PathtoPublish: sbm-desktop-$(Build.BuildNumber).zip
+    PathtoPublish: sbm-desktop.zip
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
