@@ -10,35 +10,73 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '3.1.100'
+
 - task: NuGetToolInstaller@1
   inputs:
-    versionSpec: 
     checkLatest: true
 
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
+  displayName: Restore NuGet packages
   inputs:
-    command: 'restore'
-    restoreSolution: '**\*console.sln'
-    feedsToUse: 'select'
-    vstsFeed: '13893109-2090-413a-87d0-9539cabbfcad/9d117720-4777-425f-a00e-9b010a51c6e2'
+    command: restore
+    projects: './src/sqlsync.sln'
 
-- task: VSBuild@1
+- task: DotNetCoreCLI@2
+  displayName: Build solution
   inputs:
-    solution: '**\sqlbuildmanager-console.sln'
-    platform: 'any CPU'
-    configuration: '$(BuildConfiguration)'
+    command: restore 
+    arguments:  --configuration '$(BuildConfiguration)
+    projects: './src/sqlsync.sln'
+
+- task: DotNetCoreCLI@2
+  displayName: Publish Windows command line version
+  inputs:
+    command: publish 
+    arguments:  --configuration '$(BuildConfiguration)  -r win-x64 
+    projects: ./src/SqlBuildManager.Console/sbm.csproj 
+
+- task: DotNetCoreCLI@2
+  displayName: Publish Linux command line version
+  inputs:
+    command: publish 
+    arguments:  --configuration '$(BuildConfiguration)  -r linux-x64 
+    projects: ./src/SqlBuildManager.Console/sbm.csproj 
+
+- task: DotNetCoreCLI@2
+  displayName: Publish SQL Build Manager Desktop
+  inputs:
+    command: publish 
+    arguments:  --configuration '$(BuildConfiguration)  -r win-x64 
+    projects: ./src/SqlSync/SqlSync.csproj     
 
 - task: ArchiveFiles@2
+  displayName: Archive Windows command line version
   inputs:
-    rootFolderOrFile: 'src/bin/$(BuildConfiguration)'
+    rootFolderOrFile: '/src/SqlBuildManager.Console/bin/$(BuildConfiguration)netcoreapp3.1/win-x64/publish'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: 'SqlBuildManager.Console-$(Build.BuildNumber).zip'
+    archiveFile: sbm-windows-$(Build.BuildNumber).zip'
     replaceExistingArchive: true
 
-- task: PublishBuildArtifacts@1
+- task: ArchiveFiles@2
+  displayName: Archive Linux command line version
   inputs:
-    PathtoPublish: 'SqlBuildManager.Console-$(Build.BuildNumber).zip'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    rootFolderOrFile: '/src/SqlBuildManager.Console/bin/$(BuildConfiguration)netcoreapp3.1/Linux-x64/publish'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: sbm-linux-$(Build.BuildNumber).zip'
+    replaceExistingArchive: true
+
+- task: ArchiveFiles@2
+  displayName: Archive Windows Desktop version
+  inputs:
+    rootFolderOrFile: '/src/SqlSync/bin/$(BuildConfiguration)netcoreapp3.1/Win-x64/publish'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: sbm-linux-$(Build.BuildNumber).zip'
+    replaceExistingArchive: true    
 
