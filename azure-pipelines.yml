@@ -29,28 +29,28 @@ steps:
   displayName: Build solution
   inputs:
     command: restore 
-    arguments:  --configuration '$(BuildConfiguration)
+    arguments:  --configuration $(BuildConfiguration)
     projects: './src/sqlsync.sln'
 
 - task: DotNetCoreCLI@2
   displayName: Publish Windows command line version
   inputs:
     command: publish 
-    arguments:  --configuration '$(BuildConfiguration)  -r win-x64 
+    arguments:  --configuration $(BuildConfiguration)  -r win-x64 
     projects: ./src/SqlBuildManager.Console/sbm.csproj 
 
 - task: DotNetCoreCLI@2
   displayName: Publish Linux command line version
   inputs:
     command: publish 
-    arguments:  --configuration '$(BuildConfiguration)  -r linux-x64 
+    arguments:  --configuration $(BuildConfiguration)  -r linux-x64 
     projects: ./src/SqlBuildManager.Console/sbm.csproj 
 
 - task: DotNetCoreCLI@2
   displayName: Publish SQL Build Manager Desktop
   inputs:
     command: publish 
-    arguments:  --configuration '$(BuildConfiguration)  -r win-x64 
+    arguments:  --configuration $(BuildConfiguration)  -r win-x64 
     projects: ./src/SqlSync/SqlSync.csproj     
 
 - task: ArchiveFiles@2
@@ -79,4 +79,5 @@ steps:
     archiveType: 'zip'
     archiveFile: sbm-linux-$(Build.BuildNumber).zip'
     replaceExistingArchive: true    
+
 
