@@ -23,7 +23,10 @@ param(
  $windowsZipPackage,
 
  [string]
- $linuxZipPackage
+ $linuxZipPackage,
+
+ [string]
+ $releaseVersion
 
 )
 
@@ -61,8 +64,8 @@ foreach ($env in $vars)
     New-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $env.ApplicationName
     
     Write-Host "Uploading application package $($env.ApplicationName) [$($env.BuildOutputZip)] to Azure Batch account"
-    New-AzBatchApplicationPackage -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $env.ApplicationName -ApplicationVersion $version -Format zip -FilePath $env.BuildOutputZip
+    New-AzBatchApplicationPackage -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $env.ApplicationName -ApplicationVersion $releaseVersion -Format zip -FilePath $env.BuildOutputZip
     
     Write-Host "Setting default application for  $($env.ApplicationName) version to $version"
-    Set-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $env.ApplicationName -DefaultVersion $version
+    Set-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $env.ApplicationName -DefaultVersion $releaseVersion
 }
