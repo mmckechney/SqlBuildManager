@@ -1,13 +1,17 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="11" Minor="3" Revision="1">
+    <updated>Changes tp the deployment templates and PowerShell files to be more friendly with Azure DevOps release pipelines </updated>
+    <fixed>sbm batch run regression introduced with new query option</fixed>
+  </Version>
   <Version Major="11" Minor="3" Revision="0">
-    <note>**The old style commandline (leveraging the /Action=verb flag etc.) will be deprecated soon!**</note>
+    <note>**The old style command line (leveraging the /Action=verb flag etc.) will be deprecated soon!**</note>
     <added>New querying across databases from command line for threaded and batch [sbm batch query] and [sbm threaded query]. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  </added>
     <updated>Running a threaded update is now performed via [sbm threaded run] (vs just [sbm threaded]}, now that there is also a query option for threaded runs</updated>
   </Version>
   <Version Major="11" Minor="2" Revision="0">
     <added>The Batch processors now work on Linux worker nodes!</added>
-    <updated>New batch command option to support Linux: --os [Windows,Linux]. Note also that the --batchpoolname option now has important relevence for Batch accounts that have both Linux and Windows pools</updated>
+    <updated>New batch command option to support Linux: --os [Windows,Linux]. Note also that the --batchpoolname option now has important relevance for Batch accounts that have both Linux and Windows pools</updated>
     <updated>The Azure setup scripts (see /doc/localbuild) now also include setting up a Linux pool and the creation of settings files and application package zips for both environments</updated>
   </Version>
   <Version Major="11" Minor="1" Revision="0">
@@ -16,7 +20,7 @@
     <updated>Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not</updated>
     <added>Shortened command line executable name `sbm.exe` leveraging the [System.CommmandLine](https://github.com/dotnet/command-line-api) command pattern and validation (`sbm [command] [options]`).
       The old executable (`SqlBuildManager.Console.exe`) with the prior pattern of `/Action=verb` is still supported is still available</added>
-    <note>The CLI and core UI components of the app have been throroughly tested. Some ancillary UI pieces have not. If you find an issue, please log it in GitHub</note>
+    <note>The CLI and core UI components of the app have been thoroughly tested. Some ancillary UI pieces have not. If you find an issue, please log it in GitHub</note>
   </Version>
   <Version Major="11" Minor="0" Revision="0">
     <note>MAJOR CHANGE -- removed the legacy Azure Cloud Service deployment model. Please update to use the Azure Batch model instead!</note>

@@ -1,0 +1,778 @@
+{
+    "variables": {
+        "Location": {
+            "value": "EastUs",
+            "allowOverride": true
+        }
+    },
+    "variableGroups": [],
+    "environments": [{
+            "id": 1,
+            "name": "Dev Deploy",
+            "rank": 1,
+            "owner": {
+                "displayName": "Michael McKechney",
+                "url": "https://spsprodeus27.vssps.visualstudio.com/A7804e5c4-ba71-4fd5-a822-70779f1bcc34/_apis/Identities/92ecf454-21f9-4525-8d7f-edd41aca91b1",
+                "_links": {
+                    "avatar": {
+                        "href": "https://dev.azure.com/mckechney/_apis/GraphProfile/MemberAvatars/aad.NjdhZDViN2YtYzUwOC03NDViLWEyOTYtMTk1NWI0MDc0NTBm"
+                    }
+                },
+                "id": "92ecf454-21f9-4525-8d7f-edd41aca91b1",
+                "uniqueName": "michael@mckechney.com",
+                "imageUrl": "https://dev.azure.com/mckechney/_apis/GraphProfile/MemberAvatars/aad.NjdhZDViN2YtYzUwOC03NDViLWEyOTYtMTk1NWI0MDc0NTBm",
+                "descriptor": "aad.NjdhZDViN2YtYzUwOC03NDViLWEyOTYtMTk1NWI0MDc0NTBm"
+            },
+            "variables": {
+                "prefix": {
+                    "value": "sbmdev",
+                    "allowOverride": true
+                },
+                "RgName": {
+                    "value": "sbm-dev-rg",
+                    "allowOverride": true
+                }
+            },
+            "variableGroups": [],
+            "preDeployApprovals": {
+                "approvals": [{
+                    "rank": 1,
+                    "isAutomated": true,
+                    "isNotificationOn": false,
+                    "id": 1
+                }],
+                "approvalOptions": {
+                    "requiredApproverCount": null,
+                    "releaseCreatorCanBeApprover": false,
+                    "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+                    "enforceIdentityRevalidation": false,
+                    "timeoutInMinutes": 0,
+                    "executionOrder": 1
+                }
+            },
+            "deployStep": {
+                "id": 2
+            },
+            "postDeployApprovals": {
+                "approvals": [{
+                    "rank": 1,
+                    "isAutomated": true,
+                    "isNotificationOn": false,
+                    "id": 3
+                }],
+                "approvalOptions": {
+                    "requiredApproverCount": null,
+                    "releaseCreatorCanBeApprover": false,
+                    "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+                    "enforceIdentityRevalidation": false,
+                    "timeoutInMinutes": 0,
+                    "executionOrder": 2
+                }
+            },
+            "deployPhases": [{
+                "deploymentInput": {
+                    "parallelExecution": {
+                        "parallelExecutionType": 0
+                    },
+                    "agentSpecification": {
+                        "identifier": "windows-2019"
+                    },
+                    "skipArtifactsDownload": false,
+                    "artifactsDownloadInput": {
+                        "downloadInputs": [{
+                                "alias": "_SqlBuildManager_GitHub",
+                                "artifactType": "Git",
+                                "artifactDownloadMode": "All",
+                                "artifactItems": []
+                            },
+                            {
+                                "alias": "_SqlBuildManager_GitHub_artifact",
+                                "artifactType": "Build",
+                                "artifactDownloadMode": "All",
+                                "artifactItems": []
+                            }
+                        ]
+                    },
+                    "queueId": 185,
+                    "demands": [],
+                    "enableAccessToken": false,
+                    "timeoutInMinutes": 0,
+                    "jobCancelTimeoutInMinutes": 1,
+                    "condition": "succeeded()",
+                    "overrideInputs": {}
+                },
+                "rank": 1,
+                "phaseType": 1,
+                "name": "Agent job",
+                "refName": null,
+                "workflowTasks": [{
+                        "environment": {},
+                        "taskId": "94a74903-f93f-4075-884f-dc11f34058b4",
+                        "version": "3.*",
+                        "name": "Deploy Infrastructure ARM Template",
+                        "refName": "",
+                        "enabled": true,
+                        "alwaysRun": false,
+                        "continueOnError": false,
+                        "timeoutInMinutes": 0,
+                        "definitionType": "task",
+                        "overrideInputs": {},
+                        "condition": "succeeded()",
+                        "inputs": {
+                            "deploymentScope": "Resource Group",
+                            "ConnectedServiceName": "39cadf15-89fe-4b17-9d2b-5959608a213a",
+                            "subscriptionName": "1e1dcefc-d832-4de0-889a-2a48494c441b",
+                            "action": "Create Or Update Resource Group",
+                            "resourceGroupName": "$(RgName)",
+                            "location": "$(Location)",
+                            "templateLocation": "Linked artifact",
+                            "csmFileLink": "",
+                            "csmParametersFileLink": "",
+                            "csmFile": "$(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub/docs/templates/azuredeploy.json",
+                            "csmParametersFile": "",
+                            "overrideParameters": "-namePrefix $(prefix) -eventhubSku \"Standard\" -skuCapacity 1 -location $(Location)",
+                            "deploymentMode": "Incremental",
+                            "deploymentName": "",
+                            "deploymentOutputs": "",
+                            "addSpnToEnvironment": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "taskId": "72a1931b-effb-4d2e-8fd8-f8472a07cb62",
+                        "version": "5.*",
+                        "name": "Upload Batch Application Package",
+                        "refName": "",
+                        "enabled": true,
+                        "alwaysRun": false,
+                        "continueOnError": false,
+                        "timeoutInMinutes": 0,
+                        "definitionType": "task",
+                        "overrideInputs": {},
+                        "condition": "succeeded()",
+                        "inputs": {
+                            "ConnectedServiceNameARM": "39cadf15-89fe-4b17-9d2b-5959608a213a",
+                            "ScriptType": "FilePath",
+                            "ScriptPath": "$(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub/devops/batch_update_releasepackage.ps1",
+                            "Inline": "# You can write your azure powershell scripts inline here. \n# You can also pass predefined and custom variables to this script using arguments",
+                            "ScriptArguments": "-resourceGroupName $(RgName) -batchprefix $(prefix) -windowsZipPackage $(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub_artifact/drop/sbm-windows.zip -linuxZipPackage $(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub_artifact/drop/sbm-linux.zip -releaseVersion $(Release.Artifacts._SqlBuildManager_GitHub_artifact.BuildNumber)",
+                            "errorActionPreference": "continue",
+                            "FailOnStandardError": "false",
+                            "TargetAzurePs": "LatestVersion",
+                            "CustomTargetAzurePs": "",
+                            "pwsh": "false",
+                            "workingDirectory": ""
+                        }
+                    }
+                ]
+            }],
+            "environmentOptions": {
+                "emailNotificationType": "OnlyOnFailure",
+                "emailRecipients": "release.environment.owner;release.creator",
+                "skipArtifactsDownload": false,
+                "timeoutInMinutes": 0,
+                "enableAccessToken": false,
+                "publishDeploymentStatus": true,
+                "badgeEnabled": false,
+                "autoLinkWorkItems": false,
+                "pullRequestDeploymentEnabled": false
+            },
+            "demands": [],
+            "conditions": [{
+                "name": "ReleaseStarted",
+                "conditionType": 1,
+                "value": ""
+            }],
+            "executionPolicy": {
+                "concurrencyCount": 1,
+                "queueDepthCount": 0
+            },
+            "schedules": [],
+            "currentRelease": {
+                "id": 9,
+                "url": "https://vsrm.dev.azure.com/mckechney/873c1268-92b2-4017-a8df-fee7f37866c5/_apis/Release/releases/9",
+                "_links": {}
+            },
+            "retentionPolicy": {
+                "daysToKeep": 30,
+                "releasesToKeep": 3,
+                "retainBuild": true
+            },
+            "processParameters": {},
+            "properties": {
+                "BoardsEnvironmentType": {
+                    "$type": "System.String",
+                    "$value": "unmapped"
+                },
+                "LinkBoardsWorkItems": {
+                    "$type": "System.String",
+                    "$value": "False"
+                }
+            },
+            "preDeploymentGates": {
+                "id": 0,
+                "gatesOptions": null,
+                "gates": []
+            },
+            "postDeploymentGates": {
+                "id": 0,
+                "gatesOptions": null,
+                "gates": []
+            },
+            "environmentTriggers": [],
+            "badgeUrl": "https://vsrm.dev.azure.com/mckechney/_apis/public/Release/badge/873c1268-92b2-4017-a8df-fee7f37866c5/1/1"
+        },
+        {
+            "id": 2,
+            "name": "Test Deploy",
+            "rank": 2,
+            "owner": {
+                "displayName": "Michael McKechney",
+                "url": "https://spsprodeus27.vssps.visualstudio.com/A7804e5c4-ba71-4fd5-a822-70779f1bcc34/_apis/Identities/92ecf454-21f9-4525-8d7f-edd41aca91b1",
+                "_links": {
+                    "avatar": {
+                        "href": "https://dev.azure.com/mckechney/_apis/GraphProfile/MemberAvatars/aad.NjdhZDViN2YtYzUwOC03NDViLWEyOTYtMTk1NWI0MDc0NTBm"
+                    }
+                },
+                "id": "92ecf454-21f9-4525-8d7f-edd41aca91b1",
+                "uniqueName": "michael@mckechney.com",
+                "imageUrl": "https://dev.azure.com/mckechney/_apis/GraphProfile/MemberAvatars/aad.NjdhZDViN2YtYzUwOC03NDViLWEyOTYtMTk1NWI0MDc0NTBm",
+                "descriptor": "aad.NjdhZDViN2YtYzUwOC03NDViLWEyOTYtMTk1NWI0MDc0NTBm"
+            },
+            "variables": {
+                "prefix": {
+                    "value": "sbmtst",
+                    "allowOverride": true
+                },
+                "RgName": {
+                    "value": "sbm-qa-rg",
+                    "allowOverride": true
+                }
+            },
+            "variableGroups": [],
+            "preDeployApprovals": {
+                "approvals": [{
+                    "rank": 1,
+                    "isAutomated": true,
+                    "isNotificationOn": false,
+                    "id": 4
+                }],
+                "approvalOptions": {
+                    "requiredApproverCount": null,
+                    "releaseCreatorCanBeApprover": false,
+                    "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+                    "enforceIdentityRevalidation": false,
+                    "timeoutInMinutes": 0,
+                    "executionOrder": 1
+                }
+            },
+            "deployStep": {
+                "id": 5
+            },
+            "postDeployApprovals": {
+                "approvals": [{
+                    "rank": 1,
+                    "isAutomated": true,
+                    "isNotificationOn": false,
+                    "id": 6
+                }],
+                "approvalOptions": {
+                    "requiredApproverCount": null,
+                    "releaseCreatorCanBeApprover": false,
+                    "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+                    "enforceIdentityRevalidation": false,
+                    "timeoutInMinutes": 0,
+                    "executionOrder": 2
+                }
+            },
+            "deployPhases": [{
+                "deploymentInput": {
+                    "parallelExecution": {
+                        "parallelExecutionType": 0
+                    },
+                    "agentSpecification": {
+                        "identifier": "windows-2019"
+                    },
+                    "skipArtifactsDownload": false,
+                    "artifactsDownloadInput": {
+                        "downloadInputs": [{
+                                "alias": "_SqlBuildManager_GitHub",
+                                "artifactType": "Git",
+                                "artifactDownloadMode": "All",
+                                "artifactItems": []
+                            },
+                            {
+                                "alias": "_SqlBuildManager_GitHub_artifact",
+                                "artifactType": "Build",
+                                "artifactDownloadMode": "All",
+                                "artifactItems": []
+                            }
+                        ]
+                    },
+                    "queueId": 185,
+                    "demands": [],
+                    "enableAccessToken": false,
+                    "timeoutInMinutes": 0,
+                    "jobCancelTimeoutInMinutes": 1,
+                    "condition": "succeeded()",
+                    "overrideInputs": {}
+                },
+                "rank": 1,
+                "phaseType": 1,
+                "name": "Agent job",
+                "refName": null,
+                "workflowTasks": [{
+                        "environment": {},
+                        "taskId": "94a74903-f93f-4075-884f-dc11f34058b4",
+                        "version": "3.*",
+                        "name": "Deploy Infrastructure ARM Template",
+                        "refName": "",
+                        "enabled": true,
+                        "alwaysRun": false,
+                        "continueOnError": false,
+                        "timeoutInMinutes": 0,
+                        "definitionType": "task",
+                        "overrideInputs": {},
+                        "condition": "succeeded()",
+                        "inputs": {
+                            "deploymentScope": "Resource Group",
+                            "ConnectedServiceName": "39cadf15-89fe-4b17-9d2b-5959608a213a",
+                            "subscriptionName": "1e1dcefc-d832-4de0-889a-2a48494c441b",
+                            "action": "Create Or Update Resource Group",
+                            "resourceGroupName": "$(RgName)",
+                            "location": "$(Location)",
+                            "templateLocation": "Linked artifact",
+                            "csmFileLink": "",
+                            "csmParametersFileLink": "",
+                            "csmFile": "$(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub/docs/templates/azuredeploy.json",
+                            "csmParametersFile": "",
+                            "overrideParameters": "-namePrefix $(prefix) -eventhubSku \"Standard\" -skuCapacity 1 -location $(Location)",
+                            "deploymentMode": "Incremental",
+                            "deploymentName": "",
+                            "deploymentOutputs": "",
+                            "addSpnToEnvironment": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "taskId": "72a1931b-effb-4d2e-8fd8-f8472a07cb62",
+                        "version": "5.*",
+                        "name": "Upload Batch Application Package",
+                        "refName": "",
+                        "enabled": true,
+                        "alwaysRun": false,
+                        "continueOnError": false,
+                        "timeoutInMinutes": 0,
+                        "definitionType": "task",
+                        "overrideInputs": {},
+                        "condition": "succeeded()",
+                        "inputs": {
+                            "ConnectedServiceNameARM": "39cadf15-89fe-4b17-9d2b-5959608a213a",
+                            "ScriptType": "FilePath",
+                            "ScriptPath": "$(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub/devops/batch_update_releasepackage.ps1",
+                            "Inline": "# You can write your azure powershell scripts inline here. \n# You can also pass predefined and custom variables to this script using arguments",
+                            "ScriptArguments": "-resourceGroupName $(RgName) -batchprefix $(prefix) -windowsZipPackage $(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub_artifact/drop/sbm-windows.zip -linuxZipPackage $(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub_artifact/drop/sbm-linux.zip -releaseVersion $(Release.Artifacts._SqlBuildManager_GitHub_artifact.BuildNumber)",
+                            "errorActionPreference": "continue",
+                            "FailOnStandardError": "false",
+                            "TargetAzurePs": "LatestVersion",
+                            "CustomTargetAzurePs": "",
+                            "pwsh": "false",
+                            "workingDirectory": ""
+                        }
+                    }
+                ]
+            }],
+            "environmentOptions": {
+                "emailNotificationType": "OnlyOnFailure",
+                "emailRecipients": "release.environment.owner;release.creator",
+                "skipArtifactsDownload": false,
+                "timeoutInMinutes": 0,
+                "enableAccessToken": false,
+                "publishDeploymentStatus": true,
+                "badgeEnabled": false,
+                "autoLinkWorkItems": false,
+                "pullRequestDeploymentEnabled": false
+            },
+            "demands": [],
+            "conditions": [],
+            "executionPolicy": {
+                "concurrencyCount": 1,
+                "queueDepthCount": 0
+            },
+            "schedules": [],
+            "currentRelease": {
+                "id": 9,
+                "url": "https://vsrm.dev.azure.com/mckechney/873c1268-92b2-4017-a8df-fee7f37866c5/_apis/Release/releases/9",
+                "_links": {}
+            },
+            "retentionPolicy": {
+                "daysToKeep": 30,
+                "releasesToKeep": 3,
+                "retainBuild": true
+            },
+            "processParameters": {},
+            "properties": {
+                "BoardsEnvironmentType": {
+                    "$type": "System.String",
+                    "$value": "unmapped"
+                },
+                "LinkBoardsWorkItems": {
+                    "$type": "System.String",
+                    "$value": "False"
+                }
+            },
+            "preDeploymentGates": {
+                "id": 0,
+                "gatesOptions": null,
+                "gates": []
+            },
+            "postDeploymentGates": {
+                "id": 0,
+                "gatesOptions": null,
+                "gates": []
+            },
+            "environmentTriggers": [],
+            "badgeUrl": "https://vsrm.dev.azure.com/mckechney/_apis/public/Release/badge/873c1268-92b2-4017-a8df-fee7f37866c5/1/2"
+        },
+        {
+            "id": 3,
+            "name": "Prod Deploy",
+            "rank": 3,
+            "owner": {
+                "displayName": "Michael McKechney",
+                "url": "https://spsprodeus27.vssps.visualstudio.com/A7804e5c4-ba71-4fd5-a822-70779f1bcc34/_apis/Identities/92ecf454-21f9-4525-8d7f-edd41aca91b1",
+                "_links": {
+                    "avatar": {
+                        "href": "https://dev.azure.com/mckechney/_apis/GraphProfile/MemberAvatars/aad.NjdhZDViN2YtYzUwOC03NDViLWEyOTYtMTk1NWI0MDc0NTBm"
+                    }
+                },
+                "id": "92ecf454-21f9-4525-8d7f-edd41aca91b1",
+                "uniqueName": "michael@mckechney.com",
+                "imageUrl": "https://dev.azure.com/mckechney/_apis/GraphProfile/MemberAvatars/aad.NjdhZDViN2YtYzUwOC03NDViLWEyOTYtMTk1NWI0MDc0NTBm",
+                "descriptor": "aad.NjdhZDViN2YtYzUwOC03NDViLWEyOTYtMTk1NWI0MDc0NTBm"
+            },
+            "variables": {
+                "prefix": {
+                    "value": "sbmprd",
+                    "allowOverride": true
+                },
+                "RgName": {
+                    "value": "sbm-prod-rg",
+                    "allowOverride": true
+                }
+            },
+            "variableGroups": [],
+            "preDeployApprovals": {
+                "approvals": [{
+                    "rank": 1,
+                    "isAutomated": true,
+                    "isNotificationOn": false,
+                    "id": 7
+                }],
+                "approvalOptions": {
+                    "requiredApproverCount": null,
+                    "releaseCreatorCanBeApprover": false,
+                    "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+                    "enforceIdentityRevalidation": false,
+                    "timeoutInMinutes": 0,
+                    "executionOrder": 1
+                }
+            },
+            "deployStep": {
+                "id": 8
+            },
+            "postDeployApprovals": {
+                "approvals": [{
+                    "rank": 1,
+                    "isAutomated": true,
+                    "isNotificationOn": false,
+                    "id": 9
+                }],
+                "approvalOptions": {
+                    "requiredApproverCount": null,
+                    "releaseCreatorCanBeApprover": false,
+                    "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+                    "enforceIdentityRevalidation": false,
+                    "timeoutInMinutes": 0,
+                    "executionOrder": 2
+                }
+            },
+            "deployPhases": [{
+                "deploymentInput": {
+                    "parallelExecution": {
+                        "parallelExecutionType": 0
+                    },
+                    "agentSpecification": {
+                        "identifier": "windows-2019"
+                    },
+                    "skipArtifactsDownload": false,
+                    "artifactsDownloadInput": {
+                        "downloadInputs": [{
+                                "alias": "_SqlBuildManager_GitHub",
+                                "artifactType": "Git",
+                                "artifactDownloadMode": "All",
+                                "artifactItems": []
+                            },
+                            {
+                                "alias": "_SqlBuildManager_GitHub_artifact",
+                                "artifactType": "Build",
+                                "artifactDownloadMode": "All",
+                                "artifactItems": []
+                            }
+                        ]
+                    },
+                    "queueId": 185,
+                    "demands": [],
+                    "enableAccessToken": false,
+                    "timeoutInMinutes": 0,
+                    "jobCancelTimeoutInMinutes": 1,
+                    "condition": "succeeded()",
+                    "overrideInputs": {}
+                },
+                "rank": 1,
+                "phaseType": 1,
+                "name": "Agent job",
+                "refName": null,
+                "workflowTasks": [{
+                        "environment": {},
+                        "taskId": "94a74903-f93f-4075-884f-dc11f34058b4",
+                        "version": "3.*",
+                        "name": "Deploy Infrastructure ARM Template",
+                        "refName": "",
+                        "enabled": true,
+                        "alwaysRun": false,
+                        "continueOnError": false,
+                        "timeoutInMinutes": 0,
+                        "definitionType": "task",
+                        "overrideInputs": {},
+                        "condition": "succeeded()",
+                        "inputs": {
+                            "deploymentScope": "Resource Group",
+                            "ConnectedServiceName": "39cadf15-89fe-4b17-9d2b-5959608a213a",
+                            "subscriptionName": "1e1dcefc-d832-4de0-889a-2a48494c441b",
+                            "action": "Create Or Update Resource Group",
+                            "resourceGroupName": "$(RgName)",
+                            "location": "$(Location)",
+                            "templateLocation": "Linked artifact",
+                            "csmFileLink": "",
+                            "csmParametersFileLink": "",
+                            "csmFile": "$(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub/docs/templates/azuredeploy.json",
+                            "csmParametersFile": "",
+                            "overrideParameters": "-namePrefix $(prefix) -eventhubSku \"Standard\" -skuCapacity 1 -location $(Location)",
+                            "deploymentMode": "Incremental",
+                            "deploymentName": "",
+                            "deploymentOutputs": "",
+                            "addSpnToEnvironment": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "taskId": "72a1931b-effb-4d2e-8fd8-f8472a07cb62",
+                        "version": "5.*",
+                        "name": "Upload Batch Application Package",
+                        "refName": "",
+                        "enabled": true,
+                        "alwaysRun": false,
+                        "continueOnError": false,
+                        "timeoutInMinutes": 0,
+                        "definitionType": "task",
+                        "overrideInputs": {},
+                        "condition": "succeeded()",
+                        "inputs": {
+                            "ConnectedServiceNameARM": "39cadf15-89fe-4b17-9d2b-5959608a213a",
+                            "ScriptType": "FilePath",
+                            "ScriptPath": "$(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub/devops/batch_update_releasepackage.ps1",
+                            "Inline": "# You can write your azure powershell scripts inline here. \n# You can also pass predefined and custom variables to this script using arguments",
+                            "ScriptArguments": "-resourceGroupName $(RgName) -batchprefix $(prefix) -windowsZipPackage $(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub_artifact/drop/sbm-windows.zip -linuxZipPackage $(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub_artifact/drop/sbm-linux.zip -releaseVersion $(Release.Artifacts._SqlBuildManager_GitHub_artifact.BuildNumber)",
+                            "errorActionPreference": "continue",
+                            "FailOnStandardError": "false",
+                            "TargetAzurePs": "LatestVersion",
+                            "CustomTargetAzurePs": "",
+                            "pwsh": "false",
+                            "workingDirectory": ""
+                        }
+                    }
+                ]
+            }],
+            "environmentOptions": {
+                "emailNotificationType": "OnlyOnFailure",
+                "emailRecipients": "release.environment.owner;release.creator",
+                "skipArtifactsDownload": false,
+                "timeoutInMinutes": 0,
+                "enableAccessToken": false,
+                "publishDeploymentStatus": true,
+                "badgeEnabled": false,
+                "autoLinkWorkItems": false,
+                "pullRequestDeploymentEnabled": false
+            },
+            "demands": [],
+            "conditions": [],
+            "executionPolicy": {
+                "concurrencyCount": 1,
+                "queueDepthCount": 0
+            },
+            "schedules": [],
+            "currentRelease": {
+                "id": 0,
+                "url": "https://vsrm.dev.azure.com/mckechney/873c1268-92b2-4017-a8df-fee7f37866c5/_apis/Release/releases/0",
+                "_links": {}
+            },
+            "retentionPolicy": {
+                "daysToKeep": 30,
+                "releasesToKeep": 3,
+                "retainBuild": true
+            },
+            "processParameters": {},
+            "properties": {
+                "BoardsEnvironmentType": {
+                    "$type": "System.String",
+                    "$value": "testing"
+                },
+                "LinkBoardsWorkItems": {
+                    "$type": "System.String",
+                    "$value": "False"
+                }
+            },
+            "preDeploymentGates": {
+                "id": 0,
+                "gatesOptions": null,
+                "gates": []
+            },
+            "postDeploymentGates": {
+                "id": 0,
+                "gatesOptions": null,
+                "gates": []
+            },
+            "environmentTriggers": [],
+            "badgeUrl": "https://vsrm.dev.azure.com/mckechney/_apis/public/Release/badge/873c1268-92b2-4017-a8df-fee7f37866c5/1/3"
+        }
+    ],
+    "artifacts": [{
+            "sourceId": "873c1268-92b2-4017-a8df-fee7f37866c5:adf55b82-0feb-41f4-bf68-764356531b0d",
+            "type": "Git",
+            "alias": "_SqlBuildManager_GitHub",
+            "definitionReference": {
+                "branches": {
+                    "id": "devops",
+                    "name": "devops"
+                },
+                "checkoutNestedSubmodules": {
+                    "id": "True",
+                    "name": "Any nested submodules within"
+                },
+                "checkoutSubmodules": {
+                    "id": "",
+                    "name": ""
+                },
+                "defaultVersionSpecific": {
+                    "id": "",
+                    "name": ""
+                },
+                "defaultVersionType": {
+                    "id": "latestFromBranchType",
+                    "name": "Latest from the default branch"
+                },
+                "definition": {
+                    "id": "adf55b82-0feb-41f4-bf68-764356531b0d",
+                    "name": "SqlBuildManager_GitHub"
+                },
+                "fetchDepth": {
+                    "id": "",
+                    "name": ""
+                },
+                "gitLfsSupport": {
+                    "id": "",
+                    "name": ""
+                },
+                "project": {
+                    "id": "873c1268-92b2-4017-a8df-fee7f37866c5",
+                    "name": "SqlBuildManager"
+                }
+            },
+            "isPrimary": true,
+            "isRetained": false
+        },
+        {
+            "sourceId": "873c1268-92b2-4017-a8df-fee7f37866c5:26",
+            "type": "Build",
+            "alias": "_SqlBuildManager_GitHub_artifact",
+            "definitionReference": {
+                "artifactSourceDefinitionUrl": {
+                    "id": "https://dev.azure.com/mckechney/_permalink/_build/index?collectionId=6c157aac-9f77-4b89-85c4-89a8f143690a&projectId=873c1268-92b2-4017-a8df-fee7f37866c5&definitionId=26",
+                    "name": ""
+                },
+                "defaultVersionBranch": {
+                    "id": "",
+                    "name": ""
+                },
+                "defaultVersionSpecific": {
+                    "id": "",
+                    "name": ""
+                },
+                "defaultVersionTags": {
+                    "id": "",
+                    "name": ""
+                },
+                "defaultVersionType": {
+                    "id": "latestType",
+                    "name": "Latest"
+                },
+                "definition": {
+                    "id": "26",
+                    "name": "SqlBuildManager_GitHub"
+                },
+                "definitions": {
+                    "id": "",
+                    "name": ""
+                },
+                "IsMultiDefinitionType": {
+                    "id": "False",
+                    "name": "False"
+                },
+                "project": {
+                    "id": "873c1268-92b2-4017-a8df-fee7f37866c5",
+                    "name": "SqlBuildManager"
+                },
+                "repository": {
+                    "id": "",
+                    "name": ""
+                }
+            },
+            "isRetained": false
+        }
+    ],
+    "triggers": [{
+        "branchFilters": [],
+        "alias": "_SqlBuildManager_GitHub",
+        "triggerType": 3
+    }],
+    "releaseNameFormat": "Release-$(rev:r)",
+    "tags": [],
+    "properties": {
+        "DefinitionCreationSource": {
+            "$type": "System.String",
+            "$value": "ReleaseNew"
+        },
+        "IntegrateBoardsWorkItems": {
+            "$type": "System.String",
+            "$value": "False"
+        },
+        "IntegrateJiraWorkItems": {
+            "$type": "System.String",
+            "$value": "false"
+        }
+    },
+    "id": 1,
+    "name": "Batch Deploy and Update",
+    "path": "\\",
+    "projectReference": null,
+    "url": "https://vsrm.dev.azure.com/mckechney/873c1268-92b2-4017-a8df-fee7f37866c5/_apis/Release/definitions/1",
+    "_links": {
+        "self": {
+            "href": "https://vsrm.dev.azure.com/mckechney/873c1268-92b2-4017-a8df-fee7f37866c5/_apis/Release/definitions/1"
+        },
+        "web": {
+            "href": "https://dev.azure.com/mckechney/873c1268-92b2-4017-a8df-fee7f37866c5/_release?definitionId=1"
+        }
+    }
+}

@@ -82,7 +82,7 @@
             "type": "Microsoft.Batch/batchAccounts",
             "apiVersion": "2017-09-01",
             "name": "[variables('batchAccountName')]",
-            "location": "eastus",
+            "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
             ],

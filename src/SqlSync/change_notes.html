@@ -39,9 +39,15 @@
   </head>
   <body>
     <h1>SQL Build Manager Change Notes</h1>
+    <div class="version">Version 11.3.1</div>
+    <div>
+      <span class="updated">UPDATED: </span>Changes tp the deployment templates and PowerShell files to be more friendly with Azure DevOps release pipelines </div>
+    <div>
+      <span class="fixed">FIXED: </span>sbm batch run regression introduced with new query option</div>
+    <br />
     <div class="version">Version 11.3.0</div>
     <div>
-      <span class="note">NOTE: </span>**The old style commandline (leveraging the /Action=verb flag etc.) will be deprecated soon!**</div>
+      <span class="note">NOTE: </span>**The old style command line (leveraging the /Action=verb flag etc.) will be deprecated soon!**</div>
     <div>
       <span class="added">ADDED: </span>New querying across databases from command line for threaded and batch [sbm batch query] and [sbm threaded query]. Brings the exsting UI feature (Action-&gt; Configure Multi server/Database run-&gt; Reports -&gt; Adhoc Query Execution) to command line  </div>
     <div>
@@ -51,7 +57,7 @@
     <div>
       <span class="added">ADDED: </span>The Batch processors now work on Linux worker nodes!</div>
     <div>
-      <span class="updated">UPDATED: </span>New batch command option to support Linux: --os [Windows,Linux]. Note also that the --batchpoolname option now has important relevence for Batch accounts that have both Linux and Windows pools</div>
+      <span class="updated">UPDATED: </span>New batch command option to support Linux: --os [Windows,Linux]. Note also that the --batchpoolname option now has important relevance for Batch accounts that have both Linux and Windows pools</div>
     <div>
       <span class="updated">UPDATED: </span>The Azure setup scripts (see /doc/localbuild) now also include setting up a Linux pool and the creation of settings files and application package zips for both environments</div>
     <br />
@@ -66,7 +72,7 @@
       <span class="added">ADDED: </span>Shortened command line executable name `sbm.exe` leveraging the [System.CommmandLine](https://github.com/dotnet/command-line-api) command pattern and validation (`sbm [command] [options]`).
       The old executable (`SqlBuildManager.Console.exe`) with the prior pattern of `/Action=verb` is still supported is still available</div>
     <div>
-      <span class="note">NOTE: </span>The CLI and core UI components of the app have been throroughly tested. Some ancillary UI pieces have not. If you find an issue, please log it in GitHub</div>
+      <span class="note">NOTE: </span>The CLI and core UI components of the app have been thoroughly tested. Some ancillary UI pieces have not. If you find an issue, please log it in GitHub</div>
     <br />
     <div class="version">Version 11.0.0</div>
     <div>
