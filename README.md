@@ -16,22 +16,22 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the lifecyle of
 * Automatic logging and version tracking of scripts on a per-server/per-database level
 * Full SHA-1 hashing of individual scripts and .sbm package files to ensure integrity of the scripts
 * Execution of a build package (see below) is recorded in the database for full tracking of update history, script validation and potential rebuilding of packages
-* Massively parallel execution across thousands of databases utilzing local threading, an Azure cloud service deployment or an Azure Batch execution
+* Massively parallel execution across thousands of databases utilizing local threading, an Azure cloud service deployment or an Azure Batch execution
 
 # The Basics
 
 ## Build Package meta-data
 At the core of the process is the "SQL Build Manager Package" file (.sbm extension).  Under the hood, this file is a Zip file that contains the scripts that constitute your "release" along with a configuration file  (SqlSyncBuildProject.xml) that contains meta data on the scripts and execution parameters:
 
-* `FileName`: Self explanatary, the name of the script file
+* `FileName`: Self explanatory, the name of the script file
 * `BuildOrder`: The relative order that the scripts in the package will be run
 * `Description`: Optional description about the script
 * `RollBackOnError`: Option on whether or not to roll back the transaction if there is an error running this script (default: `true`)
-* `CausesBuildFailure`: Option on whether or not to roll back the entire build if there is a failure wiht this script (default `true`)
+* `CausesBuildFailure`: Option on whether or not to roll back the entire build if there is a failure with this script (default `true`)
 * `DateAdded`: Date and time that the script was added to the package
 * `ScriptId`: System generated GUID identifier for the script
 * `Database`: Target database to run the scripts against. (This can be overridden in the case of multiple DB targets)
-* `StripTransactionText`: Script handling to remove any inline transction statements (default is `true` because you want SQL Build Manager to handle transactions)
+* `StripTransactionText`: Script handling to remove any inline transaction statements (default is `true` because you want SQL Build Manager to handle transactions)
 * `AllowMultipleRuns`: Whether or not this script can be run on the same database multiple times (default is `true` and you should always write scripts so this is viable)
 * `AddedBy`: User ID of the user that added the script to the package
 * `ScriptTimeOut`: Timeout setting for the execution of this script
@@ -60,7 +60,7 @@ Example `SqlSyncBuildProject.xml` file. You can build this by hand to create you
 
 ### Forms UI
 
-While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _Sql Build Manager.exe_. There is docmentation on the GUI that you can find [here](docs/SqlBuildManagerManual.md) that will walk through the creation of build packages ([PDF version](src/SqlBuildManager%20Manual/SqlBuildManagerManual.pdf)).
+While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _Sql Build Manager.exe_. There is documentation on the GUI that you can find [here](docs/SqlBuildManagerManual.md) that will walk through the creation of build packages ([PDF version](src/SqlBuildManager%20Manual/SqlBuildManagerManual.pdf)).
 
 ### Command line
 

@@ -223,7 +223,7 @@ script to be run and against what database.
 
 To add a pre-saved script file, you will select one of the "Add New
 File" menu options. This will present a dialog window for you to select
-the script to add. By default, it will fiter for .sql files, but you can
+the script to add. By default, it will filter for .sql files, but you can
 filter for any number of types, and of course an "All Files". After you
 make your selection and click "Open" you will need to Configure your
 Script to determine

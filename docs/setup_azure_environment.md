@@ -22,7 +22,7 @@ It is important to note that you can re-run this script at any time to ensure yo
     - `Location` - the Azure region to deploy the resources
     - `SqlServerName` - the name of the Azure SQL PaaS server to create
     - `ElasticPoolName` - the name of the elastic pool to put your databases in
-    - `DatabaseNameRoot` - the prefix for you Azure SQL databases. This will be appended with sequence numbers (001, 002, etc)
+    - `DatabaseNameRoot` - the prefix for you Azure SQL databases. This will be appended with sequence numbers (001, 002, etc.)
     - `Batchprefix` - the prefix for the Azure batch components. Must be 6 or less characters, all lowercase. 
     - `SqlServerUserName` - the SQL Admin name to use when creating the SQL server
     - `SqlServerPassword` - the SQL Admin password to use. Upon re-running the script, it will reset the Admin password to this value
@@ -48,14 +48,14 @@ In order to get some of the unit tests to succeed, you need to have a local inst
 
 ## sqlpackage.exe
 
-`sqlpackage` is needed for the use of the DACPAC features of the tool. It should already be available in the `Microsoft_SqlDB_DAC` subfolder (Windows) or the `microsoft-sqlpackage-linux` subfolder (Linux) where you are running your tests. If not, you can install or update the package from here [https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download](https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download). 
+`sqlpackage` is needed for the use of the DACPAC features of the tool. It should already be available in the `Microsoft_SqlDB_DAC` subfolder (Windows) or the `microsoft-sqlpackage-linux` subfolder (Linux) where you are running your tests. If not, you can install or update the package from here [https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download](https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download).
 
 The unit tests should find the executable but if not, you may need to add the path to `\SqlBuildManager\SqlSync.SqlBuild\DacPacHelper.cs` in the getter for `sqlPackageExe`.
 
 -----
 
 # Visual Studio Installer Project
-For Visual Studio 2015 and beyond, you will need to install an extension to load the installer project (.vdproj) 
+For Visual Studio 2015 and beyond, you will need to install an extension to load the installer project (.vdproj)
 
 ### Visual Studio 2015
 https://visualstudiogallery.msdn.microsoft.com/f1cc3f3e-c300-40a7-8797-c509fb8933b9

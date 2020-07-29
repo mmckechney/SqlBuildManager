@@ -23,7 +23,7 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 - `package` - Creates an SBM package from an SBX configuration file and scripts
 - `policycheck` - Performs a script policy check on the specified SBM package
 - `gethash` - Calculates the SHA-1 hash fingerprint value for the SBM package(scripts + run order)
-- `createbackout` - Generates a backout package (reversing stored procedure and scripted object changes)
+- `createbackout` - Generates a back out package (reversing stored procedure and scripted object changes)
 - `getdifference` - Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between --database and --golddatabase. Only supports Windows Auth
 - `synchronize` - Performs a database synchronization between between --database and --golddatabase. Can only be used for Windows Auth database targets
 - `scriptextract` - Extract a SBM package from a source --platinumdacpac
