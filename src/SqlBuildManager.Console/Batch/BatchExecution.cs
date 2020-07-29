@@ -124,6 +124,7 @@ namespace SqlBuildManager.Console.Batch
             //Get the batch and storage values
             string jobId, poolId, storageContainerName;
             (jobId, poolId, storageContainerName) = SetBatchJobAndStorageNames(cmdLine);
+            log.Info($"Using Azure Batch account: {cmdLine.BatchArgs.BatchAccountName} ({cmdLine.BatchArgs.BatchAccountUrl})");
             log.Info($"Setting job id to: {jobId}");
 
             string readOnlySasToken = string.Empty;
@@ -653,7 +654,7 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Set the queryfile name to the path on the node (if set)
-                if (!string.IsNullOrWhiteSpace(threadCmdLine.QueryFile.Name))
+                if(threadCmdLine.QueryFile != null && !string.IsNullOrWhiteSpace(threadCmdLine.QueryFile.Name))
                 {
                     var qu = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(threadCmdLine.QueryFile.Name.ToLower()))).FirstOrDefault();
                     threadCmdLine.QueryFile = new FileInfo(qu.FilePath);

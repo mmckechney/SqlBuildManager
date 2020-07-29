@@ -1,89 +1,56 @@
 ﻿# Leveraging Azure Batch for distributed builds
 
 ## Set up your Batch Account
-To use Azure Batch, you will need to have an Azure Batch account and upload the Sql Build Manager code package zip file (either from a [GitHub release](https://github.com/mmckechney/SqlBuildManager/releases) or a custom build) to the account. This setup is a one-time event and can be done via scripts or manually via the Azure portal
+To use Azure Batch, you will need to have an Azure Batch account and upload the Sql Build Manager code package zip file (either from a [GitHub release](https://github.com/mmckechney/SqlBuildManager/releases/latest) or a custom build) to the account. This setup is a one-time event and can be done via scripts or manually via the Azure portal
 
 
- ### **Option 1: PowerShell and ARM Template**
-_Note_: this method has the added benefit of also uploading the [latest release zip file](https://github.com/mmckechney/SqlBuildManager/releases/latest) to your batch account so it is ready to go
+_Note_: this will upload a build of the latest code version from a local build
 
-0. _Prerequisite_: Make sure you have the [Azure PowerShell Modules installed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
-1. Download the files `deploy_batch.ps1` and `azuredeploy.parameters.json` files from the [templates](templates) folder
-2. Edit the `azuredeploy.parameters.json` file, giving your Azure Batch and Azure Storage account names (keep in mind the [rules for naming storage accounts](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#naming-storage-accounts))
-3. Copy the URL for the [latest release package](https://github.com/mmckechney/SqlBuildManager/releases/tag/latest) `sbm-windows-vX.X.X.zip` or `sbm-linux-vX.X.X.zip`
-4. Run the `deploy_batch.ps1` file, providing values for:
+1. _Prerequisite_: Make sure you have the [Azure PowerShell Modules installed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
+2. Clone the Git repo locally, then in a PowerShell window navigate to the `docs/templates` folder
+3. Run the `deploy_batch.ps1` file, providing values for:
     - `-subscriptionId` - Guid for the subscription to deploy to
     - `-resourceGroupName` - Resource group name to put the Batch and storage accounts into
     - `-resourceGroupLocation` - Azure region for the accounts. You can get the location values via the PowerShell `Get-AzLocation | Select-Object -Property Location`
-    - `-sbmReleaseUrl` - Url to latest release Zip file
+    - `-batchprefix` - up to 6 characters that will be used to create the resource names (keep in mind the [rules for naming storage accounts](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#naming-storage-accounts))
+    - `-outputpath` - a directory path where the project build output zip files will be saved. (These Zip files are then uploaded to the Batch account)
 
 Sample script
 
 ``` powershell
-.\deploy_batch.ps1 -subscriptionId <your sub GUID> -parametersFilePath azuredeploy.parameters.json -resourceGroupName myresourcegrp -resourceGroupLocation EastUs -sbmReleaseUrl https://github.com/mmckechney/SqlBuildManager/releases/download/v11.1.0/SqlBuildManager-v11.1.0.zip
+Connect-AzAccount
 
+.\deploy_batch.ps1 -subscriptionId <your sub GUID> -resourceGroupName myresourcegrp -resourceGroupLocation EastUs -batchprefix sbmzyx -outputpath "C:\temp"
 ```
 
+Assuming the script succeeds, you can then create a settings file with the  resources URLs and keys that can be used to for your Batch runs (You can also retrieve this data manually from the [Azure portal](#option-3-manually-via-azure-portal)):
 
-Assuming the script succeeds, the last few lines will provide pre-populated arguments that you can save for your command line execution (You can also retrieve this data at a later time from the [Azure portal](#option-3-manually-via-azure-portal)):
-
-```text
-Pre-populated command line arguments. Record these for use later:
-
---batchaccountname=mybatchaccountname
---batchaccounturl=https://mybatchaccountname.eastus.batch.azure.com
---batchaccountkey=CLHvqpOqRW2X+z6Z2G/25zY9sQn/ePLMRknX1EbA79AJ74UVLV/7X1HqE91xV0UF24fPJYZfqDM/cfU6c1lPTA==
---storageaccountname=mystorageaccountname
---storageaccountkey=deDGkC2D3eOzI2BiVVmrxVpP1PPf7AdllA89HRYRAxD703iM/Me4D815aNYJTan8xiRypmfQ7QxCnZhM7QlYog==
+```powershell
+.\Create_SettingsFile.ps1 -subscriptionId <your sub GUID>  -resourceGroupName myresourcegrp -batchprefix sbmzyx -settingsFileName myfile.json
 ```
-
-### **Option 2: Direct ARM Template deployment**
-
-Use the "Deploy to Azure" button to deploy using the template via the Azure portal. You will need to collect the account information from the resources once created the same as step 7 [here](#option-3-manually-via-azure-portal)
-
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2Fdocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
-    <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.png"/></a>
-
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fmmckechney%2FSqlBuildManager%2Fmaster%2Fdocs%2Ftemplates%2Fazuredeploy.json" target="_blank">
-<img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.png"/></a>
-
-
-
-### **Option 3: Manually via Azure Portal**
-
-Login to the Azure Portal at <http://portal.azure.com>
-
-#### Create Batch Account
-
-1. Click "Create a Resource"
-2. Search for "Batch Service"
-3. On the information page, select "Create"
-4. Fill out the new Batch, Storage Account and Event Hub information and click "Create"
-5. Wait for the deployment to complete (should only take a few minutes)
-6. Collect Azure Batch, Storage Account and Event Hub information
-    - Create a new text document to capture the information you will collect
-    - In the Azure Portal, navigate to your new Batch account
-    - On the Keys blade, record the Batch Account, URL and Primary access key values
-    - On the Storage Account blade, record the Storage Account Name and Key1 values
-
-#### Create Event Hub
-
-1. Click "Create a Resource"
-2. Search for "Event Hubs"
-3. On the information page, select "Create"
-4. Fill out the new information for the new Event Hub
-5. Navigate to the new Event Hub Namespace you created
-6. Click on the "Event Hubs" link
-7. Click on "+ Event Hub" and create it
-8. On the new Event Hub blade, click on "Shared Access Policy" and create a new policy with "Send" and "Listen" permissions
-9. Record the  "Connection string–primary key" value
 
 ----
 
-## Upload SQL Build Manager code package
+## Upload a SQL Build Manager code package
 
-1. First, make sure you have a build of SQL Build Manager either from [GitHub Release](https://github.com/mmckechney/SqlBuildManager/releases) or built locally (clone/pull from [Github](https://github.com/mmckechney/SqlBuildManager) and build, the executables will be in the root bin/debug or bin/release folder)
-2. Zip up all of the files in the build folder - or grab the latest release Zip file from [here](https://github.com/mmckechney/SqlBuildManager/releases/latest)
+_Note_: a local build code package was uploaded via the `deploy_batch.ps1`.
+
+**You can re-run `deploy_batch.ps1` at any time (using the same parameter values) to easily update the code package**
+
+But, if you want to do it manually... 
+
+1. First, make sure you have a build of SQL Build Manager either from [GitHub Release](https://github.com/mmckechney/SqlBuildManager/releases) or built locally:
+    - Clone/pull from [Github](https://github.com/mmckechney/SqlBuildManager)
+    - Build locally either in Visual Studio or via command line:
+
+      ```bash
+        cd ./src/SqlBuildManager.Console
+        dotnet restore sbm.csproj
+        dotnet build sbm.csproj
+        dotnet publish sbm.csproj -r [win-x64 or linux-x64] --configuration [Debug or Release]
+      ```
+
+2. Zip up all of the files in the publish folder - or grab the latest release Zip file from [here](https://github.com/mmckechney/SqlBuildManager/releases/latest)
 3. In the Azure Portal, navigate to your Azure Batch account and click the "Applications" blade.
 4. Click the "+ Add" link
 5. Fill in the Application Id with "sqlbuildmanager" (no quotes) and the version field (can be any alpha-numeric) 
@@ -277,10 +244,12 @@ The format for the saved settings Json file is below. You can include or exclude
     "DeleteBatchPool": "<true|false>",
     "DeleteBatchJob": "<true|false>",
     "PollBatchPoolStatus": "<true|false>",
-    "EventHubConnectionString": "<connection string to EventHub (optional)>"
+    "EventHubConnectionString": "<connection string to EventHub (optional)>",
+    "BatchPoolName": "[SqlBuildManagerPoolWindows or SqlBuildManagerPoolLinux]",
+    "BatchPoolOs": "[Windows or Linux]",
+    "ApplicationPackage": "<name of the application package to use>"
   },
   "RootLoggingPath": "<valid folder path>",
-  "LogAsText": "<true|false>", 
   "DefaultScriptTimeout" : "<int>",
   "TimeoutRetryCount" : "<int>"
 }

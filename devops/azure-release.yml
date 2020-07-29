@@ -1,0 +1,24 @@
+variables:
+  RgName: 'sbm-dev--rg'
+  Location: 'EastUs'
+  prefix: 'sbmdev'
+
+steps:
+- task: AzureResourceManagerTemplateDeployment@3
+  displayName: 'ARM Template deployment: Resource Group scope'
+  inputs:
+    azureResourceManagerConnection: 'Visual Studio Ultimate with MSDN (59e53936-0bd6-4f30-b3b6-18bd2eae7699)'
+    subscriptionId: '59e53936-0bd6-4f30-b3b6-18bd2eae7699'
+    resourceGroupName: '$(RgName)'
+    location: '$(Location)'
+    csmFile: '$(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub/docs/templates/azuredeploy.json'
+    overrideParameters: '-batchAccountName $(prefix)batchacct -storageAccountName $(prefix)storage -namespaceName $(prefix)eventhubnamespace -eventhubSku "Standard" -skuCapacity 1 -eventHubName $(prefix)eventhub -location "[resourceGroup().location]"'
+
+- task: AzurePowerShell@5
+  displayName: 'Azure PowerShell script: FilePath'
+  inputs:
+    azureSubscription: 'Visual Studio Ultimate with MSDN (59e53936-0bd6-4f30-b3b6-18bd2eae7699)'
+    ScriptPath: '$(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub/devops/batch_update_releasepackage.ps1'
+    ScriptArguments: '-resourceGroupName $(RgName) -batchprefix $(prefix) -windowsZipPackage $(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub_artifact/drop/sbm-windows.zip -linuxZipPackage $(System.DefaultWorkingDirectory)/_SqlBuildManager_GitHub_artifact/drop/sbm-linux.zip'
+    errorActionPreference: continue
+    azurePowerShellVersion: LatestVersion    

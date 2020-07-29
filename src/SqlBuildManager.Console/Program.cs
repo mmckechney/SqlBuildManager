@@ -1,5 +1,5 @@
-﻿using log4net;
-using log4net.Core;
+﻿using BlueSkyDev.Logging;
+using log4net;
 using log4net.Repository.Hierarchy;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
@@ -7,33 +7,21 @@ using Microsoft.Azure.Storage.RetryPolicies;
 using Newtonsoft.Json;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
-
+using SqlSync.Connection;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.AdHocQuery;
+using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.Globalization;
-using Microsoft.SqlServer.Management.XEvent;
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.SqlServer.Management.Smo;
-using System.CommandLine.Parsing;
-using System.CommandLine.Builder;
-using System.CommandLine.IO;
-using System.Runtime.Serialization;
-using BlueSkyDev.Logging;
-using Microsoft.SqlServer.Management.Sdk.Sfc;
-using SqlSync.SqlBuild.AdHocQuery;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.Connection;
-using System.ComponentModel;
-using Microsoft.Azure.Storage.Blob.Protocol;
 
 namespace SqlBuildManager.Console
 {
@@ -280,7 +268,6 @@ namespace SqlBuildManager.Console
 
                 List<Option> generalBatchAccountOptions = new List<Option>()
                 {
-                    settingsfileOption,
                     batchaccountnameOption,
                     batchaccountkeyOption,
                     batchaccounturlOption,
@@ -453,6 +440,7 @@ namespace SqlBuildManager.Console
                 //Batch running
                 authOptions.ForEach(a => batchRunCommand.Add(a));
                 batchRunCommand.Add(overrideOption.Copy(true));
+                batchRunCommand.Add(settingsfileOption);
                 generalBatchAccountOptions.ForEach(a => batchRunCommand.Add(a));
                 generalBatchNodeOptions.ForEach(a => batchRunCommand.Add(a));
                 generalBatchExecutionOptions.ForEach(a => batchRunCommand.Add(a));
@@ -468,6 +456,7 @@ namespace SqlBuildManager.Console
                 authOptions.ForEach(a => batchRunThreadedCommand.Add(a));
                 batchRunThreadedCommand.Add(authtypeOption);
                 batchRunThreadedCommand.Add(overrideOption);
+                batchRunThreadedCommand.Add(settingsfileOption);
                 generalBatchAccountOptions.ForEach(a => batchRunThreadedCommand.Add(a));
                 generalBatchNodeOptions.ForEach(a => batchRunThreadedCommand.Add(a));
                 generalBatchExecutionOptions.ForEach(a => batchRunThreadedCommand.Add(a));
@@ -483,16 +472,19 @@ namespace SqlBuildManager.Console
                 batchRunThreadedCommand.Add(timeoutretrycountOption);
 
                 //Batch pre-stage
+                batchPreStageCommand.Add(settingsfileOption);
                 generalBatchAccountOptions.ForEach(a => batchPreStageCommand.Add(a));
                 generalBatchNodeOptions.ForEach(a => batchPreStageCommand.Add(a));
                 batchPreStageCommand.Add(pollbatchpoolstatusOption);
 
                 //Batch node cleanup
+                batchCleanUpCommand.Add(settingsfileOption);
                 generalBatchAccountOptions.ForEach(a => batchCleanUpCommand.Add(a));
                 batchCleanUpCommand.Add(pollbatchpoolstatusOption);
 
                 //Batch Save settings file
                 authOptions.ForEach(a => saveSettingsCommand.Add(a));
+                saveSettingsCommand.Add(settingsfileOption.Copy(true));
                 generalBatchAccountOptions.ForEach(a => saveSettingsCommand.Add(a));
                 generalBatchNodeOptions.ForEach(a => saveSettingsCommand.Add(a));
                 generalBatchExecutionOptions.ForEach(a => saveSettingsCommand.Add(a));
@@ -508,6 +500,7 @@ namespace SqlBuildManager.Console
                 batchQueryCommand.Add(queryFileOption.Copy(true));
                 batchQueryCommand.Add(outputFileOption.Copy(true));
                 batchQueryCommand.Add(silentOption);
+                batchQueryCommand.Add(settingsfileOption);
                 generalBatchAccountOptions.ForEach(a => batchQueryCommand.Add(a));
                 generalBatchNodeOptions.ForEach(a => batchQueryCommand.Add(a));
                 generalBatchExecutionOptions.ForEach(a => batchQueryCommand.Add(a));
@@ -518,6 +511,7 @@ namespace SqlBuildManager.Console
                 batchQueryThreadedCommand.Add(overrideOption.Copy(true));
                 batchQueryThreadedCommand.Add(queryFileOption.Copy(true));
                 batchQueryThreadedCommand.Add(outputFileOption.Copy(true));
+                batchQueryThreadedCommand.Add(settingsfileOption);
                 generalBatchAccountOptions.ForEach(a => batchQueryThreadedCommand.Add(a));
                 generalBatchNodeOptions.ForEach(a => batchQueryThreadedCommand.Add(a));
                 generalBatchExecutionOptions.ForEach(a => batchQueryThreadedCommand.Add(a));
@@ -850,7 +844,8 @@ namespace SqlBuildManager.Console
 
             if(string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
-                log.Error("When /Action=SaveSettings or 'sbm batch savesettings' is specified the /SettingsFile argument is also required");
+                log.Error("When /Action=SaveSettings or 'sbm batch savesettings' is specified the --settingsfile argument is also required");
+                return;
             }
 
             if (!clearText)

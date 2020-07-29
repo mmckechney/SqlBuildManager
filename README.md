@@ -93,4 +93,4 @@ An excellent tool for viewing and monitoring your Azure batch accounts and jobs 
 
 - ### Full command line reference details: [here](docs/commandline.md)
 - ### Detailed information on leveraging Azure Batch for massively parallel deployments: [here](docs/AzureBatch.md)
-- ### For help on building and unit testing:  [here](docs/localbuild.md)
+- ### For help on building and unit testing:  [here](docs/setup_azure_environment.md)

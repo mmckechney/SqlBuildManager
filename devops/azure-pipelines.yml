@@ -1,0 +1,99 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '3.1.100'
+
+- task: NuGetToolInstaller@1
+  inputs:
+    checkLatest: true
+
+- task: DotNetCoreCLI@2
+  displayName: Restore NuGet packages
+  inputs:
+    command: restore
+    projects: './src/sqlsync.sln'
+
+- task: DotNetCoreCLI@2
+  displayName: Build solution
+  inputs:
+    command: restore 
+    arguments:  --configuration $(BuildConfiguration)
+    projects: './src/sqlsync.sln'
+
+- task: CmdLine@2
+  displayName: Publish Windows command line version
+  inputs:
+    script: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration $(BuildConfiguration)
+
+- task: CmdLine@2
+  displayName: Publish Linux command line version
+  inputs:
+    script: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration $(BuildConfiguration)
+
+- task: CmdLine@2
+  displayName: Publish SQL Build Manager Desktop
+  inputs:
+    script: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration $(BuildConfiguration)
+
+- task: ArchiveFiles@2
+  displayName: Archive Windows command line version
+  inputs:
+    rootFolderOrFile: './src/SqlBuildManager.Console/bin/$(BuildConfiguration)/netcoreapp3.1/win-x64/publish'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: sbm-windows.zip
+    replaceExistingArchive: true
+
+- task: ArchiveFiles@2
+  displayName: Archive Linux command line version
+  inputs:
+    rootFolderOrFile: './src/SqlBuildManager.Console/bin/$(BuildConfiguration)/netcoreapp3.1/Linux-x64/publish'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: sbm-linux.zip
+    replaceExistingArchive: true
+
+- task: ArchiveFiles@2
+  displayName: Archive Windows Desktop version
+  inputs:
+    rootFolderOrFile: './src/SqlSync/bin/$(BuildConfiguration)/netcoreapp3.1/Win-x64/publish'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: sbm-desktop.zip
+    replaceExistingArchive: true    
+
+
+- task: PublishBuildArtifacts@1
+  displayName: Saving Windows CLI artifact
+  inputs:
+    PathtoPublish: sbm-windows.zip
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: Saving Linux CLI artifact
+  inputs:
+    PathtoPublish: sbm-linux.zip
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: Saving windows Desktop artifact
+  inputs:
+    PathtoPublish: sbm-desktop.zip
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+

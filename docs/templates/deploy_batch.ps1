@@ -1,21 +1,27 @@
 <#
- .SYNOPSIS
-    Deploys an Azure Batch and Storage account to a resource group, then installs and configures the Azure Batch application
+.SYNOPSIS
+Deploys Azure Batch, Storage Account, and EventHub to a resource group, then compiles, installs and configures the Azure Batch application
 
- .DESCRIPTION
-    Deploys an Azure Resource Manager template
+.DESCRIPTION
+Deploys an Azure Resource Manager template
 
- .PARAMETER subscriptionId
-    The subscription id where the template will be deployed.
+.PARAMETER subscriptionId
+The subscription id where the template will be deployed.
 
- .PARAMETER resourceGroupName
-    The resource group where the template will be deployed. Can be the name of an existing or a new resource group.
+.PARAMETER resourceGroupName
+The resource group where the template will be deployed. Can be the name of an existing or a new resource group.
 
- .PARAMETER resourceGroupLocation
-    Optional, a resource group location. If specified, will try to create a new resource group in this location. If not specified, assumes resource group is existing.
+.PARAMETER resourceGroupLocation
+Optional, a resource group location. If specified, will try to create a new resource group in this location. If not specified, assumes resource group is existing.
 
- .PARAMETER deploymentName
-    The deployment name.
+.PARAMETER batchprefix
+Up to 6 character prefix that will be used to name the various resources
+
+.PARAMETER outputpath
+The path where the application package zip files and settings JSON files will be saved 
+
+.PARAMETER templateFile
+Name of the ARM template that will deploy the resources. 
 
 #>
 
@@ -28,18 +34,22 @@ param(
  [string]
  $resourceGroupName,
 
+
  [string]
  $resourceGroupLocation,
 
+ [Parameter(Mandatory=$True)]
  [string]
  $batchprefix,
 
+ [Parameter(Mandatory=$True)]
  [string]
  $outputpath,
 
  [string]
  $deploymentName = "batchdeploy",
 
+ [Parameter(Mandatory=$True)]
  [string]
  $templateFile = "azuredeploy.json"
 
@@ -132,17 +142,11 @@ if($resourceProviders.length) {
     }
 }
 
-$batchAcctName = $batchprefix + "batchacct"
-$storageAcctName = $batchprefix + "storage"
-$namespaceName = $batchprefix + "eventhubnamespace"
-$eventHubName =  $batchprefix + "eventhub"
 
 $params = @{}
-$params.Add("batchAccountName", $batchAcctName);
-$params.Add("storageAccountName", $storageAcctName);
-$params.Add("namespaceName", $batchprefix + "eventhubnamespace");
+$params.Add("namePrefix", $batchprefix);
 $params.Add("eventhubSku", "Standard");
-$params.Add("eventHubName", $eventHubName );
+
 
 #Create or check for existing resource group
 $resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
@@ -168,6 +172,8 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deplo
 ##################################################
 # Upload zip application packages to batch account
 ##################################################
+
+$batchAcctName = $batchprefix + "batchacct"
 foreach ($env in $vars)
 {
 
@@ -185,56 +191,9 @@ foreach ($env in $vars)
 ##################################################
 # Save settings files for environments
 ##################################################
-$batch = Get-AzBatchAccountKey -AccountName $batchAcctName -ResourceGroupName $resourceGroupName
-$t = Get-AzBatchAccount -AccountName $batchAcctName -ResourceGroupName $resourceGroupName
-$s = Get-AzStorageAccountKey -Name $storageAcctName -ResourceGroupName $resourceGroupName
-$e = Get-AzEventHubKey -ResourceGroupName $resourceGroupName -NamespaceName $namespaceName -EventHubName $eventHubName -AuthorizationRuleName batchbuilder
 
 foreach ($env in $vars)
 {
-
-    $settingsFile = [PSCustomObject]@{
-        AuthenticationArgs = @{
-            UserName = ""
-            Password = ""
-        }
-        BatchArgs = @{
-            BatchNodeCount = "2"
-            BatchAccountName = $batchAcctName
-            BatchAccountKey = "$($batch.PrimaryAccountKey)"
-            BatchAccountUrl = "https://$($t.AccountEndpoint)"
-            StorageAccountName = $storageAcctName
-            StorageAccountKey = "$($s.Value[0])"
-            BatchVmSize=  "STANDARD_DS1_V2"
-            DeleteBatchPool = $false
-            DeleteBatchJob = $false
-            PollBatchPoolStatus = $True
-            EventHubConnectionString = "$($e.PrimaryConnectionString)"
-            BatchPoolOs = $env.OSName
-            BatchPoolName = $env.PoolName
-            BatchApplicationPackage = $env.ApplicationName
-        }
-        RootLoggingPath = "C:\temp"
-        TimeoutRetryCount = 0
-        DefaultScriptTimeout = 500
-    }
-
-    $tmpPath = Join-Path $outputPath "settingsfile-$($env.OSName.ToLower()).json"
-    $settingsFile | ConvertTo-Json | Set-Content -Path $tmpPath
-    Write-Host "Saved settings file to " $tmpPath
+    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName "settingsfile-$($env.OSName.ToLower()).json"
 }
 
-##################################################
-# Output values for reference
-##################################################
-Write-Host "Saving EventHub Connection string to environment variable"
-[System.Environment]::SetEnvironmentVariable("AzureEventHubAppenderConnectionString", "$($e.PrimaryConnectionString)",[System.EnvironmentVariableTarget]::User)
-
-Write-Host "Pre-populated command line arguments. Record these for use later: "
-Write-Host ""
-Write-Host "--batchaccountname=$batchAcctName"
-Write-Host "--batchaccounturl=https://$($t.AccountEndpoint)"
-Write-Host "--batchaccountkey=$($batch.PrimaryAccountKey)"
-Write-Host "--storageaccountname=$storageAcctName"
-Write-Host "--storageaccountkey=$($s.Value[0])"
-Write-Host "--eventhubconnectionstring=$($e.PrimaryConnectionString)"
