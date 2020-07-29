@@ -17,7 +17,7 @@
 
 - *ADDED:* The Batch processors now work on Linux worker nodes!
 - *UPDATED:* New batch command option to support Linux: --os [Windows,Linux]. Note also that the --batchpoolname option now has important relevance for Batch accounts that have both Linux and Windows pools
-- *UPDATED:* The Azure setup scripts (see /doc/localbuild) now also include setting up a Linux pool and the creation of settings files and application package zips for both environments
+- *UPDATED:* The Azure setup scripts (see /doc/setup_azure_environment) now also include setting up a Linux pool and the creation of settings files and application package zips for both environments
 
 ### Version 11.1.0
 

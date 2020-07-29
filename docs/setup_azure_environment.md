@@ -33,8 +33,26 @@ Once the script is done running, it will save two files to the `src\TestConfig` 
 1. `databasetargets.cfg` - a pre-configured database listing file for use in a batch or threaded execution targeting the SQL Azure databases just created
 2. `settingsfile.json` - a batch settings file that contains all of the SQL, Batch and Storage endpoints and connection keys for use in testing
 
-These files 
+**These files will be used by the tests located in the `SqlBuildManager.Console.ExternalTest` project, and can also be leveraged for any manual testing you need to perform**
 
+
+# Notes on Unit Testing
+
+**NOTE: There are currently some concurrency issues with the unit tests. You may get some failures in a full run that will then succeed after running aain, selecting only the failed tests** 
+
+There are two types of Unit Tests included in the solution. Those that are dependent on a local SQLEXPRESS database (~.Dependent.UnitTest.csproj) and those that aren't (~UnitTest.csproj). If you want to be able to run the database dependent tests, you will need to install SQL Express as per the next section
+
+## SQL Express
+
+In order to get some of the unit tests to succeed, you need to have a local install of SQLExpress. You can find the installer from here [https://www.microsoft.com/en-us/sql-server/sql-server-editions-express] (https://www.microsoft.com/en-us/sql-server/sql-server-editions-express). You should be able to leverage the basic install.
+
+## sqlpackage.exe
+
+`sqlpackage` is needed for the use of the DACPAC features of the tool. It should already be available in the `Microsoft_SqlDB_DAC` subfolder (Windows) or the `microsoft-sqlpackage-linux` subfolder (Linux) where you are running your tests. If not, you can install or update the package from here [https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download](https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download). 
+
+The unit tests should find the executable but if not, you may need to add the path to `\SqlBuildManager\SqlSync.SqlBuild\DacPacHelper.cs` in the getter for `sqlPackageExe`.
+
+-----
 
 # Visual Studio Installer Project
 For Visual Studio 2015 and beyond, you will need to install an extension to load the installer project (.vdproj) 
@@ -46,18 +64,3 @@ https://visualstudiogallery.msdn.microsoft.com/f1cc3f3e-c300-40a7-8797-c509fb893
 https://marketplace.visualstudio.com/items?itemName=VisualStudioClient.MicrosoftVisualStudio2017InstallerProjects
 
 _If you are having trouble with the installer project loading try disable extension "Microsoft Visual Studio Installer Projects", reenable, then reload the projects.
-
-# Notes in Unit Testing
-
-**NOTE: There are currently some concurrency issues with the unit tests. You may get some failures in a full run that will then succeed after running aain, selecting only the failed tests** 
-
-There are two types of Unit Tests included in the solution. Those that are dependent on a local SQLEXPRESS database (~.Dependent.UnitTest.csproj) and those that aren't (~UnitTest.csproj). If you want to be able to run the database dependent tests, you will need to install SQL Express as per the next section
-
-## SQL Express
-
-In order to get some of the unit tests to succeed, you need to have a local install of SQLExpress. You can find the installer from here [https://www.microsoft.com/en-us/sql-server/sql-server-editions-express] (https://www.microsoft.com/en-us/sql-server/sql-server-editions-express). You should be able to leverage the basic install.
-
-## SQL Package
-
-`sqlpackage` is needed for the use of the DACPAC features of the tool. It should already be available in the `Microsoft_SqlDB_DAC` subfolder (Windows) or the `microsoft-sqlpackage-linux` subfolder (Linux) where you are running your tests. If not, you can install the package from here [https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download](https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download). The unit tests should find the executable but if not, you may need to add the path to `\SqlBuildManager\SqlSync.SqlBuild\DacPacHelper.cs` in the getter for `sqlPackageExe`.
-

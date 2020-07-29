@@ -12,7 +12,7 @@
   <Version Major="11" Minor="2" Revision="0">
     <added>The Batch processors now work on Linux worker nodes!</added>
     <updated>New batch command option to support Linux: --os [Windows,Linux]. Note also that the --batchpoolname option now has important relevance for Batch accounts that have both Linux and Windows pools</updated>
-    <updated>The Azure setup scripts (see /doc/localbuild) now also include setting up a Linux pool and the creation of settings files and application package zips for both environments</updated>
+    <updated>The Azure setup scripts (see /doc/setup_azure_environment) now also include setting up a Linux pool and the creation of settings files and application package zips for both environments</updated>
   </Version>
   <Version Major="11" Minor="1" Revision="0">
     <note>Now built against .NET Standard 2.1 and .NET Core 3.1</note>
