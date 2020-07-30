@@ -66,6 +66,6 @@ foreach ($env in $vars)
     Write-Host "Uploading application package $($env.ApplicationName) [$($env.BuildOutputZip)] to Azure Batch account"
     New-AzBatchApplicationPackage -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $env.ApplicationName -ApplicationVersion $releaseVersion -Format zip -FilePath $env.BuildOutputZip
     
-    Write-Host "Setting default application for  $($env.ApplicationName) version to $version"
+    Write-Host "Setting default application for  $($env.ApplicationName) version to $$releaseVersion"
     Set-AzBatchApplication -AccountName $batchAcctName -ResourceGroupName $resourceGroupName -ApplicationId $env.ApplicationName -DefaultVersion $releaseVersion
 }
