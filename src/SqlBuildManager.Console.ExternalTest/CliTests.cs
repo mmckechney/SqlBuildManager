@@ -142,7 +142,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
 
             List<string> args = new List<string>();
-            args.Add("threaded");
+            args.Add("threaded run");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
             args.Add($"--username {this.cmdLine.AuthenticationArgs.UserName}");
