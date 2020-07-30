@@ -34,7 +34,6 @@ param(
  [string]
  $resourceGroupName,
 
-
  [string]
  $resourceGroupLocation,
 
@@ -46,10 +45,6 @@ param(
  [string]
  $outputpath,
 
- [string]
- $deploymentName = "batchdeploy",
-
- [Parameter(Mandatory=$True)]
  [string]
  $templateFile = "azuredeploy.json"
 
@@ -92,6 +87,53 @@ $linuxenv = @{
 $vars = $winenv, $linuxenv 
 
 
+$ErrorActionPreference = "Stop"
+
+#########################################################
+# ARM template deployment for batch, storage and eventhub
+#########################################################
+# select subscription
+Write-Host "Selecting subscription '$subscriptionId'";
+Select-AzSubscription -SubscriptionID $subscriptionId;
+
+# Register RPs
+$resourceProviders = @("microsoft.storage","microsoft.batch","microsoft.eventhub");
+if($resourceProviders.length) {
+    Write-Host "Registering resource providers"
+    foreach($resourceProvider in $resourceProviders) {
+        RegisterRP($resourceProvider);
+    }
+}
+
+
+$params = @{}
+$params.Add("namePrefix", $batchprefix);
+$params.Add("eventhubSku", "Standard");
+$params.Add("skuCapacity", 1);
+$params.Add("location", $resourceGroupLocation)
+
+
+#Create or check for existing resource group
+$resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
+if(!$resourceGroup)
+{
+    Write-Host "Resource group '$resourceGroupName' does not exist. To create a new resource group, please enter a location.";
+    if(!$resourceGroupLocation) {
+        $resourceGroupLocation = Read-Host "resourceGroupLocation";
+    }
+    Write-Host "Creating resource group '$resourceGroupName' in location '$resourceGroupLocation'";
+    New-AzResourceGroup -Name $resourceGroupName -Location $resourceGroupLocation
+}
+else{
+    Write-Host "Using existing resource group '$resourceGroupName'";
+}
+
+# Start the deployment
+Write-Host "Starting deployment...";
+Write-Host "Creating batch, storage and eventhub accounts...";
+New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName  -TemplateFile $templateFile -TemplateParameterObject $params -Verbose
+
+
 ##########################################
 # Build the solution
 ##########################################
@@ -123,52 +165,6 @@ foreach ($env in $vars) {
     $env.BuildOutputZip = Resolve-Path $buildOutput
 }
 
-
-$ErrorActionPreference = "Stop"
-
-#########################################################
-# ARM template deployment for batch, storage and eventhub
-#########################################################
-# select subscription
-Write-Host "Selecting subscription '$subscriptionId'";
-Select-AzSubscription -SubscriptionID $subscriptionId;
-
-# Register RPs
-$resourceProviders = @("microsoft.storage","microsoft.batch","microsoft.eventhub");
-if($resourceProviders.length) {
-    Write-Host "Registering resource providers"
-    foreach($resourceProvider in $resourceProviders) {
-        RegisterRP($resourceProvider);
-    }
-}
-
-
-$params = @{}
-$params.Add("namePrefix", $batchprefix);
-$params.Add("eventhubSku", "Standard");
-
-
-#Create or check for existing resource group
-$resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
-if(!$resourceGroup)
-{
-    Write-Host "Resource group '$resourceGroupName' does not exist. To create a new resource group, please enter a location.";
-    if(!$resourceGroupLocation) {
-        $resourceGroupLocation = Read-Host "resourceGroupLocation";
-    }
-    Write-Host "Creating resource group '$resourceGroupName' in location '$resourceGroupLocation'";
-    New-AzResourceGroup -Name $resourceGroupName -Location $resourceGroupLocation
-}
-else{
-    Write-Host "Using existing resource group '$resourceGroupName'";
-}
-
-# Start the deployment
-Write-Host "Starting deployment...";
-Write-Host "Creating batch, storage and eventhub accounts...";
-New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -Name $deploymentName -TemplateFile $templateFile -TemplateParameterObject $params
-
-
 ##################################################
 # Upload zip application packages to batch account
 ##################################################
@@ -194,6 +190,7 @@ foreach ($env in $vars)
 
 foreach ($env in $vars)
 {
-    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName "settingsfile-$($env.OSName.ToLower()).json"
+    $file = Join-Path $outputpath "settingsfile-$($env.OSName.ToLower()).json"
+    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file
 }
 
