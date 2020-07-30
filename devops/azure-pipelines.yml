@@ -96,4 +96,17 @@ steps:
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
+- task: PublishBuildArtifacts@1
+  displayName: Copying batch ARM template
+  inputs:
+    PathtoPublish: './docs/templates/azuredeploy.json'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: Copying batch package update PowerShell template
+  inputs:
+    PathtoPublish: './devops/batch_update_releasepackage.ps1'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
 
