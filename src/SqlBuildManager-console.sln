@@ -9,27 +9,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild", "SqlSync.SqlBuild\SqlSync.SqlBuild.csproj", "{9B495B5F-1578-482B-8CF7-615B04D3AE2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.SqlBuild", "SqlSync.SqlBuild\SqlSync.SqlBuild.csproj", "{9B495B5F-1578-482B-8CF7-615B04D3AE2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.Connection", "SqlSync.Connection\SqlSync.Connection.csproj", "{F3F1EFFF-265E-4995-958B-9763F947E5C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.Connection", "SqlSync.Connection\SqlSync.Connection.csproj", "{F3F1EFFF-265E-4995-958B-9763F947E5C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.ObjectScript", "SqlSync.ObjectScript\SqlSync.ObjectScript.csproj", "{CD09B7DB-851B-4321-9E21-16948DA7FA07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.ObjectScript", "SqlSync.ObjectScript\SqlSync.ObjectScript.csproj", "{CD09B7DB-851B-4321-9E21-16948DA7FA07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.Constants", "SqlSync.Constants\SqlSync.Constants.csproj", "{D68699E6-B97C-4BC4-AD52-5F3C63DB24A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.Constants", "SqlSync.Constants\SqlSync.Constants.csproj", "{D68699E6-B97C-4BC4-AD52-5F3C63DB24A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.DbInformation", "SqlSync.DbInformation\SqlSync.DbInformation.csproj", "{37A22666-195A-4CBB-A541-CFFBFB9D7905}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.DbInformation", "SqlSync.DbInformation\SqlSync.DbInformation.csproj", "{37A22666-195A-4CBB-A541-CFFBFB9D7905}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console", "SqlBuildManager.Console\SqlBuildManager.Console.csproj", "{E4496045-D324-4297-BE19-EBE664129C71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Console", "SqlBuildManager.Console\SqlBuildManager.Console.csproj", "{E4496045-D324-4297-BE19-EBE664129C71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ScriptHandling", "SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj", "{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.ScriptHandling", "SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj", "{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Interfaces", "SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj", "{FDC576E6-ACC8-41D4-8A56-8E6E00221306}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Interfaces", "SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj", "{FDC576E6-ACC8-41D4-8A56-8E6E00221306}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Enterprise", "SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj", "{15497702-FB61-4316-949B-A8ED2EEC694A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Enterprise", "SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj", "{15497702-FB61-4316-949B-A8ED2EEC694A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Logging", "SqlBuildManager.Logging\SqlBuildManager.Logging.csproj", "{C9DE9821-BA13-4528-B149-A3E990530AAD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ServiceClient", "SqlBuildManager.ServiceClient\SqlBuildManager.ServiceClient.csproj", "{641F4F7D-7730-4760-9454-7B9FCE0AA32C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Logging", "SqlBuildManager.Logging\SqlBuildManager.Logging.csproj", "{C9DE9821-BA13-4528-B149-A3E990530AAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -593,66 +591,6 @@ Global
 		{C9DE9821-BA13-4528-B149-A3E990530AAD}.SingleImage|x64.Build.0 = Release|Any CPU
 		{C9DE9821-BA13-4528-B149-A3E990530AAD}.SingleImage|x86.ActiveCfg = Release|Any CPU
 		{C9DE9821-BA13-4528-B149-A3E990530AAD}.SingleImage|x86.Build.0 = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|.NET.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|.NET.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|Any CPU.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|Any CPU.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|Mixed Platforms.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|Mixed Platforms.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|x64.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|x64.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|x86.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.CD_ROM|x86.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|.NET.Build.0 = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|x64.Build.0 = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Debug|x86.Build.0 = Debug|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|.NET.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|.NET.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|Any CPU.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|Any CPU.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|Mixed Platforms.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|Mixed Platforms.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|x64.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|x64.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|x86.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DevOpsBuild|x86.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|.NET.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|.NET.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|Any CPU.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|Any CPU.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|Mixed Platforms.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|Mixed Platforms.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|x64.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|x64.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|x86.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.DVD-5|x86.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|.NET.ActiveCfg = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|.NET.Build.0 = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|x64.ActiveCfg = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|x64.Build.0 = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|x86.ActiveCfg = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.Release|x86.Build.0 = Release|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|.NET.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|.NET.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|Any CPU.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|Any CPU.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|Mixed Platforms.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|Mixed Platforms.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|x64.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|x64.Build.0 = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|x86.ActiveCfg = DevOpsBuild|Any CPU
-		{641F4F7D-7730-4760-9454-7B9FCE0AA32C}.SingleImage|x86.Build.0 = DevOpsBuild|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
