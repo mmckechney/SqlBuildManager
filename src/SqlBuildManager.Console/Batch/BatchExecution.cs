@@ -1,8 +1,6 @@
 ﻿using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,7 +11,13 @@ using SqlSync.SqlBuild.MultiDb;
 using System.Text;
 using SqlBuildManager.Interfaces.Console;
 using System.Text.RegularExpressions;
-
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Azure;
+using Azure.Storage;
 
 namespace SqlBuildManager.Console.Batch
 {
@@ -136,8 +140,9 @@ namespace SqlBuildManager.Console.Batch
                 timer.Start();
 
                 //Get storage ready
-                CloudBlobClient blobClient = CreateStorageAndGetBlobClient(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey, storageContainerName);
-                string containerSasToken = GetOutputContainerSasUrl(blobClient, storageContainerName, false);
+                BlobServiceClient storageSvcClient = CreateStorageClient(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey);
+                StorageSharedKeyCredential storageCreds = new StorageSharedKeyCredential(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey);
+                string containerSasToken = GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, false);
                 if (log.IsDebugEnabled)
                 {
                     log.DebugFormat($"Output write SAS token: {containerSasToken}");
@@ -196,7 +201,7 @@ namespace SqlBuildManager.Console.Batch
 
                 foreach (string filePath in inputFilePaths)
                 {
-                    inputFiles.Add(UploadFileToContainer(blobClient, storageContainerName, filePath));
+                    inputFiles.Add(UploadFileToContainer(cmdLine.BatchArgs.StorageAccountName, storageContainerName,storageCreds, filePath));
                 }
 
                 //Create the individual command lines for each node
@@ -307,11 +312,11 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 log.Info("Consolidating log files");
-                ConsolidateLogFiles(blobClient, storageContainerName, inputFilePaths);
+                ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
 
                 if(batchType == BatchType.Query)
                 {
-                    CombineBatchQueryOutputfiles(blobClient, storageContainerName, this.outputFile);
+                    CombineBatchQueryOutputfiles(storageSvcClient, storageContainerName, this.outputFile);
                 }
 
                 //Finish the job out
@@ -329,7 +334,7 @@ namespace SqlBuildManager.Console.Batch
                 }                    
 
 
-                readOnlySasToken = GetOutputContainerSasUrl(blobClient, storageContainerName, true);
+                readOnlySasToken = GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, true);
                 log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
                 log.Info("The read-only SAS token URL is valid for 7 days.");
                 log.Info("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
@@ -372,48 +377,50 @@ namespace SqlBuildManager.Console.Batch
 
         }
 
-        private void CombineBatchQueryOutputfiles(CloudBlobClient blobClient, string storageContainerName, string outputFile)
+        private void CombineBatchQueryOutputfiles(BlobServiceClient blobClient, string storageContainerName, string outputFile)
         {
             outputFile = Path.GetFileName(outputFile);
-            var container = blobClient.GetContainerReference(storageContainerName);
-            var blobs = container.ListBlobs(outputFile);
+            var container = blobClient.GetBlobContainerClient(storageContainerName); //.GetContainerReference(storageContainerName);
+            var blobs = container.GetBlobs();
 
-            var destinationBlob = container.GetAppendBlobReference(outputFile);
+            var destinationBlob = container.GetAppendBlobClient(outputFile); // .GetAppendBlobReference(outputFile);
             try
             {
-                destinationBlob.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition(), null, null);
+                destinationBlob.CreateIfNotExists();
+                //destinationBlob.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition(), null, null);
             }
             catch { }
 
             var counter = 0;
-            foreach(var b in blobs)
+
+            foreach (var b in blobs)
             {
-                if (b is CloudBlockBlob)
-                {
-                    if (counter == 0)
+                var blobUri = new Uri(new Uri(container.Uri.AbsoluteUri), b.Name);
+                BlockBlobClient bbc = new BlockBlobClient(blobUri);
+                //if (counter == 0)
+                //{
+                    using (var stream = bbc.OpenRead())
                     {
-                        using (var stream = ((CloudBlockBlob)b).OpenRead())
-                        {
-                            destinationBlob.AppendFromStream(stream);
-                        }
+                        destinationBlob.AppendBlock(stream);
                     }
-                    else
-                    {
-                        using (var stream = ((CloudBlockBlob)b).OpenRead())
-                        {
-                            using (StreamReader sr = new StreamReader(stream))
-                            {
-                                sr.ReadLine();
-                                while (sr.Peek() > 0)
-                                {
-                                    destinationBlob.AppendText(sr.ReadLine() + Environment.NewLine);
-                                }
-                               
-                            }
-                        }
-                    }
-                    counter++;
-                }
+                //}
+                //else
+                //{
+                //    using (var stream = bbc.OpenRead())
+                //    {
+                //        using (StreamReader sr = new StreamReader(stream))
+                //        {
+                //            sr.ReadLine();
+                //            while (sr.Peek() > 0)
+                //            {
+                //                destinationBlob.app
+                //                destinationBlob.AppendText(sr.ReadLine() + Environment.NewLine);
+                //            }
+
+                //        }
+                //    }
+                //}
+                //counter++;
             }
 
         }
@@ -477,43 +484,44 @@ namespace SqlBuildManager.Console.Batch
             return (jobId, poolId, storageContainerName);
         }
 
-        private void ConsolidateLogFiles(CloudBlobClient blobClient, string outputContainerName, List<string> workerFiles)
+        private void ConsolidateLogFiles(BlobServiceClient storageSvcClient, string outputContainerName, List<string> workerFiles)
         {
             workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql","execution.log" });
-            var container = blobClient.GetContainerReference(outputContainerName);
-            var blobs = container.ListBlobs();
+            var container = storageSvcClient.GetBlobContainerClient(outputContainerName);
+            container.CreateIfNotExists();
+            var blobs = container.GetBlobs();
 
             //Move worker files to "Working" directory
             foreach (var blob in blobs)
             {
-                if (blob is CloudBlockBlob)
+                if (blob.Properties.BlobType == BlobType.Block )
                 {
-                    var sourceBlob = (CloudBlockBlob)blob;
-                    if (workerFiles.Any(a => blob.Uri.ToString().ToLower().EndsWith(a.ToLower())))
+                    if (workerFiles.Any(a => blob.Name.ToLower() == a.ToLower()))
                     {
-                        var destBlob = container.GetBlockBlobReference("Working/" + sourceBlob.Name);
+                        var sourceBlob = container.GetBlobClient(blob.Name);
+                        var destBlob = container.GetBlobClient("Working/" + blob.Name);
                         using (var stream = sourceBlob.OpenRead())
                         {
-                            destBlob.UploadFromStream(stream);
+                            destBlob.Upload(stream);
                         }
                         sourceBlob.Delete();
                     }
 
                     foreach (string append in Program.AppendLogFiles)
                     {
-                        if (sourceBlob.Uri.ToString().ToLower().EndsWith(append.ToLower()))
+                        if (blob.Name.ToLower() == append.ToLower())
                         {
-                            var destinationBlob = container.GetAppendBlobReference(append);
+                            var destinationBlob = container.GetAppendBlobClient(append);
                             try
                             {
-                                destinationBlob.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition(), null, null);
+                                destinationBlob.CreateIfNotExists();
                             }
                             catch { }
-                            
 
+                            var sourceBlob = container.GetBlobClient(blob.Name);
                             using (var stream = sourceBlob.OpenRead())
                             {
-                                destinationBlob.AppendFromStream(stream);
+                                destinationBlob.AppendBlock(stream);
                             }
                             sourceBlob.Delete();
                         }
@@ -603,21 +611,12 @@ namespace SqlBuildManager.Console.Batch
             return true;
         }
 
-        private CloudBlobClient CreateStorageAndGetBlobClient(string storageAccountName, string storageAccountKey, string inputContainerName)
+        private BlobServiceClient CreateStorageClient(string storageAccountName, string storageAccountKey)
         {
-            // Construct the Storage account connection string
-            string storageConnectionString = String.Format($"DefaultEndpointsProtocol=https;AccountName={storageAccountName};AccountKey={storageAccountKey}");
+            StorageSharedKeyCredential creds = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
+            var serviceClient = new BlobServiceClient(new Uri($"https://{storageAccountName}.blob.core.windows.net"), creds);
 
-            // Retrieve the storage account
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
-
-            // Create the blob client, for use in obtaining references to blob storage containers
-            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-
-            CloudBlobContainer container = blobClient.GetContainerReference(inputContainerName);
-            container.CreateIfNotExists();
-
-            return blobClient;
+            return serviceClient;
         }
 
         /// <summary>
@@ -741,58 +740,59 @@ namespace SqlBuildManager.Console.Batch
         /// <summary>
         /// Uploads the specified file to the specified Blob container.
         /// </summary>
-        /// <param name="blobClient">A <see cref="CloudBlobClient"/>.</param>
+        /// <param name="storageSvcClient">A <see cref="CloudBlobClient"/>.</param>
         /// <param name="containerName">The name of the blob storage container to which the file should be uploaded.</param>
         /// <param name="filePath">The full path to the file to upload to Storage.</param>
         /// <returns>A ResourceFile instance representing the file within blob storage.</returns>
-        private static ResourceFile UploadFileToContainer(CloudBlobClient blobClient, string containerName, string filePath)
+        private static ResourceFile UploadFileToContainer(string storageAcctName, string containerName, StorageSharedKeyCredential storageCreds,  string filePath)
         {
             log.InfoFormat("Uploading file {0} to container [{1}]...", filePath, containerName);
 
             string blobName = Path.GetFileName(filePath);
 
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
-            CloudBlockBlob blobData = container.GetBlockBlobReference(blobName);
-            blobData.UploadFromFile(filePath);
-
+           // BlobContainerClient container = new BlobContainerClient(new Uri($"https://{storageAcctName}.blob.core.windows.net storage/{containerName}"), storageCreds);  //SvcClient.GetBlobContainerClient(containerName);
+            BlockBlobClient blobData = new BlockBlobClient(new Uri($"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}"), storageCreds);   //container.GetBlockBlobClient(blobName);
+            using (var fs = new FileStream(filePath,FileMode.Open))
+            {
+                blobData.Upload(fs);
+            }
             // Set the expiry time and permissions for the blob shared access signature. In this case, no start time is specified,
             // so the shared access signature becomes valid immediately
-            SharedAccessBlobPolicy sasConstraints = new SharedAccessBlobPolicy
-            {
-                SharedAccessExpiryTime = DateTime.UtcNow.AddHours(2),
-                Permissions = SharedAccessBlobPermissions.Read
-            };
-
+            var sasPermissions = new BlobSasBuilder(BlobSasPermissions.Read, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0)));
+            sasPermissions.BlobName = blobName;
+            sasPermissions.BlobContainerName = containerName;
+            sasPermissions.StartsOn = DateTime.UtcNow.AddHours(-1);
+            sasPermissions.ExpiresOn = DateTime.UtcNow.AddHours(3);
             // Construct the SAS URL for blob
-            string sasBlobToken = blobData.GetSharedAccessSignature(sasConstraints);
-            string blobSasUri = String.Format("{0}{1}", blobData.Uri, sasBlobToken);
+            blobData.GenerateSasUri(sasPermissions);
+            string blobSasUri = blobData.GenerateSasUri(sasPermissions).ToString();
 
             return ResourceFile.FromUrl(blobSasUri, blobName, null);
         }
-        private static string GetOutputContainerSasUrl(CloudBlobClient blobClient, string outputContainerName, bool forRead)
+        private static string GetOutputContainerSasUrl(string storageAccountName, string outputContainerName, StorageSharedKeyCredential storageCreds, bool forRead)
         {
             log.DebugFormat("Ensuring presence of output blob container '{0}'", outputContainerName);
-            CloudBlobContainer container = blobClient.GetContainerReference(outputContainerName);
+            var container = new BlobContainerClient(new Uri($"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}"), storageCreds);
             container.CreateIfNotExists();
-            SharedAccessBlobPolicy sasConstraints;
+
+           BlobSasBuilder sasConstraints;
             if (!forRead)
             {
-                sasConstraints = new SharedAccessBlobPolicy
-                {
-                    SharedAccessExpiryTime = DateTime.UtcNow.AddHours(4),
-                    Permissions = SharedAccessBlobPermissions.Add | SharedAccessBlobPermissions.Create | SharedAccessBlobPermissions.Write | SharedAccessBlobPermissions.Read | SharedAccessBlobPermissions.List
-                };
+                var permissions = BlobSasPermissions.Add | BlobSasPermissions.Create | BlobSasPermissions.Write | BlobSasPermissions.Read | BlobSasPermissions.List;
+                sasConstraints = new BlobSasBuilder(permissions, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0)));
+                sasConstraints.StartsOn = DateTime.UtcNow.AddHours(-1);
+                sasConstraints.ExpiresOn = DateTime.UtcNow.AddHours(4);
             }
             else
             {
-                sasConstraints = new SharedAccessBlobPolicy
-                {
-                    SharedAccessExpiryTime = DateTime.UtcNow.AddDays(7),
-                    Permissions =  SharedAccessBlobPermissions.Read | SharedAccessBlobPermissions.List
-                };
+                var permissions = BlobSasPermissions.Read | BlobSasPermissions.List;
+                sasConstraints = new BlobSasBuilder(permissions, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0, 0, 0)));
+                sasConstraints.StartsOn = DateTime.UtcNow.AddHours(-1);
+                sasConstraints.ExpiresOn = DateTime.UtcNow.AddHours(7);
             }
-            string containerSasToken = container.GetSharedAccessSignature(sasConstraints);
-            return String.Format("{0}{1}", container.Uri, containerSasToken);
+            sasConstraints.BlobContainerName = outputContainerName;
+
+            return container.GenerateSasUri(sasConstraints).ToString();
         }
    
         /// <summary>

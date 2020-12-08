@@ -1,9 +1,7 @@
 ﻿using BlueSkyDev.Logging;
 using log4net;
 using log4net.Repository.Hierarchy;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
-using Microsoft.Azure.Storage.RetryPolicies;
+using Azure.Storage.Blobs;
 using Newtonsoft.Json;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
@@ -22,6 +20,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Blobs.Models;
 
 namespace SqlBuildManager.Console
 {
@@ -44,8 +44,7 @@ namespace SqlBuildManager.Console
             SqlBuildManager.Logging.Configure.SetLoggingPath();
 
             log.Debug("Received Command: " + String.Join(" | ", args));
-           
-
+  
             if (cliVersion == SqlSync.Constants.CliVersion.NEW_CLI)
             {
                 #region System.CommandLine options
@@ -694,7 +693,7 @@ namespace SqlBuildManager.Console
             if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.Info("Writing log files to storage...");
-                bool storageSuccess = await WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
+                bool storageSuccess = WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
             }
 
 
@@ -813,9 +812,9 @@ namespace SqlBuildManager.Console
             if(!string.IsNullOrWhiteSpace(readOnlySas))
             {
                 log.Info("Downloading the consolidated output file,,,");
-                var cloudBlobContainer = new CloudBlobContainer(new Uri(readOnlySas));
-                var blob = cloudBlobContainer.GetBlobReference(cmdLine.OutputFile.Name);
-                blob.DownloadToFile(cmdLine.OutputFile.FullName,FileMode.Create);
+                var cloudBlobContainer = new BlobContainerClient(new Uri(readOnlySas));
+                var blob = cloudBlobContainer.GetBlobClient(cmdLine.OutputFile.Name);
+                blob.DownloadTo(cmdLine.OutputFile.FullName);
                 log.Info($"Output file copied locally to {cmdLine.OutputFile.FullName}");
             }
 
@@ -1013,7 +1012,7 @@ namespace SqlBuildManager.Console
             if(!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.Info("Writing log files to storage...");
-                bool success = await WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
+                bool success = WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
             }
           
             log.Debug("Exiting Threaded Execution");
@@ -1023,33 +1022,34 @@ namespace SqlBuildManager.Console
         }
 
 
-        private static async Task<bool> WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
+        private static bool WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
         {
             try
             {
-                var writeTasks = new List<Task>();
+                //var writeTasks = new List<Task>();
                 
                 var renameLogFiles = new string[] { "sqlbuildmanager" };
-                CloudBlobContainer container = new CloudBlobContainer(new Uri(outputContainerSasUrl));
+                BlobContainerClient container = new BlobContainerClient(new Uri(outputContainerSasUrl));
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
                 string machine = Environment.MachineName;
-                fileList.ToList().ForEach(f =>
+                fileList.ToList().ForEach(async f =>
                 {
-                    try
-                    {
-                        var tmp = Path.GetRelativePath(rootLoggingPath, f);
+                try
+                {
+                    var tmp = Path.GetRelativePath(rootLoggingPath, f);
 
                         if (Program.AppendLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
 
                             tmp = machine + "-" + tmp;
                             log.InfoFormat($"Saving File '{f}' as '{tmp}'");
-                            var rename = container.GetBlockBlobReference(tmp);
+                            var rename = container.GetBlockBlobClient(tmp);
+                            using (var fs = new FileStream(f, FileMode.Open))
+                            {
+                                await rename.UploadAsync(fs);
 
-                            writeTasks.Add(
-                                rename.UploadFromFileAsync(f,
-                                AccessCondition.GenerateIfNotExistsCondition(),
-                                new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
+                            }
+
 
                         }
                         else if (renameLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
@@ -1058,21 +1058,23 @@ namespace SqlBuildManager.Console
                             var localTemp = Path.Combine(Path.GetDirectoryName(f), tmp);
                             File.Copy(f, localTemp);
                             log.InfoFormat($"Saving File '{f}' as '{tmp}'");
-                            var rename = container.GetBlockBlobReference(tmp);
+                            var rename = container.GetBlockBlobClient(tmp);
+                            using (var fs = new FileStream(localTemp, FileMode.Open))
+                            {
+                                await rename.UploadAsync(fs);
 
-                            writeTasks.Add(
-                                rename.UploadFromFileAsync(localTemp,
-                                AccessCondition.GenerateIfNotExistsCondition(),
-                                new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
+                            }
+                           
                         }
                         else
                         {
                             log.InfoFormat($"Saving File '{f}' as '{tmp}'");
-                            var b = container.GetBlockBlobReference(tmp);
-                            writeTasks.Add(
-                                b.UploadFromFileAsync(f,
-                                AccessCondition.GenerateIfNotExistsCondition(),
-                                new BlobRequestOptions() { RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(1), 20) }, null));
+                            var b = container.GetBlockBlobClient(tmp);
+                            using (var fs = new FileStream(f, FileMode.Open))
+                            {
+                                await b.UploadAsync(fs);
+
+                            }
                         }
                     }
                     catch (Exception e)
@@ -1081,7 +1083,7 @@ namespace SqlBuildManager.Console
                     }
                 });
 
-                await Task.WhenAll(writeTasks);
+                //await Task.WhenAll(writeTasks);
                 return true;
             }
             catch (Exception exe)
