@@ -106,8 +106,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest.Properties {
         ///ALTER DATABASE [{0}] SET ANSI_NULL_DEFAULT OFF 
         ///GO
         ///ALTER DATABASE [{0}] SET ANSI_NULLS OFF 
-        ///GO
-        /// [rest of string was truncated]&quot;;.
+        ///GO        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string CreateDatabaseScript {
             get {
