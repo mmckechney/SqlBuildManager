@@ -87,19 +87,19 @@ namespace SqlSync.SqlBuild.Objects
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddObjectForm));
             this.lstAdds = new System.Windows.Forms.ListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.previewObjectScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.viewObjectsSqlBuildHistoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnUpdate = new System.Windows.Forms.Button();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statGeneral = new System.Windows.Forms.ToolStripStatusLabel();
             this.label1 = new System.Windows.Forms.Label();
             this.txtFind = new System.Windows.Forms.TextBox();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -107,9 +107,9 @@ namespace SqlSync.SqlBuild.Objects
             // 
             // lstAdds
             // 
-            this.lstAdds.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstAdds.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstAdds.CheckBoxes = true;
             this.lstAdds.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
@@ -118,9 +118,10 @@ namespace SqlSync.SqlBuild.Objects
             this.lstAdds.ContextMenuStrip = this.contextMenuStrip1;
             this.lstAdds.FullRowSelect = true;
             this.lstAdds.GridLines = true;
-            this.lstAdds.Location = new System.Drawing.Point(16, 16);
+            this.lstAdds.HideSelection = false;
+            this.lstAdds.Location = new System.Drawing.Point(19, 20);
             this.lstAdds.Name = "lstAdds";
-            this.lstAdds.Size = new System.Drawing.Size(624, 448);
+            this.lstAdds.Size = new System.Drawing.Size(618, 425);
             this.lstAdds.TabIndex = 2;
             this.lstAdds.UseCompatibleStateImageBehavior = false;
             this.lstAdds.View = System.Windows.Forms.View.Details;
@@ -148,22 +149,36 @@ namespace SqlSync.SqlBuild.Objects
             this.toolStripSeparator1,
             this.viewObjectsSqlBuildHistoryToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(359, 76);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(377, 54);
             // 
             // previewObjectScriptToolStripMenuItem
             // 
             this.previewObjectScriptToolStripMenuItem.Name = "previewObjectScriptToolStripMenuItem";
-            this.previewObjectScriptToolStripMenuItem.Size = new System.Drawing.Size(358, 22);
+            this.previewObjectScriptToolStripMenuItem.Size = new System.Drawing.Size(376, 22);
             this.previewObjectScriptToolStripMenuItem.Text = "Preview Object Script";
             this.previewObjectScriptToolStripMenuItem.Click += new System.EventHandler(this.previewObjectScriptToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(373, 6);
+            // 
+            // viewObjectsSqlBuildHistoryToolStripMenuItem
+            // 
+            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Name = "viewObjectsSqlBuildHistoryToolStripMenuItem";
+            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Size = new System.Drawing.Size(376, 22);
+            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Text = "View Object\'s change history as run by Sql Build Manager";
+            this.viewObjectsSqlBuildHistoryToolStripMenuItem.ToolTipText = "If a database object has been updated in the past via the Sql Build Manager tool," +
+    " this will show you the history and allow you to compare versions.";
+            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Click += new System.EventHandler(this.viewObjectsSqlBuildHistoryToolStripMenuItem_Click);
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnCancel.Location = new System.Drawing.Point(340, 498);
+            this.btnCancel.Location = new System.Drawing.Point(343, 487);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(112, 23);
+            this.btnCancel.Size = new System.Drawing.Size(134, 28);
             this.btnCancel.TabIndex = 6;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -172,9 +187,9 @@ namespace SqlSync.SqlBuild.Objects
             // 
             this.btnUpdate.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnUpdate.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnUpdate.Location = new System.Drawing.Point(204, 498);
+            this.btnUpdate.Location = new System.Drawing.Point(180, 487);
             this.btnUpdate.Name = "btnUpdate";
-            this.btnUpdate.Size = new System.Drawing.Size(128, 23);
+            this.btnUpdate.Size = new System.Drawing.Size(153, 28);
             this.btnUpdate.TabIndex = 5;
             this.btnUpdate.Text = "Add Checked Files";
             this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
@@ -198,42 +213,28 @@ namespace SqlSync.SqlBuild.Objects
             // 
             // label1
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 471);
+            this.label1.Location = new System.Drawing.Point(19, 454);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(32, 13);
+            this.label1.Size = new System.Drawing.Size(36, 15);
             this.label1.TabIndex = 8;
             this.label1.Text = "Filter:";
             // 
             // txtFind
             // 
-            this.txtFind.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtFind.Location = new System.Drawing.Point(50, 467);
+            this.txtFind.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtFind.Location = new System.Drawing.Point(60, 449);
             this.txtFind.Name = "txtFind";
-            this.txtFind.Size = new System.Drawing.Size(590, 20);
+            this.txtFind.Size = new System.Drawing.Size(577, 23);
             this.txtFind.TabIndex = 9;
             this.txtFind.TextChanged += new System.EventHandler(this.txtFind_TextChanged);
             // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(355, 6);
-            // 
-            // viewObjectsSqlBuildHistoryToolStripMenuItem
-            // 
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Name = "viewObjectsSqlBuildHistoryToolStripMenuItem";
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Size = new System.Drawing.Size(358, 22);
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Text = "View Object\'s change history as run by Sql Build Manager";
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.ToolTipText = "If a database object has been updated in the past via the Sql Build Manager tool," +
-                " this will show you the history and allow you to compare versions.";
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Click += new System.EventHandler(this.viewObjectsSqlBuildHistoryToolStripMenuItem_Click);
-            // 
             // AddObjectForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(656, 547);
             this.Controls.Add(this.txtFind);
             this.Controls.Add(this.label1);

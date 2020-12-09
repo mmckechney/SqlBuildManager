@@ -25,18 +25,15 @@ namespace SqlSync.BuildHistory
 		private System.Windows.Forms.LinkLabel lnkCheckAll;
 		private System.Windows.Forms.StatusStrip statusBar1;
 		private System.Windows.Forms.ToolStripStatusLabel statGeneral;
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+        private IContainer components;
 
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="basePath">The path to the temp folder created for the session</param>
-		/// <param name="buildFileName">Name of the build file zip (sbm) file, used to pre-populate the destination file name</param>
-		public LogFileHistoryForm(string basePath, string buildFileName)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="basePath">The path to the temp folder created for the session</param>
+        /// <param name="buildFileName">Name of the build file zip (sbm) file, used to pre-populate the destination file name</param>
+        public LogFileHistoryForm(string basePath, string buildFileName)
 		{
 			//
 			// Required for Windows Form Designer support
@@ -72,25 +69,28 @@ namespace SqlSync.BuildHistory
 		/// </summary>
 		private void InitializeComponent()
 		{
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LogFileHistoryForm));
             this.lstLogFiles = new System.Windows.Forms.ListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuOpenInNotePad = new System.Windows.Forms.ToolStripMenuItem();
             this.btnArchive = new System.Windows.Forms.Button();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.lnkCheckAll = new System.Windows.Forms.LinkLabel();
             this.statusBar1 = new System.Windows.Forms.StatusStrip();
             this.statGeneral = new System.Windows.Forms.ToolStripStatusLabel();
+            this.contextMenu1.SuspendLayout();
+            this.statusBar1.SuspendLayout();
             this.SuspendLayout();
             // 
             // lstLogFiles
             // 
             this.lstLogFiles.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.lstLogFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstLogFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstLogFiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lstLogFiles.CheckBoxes = true;
             this.lstLogFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -99,10 +99,11 @@ namespace SqlSync.BuildHistory
             this.lstLogFiles.ContextMenuStrip = this.contextMenu1;
             this.lstLogFiles.FullRowSelect = true;
             this.lstLogFiles.GridLines = true;
-            this.lstLogFiles.Location = new System.Drawing.Point(16, 8);
+            this.lstLogFiles.HideSelection = false;
+            this.lstLogFiles.Location = new System.Drawing.Point(19, 10);
             this.lstLogFiles.Name = "lstLogFiles";
             this.lstLogFiles.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.lstLogFiles.Size = new System.Drawing.Size(286, 332);
+            this.lstLogFiles.Size = new System.Drawing.Size(279, 316);
             this.lstLogFiles.TabIndex = 0;
             this.lstLogFiles.UseCompatibleStateImageBehavior = false;
             this.lstLogFiles.View = System.Windows.Forms.View.Details;
@@ -119,12 +120,15 @@ namespace SqlSync.BuildHistory
             // 
             // contextMenu1
             // 
-            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
+            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuOpenInNotePad});
+            this.contextMenu1.Name = "contextMenu1";
+            this.contextMenu1.Size = new System.Drawing.Size(210, 26);
             // 
             // mnuOpenInNotePad
             // 
-            //this.mnuOpenInNotePad.Index = 0;
+            this.mnuOpenInNotePad.Name = "mnuOpenInNotePad";
+            this.mnuOpenInNotePad.Size = new System.Drawing.Size(209, 22);
             this.mnuOpenInNotePad.Text = "Open Log File in NotePad";
             this.mnuOpenInNotePad.Click += new System.EventHandler(this.mnuOpenInNotePad_Click);
             // 
@@ -132,9 +136,9 @@ namespace SqlSync.BuildHistory
             // 
             this.btnArchive.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnArchive.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnArchive.Location = new System.Drawing.Point(228, 344);
+            this.btnArchive.Location = new System.Drawing.Point(210, 331);
             this.btnArchive.Name = "btnArchive";
-            this.btnArchive.Size = new System.Drawing.Size(75, 20);
+            this.btnArchive.Size = new System.Drawing.Size(90, 25);
             this.btnArchive.TabIndex = 1;
             this.btnArchive.Text = "Archive";
             this.btnArchive.Click += new System.EventHandler(this.btnArchive_Click);
@@ -149,9 +153,9 @@ namespace SqlSync.BuildHistory
             // lnkCheckAll
             // 
             this.lnkCheckAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lnkCheckAll.Location = new System.Drawing.Point(16, 340);
+            this.lnkCheckAll.Location = new System.Drawing.Point(19, 326);
             this.lnkCheckAll.Name = "lnkCheckAll";
-            this.lnkCheckAll.Size = new System.Drawing.Size(100, 16);
+            this.lnkCheckAll.Size = new System.Drawing.Size(120, 20);
             this.lnkCheckAll.TabIndex = 2;
             this.lnkCheckAll.TabStop = true;
             this.lnkCheckAll.Text = "Check All";
@@ -159,25 +163,23 @@ namespace SqlSync.BuildHistory
             // 
             // statusBar1
             // 
-            this.statusBar1.Location = new System.Drawing.Point(0, 374);
-            this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statGeneral});
-            //this.statusBar1.ShowPanels = true;
-            this.statusBar1.Size = new System.Drawing.Size(320, 24);
+            this.statusBar1.Location = new System.Drawing.Point(0, 376);
+            this.statusBar1.Name = "statusBar1";
+            this.statusBar1.Size = new System.Drawing.Size(320, 22);
             this.statusBar1.TabIndex = 3;
             this.statusBar1.Text = "statusBar1";
-			// 
-			// statGeneral
-			// 
-			this.statGeneral.AutoSize = true;
-			this.statGeneral.Spring = true;
+            // 
+            // statGeneral
+            // 
             this.statGeneral.Name = "statGeneral";
-            this.statGeneral.Width = 303;
+            this.statGeneral.Size = new System.Drawing.Size(305, 17);
+            this.statGeneral.Spring = true;
             // 
             // LogFileHistoryForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(320, 398);
             this.Controls.Add(this.statusBar1);
             this.Controls.Add(this.lnkCheckAll);
@@ -189,9 +191,13 @@ namespace SqlSync.BuildHistory
             this.Name = "LogFileHistoryForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Log File List";
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.LogFileHistoryForm_KeyDown);
             this.Load += new System.EventHandler(this.LogFileHistoryForm_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.LogFileHistoryForm_KeyDown);
+            this.contextMenu1.ResumeLayout(false);
+            this.statusBar1.ResumeLayout(false);
+            this.statusBar1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
 		}
 		#endregion

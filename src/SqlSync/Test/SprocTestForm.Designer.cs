@@ -55,9 +55,9 @@ namespace SqlSync.Test
             // 
             // listView1
             // 
-            this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2,
@@ -66,9 +66,11 @@ namespace SqlSync.Test
             this.listView1.ContextMenuStrip = this.contextMenuStrip1;
             this.listView1.FullRowSelect = true;
             this.listView1.GridLines = true;
-            this.listView1.Location = new System.Drawing.Point(12, 30);
+            this.listView1.HideSelection = false;
+            this.listView1.Location = new System.Drawing.Point(14, 35);
+            this.listView1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(819, 236);
+            this.listView1.Size = new System.Drawing.Size(955, 272);
             this.listView1.TabIndex = 2;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -100,24 +102,24 @@ namespace SqlSync.Test
             this.toolStripSeparator1,
             this.saveAllTestResultsToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(192, 54);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(190, 54);
             // 
             // showDetailedResultsToolStripMenuItem
             // 
             this.showDetailedResultsToolStripMenuItem.Name = "showDetailedResultsToolStripMenuItem";
-            this.showDetailedResultsToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.showDetailedResultsToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             this.showDetailedResultsToolStripMenuItem.Text = "Show Detailed Results";
             this.showDetailedResultsToolStripMenuItem.Click += new System.EventHandler(this.showDetailedResultsToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(188, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(186, 6);
             // 
             // saveAllTestResultsToolStripMenuItem
             // 
             this.saveAllTestResultsToolStripMenuItem.Name = "saveAllTestResultsToolStripMenuItem";
-            this.saveAllTestResultsToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.saveAllTestResultsToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             this.saveAllTestResultsToolStripMenuItem.Text = "Save All Test Results";
             this.saveAllTestResultsToolStripMenuItem.Click += new System.EventHandler(this.saveAllTestResultsToolStripMenuItem_Click);
             // 
@@ -130,9 +132,10 @@ namespace SqlSync.Test
             this.statPassed,
             this.statFailed,
             this.statProgressBar});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 275);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 319);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(843, 22);
+            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
+            this.statusStrip1.Size = new System.Drawing.Size(983, 24);
             this.statusStrip1.TabIndex = 3;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -140,7 +143,7 @@ namespace SqlSync.Test
             // 
             this.statGeneral.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.statGeneral.Name = "statGeneral";
-            this.statGeneral.Size = new System.Drawing.Size(195, 17);
+            this.statGeneral.Size = new System.Drawing.Size(298, 19);
             this.statGeneral.Spring = true;
             this.statGeneral.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -149,7 +152,7 @@ namespace SqlSync.Test
             this.statSpCount.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.statSpCount.Name = "statSpCount";
             this.statSpCount.Padding = new System.Windows.Forms.Padding(0, 0, 20, 0);
-            this.statSpCount.Size = new System.Drawing.Size(169, 17);
+            this.statSpCount.Size = new System.Drawing.Size(175, 19);
             this.statSpCount.Text = "Stored Procedures Tested: 0";
             this.statSpCount.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -159,7 +162,7 @@ namespace SqlSync.Test
             this.statTestCaseRunCount.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.statTestCaseRunCount.Name = "statTestCaseRunCount";
             this.statTestCaseRunCount.Padding = new System.Windows.Forms.Padding(0, 0, 40, 0);
-            this.statTestCaseRunCount.Size = new System.Drawing.Size(139, 17);
+            this.statTestCaseRunCount.Size = new System.Drawing.Size(140, 19);
             this.statTestCaseRunCount.Text = "Test Cases Run: 0";
             this.statTestCaseRunCount.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -168,7 +171,7 @@ namespace SqlSync.Test
             this.statPassed.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.statPassed.Name = "statPassed";
             this.statPassed.Padding = new System.Windows.Forms.Padding(0, 0, 30, 0);
-            this.statPassed.Size = new System.Drawing.Size(91, 17);
+            this.statPassed.Size = new System.Drawing.Size(92, 19);
             this.statPassed.Text = "Passed : 0";
             this.statPassed.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -177,29 +180,30 @@ namespace SqlSync.Test
             this.statFailed.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.statFailed.Name = "statFailed";
             this.statFailed.Padding = new System.Windows.Forms.Padding(0, 0, 30, 0);
-            this.statFailed.Size = new System.Drawing.Size(82, 17);
+            this.statFailed.Size = new System.Drawing.Size(84, 19);
             this.statFailed.Text = "Failed: 0";
             this.statFailed.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // statProgressBar
             // 
             this.statProgressBar.Name = "statProgressBar";
-            this.statProgressBar.Size = new System.Drawing.Size(150, 16);
+            this.statProgressBar.Size = new System.Drawing.Size(175, 18);
             // 
             // bgTestRunner
             // 
             this.bgTestRunner.WorkerReportsProgress = true;
             this.bgTestRunner.WorkerSupportsCancellation = true;
             this.bgTestRunner.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgTestRunner_DoWork);
-            this.bgTestRunner.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgTestRunner_RunWorkerCompleted);
             this.bgTestRunner.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgTestRunner_ProgressChanged);
+            this.bgTestRunner.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgTestRunner_RunWorkerCompleted);
             // 
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(12, 3);
+            this.btnCancel.Location = new System.Drawing.Point(14, 3);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(87, 23);
+            this.btnCancel.Size = new System.Drawing.Size(102, 27);
             this.btnCancel.TabIndex = 4;
             this.btnCancel.Text = "Cancel Tests";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -213,14 +217,15 @@ namespace SqlSync.Test
             // 
             // SprocTestForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(843, 297);
+            this.ClientSize = new System.Drawing.Size(983, 343);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.listView1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "SprocTestForm";
             this.Text = "Stored Procedure Test Results";
             this.Load += new System.EventHandler(this.SprocTestForm_Load);

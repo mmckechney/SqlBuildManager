@@ -349,51 +349,51 @@ namespace SqlSync.SqlBuild
             // 
             // label1
             // 
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(12, 8);
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.label1.Location = new System.Drawing.Point(14, 10);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(72, 16);
+            this.label1.Size = new System.Drawing.Size(87, 20);
             this.label1.TabIndex = 0;
             this.label1.Text = "File Name:";
             // 
             // lblFileName
             // 
-            this.lblFileName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblFileName.Location = new System.Drawing.Point(84, 8);
+            this.lblFileName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblFileName.Location = new System.Drawing.Point(101, 10);
             this.lblFileName.Name = "lblFileName";
-            this.lblFileName.Size = new System.Drawing.Size(438, 16);
+            this.lblFileName.Size = new System.Drawing.Size(418, 20);
             this.lblFileName.TabIndex = 1;
             // 
             // rtbDescription
             // 
-            this.rtbDescription.Location = new System.Drawing.Point(264, 65);
+            this.rtbDescription.Location = new System.Drawing.Point(317, 80);
             this.rtbDescription.Name = "rtbDescription";
-            this.rtbDescription.Size = new System.Drawing.Size(250, 80);
+            this.rtbDescription.Size = new System.Drawing.Size(300, 98);
             this.rtbDescription.TabIndex = 8;
             this.rtbDescription.Text = "";
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(264, 50);
+            this.label2.Location = new System.Drawing.Point(317, 62);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(96, 16);
+            this.label2.Size = new System.Drawing.Size(115, 19);
             this.label2.TabIndex = 3;
             this.label2.Text = "Script Description:";
             // 
             // txtBuildOrder
             // 
-            this.txtBuildOrder.Location = new System.Drawing.Point(198, 26);
+            this.txtBuildOrder.Location = new System.Drawing.Point(238, 32);
             this.txtBuildOrder.Name = "txtBuildOrder";
-            this.txtBuildOrder.Size = new System.Drawing.Size(96, 20);
+            this.txtBuildOrder.Size = new System.Drawing.Size(115, 23);
             this.txtBuildOrder.TabIndex = 1;
             this.toolTip1.SetToolTip(this.txtBuildOrder, "#\'s greater than 1000 can not be re-sequenced");
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(198, 8);
+            this.label3.Location = new System.Drawing.Point(238, 10);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(96, 16);
+            this.label3.Size = new System.Drawing.Size(115, 20);
             this.label3.TabIndex = 5;
             this.label3.Text = "Build Sequence #:";
             this.toolTip1.SetToolTip(this.label3, "#\'s greater than 1000 can not be re-sequenced");
@@ -403,9 +403,9 @@ namespace SqlSync.SqlBuild
             this.chkRollBackScript.Checked = true;
             this.chkRollBackScript.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkRollBackScript.Enabled = false;
-            this.chkRollBackScript.Location = new System.Drawing.Point(15, 89);
+            this.chkRollBackScript.Location = new System.Drawing.Point(18, 110);
             this.chkRollBackScript.Name = "chkRollBackScript";
-            this.chkRollBackScript.Size = new System.Drawing.Size(257, 28);
+            this.chkRollBackScript.Size = new System.Drawing.Size(308, 34);
             this.chkRollBackScript.TabIndex = 5;
             this.chkRollBackScript.Text = "Roll back full script file contents on partial failure";
             this.toolTip1.SetToolTip(this.chkRollBackScript, resources.GetString("chkRollBackScript.ToolTip"));
@@ -414,13 +414,13 @@ namespace SqlSync.SqlBuild
             // 
             this.chkRollBackBuild.Checked = true;
             this.chkRollBackBuild.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkRollBackBuild.Location = new System.Drawing.Point(15, 65);
+            this.chkRollBackBuild.Location = new System.Drawing.Point(18, 80);
             this.chkRollBackBuild.Name = "chkRollBackBuild";
-            this.chkRollBackBuild.Size = new System.Drawing.Size(192, 24);
+            this.chkRollBackBuild.Size = new System.Drawing.Size(230, 30);
             this.chkRollBackBuild.TabIndex = 4;
             this.chkRollBackBuild.Text = "Roll back entire build on failure";
             this.toolTip1.SetToolTip(this.chkRollBackBuild, "Check to have any script failure cause the entire build to get rolled back.\r\nFor " +
-                    "most scripts, this should be left checked.");
+        "most scripts, this should be left checked.");
             this.chkRollBackBuild.CheckedChanged += new System.EventHandler(this.chkRollBackBuild_CheckedChanged);
             // 
             // button2
@@ -428,9 +428,9 @@ namespace SqlSync.SqlBuild
             this.button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button2.Location = new System.Drawing.Point(272, 184);
+            this.button2.Location = new System.Drawing.Point(273, 159);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(56, 20);
+            this.button2.Size = new System.Drawing.Size(68, 25);
             this.button2.TabIndex = 11;
             this.button2.Text = "Cancel";
             // 
@@ -438,18 +438,18 @@ namespace SqlSync.SqlBuild
             // 
             this.button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button1.Location = new System.Drawing.Point(208, 184);
+            this.button1.Location = new System.Drawing.Point(197, 159);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(48, 20);
+            this.button1.Size = new System.Drawing.Size(57, 25);
             this.button1.TabIndex = 10;
             this.button1.Text = "OK";
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(15, 8);
+            this.label4.Location = new System.Drawing.Point(18, 10);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(96, 16);
+            this.label4.Size = new System.Drawing.Size(115, 20);
             this.label4.TabIndex = 11;
             this.label4.Text = "Target Database:";
             // 
@@ -457,40 +457,40 @@ namespace SqlSync.SqlBuild
             // 
             this.chkStripTransactions.Checked = true;
             this.chkStripTransactions.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkStripTransactions.Location = new System.Drawing.Point(15, 113);
+            this.chkStripTransactions.Location = new System.Drawing.Point(18, 139);
             this.chkStripTransactions.Name = "chkStripTransactions";
-            this.chkStripTransactions.Size = new System.Drawing.Size(192, 24);
+            this.chkStripTransactions.Size = new System.Drawing.Size(230, 30);
             this.chkStripTransactions.TabIndex = 6;
             this.chkStripTransactions.Text = "Strip Transaction References";
             this.toolTip1.SetToolTip(this.chkStripTransactions, "Check to strip out transaction references in the file and allow Sql Buid Manager " +
-                    "to manage transactions. \r\nThis in generally only unchecked for Stored Procedures" +
-                    " and Function scripts.");
+        "to manage transactions. \r\nThis in generally only unchecked for Stored Procedures" +
+        " and Function scripts.");
             this.chkStripTransactions.CheckedChanged += new System.EventHandler(this.chkStripTransactions_CheckedChanged);
             // 
             // chkAllowMultipleRuns
             // 
             this.chkAllowMultipleRuns.Checked = true;
             this.chkAllowMultipleRuns.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkAllowMultipleRuns.Location = new System.Drawing.Point(15, 137);
+            this.chkAllowMultipleRuns.Location = new System.Drawing.Point(18, 169);
             this.chkAllowMultipleRuns.Name = "chkAllowMultipleRuns";
-            this.chkAllowMultipleRuns.Size = new System.Drawing.Size(216, 40);
+            this.chkAllowMultipleRuns.Size = new System.Drawing.Size(259, 49);
             this.chkAllowMultipleRuns.TabIndex = 7;
             this.chkAllowMultipleRuns.Text = "Allow Multiple Committed Runs on same Server";
             this.toolTip1.SetToolTip(this.chkAllowMultipleRuns, "Check to allow the script to be run more than once on the target server.");
             // 
             // lblAddedBy
             // 
-            this.lblAddedBy.Location = new System.Drawing.Point(125, 32);
+            this.lblAddedBy.Location = new System.Drawing.Point(150, 39);
             this.lblAddedBy.Name = "lblAddedBy";
-            this.lblAddedBy.Size = new System.Drawing.Size(129, 16);
+            this.lblAddedBy.Size = new System.Drawing.Size(155, 20);
             this.lblAddedBy.TabIndex = 15;
             // 
             // label7
             // 
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(12, 32);
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.label7.Location = new System.Drawing.Point(14, 39);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(72, 16);
+            this.label7.Size = new System.Drawing.Size(87, 20);
             this.label7.TabIndex = 14;
             this.label7.Text = "Added By:";
             // 
@@ -511,58 +511,58 @@ namespace SqlSync.SqlBuild
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(536, 74);
+            this.panel1.Size = new System.Drawing.Size(536, 91);
             this.panel1.TabIndex = 16;
             // 
             // lblModDate
             // 
-            this.lblModDate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblModDate.Location = new System.Drawing.Point(354, 48);
+            this.lblModDate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblModDate.Location = new System.Drawing.Point(425, 59);
             this.lblModDate.Name = "lblModDate";
-            this.lblModDate.Size = new System.Drawing.Size(168, 16);
+            this.lblModDate.Size = new System.Drawing.Size(94, 20);
             this.lblModDate.TabIndex = 21;
             // 
             // lblAddDate
             // 
-            this.lblAddDate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblAddDate.Location = new System.Drawing.Point(354, 32);
+            this.lblAddDate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblAddDate.Location = new System.Drawing.Point(425, 39);
             this.lblAddDate.Name = "lblAddDate";
-            this.lblAddDate.Size = new System.Drawing.Size(169, 16);
+            this.lblAddDate.Size = new System.Drawing.Size(96, 20);
             this.lblAddDate.TabIndex = 20;
             // 
             // label10
             // 
-            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.Location = new System.Drawing.Point(260, 48);
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.label10.Location = new System.Drawing.Point(312, 59);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(99, 16);
+            this.label10.Size = new System.Drawing.Size(119, 20);
             this.label10.TabIndex = 19;
             this.label10.Text = "Last Mod Date:";
             // 
             // label9
             // 
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(260, 32);
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.label9.Location = new System.Drawing.Point(312, 39);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(99, 16);
+            this.label9.Size = new System.Drawing.Size(119, 20);
             this.label9.TabIndex = 18;
             this.label9.Text = "Add Date:";
             // 
             // lblModBy
             // 
-            this.lblModBy.Location = new System.Drawing.Point(125, 48);
+            this.lblModBy.Location = new System.Drawing.Point(150, 59);
             this.lblModBy.Name = "lblModBy";
-            this.lblModBy.Size = new System.Drawing.Size(129, 16);
+            this.lblModBy.Size = new System.Drawing.Size(155, 20);
             this.lblModBy.TabIndex = 17;
             // 
             // label6
             // 
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(11, 48);
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.label6.Location = new System.Drawing.Point(13, 59);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(112, 16);
+            this.label6.Size = new System.Drawing.Size(135, 20);
             this.label6.TabIndex = 16;
             this.label6.Text = "Last Modified By:";
             // 
@@ -575,29 +575,28 @@ namespace SqlSync.SqlBuild
             // 
             // label5
             // 
-            this.label5.Location = new System.Drawing.Point(319, 8);
+            this.label5.Location = new System.Drawing.Point(383, 10);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(141, 16);
+            this.label5.Size = new System.Drawing.Size(169, 20);
             this.label5.TabIndex = 17;
             this.label5.Text = "Time Out (seconds):";
             this.toolTip1.SetToolTip(this.label5, "#\'s greater than 1000 can not be re-sequenced");
             // 
             // txtScriptTimeout
             // 
-            this.txtScriptTimeout.Location = new System.Drawing.Point(319, 26);
+            this.txtScriptTimeout.Location = new System.Drawing.Point(383, 32);
             this.txtScriptTimeout.Name = "txtScriptTimeout";
-            this.txtScriptTimeout.Size = new System.Drawing.Size(99, 20);
+            this.txtScriptTimeout.Size = new System.Drawing.Size(119, 23);
             this.txtScriptTimeout.TabIndex = 2;
             this.txtScriptTimeout.Text = "20";
             this.toolTip1.SetToolTip(this.txtScriptTimeout, "#\'s greater than 1000 can not be re-sequenced");
-            
             this.txtScriptTimeout.Leave += new System.EventHandler(this.txtScriptTimeout_Leave);
             // 
             // label8
             // 
-            this.label8.Location = new System.Drawing.Point(421, 8);
+            this.label8.Location = new System.Drawing.Point(505, 10);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(66, 16);
+            this.label8.Size = new System.Drawing.Size(79, 20);
             this.label8.TabIndex = 27;
             this.label8.Text = "Script Tag:";
             this.toolTip1.SetToolTip(this.label8, "Target Database to run this script on");
@@ -612,9 +611,9 @@ namespace SqlSync.SqlBuild
             "Name/Script",
             "Script Only",
             "Name Only"});
-            this.ddInfer.Location = new System.Drawing.Point(393, 156);
+            this.ddInfer.Location = new System.Drawing.Point(472, 192);
             this.ddInfer.Name = "ddInfer";
-            this.ddInfer.Size = new System.Drawing.Size(121, 21);
+            this.ddInfer.Size = new System.Drawing.Size(145, 23);
             this.ddInfer.TabIndex = 9;
             this.toolTip1.SetToolTip(this.ddInfer, resources.GetString("ddInfer.ToolTip"));
             // 
@@ -639,16 +638,16 @@ namespace SqlSync.SqlBuild
             this.panel2.Controls.Add(this.txtBuildOrder);
             this.panel2.Controls.Add(this.label5);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(0, 74);
+            this.panel2.Location = new System.Drawing.Point(0, 91);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(536, 218);
+            this.panel2.Size = new System.Drawing.Size(536, 201);
             this.panel2.TabIndex = 19;
             // 
             // label11
             // 
-            this.label11.Location = new System.Drawing.Point(279, 159);
+            this.label11.Location = new System.Drawing.Point(335, 196);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(108, 16);
+            this.label11.Size = new System.Drawing.Size(129, 19);
             this.label11.TabIndex = 31;
             this.label11.Text = "Infer tag value from:";
             // 
@@ -656,25 +655,25 @@ namespace SqlSync.SqlBuild
             // 
             this.ddDatabaseList.DatabaseList = null;
             this.ddDatabaseList.FormattingEnabled = true;
-            this.ddDatabaseList.Location = new System.Drawing.Point(18, 25);
+            this.ddDatabaseList.Location = new System.Drawing.Point(22, 31);
             this.ddDatabaseList.Name = "ddDatabaseList";
             this.ddDatabaseList.SelectedDatabase = "";
-            this.ddDatabaseList.Size = new System.Drawing.Size(174, 21);
+            this.ddDatabaseList.Size = new System.Drawing.Size(208, 23);
             this.ddDatabaseList.TabIndex = 0;
             // 
             // cbTag
             // 
             this.cbTag.FormattingEnabled = true;
-            this.cbTag.Location = new System.Drawing.Point(424, 25);
+            this.cbTag.Location = new System.Drawing.Point(509, 31);
             this.cbTag.Name = "cbTag";
-            this.cbTag.Size = new System.Drawing.Size(90, 21);
+            this.cbTag.Size = new System.Drawing.Size(108, 23);
             this.cbTag.TabIndex = 3;
             this.cbTag.SelectionChangeCommitted += new System.EventHandler(this.cbTag_SelectionChangeCommitted);
             this.cbTag.TextUpdate += new System.EventHandler(this.cbTag_SelectionChangeCommitted);
             // 
             // NewBuildScriptForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(536, 292);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);

@@ -149,10 +149,10 @@ namespace SqlSync
             this.chkZip = new System.Windows.Forms.CheckBox();
             this.chkCombineTableObjects = new System.Windows.Forms.CheckBox();
             this.lstStatus = new System.Windows.Forms.ListView();
-            this.colFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colStatus = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colFullPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            this.colFile = new System.Windows.Forms.ColumnHeader();
+            this.colStatus = new System.Windows.Forms.ColumnHeader();
+            this.colFullPath = new System.Windows.Forms.ColumnHeader();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuNotePad = new System.Windows.Forms.ToolStripMenuItem();
             this.statusBar1 = new System.Windows.Forms.StatusStrip();
             this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
@@ -177,9 +177,13 @@ namespace SqlSync
             this.mnuServerLogins = new System.Windows.Forms.ToolStripMenuItem();
             this.bgScripting = new System.ComponentModel.BackgroundWorker();
             this.settingsControl1 = new SqlSync.SettingsControl();
-            this.panel1 = new Panel();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.grpDirectory.SuspendLayout();
             this.grpScripting.SuspendLayout();
+            this.contextMenu1.SuspendLayout();
+            this.statusBar1.SuspendLayout();
+            this.mainMenu1.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpDirectory
@@ -188,27 +192,27 @@ namespace SqlSync
             this.grpDirectory.Controls.Add(this.ddDatabase);
             this.grpDirectory.Dock = System.Windows.Forms.DockStyle.Top;
             this.grpDirectory.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.grpDirectory.Location = new System.Drawing.Point(0, 60);
+            this.grpDirectory.Location = new System.Drawing.Point(0, 92);
             this.grpDirectory.Name = "grpDirectory";
-            this.grpDirectory.Size = new System.Drawing.Size(775, 48);
+            this.grpDirectory.Size = new System.Drawing.Size(800, 59);
             this.grpDirectory.TabIndex = 0;
             this.grpDirectory.TabStop = false;
             this.grpDirectory.Text = "1) Select a Database";
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(16, 18);
+            this.label1.Location = new System.Drawing.Point(19, 22);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(64, 16);
+            this.label1.Size = new System.Drawing.Size(77, 20);
             this.label1.TabIndex = 5;
             this.label1.Text = "Database:";
             // 
             // ddDatabase
             // 
             this.ddDatabase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ddDatabase.Location = new System.Drawing.Point(88, 16);
+            this.ddDatabase.Location = new System.Drawing.Point(106, 20);
             this.ddDatabase.Name = "ddDatabase";
-            this.ddDatabase.Size = new System.Drawing.Size(121, 21);
+            this.ddDatabase.Size = new System.Drawing.Size(145, 23);
             this.ddDatabase.TabIndex = 0;
             this.ddDatabase.SelectionChangeCommitted += new System.EventHandler(this.ddDatabase_SelectionChangeCommitted);
             // 
@@ -224,9 +228,9 @@ namespace SqlSync
             this.grpScripting.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpScripting.Enabled = false;
             this.grpScripting.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.grpScripting.Location = new System.Drawing.Point(0, 108);
+            this.grpScripting.Location = new System.Drawing.Point(0, 151);
             this.grpScripting.Name = "grpScripting";
-            this.grpScripting.Size = new System.Drawing.Size(775, 203);
+            this.grpScripting.Size = new System.Drawing.Size(800, 207);
             this.grpScripting.TabIndex = 4;
             this.grpScripting.TabStop = false;
             this.grpScripting.Text = "2) Update Script Files from Database";
@@ -235,20 +239,20 @@ namespace SqlSync
             // 
             this.chkIncludeHeaders.Checked = true;
             this.chkIncludeHeaders.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkIncludeHeaders.Location = new System.Drawing.Point(499, 16);
+            this.chkIncludeHeaders.Location = new System.Drawing.Point(599, 20);
             this.chkIncludeHeaders.Name = "chkIncludeHeaders";
-            this.chkIncludeHeaders.Size = new System.Drawing.Size(144, 16);
+            this.chkIncludeHeaders.Size = new System.Drawing.Size(173, 19);
             this.chkIncludeHeaders.TabIndex = 8;
             this.chkIncludeHeaders.Text = "Include Headers";
             this.toolTip1.SetToolTip(this.chkIncludeHeaders, "Adds scripts for Primary Keys, Foreign Keys, Indexes and Defaults in the same fil" +
-                    "e as the table create script");
+        "e as the table create script");
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.Location = new System.Drawing.Point(665, 14);
+            this.btnCancel.Location = new System.Drawing.Point(668, 17);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(102, 23);
+            this.btnCancel.Size = new System.Drawing.Size(122, 29);
             this.btnCancel.TabIndex = 7;
             this.btnCancel.Text = "Cancel Scripting";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -256,9 +260,9 @@ namespace SqlSync
             // 
             // btnGo
             // 
-            this.btnGo.Location = new System.Drawing.Point(218, 14);
+            this.btnGo.Location = new System.Drawing.Point(262, 17);
             this.btnGo.Name = "btnGo";
-            this.btnGo.Size = new System.Drawing.Size(40, 23);
+            this.btnGo.Size = new System.Drawing.Size(48, 29);
             this.btnGo.TabIndex = 6;
             this.btnGo.Text = "Go";
             this.btnGo.UseVisualStyleBackColor = true;
@@ -267,40 +271,40 @@ namespace SqlSync
             // ddScriptType
             // 
             this.ddScriptType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ddScriptType.Location = new System.Drawing.Point(16, 14);
+            this.ddScriptType.Location = new System.Drawing.Point(19, 17);
             this.ddScriptType.Name = "ddScriptType";
-            this.ddScriptType.Size = new System.Drawing.Size(192, 21);
+            this.ddScriptType.Size = new System.Drawing.Size(231, 23);
             this.ddScriptType.TabIndex = 0;
             // 
             // chkZip
             // 
             this.chkZip.Checked = true;
             this.chkZip.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkZip.Location = new System.Drawing.Point(272, 16);
+            this.chkZip.Location = new System.Drawing.Point(326, 20);
             this.chkZip.Name = "chkZip";
-            this.chkZip.Size = new System.Drawing.Size(80, 16);
+            this.chkZip.Size = new System.Drawing.Size(96, 19);
             this.chkZip.TabIndex = 2;
             this.chkZip.Text = "Zip Scripts ";
             this.toolTip1.SetToolTip(this.chkZip, "Adds scripts for Primary Keys, Foreign Keys, Indexes and Defaults in the same fil" +
-                    "e as the table create script");
+        "e as the table create script");
             // 
             // chkCombineTableObjects
             // 
             this.chkCombineTableObjects.Checked = true;
             this.chkCombineTableObjects.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkCombineTableObjects.Location = new System.Drawing.Point(360, 16);
+            this.chkCombineTableObjects.Location = new System.Drawing.Point(432, 20);
             this.chkCombineTableObjects.Name = "chkCombineTableObjects";
-            this.chkCombineTableObjects.Size = new System.Drawing.Size(144, 16);
+            this.chkCombineTableObjects.Size = new System.Drawing.Size(173, 19);
             this.chkCombineTableObjects.TabIndex = 3;
             this.chkCombineTableObjects.Text = "Combine Table Objects";
             this.toolTip1.SetToolTip(this.chkCombineTableObjects, "Adds scripts for Primary Keys, Foreign Keys, Indexes and Defaults in the same fil" +
-                    "e as the table create script");
+        "e as the table create script");
             // 
             // lstStatus
             // 
-            this.lstStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstStatus.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.colFile,
             this.colStatus,
@@ -308,10 +312,11 @@ namespace SqlSync
             this.lstStatus.ContextMenuStrip = this.contextMenu1;
             this.lstStatus.FullRowSelect = true;
             this.lstStatus.GridLines = true;
-            this.lstStatus.Location = new System.Drawing.Point(16, 48);
+            this.lstStatus.HideSelection = false;
+            this.lstStatus.Location = new System.Drawing.Point(19, 59);
             this.lstStatus.MultiSelect = false;
             this.lstStatus.Name = "lstStatus";
-            this.lstStatus.Size = new System.Drawing.Size(751, 148);
+            this.lstStatus.Size = new System.Drawing.Size(771, 139);
             this.lstStatus.TabIndex = 5;
             this.lstStatus.UseCompatibleStateImageBehavior = false;
             this.lstStatus.View = System.Windows.Forms.View.Details;
@@ -333,33 +338,33 @@ namespace SqlSync
             // 
             // contextMenu1
             // 
-            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
+            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuNotePad});
+            this.contextMenu1.Name = "contextMenu1";
+            this.contextMenu1.Size = new System.Drawing.Size(187, 26);
             // 
             // mnuNotePad
             // 
-            //this.mnuNotePad.Index = 0;
+            this.mnuNotePad.Name = "mnuNotePad";
+            this.mnuNotePad.Size = new System.Drawing.Size(186, 22);
             this.mnuNotePad.Text = "Open File in NotePad";
             this.mnuNotePad.Click += new System.EventHandler(this.mnuNotePad_Click);
             // 
             // statusBar1
             // 
-            this.statusBar1.Location = new System.Drawing.Point(0, 311);
-            this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statStatus});
-            //this.statusBar1.ShowPanels = true;
-            this.statusBar1.Size = new System.Drawing.Size(775, 22);
+            this.statusBar1.Location = new System.Drawing.Point(0, 358);
+            this.statusBar1.Name = "statusBar1";
+            this.statusBar1.Size = new System.Drawing.Size(800, 22);
             this.statusBar1.TabIndex = 5;
             this.statusBar1.Text = "statusBar1";
             // 
             // statStatus
             // 
-            //this.statStatus.AutoSize = System.Windows.Forms.ToolStripStatusLabel.Spring;
-            this.statStatus.AutoSize = true;
-            this.statStatus.Spring = true;
             this.statStatus.Name = "statStatus";
-            this.statStatus.Width = 758;
+            this.statStatus.Size = new System.Drawing.Size(785, 17);
+            this.statStatus.Spring = true;
             // 
             // saveAutoScriptFileDialog1
             // 
@@ -370,19 +375,17 @@ namespace SqlSync
             // 
             // mainMenu1
             // 
-            this.mainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
+            this.mainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuItem2,
             this.mnuComparisons});
             this.mainMenu1.Location = new System.Drawing.Point(0, 0);
             this.mainMenu1.Name = "mainMenu1";
-            this.mainMenu1.Size = new System.Drawing.Size(896, 24);
+            this.mainMenu1.Size = new System.Drawing.Size(800, 24);
             this.mainMenu1.TabIndex = 0;
-            this.mainMenu1.Dock = System.Windows.Forms.DockStyle.Top;
             // 
             // menuItem2
             // 
-            //this.menuItem2.Index = 0;
-            this.menuItem2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
+            this.menuItem2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuDestination,
             this.mnuChangeConnection,
             this.menuItem3,
@@ -391,106 +394,123 @@ namespace SqlSync
             this.mnuLookUpTables,
             this.mnuSqlBuildManager,
             this.mnuDataDump});
+            this.menuItem2.Name = "menuItem2";
+            this.menuItem2.Size = new System.Drawing.Size(54, 20);
             this.menuItem2.Text = "&Action";
             // 
             // mnuDestination
             // 
-           // this.mnuDestination.Index = 0;
+            this.mnuDestination.Name = "mnuDestination";
+            this.mnuDestination.Size = new System.Drawing.Size(266, 22);
             this.mnuDestination.Text = "Select Destination Directory";
             this.mnuDestination.Click += new System.EventHandler(this.mnuDestination_Click);
             // 
             // mnuChangeConnection
             // 
-            //this.mnuChangeConnection.Index = 1;
+            this.mnuChangeConnection.Name = "mnuChangeConnection";
+            this.mnuChangeConnection.Size = new System.Drawing.Size(266, 22);
             this.mnuChangeConnection.Text = "&Change Sql Server Connection";
             this.mnuChangeConnection.Click += new System.EventHandler(this.mnuChangeConnection_Click);
             // 
             // menuItem3
             // 
-            //this.menuItem3.Index = 2;
+            this.menuItem3.Name = "menuItem3";
+            this.menuItem3.Size = new System.Drawing.Size(266, 22);
             this.menuItem3.Text = "-";
             // 
             // mnuAutoScript
             // 
-            //this.mnuAutoScript.Index = 3;
+            this.mnuAutoScript.Name = "mnuAutoScript";
+            this.mnuAutoScript.Size = new System.Drawing.Size(266, 22);
             this.mnuAutoScript.Text = "Save to &Auto Script File";
             this.mnuAutoScript.Click += new System.EventHandler(this.mnuAutoScript_Click);
             // 
             // menuItem5
             // 
-            //this.menuItem5.Index = 4;
+            this.menuItem5.Name = "menuItem5";
+            this.menuItem5.Size = new System.Drawing.Size(266, 22);
             this.menuItem5.Text = "-";
             this.menuItem5.Visible = false;
             // 
             // mnuLookUpTables
             // 
-            //this.mnuLookUpTables.Index = 5;
-            this.mnuLookUpTables.ShortcutKeys = System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.L;
+            this.mnuLookUpTables.Name = "mnuLookUpTables";
+            this.mnuLookUpTables.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.L)));
+            this.mnuLookUpTables.Size = new System.Drawing.Size(266, 22);
             this.mnuLookUpTables.Text = "Open &Lookup Table Scripting";
             this.mnuLookUpTables.Visible = false;
             this.mnuLookUpTables.Click += new System.EventHandler(this.mnuLookUpTables_Click);
             // 
             // mnuSqlBuildManager
             // 
-            //this.mnuSqlBuildManager.Index = 6;
-            this.mnuSqlBuildManager.ShortcutKeys = System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.B;
+            this.mnuSqlBuildManager.Name = "mnuSqlBuildManager";
+            this.mnuSqlBuildManager.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.B)));
+            this.mnuSqlBuildManager.Size = new System.Drawing.Size(266, 22);
             this.mnuSqlBuildManager.Text = "Open Sql &Build Manager";
             this.mnuSqlBuildManager.Visible = false;
             this.mnuSqlBuildManager.Click += new System.EventHandler(this.mnuSqlBuildManager_Click);
             // 
             // mnuDataDump
             // 
-            //this.mnuDataDump.Index = 7;
+            this.mnuDataDump.Name = "mnuDataDump";
+            this.mnuDataDump.Size = new System.Drawing.Size(266, 22);
             this.mnuDataDump.Text = "Open Data Extraction";
             this.mnuDataDump.Visible = false;
             this.mnuDataDump.Click += new System.EventHandler(this.mnuDataDump_Click);
             // 
             // mnuComparisons
             // 
-            this.mnuComparisons.Enabled = false;
-            //this.mnuComparisons.Index = 1;
-            this.mnuComparisons.DropDownItems.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
+            this.mnuComparisons.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuCompareTables,
             this.mnuCompareViews,
             this.mnuCompareStoredProcs,
             this.mnuCompareFunctions,
             this.mnuCompareUsers,
             this.mnuServerLogins});
+            this.mnuComparisons.Enabled = false;
+            this.mnuComparisons.Name = "mnuComparisons";
+            this.mnuComparisons.Size = new System.Drawing.Size(89, 20);
             this.mnuComparisons.Text = "&Comparisons";
             // 
             // mnuCompareTables
             // 
-            //this.mnuCompareTables.Index = 0;
+            this.mnuCompareTables.Name = "mnuCompareTables";
+            this.mnuCompareTables.Size = new System.Drawing.Size(233, 22);
             this.mnuCompareTables.Text = "&Tables (with Keys and Indexes)";
             this.mnuCompareTables.Click += new System.EventHandler(this.mnuCompareTables_Click);
             // 
             // mnuCompareViews
             // 
-            //this.mnuCompareViews.Index = 1;
+            this.mnuCompareViews.Name = "mnuCompareViews";
+            this.mnuCompareViews.Size = new System.Drawing.Size(233, 22);
             this.mnuCompareViews.Text = "&Views";
             this.mnuCompareViews.Click += new System.EventHandler(this.mnuCompareViews_Click);
             // 
             // mnuCompareStoredProcs
             // 
-           // this.mnuCompareStoredProcs.Index = 2;
+            this.mnuCompareStoredProcs.Name = "mnuCompareStoredProcs";
+            this.mnuCompareStoredProcs.Size = new System.Drawing.Size(233, 22);
             this.mnuCompareStoredProcs.Text = "&Stored Procedures";
             this.mnuCompareStoredProcs.Click += new System.EventHandler(this.mnuCompareStoredProcs_Click);
             // 
             // mnuCompareFunctions
             // 
-            //this.mnuCompareFunctions.Index = 3;
+            this.mnuCompareFunctions.Name = "mnuCompareFunctions";
+            this.mnuCompareFunctions.Size = new System.Drawing.Size(233, 22);
             this.mnuCompareFunctions.Text = "&User Defined Functions";
             this.mnuCompareFunctions.Click += new System.EventHandler(this.mnuCompareFunctions_Click);
             // 
             // mnuCompareUsers
             // 
-            //this.mnuCompareUsers.Index = 4;
+            this.mnuCompareUsers.Name = "mnuCompareUsers";
+            this.mnuCompareUsers.Size = new System.Drawing.Size(233, 22);
             this.mnuCompareUsers.Text = "&Database Users";
             this.mnuCompareUsers.Click += new System.EventHandler(this.mnuCompareUsers_Click);
             // 
             // mnuServerLogins
             // 
-            //this.mnuServerLogins.Index = 5;
+            this.mnuServerLogins.Name = "mnuServerLogins";
+            this.mnuServerLogins.Size = new System.Drawing.Size(233, 22);
             this.mnuServerLogins.Text = "Server &Logins";
             this.mnuServerLogins.Click += new System.EventHandler(this.mnuServerLogins_Click);
             // 
@@ -506,43 +526,50 @@ namespace SqlSync
             // 
             this.settingsControl1.BackColor = System.Drawing.Color.White;
             this.settingsControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            //this.settingsControl1.Location = new System.Drawing.Point(0, 0);
+            this.settingsControl1.Location = new System.Drawing.Point(0, 0);
             this.settingsControl1.Name = "settingsControl1";
             this.settingsControl1.Project = "(Select Destination)";
             this.settingsControl1.ProjectLabelText = "Destination Folder:";
             this.settingsControl1.Server = "";
-            this.settingsControl1.Size = new System.Drawing.Size(775, 60);
+            this.settingsControl1.Size = new System.Drawing.Size(800, 92);
             this.settingsControl1.TabIndex = 6;
             this.settingsControl1.ServerChanged += new SqlSync.ServerChangedEventHandler(this.settingsControl1_ServerChanged);
-
-            this.panel1.Dock = DockStyle.Top;
+            // 
+            // panel1
+            // 
             this.panel1.Controls.Add(this.mainMenu1);
             this.panel1.Controls.Add(this.settingsControl1);
-            this.panel1.Size = new Size(775, 75);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(800, 92);
+            this.panel1.TabIndex = 5;
             // 
             // SyncForm
             // 
-            this.MainMenuStrip = this.mainMenu1;
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(800, 380);
-            
-            //this.Controls.Add(this.mainMenu1);
             this.Controls.Add(this.grpScripting);
             this.Controls.Add(this.grpDirectory);
             this.Controls.Add(this.panel1);
-            //this.Controls.Add(this.settingsControl1);
             this.Controls.Add(this.statusBar1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            
+            this.MainMenuStrip = this.mainMenu1;
             this.Name = "SyncForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Sql Build Manager :: Schema Scripting";
             this.Load += new System.EventHandler(this.SyncForm_Load);
             this.grpDirectory.ResumeLayout(false);
             this.grpScripting.ResumeLayout(false);
+            this.contextMenu1.ResumeLayout(false);
+            this.statusBar1.ResumeLayout(false);
+            this.statusBar1.PerformLayout();
             this.mainMenu1.ResumeLayout(false);
             this.mainMenu1.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
 		}
 		#endregion

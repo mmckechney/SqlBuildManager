@@ -25,15 +25,12 @@ namespace SqlSync.SqlBuild
 		private System.Windows.Forms.ContextMenuStrip contextMenu1;
 		private System.Windows.Forms.ToolStripMenuItem mnuView;
         private string[] preSelectedFiles = null;
-		public SqlSync.SqlBuild.SqlSyncBuildData ImportData
+        private IContainer components;
+
+        public SqlSync.SqlBuild.SqlSyncBuildData ImportData
 		{
 			get { return this.importData; }    
 		}
-
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
 
 		public ImportListForm(SqlBuild.SqlSyncBuildData importData, string importTempPath, SqlBuild.SqlSyncBuildData buildData, string[] preSelectedFiles)
 		{
@@ -70,24 +67,26 @@ namespace SqlSync.SqlBuild
 		/// </summary>
 		private void InitializeComponent()
 		{
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ImportListForm));
             this.lstImport = new System.Windows.Forms.ListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuView = new System.Windows.Forms.ToolStripMenuItem();
             this.label1 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
+            this.contextMenu1.SuspendLayout();
             this.SuspendLayout();
             // 
             // lstImport
             // 
-            this.lstImport.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstImport.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstImport.CheckBoxes = true;
             this.lstImport.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
@@ -96,9 +95,10 @@ namespace SqlSync.SqlBuild
             this.columnHeader4});
             this.lstImport.ContextMenuStrip = this.contextMenu1;
             this.lstImport.GridLines = true;
-            this.lstImport.Location = new System.Drawing.Point(16, 23);
+            this.lstImport.HideSelection = false;
+            this.lstImport.Location = new System.Drawing.Point(19, 28);
             this.lstImport.Name = "lstImport";
-            this.lstImport.Size = new System.Drawing.Size(528, 249);
+            this.lstImport.Size = new System.Drawing.Size(522, 228);
             this.lstImport.TabIndex = 1;
             this.lstImport.UseCompatibleStateImageBehavior = false;
             this.lstImport.View = System.Windows.Forms.View.Details;
@@ -125,21 +125,24 @@ namespace SqlSync.SqlBuild
             // 
             // contextMenu1
             // 
-            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
+            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuView});
+            this.contextMenu1.Name = "contextMenu1";
+            this.contextMenu1.Size = new System.Drawing.Size(121, 26);
             // 
             // mnuView
             // 
-           //this.mnuView.Index = 0;
+            this.mnuView.Name = "mnuView";
+            this.mnuView.Size = new System.Drawing.Size(120, 22);
             this.mnuView.Text = "View File";
             this.mnuView.Click += new System.EventHandler(this.mnuView_Click);
             // 
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label1.Location = new System.Drawing.Point(16, 272);
+            this.label1.Location = new System.Drawing.Point(19, 256);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(216, 23);
+            this.label1.Size = new System.Drawing.Size(259, 28);
             this.label1.TabIndex = 10;
             this.label1.Text = "* Colored items denote pre-existing files";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -148,9 +151,9 @@ namespace SqlSync.SqlBuild
             // 
             this.button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button2.Location = new System.Drawing.Point(284, 312);
+            this.button2.Location = new System.Drawing.Point(285, 305);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(112, 23);
+            this.button2.Size = new System.Drawing.Size(134, 28);
             this.button2.TabIndex = 7;
             this.button2.Text = "Cancel";
             this.button2.Click += new System.EventHandler(this.button2_Click);
@@ -159,16 +162,16 @@ namespace SqlSync.SqlBuild
             // 
             this.button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button1.Location = new System.Drawing.Point(164, 312);
+            this.button1.Location = new System.Drawing.Point(141, 305);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(112, 23);
+            this.button1.Size = new System.Drawing.Size(134, 28);
             this.button1.TabIndex = 6;
             this.button1.Text = "Add Checked Files";
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // ImportListForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(560, 342);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button2);
@@ -179,6 +182,7 @@ namespace SqlSync.SqlBuild
             this.Name = "ImportListForm";
             this.Text = "Import Confirmation";
             this.Load += new System.EventHandler(this.ImportListForm_Load);
+            this.contextMenu1.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}

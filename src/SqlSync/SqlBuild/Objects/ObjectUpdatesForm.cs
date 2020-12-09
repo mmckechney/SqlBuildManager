@@ -62,7 +62,7 @@ namespace SqlSync.SqlBuild.Objects
 		private void InitializeComponent()
 		{
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ObjectUpdatesForm));
-            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
             this.sqlConnect1 = new SqlSync.SQLConnect();
             this.btnChangeScripting = new System.Windows.Forms.Button();
             this.pnlSqlConnect = new System.Windows.Forms.Panel();
@@ -81,11 +81,13 @@ namespace SqlSync.SqlBuild.Objects
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(428, 496);
+            this.btnCancel.Location = new System.Drawing.Point(431, 489);
+            this.btnCancel.Size = new System.Drawing.Size(134, 29);
             // 
             // btnUpdate
             // 
-            this.btnUpdate.Location = new System.Drawing.Point(292, 496);
+            this.btnUpdate.Location = new System.Drawing.Point(267, 489);
+            this.btnUpdate.Size = new System.Drawing.Size(154, 29);
             this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
             // 
             // lstUpdates
@@ -93,12 +95,13 @@ namespace SqlSync.SqlBuild.Objects
             this.lstUpdates.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader5});
             this.lstUpdates.FullRowSelect = true;
-            this.lstUpdates.Location = new System.Drawing.Point(24, 38);
-            this.lstUpdates.Size = new System.Drawing.Size(784, 448);
+            this.lstUpdates.Location = new System.Drawing.Point(29, 47);
+            this.lstUpdates.Size = new System.Drawing.Size(775, 430);
             // 
             // lnkCheck
             // 
-            this.lnkCheck.Location = new System.Drawing.Point(688, 23);
+            this.lnkCheck.Location = new System.Drawing.Point(826, 28);
+            this.lnkCheck.Size = new System.Drawing.Size(144, 15);
             // 
             // columnHeader5
             // 
@@ -108,17 +111,17 @@ namespace SqlSync.SqlBuild.Objects
             // sqlConnect1
             // 
             this.sqlConnect1.DisplayDatabaseDropDown = true;
-            this.sqlConnect1.Location = new System.Drawing.Point(48, 16);
+            this.sqlConnect1.Location = new System.Drawing.Point(58, 20);
             this.sqlConnect1.Name = "sqlConnect1";
-            this.sqlConnect1.Size = new System.Drawing.Size(264, 419);
+            this.sqlConnect1.Size = new System.Drawing.Size(316, 515);
             this.sqlConnect1.TabIndex = 6;
             // 
             // btnChangeScripting
             // 
             this.btnChangeScripting.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnChangeScripting.Location = new System.Drawing.Point(670, 490);
+            this.btnChangeScripting.Location = new System.Drawing.Point(638, 482);
             this.btnChangeScripting.Name = "btnChangeScripting";
-            this.btnChangeScripting.Size = new System.Drawing.Size(138, 22);
+            this.btnChangeScripting.Size = new System.Drawing.Size(166, 27);
             this.btnChangeScripting.TabIndex = 7;
             this.btnChangeScripting.Text = "Change Scripting Source";
             this.btnChangeScripting.UseVisualStyleBackColor = true;
@@ -126,23 +129,23 @@ namespace SqlSync.SqlBuild.Objects
             // 
             // pnlSqlConnect
             // 
-            this.pnlSqlConnect.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlSqlConnect.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlSqlConnect.BackColor = System.Drawing.Color.LightSteelBlue;
             this.pnlSqlConnect.Controls.Add(this.btnCancelChangeSource);
             this.pnlSqlConnect.Controls.Add(this.btnChangeSource);
             this.pnlSqlConnect.Controls.Add(this.sqlConnect1);
-            this.pnlSqlConnect.Location = new System.Drawing.Point(254, 12);
+            this.pnlSqlConnect.Location = new System.Drawing.Point(305, 15);
             this.pnlSqlConnect.Name = "pnlSqlConnect";
-            this.pnlSqlConnect.Size = new System.Drawing.Size(361, 474);
+            this.pnlSqlConnect.Size = new System.Drawing.Size(267, 462);
             this.pnlSqlConnect.TabIndex = 8;
             // 
             // btnCancelChangeSource
             // 
-            this.btnCancelChangeSource.Location = new System.Drawing.Point(206, 441);
+            this.btnCancelChangeSource.Location = new System.Drawing.Point(247, 543);
             this.btnCancelChangeSource.Name = "btnCancelChangeSource";
-            this.btnCancelChangeSource.Size = new System.Drawing.Size(75, 23);
+            this.btnCancelChangeSource.Size = new System.Drawing.Size(90, 28);
             this.btnCancelChangeSource.TabIndex = 8;
             this.btnCancelChangeSource.Text = "Cancel";
             this.btnCancelChangeSource.UseVisualStyleBackColor = true;
@@ -150,9 +153,9 @@ namespace SqlSync.SqlBuild.Objects
             // 
             // btnChangeSource
             // 
-            this.btnChangeSource.Location = new System.Drawing.Point(84, 441);
+            this.btnChangeSource.Location = new System.Drawing.Point(101, 543);
             this.btnChangeSource.Name = "btnChangeSource";
-            this.btnChangeSource.Size = new System.Drawing.Size(116, 23);
+            this.btnChangeSource.Size = new System.Drawing.Size(139, 28);
             this.btnChangeSource.TabIndex = 7;
             this.btnChangeSource.Text = "Change Source";
             this.btnChangeSource.UseVisualStyleBackColor = true;
@@ -171,16 +174,15 @@ namespace SqlSync.SqlBuild.Objects
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.helpToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Help_2;
             this.helpToolStripMenuItem.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(28, 20);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(12, 20);
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
             // ObjectUpdatesForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(832, 526);
             this.Controls.Add(this.pnlSqlConnect);
             this.Controls.Add(this.btnChangeScripting);

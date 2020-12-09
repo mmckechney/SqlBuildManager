@@ -117,19 +117,19 @@ namespace SqlSync
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.richTextBox1.BackColor = System.Drawing.SystemColors.Window;
             this.richTextBox1.CaseSensitive = false;
             this.richTextBox1.ContextMenuStrip = this.contextMenuStrip1;
             this.richTextBox1.FilterAutoComplete = false;
             this.richTextBox1.HighlightDescriptors = highLightDescriptorCollection1;
             this.richTextBox1.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
-            this.richTextBox1.Location = new System.Drawing.Point(4, 2);
+            this.richTextBox1.Location = new System.Drawing.Point(5, 2);
             this.richTextBox1.MaxUndoRedoSteps = 50;
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(964, 514);
+            this.richTextBox1.Size = new System.Drawing.Size(963, 506);
             this.richTextBox1.SuspendHighlighting = false;
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
@@ -140,18 +140,18 @@ namespace SqlSync
             this.toolStripSeparator1,
             this.wordWrapToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 120);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(135, 98);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(131, 6);
             // 
             // wordWrapToolStripMenuItem
             // 
             this.wordWrapToolStripMenuItem.Name = "wordWrapToolStripMenuItem";
-            this.wordWrapToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.wordWrapToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
             this.wordWrapToolStripMenuItem.Text = "Word Wrap";
             this.wordWrapToolStripMenuItem.Click += new System.EventHandler(this.wordWrapToolStripMenuItem_Click);
             // 
@@ -159,14 +159,15 @@ namespace SqlSync
             // 
             this.finderCtrl1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.finderCtrl1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.finderCtrl1.Location = new System.Drawing.Point(0, 520);
+            this.finderCtrl1.Location = new System.Drawing.Point(0, 513);
+            this.finderCtrl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.finderCtrl1.Name = "finderCtrl1";
-            this.finderCtrl1.Size = new System.Drawing.Size(972, 30);
+            this.finderCtrl1.Size = new System.Drawing.Size(972, 37);
             this.finderCtrl1.TabIndex = 1;
             // 
             // ScriptDisplayForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(972, 550);
             this.Controls.Add(this.finderCtrl1);
             this.Controls.Add(this.richTextBox1);

@@ -72,24 +72,24 @@ namespace SqlSync.SqlBuild
             // 
             // txtScriptName
             // 
-            this.txtScriptName.Location = new System.Drawing.Point(15, 98);
+            this.txtScriptName.Location = new System.Drawing.Point(18, 121);
             this.txtScriptName.Name = "txtScriptName";
-            this.txtScriptName.Size = new System.Drawing.Size(320, 20);
+            this.txtScriptName.Size = new System.Drawing.Size(384, 23);
             this.txtScriptName.TabIndex = 2;
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(17, 82);
+            this.label1.Location = new System.Drawing.Point(20, 101);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(100, 16);
+            this.label1.Size = new System.Drawing.Size(120, 20);
             this.label1.TabIndex = 1;
             this.label1.Text = "Signature Value:";
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(94, 125);
+            this.btnOK.Location = new System.Drawing.Point(113, 154);
             this.btnOK.Name = "btnOK";
-            this.btnOK.Size = new System.Drawing.Size(75, 23);
+            this.btnOK.Size = new System.Drawing.Size(90, 28);
             this.btnOK.TabIndex = 0;
             this.btnOK.Text = "Copy";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
@@ -97,9 +97,9 @@ namespace SqlSync.SqlBuild
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(182, 125);
+            this.btnCancel.Location = new System.Drawing.Point(218, 154);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.Size = new System.Drawing.Size(90, 28);
             this.btnCancel.TabIndex = 1;
             this.btnCancel.Text = "Close";
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -111,7 +111,7 @@ namespace SqlSync.SqlBuild
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(350, 79);
+            this.panel1.Size = new System.Drawing.Size(350, 97);
             this.panel1.TabIndex = 3;
             // 
             // label2
@@ -122,14 +122,14 @@ namespace SqlSync.SqlBuild
             this.label2.Location = new System.Drawing.Point(0, 0);
             this.label2.Name = "label2";
             this.label2.Padding = new System.Windows.Forms.Padding(5);
-            this.label2.Size = new System.Drawing.Size(350, 79);
+            this.label2.Size = new System.Drawing.Size(350, 97);
             this.label2.TabIndex = 4;
             this.label2.Text = resources.GetString("label2.Text");
             // 
             // PackageSignatureForm
             // 
             this.AcceptButton = this.btnOK;
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(350, 155);
             this.Controls.Add(this.panel1);

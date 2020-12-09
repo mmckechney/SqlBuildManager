@@ -83,104 +83,104 @@ namespace SqlSync.BuildHistory
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(16, 40);
+            this.label1.Location = new System.Drawing.Point(19, 49);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(123, 16);
+            this.label1.Size = new System.Drawing.Size(148, 20);
             this.label1.TabIndex = 0;
             this.label1.Text = "Start:";
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(16, 56);
+            this.label2.Location = new System.Drawing.Point(19, 69);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(123, 16);
+            this.label2.Size = new System.Drawing.Size(148, 20);
             this.label2.TabIndex = 1;
             this.label2.Text = "End:";
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(16, 24);
+            this.label3.Location = new System.Drawing.Point(19, 30);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(123, 16);
+            this.label3.Size = new System.Drawing.Size(148, 19);
             this.label3.TabIndex = 2;
             this.label3.Text = "Run Order:";
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(16, 8);
+            this.label4.Location = new System.Drawing.Point(19, 10);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(123, 16);
+            this.label4.Size = new System.Drawing.Size(148, 20);
             this.label4.TabIndex = 3;
             this.label4.Text = "Destination Database:";
             // 
             // label5
             // 
-            this.label5.Location = new System.Drawing.Point(16, 72);
+            this.label5.Location = new System.Drawing.Point(19, 89);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(123, 16);
+            this.label5.Size = new System.Drawing.Size(148, 19);
             this.label5.TabIndex = 4;
             this.label5.Text = "Successful:";
             // 
             // rtbResults
             // 
-            this.rtbResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.rtbResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.rtbResults.BackColor = System.Drawing.SystemColors.Control;
             this.rtbResults.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.rtbResults.Location = new System.Drawing.Point(56, 104);
+            this.rtbResults.Location = new System.Drawing.Point(67, 128);
             this.rtbResults.Name = "rtbResults";
             this.rtbResults.ReadOnly = true;
-            this.rtbResults.Size = new System.Drawing.Size(622, 262);
+            this.rtbResults.Size = new System.Drawing.Size(609, 236);
             this.rtbResults.TabIndex = 5;
             this.rtbResults.Text = "";
             // 
             // lblDatabase
             // 
-            this.lblDatabase.Location = new System.Drawing.Point(144, 8);
+            this.lblDatabase.Location = new System.Drawing.Point(173, 10);
             this.lblDatabase.Name = "lblDatabase";
-            this.lblDatabase.Size = new System.Drawing.Size(224, 16);
+            this.lblDatabase.Size = new System.Drawing.Size(269, 20);
             this.lblDatabase.TabIndex = 6;
             // 
             // lblRunOrder
             // 
-            this.lblRunOrder.Location = new System.Drawing.Point(144, 24);
+            this.lblRunOrder.Location = new System.Drawing.Point(173, 30);
             this.lblRunOrder.Name = "lblRunOrder";
-            this.lblRunOrder.Size = new System.Drawing.Size(224, 16);
+            this.lblRunOrder.Size = new System.Drawing.Size(269, 19);
             this.lblRunOrder.TabIndex = 7;
             // 
             // lblStart
             // 
-            this.lblStart.Location = new System.Drawing.Point(144, 40);
+            this.lblStart.Location = new System.Drawing.Point(173, 49);
             this.lblStart.Name = "lblStart";
-            this.lblStart.Size = new System.Drawing.Size(224, 16);
+            this.lblStart.Size = new System.Drawing.Size(269, 20);
             this.lblStart.TabIndex = 8;
             // 
             // lblEnd
             // 
-            this.lblEnd.Location = new System.Drawing.Point(144, 56);
+            this.lblEnd.Location = new System.Drawing.Point(173, 69);
             this.lblEnd.Name = "lblEnd";
-            this.lblEnd.Size = new System.Drawing.Size(224, 16);
+            this.lblEnd.Size = new System.Drawing.Size(269, 20);
             this.lblEnd.TabIndex = 9;
             // 
             // lblSuccess
             // 
-            this.lblSuccess.Location = new System.Drawing.Point(144, 72);
+            this.lblSuccess.Location = new System.Drawing.Point(173, 89);
             this.lblSuccess.Name = "lblSuccess";
-            this.lblSuccess.Size = new System.Drawing.Size(224, 16);
+            this.lblSuccess.Size = new System.Drawing.Size(269, 19);
             this.lblSuccess.TabIndex = 10;
             // 
             // label11
             // 
-            this.label11.Location = new System.Drawing.Point(16, 88);
+            this.label11.Location = new System.Drawing.Point(19, 108);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(123, 16);
+            this.label11.Size = new System.Drawing.Size(148, 20);
             this.label11.TabIndex = 11;
             this.label11.Text = "Results:";
             // 
             // ScriptRunResultsForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(688, 374);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.lblSuccess);

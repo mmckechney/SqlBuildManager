@@ -218,8 +218,12 @@ namespace SqlSync.SqlBuild
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.lblModDate = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.scriptConfigCtrl1 = new SqlSync.SqlBuild.ScriptConfigCtrl();
             this.splitter1 = new System.Windows.Forms.Splitter();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.rtbSqlScript = new UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox();
+            this.cutCopyPastecontextMenuStrip1 = new SqlSync.CutCopyPasteContextMenuStrip();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.panel5 = new System.Windows.Forms.Panel();
             this.label5 = new System.Windows.Forms.Label();
             this.lnkRunPolicyChecks = new System.Windows.Forms.LinkLabel();
@@ -227,27 +231,22 @@ namespace SqlSync.SqlBuild
             this.lblHighlightLimit = new System.Windows.Forms.Label();
             this.lblLineNumber = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.rtbSqlScript = new UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox();
-            this.cutCopyPastecontextMenuStrip1 = new SqlSync.CutCopyPasteContextMenuStrip();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            //this.codeReviewControl1 = new SqlSync.Controls.CodeReviewControl();
             this.finderCtrl1 = new SqlSync.FinderCtrl();
-            this.scriptConfigCtrl1 = new SqlSync.SqlBuild.ScriptConfigCtrl();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
-            this.panel5.SuspendLayout();
             this.cutCopyPastecontextMenuStrip1.SuspendLayout();
+            this.panel5.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtScriptName
             // 
             this.txtScriptName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtScriptName.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtScriptName.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.txtScriptName.Location = new System.Drawing.Point(5, 19);
             this.txtScriptName.Name = "txtScriptName";
             this.txtScriptName.Size = new System.Drawing.Size(1196, 21);
@@ -294,7 +293,7 @@ namespace SqlSync.SqlBuild
             // 
             // label4
             // 
-            this.label4.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label4.Location = new System.Drawing.Point(3, 3);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(76, 14);
@@ -303,7 +302,7 @@ namespace SqlSync.SqlBuild
             // 
             // lblHash
             // 
-            this.lblHash.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblHash.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.lblHash.Location = new System.Drawing.Point(3, 6);
             this.lblHash.Name = "lblHash";
             this.lblHash.Size = new System.Drawing.Size(81, 16);
@@ -356,7 +355,6 @@ namespace SqlSync.SqlBuild
             // pictureBox1
             // 
             this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox1.Image = global::SqlSync.Properties.Resources.Help_2;
             this.pictureBox1.Location = new System.Drawing.Point(1185, 2);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(21, 16);
@@ -381,7 +379,7 @@ namespace SqlSync.SqlBuild
             this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label10.Location = new System.Drawing.Point(626, 1);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(96, 22);
@@ -394,7 +392,7 @@ namespace SqlSync.SqlBuild
             this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label9.Location = new System.Drawing.Point(186, 1);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(69, 22);
@@ -418,7 +416,7 @@ namespace SqlSync.SqlBuild
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label6.Location = new System.Drawing.Point(434, 1);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(86, 22);
@@ -442,7 +440,7 @@ namespace SqlSync.SqlBuild
             this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label7.Location = new System.Drawing.Point(4, 1);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(66, 22);
@@ -462,7 +460,7 @@ namespace SqlSync.SqlBuild
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 92F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 98F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 102F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 509F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 510F));
             this.tableLayoutPanel1.Controls.Add(this.lblModDate, 7, 0);
             this.tableLayoutPanel1.Controls.Add(this.label10, 6, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblAddDate, 3, 0);
@@ -504,6 +502,23 @@ namespace SqlSync.SqlBuild
             this.panel3.Size = new System.Drawing.Size(1206, 154);
             this.panel3.TabIndex = 19;
             // 
+            // scriptConfigCtrl1
+            // 
+            this.scriptConfigCtrl1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.scriptConfigCtrl1.BackColor = System.Drawing.SystemColors.Control;
+            this.scriptConfigCtrl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.scriptConfigCtrl1.BuildSequenceChanged = false;
+            this.scriptConfigCtrl1.DatabaseList = null;
+            this.scriptConfigCtrl1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.scriptConfigCtrl1.HasChanged = false;
+            this.scriptConfigCtrl1.Location = new System.Drawing.Point(5, 43);
+            this.scriptConfigCtrl1.Margin = new System.Windows.Forms.Padding(0);
+            this.scriptConfigCtrl1.Name = "scriptConfigCtrl1";
+            this.scriptConfigCtrl1.ShowFull = false;
+            this.scriptConfigCtrl1.Size = new System.Drawing.Size(1207, 111);
+            this.scriptConfigCtrl1.TabIndex = 1;
+            // 
             // splitter1
             // 
             this.splitter1.Dock = System.Windows.Forms.DockStyle.Top;
@@ -516,7 +531,6 @@ namespace SqlSync.SqlBuild
             // panel4
             // 
             this.panel4.Controls.Add(this.rtbSqlScript);
-           // this.panel4.Controls.Add(this.codeReviewControl1);
             this.panel4.Controls.Add(this.panel5);
             this.panel4.Controls.Add(this.finderCtrl1);
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -524,6 +538,41 @@ namespace SqlSync.SqlBuild
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(1206, 472);
             this.panel4.TabIndex = 21;
+            // 
+            // rtbSqlScript
+            // 
+            this.rtbSqlScript.AcceptsTab = true;
+            this.rtbSqlScript.CaseSensitive = false;
+            this.rtbSqlScript.ContextMenuStrip = this.cutCopyPastecontextMenuStrip1;
+            this.rtbSqlScript.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbSqlScript.FilterAutoComplete = true;
+            this.rtbSqlScript.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.rtbSqlScript.HighlightDescriptors = highLightDescriptorCollection1;
+            this.rtbSqlScript.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
+            this.rtbSqlScript.Location = new System.Drawing.Point(0, 0);
+            this.rtbSqlScript.MaxUndoRedoSteps = 50;
+            this.rtbSqlScript.Name = "rtbSqlScript";
+            this.rtbSqlScript.Size = new System.Drawing.Size(1206, 405);
+            this.rtbSqlScript.SuspendHighlighting = false;
+            this.rtbSqlScript.TabIndex = 0;
+            this.rtbSqlScript.Text = "";
+            this.rtbSqlScript.WordWrap = false;
+            this.rtbSqlScript.SelectionChanged += new System.EventHandler(this.rtbSqlScript_SelectionChanged);
+            this.rtbSqlScript.TextChanged += new System.EventHandler(this.rtbSqlScript_TextChanged);
+            this.rtbSqlScript.KeyUp += new System.Windows.Forms.KeyEventHandler(this.rtbSqlScript_KeyUp);
+            this.rtbSqlScript.MouseUp += new System.Windows.Forms.MouseEventHandler(this.rtbSqlScript_MouseUp);
+            // 
+            // cutCopyPastecontextMenuStrip1
+            // 
+            this.cutCopyPastecontextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripSeparator1});
+            this.cutCopyPastecontextMenuStrip1.Name = "mnuCopyPaste";
+            this.cutCopyPastecontextMenuStrip1.Size = new System.Drawing.Size(103, 76);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(99, 6);
             // 
             // panel5
             // 
@@ -577,7 +626,7 @@ namespace SqlSync.SqlBuild
             // 
             this.lblHighlightLimit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblHighlightLimit.AutoSize = true;
-            this.lblHighlightLimit.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblHighlightLimit.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lblHighlightLimit.ForeColor = System.Drawing.Color.Firebrick;
             this.lblHighlightLimit.Location = new System.Drawing.Point(4, 7);
             this.lblHighlightLimit.Name = "lblHighlightLimit";
@@ -607,77 +656,15 @@ namespace SqlSync.SqlBuild
             this.label3.TabIndex = 5;
             this.label3.Text = "Line:";
             // 
-            // rtbSqlScript
-            // 
-            this.rtbSqlScript.AcceptsTab = true;
-            this.rtbSqlScript.CaseSensitive = false;
-            this.rtbSqlScript.ContextMenuStrip = this.cutCopyPastecontextMenuStrip1;
-            this.rtbSqlScript.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbSqlScript.FilterAutoComplete = true;
-            this.rtbSqlScript.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbSqlScript.HighlightDescriptors = highLightDescriptorCollection1;
-            this.rtbSqlScript.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
-            this.rtbSqlScript.Location = new System.Drawing.Point(0, 0);
-            this.rtbSqlScript.MaxUndoRedoSteps = 50;
-            this.rtbSqlScript.Name = "rtbSqlScript";
-            this.rtbSqlScript.Size = new System.Drawing.Size(1206, 334);
-            this.rtbSqlScript.SuspendHighlighting = false;
-            this.rtbSqlScript.TabIndex = 0;
-            this.rtbSqlScript.Text = "";
-            this.rtbSqlScript.WordWrap = false;
-            this.rtbSqlScript.SelectionChanged += new System.EventHandler(this.rtbSqlScript_SelectionChanged);
-            this.rtbSqlScript.TextChanged += new System.EventHandler(this.rtbSqlScript_TextChanged);
-            this.rtbSqlScript.KeyUp += new System.Windows.Forms.KeyEventHandler(this.rtbSqlScript_KeyUp);
-            this.rtbSqlScript.MouseUp += new System.Windows.Forms.MouseEventHandler(this.rtbSqlScript_MouseUp);
-            // 
-            // cutCopyPastecontextMenuStrip1
-            // 
-            this.cutCopyPastecontextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripSeparator1});
-            this.cutCopyPastecontextMenuStrip1.Name = "mnuCopyPaste";
-            this.cutCopyPastecontextMenuStrip1.Size = new System.Drawing.Size(61, 10);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(57, 6);
-            // 
-            // codeReviewControl1
-            // 
-            //this.codeReviewControl1.BackColor = System.Drawing.SystemColors.Control;
-            //this.codeReviewControl1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            //this.codeReviewControl1.HasChanges = false;
-            //this.codeReviewControl1.Location = new System.Drawing.Point(0, 334);
-            //this.codeReviewControl1.Margin = new System.Windows.Forms.Padding(2);
-            //this.codeReviewControl1.Name = "codeReviewControl1";
-            //this.codeReviewControl1.Size = new System.Drawing.Size(1206, 71);
-            //this.codeReviewControl1.TabIndex = 11;
-            // 
             // finderCtrl1
             // 
             this.finderCtrl1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.finderCtrl1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.finderCtrl1.Location = new System.Drawing.Point(0, 442);
+            this.finderCtrl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.finderCtrl1.Name = "finderCtrl1";
             this.finderCtrl1.Size = new System.Drawing.Size(1206, 30);
             this.finderCtrl1.TabIndex = 4;
-            // 
-            // scriptConfigCtrl1
-            // 
-            this.scriptConfigCtrl1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.scriptConfigCtrl1.BackColor = System.Drawing.SystemColors.Control;
-            this.scriptConfigCtrl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.scriptConfigCtrl1.BuildSequenceChanged = false;
-            this.scriptConfigCtrl1.DatabaseList = null;
-            this.scriptConfigCtrl1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.scriptConfigCtrl1.HasChanged = false;
-            this.scriptConfigCtrl1.Location = new System.Drawing.Point(5, 43);
-            this.scriptConfigCtrl1.Margin = new System.Windows.Forms.Padding(0);
-            this.scriptConfigCtrl1.Name = "scriptConfigCtrl1";
-            this.scriptConfigCtrl1.ShowFull = false;
-            this.scriptConfigCtrl1.Size = new System.Drawing.Size(1207, 111);
-            this.scriptConfigCtrl1.TabIndex = 1;
             // 
             // AddScriptTextForm
             // 
@@ -692,7 +679,7 @@ namespace SqlSync.SqlBuild
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.label2);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
@@ -709,9 +696,9 @@ namespace SqlSync.SqlBuild
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             this.panel4.ResumeLayout(false);
+            this.cutCopyPastecontextMenuStrip1.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
-            this.cutCopyPastecontextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
