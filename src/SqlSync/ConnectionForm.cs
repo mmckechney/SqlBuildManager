@@ -20,8 +20,8 @@ namespace SqlSync
 		private System.ComponentModel.Container components = null;
 		private ConnectionData connData = new ConnectionData();
 		private System.Windows.Forms.Label lblTitle;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel pnlStatus;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel pnlStatus;
         private PictureBox pictureBox1;
         private Label lblVersion;
         private DatabaseList databaseList = new DatabaseList();
@@ -99,8 +99,8 @@ namespace SqlSync
 		{
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConnectionForm));
             this.lblTitle = new System.Windows.Forms.Label();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.pnlStatus = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.pnlStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.lblVersion = new System.Windows.Forms.Label();
             this.sqlConnect1 = new SqlSync.SQLConnect(lastAuthenticationType);
@@ -123,16 +123,17 @@ namespace SqlSync
             // 
             this.statusBar1.Location = new System.Drawing.Point(0, 424);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
             this.pnlStatus});
-            this.statusBar1.ShowPanels = true;
+            //this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(287, 28);
             this.statusBar1.TabIndex = 2;
             this.statusBar1.Text = "statusBar1";
             // 
             // pnlStatus
             // 
-            this.pnlStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+            this.pnlStatus.AutoSize = true;
+            this.pnlStatus.Spring = true;
             this.pnlStatus.Name = "pnlStatus";
             this.pnlStatus.Text = "Enumerating Sql Server List...";
             this.pnlStatus.Width = 266;

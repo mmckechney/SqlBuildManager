@@ -23,8 +23,8 @@ namespace SqlSync.BuildHistory
 		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
 		private string buildFileName;
 		private System.Windows.Forms.LinkLabel lnkCheckAll;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel statGeneral;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel statGeneral;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -81,8 +81,8 @@ namespace SqlSync.BuildHistory
             this.btnArchive = new System.Windows.Forms.Button();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.lnkCheckAll = new System.Windows.Forms.LinkLabel();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statGeneral = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statGeneral = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.statGeneral)).BeginInit();
             this.SuspendLayout();
             // 
@@ -162,16 +162,17 @@ namespace SqlSync.BuildHistory
             // 
             this.statusBar1.Location = new System.Drawing.Point(0, 374);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
             this.statGeneral});
-            this.statusBar1.ShowPanels = true;
+            //this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(320, 24);
             this.statusBar1.TabIndex = 3;
             this.statusBar1.Text = "statusBar1";
-            // 
-            // statGeneral
-            // 
-            this.statGeneral.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+			// 
+			// statGeneral
+			// 
+			this.statGeneral.AutoSize = true;
+			this.statGeneral.Spring = true;
             this.statGeneral.Name = "statGeneral";
             this.statGeneral.Width = 303;
             // 

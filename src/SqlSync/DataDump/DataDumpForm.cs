@@ -25,8 +25,8 @@ namespace SqlSync.DataDump
 		private System.Windows.Forms.ComboBox ddDatabaseList;
 		private Connection.ConnectionData connData;
 		private System.Windows.Forms.LinkLabel lnkExtractData;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel statStatus;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel statStatus;
         private System.Windows.Forms.ColumnHeader columnHeader2;
 		private System.Windows.Forms.ToolStripMenuItem mnuChangeFolder;
 		private System.Windows.Forms.ToolStripMenuItem menuItem1;
@@ -89,8 +89,8 @@ namespace SqlSync.DataDump
             this.menuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.ddDatabaseList = new System.Windows.Forms.ComboBox();
             this.lnkExtractData = new System.Windows.Forms.LinkLabel();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statStatus = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.label2 = new System.Windows.Forms.Label();
             this.lstResults = new System.Windows.Forms.ListView();
@@ -200,16 +200,17 @@ namespace SqlSync.DataDump
             // 
             this.statusBar1.Location = new System.Drawing.Point(0, 389);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
             this.statStatus});
-            this.statusBar1.ShowPanels = true;
+            //this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(744, 22);
             this.statusBar1.TabIndex = 15;
             this.statusBar1.Text = "statusBar1";
             // 
             // statStatus
             // 
-            this.statStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+            this.statStatus.AutoSize = true;
+            this.statStatus.Spring = true;
             this.statStatus.Name = "statStatus";
             this.statStatus.Width = 727;
             // 
