@@ -93,8 +93,6 @@ namespace SqlSync
             this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.statDefaultPath = new System.Windows.Forms.ToolStripStatusLabel();
             this.lnkDelete = new System.Windows.Forms.LinkLabel();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statDefaultPath)).BeginInit();
             this.SuspendLayout();
             // 
             // lstComparison
@@ -239,8 +237,6 @@ namespace SqlSync
             this.Name = "ObjectComparison";
             this.Text = "ObjectComparison";
             this.Load += new System.EventHandler(this.ObjectComparison_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statDefaultPath)).EndInit();
             this.ResumeLayout(false);
 
 		}

@@ -103,7 +103,6 @@ namespace SqlSync.Validate
             this.changeSqlServerConnectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsControl1 = new SqlSync.SettingsControl();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             this.pnlWarning.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -347,7 +346,6 @@ namespace SqlSync.Validate
             this.Text = "Sql Build Manager :: Database Object Validation";
             this.Load += new System.EventHandler(this.ObjectValidation_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ObjectValidation_KeyDown);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             this.pnlWarning.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.menuStrip1.ResumeLayout(false);

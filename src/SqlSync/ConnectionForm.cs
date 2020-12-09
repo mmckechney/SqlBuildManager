@@ -104,7 +104,6 @@ namespace SqlSync
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.lblVersion = new System.Windows.Forms.Label();
             this.sqlConnect1 = new SqlSync.SQLConnect(lastAuthenticationType);
-            ((System.ComponentModel.ISupportInitialize)(this.pnlStatus)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -188,7 +187,6 @@ namespace SqlSync
             this.Text = "Initalize Sql Server Connection";
             this.Load += new System.EventHandler(this.ConnectionForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ConnectionForm_KeyDown);
-            ((System.ComponentModel.ISupportInitialize)(this.pnlStatus)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -226,7 +226,6 @@ namespace SqlSync
             this.mnuAddNewTable = new System.Windows.Forms.ToolStripMenuItem();
             this.bgTriggerScript = new System.ComponentModel.BackgroundWorker();
             this.contextMenu1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             this.grpScripting.SuspendLayout();
             this.contextDatabase.SuspendLayout();
             this.mainMenu1.SuspendLayout();
@@ -937,7 +936,6 @@ namespace SqlSync
             this.Text = "Sql Build Manager ::  Code Table Scripting and Auditing";
             this.Load += new System.EventHandler(this.LookUpTable_Load);
             this.contextMenu1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             this.grpScripting.ResumeLayout(false);
             this.grpScripting.PerformLayout();
             this.contextDatabase.ResumeLayout(false);

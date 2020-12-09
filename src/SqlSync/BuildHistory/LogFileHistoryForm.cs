@@ -83,7 +83,6 @@ namespace SqlSync.BuildHistory
             this.lnkCheckAll = new System.Windows.Forms.LinkLabel();
             this.statusBar1 = new System.Windows.Forms.StatusStrip();
             this.statGeneral = new System.Windows.Forms.ToolStripStatusLabel();
-            ((System.ComponentModel.ISupportInitialize)(this.statGeneral)).BeginInit();
             this.SuspendLayout();
             // 
             // lstLogFiles
@@ -192,7 +191,6 @@ namespace SqlSync.BuildHistory
             this.Text = "Log File List";
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.LogFileHistoryForm_KeyDown);
             this.Load += new System.EventHandler(this.LogFileHistoryForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.statGeneral)).EndInit();
             this.ResumeLayout(false);
 
 		}

@@ -220,7 +220,6 @@ namespace SqlSync
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.settingsControl1 = new SqlSync.SettingsControl();
             this.contextMenu1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             this.mainMenu1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.grpDatabaseInfo.SuspendLayout();
@@ -874,7 +873,6 @@ namespace SqlSync
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DataAuditForm_FormClosing);
             this.Load += new System.EventHandler(this.LookUpTable_Load);
             this.contextMenu1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             this.mainMenu1.ResumeLayout(false);
             this.mainMenu1.PerformLayout();
             this.panel1.ResumeLayout(false);

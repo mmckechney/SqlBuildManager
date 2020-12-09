@@ -180,7 +180,6 @@ namespace SqlSync
             this.panel1 = new Panel();
             this.grpDirectory.SuspendLayout();
             this.grpScripting.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             this.SuspendLayout();
             // 
             // grpDirectory
@@ -541,7 +540,6 @@ namespace SqlSync
             this.Load += new System.EventHandler(this.SyncForm_Load);
             this.grpDirectory.ResumeLayout(false);
             this.grpScripting.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             this.mainMenu1.ResumeLayout(false);
             this.mainMenu1.PerformLayout();
             this.ResumeLayout(false);

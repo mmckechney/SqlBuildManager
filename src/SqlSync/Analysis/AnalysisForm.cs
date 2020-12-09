@@ -84,7 +84,6 @@ namespace SqlSync.Analysis
             this.dataGridTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sizeAnalysisTable1 = new SqlSync.DbInformation.SizeAnalysisTable();
             this.btnCopy = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sizeAnalysisTable1)).BeginInit();
             this.SuspendLayout();
@@ -242,7 +241,6 @@ namespace SqlSync.Analysis
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Database Size Analysis for {0}";
             this.Load += new System.EventHandler(this.AnalysisForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sizeAnalysisTable1)).EndInit();
             this.ResumeLayout(false);

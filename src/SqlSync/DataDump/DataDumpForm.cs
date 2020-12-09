@@ -106,7 +106,6 @@ namespace SqlSync.DataDump
             this.changeSqlServerConnectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsControl1 = new SqlSync.SettingsControl();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -362,7 +361,6 @@ namespace SqlSync.DataDump
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Sql Build Manager :: Data Extraction";
             this.Load += new System.EventHandler(this.DataDumpForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);

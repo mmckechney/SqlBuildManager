@@ -82,8 +82,6 @@ namespace SqlSync.AutoScript
 			this.mainMenu1 = new System.Windows.Forms.MenuStrip();
             this.menuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.statOverall)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statRunningCount)).BeginInit();
             this.SuspendLayout();
             // 
             // statusBar1
@@ -141,8 +139,6 @@ namespace SqlSync.AutoScript
             this.Text = "Sql Build Manager :: Auto Scripting";
             this.Load += new System.EventHandler(this.AutoScriptMDI_Load);
             this.Closing += new System.ComponentModel.CancelEventHandler(this.AutoScriptMDI_Closing);
-            ((System.ComponentModel.ISupportInitialize)(this.statOverall)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statRunningCount)).EndInit();
             this.ResumeLayout(false);
 
 		}

@@ -103,7 +103,6 @@ namespace SqlSync
             this.label3 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -285,7 +284,6 @@ namespace SqlSync
             this.Name = "AutoScripting";
             this.Text = "Sql Build Manager :: Auto Scripting";
             this.Load += new System.EventHandler(this.AutoScripting_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.Panel2.PerformLayout();
