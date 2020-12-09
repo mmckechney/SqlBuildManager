@@ -74,7 +74,7 @@ steps:
 - task: ArchiveFiles@2
   displayName: Archive Windows Desktop version
   inputs:
-    rootFolderOrFile: './src/SqlSync/bin/$(BuildConfiguration)/net5.0/Win-x64/publish'
+    rootFolderOrFile: './src/SqlSync/bin/$(BuildConfiguration)/net5.0-windows/Win-x64/publish'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: sbm-desktop.zip
