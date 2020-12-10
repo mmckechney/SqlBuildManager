@@ -559,10 +559,16 @@ namespace SqlSync.SqlBuild
                     this.UnattendedProcessingCompleteEvent(998);
             }
 
-            
+            try
+            {
 
-            //Set the database list as found in the main menu "Scripting" selection
-            this.SetDatabaseMenuList();
+                //Set the database list as found in the main menu "Scripting" selection
+                this.SetDatabaseMenuList();
+            }
+            catch(Exception exe)
+            {
+                log.Error(exe.ToString());
+            }
 
             
 
@@ -570,50 +576,64 @@ namespace SqlSync.SqlBuild
         }
         private void bgEnterpriseSettings_DoWork(object sender, DoWorkEventArgs e)
         {
-            bool tagsRequiredEnabled, defaultScriptEnabled, remoteExecutionEnabled, policyCheckOnLoadEnabled, scriptPkWithTable;
-            SetPropertiesFromEnterpriseConfiguration(out tagsRequiredEnabled, out defaultScriptEnabled, out remoteExecutionEnabled, out policyCheckOnLoadEnabled, out scriptPkWithTable);
-            e.Result = new List<bool>(new bool[] { tagsRequiredEnabled, defaultScriptEnabled, remoteExecutionEnabled, policyCheckOnLoadEnabled, scriptPkWithTable });
+            try
+            {
+                bool tagsRequiredEnabled, defaultScriptEnabled, remoteExecutionEnabled, policyCheckOnLoadEnabled, scriptPkWithTable;
+                SetPropertiesFromEnterpriseConfiguration(out tagsRequiredEnabled, out defaultScriptEnabled, out remoteExecutionEnabled, out policyCheckOnLoadEnabled, out scriptPkWithTable);
+                e.Result = new List<bool>(new bool[] { tagsRequiredEnabled, defaultScriptEnabled, remoteExecutionEnabled, policyCheckOnLoadEnabled, scriptPkWithTable });
+            }catch(Exception exe)
+            {
+                log.Error(exe.ToString());
+                throw exe;
+            }
         }
 
         private void bgEnterpriseSettings_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (e.Result is List<bool>)
+            try
             {
-                List<bool> x = (List<bool>)e.Result;
-                scriptTagsRequiredToolStripMenuItem.Enabled = x[0];
-                maintainDefaultScriptRegistryToolStripMenuItem.Enabled = x[1];
-                //remoteExecutionServiceToolStripMenuItem.Enabled = x[2];
-                runPolicyCheckingonloadtoolStripMenuItem.Enabled = x[3];
-                if (!x[4])
+                if (e.Result is List<bool>)
                 {
-                    scriptPrimaryKeyWithTableToolStripMenuItem.Enabled = x[4];
-                    scriptPrimaryKeyWithTableToolStripMenuItem.Checked = false;
+                    List<bool> x = (List<bool>)e.Result;
+                    scriptTagsRequiredToolStripMenuItem.Enabled = x[0];
+                    maintainDefaultScriptRegistryToolStripMenuItem.Enabled = x[1];
+                    //remoteExecutionServiceToolStripMenuItem.Enabled = x[2];
+                    runPolicyCheckingonloadtoolStripMenuItem.Enabled = x[3];
+                    if (!x[4])
+                    {
+                        scriptPrimaryKeyWithTableToolStripMenuItem.Enabled = x[4];
+                        scriptPrimaryKeyWithTableToolStripMenuItem.Checked = false;
+                    }
+                    else
+                    {
+                        scriptPrimaryKeyWithTableToolStripMenuItem.Checked = true;
+                    }
+
+                }
+
+                if (!this.runPolicyCheckingOnLoad)
+                {
+                    this.lstScriptFiles.Columns[(int)ScriptListIndex.PolicyIconColumn].Width = 0;
+                    this.policyCheckIconHelpToolStripMenuItem.Visible = false;
+                    this.runPolicyCheckingonloadtoolStripMenuItem.Checked = true;
                 }
                 else
                 {
-                    scriptPrimaryKeyWithTableToolStripMenuItem.Checked = true;
+                    this.runPolicyCheckingonloadtoolStripMenuItem.Checked = false;
                 }
 
-            }
+                //Code Review status
+                if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null)
+                    EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig = new CodeReviewConfig();
 
-            if (!this.runPolicyCheckingOnLoad)
+                if (!EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
+                {
+                    this.lstScriptFiles.Columns[(int)ScriptListIndex.CodeReviewStatusIconColumn].Width = 0;
+                }
+            }catch(Exception exe)
             {
-                this.lstScriptFiles.Columns[(int)ScriptListIndex.PolicyIconColumn].Width = 0;
-                this.policyCheckIconHelpToolStripMenuItem.Visible = false;
-                this.runPolicyCheckingonloadtoolStripMenuItem.Checked = true;
-            }
-            else
-            {
-                this.runPolicyCheckingonloadtoolStripMenuItem.Checked = false;
-            }
-
-            //Code Review status
-            if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null)
-                EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig = new CodeReviewConfig();
-
-            if (!EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
-            {
-                this.lstScriptFiles.Columns[(int)ScriptListIndex.CodeReviewStatusIconColumn].Width = 0;
+                log.Error(exe.ToString());
+                throw exe;
             }
         }
         private void SetPropertiesFromEnterpriseConfiguration(out bool tagsRequiredEnabled, out bool defaultScriptEnabled, out bool remoteExecutionEnabled, out bool policyCheckOnLoadEnabled, out bool scriptPkWithTable)
@@ -3989,7 +4009,7 @@ namespace SqlSync.SqlBuild
 
             try
             {
-                fileSize = new FileInfo(Path.Combine(this.projectFilePath + row.FileName)).Length;
+                fileSize = new FileInfo(Path.Combine(this.projectFilePath,row.FileName)).Length;
             }
             catch { }
 
@@ -4111,11 +4131,11 @@ namespace SqlSync.SqlBuild
             string scriptContents = string.Empty;
             try
             {
-                scriptContents = File.ReadAllText(this.projectFilePath + row.FileName);
+                scriptContents = File.ReadAllText( Path.Combine(this.projectFilePath,row.FileName));
             }
             catch (Exception exe)
             {
-                log.Error(String.Format("Unable to read file at {0} for list refresh", this.projectFilePath + row.FileName), exe);
+                log.Error(String.Format("Unable to read file at {0} for list refresh", Path.Combine(this.projectFilePath, row.FileName)), exe);
             }
 
             //Determine if this script requires a build message...  
@@ -4306,7 +4326,7 @@ namespace SqlSync.SqlBuild
                             try
                             {
                                 bg.ReportProgress(0, string.Format("Policy checking {0}", row.FileName));
-                                string scriptContents = File.ReadAllText(this.projectFilePath + row.FileName);
+                                string scriptContents = File.ReadAllText(Path.Combine(this.projectFilePath,row.FileName));
                                 violation = policyHelp.ValidateScriptAgainstPolicies(row.FileName, row.ScriptId, scriptContents, row.Database, 80);
                                 if (violation == null)
                                 {
@@ -4346,9 +4366,9 @@ namespace SqlSync.SqlBuild
                             }
                             catch (Exception exe)
                             {
-                                log.Error(String.Format("Unable to read file '{0}' for policy check validation", this.projectFilePath + row.FileName), exe);
+                                log.Error(String.Format("Unable to read file '{0}' for policy check validation", Path.Combine(this.projectFilePath, row.FileName)), exe);
                             }
-                        });
+                        }); 
                     }
                     else
                     {
@@ -4360,7 +4380,7 @@ namespace SqlSync.SqlBuild
                                        where sc.BuildOrder == index
                                        select sc).First<SqlSyncBuildData.ScriptRow>();
 
-                            string scriptContents = File.ReadAllText(this.projectFilePath + row.FileName);
+                            string scriptContents = File.ReadAllText(Path.Combine(this.projectFilePath, row.FileName));
                             violation = policyHelp.ValidateScriptAgainstPolicies(row.FileName, row.ScriptId, scriptContents, row.Database, 80);
                             
                             if (violation == null)
@@ -4812,7 +4832,7 @@ namespace SqlSync.SqlBuild
             string shortFileName = Path.GetFileName(fullFileName);
             bool fileAdded = true;
             //Move the file to the build file folder
-            string newLocalFile = this.projectFilePath + shortFileName;
+            string newLocalFile = Path.Combine(this.projectFilePath, shortFileName);
             if (File.Exists(fullFileName) && fullFileName != newLocalFile)
             {
                 bool copy = true;
@@ -4974,7 +4994,7 @@ namespace SqlSync.SqlBuild
                 else
                     return;
 
-                string fullFileName = this.projectFilePath + fileName;
+                string fullFileName = Path.Combine(this.projectFilePath, fileName);
                 if (File.Exists(fullFileName))
                 {
                     SqlSyncBuildData.ScriptRow cfgRow = this.GetScriptRow(new Guid(scriptGuid));
@@ -4987,7 +5007,7 @@ namespace SqlSync.SqlBuild
                     string textHash;
                     SqlBuild.SqlBuildFileHelper.GetSHA1Hash(fullFileName, out fileHash, out textHash, stripTransText);
                     bool allowEdit = true;
-                    if ((File.GetAttributes(this.projectFilePath + fileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                    if ((File.GetAttributes(fullFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                         allowEdit = false;
 
                     this.PopulateTagList();
@@ -8571,7 +8591,19 @@ namespace SqlSync.SqlBuild
             }
         }
 
-     
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            try
+            {
+                base.OnPaint(e);
+            }
+            catch (Exception ex)
+            {
+                this.Invalidate();  //attempt to redraw the control
+
+            }
+        }
+
 
 
     }
