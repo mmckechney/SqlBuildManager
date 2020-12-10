@@ -58,7 +58,7 @@ jobs:
     #     dotnet-version: 5.0.100
  
     - name: Build Main Solution
-      run: dotnet build ./src/sqlsync.sln --configuration Release --no-restore -f netcoreapp3.1
+      run: dotnet build ./src/sqlsync.sln --configuration Release -f netcoreapp3.1
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
