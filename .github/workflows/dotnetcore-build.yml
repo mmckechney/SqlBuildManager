@@ -30,12 +30,13 @@ jobs:
     #- name: Set build config variable
     #  run: echo "::set-env name=BUILD_CONFIG::Release"        
 
-    - name: Restore dependencies
-      run: dotnet restore ./src/sqlsync.sln
+    - name: Restore and build console app
+      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net5.0
 
-    - name: Build Main Solution
-      run: dotnet build ./src/sqlsync.sln --configuration Release --no-restore
+    - name: Restore and build desktop app
+      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f net5.0-windows
 
+    # Run tests
     - name: Run SqlBuildManager.Console.UnitTest
       run: dotnet test ./src/SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --configuration Release
 
@@ -56,7 +57,7 @@ jobs:
 
     # .NET 5.0 pubish
     - name: Publish the Windows desktop app
-      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f net5.0
+      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f net5.0-windows
 
     - name: Publish the legacy Console CLI app
       run: dotnet publish ./src/SqlBuildManager.Console/SqlBuildManager.Console.csproj -r win-x64 --configuration Release -f net5.0
