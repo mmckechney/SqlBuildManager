@@ -68,46 +68,51 @@
             this.panel1.Controls.Add(this.label1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 24);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(675, 95);
+            this.panel1.Size = new System.Drawing.Size(788, 110);
             this.panel1.TabIndex = 0;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 73);
+            this.label4.Location = new System.Drawing.Point(4, 84);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(623, 13);
+            this.label4.Size = new System.Drawing.Size(698, 15);
             this.label4.TabIndex = 2;
             this.label4.Text = "NOTE: To add additional values that will be included in an AdHoc query, add the c" +
-                "olumns after the <<override DB Name>> column\r\n";
+    "olumns after the <<override DB Name>> column\r\n";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(117, 27);
+            this.label2.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label2.Location = new System.Drawing.Point(136, 31);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(389, 30);
             this.label2.TabIndex = 1;
             this.label2.Text = "SELECT <<server name>>, <<default DB Name>>, <<override DB Name>> \r\nFROM <<table>" +
-                "> WHERE <<criteria>>";
+    "> WHERE <<criteria>>";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 9);
+            this.label1.Location = new System.Drawing.Point(4, 10);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(296, 13);
+            this.label1.Size = new System.Drawing.Size(333, 15);
             this.label1.TabIndex = 0;
             this.label1.Text = "To properly create your configuration construct your query as:";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 9);
+            this.label3.Location = new System.Drawing.Point(14, 10);
+            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(78, 13);
+            this.label3.Size = new System.Drawing.Size(81, 15);
             this.label3.TabIndex = 2;
             this.label3.Text = "Source Server:";
             // 
@@ -117,7 +122,8 @@
             this.actionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(675, 24);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(788, 24);
             this.menuStrip1.TabIndex = 10;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -132,68 +138,65 @@
             this.recentFilesToolStripMenuItem,
             this.toolStripSeparator3,
             this.exitToolStripMenuItem});
-            this.actionToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Execute;
             this.actionToolStripMenuItem.Name = "actionToolStripMenuItem";
-            this.actionToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
+            this.actionToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
             this.actionToolStripMenuItem.Text = "Action";
             // 
             // openSavedQueryToolStripMenuItem
             // 
-            this.openSavedQueryToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Open;
             this.openSavedQueryToolStripMenuItem.Name = "openSavedQueryToolStripMenuItem";
-            this.openSavedQueryToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
+            this.openSavedQueryToolStripMenuItem.Size = new System.Drawing.Size(249, 22);
             this.openSavedQueryToolStripMenuItem.Text = "Open Saved Query Configuration";
             this.openSavedQueryToolStripMenuItem.Click += new System.EventHandler(this.openSavedQueryToolStripMenuItem_Click);
             // 
             // saveQueryConfigurationToolStripMenuItem
             // 
-            this.saveQueryConfigurationToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Save;
             this.saveQueryConfigurationToolStripMenuItem.Name = "saveQueryConfigurationToolStripMenuItem";
-            this.saveQueryConfigurationToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
+            this.saveQueryConfigurationToolStripMenuItem.Size = new System.Drawing.Size(249, 22);
             this.saveQueryConfigurationToolStripMenuItem.Text = "Save Query Configuration";
             this.saveQueryConfigurationToolStripMenuItem.Click += new System.EventHandler(this.saveQueryConfigurationToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(242, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(246, 6);
             // 
             // changeSqlServerConnectionToolStripMenuItem
             // 
-            this.changeSqlServerConnectionToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Server1;
             this.changeSqlServerConnectionToolStripMenuItem.Name = "changeSqlServerConnectionToolStripMenuItem";
-            this.changeSqlServerConnectionToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
+            this.changeSqlServerConnectionToolStripMenuItem.Size = new System.Drawing.Size(249, 22);
             this.changeSqlServerConnectionToolStripMenuItem.Text = "Change Sql Server Connection";
             this.changeSqlServerConnectionToolStripMenuItem.Click += new System.EventHandler(this.mnuChangeSqlServer_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(242, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(246, 6);
             // 
             // recentFilesToolStripMenuItem
             // 
             this.recentFilesToolStripMenuItem.Name = "recentFilesToolStripMenuItem";
-            this.recentFilesToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
+            this.recentFilesToolStripMenuItem.Size = new System.Drawing.Size(249, 22);
             this.recentFilesToolStripMenuItem.Text = "Recent Files";
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(242, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(246, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(249, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // lblServer
             // 
             this.lblServer.AutoSize = true;
-            this.lblServer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblServer.Location = new System.Drawing.Point(96, 9);
+            this.lblServer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lblServer.Location = new System.Drawing.Point(112, 10);
+            this.lblServer.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblServer.Name = "lblServer";
             this.lblServer.Size = new System.Drawing.Size(54, 13);
             this.lblServer.TabIndex = 3;
@@ -207,36 +210,40 @@
             this.panel2.Controls.Add(this.lblServer);
             this.panel2.Controls.Add(this.label3);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(0, 119);
+            this.panel2.Location = new System.Drawing.Point(0, 134);
+            this.panel2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(675, 30);
+            this.panel2.Size = new System.Drawing.Size(788, 35);
             this.panel2.TabIndex = 11;
             // 
             // ddDatabase
             // 
             this.ddDatabase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ddDatabase.FormattingEnabled = true;
-            this.ddDatabase.Location = new System.Drawing.Point(349, 5);
+            this.ddDatabase.Location = new System.Drawing.Point(407, 6);
+            this.ddDatabase.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.ddDatabase.Name = "ddDatabase";
-            this.ddDatabase.Size = new System.Drawing.Size(163, 21);
+            this.ddDatabase.Size = new System.Drawing.Size(190, 23);
             this.ddDatabase.TabIndex = 5;
             this.ddDatabase.SelectionChangeCommitted += new System.EventHandler(this.ddDatabase_SelectionChangeCommitted);
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(255, 9);
+            this.label5.Location = new System.Drawing.Point(298, 10);
+            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(93, 13);
+            this.label5.Size = new System.Drawing.Size(97, 15);
             this.label5.TabIndex = 4;
             this.label5.Text = "Source Database:";
             // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(515, 381);
+            this.button1.Location = new System.Drawing.Point(601, 440);
+            this.button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(148, 23);
+            this.button1.Size = new System.Drawing.Size(173, 27);
             this.button1.TabIndex = 12;
             this.button1.Text = "Create Configuration";
             this.button1.UseVisualStyleBackColor = true;
@@ -255,33 +262,29 @@
             // 
             // btnPreview
             // 
-            //this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            //this.btnPreview.Location = new System.Drawing.Point(361, 381);
-            //this.btnPreview.Name = "btnPreview";
-            //this.btnPreview.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            //this.btnPreview.Size = new System.Drawing.Size(148, 23);
-            //this.btnPreview.TabIndex = 13;
-            //this.btnPreview.Text = "Preview Configuration";
-            //this.btnPreview.UseVisualStyleBackColor = true;
-            //this.btnPreview.Visible = false;
-            //this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
+            this.btnPreview.Location = new System.Drawing.Point(0, 0);
+            this.btnPreview.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.btnPreview.Name = "btnPreview";
+            this.btnPreview.Size = new System.Drawing.Size(88, 27);
+            this.btnPreview.TabIndex = 1;
             // 
             // rtbSqlScript
             // 
             this.rtbSqlScript.AcceptsTab = true;
-            this.rtbSqlScript.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.rtbSqlScript.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.rtbSqlScript.CaseSensitive = false;
             this.rtbSqlScript.ContextMenuStrip = this.cutCopyPasteContextMenuStrip1;
             this.rtbSqlScript.FilterAutoComplete = true;
-            this.rtbSqlScript.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rtbSqlScript.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.rtbSqlScript.HighlightDescriptors = highLightDescriptorCollection1;
             this.rtbSqlScript.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
-            this.rtbSqlScript.Location = new System.Drawing.Point(6, 155);
+            this.rtbSqlScript.Location = new System.Drawing.Point(7, 179);
+            this.rtbSqlScript.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.rtbSqlScript.MaxUndoRedoSteps = 50;
             this.rtbSqlScript.Name = "rtbSqlScript";
-            this.rtbSqlScript.Size = new System.Drawing.Size(663, 223);
+            this.rtbSqlScript.Size = new System.Drawing.Size(773, 257);
             this.rtbSqlScript.SuspendHighlighting = false;
             this.rtbSqlScript.TabIndex = 9;
             this.rtbSqlScript.Text = "";
@@ -291,13 +294,13 @@
             // cutCopyPasteContextMenuStrip1
             // 
             this.cutCopyPasteContextMenuStrip1.Name = "mnuCopyPaste";
-            this.cutCopyPasteContextMenuStrip1.Size = new System.Drawing.Size(113, 70);
+            this.cutCopyPasteContextMenuStrip1.Size = new System.Drawing.Size(103, 70);
             // 
             // ConfigurationViaQueryForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(675, 406);
+            this.ClientSize = new System.Drawing.Size(788, 468);
             this.Controls.Add(this.btnPreview);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.panel2);
@@ -306,6 +309,7 @@
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
+            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "ConfigurationViaQueryForm";
             this.Text = "Create Configuration Via Query ";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ConfigurationViaQueryForm_FormClosing);

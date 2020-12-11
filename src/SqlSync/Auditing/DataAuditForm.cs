@@ -34,8 +34,8 @@ namespace SqlSync
 		private MRUManager mruManager;
 		private System.ComponentModel.IContainer components;
         ConnectionData data = null;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel statStatus;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel statStatus;
 		private System.Windows.Forms.ContextMenuStrip contextMenu1;
         private System.Windows.Forms.ToolStripMenuItem mnuAddTable;
         private System.Windows.Forms.ToolStripMenuItem mnuDeleteTable;
@@ -167,8 +167,8 @@ namespace SqlSync
             this.menuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuCopyTables = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuCopyTablesForsql = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statStatus = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.ddDatabaseList = new System.Windows.Forms.ComboBox();
@@ -176,8 +176,8 @@ namespace SqlSync
             this.lnkCheckAll = new System.Windows.Forms.LinkLabel();
             this.label1 = new System.Windows.Forms.Label();
             this.lstTables = new System.Windows.Forms.ListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.mainMenu1 = new System.Windows.Forms.MenuStrip();
             this.mnuActionMain = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuLoadProjectFile = new System.Windows.Forms.ToolStripMenuItem();
@@ -220,7 +220,7 @@ namespace SqlSync
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.settingsControl1 = new SqlSync.SettingsControl();
             this.contextMenu1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
+            this.statusBar1.SuspendLayout();
             this.mainMenu1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.grpDatabaseInfo.SuspendLayout();
@@ -246,14 +246,14 @@ namespace SqlSync
             this.mnuCopyTables,
             this.mnuCopyTablesForsql});
             this.contextMenu1.Name = "contextMenu1";
-            this.contextMenu1.Size = new System.Drawing.Size(276, 220);
+            this.contextMenu1.Size = new System.Drawing.Size(283, 220);
             this.contextMenu1.Click += new System.EventHandler(this.contextMenu1_Popup);
             // 
             // menuItem6
             // 
             this.menuItem6.MergeIndex = 0;
             this.menuItem6.Name = "menuItem6";
-            this.menuItem6.Size = new System.Drawing.Size(272, 6);
+            this.menuItem6.Size = new System.Drawing.Size(279, 6);
             this.menuItem6.Visible = false;
             // 
             // mnuScriptMissingColumns
@@ -261,7 +261,7 @@ namespace SqlSync
             this.mnuScriptMissingColumns.Enabled = false;
             this.mnuScriptMissingColumns.MergeIndex = 1;
             this.mnuScriptMissingColumns.Name = "mnuScriptMissingColumns";
-            this.mnuScriptMissingColumns.Size = new System.Drawing.Size(275, 22);
+            this.mnuScriptMissingColumns.Size = new System.Drawing.Size(282, 22);
             this.mnuScriptMissingColumns.Text = "Script For Missing Update Columns";
             this.mnuScriptMissingColumns.Visible = false;
             // 
@@ -269,7 +269,7 @@ namespace SqlSync
             // 
             this.mnuScriptTrigger.MergeIndex = 2;
             this.mnuScriptTrigger.Name = "mnuScriptTrigger";
-            this.mnuScriptTrigger.Size = new System.Drawing.Size(275, 22);
+            this.mnuScriptTrigger.Size = new System.Drawing.Size(282, 22);
             this.mnuScriptTrigger.Text = "Script For Update Trigger";
             this.mnuScriptTrigger.Visible = false;
             // 
@@ -277,7 +277,7 @@ namespace SqlSync
             // 
             this.mnuScriptDefault.MergeIndex = 3;
             this.mnuScriptDefault.Name = "mnuScriptDefault";
-            this.mnuScriptDefault.Size = new System.Drawing.Size(275, 22);
+            this.mnuScriptDefault.Size = new System.Drawing.Size(282, 22);
             this.mnuScriptDefault.Text = "Script to Reset Update Column Defaults";
             this.mnuScriptDefault.Visible = false;
             // 
@@ -285,7 +285,7 @@ namespace SqlSync
             // 
             this.mnuAuditTable.MergeIndex = 4;
             this.mnuAuditTable.Name = "mnuAuditTable";
-            this.mnuAuditTable.Size = new System.Drawing.Size(275, 22);
+            this.mnuAuditTable.Size = new System.Drawing.Size(282, 22);
             this.mnuAuditTable.Text = "Script for Audit Table";
             this.mnuAuditTable.Click += new System.EventHandler(this.mnuAuditTable_Click);
             // 
@@ -293,7 +293,7 @@ namespace SqlSync
             // 
             this.mnuSingleAuditTrigger.MergeIndex = 5;
             this.mnuSingleAuditTrigger.Name = "mnuSingleAuditTrigger";
-            this.mnuSingleAuditTrigger.Size = new System.Drawing.Size(275, 22);
+            this.mnuSingleAuditTrigger.Size = new System.Drawing.Size(282, 22);
             this.mnuSingleAuditTrigger.Text = "Script for Audit Triggers";
             this.mnuSingleAuditTrigger.Click += new System.EventHandler(this.mnuSingleAuditTrigger_Click);
             // 
@@ -301,13 +301,13 @@ namespace SqlSync
             // 
             this.menuItem3.MergeIndex = 6;
             this.menuItem3.Name = "menuItem3";
-            this.menuItem3.Size = new System.Drawing.Size(272, 6);
+            this.menuItem3.Size = new System.Drawing.Size(279, 6);
             // 
             // mnuAddTable
             // 
             this.mnuAddTable.MergeIndex = 7;
             this.mnuAddTable.Name = "mnuAddTable";
-            this.mnuAddTable.Size = new System.Drawing.Size(275, 22);
+            this.mnuAddTable.Size = new System.Drawing.Size(282, 22);
             this.mnuAddTable.Text = "Add Table";
             this.mnuAddTable.Click += new System.EventHandler(this.mnuAddTable_Click);
             // 
@@ -315,7 +315,7 @@ namespace SqlSync
             // 
             this.mnuDeleteTable.MergeIndex = 8;
             this.mnuDeleteTable.Name = "mnuDeleteTable";
-            this.mnuDeleteTable.Size = new System.Drawing.Size(275, 22);
+            this.mnuDeleteTable.Size = new System.Drawing.Size(282, 22);
             this.mnuDeleteTable.Text = "Delete Selected Table";
             this.mnuDeleteTable.Click += new System.EventHandler(this.mnuDeleteTable_Click);
             // 
@@ -323,13 +323,13 @@ namespace SqlSync
             // 
             this.menuItem1.MergeIndex = 9;
             this.menuItem1.Name = "menuItem1";
-            this.menuItem1.Size = new System.Drawing.Size(272, 6);
+            this.menuItem1.Size = new System.Drawing.Size(279, 6);
             // 
             // mnuCopyTables
             // 
             this.mnuCopyTables.MergeIndex = 10;
             this.mnuCopyTables.Name = "mnuCopyTables";
-            this.mnuCopyTables.Size = new System.Drawing.Size(275, 22);
+            this.mnuCopyTables.Size = new System.Drawing.Size(282, 22);
             this.mnuCopyTables.Text = "Copy Table List";
             this.mnuCopyTables.Click += new System.EventHandler(this.mnuCopyTables_Click);
             // 
@@ -337,37 +337,37 @@ namespace SqlSync
             // 
             this.mnuCopyTablesForsql.MergeIndex = 11;
             this.mnuCopyTablesForsql.Name = "mnuCopyTablesForsql";
-            this.mnuCopyTablesForsql.Size = new System.Drawing.Size(275, 22);
+            this.mnuCopyTablesForsql.Size = new System.Drawing.Size(282, 22);
             this.mnuCopyTablesForsql.Text = "Copy Table List for Sql";
             this.mnuCopyTablesForsql.Click += new System.EventHandler(this.mnuCopyTablesForsql_Click);
             // 
             // statusBar1
             // 
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statStatus});
             this.statusBar1.Location = new System.Drawing.Point(0, 606);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
-            this.statStatus});
-            this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(896, 22);
             this.statusBar1.TabIndex = 6;
             this.statusBar1.Text = "statusBar1";
             // 
             // statStatus
             // 
-            this.statStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
             this.statStatus.Name = "statStatus";
-            this.statStatus.Width = 879;
+            this.statStatus.Size = new System.Drawing.Size(881, 17);
+            this.statStatus.Spring = true;
             // 
             // openFileDialog1
             // 
             this.openFileDialog1.CheckFileExists = false;
             this.openFileDialog1.DefaultExt = "xml";
             this.openFileDialog1.Filter = "Sql Sync Audit Config *.audit|*.audit|Sql Sync Audit Config *.adt|*.adt|XML Files" +
-                "|*.xml|All Files|*.*";
+    "|*.xml|All Files|*.*";
             this.openFileDialog1.Title = "Open SQL Sync Audit Project File";
             // 
             // imageList1
             // 
+            this.imageList1.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
             this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
             this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
             this.imageList1.Images.SetKeyName(0, "");
@@ -380,8 +380,8 @@ namespace SqlSync
             // 
             // ddDatabaseList
             // 
-            this.ddDatabaseList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.ddDatabaseList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.ddDatabaseList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ddDatabaseList.Location = new System.Drawing.Point(12, 48);
             this.ddDatabaseList.Name = "ddDatabaseList";
@@ -399,8 +399,8 @@ namespace SqlSync
             // 
             // lnkCheckAll
             // 
-            this.lnkCheckAll.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lnkCheckAll.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkCheckAll.Location = new System.Drawing.Point(140, 72);
             this.lnkCheckAll.Name = "lnkCheckAll";
             this.lnkCheckAll.Size = new System.Drawing.Size(120, 16);
@@ -421,15 +421,15 @@ namespace SqlSync
             // lstTables
             // 
             this.lstTables.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.lstTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstTables.CheckBoxes = true;
             this.lstTables.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2});
             this.lstTables.ContextMenuStrip = this.contextMenu1;
-            this.lstTables.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstTables.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lstTables.FullRowSelect = true;
             listViewGroup1.Header = "Added to Project File";
             listViewGroup1.Name = "lstGrpAdded";
@@ -438,6 +438,7 @@ namespace SqlSync
             this.lstTables.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
             listViewGroup1,
             listViewGroup2});
+            this.lstTables.HideSelection = false;
             this.lstTables.Location = new System.Drawing.Point(14, 92);
             this.lstTables.Name = "lstTables";
             this.lstTables.Size = new System.Drawing.Size(248, 384);
@@ -516,9 +517,9 @@ namespace SqlSync
             // 
             // grpDatabaseInfo
             // 
-            this.grpDatabaseInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpDatabaseInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpDatabaseInfo.Controls.Add(this.menuStrip1);
             this.grpDatabaseInfo.Controls.Add(this.radPrefix);
             this.grpDatabaseInfo.Controls.Add(this.radSuffix);
@@ -562,7 +563,7 @@ namespace SqlSync
             // 
             this.allowMultipleRunsOfScriptOnSameServerToolStripMenuItem.BackColor = System.Drawing.Color.Red;
             this.allowMultipleRunsOfScriptOnSameServerToolStripMenuItem.Name = "allowMultipleRunsOfScriptOnSameServerToolStripMenuItem";
-            this.allowMultipleRunsOfScriptOnSameServerToolStripMenuItem.Size = new System.Drawing.Size(682, 22);
+            this.allowMultipleRunsOfScriptOnSameServerToolStripMenuItem.Size = new System.Drawing.Size(681, 22);
             this.allowMultipleRunsOfScriptOnSameServerToolStripMenuItem.Text = "The highlighted table is missing one or more triggers required for auditing";
             // 
             // leaveTransactionTextInScriptsdontStripOutToolStripMenuItem
@@ -570,9 +571,9 @@ namespace SqlSync
             this.leaveTransactionTextInScriptsdontStripOutToolStripMenuItem.BackColor = System.Drawing.Color.LightBlue;
             this.leaveTransactionTextInScriptsdontStripOutToolStripMenuItem.Name = "leaveTransactionTextInScriptsdontStripOutToolStripMenuItem";
             this.leaveTransactionTextInScriptsdontStripOutToolStripMenuItem.RightToLeftAutoMirrorImage = true;
-            this.leaveTransactionTextInScriptsdontStripOutToolStripMenuItem.Size = new System.Drawing.Size(682, 22);
+            this.leaveTransactionTextInScriptsdontStripOutToolStripMenuItem.Size = new System.Drawing.Size(681, 22);
             this.leaveTransactionTextInScriptsdontStripOutToolStripMenuItem.Text = "The \"candidate\" table has all the objects for auditing (audit table and triggers)" +
-                ". Do you want to add it to the project?";
+    ". Do you want to add it to the project?";
             // 
             // groupingHelpToolStripMenuItem
             // 
@@ -587,14 +588,14 @@ namespace SqlSync
             // candidateTablesTheToolHasDetectedThatTheseToolStripMenuItem
             // 
             this.candidateTablesTheToolHasDetectedThatTheseToolStripMenuItem.Name = "candidateTablesTheToolHasDetectedThatTheseToolStripMenuItem";
-            this.candidateTablesTheToolHasDetectedThatTheseToolStripMenuItem.Size = new System.Drawing.Size(764, 22);
+            this.candidateTablesTheToolHasDetectedThatTheseToolStripMenuItem.Size = new System.Drawing.Size(761, 22);
             this.candidateTablesTheToolHasDetectedThatTheseToolStripMenuItem.Text = "\"Candidate Tables\": The tool has detected that these tables have a matching \"audi" +
-                "t\" table. Do you want to add them to the project?";
+    "t\" table. Do you want to add them to the project?";
             // 
             // addedToProjectFileYouHaveSelectedThisTableForAuditingToolStripMenuItem
             // 
             this.addedToProjectFileYouHaveSelectedThisTableForAuditingToolStripMenuItem.Name = "addedToProjectFileYouHaveSelectedThisTableForAuditingToolStripMenuItem";
-            this.addedToProjectFileYouHaveSelectedThisTableForAuditingToolStripMenuItem.Size = new System.Drawing.Size(764, 22);
+            this.addedToProjectFileYouHaveSelectedThisTableForAuditingToolStripMenuItem.Size = new System.Drawing.Size(761, 22);
             this.addedToProjectFileYouHaveSelectedThisTableForAuditingToolStripMenuItem.Text = "\"Added to Project File\": You have selected this table for auditing";
             // 
             // radPrefix
@@ -652,7 +653,7 @@ namespace SqlSync
             this.toolStripCommands.Margin = new System.Windows.Forms.Padding(5);
             this.toolStripCommands.Name = "toolStripCommands";
             this.toolStripCommands.Padding = new System.Windows.Forms.Padding(5);
-            this.toolStripCommands.Size = new System.Drawing.Size(613, 33);
+            this.toolStripCommands.Size = new System.Drawing.Size(613, 32);
             this.toolStripCommands.TabIndex = 10;
             this.toolStripCommands.Text = "toolStripCommands";
             // 
@@ -665,21 +666,20 @@ namespace SqlSync
             this.scriptAuditTriggersToolStripMenuItem,
             this.toolStripSeparator2,
             this.scriptMasterTransactionTableToolStripMenuItem});
-            this.toolStripSplitButton1.Image = global::SqlSync.Properties.Resources.Script_Edit;
             this.toolStripSplitButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripSplitButton1.Name = "toolStripSplitButton1";
             this.toolStripSplitButton1.RightToLeftAutoMirrorImage = true;
-            this.toolStripSplitButton1.Size = new System.Drawing.Size(182, 20);
+            this.toolStripSplitButton1.Size = new System.Drawing.Size(166, 19);
             this.toolStripSplitButton1.Text = "Auditing Solution Scripting";
             this.toolStripSplitButton1.ToolTipText = "Creates the scripts required to implement the \"sister table/trigger\" auditing sol" +
-                "ution";
+    "ution";
             this.toolStripSplitButton1.Click += new System.EventHandler(this.splitButton_Click);
             // 
             // scriptCompletedAuditScriptSolutionToolStripMenuItem
             // 
             this.scriptCompletedAuditScriptSolutionToolStripMenuItem.Name = "scriptCompletedAuditScriptSolutionToolStripMenuItem";
             this.scriptCompletedAuditScriptSolutionToolStripMenuItem.RightToLeftAutoMirrorImage = true;
-            this.scriptCompletedAuditScriptSolutionToolStripMenuItem.Size = new System.Drawing.Size(420, 22);
+            this.scriptCompletedAuditScriptSolutionToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
             this.scriptCompletedAuditScriptSolutionToolStripMenuItem.Text = "Script Complete Audit  Solution";
             this.scriptCompletedAuditScriptSolutionToolStripMenuItem.ToolTipText = resources.GetString("scriptCompletedAuditScriptSolutionToolStripMenuItem.ToolTipText");
             this.scriptCompletedAuditScriptSolutionToolStripMenuItem.Click += new System.EventHandler(this.mnuCompleteAudit_Click);
@@ -687,39 +687,39 @@ namespace SqlSync
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(417, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(413, 6);
             // 
             // scriptAuditTablesToolStripMenuItem
             // 
             this.scriptAuditTablesToolStripMenuItem.Name = "scriptAuditTablesToolStripMenuItem";
-            this.scriptAuditTablesToolStripMenuItem.Size = new System.Drawing.Size(420, 22);
+            this.scriptAuditTablesToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
             this.scriptAuditTablesToolStripMenuItem.Text = "Audit Tables Creation/Modification Scripts -  for Checked Tables";
             this.scriptAuditTablesToolStripMenuItem.ToolTipText = "For the checked tables, will generate scripts for their \"sister\" audit tables\r\nan" +
-                "d save them to the directory you choose\r\n";
+    "d save them to the directory you choose\r\n";
             this.scriptAuditTablesToolStripMenuItem.Click += new System.EventHandler(this.mnuScriptAllAudit_Click);
             // 
             // scriptAuditTriggersToolStripMenuItem
             // 
             this.scriptAuditTriggersToolStripMenuItem.Name = "scriptAuditTriggersToolStripMenuItem";
-            this.scriptAuditTriggersToolStripMenuItem.Size = new System.Drawing.Size(420, 22);
+            this.scriptAuditTriggersToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
             this.scriptAuditTriggersToolStripMenuItem.Text = "Audit Triggers Creation/Modification Scripts - for Checked Tables";
             this.scriptAuditTriggersToolStripMenuItem.ToolTipText = "For the checked tables, will generate scripts for the 3 audit triggers (INSERT, U" +
-                "PDATE, DELETE)\r\nand save them to the directory you choose\r\n";
+    "PDATE, DELETE)\r\nand save them to the directory you choose\r\n";
             this.scriptAuditTriggersToolStripMenuItem.Click += new System.EventHandler(this.scriptAuditTriggersToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(417, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(413, 6);
             // 
             // scriptMasterTransactionTableToolStripMenuItem
             // 
             this.scriptMasterTransactionTableToolStripMenuItem.Enabled = false;
             this.scriptMasterTransactionTableToolStripMenuItem.Name = "scriptMasterTransactionTableToolStripMenuItem";
-            this.scriptMasterTransactionTableToolStripMenuItem.Size = new System.Drawing.Size(420, 22);
+            this.scriptMasterTransactionTableToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
             this.scriptMasterTransactionTableToolStripMenuItem.Text = "Master Transaction Table Creation Script";
             this.scriptMasterTransactionTableToolStripMenuItem.ToolTipText = "Generates the create script for the master audit table to the script window below" +
-                ".";
+    ".";
             this.scriptMasterTransactionTableToolStripMenuItem.Visible = false;
             this.scriptMasterTransactionTableToolStripMenuItem.Click += new System.EventHandler(this.mnuMasterTrx_Click);
             // 
@@ -728,32 +728,31 @@ namespace SqlSync
             this.toolStripSplitButton2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.disableAuditTriggersToolStripMenuItem,
             this.enableAuditTriggersToolStripMenuItem});
-            this.toolStripSplitButton2.Image = global::SqlSync.Properties.Resources.Script_Delete;
             this.toolStripSplitButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripSplitButton2.Name = "toolStripSplitButton2";
-            this.toolStripSplitButton2.Size = new System.Drawing.Size(158, 20);
+            this.toolStripSplitButton2.Size = new System.Drawing.Size(140, 19);
             this.toolStripSplitButton2.Text = "Trigger Enable/Disable";
             this.toolStripSplitButton2.ToolTipText = "There may be cases where you need to disable the auditing triggers temporarily.\r\n" +
-                "These commands will create the scripts to disable and enable the auditing trigge" +
-                "rs.";
+    "These commands will create the scripts to disable and enable the auditing trigge" +
+    "rs.";
             this.toolStripSplitButton2.Click += new System.EventHandler(this.splitButton_Click);
             // 
             // disableAuditTriggersToolStripMenuItem
             // 
             this.disableAuditTriggersToolStripMenuItem.Name = "disableAuditTriggersToolStripMenuItem";
-            this.disableAuditTriggersToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.disableAuditTriggersToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.disableAuditTriggersToolStripMenuItem.Text = "Disable Audit Triggers Scripts";
             this.disableAuditTriggersToolStripMenuItem.ToolTipText = "For the checked tables, create the scripts to disable the 3 auditing triggers (IN" +
-                "SERT, UPDATE, DELETE)";
+    "SERT, UPDATE, DELETE)";
             this.disableAuditTriggersToolStripMenuItem.Click += new System.EventHandler(this.mnuDisableAuditTrigs_Click);
             // 
             // enableAuditTriggersToolStripMenuItem
             // 
             this.enableAuditTriggersToolStripMenuItem.Name = "enableAuditTriggersToolStripMenuItem";
-            this.enableAuditTriggersToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.enableAuditTriggersToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.enableAuditTriggersToolStripMenuItem.Text = "Enable Audit Triggers Scripts";
             this.enableAuditTriggersToolStripMenuItem.ToolTipText = "For the checked tables, create the scripts to enable the 3 auditing triggers (INS" +
-                "ERT, UPDATE, DELETE)";
+    "ERT, UPDATE, DELETE)";
             this.enableAuditTriggersToolStripMenuItem.Click += new System.EventHandler(this.mnuEnableAuditTrigs_Click);
             // 
             // toolStripSplitButton3
@@ -762,10 +761,9 @@ namespace SqlSync
             this.toolStripSplitButton3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.saveToOpenToolStripMenuItem,
             this.saveToNewSBMPackageToolStripMenuItem});
-            this.toolStripSplitButton3.Image = global::SqlSync.Properties.Resources.SqlBuildManager;
             this.toolStripSplitButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripSplitButton3.Name = "toolStripSplitButton3";
-            this.toolStripSplitButton3.Size = new System.Drawing.Size(101, 20);
+            this.toolStripSplitButton3.Size = new System.Drawing.Size(85, 19);
             this.toolStripSplitButton3.Text = "Save Scripts";
             this.toolStripSplitButton3.ToolTipText = "Save scripts";
             this.toolStripSplitButton3.Click += new System.EventHandler(this.splitButton_Click);
@@ -785,19 +783,19 @@ namespace SqlSync
             this.saveToNewSBMPackageToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
             this.saveToNewSBMPackageToolStripMenuItem.Text = "Save to new SBM package";
             this.saveToNewSBMPackageToolStripMenuItem.ToolTipText = "Save scripts to a new SBM package, or add them to an alternate existing SBM packa" +
-                "ge";
+    "ge";
             this.saveToNewSBMPackageToolStripMenuItem.Click += new System.EventHandler(this.toolStripSave_Click);
             // 
             // rtbSqlScript
             // 
             this.rtbSqlScript.AcceptsTab = true;
-            this.rtbSqlScript.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.rtbSqlScript.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.rtbSqlScript.CaseSensitive = false;
             this.rtbSqlScript.ContextMenuStrip = this.contextMenu2;
             this.rtbSqlScript.FilterAutoComplete = true;
-            this.rtbSqlScript.Font = new System.Drawing.Font("Lucida Console", 8F);
+            this.rtbSqlScript.Font = new System.Drawing.Font("Lucida Console", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.rtbSqlScript.HighlightDescriptors = highLightDescriptorCollection1;
             this.rtbSqlScript.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
             this.rtbSqlScript.Location = new System.Drawing.Point(4, 38);
@@ -814,13 +812,13 @@ namespace SqlSync
             this.mnuCopy,
             this.menuItem11});
             this.contextMenu2.Name = "contextMenu2";
-            this.contextMenu2.Size = new System.Drawing.Size(174, 48);
+            this.contextMenu2.Size = new System.Drawing.Size(173, 48);
             // 
             // mnuCopy
             // 
             this.mnuCopy.MergeIndex = 0;
             this.mnuCopy.Name = "mnuCopy";
-            this.mnuCopy.Size = new System.Drawing.Size(173, 22);
+            this.mnuCopy.Size = new System.Drawing.Size(172, 22);
             this.mnuCopy.Text = "Copy To Clipboard";
             this.mnuCopy.Click += new System.EventHandler(this.mnuCopy_Click);
             // 
@@ -828,7 +826,7 @@ namespace SqlSync
             // 
             this.menuItem11.MergeIndex = 1;
             this.menuItem11.Name = "menuItem11";
-            this.menuItem11.Size = new System.Drawing.Size(173, 22);
+            this.menuItem11.Size = new System.Drawing.Size(172, 22);
             this.menuItem11.Text = "Save to File";
             // 
             // splitter2
@@ -864,7 +862,7 @@ namespace SqlSync
             this.Controls.Add(this.statusBar1);
             this.Controls.Add(this.settingsControl1);
             this.Controls.Add(this.mainMenu1);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.mainMenu1;
             this.Name = "DataAuditForm";
@@ -873,7 +871,8 @@ namespace SqlSync
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DataAuditForm_FormClosing);
             this.Load += new System.EventHandler(this.LookUpTable_Load);
             this.contextMenu1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
+            this.statusBar1.ResumeLayout(false);
+            this.statusBar1.PerformLayout();
             this.mainMenu1.ResumeLayout(false);
             this.mainMenu1.PerformLayout();
             this.panel1.ResumeLayout(false);

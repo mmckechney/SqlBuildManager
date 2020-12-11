@@ -4,7 +4,7 @@ on:
   push:
     branches: 
       - master
-      - dotnetstandard
+
   pull_request:
     branches:
       - master
@@ -22,15 +22,21 @@ jobs:
       with:
         dotnet-version: 3.1.101
 
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.100
+
     #- name: Set build config variable
     #  run: echo "::set-env name=BUILD_CONFIG::Release"        
 
-    - name: Restore dependencies
-      run: dotnet restore ./src/sqlsync.sln
+    - name: Restore and build console app
+      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net5.0
 
-    - name: Build Main Solution
-      run: dotnet build ./src/sqlsync.sln --configuration Release --no-restore
+    - name: Restore and build desktop app
+      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f net5.0-windows
 
+    # Run tests
     - name: Run SqlBuildManager.Console.UnitTest
       run: dotnet test ./src/SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --configuration Release
 
@@ -49,34 +55,68 @@ jobs:
     - name: Run SqlSync.SqlBuild.UnitTest
       run: dotnet test ./src/SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --configuration Release
 
+    # .NET 5.0 pubish
     - name: Publish the Windows desktop app
-      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release
+      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f net5.0-windows
 
     - name: Publish the legacy Console CLI app
-      run: dotnet publish ./src/SqlBuildManager.Console/SqlBuildManager.Console.csproj -r win-x64 --configuration Release
+      run: dotnet publish ./src/SqlBuildManager.Console/SqlBuildManager.Console.csproj -r win-x64 --configuration Release -f net5.0
 
     - name: Publish the new Windows CLI app 
-      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release -f net5.0
 
     - name: Publish the new Linux CLI app
-      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f net5.0
 
+    # .NET Core 3.1 pubish
+    - name: Publish the Windows desktop app
+      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f netcoreapp3.1
+
+    - name: Publish the legacy Console CLI app
+      run: dotnet publish ./src/SqlBuildManager.Console/SqlBuildManager.Console.csproj -r win-x64 --configuration Release -f netcoreapp3.1
+
+    - name: Publish the new Windows CLI app 
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release -f netcoreapp3.1
+
+    - name: Publish the new Linux CLI app
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f netcoreapp3.1
+
+    # .NET 5.0 artifacts
     - name: Upload a Build Artifact sbm-windows
       uses: actions/upload-artifact@v2
       with:
         name: sbm-windows
-        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish"
+        path: "./src/SqlBuildManager.Console/bin/Release/net5.0/win-x64/publish"
 
     - name: Upload a Build Artifact sbm-linux
       uses: actions/upload-artifact@v2
       with:
         name: sbm-linux
-        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/linux-x64/publish"
+        path: "./src/SqlBuildManager.Console/bin/Release/net5.0/linux-x64/publish"
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
         name: SqlBuildManager Desktop
+        path: "./src/SqlSync/bin/Release/net5.0-windows/win-x64/publish"     
+
+    # .NET 3.1 artifacts
+    - name: Upload a Build Artifact sbm-windows
+      uses: actions/upload-artifact@v2
+      with:
+        name: sbm-windows_netcore3.1
+        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish"
+
+    - name: Upload a Build Artifact sbm-linux
+      uses: actions/upload-artifact@v2
+      with:
+        name: sbm-linux_netcore3.1
+        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/linux-x64/publish"
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: SqlBuildManager Desktop netcore3.1
         path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"     
         
 

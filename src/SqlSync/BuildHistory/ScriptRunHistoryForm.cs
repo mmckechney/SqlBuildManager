@@ -117,10 +117,10 @@ namespace SqlSync.BuildHistory
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.viewScriptAsRunOnServerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.compareToCurrentScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.scriptRunLogBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.scriptRunLog1 = new SqlSync.SqlBuild.ScriptRunLog();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.compareSelectedScriptsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scriptRunLogBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.scriptRunLog1 = new SqlSync.SqlBuild.ScriptRunLog();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
@@ -130,7 +130,7 @@ namespace SqlSync.BuildHistory
             // 
             // label1
             // 
-            this.label1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label1.Location = new System.Drawing.Point(16, 8);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(96, 16);
@@ -157,7 +157,7 @@ namespace SqlSync.BuildHistory
             // 
             // label2
             // 
-            this.label2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label2.Location = new System.Drawing.Point(16, 27);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(96, 16);
@@ -181,7 +181,7 @@ namespace SqlSync.BuildHistory
             // 
             // label3
             // 
-            this.label3.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label3.Location = new System.Drawing.Point(16, 46);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(96, 16);
@@ -199,51 +199,44 @@ namespace SqlSync.BuildHistory
             // 
             // dataGridTextBoxColumn10
             // 
-           // this.dataGridTextBoxColumn10.Format = "";
-            //this.dataGridTextBoxColumn10.FormatInfo = null;
-            this.dataGridTextBoxColumn10.HeaderText = "Script Text";
             this.dataGridTextBoxColumn10.DataPropertyName = "ScriptText";
+            this.dataGridTextBoxColumn10.HeaderText = "Script Text";
+            this.dataGridTextBoxColumn10.Name = "dataGridTextBoxColumn10";
             this.dataGridTextBoxColumn10.Width = 75;
             // 
             // dataGridTextBoxColumn9
             // 
-            //this.dataGridTextBoxColumn9.Format = "";
-            //this.dataGridTextBoxColumn9.FormatInfo = null;
-            this.dataGridTextBoxColumn9.HeaderText = "Blocking?";
             this.dataGridTextBoxColumn9.DataPropertyName = "AllowScriptBlock";
+            this.dataGridTextBoxColumn9.HeaderText = "Blocking?";
+            this.dataGridTextBoxColumn9.Name = "dataGridTextBoxColumn9";
             this.dataGridTextBoxColumn9.Width = 70;
             // 
             // dataGridTextBoxColumn3
             // 
-            //this.dataGridTextBoxColumn3.Format = "";
-            //this.dataGridTextBoxColumn3.FormatInfo = null;
-            this.dataGridTextBoxColumn3.HeaderText = "Source Build File";
             this.dataGridTextBoxColumn3.DataPropertyName = "BuildFileName";
+            this.dataGridTextBoxColumn3.HeaderText = "Source Build File";
+            this.dataGridTextBoxColumn3.Name = "dataGridTextBoxColumn3";
             this.dataGridTextBoxColumn3.Width = 245;
             // 
             // dataGridTextBoxColumn2
             // 
-            //this.dataGridTextBoxColumn2.Format = "";
-            //this.dataGridTextBoxColumn2.FormatInfo = null;
-            this.dataGridTextBoxColumn2.HeaderText = "Script Hash";
             this.dataGridTextBoxColumn2.DataPropertyName = "ScriptFileHash";
+            this.dataGridTextBoxColumn2.HeaderText = "Script Hash";
+            this.dataGridTextBoxColumn2.Name = "dataGridTextBoxColumn2";
             this.dataGridTextBoxColumn2.Width = 305;
             // 
             // dataGridTextBoxColumn7
             // 
-            //this.dataGridTextBoxColumn7.Format = "";
-            //this.dataGridTextBoxColumn7.FormatInfo = null;
-            this.dataGridTextBoxColumn7.HeaderText = "Run By";
             this.dataGridTextBoxColumn7.DataPropertyName = "UserId";
+            this.dataGridTextBoxColumn7.HeaderText = "Run By";
+            this.dataGridTextBoxColumn7.Name = "dataGridTextBoxColumn7";
             this.dataGridTextBoxColumn7.Width = 80;
             // 
             // dataGridTextBoxColumn1
             // 
-            //this.dataGridTextBoxColumn1.Format = "";
-            //this.dataGridTextBoxColumn1.FormatInfo = null;
-            this.dataGridTextBoxColumn1.HeaderText = "Commit Date";
             this.dataGridTextBoxColumn1.DataPropertyName = "CommitDate";
-            //this.dataGridTextBoxColumn1.NullText = "";
+            this.dataGridTextBoxColumn1.HeaderText = "Commit Date";
+            this.dataGridTextBoxColumn1.Name = "dataGridTextBoxColumn1";
             this.dataGridTextBoxColumn1.Width = 125;
             // 
             // dataGridView1
@@ -269,7 +262,7 @@ namespace SqlSync.BuildHistory
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.RowHeadersVisible = false;
-            this.dataGridView1.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dataGridView1.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.dataGridView1.Size = new System.Drawing.Size(976, 308);
             this.dataGridView1.TabIndex = 0;
             this.dataGridView1.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(this.dataGridView1_RowsAdded);
@@ -336,22 +329,35 @@ namespace SqlSync.BuildHistory
             this.toolStripSeparator1,
             this.compareSelectedScriptsToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(224, 98);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(223, 76);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // viewScriptAsRunOnServerToolStripMenuItem
             // 
             this.viewScriptAsRunOnServerToolStripMenuItem.Name = "viewScriptAsRunOnServerToolStripMenuItem";
-            this.viewScriptAsRunOnServerToolStripMenuItem.Size = new System.Drawing.Size(223, 22);
+            this.viewScriptAsRunOnServerToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
             this.viewScriptAsRunOnServerToolStripMenuItem.Text = "View Script as Run on Server";
             this.viewScriptAsRunOnServerToolStripMenuItem.Click += new System.EventHandler(this.viewScriptAsRunOnServerToolStripMenuItem_Click);
             // 
             // compareToCurrentScriptToolStripMenuItem
             // 
             this.compareToCurrentScriptToolStripMenuItem.Name = "compareToCurrentScriptToolStripMenuItem";
-            this.compareToCurrentScriptToolStripMenuItem.Size = new System.Drawing.Size(223, 22);
+            this.compareToCurrentScriptToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
             this.compareToCurrentScriptToolStripMenuItem.Text = "Compare to Current Script";
             this.compareToCurrentScriptToolStripMenuItem.Click += new System.EventHandler(this.compareToCurrentScriptToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(219, 6);
+            // 
+            // compareSelectedScriptsToolStripMenuItem
+            // 
+            this.compareSelectedScriptsToolStripMenuItem.Enabled = false;
+            this.compareSelectedScriptsToolStripMenuItem.Name = "compareSelectedScriptsToolStripMenuItem";
+            this.compareSelectedScriptsToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.compareSelectedScriptsToolStripMenuItem.Text = "Compare selected scripts";
+            this.compareSelectedScriptsToolStripMenuItem.Click += new System.EventHandler(this.compareSelectedScriptsToolStripMenuItem_Click);
             // 
             // scriptRunLogBindingSource
             // 
@@ -359,20 +365,9 @@ namespace SqlSync.BuildHistory
             // 
             // scriptRunLog1
             // 
+            this.scriptRunLog1.Namespace = "";
+            this.scriptRunLog1.PrimaryKey = new System.Data.DataColumn[0];
             this.scriptRunLog1.TableName = "ScriptRunLog";
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(220, 6);
-            // 
-            // compareSelectedScriptsToolStripMenuItem
-            // 
-            this.compareSelectedScriptsToolStripMenuItem.Enabled = false;
-            this.compareSelectedScriptsToolStripMenuItem.Name = "compareSelectedScriptsToolStripMenuItem";
-            this.compareSelectedScriptsToolStripMenuItem.Size = new System.Drawing.Size(223, 22);
-            this.compareSelectedScriptsToolStripMenuItem.Text = "Compare selected scripts";
-            this.compareSelectedScriptsToolStripMenuItem.Click += new System.EventHandler(this.compareSelectedScriptsToolStripMenuItem_Click);
             // 
             // ScriptRunHistoryForm
             // 
@@ -380,7 +375,7 @@ namespace SqlSync.BuildHistory
             this.ClientSize = new System.Drawing.Size(976, 374);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.panel1);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.Name = "ScriptRunHistoryForm";

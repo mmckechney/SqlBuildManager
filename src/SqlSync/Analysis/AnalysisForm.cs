@@ -7,6 +7,8 @@ using SqlSync.DbInformation;
 using System.Globalization;
 using System.Text;
 using System.Data;
+using Microsoft.SqlServer.Management.Smo;
+
 namespace SqlSync.Analysis
 {
 	/// <summary>
@@ -16,8 +18,8 @@ namespace SqlSync.Analysis
     {
         private System.Windows.Forms.MenuStrip mainMenu1;
 		private Connection.ConnectionData connData = null;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel statStatus;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel statStatus;
         private System.Windows.Forms.DataGridView dataGrid1;
 		//private System.Windows.Forms.DataGridViewTableStyle dataGridTableStyle1;
 		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridTextBoxColumn1;
@@ -68,8 +70,8 @@ namespace SqlSync.Analysis
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AnalysisForm));
             this.mainMenu1 = new System.Windows.Forms.MenuStrip();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statStatus = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.dataGrid1 = new System.Windows.Forms.DataGridView();
             //this.dataGridTableStyle1 = new System.Windows.Forms.DataGridViewTableStyle();
             this.dataGridTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -82,7 +84,6 @@ namespace SqlSync.Analysis
             this.dataGridTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sizeAnalysisTable1 = new SqlSync.DbInformation.SizeAnalysisTable();
             this.btnCopy = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sizeAnalysisTable1)).BeginInit();
             this.SuspendLayout();
@@ -91,16 +92,17 @@ namespace SqlSync.Analysis
             // 
             this.statusBar1.Location = new System.Drawing.Point(0, 340);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
             this.statStatus});
-            this.statusBar1.ShowPanels = true;
+            //this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(970, 22);
             this.statusBar1.TabIndex = 21;
             this.statusBar1.Text = "statusBar1";
             // 
             // statStatus
             // 
-            this.statStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+            this.statStatus.AutoSize = true;
+            this.statStatus.Spring = true;
             this.statStatus.Name = "statStatus";
             this.statStatus.Text = "Ready";
             this.statStatus.Width = 953;
@@ -239,7 +241,6 @@ namespace SqlSync.Analysis
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Database Size Analysis for {0}";
             this.Load += new System.EventHandler(this.AnalysisForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sizeAnalysisTable1)).EndInit();
             this.ResumeLayout(false);

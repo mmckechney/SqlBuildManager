@@ -125,9 +125,9 @@ namespace SqlSync
             this.button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button2.Location = new System.Drawing.Point(376, 248);
+            this.button2.Location = new System.Drawing.Point(377, 240);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(56, 20);
+            this.button2.Size = new System.Drawing.Size(67, 25);
             this.button2.TabIndex = 3;
             this.button2.Text = "Cancel";
             // 
@@ -136,9 +136,9 @@ namespace SqlSync
             this.button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button1.Location = new System.Drawing.Point(312, 248);
+            this.button1.Location = new System.Drawing.Point(300, 240);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(48, 20);
+            this.button1.Size = new System.Drawing.Size(58, 25);
             this.button1.TabIndex = 2;
             this.button1.Text = "OK";
             this.button1.Click += new System.EventHandler(this.button1_Click);
@@ -147,24 +147,25 @@ namespace SqlSync
             // 
             this.rtbWhereClause.AllowDrop = true;
             this.rtbWhereClause.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.rtbWhereClause.Location = new System.Drawing.Point(208, 40);
+            this.rtbWhereClause.Location = new System.Drawing.Point(250, 49);
             this.rtbWhereClause.Name = "rtbWhereClause";
-            this.rtbWhereClause.Size = new System.Drawing.Size(328, 200);
+            this.rtbWhereClause.Size = new System.Drawing.Size(393, 246);
             this.rtbWhereClause.TabIndex = 1;
             this.rtbWhereClause.Text = "";
             // 
             // lstColumns
             // 
             this.lstColumns.AllowDrop = true;
-            this.lstColumns.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.lstColumns.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.lstColumns.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lstColumns.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1});
             this.lstColumns.FullRowSelect = true;
-            this.lstColumns.Location = new System.Drawing.Point(16, 40);
+            this.lstColumns.HideSelection = false;
+            this.lstColumns.Location = new System.Drawing.Point(19, 49);
             this.lstColumns.Name = "lstColumns";
-            this.lstColumns.Size = new System.Drawing.Size(176, 224);
+            this.lstColumns.Size = new System.Drawing.Size(211, 211);
             this.lstColumns.TabIndex = 0;
             this.lstColumns.UseCompatibleStateImageBehavior = false;
             this.lstColumns.View = System.Windows.Forms.View.Details;
@@ -177,43 +178,44 @@ namespace SqlSync
             // 
             // chkUseFullSelect
             // 
-            this.chkUseFullSelect.Location = new System.Drawing.Point(208, 16);
+            this.chkUseFullSelect.Location = new System.Drawing.Point(250, 20);
             this.chkUseFullSelect.Name = "chkUseFullSelect";
-            this.chkUseFullSelect.Size = new System.Drawing.Size(216, 16);
+            this.chkUseFullSelect.Size = new System.Drawing.Size(259, 19);
             this.chkUseFullSelect.TabIndex = 4;
             this.chkUseFullSelect.Text = "Use query as a full SELECT statement";
             // 
             // label2
             // 
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(16, 8);
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label2.Location = new System.Drawing.Point(19, 10);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(176, 32);
+            this.label2.Size = new System.Drawing.Size(211, 39);
             this.label2.TabIndex = 7;
             this.label2.Text = "Click Column Name to add to \"WHERE\" Query";
             // 
             // label3
             // 
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(552, 8);
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label3.Location = new System.Drawing.Point(662, 10);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(176, 32);
+            this.label3.Size = new System.Drawing.Size(212, 39);
             this.label3.TabIndex = 9;
             this.label3.Text = "Check Column Names to use as \"EXISTS\" and \"UPDATE WHERE\" Keys";
             // 
             // lstUpdateKeyColumns
             // 
             this.lstUpdateKeyColumns.AllowDrop = true;
-            this.lstUpdateKeyColumns.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.lstUpdateKeyColumns.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.lstUpdateKeyColumns.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lstUpdateKeyColumns.CheckBoxes = true;
             this.lstUpdateKeyColumns.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader3});
             this.lstUpdateKeyColumns.FullRowSelect = true;
-            this.lstUpdateKeyColumns.Location = new System.Drawing.Point(552, 40);
+            this.lstUpdateKeyColumns.HideSelection = false;
+            this.lstUpdateKeyColumns.Location = new System.Drawing.Point(662, 49);
             this.lstUpdateKeyColumns.Name = "lstUpdateKeyColumns";
-            this.lstUpdateKeyColumns.Size = new System.Drawing.Size(176, 224);
+            this.lstUpdateKeyColumns.Size = new System.Drawing.Size(212, 211);
             this.lstUpdateKeyColumns.TabIndex = 8;
             this.lstUpdateKeyColumns.UseCompatibleStateImageBehavior = false;
             this.lstUpdateKeyColumns.View = System.Windows.Forms.View.Details;
@@ -226,7 +228,7 @@ namespace SqlSync
             // WhereClauseForm
             // 
             this.AllowDrop = true;
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(738, 280);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.lstUpdateKeyColumns);

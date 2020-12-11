@@ -559,10 +559,16 @@ namespace SqlSync.SqlBuild
                     this.UnattendedProcessingCompleteEvent(998);
             }
 
-            
+            try
+            {
 
-            //Set the database list as found in the main menu "Scripting" selection
-            this.SetDatabaseMenuList();
+                //Set the database list as found in the main menu "Scripting" selection
+                this.SetDatabaseMenuList();
+            }
+            catch(Exception exe)
+            {
+                log.Error(exe.ToString());
+            }
 
             
 
@@ -570,50 +576,64 @@ namespace SqlSync.SqlBuild
         }
         private void bgEnterpriseSettings_DoWork(object sender, DoWorkEventArgs e)
         {
-            bool tagsRequiredEnabled, defaultScriptEnabled, remoteExecutionEnabled, policyCheckOnLoadEnabled, scriptPkWithTable;
-            SetPropertiesFromEnterpriseConfiguration(out tagsRequiredEnabled, out defaultScriptEnabled, out remoteExecutionEnabled, out policyCheckOnLoadEnabled, out scriptPkWithTable);
-            e.Result = new List<bool>(new bool[] { tagsRequiredEnabled, defaultScriptEnabled, remoteExecutionEnabled, policyCheckOnLoadEnabled, scriptPkWithTable });
+            try
+            {
+                bool tagsRequiredEnabled, defaultScriptEnabled, remoteExecutionEnabled, policyCheckOnLoadEnabled, scriptPkWithTable;
+                SetPropertiesFromEnterpriseConfiguration(out tagsRequiredEnabled, out defaultScriptEnabled, out remoteExecutionEnabled, out policyCheckOnLoadEnabled, out scriptPkWithTable);
+                e.Result = new List<bool>(new bool[] { tagsRequiredEnabled, defaultScriptEnabled, remoteExecutionEnabled, policyCheckOnLoadEnabled, scriptPkWithTable });
+            }catch(Exception exe)
+            {
+                log.Error(exe.ToString());
+                throw exe;
+            }
         }
 
         private void bgEnterpriseSettings_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (e.Result is List<bool>)
+            try
             {
-                List<bool> x = (List<bool>)e.Result;
-                scriptTagsRequiredToolStripMenuItem.Enabled = x[0];
-                maintainDefaultScriptRegistryToolStripMenuItem.Enabled = x[1];
-                //remoteExecutionServiceToolStripMenuItem.Enabled = x[2];
-                runPolicyCheckingonloadtoolStripMenuItem.Enabled = x[3];
-                if (!x[4])
+                if (e.Result is List<bool>)
                 {
-                    scriptPrimaryKeyWithTableToolStripMenuItem.Enabled = x[4];
-                    scriptPrimaryKeyWithTableToolStripMenuItem.Checked = false;
+                    List<bool> x = (List<bool>)e.Result;
+                    scriptTagsRequiredToolStripMenuItem.Enabled = x[0];
+                    maintainDefaultScriptRegistryToolStripMenuItem.Enabled = x[1];
+                    //remoteExecutionServiceToolStripMenuItem.Enabled = x[2];
+                    runPolicyCheckingonloadtoolStripMenuItem.Enabled = x[3];
+                    if (!x[4])
+                    {
+                        scriptPrimaryKeyWithTableToolStripMenuItem.Enabled = x[4];
+                        scriptPrimaryKeyWithTableToolStripMenuItem.Checked = false;
+                    }
+                    else
+                    {
+                        scriptPrimaryKeyWithTableToolStripMenuItem.Checked = true;
+                    }
+
+                }
+
+                if (!this.runPolicyCheckingOnLoad)
+                {
+                    this.lstScriptFiles.Columns[(int)ScriptListIndex.PolicyIconColumn].Width = 0;
+                    this.policyCheckIconHelpToolStripMenuItem.Visible = false;
+                    this.runPolicyCheckingonloadtoolStripMenuItem.Checked = true;
                 }
                 else
                 {
-                    scriptPrimaryKeyWithTableToolStripMenuItem.Checked = true;
+                    this.runPolicyCheckingonloadtoolStripMenuItem.Checked = false;
                 }
 
-            }
+                //Code Review status
+                if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null)
+                    EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig = new CodeReviewConfig();
 
-            if (!this.runPolicyCheckingOnLoad)
+                if (!EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
+                {
+                    this.lstScriptFiles.Columns[(int)ScriptListIndex.CodeReviewStatusIconColumn].Width = 0;
+                }
+            }catch(Exception exe)
             {
-                this.lstScriptFiles.Columns[(int)ScriptListIndex.PolicyIconColumn].Width = 0;
-                this.policyCheckIconHelpToolStripMenuItem.Visible = false;
-                this.runPolicyCheckingonloadtoolStripMenuItem.Checked = true;
-            }
-            else
-            {
-                this.runPolicyCheckingonloadtoolStripMenuItem.Checked = false;
-            }
-
-            //Code Review status
-            if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null)
-                EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig = new CodeReviewConfig();
-
-            if (!EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
-            {
-                this.lstScriptFiles.Columns[(int)ScriptListIndex.CodeReviewStatusIconColumn].Width = 0;
+                log.Error(exe.ToString());
+                throw exe;
             }
         }
         private void SetPropertiesFromEnterpriseConfiguration(out bool tagsRequiredEnabled, out bool defaultScriptEnabled, out bool remoteExecutionEnabled, out bool policyCheckOnLoadEnabled, out bool scriptPkWithTable)
@@ -911,17 +931,17 @@ namespace SqlSync.SqlBuild
             this.chkUpdateOnOverride = new System.Windows.Forms.CheckBox();
             this.chkScriptChanges = new System.Windows.Forms.CheckBox();
             this.lstScriptFiles = new SqlSync.Controls.OAKControls.OAKListView();
-            this.colImage = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colPolicyIcon = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colCodeReviewIcon = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colSequence = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colScriptFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colDatabaseName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colScriptId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colScriptSize = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colTag = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colDateAdded = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colDateModified = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colImage = new System.Windows.Forms.ColumnHeader();
+            this.colPolicyIcon = new System.Windows.Forms.ColumnHeader();
+            this.colCodeReviewIcon = new System.Windows.Forms.ColumnHeader();
+            this.colSequence = new System.Windows.Forms.ColumnHeader();
+            this.colScriptFile = new System.Windows.Forms.ColumnHeader();
+            this.colDatabaseName = new System.Windows.Forms.ColumnHeader();
+            this.colScriptId = new System.Windows.Forms.ColumnHeader();
+            this.colScriptSize = new System.Windows.Forms.ColumnHeader();
+            this.colTag = new System.Windows.Forms.ColumnHeader();
+            this.colDateAdded = new System.Windows.Forms.ColumnHeader();
+            this.colDateModified = new System.Windows.Forms.ColumnHeader();
             this.ctxScriptFile = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuEditFile = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuEditScriptFile = new System.Windows.Forms.ToolStripMenuItem();
@@ -968,12 +988,6 @@ namespace SqlSync.SqlBuild
             this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.policyWarningActionMayBeRequiredToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.passesPolicyChecksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            //this.codeReviewIconToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.waitingOnStatusCheckToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reviewNotStartedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reviewInProgressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reviewAcceptedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reviewAcceptedByDBAToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgrounLegendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.allowMultipleRunsOfScriptOnSameServerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.leaveTransactionTextInScriptsdontStripOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -982,6 +996,11 @@ namespace SqlSync.SqlBuild
             this.scriptFileIsReadonlyYouWillNeedToMakeWriteableBeforeModifyingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.statusHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.waitingOnStatusCheckToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reviewNotStartedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reviewInProgressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reviewAcceptedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reviewAcceptedByDBAToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openSbmFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.dlgAddScriptFile = new System.Windows.Forms.OpenFileDialog();
             this.grpManager = new System.Windows.Forms.GroupBox();
@@ -1000,12 +1019,12 @@ namespace SqlSync.SqlBuild
             this.ddOverrideLogDatabase = new System.Windows.Forms.ComboBox();
             this.chkNotTransactional = new System.Windows.Forms.CheckBox();
             this.lstBuild = new System.Windows.Forms.ListView();
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader8 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader13 = new System.Windows.Forms.ColumnHeader();
             this.ctxResults = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuDisplayRowResults = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuEditFromResults = new System.Windows.Forms.ToolStripMenuItem();
@@ -1034,8 +1053,6 @@ namespace SqlSync.SqlBuild
             this.defaultScriptTimeoutsecondsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuDefaultScriptTimeout = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
-            //this.sourceControlServerURLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            //this.sourceControlServerURLTextboxMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.mnuMainAddSqlScript = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuMainAddNewFile = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -1192,10 +1209,8 @@ namespace SqlSync.SqlBuild
             this.grpAdvanced.SuspendLayout();
             this.grpBuildResults.SuspendLayout();
             this.pnlBuildScripts.SuspendLayout();
-            this.toolStripContainer1.SuspendLayout();
             this.toolStripContainer2.ContentPanel.SuspendLayout();
             this.toolStripContainer2.TopToolStripPanel.SuspendLayout();
-            this.toolStripContainer2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -1213,7 +1228,7 @@ namespace SqlSync.SqlBuild
             this.grbBuildScripts.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.grbBuildScripts.Location = new System.Drawing.Point(2, 2);
             this.grbBuildScripts.Name = "grbBuildScripts";
-            this.grbBuildScripts.Size = new System.Drawing.Size(518, 540);
+            this.grbBuildScripts.Size = new System.Drawing.Size(518, 564);
             this.grbBuildScripts.TabIndex = 14;
             this.grbBuildScripts.TabStop = false;
             this.grbBuildScripts.Text = "Build Scripts";
@@ -1226,7 +1241,7 @@ namespace SqlSync.SqlBuild
             this.btnSlideBuildScripts.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSlideBuildScripts.ImageIndex = 0;
             this.btnSlideBuildScripts.ImageList = this.imageListSlide;
-            this.btnSlideBuildScripts.Location = new System.Drawing.Point(497, 485);
+            this.btnSlideBuildScripts.Location = new System.Drawing.Point(497, 509);
             this.btnSlideBuildScripts.Margin = new System.Windows.Forms.Padding(0);
             this.btnSlideBuildScripts.Name = "btnSlideBuildScripts";
             this.btnSlideBuildScripts.Size = new System.Drawing.Size(15, 15);
@@ -1237,6 +1252,7 @@ namespace SqlSync.SqlBuild
             // 
             // imageListSlide
             // 
+            this.imageListSlide.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
             this.imageListSlide.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageListSlide.ImageStream")));
             this.imageListSlide.TransparentColor = System.Drawing.Color.Transparent;
             this.imageListSlide.Images.SetKeyName(0, "rightarrow_white.GIF");
@@ -1247,8 +1263,8 @@ namespace SqlSync.SqlBuild
             this.chkUpdateOnOverride.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chkUpdateOnOverride.Checked = true;
             this.chkUpdateOnOverride.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkUpdateOnOverride.Font = new System.Drawing.Font("Verdana", 7.5F);
-            this.chkUpdateOnOverride.Location = new System.Drawing.Point(6, 494);
+            this.chkUpdateOnOverride.Font = new System.Drawing.Font("Verdana", 7.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.chkUpdateOnOverride.Location = new System.Drawing.Point(6, 518);
             this.chkUpdateOnOverride.Name = "chkUpdateOnOverride";
             this.chkUpdateOnOverride.Size = new System.Drawing.Size(420, 16);
             this.chkUpdateOnOverride.TabIndex = 16;
@@ -1260,8 +1276,8 @@ namespace SqlSync.SqlBuild
             this.chkScriptChanges.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chkScriptChanges.Checked = true;
             this.chkScriptChanges.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkScriptChanges.Font = new System.Drawing.Font("Verdana", 7.5F);
-            this.chkScriptChanges.Location = new System.Drawing.Point(6, 478);
+            this.chkScriptChanges.Font = new System.Drawing.Font("Verdana", 7.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.chkScriptChanges.Location = new System.Drawing.Point(6, 502);
             this.chkScriptChanges.Name = "chkScriptChanges";
             this.chkScriptChanges.Size = new System.Drawing.Size(420, 16);
             this.chkScriptChanges.TabIndex = 15;
@@ -1289,13 +1305,14 @@ namespace SqlSync.SqlBuild
             this.colDateAdded,
             this.colDateModified});
             this.lstScriptFiles.ContextMenuStrip = this.ctxScriptFile;
-            this.lstScriptFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstScriptFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lstScriptFiles.FullRowSelect = true;
             this.lstScriptFiles.GridLines = true;
+            this.lstScriptFiles.HideSelection = false;
             this.lstScriptFiles.Location = new System.Drawing.Point(5, 17);
             this.lstScriptFiles.Name = "lstScriptFiles";
             this.lstScriptFiles.ShowItemToolTips = true;
-            this.lstScriptFiles.Size = new System.Drawing.Size(508, 455);
+            this.lstScriptFiles.Size = new System.Drawing.Size(508, 479);
             this.lstScriptFiles.SmallImageList = this.imageListBuildScripts;
             this.lstScriptFiles.TabIndex = 0;
             this.lstScriptFiles.UseCompatibleStateImageBehavior = false;
@@ -1394,7 +1411,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuEditFile
             // 
-            this.mnuEditFile.Image = global::SqlSync.Properties.Resources.Script_Edit;
             this.mnuEditFile.MergeIndex = 1;
             this.mnuEditFile.Name = "mnuEditFile";
             this.mnuEditFile.Size = new System.Drawing.Size(388, 22);
@@ -1417,7 +1433,6 @@ namespace SqlSync.SqlBuild
             // 
             // makeFileWriteableremoveToolStripMenuItem
             // 
-            this.makeFileWriteableremoveToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Key;
             this.makeFileWriteableremoveToolStripMenuItem.Name = "makeFileWriteableremoveToolStripMenuItem";
             this.makeFileWriteableremoveToolStripMenuItem.Size = new System.Drawing.Size(388, 22);
             this.makeFileWriteableremoveToolStripMenuItem.Text = "Make file writeable (remove Read Only attribute)";
@@ -1430,7 +1445,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuAddSqlScriptText
             // 
-            this.mnuAddSqlScriptText.Image = global::SqlSync.Properties.Resources.Script_New;
             this.mnuAddSqlScriptText.MergeIndex = 4;
             this.mnuAddSqlScriptText.Name = "mnuAddSqlScriptText";
             this.mnuAddSqlScriptText.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
@@ -1440,7 +1454,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuAddScript
             // 
-            this.mnuAddScript.Image = global::SqlSync.Properties.Resources.Script_Load;
             this.mnuAddScript.MergeIndex = 3;
             this.mnuAddScript.Name = "mnuAddScript";
             this.mnuAddScript.Size = new System.Drawing.Size(388, 22);
@@ -1456,7 +1469,6 @@ namespace SqlSync.SqlBuild
             // mnuUpdatePopulates
             // 
             this.mnuUpdatePopulates.Enabled = false;
-            this.mnuUpdatePopulates.Image = global::SqlSync.Properties.Resources.DB_Refresh;
             this.mnuUpdatePopulates.MergeIndex = 6;
             this.mnuUpdatePopulates.Name = "mnuUpdatePopulates";
             this.mnuUpdatePopulates.Size = new System.Drawing.Size(388, 22);
@@ -1469,7 +1481,6 @@ namespace SqlSync.SqlBuild
             this.mnuObjectScripts_FileDefault,
             this.mnuObjectScripts_CurrentSettings});
             this.mnuUpdateObjectScripts.Enabled = false;
-            this.mnuUpdateObjectScripts.Image = global::SqlSync.Properties.Resources.Update;
             this.mnuUpdateObjectScripts.MergeIndex = 7;
             this.mnuUpdateObjectScripts.Name = "mnuUpdateObjectScripts";
             this.mnuUpdateObjectScripts.Size = new System.Drawing.Size(388, 22);
@@ -1504,7 +1515,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuCreateExportFile
             // 
-            this.mnuCreateExportFile.Image = global::SqlSync.Properties.Resources.Export;
             this.mnuCreateExportFile.MergeIndex = 9;
             this.mnuCreateExportFile.Name = "mnuCreateExportFile";
             this.mnuCreateExportFile.Size = new System.Drawing.Size(388, 22);
@@ -1513,7 +1523,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuRemoveScriptFile
             // 
-            this.mnuRemoveScriptFile.Image = global::SqlSync.Properties.Resources.Script_Delete;
             this.mnuRemoveScriptFile.MergeIndex = 10;
             this.mnuRemoveScriptFile.Name = "mnuRemoveScriptFile";
             this.mnuRemoveScriptFile.Size = new System.Drawing.Size(388, 22);
@@ -1528,7 +1537,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuTryScript
             // 
-            this.mnuTryScript.Image = global::SqlSync.Properties.Resources.db_next;
             this.mnuTryScript.MergeIndex = 12;
             this.mnuTryScript.Name = "mnuTryScript";
             this.mnuTryScript.Size = new System.Drawing.Size(388, 22);
@@ -1537,7 +1545,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuRunScript
             // 
-            this.mnuRunScript.Image = global::SqlSync.Properties.Resources.db_edit_green;
             this.mnuRunScript.MergeIndex = 13;
             this.mnuRunScript.Name = "mnuRunScript";
             this.mnuRunScript.Size = new System.Drawing.Size(388, 22);
@@ -1552,7 +1559,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuViewRunHistory
             // 
-            this.mnuViewRunHistory.Image = global::SqlSync.Properties.Resources.History;
             this.mnuViewRunHistory.MergeIndex = 15;
             this.mnuViewRunHistory.Name = "mnuViewRunHistory";
             this.mnuViewRunHistory.Size = new System.Drawing.Size(388, 22);
@@ -1569,7 +1575,6 @@ namespace SqlSync.SqlBuild
             // 
             // renameScriptFIleToolStripMenuItem
             // 
-            this.renameScriptFIleToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Rename;
             this.renameScriptFIleToolStripMenuItem.Name = "renameScriptFIleToolStripMenuItem";
             this.renameScriptFIleToolStripMenuItem.Size = new System.Drawing.Size(388, 22);
             this.renameScriptFIleToolStripMenuItem.Text = "Rename Script File";
@@ -1582,6 +1587,7 @@ namespace SqlSync.SqlBuild
             // 
             // imageListBuildScripts
             // 
+            this.imageListBuildScripts.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
             this.imageListBuildScripts.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageListBuildScripts.ImageStream")));
             this.imageListBuildScripts.TransparentColor = System.Drawing.Color.Transparent;
             this.imageListBuildScripts.Images.SetKeyName(0, "");
@@ -1611,10 +1617,9 @@ namespace SqlSync.SqlBuild
             this.statusHelpToolStripMenuItem1,
             this.iconLegendToolStripMenuItem,
             this.policyCheckIconHelpToolStripMenuItem,
-            //this.codeReviewIconToolStripMenuItem,
             this.backgrounLegendToolStripMenuItem,
             this.toolStripMenuItem1});
-            this.menuStrip1.Location = new System.Drawing.Point(3, 513);
+            this.menuStrip1.Location = new System.Drawing.Point(3, 537);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(512, 24);
             this.menuStrip1.TabIndex = 18;
@@ -1720,7 +1725,6 @@ namespace SqlSync.SqlBuild
             // 
             // fileMissingToolStripMenuItem
             // 
-            this.fileMissingToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Delete1;
             this.fileMissingToolStripMenuItem.Name = "fileMissingToolStripMenuItem";
             this.fileMissingToolStripMenuItem.Size = new System.Drawing.Size(599, 22);
             this.fileMissingToolStripMenuItem.Text = "File is missing from file system or build file. This must be corrected prior to e" +
@@ -1741,86 +1745,33 @@ namespace SqlSync.SqlBuild
             // 
             // policyChecksNotRunToolStripMenuItem
             // 
-            this.policyChecksNotRunToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Help_2;
             this.policyChecksNotRunToolStripMenuItem.Name = "policyChecksNotRunToolStripMenuItem";
-            this.policyChecksNotRunToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
+            this.policyChecksNotRunToolStripMenuItem.Size = new System.Drawing.Size(433, 22);
             this.policyChecksNotRunToolStripMenuItem.Text = "Policy checks not run";
             // 
             // policyCheckFailedActionRequiredToolStripMenuItem
             // 
-            this.policyCheckFailedActionRequiredToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Exclamation_square;
             this.policyCheckFailedActionRequiredToolStripMenuItem.Name = "policyCheckFailedActionRequiredToolStripMenuItem";
-            this.policyCheckFailedActionRequiredToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
+            this.policyCheckFailedActionRequiredToolStripMenuItem.Size = new System.Drawing.Size(433, 22);
             this.policyCheckFailedActionRequiredToolStripMenuItem.Text = "Policy checks failed - ACTION REQUIRED!";
             // 
             // reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem
             // 
-            this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Discuss;
             this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem.Name = "reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem";
-            this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
+            this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem.Size = new System.Drawing.Size(433, 22);
             this.reviewWarningThisScriptShouldBeExaminedBeforeDeploymentToolStripMenuItem.Text = "Review warning - this script should be examined before deployment";
             // 
             // policyWarningActionMayBeRequiredToolStripMenuItem
             // 
-            this.policyWarningActionMayBeRequiredToolStripMenuItem.Image = global::SqlSync.Properties.Resources.exclamation_shield_frame;
             this.policyWarningActionMayBeRequiredToolStripMenuItem.Name = "policyWarningActionMayBeRequiredToolStripMenuItem";
-            this.policyWarningActionMayBeRequiredToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
+            this.policyWarningActionMayBeRequiredToolStripMenuItem.Size = new System.Drawing.Size(433, 22);
             this.policyWarningActionMayBeRequiredToolStripMenuItem.Text = "Policy warning - action may be required.";
             // 
             // passesPolicyChecksToolStripMenuItem
             // 
-            this.passesPolicyChecksToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Tick;
             this.passesPolicyChecksToolStripMenuItem.Name = "passesPolicyChecksToolStripMenuItem";
-            this.passesPolicyChecksToolStripMenuItem.Size = new System.Drawing.Size(432, 22);
+            this.passesPolicyChecksToolStripMenuItem.Size = new System.Drawing.Size(433, 22);
             this.passesPolicyChecksToolStripMenuItem.Text = "Policy checks passed";
-            // 
-            // codeReviewIconToolStripMenuItem
-            //// 
-            //this.codeReviewIconToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            //this.waitingOnStatusCheckToolStripMenuItem,
-            //this.reviewNotStartedToolStripMenuItem,
-            //this.reviewInProgressToolStripMenuItem,
-            //this.reviewAcceptedToolStripMenuItem,
-            //this.reviewAcceptedByDBAToolStripMenuItem});
-            //this.codeReviewIconToolStripMenuItem.ForeColor = System.Drawing.Color.Blue;
-            //this.codeReviewIconToolStripMenuItem.Name = "codeReviewIconToolStripMenuItem";
-            //this.codeReviewIconToolStripMenuItem.Size = new System.Drawing.Size(113, 20);
-            //this.codeReviewIconToolStripMenuItem.Text = "Code Review Icon";
-            // 
-            // waitingOnStatusCheckToolStripMenuItem
-            // 
-            this.waitingOnStatusCheckToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Wait;
-            this.waitingOnStatusCheckToolStripMenuItem.Name = "waitingOnStatusCheckToolStripMenuItem";
-            this.waitingOnStatusCheckToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.waitingOnStatusCheckToolStripMenuItem.Text = "Waiting on status check";
-            // 
-            // reviewNotStartedToolStripMenuItem
-            // 
-            this.reviewNotStartedToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Hand;
-            this.reviewNotStartedToolStripMenuItem.Name = "reviewNotStartedToolStripMenuItem";
-            this.reviewNotStartedToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.reviewNotStartedToolStripMenuItem.Text = "Review Not Started";
-            // 
-            // reviewInProgressToolStripMenuItem
-            // 
-            this.reviewInProgressToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Clock;
-            this.reviewInProgressToolStripMenuItem.Name = "reviewInProgressToolStripMenuItem";
-            this.reviewInProgressToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.reviewInProgressToolStripMenuItem.Text = "Review in Progress";
-            // 
-            // reviewAcceptedToolStripMenuItem
-            // 
-            this.reviewAcceptedToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Ok_blueSquare;
-            this.reviewAcceptedToolStripMenuItem.Name = "reviewAcceptedToolStripMenuItem";
-            this.reviewAcceptedToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.reviewAcceptedToolStripMenuItem.Text = "Review Accepted";
-            // 
-            // reviewAcceptedByDBAToolStripMenuItem
-            // 
-            this.reviewAcceptedByDBAToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Ok_greenSquare;
-            this.reviewAcceptedByDBAToolStripMenuItem.Name = "reviewAcceptedByDBAToolStripMenuItem";
-            this.reviewAcceptedByDBAToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.reviewAcceptedByDBAToolStripMenuItem.Text = "Review Accepted by DBA";
             // 
             // backgrounLegendToolStripMenuItem
             // 
@@ -1885,6 +1836,36 @@ namespace SqlSync.SqlBuild
             this.statusHelpToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.statusHelpToolStripMenuItem.Text = "Status Help:";
             // 
+            // waitingOnStatusCheckToolStripMenuItem
+            // 
+            this.waitingOnStatusCheckToolStripMenuItem.Name = "waitingOnStatusCheckToolStripMenuItem";
+            this.waitingOnStatusCheckToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.waitingOnStatusCheckToolStripMenuItem.Text = "Waiting on status check";
+            // 
+            // reviewNotStartedToolStripMenuItem
+            // 
+            this.reviewNotStartedToolStripMenuItem.Name = "reviewNotStartedToolStripMenuItem";
+            this.reviewNotStartedToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.reviewNotStartedToolStripMenuItem.Text = "Review Not Started";
+            // 
+            // reviewInProgressToolStripMenuItem
+            // 
+            this.reviewInProgressToolStripMenuItem.Name = "reviewInProgressToolStripMenuItem";
+            this.reviewInProgressToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.reviewInProgressToolStripMenuItem.Text = "Review in Progress";
+            // 
+            // reviewAcceptedToolStripMenuItem
+            // 
+            this.reviewAcceptedToolStripMenuItem.Name = "reviewAcceptedToolStripMenuItem";
+            this.reviewAcceptedToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.reviewAcceptedToolStripMenuItem.Text = "Review Accepted";
+            // 
+            // reviewAcceptedByDBAToolStripMenuItem
+            // 
+            this.reviewAcceptedByDBAToolStripMenuItem.Name = "reviewAcceptedByDBAToolStripMenuItem";
+            this.reviewAcceptedByDBAToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.reviewAcceptedByDBAToolStripMenuItem.Text = "Review Accepted by DBA";
+            // 
             // openSbmFileDialog
             // 
             this.openSbmFileDialog.CheckFileExists = false;
@@ -1917,7 +1898,7 @@ namespace SqlSync.SqlBuild
             this.grpManager.Location = new System.Drawing.Point(3, 3);
             this.grpManager.MinimumSize = new System.Drawing.Size(533, 154);
             this.grpManager.Name = "grpManager";
-            this.grpManager.Size = new System.Drawing.Size(541, 168);
+            this.grpManager.Size = new System.Drawing.Size(541, 176);
             this.grpManager.TabIndex = 15;
             this.grpManager.TabStop = false;
             this.grpManager.Text = "Build Manager / Run Settings";
@@ -1925,7 +1906,6 @@ namespace SqlSync.SqlBuild
             // pictureBox1
             // 
             this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox1.Image = global::SqlSync.Properties.Resources.Help_2;
             this.pictureBox1.Location = new System.Drawing.Point(519, 16);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(17, 16);
@@ -1941,8 +1921,9 @@ namespace SqlSync.SqlBuild
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.targetDatabaseOverrideCtrl1.Location = new System.Drawing.Point(99, 41);
+            this.targetDatabaseOverrideCtrl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.targetDatabaseOverrideCtrl1.Name = "targetDatabaseOverrideCtrl1";
-            this.targetDatabaseOverrideCtrl1.Size = new System.Drawing.Size(437, 77);
+            this.targetDatabaseOverrideCtrl1.Size = new System.Drawing.Size(437, 85);
             this.targetDatabaseOverrideCtrl1.TabIndex = 1;
             this.targetDatabaseOverrideCtrl1.TargetChanged += new SqlSync.TargetChangedEventHandler(this.targetDatabaseOverrideCtrl1_TargetChanged);
             // 
@@ -1959,7 +1940,7 @@ namespace SqlSync.SqlBuild
             this.txtBuildDesc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.txtBuildDesc.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.txtBuildDesc.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-            this.txtBuildDesc.Location = new System.Drawing.Point(99, 124);
+            this.txtBuildDesc.Location = new System.Drawing.Point(99, 132);
             this.txtBuildDesc.Name = "txtBuildDesc";
             this.txtBuildDesc.Size = new System.Drawing.Size(370, 21);
             this.txtBuildDesc.TabIndex = 2;
@@ -1973,7 +1954,7 @@ namespace SqlSync.SqlBuild
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnCancel.BackColor = System.Drawing.SystemColors.Control;
             this.btnCancel.ForeColor = System.Drawing.Color.Red;
-            this.btnCancel.Location = new System.Drawing.Point(475, 124);
+            this.btnCancel.Location = new System.Drawing.Point(475, 132);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(55, 23);
             this.btnCancel.TabIndex = 24;
@@ -2003,7 +1984,7 @@ namespace SqlSync.SqlBuild
             // label3
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label3.Location = new System.Drawing.Point(8, 127);
+            this.label3.Location = new System.Drawing.Point(8, 135);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(92, 16);
             this.label3.TabIndex = 12;
@@ -2013,7 +1994,7 @@ namespace SqlSync.SqlBuild
             // 
             this.lnkStartBuild.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lnkStartBuild.Enabled = false;
-            this.lnkStartBuild.Location = new System.Drawing.Point(96, 146);
+            this.lnkStartBuild.Location = new System.Drawing.Point(96, 154);
             this.lnkStartBuild.Name = "lnkStartBuild";
             this.lnkStartBuild.Size = new System.Drawing.Size(261, 16);
             this.lnkStartBuild.TabIndex = 3;
@@ -2024,7 +2005,7 @@ namespace SqlSync.SqlBuild
             // 
             // label1
             // 
-            this.label1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label1.Location = new System.Drawing.Point(9, 18);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(75, 16);
@@ -2034,7 +2015,7 @@ namespace SqlSync.SqlBuild
             // 
             // ddBuildType
             // 
-            this.ddBuildType.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ddBuildType.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.ddBuildType.ItemHeight = 13;
             this.ddBuildType.Location = new System.Drawing.Point(115, 16);
             this.ddBuildType.Name = "ddBuildType";
@@ -2093,12 +2074,13 @@ namespace SqlSync.SqlBuild
             this.columnHeader7,
             this.columnHeader13});
             this.lstBuild.ContextMenuStrip = this.ctxResults;
-            this.lstBuild.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstBuild.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lstBuild.FullRowSelect = true;
             this.lstBuild.GridLines = true;
+            this.lstBuild.HideSelection = false;
             this.lstBuild.Location = new System.Drawing.Point(5, 15);
             this.lstBuild.Name = "lstBuild";
-            this.lstBuild.Size = new System.Drawing.Size(531, 303);
+            this.lstBuild.Size = new System.Drawing.Size(531, 319);
             this.lstBuild.TabIndex = 10;
             this.lstBuild.UseCompatibleStateImageBehavior = false;
             this.lstBuild.View = System.Windows.Forms.View.Details;
@@ -2145,7 +2127,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuDisplayRowResults
             // 
-            this.mnuDisplayRowResults.Image = global::SqlSync.Properties.Resources.Book_Open;
             this.mnuDisplayRowResults.MergeIndex = 0;
             this.mnuDisplayRowResults.Name = "mnuDisplayRowResults";
             this.mnuDisplayRowResults.Size = new System.Drawing.Size(152, 22);
@@ -2154,7 +2135,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuEditFromResults
             // 
-            this.mnuEditFromResults.Image = global::SqlSync.Properties.Resources.Script_Edit;
             this.mnuEditFromResults.MergeIndex = 2;
             this.mnuEditFromResults.Name = "mnuEditFromResults";
             this.mnuEditFromResults.Size = new System.Drawing.Size(152, 22);
@@ -2163,7 +2143,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuOpenRunScriptFile
             // 
-            this.mnuOpenRunScriptFile.Image = global::SqlSync.Properties.Resources.Script_Load;
             this.mnuOpenRunScriptFile.MergeIndex = 1;
             this.mnuOpenRunScriptFile.Name = "mnuOpenRunScriptFile";
             this.mnuOpenRunScriptFile.Size = new System.Drawing.Size(152, 22);
@@ -2229,28 +2208,25 @@ namespace SqlSync.SqlBuild
             this.mnuFileMRU,
             this.toolStripSeparator13,
             this.exitToolStripMenuItem});
-            this.mnuActionMain.Image = global::SqlSync.Properties.Resources.Execute;
             this.mnuActionMain.MergeIndex = 0;
             this.mnuActionMain.Name = "mnuActionMain";
-            this.mnuActionMain.Size = new System.Drawing.Size(70, 20);
+            this.mnuActionMain.Size = new System.Drawing.Size(54, 20);
             this.mnuActionMain.Text = "&Action";
             this.mnuActionMain.MouseUp += new System.Windows.Forms.MouseEventHandler(this.mnuActionMain_MouseUp);
             // 
             // mnuLoadProject
             // 
-            this.mnuLoadProject.Image = global::SqlSync.Properties.Resources.Open;
             this.mnuLoadProject.MergeIndex = 0;
             this.mnuLoadProject.Name = "mnuLoadProject";
-            this.mnuLoadProject.Size = new System.Drawing.Size(344, 22);
+            this.mnuLoadProject.Size = new System.Drawing.Size(345, 22);
             this.mnuLoadProject.Text = "&Load/New Project File (*.sbm)";
             this.mnuLoadProject.ToolTipText = "Open existing or create new self contained build project file (.sbm)";
             this.mnuLoadProject.Click += new System.EventHandler(this.mnuLoadProject_Click);
             // 
             // loadNewDirectoryControlFilesbxToolStripMenuItem
             // 
-            this.loadNewDirectoryControlFilesbxToolStripMenuItem.Image = global::SqlSync.Properties.Resources.open_xml;
             this.loadNewDirectoryControlFilesbxToolStripMenuItem.Name = "loadNewDirectoryControlFilesbxToolStripMenuItem";
-            this.loadNewDirectoryControlFilesbxToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
+            this.loadNewDirectoryControlFilesbxToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
             this.loadNewDirectoryControlFilesbxToolStripMenuItem.Text = "Load/New Directory Based Build Control File (*.sbx)";
             this.loadNewDirectoryControlFilesbxToolStripMenuItem.ToolTipText = "Open existing or create new directory control file (.sbx) to manage \"loose\" scrip" +
     "ts ";
@@ -2259,35 +2235,33 @@ namespace SqlSync.SqlBuild
             // toolStripSeparator11
             // 
             this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(341, 6);
+            this.toolStripSeparator11.Size = new System.Drawing.Size(342, 6);
             // 
             // packageScriptsIntoProjectFilesbmToolStripMenuItem
             // 
             this.packageScriptsIntoProjectFilesbmToolStripMenuItem.Enabled = false;
-            this.packageScriptsIntoProjectFilesbmToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Box_Open_2;
             this.packageScriptsIntoProjectFilesbmToolStripMenuItem.Name = "packageScriptsIntoProjectFilesbmToolStripMenuItem";
-            this.packageScriptsIntoProjectFilesbmToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
+            this.packageScriptsIntoProjectFilesbmToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
             this.packageScriptsIntoProjectFilesbmToolStripMenuItem.Text = "Package scripts into project file (.sbm)";
             this.packageScriptsIntoProjectFilesbmToolStripMenuItem.Click += new System.EventHandler(this.packageScriptsIntoProjectFilesbmToolStripMenuItem_Click);
             // 
             // toolStripSeparator10
             // 
             this.toolStripSeparator10.Name = "toolStripSeparator10";
-            this.toolStripSeparator10.Size = new System.Drawing.Size(341, 6);
+            this.toolStripSeparator10.Size = new System.Drawing.Size(342, 6);
             // 
             // mnuChangeSqlServer
             // 
-            this.mnuChangeSqlServer.Image = global::SqlSync.Properties.Resources.Server1;
             this.mnuChangeSqlServer.MergeIndex = 1;
             this.mnuChangeSqlServer.Name = "mnuChangeSqlServer";
-            this.mnuChangeSqlServer.Size = new System.Drawing.Size(344, 22);
+            this.mnuChangeSqlServer.Size = new System.Drawing.Size(345, 22);
             this.mnuChangeSqlServer.Text = "&Change Sql Server Connection";
             this.mnuChangeSqlServer.Click += new System.EventHandler(this.mnuChangeSqlServer_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(341, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(342, 6);
             // 
             // settingsToolStripMenuItem
             // 
@@ -2303,37 +2277,34 @@ namespace SqlSync.SqlBuild
             this.defaultScriptTimeoutsecondsToolStripMenuItem,
             this.mnuDefaultScriptTimeout,
             this.toolStripSeparator16});
-            //this.sourceControlServerURLToolStripMenuItem,
-            //this.sourceControlServerURLTextboxMenuItem
-            this.settingsToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Wizard;
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // maintainManualDatabaseEntriesToolStripMenuItem
             // 
             this.maintainManualDatabaseEntriesToolStripMenuItem.Name = "maintainManualDatabaseEntriesToolStripMenuItem";
-            this.maintainManualDatabaseEntriesToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
+            this.maintainManualDatabaseEntriesToolStripMenuItem.Size = new System.Drawing.Size(307, 22);
             this.maintainManualDatabaseEntriesToolStripMenuItem.Text = "Maintain Manual Database Entries";
             this.maintainManualDatabaseEntriesToolStripMenuItem.Click += new System.EventHandler(this.maintainManualDatabaseEntriesToolStripMenuItem_Click);
             // 
             // maintainDefaultScriptRegistryToolStripMenuItem
             // 
             this.maintainDefaultScriptRegistryToolStripMenuItem.Name = "maintainDefaultScriptRegistryToolStripMenuItem";
-            this.maintainDefaultScriptRegistryToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
+            this.maintainDefaultScriptRegistryToolStripMenuItem.Size = new System.Drawing.Size(307, 22);
             this.maintainDefaultScriptRegistryToolStripMenuItem.Text = "Maintain Default Script Registry";
             this.maintainDefaultScriptRegistryToolStripMenuItem.Click += new System.EventHandler(this.maintainDefaultScriptRegistryToolStripMenuItem_Click);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(307, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(304, 6);
             // 
             // scriptTagsRequiredToolStripMenuItem
             // 
             this.scriptTagsRequiredToolStripMenuItem.CheckOnClick = true;
             this.scriptTagsRequiredToolStripMenuItem.Name = "scriptTagsRequiredToolStripMenuItem";
-            this.scriptTagsRequiredToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
+            this.scriptTagsRequiredToolStripMenuItem.Size = new System.Drawing.Size(307, 22);
             this.scriptTagsRequiredToolStripMenuItem.Text = "Script Tags Required";
             this.scriptTagsRequiredToolStripMenuItem.ToolTipText = "Check as to whether or not this build file requires script tags for all of its sc" +
     "ripts.";
@@ -2343,7 +2314,7 @@ namespace SqlSync.SqlBuild
             // 
             this.createSQLLogOfBuildRunsToolStripMenuItem.CheckOnClick = true;
             this.createSQLLogOfBuildRunsToolStripMenuItem.Name = "createSQLLogOfBuildRunsToolStripMenuItem";
-            this.createSQLLogOfBuildRunsToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
+            this.createSQLLogOfBuildRunsToolStripMenuItem.Size = new System.Drawing.Size(307, 22);
             this.createSQLLogOfBuildRunsToolStripMenuItem.Text = "Create SQL Log of Build Runs";
             this.createSQLLogOfBuildRunsToolStripMenuItem.ToolTipText = "Check as to whether or not to create a SQL script log \r\nof builds as they are run" +
     ".";
@@ -2354,7 +2325,7 @@ namespace SqlSync.SqlBuild
             // 
             this.runPolicyCheckingonloadtoolStripMenuItem.CheckOnClick = true;
             this.runPolicyCheckingonloadtoolStripMenuItem.Name = "runPolicyCheckingonloadtoolStripMenuItem";
-            this.runPolicyCheckingonloadtoolStripMenuItem.Size = new System.Drawing.Size(310, 22);
+            this.runPolicyCheckingonloadtoolStripMenuItem.Size = new System.Drawing.Size(307, 22);
             this.runPolicyCheckingonloadtoolStripMenuItem.Text = "Run Policy Checking on load";
             this.runPolicyCheckingonloadtoolStripMenuItem.ToolTipText = "Check as to whether or not to create a SQL script log \r\nof builds as they are run" +
     ".";
@@ -2363,18 +2334,18 @@ namespace SqlSync.SqlBuild
             // scriptPrimaryKeyWithTableToolStripMenuItem
             // 
             this.scriptPrimaryKeyWithTableToolStripMenuItem.Name = "scriptPrimaryKeyWithTableToolStripMenuItem";
-            this.scriptPrimaryKeyWithTableToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
+            this.scriptPrimaryKeyWithTableToolStripMenuItem.Size = new System.Drawing.Size(307, 22);
             this.scriptPrimaryKeyWithTableToolStripMenuItem.Text = "Script Primary Key with Table";
             // 
             // toolStripSeparator15
             // 
             this.toolStripSeparator15.Name = "toolStripSeparator15";
-            this.toolStripSeparator15.Size = new System.Drawing.Size(307, 6);
+            this.toolStripSeparator15.Size = new System.Drawing.Size(304, 6);
             // 
             // defaultScriptTimeoutsecondsToolStripMenuItem
             // 
             this.defaultScriptTimeoutsecondsToolStripMenuItem.Name = "defaultScriptTimeoutsecondsToolStripMenuItem";
-            this.defaultScriptTimeoutsecondsToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
+            this.defaultScriptTimeoutsecondsToolStripMenuItem.Size = new System.Drawing.Size(307, 22);
             this.defaultScriptTimeoutsecondsToolStripMenuItem.Text = "Default/Minimum Script Timeout (seconds):";
             // 
             // mnuDefaultScriptTimeout
@@ -2390,54 +2361,38 @@ namespace SqlSync.SqlBuild
             // toolStripSeparator16
             // 
             this.toolStripSeparator16.Name = "toolStripSeparator16";
-            this.toolStripSeparator16.Size = new System.Drawing.Size(307, 6);
-            // 
-            // sourceControlServerURLToolStripMenuItem
-            // 
-            //this.sourceControlServerURLToolStripMenuItem.Name = "sourceControlServerURLToolStripMenuItem";
-            //this.sourceControlServerURLToolStripMenuItem.Size = new System.Drawing.Size(310, 22);
-            //this.sourceControlServerURLToolStripMenuItem.Text = "Source Control Server URL:";
-            // 
-            // sourceControlServerURLTextboxMenuItem
-            // 
-            //this.sourceControlServerURLTextboxMenuItem.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            //this.sourceControlServerURLTextboxMenuItem.Name = "sourceControlServerURLTextboxMenuItem";
-            //this.sourceControlServerURLTextboxMenuItem.Size = new System.Drawing.Size(250, 23);
-            //this.sourceControlServerURLTextboxMenuItem.TextChanged += new System.EventHandler(this.sourceControlServerURLTextboxMenuItem_TextChanged);
+            this.toolStripSeparator16.Size = new System.Drawing.Size(304, 6);
             // 
             // mnuMainAddSqlScript
             // 
             this.mnuMainAddSqlScript.Enabled = false;
-            this.mnuMainAddSqlScript.Image = global::SqlSync.Properties.Resources.Script_New;
             this.mnuMainAddSqlScript.MergeIndex = 4;
             this.mnuMainAddSqlScript.Name = "mnuMainAddSqlScript";
             this.mnuMainAddSqlScript.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.mnuMainAddSqlScript.Size = new System.Drawing.Size(344, 22);
+            this.mnuMainAddSqlScript.Size = new System.Drawing.Size(345, 22);
             this.mnuMainAddSqlScript.Text = "Add New Sql Script (Text)";
             this.mnuMainAddSqlScript.Click += new System.EventHandler(this.mnuAddSqlScriptText_Click);
             // 
             // mnuMainAddNewFile
             // 
             this.mnuMainAddNewFile.Enabled = false;
-            this.mnuMainAddNewFile.Image = global::SqlSync.Properties.Resources.Script_Load;
             this.mnuMainAddNewFile.MergeIndex = 3;
             this.mnuMainAddNewFile.Name = "mnuMainAddNewFile";
-            this.mnuMainAddNewFile.Size = new System.Drawing.Size(344, 22);
+            this.mnuMainAddNewFile.Size = new System.Drawing.Size(345, 22);
             this.mnuMainAddNewFile.Text = "Add New File";
             this.mnuMainAddNewFile.Click += new System.EventHandler(this.mnuAddScript_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(341, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(342, 6);
             // 
             // mnuImportScriptFromFile
             // 
             this.mnuImportScriptFromFile.Enabled = false;
-            this.mnuImportScriptFromFile.Image = global::SqlSync.Properties.Resources.Import;
             this.mnuImportScriptFromFile.MergeIndex = 3;
             this.mnuImportScriptFromFile.Name = "mnuImportScriptFromFile";
-            this.mnuImportScriptFromFile.Size = new System.Drawing.Size(344, 22);
+            this.mnuImportScriptFromFile.Size = new System.Drawing.Size(345, 22);
             this.mnuImportScriptFromFile.Text = "&Import Scripts from Sql Build File";
             this.mnuImportScriptFromFile.Click += new System.EventHandler(this.mnuImportScriptFromFile_Click);
             // 
@@ -2445,15 +2400,14 @@ namespace SqlSync.SqlBuild
             // 
             this.mnuCompare.Enabled = false;
             this.mnuCompare.Name = "mnuCompare";
-            this.mnuCompare.Size = new System.Drawing.Size(344, 22);
+            this.mnuCompare.Size = new System.Drawing.Size(345, 22);
             this.mnuCompare.Text = "Compare Build File To...";
             this.mnuCompare.Click += new System.EventHandler(this.mnuCompare_Click);
             // 
             // mnuDacpacDelta
             // 
-            this.mnuDacpacDelta.Image = global::SqlSync.Properties.Resources.importDB;
             this.mnuDacpacDelta.Name = "mnuDacpacDelta";
-            this.mnuDacpacDelta.Size = new System.Drawing.Size(344, 22);
+            this.mnuDacpacDelta.Size = new System.Drawing.Size(345, 22);
             this.mnuDacpacDelta.Text = "Sql Build File from DACPAC/DB Delta";
             this.mnuDacpacDelta.Click += new System.EventHandler(this.mnuDacpacDelta_Click);
             // 
@@ -2461,7 +2415,7 @@ namespace SqlSync.SqlBuild
             // 
             this.menuItem12.MergeIndex = 4;
             this.menuItem12.Name = "menuItem12";
-            this.menuItem12.Size = new System.Drawing.Size(341, 6);
+            this.menuItem12.Size = new System.Drawing.Size(342, 6);
             // 
             // mnuExportScriptText
             // 
@@ -2472,17 +2426,16 @@ namespace SqlSync.SqlBuild
             this.mnuIncludeUSE,
             this.mnuIncludeSequence});
             this.mnuExportScriptText.Enabled = false;
-            this.mnuExportScriptText.Image = global::SqlSync.Properties.Resources.Export;
             this.mnuExportScriptText.MergeIndex = 6;
             this.mnuExportScriptText.Name = "mnuExportScriptText";
-            this.mnuExportScriptText.Size = new System.Drawing.Size(344, 22);
+            this.mnuExportScriptText.Size = new System.Drawing.Size(345, 22);
             this.mnuExportScriptText.Text = "Export Scripts To";
             // 
             // mnuIndividualFiles
             // 
             this.mnuIndividualFiles.MergeIndex = 0;
             this.mnuIndividualFiles.Name = "mnuIndividualFiles";
-            this.mnuIndividualFiles.Size = new System.Drawing.Size(246, 22);
+            this.mnuIndividualFiles.Size = new System.Drawing.Size(247, 22);
             this.mnuIndividualFiles.Text = "Individual Script Files";
             this.mnuIndividualFiles.Click += new System.EventHandler(this.mnuIndividualFiles_Click);
             // 
@@ -2490,7 +2443,7 @@ namespace SqlSync.SqlBuild
             // 
             this.mnuCombinedFile.MergeIndex = 1;
             this.mnuCombinedFile.Name = "mnuCombinedFile";
-            this.mnuCombinedFile.Size = new System.Drawing.Size(246, 22);
+            this.mnuCombinedFile.Size = new System.Drawing.Size(247, 22);
             this.mnuCombinedFile.Text = "Consolidated Script File";
             this.mnuCombinedFile.Click += new System.EventHandler(this.mnuCombinedFile_Click);
             // 
@@ -2498,7 +2451,7 @@ namespace SqlSync.SqlBuild
             // 
             this.menuItem22.MergeIndex = 2;
             this.menuItem22.Name = "menuItem22";
-            this.menuItem22.Size = new System.Drawing.Size(243, 6);
+            this.menuItem22.Size = new System.Drawing.Size(244, 6);
             // 
             // mnuIncludeUSE
             // 
@@ -2507,7 +2460,7 @@ namespace SqlSync.SqlBuild
             this.mnuIncludeUSE.CheckState = System.Windows.Forms.CheckState.Checked;
             this.mnuIncludeUSE.MergeIndex = 3;
             this.mnuIncludeUSE.Name = "mnuIncludeUSE";
-            this.mnuIncludeUSE.Size = new System.Drawing.Size(246, 22);
+            this.mnuIncludeUSE.Size = new System.Drawing.Size(247, 22);
             this.mnuIncludeUSE.Text = "Include \"USE\" Statements";
             // 
             // mnuIncludeSequence
@@ -2517,52 +2470,48 @@ namespace SqlSync.SqlBuild
             this.mnuIncludeSequence.CheckState = System.Windows.Forms.CheckState.Checked;
             this.mnuIncludeSequence.MergeIndex = 4;
             this.mnuIncludeSequence.Name = "mnuIncludeSequence";
-            this.mnuIncludeSequence.Size = new System.Drawing.Size(246, 22);
+            this.mnuIncludeSequence.Size = new System.Drawing.Size(247, 22);
             this.mnuIncludeSequence.Text = "Include Sequence Number Prefix";
             // 
             // menuItem15
             // 
             this.menuItem15.MergeIndex = 7;
             this.menuItem15.Name = "menuItem15";
-            this.menuItem15.Size = new System.Drawing.Size(341, 6);
+            this.menuItem15.Size = new System.Drawing.Size(342, 6);
             // 
             // startConfigureMultiServerDatabaseRunToolStripMenuItem
             // 
-            this.startConfigureMultiServerDatabaseRunToolStripMenuItem.Image = global::SqlSync.Properties.Resources.multi_db;
             this.startConfigureMultiServerDatabaseRunToolStripMenuItem.Name = "startConfigureMultiServerDatabaseRunToolStripMenuItem";
-            this.startConfigureMultiServerDatabaseRunToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
+            this.startConfigureMultiServerDatabaseRunToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
             this.startConfigureMultiServerDatabaseRunToolStripMenuItem.Text = "Configure Multi Server/Database Run";
             this.startConfigureMultiServerDatabaseRunToolStripMenuItem.Click += new System.EventHandler(this.startConfigureMultiServerDatabaseRunToolStripMenuItem_Click);
             // 
             // remoteExecutionServiceToolStripMenuItem
             // 
-            //this.remoteExecutionServiceToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Server_Internet;
-            //this.remoteExecutionServiceToolStripMenuItem.Name = "remoteExecutionServiceToolStripMenuItem";
-            //this.remoteExecutionServiceToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
-            //this.remoteExecutionServiceToolStripMenuItem.Text = "Remote Execution Service";
-            //this.remoteExecutionServiceToolStripMenuItem.Click += new System.EventHandler(this.remoteExecutionServiceToolStripMenuItem_Click);
+            this.remoteExecutionServiceToolStripMenuItem.Name = "remoteExecutionServiceToolStripMenuItem";
+            this.remoteExecutionServiceToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(341, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(342, 6);
             // 
             // mnuFileMRU
             // 
             this.mnuFileMRU.MergeIndex = 8;
             this.mnuFileMRU.Name = "mnuFileMRU";
-            this.mnuFileMRU.Size = new System.Drawing.Size(344, 22);
+            this.mnuFileMRU.Size = new System.Drawing.Size(345, 22);
             this.mnuFileMRU.Text = "Recent Files";
             // 
             // toolStripSeparator13
             // 
             this.toolStripSeparator13.Name = "toolStripSeparator13";
-            this.toolStripSeparator13.Size = new System.Drawing.Size(341, 6);
+            this.toolStripSeparator13.Size = new System.Drawing.Size(342, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(344, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -2584,16 +2533,14 @@ namespace SqlSync.SqlBuild
             this.toolStripSeparator18,
             this.inferScriptTagFromFileNameToolStripMenuItem});
             this.mnuListTop.Enabled = false;
-            this.mnuListTop.Image = global::SqlSync.Properties.Resources.Columns_2;
             this.mnuListTop.MergeIndex = 1;
             this.mnuListTop.Name = "mnuListTop";
-            this.mnuListTop.Size = new System.Drawing.Size(53, 20);
+            this.mnuListTop.Size = new System.Drawing.Size(37, 20);
             this.mnuListTop.Text = "&List";
             this.mnuListTop.DropDownOpening += new System.EventHandler(this.mnuListTop_DropDownOpening);
             // 
             // mnuFindScript
             // 
-            this.mnuFindScript.Image = global::SqlSync.Properties.Resources.Search;
             this.mnuFindScript.MergeIndex = 0;
             this.mnuFindScript.Name = "mnuFindScript";
             this.mnuFindScript.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F)));
@@ -2603,7 +2550,6 @@ namespace SqlSync.SqlBuild
             // 
             // menuItem9
             // 
-            this.menuItem9.Image = global::SqlSync.Properties.Resources.Search_Next;
             this.menuItem9.MergeIndex = 1;
             this.menuItem9.Name = "menuItem9";
             this.menuItem9.ShortcutKeys = System.Windows.Forms.Keys.F3;
@@ -2619,7 +2565,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuRenumberSequence
             // 
-            this.mnuRenumberSequence.Image = global::SqlSync.Properties.Resources.Numbering_2;
             this.mnuRenumberSequence.MergeIndex = 3;
             this.mnuRenumberSequence.Name = "mnuRenumberSequence";
             this.mnuRenumberSequence.Size = new System.Drawing.Size(327, 22);
@@ -2628,7 +2573,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuResortByFileType
             // 
-            this.mnuResortByFileType.Image = global::SqlSync.Properties.Resources.Sort_Descending;
             this.mnuResortByFileType.MergeIndex = 4;
             this.mnuResortByFileType.Name = "mnuResortByFileType";
             this.mnuResortByFileType.Size = new System.Drawing.Size(327, 22);
@@ -2650,7 +2594,7 @@ namespace SqlSync.SqlBuild
             // 
             this.mnuExportBuildListToFile.MergeIndex = 0;
             this.mnuExportBuildListToFile.Name = "mnuExportBuildListToFile";
-            this.mnuExportBuildListToFile.Size = new System.Drawing.Size(142, 22);
+            this.mnuExportBuildListToFile.Size = new System.Drawing.Size(141, 22);
             this.mnuExportBuildListToFile.Text = "To &File";
             this.mnuExportBuildListToFile.Click += new System.EventHandler(this.mnuExportBuildList_Click);
             // 
@@ -2658,7 +2602,7 @@ namespace SqlSync.SqlBuild
             // 
             this.mnuExportBuildListToClipBoard.MergeIndex = 1;
             this.mnuExportBuildListToClipBoard.Name = "mnuExportBuildListToClipBoard";
-            this.mnuExportBuildListToClipBoard.Size = new System.Drawing.Size(142, 22);
+            this.mnuExportBuildListToClipBoard.Size = new System.Drawing.Size(141, 22);
             this.mnuExportBuildListToClipBoard.Text = "To &Clipboard";
             this.mnuExportBuildListToClipBoard.Click += new System.EventHandler(this.mnuExportBuildListToClipBoard_Click);
             // 
@@ -2782,15 +2726,14 @@ namespace SqlSync.SqlBuild
             this.toolStripSeparator19,
             this.createBackoutPackageToolStripMenuItem});
             this.mnuScripting.Enabled = false;
-            this.mnuScripting.Image = global::SqlSync.Properties.Resources.Script_Edit;
             this.mnuScripting.MergeIndex = 2;
             this.mnuScripting.Name = "mnuScripting";
-            this.mnuScripting.Size = new System.Drawing.Size(82, 20);
+            this.mnuScripting.Size = new System.Drawing.Size(66, 20);
             this.mnuScripting.Text = "Scripting";
             // 
             // mnuDDActiveDatabase
             // 
-            this.mnuDDActiveDatabase.Font = new System.Drawing.Font("Tahoma", 9F);
+            this.mnuDDActiveDatabase.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.mnuDDActiveDatabase.Name = "mnuDDActiveDatabase";
             this.mnuDDActiveDatabase.Size = new System.Drawing.Size(200, 22);
             this.mnuDDActiveDatabase.Text = "<< Select Active Database >>";
@@ -2810,71 +2753,66 @@ namespace SqlSync.SqlBuild
             this.mnuAddObjectCreate.Enabled = false;
             this.mnuAddObjectCreate.MergeIndex = 1;
             this.mnuAddObjectCreate.Name = "mnuAddObjectCreate";
-            this.mnuAddObjectCreate.Size = new System.Drawing.Size(262, 22);
+            this.mnuAddObjectCreate.Size = new System.Drawing.Size(261, 22);
             this.mnuAddObjectCreate.Text = "Add Object Create Scripts";
             // 
             // mnuAddStoredProcs
             // 
-            this.mnuAddStoredProcs.Image = global::SqlSync.Properties.Resources.storedproc1;
             this.mnuAddStoredProcs.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.mnuAddStoredProcs.ImageTransparentColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(219)))), ((int)(((byte)(224)))));
             this.mnuAddStoredProcs.MergeIndex = 0;
             this.mnuAddStoredProcs.Name = "mnuAddStoredProcs";
-            this.mnuAddStoredProcs.Size = new System.Drawing.Size(175, 26);
+            this.mnuAddStoredProcs.Size = new System.Drawing.Size(170, 22);
             this.mnuAddStoredProcs.Text = "Stored Procedures";
             this.mnuAddStoredProcs.Click += new System.EventHandler(this.mnuAddStoredProcs_Click);
             // 
             // mnuAddFunctions
             // 
-            this.mnuAddFunctions.Image = global::SqlSync.Properties.Resources.Function_2;
             this.mnuAddFunctions.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.mnuAddFunctions.ImageTransparentColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(219)))), ((int)(((byte)(224)))));
             this.mnuAddFunctions.MergeIndex = 1;
             this.mnuAddFunctions.Name = "mnuAddFunctions";
-            this.mnuAddFunctions.Size = new System.Drawing.Size(175, 26);
+            this.mnuAddFunctions.Size = new System.Drawing.Size(170, 22);
             this.mnuAddFunctions.Text = "Functions";
             this.mnuAddFunctions.Click += new System.EventHandler(this.mnuAddFunctions_Click);
             // 
             // mnuAddViews
             // 
-            this.mnuAddViews.Image = global::SqlSync.Properties.Resources.Debug_Watch;
             this.mnuAddViews.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.mnuAddViews.ImageTransparentColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(219)))), ((int)(((byte)(224)))));
             this.mnuAddViews.MergeIndex = 2;
             this.mnuAddViews.Name = "mnuAddViews";
-            this.mnuAddViews.Size = new System.Drawing.Size(175, 26);
+            this.mnuAddViews.Size = new System.Drawing.Size(170, 22);
             this.mnuAddViews.Text = "Views";
             this.mnuAddViews.Click += new System.EventHandler(this.mnuAddViews_Click);
             // 
             // mnuAddTables
             // 
-            this.mnuAddTables.Image = global::SqlSync.Properties.Resources.Table;
             this.mnuAddTables.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.mnuAddTables.ImageTransparentColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(219)))), ((int)(((byte)(224)))));
             this.mnuAddTables.MergeIndex = 3;
             this.mnuAddTables.Name = "mnuAddTables";
-            this.mnuAddTables.Size = new System.Drawing.Size(175, 26);
+            this.mnuAddTables.Size = new System.Drawing.Size(170, 22);
             this.mnuAddTables.Text = "Tables";
             this.mnuAddTables.Click += new System.EventHandler(this.mnuAddTables_Click);
             // 
             // mnuAddTriggers
             // 
-            this.mnuAddTriggers.Image = global::SqlSync.Properties.Resources.Execute;
             this.mnuAddTriggers.Name = "mnuAddTriggers";
-            this.mnuAddTriggers.Size = new System.Drawing.Size(175, 26);
+            this.mnuAddTriggers.Size = new System.Drawing.Size(170, 22);
             this.mnuAddTriggers.Text = "Triggers";
             this.mnuAddTriggers.Click += new System.EventHandler(this.mnuAddTriggers_Click);
             // 
             // toolStripSeparator21
             // 
             this.toolStripSeparator21.Name = "toolStripSeparator21";
-            this.toolStripSeparator21.Size = new System.Drawing.Size(172, 6);
+            this.toolStripSeparator21.Size = new System.Drawing.Size(167, 6);
             this.toolStripSeparator21.Visible = false;
             // 
             // mnuAddRoles
             // 
             this.mnuAddRoles.Name = "mnuAddRoles";
-            this.mnuAddRoles.Size = new System.Drawing.Size(175, 26);
+            this.mnuAddRoles.Size = new System.Drawing.Size(170, 22);
             this.mnuAddRoles.Text = "Roles";
             this.mnuAddRoles.Visible = false;
             this.mnuAddRoles.Click += new System.EventHandler(this.mnuAddRoles_Click);
@@ -2883,9 +2821,8 @@ namespace SqlSync.SqlBuild
             // 
             this.scriptingOptionsToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
             this.scriptingOptionsToolStripMenuItem.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.scriptingOptionsToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Wizard;
             this.scriptingOptionsToolStripMenuItem.Name = "scriptingOptionsToolStripMenuItem";
-            this.scriptingOptionsToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.scriptingOptionsToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
             this.scriptingOptionsToolStripMenuItem.Text = "Scripting Options";
             // 
             // scriptALTERAndCREATEToolStripMenuItem
@@ -2893,7 +2830,7 @@ namespace SqlSync.SqlBuild
             this.scriptALTERAndCREATEToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
             this.scriptALTERAndCREATEToolStripMenuItem.CheckOnClick = true;
             this.scriptALTERAndCREATEToolStripMenuItem.Name = "scriptALTERAndCREATEToolStripMenuItem";
-            this.scriptALTERAndCREATEToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.scriptALTERAndCREATEToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
             this.scriptALTERAndCREATEToolStripMenuItem.Text = "Script Object ALTER and CREATE";
             this.scriptALTERAndCREATEToolStripMenuItem.Click += new System.EventHandler(this.scriptALTERVsCREATEToolStripMenuItem_Click);
             // 
@@ -2902,7 +2839,7 @@ namespace SqlSync.SqlBuild
             this.includeObjectPermissionsToolStripMenuItem1.BackColor = System.Drawing.SystemColors.Control;
             this.includeObjectPermissionsToolStripMenuItem1.CheckOnClick = true;
             this.includeObjectPermissionsToolStripMenuItem1.Name = "includeObjectPermissionsToolStripMenuItem1";
-            this.includeObjectPermissionsToolStripMenuItem1.Size = new System.Drawing.Size(262, 22);
+            this.includeObjectPermissionsToolStripMenuItem1.Size = new System.Drawing.Size(261, 22);
             this.includeObjectPermissionsToolStripMenuItem1.Text = "Include Object Permissions";
             this.includeObjectPermissionsToolStripMenuItem1.Click += new System.EventHandler(this.includeObjectPermissionsToolStripMenuItem_Click);
             // 
@@ -2910,14 +2847,13 @@ namespace SqlSync.SqlBuild
             // 
             this.toolStripSeparator3.BackColor = System.Drawing.SystemColors.Control;
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(259, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(258, 6);
             // 
             // mnuAddCodeTablePop
             // 
-            this.mnuAddCodeTablePop.Image = global::SqlSync.Properties.Resources.Table_Import;
             this.mnuAddCodeTablePop.MergeIndex = 2;
             this.mnuAddCodeTablePop.Name = "mnuAddCodeTablePop";
-            this.mnuAddCodeTablePop.Size = new System.Drawing.Size(262, 22);
+            this.mnuAddCodeTablePop.Size = new System.Drawing.Size(261, 22);
             this.mnuAddCodeTablePop.Text = "Add Code Table Populate Scripts";
             this.mnuAddCodeTablePop.Click += new System.EventHandler(this.mnuAddCodeTablePop_Click);
             // 
@@ -2925,36 +2861,33 @@ namespace SqlSync.SqlBuild
             // 
             this.menuItem3.MergeIndex = 3;
             this.menuItem3.Name = "menuItem3";
-            this.menuItem3.Size = new System.Drawing.Size(259, 6);
+            this.menuItem3.Size = new System.Drawing.Size(258, 6);
             // 
             // mnuUpdatePopulate
             // 
-            this.mnuUpdatePopulate.Image = global::SqlSync.Properties.Resources.DB_Refresh;
             this.mnuUpdatePopulate.MergeIndex = 4;
             this.mnuUpdatePopulate.Name = "mnuUpdatePopulate";
-            this.mnuUpdatePopulate.Size = new System.Drawing.Size(262, 22);
+            this.mnuUpdatePopulate.Size = new System.Drawing.Size(261, 22);
             this.mnuUpdatePopulate.Text = "Update Code Table Populate Scripts";
             this.mnuUpdatePopulate.Click += new System.EventHandler(this.mnuUpdatePopulate_Click);
             // 
             // mnuObjectUpdates
             // 
-            this.mnuObjectUpdates.Image = global::SqlSync.Properties.Resources.Update;
             this.mnuObjectUpdates.MergeIndex = 5;
             this.mnuObjectUpdates.Name = "mnuObjectUpdates";
-            this.mnuObjectUpdates.Size = new System.Drawing.Size(262, 22);
+            this.mnuObjectUpdates.Size = new System.Drawing.Size(261, 22);
             this.mnuObjectUpdates.Text = "Update Object Create Scripts";
             this.mnuObjectUpdates.Click += new System.EventHandler(this.mnuObjectUpdates_Click);
             // 
             // toolStripSeparator19
             // 
             this.toolStripSeparator19.Name = "toolStripSeparator19";
-            this.toolStripSeparator19.Size = new System.Drawing.Size(259, 6);
+            this.toolStripSeparator19.Size = new System.Drawing.Size(258, 6);
             // 
             // createBackoutPackageToolStripMenuItem
             // 
-            this.createBackoutPackageToolStripMenuItem.Image = global::SqlSync.Properties.Resources.History;
             this.createBackoutPackageToolStripMenuItem.Name = "createBackoutPackageToolStripMenuItem";
-            this.createBackoutPackageToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.createBackoutPackageToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
             this.createBackoutPackageToolStripMenuItem.Text = "Create back out package";
             this.createBackoutPackageToolStripMenuItem.Click += new System.EventHandler(this.createBackoutPackageToolStripMenuItem_Click);
             // 
@@ -2967,10 +2900,9 @@ namespace SqlSync.SqlBuild
             this.mnuShowBuildHistory,
             this.archiveBuildHistoryToolStripMenuItem});
             this.mnuLogging.Enabled = false;
-            this.mnuLogging.Image = global::SqlSync.Properties.Resources.Note_Book;
             this.mnuLogging.MergeIndex = 3;
             this.mnuLogging.Name = "mnuLogging";
-            this.mnuLogging.Size = new System.Drawing.Size(79, 20);
+            this.mnuLogging.Size = new System.Drawing.Size(63, 20);
             this.mnuLogging.Text = "Lo&gging";
             // 
             // mnuShowBuildLogs
@@ -3031,15 +2963,13 @@ namespace SqlSync.SqlBuild
             this.toolStripSeparator14,
             this.scriptPolicyCheckingToolStripMenuItem,
             this.calculateScriptPackageHashSignatureToolStripMenuItem});
-            this.menuItem16.Image = global::SqlSync.Properties.Resources.Tools;
             this.menuItem16.MergeIndex = 4;
             this.menuItem16.Name = "menuItem16";
-            this.menuItem16.Size = new System.Drawing.Size(63, 20);
+            this.menuItem16.Size = new System.Drawing.Size(46, 20);
             this.menuItem16.Text = "Tools";
             // 
             // mnuObjectValidation
             // 
-            this.mnuObjectValidation.Image = global::SqlSync.Properties.Resources.Certificate;
             this.mnuObjectValidation.MergeIndex = 0;
             this.mnuObjectValidation.Name = "mnuObjectValidation";
             this.mnuObjectValidation.Size = new System.Drawing.Size(286, 22);
@@ -3048,7 +2978,6 @@ namespace SqlSync.SqlBuild
             // 
             // storedProcedureTestingToolStripMenuItem
             // 
-            this.storedProcedureTestingToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Procedure;
             this.storedProcedureTestingToolStripMenuItem.Name = "storedProcedureTestingToolStripMenuItem";
             this.storedProcedureTestingToolStripMenuItem.Size = new System.Drawing.Size(286, 22);
             this.storedProcedureTestingToolStripMenuItem.Text = "Stored Procedure Testing";
@@ -3062,7 +2991,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuSchemaScripting
             // 
-            this.mnuSchemaScripting.Image = global::SqlSync.Properties.Resources.Database_Schema;
             this.mnuSchemaScripting.MergeIndex = 2;
             this.mnuSchemaScripting.Name = "mnuSchemaScripting";
             this.mnuSchemaScripting.Size = new System.Drawing.Size(286, 22);
@@ -3071,7 +2999,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuCodeTableScripting
             // 
-            this.mnuCodeTableScripting.Image = global::SqlSync.Properties.Resources.Table_Relationships;
             this.mnuCodeTableScripting.MergeIndex = 3;
             this.mnuCodeTableScripting.Name = "mnuCodeTableScripting";
             this.mnuCodeTableScripting.Size = new System.Drawing.Size(286, 22);
@@ -3086,7 +3013,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuDataAuditScripting
             // 
-            this.mnuDataAuditScripting.Image = global::SqlSync.Properties.Resources.Datasheet_View;
             this.mnuDataAuditScripting.MergeIndex = 5;
             this.mnuDataAuditScripting.Name = "mnuDataAuditScripting";
             this.mnuDataAuditScripting.Size = new System.Drawing.Size(286, 22);
@@ -3095,7 +3021,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuDataExtraction
             // 
-            this.mnuDataExtraction.Image = global::SqlSync.Properties.Resources.Database_Open;
             this.mnuDataExtraction.MergeIndex = 6;
             this.mnuDataExtraction.Name = "mnuDataExtraction";
             this.mnuDataExtraction.Size = new System.Drawing.Size(286, 22);
@@ -3104,7 +3029,6 @@ namespace SqlSync.SqlBuild
             // 
             // createToolStripMenuItem
             // 
-            this.createToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Script_Load;
             this.createToolStripMenuItem.Name = "createToolStripMenuItem";
             this.createToolStripMenuItem.Size = new System.Drawing.Size(286, 22);
             this.createToolStripMenuItem.Text = "Create Scripts from Extracted Data";
@@ -3117,7 +3041,6 @@ namespace SqlSync.SqlBuild
             // 
             // mnuDatabaseSize
             // 
-            this.mnuDatabaseSize.Image = global::SqlSync.Properties.Resources.Database_Search;
             this.mnuDatabaseSize.MergeIndex = 7;
             this.mnuDatabaseSize.Name = "mnuDatabaseSize";
             this.mnuDatabaseSize.Size = new System.Drawing.Size(286, 22);
@@ -3145,7 +3068,6 @@ namespace SqlSync.SqlBuild
             // 
             // rebuildPreviouslyCommitedBuildFileToolStripMenuItem
             // 
-            this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Insert;
             this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem.Name = "rebuildPreviouslyCommitedBuildFileToolStripMenuItem";
             this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem.Size = new System.Drawing.Size(286, 22);
             this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem.Text = "Rebuild Previously Commited Build File";
@@ -3153,7 +3075,6 @@ namespace SqlSync.SqlBuild
             // 
             // constructCommandLineStringToolStripMenuItem
             // 
-            this.constructCommandLineStringToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Database_commandline;
             this.constructCommandLineStringToolStripMenuItem.Name = "constructCommandLineStringToolStripMenuItem";
             this.constructCommandLineStringToolStripMenuItem.Size = new System.Drawing.Size(286, 22);
             this.constructCommandLineStringToolStripMenuItem.Text = "Construct Command Line String";
@@ -3171,14 +3092,12 @@ namespace SqlSync.SqlBuild
             this.toolStripSeparator9,
             this.savePolicyResultsInCSVToolStripMenuItem,
             this.savePolicyResultsAsXMLToolStripMenuItem});
-            this.scriptPolicyCheckingToolStripMenuItem.Image = global::SqlSync.Properties.Resources.ScriptCheck;
             this.scriptPolicyCheckingToolStripMenuItem.Name = "scriptPolicyCheckingToolStripMenuItem";
             this.scriptPolicyCheckingToolStripMenuItem.Size = new System.Drawing.Size(286, 22);
             this.scriptPolicyCheckingToolStripMenuItem.Text = "Script Policy Checking";
             // 
             // runPolicyChecksToolStripMenuItem
             // 
-            this.runPolicyChecksToolStripMenuItem.Image = global::SqlSync.Properties.Resources.ScriptCheck;
             this.runPolicyChecksToolStripMenuItem.Name = "runPolicyChecksToolStripMenuItem";
             this.runPolicyChecksToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.runPolicyChecksToolStripMenuItem.Text = "Run Policy Checks";
@@ -3191,7 +3110,6 @@ namespace SqlSync.SqlBuild
             // 
             // savePolicyResultsInCSVToolStripMenuItem
             // 
-            this.savePolicyResultsInCSVToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Save;
             this.savePolicyResultsInCSVToolStripMenuItem.Name = "savePolicyResultsInCSVToolStripMenuItem";
             this.savePolicyResultsInCSVToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.savePolicyResultsInCSVToolStripMenuItem.Text = "Save Policy Results as CSV";
@@ -3199,7 +3117,6 @@ namespace SqlSync.SqlBuild
             // 
             // savePolicyResultsAsXMLToolStripMenuItem
             // 
-            this.savePolicyResultsAsXMLToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Save;
             this.savePolicyResultsAsXMLToolStripMenuItem.Name = "savePolicyResultsAsXMLToolStripMenuItem";
             this.savePolicyResultsAsXMLToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.savePolicyResultsAsXMLToolStripMenuItem.Text = "Save Policy Results as XML";
@@ -3207,7 +3124,6 @@ namespace SqlSync.SqlBuild
             // 
             // calculateScriptPackageHashSignatureToolStripMenuItem
             // 
-            this.calculateScriptPackageHashSignatureToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Signature;
             this.calculateScriptPackageHashSignatureToolStripMenuItem.Name = "calculateScriptPackageHashSignatureToolStripMenuItem";
             this.calculateScriptPackageHashSignatureToolStripMenuItem.Size = new System.Drawing.Size(286, 22);
             this.calculateScriptPackageHashSignatureToolStripMenuItem.Text = "Calculate Script Package Hash Signature";
@@ -3222,15 +3138,13 @@ namespace SqlSync.SqlBuild
             this.projectSiteToolStripMenuItem,
             this.viewLogFileMenuItem2,
             this.setLoggingLevelMenuItem2});
-            this.mnuHelp.Image = global::SqlSync.Properties.Resources.Help;
             this.mnuHelp.MergeIndex = 5;
             this.mnuHelp.Name = "mnuHelp";
-            this.mnuHelp.Size = new System.Drawing.Size(60, 20);
+            this.mnuHelp.Size = new System.Drawing.Size(44, 20);
             this.mnuHelp.Text = "Help";
             // 
             // mnuAbout
             // 
-            this.mnuAbout.Image = global::SqlSync.Properties.Resources.About;
             this.mnuAbout.MergeIndex = 0;
             this.mnuAbout.Name = "mnuAbout";
             this.mnuAbout.Size = new System.Drawing.Size(221, 22);
@@ -3239,7 +3153,6 @@ namespace SqlSync.SqlBuild
             // 
             // howToToolStripMenuItem
             // 
-            this.howToToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Help_2;
             this.howToToolStripMenuItem.Name = "howToToolStripMenuItem";
             this.howToToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.howToToolStripMenuItem.Text = "How Do I?";
@@ -3284,7 +3197,7 @@ namespace SqlSync.SqlBuild
             this.pnlManager.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlManager.Location = new System.Drawing.Point(526, 56);
             this.pnlManager.Name = "pnlManager";
-            this.pnlManager.Size = new System.Drawing.Size(547, 544);
+            this.pnlManager.Size = new System.Drawing.Size(547, 568);
             this.pnlManager.TabIndex = 19;
             // 
             // splitContainer1
@@ -3304,8 +3217,8 @@ namespace SqlSync.SqlBuild
             // 
             this.splitContainer1.Panel2.Controls.Add(this.grpBuildResults);
             this.splitContainer1.Panel2.Padding = new System.Windows.Forms.Padding(3);
-            this.splitContainer1.Size = new System.Drawing.Size(547, 544);
-            this.splitContainer1.SplitterDistance = 189;
+            this.splitContainer1.Size = new System.Drawing.Size(547, 568);
+            this.splitContainer1.SplitterDistance = 197;
             this.splitContainer1.TabIndex = 17;
             // 
             // pnlAdvanced
@@ -3313,7 +3226,7 @@ namespace SqlSync.SqlBuild
             this.pnlAdvanced.Controls.Add(this.lblAdvanced);
             this.pnlAdvanced.Controls.Add(this.grpAdvanced);
             this.pnlAdvanced.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlAdvanced.Location = new System.Drawing.Point(3, 171);
+            this.pnlAdvanced.Location = new System.Drawing.Point(3, 179);
             this.pnlAdvanced.Name = "pnlAdvanced";
             this.pnlAdvanced.Size = new System.Drawing.Size(541, 15);
             this.pnlAdvanced.TabIndex = 17;
@@ -3350,7 +3263,7 @@ namespace SqlSync.SqlBuild
             this.grpBuildResults.Location = new System.Drawing.Point(3, 3);
             this.grpBuildResults.Margin = new System.Windows.Forms.Padding(6);
             this.grpBuildResults.Name = "grpBuildResults";
-            this.grpBuildResults.Size = new System.Drawing.Size(541, 345);
+            this.grpBuildResults.Size = new System.Drawing.Size(541, 361);
             this.grpBuildResults.TabIndex = 16;
             this.grpBuildResults.TabStop = false;
             this.grpBuildResults.Text = "Build Results";
@@ -3361,14 +3274,14 @@ namespace SqlSync.SqlBuild
             this.pnlBuildScripts.Dock = System.Windows.Forms.DockStyle.Left;
             this.pnlBuildScripts.Location = new System.Drawing.Point(0, 56);
             this.pnlBuildScripts.Name = "pnlBuildScripts";
-            this.pnlBuildScripts.Size = new System.Drawing.Size(522, 544);
+            this.pnlBuildScripts.Size = new System.Drawing.Size(522, 568);
             this.pnlBuildScripts.TabIndex = 20;
             // 
             // splitter1
             // 
             this.splitter1.Location = new System.Drawing.Point(522, 56);
             this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(4, 544);
+            this.splitter1.Size = new System.Drawing.Size(4, 568);
             this.splitter1.TabIndex = 21;
             this.splitter1.TabStop = false;
             // 
@@ -3398,36 +3311,90 @@ namespace SqlSync.SqlBuild
             // toolStripContainer1
             // 
             // 
-            // toolStripContainer1.ContentPanel
             // 
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(150, 150);
+            // 
+            this.toolStripContainer1.BottomToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.BottomToolStripPanel.Name = "";
+            this.toolStripContainer1.BottomToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer1.BottomToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            // 
+            // 
+            // 
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(150, 175);
+            // 
+            // 
+            // 
+            this.toolStripContainer1.LeftToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.LeftToolStripPanel.Name = "";
+            this.toolStripContainer1.LeftToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer1.LeftToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.toolStripContainer1.Location = new System.Drawing.Point(8, 8);
             this.toolStripContainer1.Name = "toolStripContainer1";
+            // 
+            // 
+            // 
+            this.toolStripContainer1.RightToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.RightToolStripPanel.Name = "";
+            this.toolStripContainer1.RightToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer1.RightToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.toolStripContainer1.Size = new System.Drawing.Size(150, 175);
             this.toolStripContainer1.TabIndex = 22;
             this.toolStripContainer1.Text = "toolStripContainer1";
             // 
+            // 
+            // 
+            this.toolStripContainer1.TopToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.TopToolStripPanel.Name = "";
+            this.toolStripContainer1.TopToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer1.TopToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            // 
             // toolStripContainer2
             // 
             // 
-            // toolStripContainer2.ContentPanel
+            // 
+            // 
+            this.toolStripContainer2.BottomToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer2.BottomToolStripPanel.Name = "";
+            this.toolStripContainer2.BottomToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer2.BottomToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            // 
+            // 
             // 
             this.toolStripContainer2.ContentPanel.AutoScroll = true;
             this.toolStripContainer2.ContentPanel.Controls.Add(this.pnlManager);
             this.toolStripContainer2.ContentPanel.Controls.Add(this.splitter1);
             this.toolStripContainer2.ContentPanel.Controls.Add(this.pnlBuildScripts);
             this.toolStripContainer2.ContentPanel.Controls.Add(this.settingsControl1);
-            this.toolStripContainer2.ContentPanel.Size = new System.Drawing.Size(1073, 600);
+            this.toolStripContainer2.ContentPanel.Size = new System.Drawing.Size(1073, 624);
             this.toolStripContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            // 
+            // 
+            // 
+            this.toolStripContainer2.LeftToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer2.LeftToolStripPanel.Name = "";
+            this.toolStripContainer2.LeftToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer2.LeftToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.toolStripContainer2.Location = new System.Drawing.Point(0, 0);
             this.toolStripContainer2.Name = "toolStripContainer2";
+            // 
+            // 
+            // 
+            this.toolStripContainer2.RightToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer2.RightToolStripPanel.Name = "";
+            this.toolStripContainer2.RightToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer2.RightToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.toolStripContainer2.Size = new System.Drawing.Size(1073, 624);
             this.toolStripContainer2.TabIndex = 23;
             this.toolStripContainer2.Text = "toolStripContainer2";
             // 
-            // toolStripContainer2.TopToolStripPanel
+            // 
             // 
             this.toolStripContainer2.TopToolStripPanel.Controls.Add(this.mainMenu1);
+            this.toolStripContainer2.TopToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer2.TopToolStripPanel.Name = "";
+            this.toolStripContainer2.TopToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer2.TopToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.toolStripContainer2.TopToolStripPanel.Size = new System.Drawing.Size(1073, 24);
             // 
             // settingsControl1
             // 
@@ -3469,7 +3436,7 @@ namespace SqlSync.SqlBuild
             this.statGeneral.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.statGeneral.Name = "statGeneral";
             this.statGeneral.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
-            this.statGeneral.Size = new System.Drawing.Size(292, 19);
+            this.statGeneral.Size = new System.Drawing.Size(457, 19);
             this.statGeneral.Spring = true;
             this.statGeneral.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -3594,14 +3561,6 @@ namespace SqlSync.SqlBuild
             this.bgBulkAddStep2.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgBulkAddStep2_ProgressChanged);
             this.bgBulkAddStep2.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgBulkAddStep2_RunWorkerCompleted);
             // 
-            // bgCodeReview
-            // 
-            //this.bgCodeReview.WorkerReportsProgress = true;
-            //this.bgCodeReview.WorkerSupportsCancellation = true;
-            //this.bgCodeReview.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgCodeReview_DoWork);
-            //this.bgCodeReview.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgCodeReview_ProgressChanged);
-            //this.bgCodeReview.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgCodeReview_RunWorkerCompleted);
-            // 
             // SqlBuildForm
             // 
             this.AllowDrop = true;
@@ -3612,7 +3571,7 @@ namespace SqlSync.SqlBuild
             this.Controls.Add(this.toolStripContainer2);
             this.Controls.Add(this.toolStripContainer1);
             this.Controls.Add(this.statusStrip1);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
@@ -3645,13 +3604,9 @@ namespace SqlSync.SqlBuild
             this.grpAdvanced.PerformLayout();
             this.grpBuildResults.ResumeLayout(false);
             this.pnlBuildScripts.ResumeLayout(false);
-            this.toolStripContainer1.ResumeLayout(false);
-            this.toolStripContainer1.PerformLayout();
             this.toolStripContainer2.ContentPanel.ResumeLayout(false);
             this.toolStripContainer2.TopToolStripPanel.ResumeLayout(false);
             this.toolStripContainer2.TopToolStripPanel.PerformLayout();
-            this.toolStripContainer2.ResumeLayout(false);
-            this.toolStripContainer2.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -4054,7 +4009,7 @@ namespace SqlSync.SqlBuild
 
             try
             {
-                fileSize = new FileInfo(Path.Combine(this.projectFilePath + row.FileName)).Length;
+                fileSize = new FileInfo(Path.Combine(this.projectFilePath,row.FileName)).Length;
             }
             catch { }
 
@@ -4176,11 +4131,11 @@ namespace SqlSync.SqlBuild
             string scriptContents = string.Empty;
             try
             {
-                scriptContents = File.ReadAllText(this.projectFilePath + row.FileName);
+                scriptContents = File.ReadAllText( Path.Combine(this.projectFilePath,row.FileName));
             }
             catch (Exception exe)
             {
-                log.Error(String.Format("Unable to read file at {0} for list refresh", this.projectFilePath + row.FileName), exe);
+                log.Error(String.Format("Unable to read file at {0} for list refresh", Path.Combine(this.projectFilePath, row.FileName)), exe);
             }
 
             //Determine if this script requires a build message...  
@@ -4371,7 +4326,7 @@ namespace SqlSync.SqlBuild
                             try
                             {
                                 bg.ReportProgress(0, string.Format("Policy checking {0}", row.FileName));
-                                string scriptContents = File.ReadAllText(this.projectFilePath + row.FileName);
+                                string scriptContents = File.ReadAllText(Path.Combine(this.projectFilePath,row.FileName));
                                 violation = policyHelp.ValidateScriptAgainstPolicies(row.FileName, row.ScriptId, scriptContents, row.Database, 80);
                                 if (violation == null)
                                 {
@@ -4411,9 +4366,9 @@ namespace SqlSync.SqlBuild
                             }
                             catch (Exception exe)
                             {
-                                log.Error(String.Format("Unable to read file '{0}' for policy check validation", this.projectFilePath + row.FileName), exe);
+                                log.Error(String.Format("Unable to read file '{0}' for policy check validation", Path.Combine(this.projectFilePath, row.FileName)), exe);
                             }
-                        });
+                        }); 
                     }
                     else
                     {
@@ -4425,7 +4380,7 @@ namespace SqlSync.SqlBuild
                                        where sc.BuildOrder == index
                                        select sc).First<SqlSyncBuildData.ScriptRow>();
 
-                            string scriptContents = File.ReadAllText(this.projectFilePath + row.FileName);
+                            string scriptContents = File.ReadAllText(Path.Combine(this.projectFilePath, row.FileName));
                             violation = policyHelp.ValidateScriptAgainstPolicies(row.FileName, row.ScriptId, scriptContents, row.Database, 80);
                             
                             if (violation == null)
@@ -4877,7 +4832,7 @@ namespace SqlSync.SqlBuild
             string shortFileName = Path.GetFileName(fullFileName);
             bool fileAdded = true;
             //Move the file to the build file folder
-            string newLocalFile = this.projectFilePath + shortFileName;
+            string newLocalFile = Path.Combine(this.projectFilePath, shortFileName);
             if (File.Exists(fullFileName) && fullFileName != newLocalFile)
             {
                 bool copy = true;
@@ -5039,7 +4994,7 @@ namespace SqlSync.SqlBuild
                 else
                     return;
 
-                string fullFileName = this.projectFilePath + fileName;
+                string fullFileName = Path.Combine(this.projectFilePath, fileName);
                 if (File.Exists(fullFileName))
                 {
                     SqlSyncBuildData.ScriptRow cfgRow = this.GetScriptRow(new Guid(scriptGuid));
@@ -5052,7 +5007,7 @@ namespace SqlSync.SqlBuild
                     string textHash;
                     SqlBuild.SqlBuildFileHelper.GetSHA1Hash(fullFileName, out fileHash, out textHash, stripTransText);
                     bool allowEdit = true;
-                    if ((File.GetAttributes(this.projectFilePath + fileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                    if ((File.GetAttributes(fullFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                         allowEdit = false;
 
                     this.PopulateTagList();
@@ -8636,7 +8591,19 @@ namespace SqlSync.SqlBuild
             }
         }
 
-     
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            try
+            {
+                base.OnPaint(e);
+            }
+            catch (Exception ex)
+            {
+                this.Invalidate();  //attempt to redraw the control
+
+            }
+        }
+
 
 
     }

@@ -98,6 +98,8 @@ namespace SqlSync.BuildHistory
             this.buildTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.finalStatusDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.userIdDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ctxMaster = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.saveBuildDetailsForSelectedRowsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.buildBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.sqlSyncBuildDataBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.label1 = new System.Windows.Forms.Label();
@@ -113,21 +115,20 @@ namespace SqlSync.BuildHistory
             this.scriptRunIdDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.scriptRunBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.sqlSyncBuildProjectBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.ctxMaster = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.saveBuildDetailsForSelectedRowsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.sqlSyncBuildData1)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgMaster)).BeginInit();
+            this.ctxMaster.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.buildBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sqlSyncBuildDataBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgDetail)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scriptRunBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sqlSyncBuildProjectBindingSource)).BeginInit();
-            this.ctxMaster.SuspendLayout();
             this.SuspendLayout();
             // 
             // sqlSyncBuildData1
@@ -135,6 +136,7 @@ namespace SqlSync.BuildHistory
             this.sqlSyncBuildData1.DataSetName = "SqlSyncBuildData";
             this.sqlSyncBuildData1.EnforceConstraints = false;
             this.sqlSyncBuildData1.Locale = new System.Globalization.CultureInfo("en-US");
+            this.sqlSyncBuildData1.Namespace = "http://schemas.mckechney.com/SqlSyncBuildProject.xsd";
             this.sqlSyncBuildData1.SchemaSerializationMode = System.Data.SchemaSerializationMode.IncludeSchema;
             // 
             // contextMenuStrip1
@@ -142,12 +144,12 @@ namespace SqlSync.BuildHistory
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.viewScriptToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(146, 26);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(140, 26);
             // 
             // viewScriptToolStripMenuItem
             // 
             this.viewScriptToolStripMenuItem.Name = "viewScriptToolStripMenuItem";
-            this.viewScriptToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.viewScriptToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
             this.viewScriptToolStripMenuItem.Text = "View Results";
             this.viewScriptToolStripMenuItem.Click += new System.EventHandler(this.viewScriptToolStripMenuItem_Click);
             // 
@@ -174,10 +176,10 @@ namespace SqlSync.BuildHistory
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(3, 5);
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label2.Location = new System.Drawing.Point(4, 6);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(64, 16);
+            this.label2.Size = new System.Drawing.Size(63, 16);
             this.label2.TabIndex = 4;
             this.label2.Text = "Build List:";
             // 
@@ -188,9 +190,9 @@ namespace SqlSync.BuildHistory
             this.dgMaster.AllowUserToOrderColumns = true;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.dgMaster.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgMaster.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgMaster.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgMaster.AutoGenerateColumns = false;
             this.dgMaster.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.buildStartDataGridViewTextBoxColumn,
@@ -202,12 +204,12 @@ namespace SqlSync.BuildHistory
             this.userIdDataGridViewTextBoxColumn});
             this.dgMaster.ContextMenuStrip = this.ctxMaster;
             this.dgMaster.DataSource = this.buildBindingSource;
-            this.dgMaster.Location = new System.Drawing.Point(0, 34);
+            this.dgMaster.Location = new System.Drawing.Point(0, 42);
             this.dgMaster.Name = "dgMaster";
             this.dgMaster.ReadOnly = true;
             this.dgMaster.RowHeadersVisible = false;
-            this.dgMaster.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.dgMaster.Size = new System.Drawing.Size(1096, 149);
+            this.dgMaster.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.dgMaster.Size = new System.Drawing.Size(1096, 143);
             this.dgMaster.TabIndex = 3;
             this.dgMaster.CellEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgMaster_CellEnter);
             this.dgMaster.Click += new System.EventHandler(this.dgMaster_Click);
@@ -265,6 +267,20 @@ namespace SqlSync.BuildHistory
             this.userIdDataGridViewTextBoxColumn.Name = "userIdDataGridViewTextBoxColumn";
             this.userIdDataGridViewTextBoxColumn.ReadOnly = true;
             // 
+            // ctxMaster
+            // 
+            this.ctxMaster.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveBuildDetailsForSelectedRowsToolStripMenuItem});
+            this.ctxMaster.Name = "ctxMaster";
+            this.ctxMaster.Size = new System.Drawing.Size(263, 26);
+            // 
+            // saveBuildDetailsForSelectedRowsToolStripMenuItem
+            // 
+            this.saveBuildDetailsForSelectedRowsToolStripMenuItem.Name = "saveBuildDetailsForSelectedRowsToolStripMenuItem";
+            this.saveBuildDetailsForSelectedRowsToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.saveBuildDetailsForSelectedRowsToolStripMenuItem.Text = "Save Build Details for Selected Rows";
+            this.saveBuildDetailsForSelectedRowsToolStripMenuItem.Click += new System.EventHandler(this.saveBuildDetailsForSelectedRowsToolStripMenuItem_Click);
+            // 
             // buildBindingSource
             // 
             this.buildBindingSource.DataMember = "Build";
@@ -278,10 +294,10 @@ namespace SqlSync.BuildHistory
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(3, 9);
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label1.Location = new System.Drawing.Point(4, 11);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(86, 16);
+            this.label1.Size = new System.Drawing.Size(85, 16);
             this.label1.TabIndex = 3;
             this.label1.Text = "Build Details:";
             // 
@@ -292,9 +308,9 @@ namespace SqlSync.BuildHistory
             this.dgDetail.AllowUserToOrderColumns = true;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.dgDetail.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle2;
-            this.dgDetail.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgDetail.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgDetail.AutoGenerateColumns = false;
             this.dgDetail.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.fileNameDataGridViewTextBoxColumn,
@@ -308,12 +324,12 @@ namespace SqlSync.BuildHistory
             this.scriptRunIdDataGridViewTextBoxColumn});
             this.dgDetail.ContextMenuStrip = this.contextMenuStrip1;
             this.dgDetail.DataSource = this.scriptRunBindingSource;
-            this.dgDetail.Location = new System.Drawing.Point(0, 31);
+            this.dgDetail.Location = new System.Drawing.Point(0, 38);
             this.dgDetail.Name = "dgDetail";
             this.dgDetail.ReadOnly = true;
             this.dgDetail.RowHeadersVisible = false;
-            this.dgDetail.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.dgDetail.Size = new System.Drawing.Size(1096, 326);
+            this.dgDetail.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.dgDetail.Size = new System.Drawing.Size(1096, 319);
             this.dgDetail.TabIndex = 2;
             // 
             // fileNameDataGridViewTextBoxColumn
@@ -395,20 +411,6 @@ namespace SqlSync.BuildHistory
             this.sqlSyncBuildProjectBindingSource.DataMember = "SqlSyncBuildProject";
             this.sqlSyncBuildProjectBindingSource.DataSource = this.sqlSyncBuildDataBindingSource;
             // 
-            // ctxMaster
-            // 
-            this.ctxMaster.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.saveBuildDetailsForSelectedRowsToolStripMenuItem});
-            this.ctxMaster.Name = "ctxMaster";
-            this.ctxMaster.Size = new System.Drawing.Size(260, 26);
-            // 
-            // saveBuildDetailsForSelectedRowsToolStripMenuItem
-            // 
-            this.saveBuildDetailsForSelectedRowsToolStripMenuItem.Name = "saveBuildDetailsForSelectedRowsToolStripMenuItem";
-            this.saveBuildDetailsForSelectedRowsToolStripMenuItem.Size = new System.Drawing.Size(259, 22);
-            this.saveBuildDetailsForSelectedRowsToolStripMenuItem.Text = "Save Build Details for Selected Rows";
-            this.saveBuildDetailsForSelectedRowsToolStripMenuItem.Click += new System.EventHandler(this.saveBuildDetailsForSelectedRowsToolStripMenuItem_Click);
-            // 
             // saveFileDialog1
             // 
             this.saveFileDialog1.DefaultExt = "xml";
@@ -417,7 +419,7 @@ namespace SqlSync.BuildHistory
             // 
             // PastBuildReviewForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
             this.ClientSize = new System.Drawing.Size(1096, 534);
             this.Controls.Add(this.splitContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -430,14 +432,15 @@ namespace SqlSync.BuildHistory
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgMaster)).EndInit();
+            this.ctxMaster.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.buildBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sqlSyncBuildDataBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgDetail)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.scriptRunBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sqlSyncBuildProjectBindingSource)).EndInit();
-            this.ctxMaster.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}

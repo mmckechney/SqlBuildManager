@@ -19,8 +19,8 @@ namespace SqlSync
 		private System.ComponentModel.Container components = null;
 		private System.Windows.Forms.ListView lstStatus;
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel statStatus;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel statStatus;
 		private System.Windows.Forms.ColumnHeader columnHeader1;
 		private System.Windows.Forms.ColumnHeader columnHeader2;
 		private System.Windows.Forms.ColumnHeader columnHeader3;
@@ -90,8 +90,8 @@ namespace SqlSync
             this.colStart = new System.Windows.Forms.ColumnHeader();
             this.colEnd = new System.Windows.Forms.ColumnHeader();
             this.label1 = new System.Windows.Forms.Label();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statStatus = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.lstDatabase = new System.Windows.Forms.ListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
@@ -103,7 +103,6 @@ namespace SqlSync
             this.label3 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -156,16 +155,17 @@ namespace SqlSync
             // 
             this.statusBar1.Location = new System.Drawing.Point(0, 444);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
             this.statStatus});
-            this.statusBar1.ShowPanels = true;
+            //this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(1025, 22);
             this.statusBar1.TabIndex = 8;
             this.statusBar1.Text = "statusBar1";
             // 
             // statStatus
             // 
-            this.statStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+            this.statStatus.AutoSize = true;
+            this.statStatus.Spring = true;
             this.statStatus.Name = "statStatus";
             this.statStatus.Width = 1008;
             // 
@@ -284,7 +284,6 @@ namespace SqlSync
             this.Name = "AutoScripting";
             this.Text = "Sql Build Manager :: Auto Scripting";
             this.Load += new System.EventHandler(this.AutoScripting_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.Panel2.PerformLayout();

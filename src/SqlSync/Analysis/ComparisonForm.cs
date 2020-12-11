@@ -240,6 +240,7 @@ namespace SqlSync.Analysis
             this.finderSingle.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.finderSingle.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.finderSingle.Location = new System.Drawing.Point(0, 284);
+            this.finderSingle.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.finderSingle.Name = "finderSingle";
             this.finderSingle.Size = new System.Drawing.Size(1111, 25);
             this.finderSingle.TabIndex = 9;
@@ -250,7 +251,7 @@ namespace SqlSync.Analysis
             this.rtbResultsHighlight.CaseSensitive = false;
             this.rtbResultsHighlight.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rtbResultsHighlight.FilterAutoComplete = true;
-            this.rtbResultsHighlight.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rtbResultsHighlight.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.rtbResultsHighlight.HighlightDescriptors = highLightDescriptorCollection1;
             this.rtbResultsHighlight.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
             this.rtbResultsHighlight.Location = new System.Drawing.Point(0, 0);
@@ -266,6 +267,7 @@ namespace SqlSync.Analysis
             this.linkedBoxes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.linkedBoxes.LeftFileName = null;
             this.linkedBoxes.Location = new System.Drawing.Point(0, 0);
+            this.linkedBoxes.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.linkedBoxes.Name = "linkedBoxes";
             this.linkedBoxes.RightFileName = null;
             this.linkedBoxes.ShowMenuStrip = true;
@@ -287,7 +289,7 @@ namespace SqlSync.Analysis
             // 
             this.statGeneral.Margin = new System.Windows.Forms.Padding(0, 3, 150, 2);
             this.statGeneral.Name = "statGeneral";
-            this.statGeneral.Size = new System.Drawing.Size(38, 17);
+            this.statGeneral.Size = new System.Drawing.Size(39, 17);
             this.statGeneral.Text = "Ready";
             // 
             // pnlControls
@@ -309,7 +311,7 @@ namespace SqlSync.Analysis
             // 
             // statusStrip2
             // 
-            this.statusStrip2.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.statusStrip2.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.statusStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statOnlyInLeft,
             this.statIdentical,
@@ -353,9 +355,9 @@ namespace SqlSync.Analysis
             // 
             // lstFiles
             // 
-            this.lstFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.Index,
             this.colLeftTag,
@@ -366,14 +368,15 @@ namespace SqlSync.Analysis
             this.lstFiles.ContextMenuStrip = this.ctxImport;
             this.lstFiles.FullRowSelect = true;
             this.lstFiles.GridLines = true;
+            this.lstFiles.HideSelection = false;
             this.lstFiles.Location = new System.Drawing.Point(7, 98);
             this.lstFiles.Name = "lstFiles";
             this.lstFiles.Size = new System.Drawing.Size(1097, 187);
             this.lstFiles.TabIndex = 10;
             this.lstFiles.UseCompatibleStateImageBehavior = false;
             this.lstFiles.View = System.Windows.Forms.View.Details;
-            this.lstFiles.DoubleClick += new System.EventHandler(this.lstFiles_DoubleClick);
             this.lstFiles.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lstFiles_ColumnClick);
+            this.lstFiles.DoubleClick += new System.EventHandler(this.lstFiles_DoubleClick);
             // 
             // Index
             // 
@@ -411,14 +414,14 @@ namespace SqlSync.Analysis
             this.removeSelectedScriptsFromTheLeftFileToolStripMenuItem,
             this.mnuMergeResolve});
             this.ctxImport.Name = "ctxImport";
-            this.ctxImport.Size = new System.Drawing.Size(210, 70);
+            this.ctxImport.Size = new System.Drawing.Size(211, 70);
             this.ctxImport.Opening += new System.ComponentModel.CancelEventHandler(this.ctxImport_Opening);
             // 
             // mnuImportScripts
             // 
             this.mnuImportScripts.Image = ((System.Drawing.Image)(resources.GetObject("mnuImportScripts.Image")));
             this.mnuImportScripts.Name = "mnuImportScripts";
-            this.mnuImportScripts.Size = new System.Drawing.Size(209, 22);
+            this.mnuImportScripts.Size = new System.Drawing.Size(210, 22);
             this.mnuImportScripts.Text = "Import into Left File";
             this.mnuImportScripts.Click += new System.EventHandler(this.mnuImportScripts_Click);
             // 
@@ -426,7 +429,7 @@ namespace SqlSync.Analysis
             // 
             this.removeSelectedScriptsFromTheLeftFileToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("removeSelectedScriptsFromTheLeftFileToolStripMenuItem.Image")));
             this.removeSelectedScriptsFromTheLeftFileToolStripMenuItem.Name = "removeSelectedScriptsFromTheLeftFileToolStripMenuItem";
-            this.removeSelectedScriptsFromTheLeftFileToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.removeSelectedScriptsFromTheLeftFileToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
             this.removeSelectedScriptsFromTheLeftFileToolStripMenuItem.Text = "Remove from the Left File";
             this.removeSelectedScriptsFromTheLeftFileToolStripMenuItem.Click += new System.EventHandler(this.removeSelectedScriptsFromTheLeftFileToolStripMenuItem_Click);
             // 
@@ -434,7 +437,7 @@ namespace SqlSync.Analysis
             // 
             this.mnuMergeResolve.Image = ((System.Drawing.Image)(resources.GetObject("mnuMergeResolve.Image")));
             this.mnuMergeResolve.Name = "mnuMergeResolve";
-            this.mnuMergeResolve.Size = new System.Drawing.Size(209, 22);
+            this.mnuMergeResolve.Size = new System.Drawing.Size(210, 22);
             this.mnuMergeResolve.Text = "Merge / Resolve Conflict";
             this.mnuMergeResolve.Click += new System.EventHandler(this.mnuMergeResolve_Click);
             // 
@@ -470,8 +473,8 @@ namespace SqlSync.Analysis
             // 
             this.bgWorker.WorkerReportsProgress = true;
             this.bgWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgWorker_DoWork);
-            this.bgWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgWorker_RunWorkerCompleted);
             this.bgWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgWorker_ProgressChanged);
+            this.bgWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgWorker_RunWorkerCompleted);
             // 
             // ComparisonForm
             // 
@@ -480,12 +483,12 @@ namespace SqlSync.Analysis
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.splitter1);
             this.Controls.Add(this.pnlControls);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ComparisonForm";
             this.Text = "Sql Build Manager :: Build File Comparison";
-            this.Load += new System.EventHandler(this.ComparisonForm_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ComparisonForm_FormClosing);
+            this.Load += new System.EventHandler(this.ComparisonForm_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.pnlSingleResults.ResumeLayout(false);

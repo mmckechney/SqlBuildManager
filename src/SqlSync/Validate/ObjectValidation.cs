@@ -22,8 +22,8 @@ namespace SqlSync.Validate
         private System.Windows.Forms.ComboBox ddDatabaseList;
         private SqlSync.SettingsControl settingsControl1;
         private Connection.ConnectionData connData = null;
-        private System.Windows.Forms.StatusBar statusBar1;
-        private System.Windows.Forms.StatusBarPanel statStatus;
+        private System.Windows.Forms.StatusStrip statusBar1;
+        private System.Windows.Forms.ToolStripStatusLabel statStatus;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
@@ -80,8 +80,8 @@ namespace SqlSync.Validate
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ObjectValidation));
             this.label2 = new System.Windows.Forms.Label();
             this.ddDatabaseList = new System.Windows.Forms.ComboBox();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statStatus = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnValidate = new System.Windows.Forms.Button();
             this.lstResults = new System.Windows.Forms.ListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
@@ -103,7 +103,6 @@ namespace SqlSync.Validate
             this.changeSqlServerConnectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsControl1 = new SqlSync.SettingsControl();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
             this.pnlWarning.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -130,16 +129,17 @@ namespace SqlSync.Validate
             // 
             this.statusBar1.Location = new System.Drawing.Point(0, 427);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
             this.statStatus});
-            this.statusBar1.ShowPanels = true;
+            //this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(910, 22);
             this.statusBar1.TabIndex = 21;
             this.statusBar1.Text = "statusBar1";
             // 
             // statStatus
             // 
-            this.statStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+            this.statStatus.AutoSize = true;
+            this.statStatus.Spring = true;
             this.statStatus.Name = "statStatus";
             this.statStatus.Text = "Ready";
             this.statStatus.Width = 893;
@@ -346,7 +346,6 @@ namespace SqlSync.Validate
             this.Text = "Sql Build Manager :: Database Object Validation";
             this.Load += new System.EventHandler(this.ObjectValidation_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ObjectValidation_KeyDown);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
             this.pnlWarning.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.menuStrip1.ResumeLayout(false);

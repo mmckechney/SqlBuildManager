@@ -51,12 +51,17 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
- 
-    - name: Restore dependencies
-      run: dotnet restore ./src/sqlsync.sln
 
-    - name: Build Main Solution
-      run: dotnet build ./src/sqlsync.sln --configuration Release --no-restore
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.100
+ 
+    - name: Restore and build console app
+      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f netcoreapp3.1
+
+    - name: Restore and build desktop app
+      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f netcoreapp3.1
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl

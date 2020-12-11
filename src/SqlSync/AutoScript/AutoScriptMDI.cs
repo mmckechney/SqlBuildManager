@@ -9,9 +9,9 @@ namespace SqlSync.AutoScript
 	public class AutoScriptMDI :Form 
 	{
 		private string configFile = string.Empty;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel statOverall;
-		private System.Windows.Forms.StatusBarPanel statRunningCount;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel statOverall;
+		private System.Windows.Forms.ToolStripStatusLabel statRunningCount;
 		private AutoScriptingConfig config;
 		private int childCount = 0;
 		private int completedCount = 0;
@@ -76,24 +76,22 @@ namespace SqlSync.AutoScript
 		{
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AutoScriptMDI));
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statOverall = new System.Windows.Forms.StatusBarPanel();
-            this.statRunningCount = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statOverall = new System.Windows.Forms.ToolStripStatusLabel();
+            this.statRunningCount = new System.Windows.Forms.ToolStripStatusLabel();
 			this.mainMenu1 = new System.Windows.Forms.MenuStrip();
             this.menuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.statOverall)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statRunningCount)).BeginInit();
             this.SuspendLayout();
             // 
             // statusBar1
             // 
             this.statusBar1.Location = new System.Drawing.Point(0, 555);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
             this.statOverall,
             this.statRunningCount});
-            this.statusBar1.ShowPanels = true;
+            //this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(1000, 22);
             this.statusBar1.TabIndex = 1;
             this.statusBar1.Text = "statusBar1";
@@ -102,10 +100,11 @@ namespace SqlSync.AutoScript
             // 
             this.statOverall.Name = "statOverall";
             this.statOverall.Width = 350;
-            // 
-            // statRunningCount
-            // 
-            this.statRunningCount.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+			// 
+			// statRunningCount
+			// 
+			this.statRunningCount.AutoSize = true;
+			this.statRunningCount.Spring = true;
             this.statRunningCount.Name = "statRunningCount";
             this.statRunningCount.Width = 633;
             // 
@@ -140,8 +139,6 @@ namespace SqlSync.AutoScript
             this.Text = "Sql Build Manager :: Auto Scripting";
             this.Load += new System.EventHandler(this.AutoScriptMDI_Load);
             this.Closing += new System.ComponentModel.CancelEventHandler(this.AutoScriptMDI_Closing);
-            ((System.ComponentModel.ISupportInitialize)(this.statOverall)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statRunningCount)).EndInit();
             this.ResumeLayout(false);
 
 		}

@@ -25,8 +25,8 @@ namespace SqlSync.DataDump
 		private System.Windows.Forms.ComboBox ddDatabaseList;
 		private Connection.ConnectionData connData;
 		private System.Windows.Forms.LinkLabel lnkExtractData;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel statStatus;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel statStatus;
         private System.Windows.Forms.ColumnHeader columnHeader2;
 		private System.Windows.Forms.ToolStripMenuItem mnuChangeFolder;
 		private System.Windows.Forms.ToolStripMenuItem menuItem1;
@@ -44,6 +44,7 @@ namespace SqlSync.DataDump
         private ToolStripMenuItem toolStripMenuItem1;
         private ToolStripMenuItem changeSqlServerConnectionToolStripMenuItem;
         private ToolStripMenuItem changeDestinationFolderToolStripMenuItem;
+        private IContainer components;
         private ToolStripMenuItem toolStripMenuItem2;
         //private IContainer components;
 
@@ -78,6 +79,7 @@ namespace SqlSync.DataDump
 		/// </summary>
 		private void InitializeComponent()
 		{
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DataDumpForm));
             this.lnkCheckAll = new System.Windows.Forms.LinkLabel();
             this.label1 = new System.Windows.Forms.Label();
@@ -89,24 +91,25 @@ namespace SqlSync.DataDump
             this.menuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.ddDatabaseList = new System.Windows.Forms.ComboBox();
             this.lnkExtractData = new System.Windows.Forms.LinkLabel();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statStatus = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.label2 = new System.Windows.Forms.Label();
             this.lstResults = new System.Windows.Forms.ListView();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuOpen = new System.Windows.Forms.ToolStripMenuItem();
             this.label3 = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.changeDestinationFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.changeSqlServerConnectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.settingsControl1 = new SqlSync.SettingsControl();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
+            this.settingsControl1 = new SqlSync.SettingsControl();
+            this.statusBar1.SuspendLayout();
+            this.contextMenu1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -123,7 +126,7 @@ namespace SqlSync.DataDump
             // 
             // label1
             // 
-            this.label1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label1.Location = new System.Drawing.Point(16, 129);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(112, 16);
@@ -133,14 +136,15 @@ namespace SqlSync.DataDump
             // lstTables
             // 
             this.lstTables.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.lstTables.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.lstTables.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.lstTables.CheckBoxes = true;
             this.lstTables.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2});
             this.lstTables.FullRowSelect = true;
             this.lstTables.GridLines = true;
+            this.lstTables.HideSelection = false;
             this.lstTables.Location = new System.Drawing.Point(16, 147);
             this.lstTables.Name = "lstTables";
             this.lstTables.Size = new System.Drawing.Size(328, 226);
@@ -162,18 +166,18 @@ namespace SqlSync.DataDump
             // 
             // menuItem2
             // 
-           // this.menuItem2.Index = -1;
-            this.menuItem2.Text = "";
+            this.menuItem2.Name = "menuItem2";
+            this.menuItem2.Size = new System.Drawing.Size(32, 19);
             // 
             // mnuChangeFolder
             // 
-            //this.mnuChangeFolder.Index = -1;
-            this.mnuChangeFolder.Text = "";
+            this.mnuChangeFolder.Name = "mnuChangeFolder";
+            this.mnuChangeFolder.Size = new System.Drawing.Size(32, 19);
             // 
             // menuItem1
             // 
-            //this.menuItem1.Index = -1;
-            this.menuItem1.Text = "";
+            this.menuItem1.Name = "menuItem1";
+            this.menuItem1.Size = new System.Drawing.Size(32, 19);
             // 
             // ddDatabaseList
             // 
@@ -187,7 +191,7 @@ namespace SqlSync.DataDump
             // lnkExtractData
             // 
             this.lnkExtractData.Enabled = false;
-            this.lnkExtractData.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lnkExtractData.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.lnkExtractData.Location = new System.Drawing.Point(384, 113);
             this.lnkExtractData.Name = "lnkExtractData";
             this.lnkExtractData.Size = new System.Drawing.Size(100, 16);
@@ -198,24 +202,23 @@ namespace SqlSync.DataDump
             // 
             // statusBar1
             // 
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statStatus});
             this.statusBar1.Location = new System.Drawing.Point(0, 389);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
-            this.statStatus});
-            this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(744, 22);
             this.statusBar1.TabIndex = 15;
             this.statusBar1.Text = "statusBar1";
             // 
             // statStatus
             // 
-            this.statStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
             this.statStatus.Name = "statStatus";
-            this.statStatus.Width = 727;
+            this.statStatus.Size = new System.Drawing.Size(729, 17);
+            this.statStatus.Spring = true;
             // 
             // label2
             // 
-            this.label2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label2.Location = new System.Drawing.Point(16, 85);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(112, 16);
@@ -225,8 +228,8 @@ namespace SqlSync.DataDump
             // lstResults
             // 
             this.lstResults.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.lstResults.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.lstResults.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.lstResults.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader3,
             this.columnHeader4,
@@ -234,6 +237,7 @@ namespace SqlSync.DataDump
             this.lstResults.ContextMenuStrip = this.contextMenu1;
             this.lstResults.FullRowSelect = true;
             this.lstResults.GridLines = true;
+            this.lstResults.HideSelection = false;
             this.lstResults.Location = new System.Drawing.Point(384, 147);
             this.lstResults.Name = "lstResults";
             this.lstResults.Size = new System.Drawing.Size(328, 226);
@@ -260,18 +264,21 @@ namespace SqlSync.DataDump
             // 
             // contextMenu1
             // 
-            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
+            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuOpen});
+            this.contextMenu1.Name = "contextMenu1";
+            this.contextMenu1.Size = new System.Drawing.Size(125, 26);
             // 
             // mnuOpen
             // 
-            //this.mnuOpen.Index = 0;
+            this.mnuOpen.Name = "mnuOpen";
+            this.mnuOpen.Size = new System.Drawing.Size(124, 22);
             this.mnuOpen.Text = "Open File";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
             // 
             // label3
             // 
-            this.label3.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label3.Location = new System.Drawing.Point(384, 129);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(112, 16);
@@ -294,26 +301,30 @@ namespace SqlSync.DataDump
             this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.changeDestinationFolderToolStripMenuItem,
             this.changeSqlServerConnectionToolStripMenuItem});
-            this.toolStripMenuItem1.Image = global::SqlSync.Properties.Resources.Execute;
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(65, 20);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(54, 20);
             this.toolStripMenuItem1.Text = "Action";
             // 
             // changeDestinationFolderToolStripMenuItem
             // 
-            this.changeDestinationFolderToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Open;
             this.changeDestinationFolderToolStripMenuItem.Name = "changeDestinationFolderToolStripMenuItem";
-            this.changeDestinationFolderToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.changeDestinationFolderToolStripMenuItem.Size = new System.Drawing.Size(234, 22);
             this.changeDestinationFolderToolStripMenuItem.Text = "Change &Destination Folder";
             this.changeDestinationFolderToolStripMenuItem.Click += new System.EventHandler(this.mnuChangeFolder_Click);
             // 
             // changeSqlServerConnectionToolStripMenuItem
             // 
-            this.changeSqlServerConnectionToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Server1;
             this.changeSqlServerConnectionToolStripMenuItem.Name = "changeSqlServerConnectionToolStripMenuItem";
-            this.changeSqlServerConnectionToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.changeSqlServerConnectionToolStripMenuItem.Size = new System.Drawing.Size(234, 22);
             this.changeSqlServerConnectionToolStripMenuItem.Text = "Change Sql Server Connection";
             this.changeSqlServerConnectionToolStripMenuItem.Click += new System.EventHandler(this.mnuChangeSqlServer_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(12, 20);
+            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // settingsControl1
             // 
@@ -326,18 +337,10 @@ namespace SqlSync.DataDump
             this.settingsControl1.Server = "";
             this.settingsControl1.Size = new System.Drawing.Size(744, 56);
             this.settingsControl1.TabIndex = 16;
-            this.settingsControl1.Load += new System.EventHandler(this.settingsControl1_Load);
-            this.settingsControl1.ServerChanged += new SqlSync.ServerChangedEventHandler(this.settingsControl1_ServerChanged);
-            this.settingsControl1.DoubleClick += new System.EventHandler(this.settingsControl1_Click);
             this.settingsControl1.Click += new System.EventHandler(this.settingsControl1_Click);
-            // 
-            // toolStripMenuItem2
-            // 
-            this.toolStripMenuItem2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripMenuItem2.Image = global::SqlSync.Properties.Resources.Help_2;
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(28, 20);
-            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
+            this.settingsControl1.DoubleClick += new System.EventHandler(this.settingsControl1_Click);
+            this.settingsControl1.ServerChanged += new SqlSync.ServerChangedEventHandler(this.settingsControl1_ServerChanged);
+            this.settingsControl1.Load += new System.EventHandler(this.settingsControl1_Load);
             // 
             // DataDumpForm
             // 
@@ -354,14 +357,16 @@ namespace SqlSync.DataDump
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lstTables);
             this.Controls.Add(this.menuStrip1);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "DataDumpForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Sql Build Manager :: Data Extraction";
             this.Load += new System.EventHandler(this.DataDumpForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
+            this.statusBar1.ResumeLayout(false);
+            this.statusBar1.PerformLayout();
+            this.contextMenu1.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);

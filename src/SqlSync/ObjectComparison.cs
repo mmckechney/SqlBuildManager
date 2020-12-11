@@ -28,10 +28,10 @@ namespace SqlSync
 		private System.Windows.Forms.FolderBrowserDialog fldrSaveDir;
 		private System.Windows.Forms.ContextMenuStrip contextMenu1;
 		private System.Windows.Forms.ToolStripMenuItem mnuNotePad;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel statStatus;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel statStatus;
 		private System.Windows.Forms.ToolStripMenuItem mnuDefaultPath;
-		private System.Windows.Forms.StatusBarPanel statDefaultPath;
+		private System.Windows.Forms.ToolStripStatusLabel statDefaultPath;
 		private System.Windows.Forms.ToolStripMenuItem menuItem1;
 		private System.Windows.Forms.ToolStripMenuItem mnuDeleteFile;
 		private System.Windows.Forms.LinkLabel lnkDelete;
@@ -89,12 +89,10 @@ namespace SqlSync
             this.mnuDeleteFile = new System.Windows.Forms.ToolStripMenuItem();
             this.lnkScript = new System.Windows.Forms.LinkLabel();
             this.fldrSaveDir = new System.Windows.Forms.FolderBrowserDialog();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statStatus = new System.Windows.Forms.StatusBarPanel();
-            this.statDefaultPath = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.statDefaultPath = new System.Windows.Forms.ToolStripStatusLabel();
             this.lnkDelete = new System.Windows.Forms.LinkLabel();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statDefaultPath)).BeginInit();
             this.SuspendLayout();
             // 
             // lstComparison
@@ -195,17 +193,18 @@ namespace SqlSync
             // 
             this.statusBar1.Location = new System.Drawing.Point(0, 456);
             this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
             this.statStatus,
             this.statDefaultPath});
-            this.statusBar1.ShowPanels = true;
+            //this.statusBar1.ShowPanels = true;
             this.statusBar1.Size = new System.Drawing.Size(864, 22);
             this.statusBar1.TabIndex = 2;
             this.statusBar1.Text = "statusBar1";
-            // 
-            // statStatus
-            // 
-            this.statStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+			// 
+			// statStatus
+			// 
+			this.statStatus.AutoSize = true;
+			this.statStatus.Spring = true;
             this.statStatus.Name = "statStatus";
             this.statStatus.Text = "Ready";
             this.statStatus.Width = 447;
@@ -238,8 +237,6 @@ namespace SqlSync
             this.Name = "ObjectComparison";
             this.Text = "ObjectComparison";
             this.Load += new System.EventHandler(this.ObjectComparison_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statDefaultPath)).EndInit();
             this.ResumeLayout(false);
 
 		}

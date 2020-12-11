@@ -29,8 +29,8 @@ namespace SqlSync
 		private System.ComponentModel.IContainer components;
 		ConnectionData data = null;
 		private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
-		private System.Windows.Forms.StatusBar statusBar1;
-		private System.Windows.Forms.StatusBarPanel statStatus;
+		private System.Windows.Forms.StatusStrip statusBar1;
+		private System.Windows.Forms.ToolStripStatusLabel statStatus;
 		private System.Windows.Forms.ContextMenuStrip contextMenu1;
         private System.Windows.Forms.ToolStripMenuItem mnuAddTable;
 		private System.Windows.Forms.ToolStripMenuItem mnuDeleteTable;
@@ -169,8 +169,8 @@ namespace SqlSync
             this.mnuCopyTables = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuCopyTablesForsql = new System.Windows.Forms.ToolStripMenuItem();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statStatus = new System.Windows.Forms.StatusBarPanel();
+            this.statusBar1 = new System.Windows.Forms.StatusStrip();
+            this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.grpScripting = new System.Windows.Forms.GroupBox();
             this.btnGenerateScripts = new System.Windows.Forms.Button();
@@ -226,8 +226,9 @@ namespace SqlSync
             this.mnuAddNewTable = new System.Windows.Forms.ToolStripMenuItem();
             this.bgTriggerScript = new System.ComponentModel.BackgroundWorker();
             this.contextMenu1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).BeginInit();
+            this.statusBar1.SuspendLayout();
             this.grpScripting.SuspendLayout();
+            this.toolBar1.SuspendLayout();
             this.contextDatabase.SuspendLayout();
             this.mainMenu1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -236,7 +237,6 @@ namespace SqlSync
             this.panel2.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
-            this.toolStripContainer1.SuspendLayout();
             this.ctxCandidate.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -255,14 +255,14 @@ namespace SqlSync
             this.mnuCopyTables,
             this.mnuCopyTablesForsql});
             this.contextMenu1.Name = "contextMenu1";
-            this.contextMenu1.Size = new System.Drawing.Size(313, 198);
+            this.contextMenu1.Size = new System.Drawing.Size(322, 198);
             this.contextMenu1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenu1_Opening);
             // 
             // mnuWhereClause
             // 
             this.mnuWhereClause.MergeIndex = 0;
             this.mnuWhereClause.Name = "mnuWhereClause";
-            this.mnuWhereClause.Size = new System.Drawing.Size(312, 22);
+            this.mnuWhereClause.Size = new System.Drawing.Size(321, 22);
             this.mnuWhereClause.Text = "Add/View \"Where\" Clause";
             this.mnuWhereClause.Click += new System.EventHandler(this.mnuWhereClause_Click);
             // 
@@ -270,14 +270,14 @@ namespace SqlSync
             // 
             this.menuItem6.MergeIndex = 1;
             this.menuItem6.Name = "menuItem6";
-            this.menuItem6.Size = new System.Drawing.Size(309, 6);
+            this.menuItem6.Size = new System.Drawing.Size(318, 6);
             // 
             // mnuScriptMissingColumns
             // 
             this.mnuScriptMissingColumns.Enabled = false;
             this.mnuScriptMissingColumns.MergeIndex = 2;
             this.mnuScriptMissingColumns.Name = "mnuScriptMissingColumns";
-            this.mnuScriptMissingColumns.Size = new System.Drawing.Size(312, 22);
+            this.mnuScriptMissingColumns.Size = new System.Drawing.Size(321, 22);
             this.mnuScriptMissingColumns.Text = "Script For Missing Create/Update Columns";
             this.mnuScriptMissingColumns.Click += new System.EventHandler(this.mnuScriptMissingColumns_Click);
             // 
@@ -286,7 +286,7 @@ namespace SqlSync
             this.mnuScriptTrigger.Enabled = false;
             this.mnuScriptTrigger.MergeIndex = 3;
             this.mnuScriptTrigger.Name = "mnuScriptTrigger";
-            this.mnuScriptTrigger.Size = new System.Drawing.Size(312, 22);
+            this.mnuScriptTrigger.Size = new System.Drawing.Size(321, 22);
             this.mnuScriptTrigger.Text = "Script For Update Trigger";
             this.mnuScriptTrigger.Click += new System.EventHandler(this.mnuScriptTrigger_Click);
             // 
@@ -294,7 +294,7 @@ namespace SqlSync
             // 
             this.mnuScriptDefault.MergeIndex = 4;
             this.mnuScriptDefault.Name = "mnuScriptDefault";
-            this.mnuScriptDefault.Size = new System.Drawing.Size(312, 22);
+            this.mnuScriptDefault.Size = new System.Drawing.Size(321, 22);
             this.mnuScriptDefault.Text = "Script to Reset Create/Update Column Defaults";
             this.mnuScriptDefault.Click += new System.EventHandler(this.mnuScriptDefault_Click);
             // 
@@ -302,13 +302,13 @@ namespace SqlSync
             // 
             this.menuItem3.MergeIndex = 5;
             this.menuItem3.Name = "menuItem3";
-            this.menuItem3.Size = new System.Drawing.Size(309, 6);
+            this.menuItem3.Size = new System.Drawing.Size(318, 6);
             // 
             // mnuAddTable
             // 
             this.mnuAddTable.MergeIndex = 6;
             this.mnuAddTable.Name = "mnuAddTable";
-            this.mnuAddTable.Size = new System.Drawing.Size(312, 22);
+            this.mnuAddTable.Size = new System.Drawing.Size(321, 22);
             this.mnuAddTable.Text = "Add New Table to List";
             this.mnuAddTable.Click += new System.EventHandler(this.mnuAddNewTable_Click);
             // 
@@ -316,7 +316,7 @@ namespace SqlSync
             // 
             this.mnuDeleteTable.MergeIndex = 7;
             this.mnuDeleteTable.Name = "mnuDeleteTable";
-            this.mnuDeleteTable.Size = new System.Drawing.Size(312, 22);
+            this.mnuDeleteTable.Size = new System.Drawing.Size(321, 22);
             this.mnuDeleteTable.Text = "Remove Selected Table";
             this.mnuDeleteTable.Click += new System.EventHandler(this.mnuDeleteTable_Click);
             // 
@@ -324,13 +324,13 @@ namespace SqlSync
             // 
             this.menuItem1.MergeIndex = 8;
             this.menuItem1.Name = "menuItem1";
-            this.menuItem1.Size = new System.Drawing.Size(309, 6);
+            this.menuItem1.Size = new System.Drawing.Size(318, 6);
             // 
             // mnuCopyTables
             // 
             this.mnuCopyTables.MergeIndex = 9;
             this.mnuCopyTables.Name = "mnuCopyTables";
-            this.mnuCopyTables.Size = new System.Drawing.Size(312, 22);
+            this.mnuCopyTables.Size = new System.Drawing.Size(321, 22);
             this.mnuCopyTables.Text = "Copy Table List";
             this.mnuCopyTables.Click += new System.EventHandler(this.mnuCopyTables_Click);
             // 
@@ -338,7 +338,7 @@ namespace SqlSync
             // 
             this.mnuCopyTablesForsql.MergeIndex = 10;
             this.mnuCopyTablesForsql.Name = "mnuCopyTablesForsql";
-            this.mnuCopyTablesForsql.Size = new System.Drawing.Size(312, 22);
+            this.mnuCopyTablesForsql.Size = new System.Drawing.Size(321, 22);
             this.mnuCopyTablesForsql.Text = "Copy Table List for Sql";
             this.mnuCopyTablesForsql.Click += new System.EventHandler(this.mnuCopyTablesForsql_Click);
             // 
@@ -348,20 +348,19 @@ namespace SqlSync
             // 
             // statusBar1
             // 
-            this.statusBar1.Location = new System.Drawing.Point(0, 624);
-            this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statStatus});
-            this.statusBar1.ShowPanels = true;
+            this.statusBar1.Location = new System.Drawing.Point(0, 648);
+            this.statusBar1.Name = "statusBar1";
             this.statusBar1.Size = new System.Drawing.Size(944, 22);
             this.statusBar1.TabIndex = 6;
             this.statusBar1.Text = "statusBar1";
             // 
             // statStatus
             // 
-            this.statStatus.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
             this.statStatus.Name = "statStatus";
-            this.statStatus.Width = 927;
+            this.statStatus.Size = new System.Drawing.Size(929, 17);
+            this.statStatus.Spring = true;
             // 
             // openFileDialog1
             // 
@@ -372,9 +371,9 @@ namespace SqlSync
             // 
             // grpScripting
             // 
-            this.grpScripting.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpScripting.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpScripting.Controls.Add(this.btnGenerateScripts);
             this.grpScripting.Controls.Add(this.chkSelectByDate);
             this.grpScripting.Controls.Add(this.dateTimePicker1);
@@ -384,7 +383,7 @@ namespace SqlSync
             this.grpScripting.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.grpScripting.Location = new System.Drawing.Point(2, 2);
             this.grpScripting.Name = "grpScripting";
-            this.grpScripting.Size = new System.Drawing.Size(631, 560);
+            this.grpScripting.Size = new System.Drawing.Size(631, 584);
             this.grpScripting.TabIndex = 11;
             this.grpScripting.TabStop = false;
             this.grpScripting.Enter += new System.EventHandler(this.grpScripting_Enter);
@@ -402,7 +401,7 @@ namespace SqlSync
             // chkSelectByDate
             // 
             this.chkSelectByDate.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.chkSelectByDate.Font = new System.Drawing.Font("Verdana", 7.5F);
+            this.chkSelectByDate.Font = new System.Drawing.Font("Verdana", 7.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.chkSelectByDate.Location = new System.Drawing.Point(176, 17);
             this.chkSelectByDate.Name = "chkSelectByDate";
             this.chkSelectByDate.Size = new System.Drawing.Size(200, 20);
@@ -414,7 +413,7 @@ namespace SqlSync
             // 
             this.dateTimePicker1.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.dateTimePicker1.Enabled = false;
-            this.dateTimePicker1.Font = new System.Drawing.Font("Verdana", 7.5F);
+            this.dateTimePicker1.Font = new System.Drawing.Font("Verdana", 7.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.dateTimePicker1.Format = System.Windows.Forms.DateTimePickerFormat.Short;
             this.dateTimePicker1.Location = new System.Drawing.Point(376, 17);
             this.dateTimePicker1.MaxDate = new System.DateTime(3000, 12, 31, 0, 0, 0, 0);
@@ -425,31 +424,28 @@ namespace SqlSync
             // 
             // tcTables
             // 
-            this.tcTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tcTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tcTables.Location = new System.Drawing.Point(8, 56);
             this.tcTables.Multiline = true;
             this.tcTables.Name = "tcTables";
             this.tcTables.SelectedIndex = 0;
-            this.tcTables.Size = new System.Drawing.Size(617, 496);
+            this.tcTables.Size = new System.Drawing.Size(617, 520);
             this.tcTables.TabIndex = 11;
             this.tcTables.SelectedIndexChanged += new System.EventHandler(this.tcTables_SelectedIndexChanged);
             // 
             // toolBar1
             // 
             this.toolBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-           // this.toolBar1.Appearance = System.Windows.Forms.ToolBarAppearance.Flat;
-            this.toolBar1.Items.AddRange(new System.Windows.Forms.ToolStripButton[] {
+            this.toolBar1.Dock = System.Windows.Forms.DockStyle.None;
+            this.toolBar1.ImageList = this.imageList1;
+            this.toolBar1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tbbSave,
             this.tbbExportToBM});
-            this.toolBar1.Dock = System.Windows.Forms.DockStyle.None;
-           // this.toolBar1.DropDownArrows = true;
-            this.toolBar1.ImageList = this.imageList1;
-            this.toolBar1.Location = new System.Drawing.Point(561, 31);
+            this.toolBar1.Location = new System.Drawing.Point(559, 31);
             this.toolBar1.Name = "toolBar1";
-            //this.toolBar1.ShowToolTips = true;
-            this.toolBar1.Size = new System.Drawing.Size(56, 28);
+            this.toolBar1.Size = new System.Drawing.Size(58, 25);
             this.toolBar1.TabIndex = 22;
             this.toolBar1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.toolBar1_ButtonClick);
             // 
@@ -457,6 +453,7 @@ namespace SqlSync
             // 
             this.tbbSave.ImageIndex = 6;
             this.tbbSave.Name = "tbbSave";
+            this.tbbSave.Size = new System.Drawing.Size(23, 22);
             this.tbbSave.Tag = "SaveAll";
             this.tbbSave.ToolTipText = "Save to File";
             // 
@@ -464,11 +461,13 @@ namespace SqlSync
             // 
             this.tbbExportToBM.ImageIndex = 5;
             this.tbbExportToBM.Name = "tbbExportToBM";
+            this.tbbExportToBM.Size = new System.Drawing.Size(23, 22);
             this.tbbExportToBM.Tag = "export";
             this.tbbExportToBM.ToolTipText = "Export All Scripts to New Sql Build Manager File";
             // 
             // imageList1
             // 
+            this.imageList1.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
             this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
             this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
             this.imageList1.Images.SetKeyName(0, "");
@@ -481,8 +480,8 @@ namespace SqlSync
             // 
             // ddDatabaseList
             // 
-            this.ddDatabaseList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.ddDatabaseList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.ddDatabaseList.ContextMenuStrip = this.contextDatabase;
             this.ddDatabaseList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ddDatabaseList.Location = new System.Drawing.Point(12, 30);
@@ -496,13 +495,13 @@ namespace SqlSync
             this.contextDatabase.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuRemoveDatabase});
             this.contextDatabase.Name = "contextDatabase";
-            this.contextDatabase.Size = new System.Drawing.Size(237, 26);
+            this.contextDatabase.Size = new System.Drawing.Size(235, 26);
             // 
             // mnuRemoveDatabase
             // 
             this.mnuRemoveDatabase.MergeIndex = 0;
             this.mnuRemoveDatabase.Name = "mnuRemoveDatabase";
-            this.mnuRemoveDatabase.Size = new System.Drawing.Size(236, 22);
+            this.mnuRemoveDatabase.Size = new System.Drawing.Size(234, 22);
             this.mnuRemoveDatabase.Text = "Remove Database (and Tables)";
             this.mnuRemoveDatabase.Click += new System.EventHandler(this.mnuRemoveDatabase_Click);
             // 
@@ -516,8 +515,8 @@ namespace SqlSync
             // 
             // lnkCheckAll
             // 
-            this.lnkCheckAll.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lnkCheckAll.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkCheckAll.Location = new System.Drawing.Point(116, 58);
             this.lnkCheckAll.Name = "lnkCheckAll";
             this.lnkCheckAll.Size = new System.Drawing.Size(171, 16);
@@ -537,15 +536,15 @@ namespace SqlSync
             // lstTables
             // 
             this.lstTables.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.lstTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstTables.CheckBoxes = true;
             this.lstTables.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2});
             this.lstTables.ContextMenuStrip = this.contextMenu1;
-            this.lstTables.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstTables.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lstTables.FullRowSelect = true;
             listViewGroup1.Header = "Included (with Triggers)";
             listViewGroup1.Name = "Included";
@@ -560,10 +559,11 @@ namespace SqlSync
             listViewGroup2,
             listViewGroup3,
             listViewGroup4});
+            this.lstTables.HideSelection = false;
             this.lstTables.Location = new System.Drawing.Point(14, 80);
             this.lstTables.Name = "lstTables";
             this.lstTables.ShowItemToolTips = true;
-            this.lstTables.Size = new System.Drawing.Size(271, 442);
+            this.lstTables.Size = new System.Drawing.Size(271, 466);
             this.lstTables.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.lstTables.TabIndex = 8;
             this.lstTables.UseCompatibleStateImageBehavior = false;
@@ -598,27 +598,24 @@ namespace SqlSync
             this.mnuChangeSqlServer,
             this.menuItem4,
             this.mnuFileMRU});
-            this.mnuActionMain.Image = global::SqlSync.Properties.Resources.Execute;
             this.mnuActionMain.MergeIndex = 0;
             this.mnuActionMain.Name = "mnuActionMain";
-            this.mnuActionMain.Size = new System.Drawing.Size(65, 20);
+            this.mnuActionMain.Size = new System.Drawing.Size(54, 20);
             this.mnuActionMain.Text = "&Action";
             // 
             // mnuLoadProjectFile
             // 
-            this.mnuLoadProjectFile.Image = global::SqlSync.Properties.Resources.Open;
             this.mnuLoadProjectFile.MergeIndex = 0;
             this.mnuLoadProjectFile.Name = "mnuLoadProjectFile";
-            this.mnuLoadProjectFile.Size = new System.Drawing.Size(231, 22);
+            this.mnuLoadProjectFile.Size = new System.Drawing.Size(234, 22);
             this.mnuLoadProjectFile.Text = "&Load/New  Configuration File";
             this.mnuLoadProjectFile.Click += new System.EventHandler(this.mnuLoadProjectFile_Click);
             // 
             // mnuChangeSqlServer
             // 
-            this.mnuChangeSqlServer.Image = global::SqlSync.Properties.Resources.Server1;
             this.mnuChangeSqlServer.MergeIndex = 1;
             this.mnuChangeSqlServer.Name = "mnuChangeSqlServer";
-            this.mnuChangeSqlServer.Size = new System.Drawing.Size(231, 22);
+            this.mnuChangeSqlServer.Size = new System.Drawing.Size(234, 22);
             this.mnuChangeSqlServer.Text = "&Change Sql Server Connection";
             this.mnuChangeSqlServer.Click += new System.EventHandler(this.mnuChangeSqlServer_Click);
             // 
@@ -626,13 +623,13 @@ namespace SqlSync
             // 
             this.menuItem4.MergeIndex = 2;
             this.menuItem4.Name = "menuItem4";
-            this.menuItem4.Size = new System.Drawing.Size(228, 6);
+            this.menuItem4.Size = new System.Drawing.Size(231, 6);
             // 
             // mnuFileMRU
             // 
             this.mnuFileMRU.MergeIndex = 3;
             this.mnuFileMRU.Name = "mnuFileMRU";
-            this.mnuFileMRU.Size = new System.Drawing.Size(231, 22);
+            this.mnuFileMRU.Size = new System.Drawing.Size(234, 22);
             this.mnuFileMRU.Text = "Recent Files";
             // 
             // mnuSettings
@@ -641,10 +638,9 @@ namespace SqlSync
             this.mnuGoSeparators,
             this.mnuIncludeUpdateStatements,
             this.mnuUpdateDateAndId});
-            this.mnuSettings.Image = global::SqlSync.Properties.Resources.Wizard;
             this.mnuSettings.MergeIndex = 1;
             this.mnuSettings.Name = "mnuSettings";
-            this.mnuSettings.Size = new System.Drawing.Size(74, 20);
+            this.mnuSettings.Size = new System.Drawing.Size(61, 20);
             this.mnuSettings.Text = "Settings";
             // 
             // mnuGoSeparators
@@ -653,7 +649,7 @@ namespace SqlSync
             this.mnuGoSeparators.CheckState = System.Windows.Forms.CheckState.Checked;
             this.mnuGoSeparators.MergeIndex = 0;
             this.mnuGoSeparators.Name = "mnuGoSeparators";
-            this.mnuGoSeparators.Size = new System.Drawing.Size(298, 22);
+            this.mnuGoSeparators.Size = new System.Drawing.Size(309, 22);
             this.mnuGoSeparators.Text = "Add Batch \"GO\" Separators";
             this.mnuGoSeparators.Click += new System.EventHandler(this.SettingsItem_Click);
             // 
@@ -663,7 +659,7 @@ namespace SqlSync
             this.mnuIncludeUpdateStatements.CheckState = System.Windows.Forms.CheckState.Checked;
             this.mnuIncludeUpdateStatements.MergeIndex = 1;
             this.mnuIncludeUpdateStatements.Name = "mnuIncludeUpdateStatements";
-            this.mnuIncludeUpdateStatements.Size = new System.Drawing.Size(298, 22);
+            this.mnuIncludeUpdateStatements.Size = new System.Drawing.Size(309, 22);
             this.mnuIncludeUpdateStatements.Text = "Include Update Statements When Applicable";
             this.mnuIncludeUpdateStatements.Click += new System.EventHandler(this.SettingsItem_Click);
             // 
@@ -671,7 +667,7 @@ namespace SqlSync
             // 
             this.mnuUpdateDateAndId.MergeIndex = 2;
             this.mnuUpdateDateAndId.Name = "mnuUpdateDateAndId";
-            this.mnuUpdateDateAndId.Size = new System.Drawing.Size(298, 22);
+            this.mnuUpdateDateAndId.Size = new System.Drawing.Size(309, 22);
             this.mnuUpdateDateAndId.Text = "Replace UpdateDate and UpdateId Values";
             this.mnuUpdateDateAndId.Click += new System.EventHandler(this.SettingsItem_Click);
             // 
@@ -683,7 +679,7 @@ namespace SqlSync
             this.mnuScriptAllColumnDefaults});
             this.menuItem7.MergeIndex = 2;
             this.menuItem7.Name = "menuItem7";
-            this.menuItem7.Size = new System.Drawing.Size(96, 20);
+            this.menuItem7.Size = new System.Drawing.Size(101, 20);
             this.menuItem7.Text = "Update Triggers";
             // 
             // mnuScriptTriggers
@@ -694,7 +690,7 @@ namespace SqlSync
             this.mnuScriptTriggersPerTable});
             this.mnuScriptTriggers.MergeIndex = 0;
             this.mnuScriptTriggers.Name = "mnuScriptTriggers";
-            this.mnuScriptTriggers.Size = new System.Drawing.Size(314, 22);
+            this.mnuScriptTriggers.Size = new System.Drawing.Size(322, 22);
             this.mnuScriptTriggers.Text = "Script Checked For Update Column Triggers";
             // 
             // mnuSaveUpdateTrigToBuildFile
@@ -725,7 +721,7 @@ namespace SqlSync
             // 
             this.mnuScriptAllMissingColumns.MergeIndex = 1;
             this.mnuScriptAllMissingColumns.Name = "mnuScriptAllMissingColumns";
-            this.mnuScriptAllMissingColumns.Size = new System.Drawing.Size(314, 22);
+            this.mnuScriptAllMissingColumns.Size = new System.Drawing.Size(322, 22);
             this.mnuScriptAllMissingColumns.Text = "Script All For Missing Create/Update Columns";
             this.mnuScriptAllMissingColumns.Click += new System.EventHandler(this.mnuScriptAllMissingColumns_Click);
             // 
@@ -733,7 +729,7 @@ namespace SqlSync
             // 
             this.mnuScriptAllColumnDefaults.MergeIndex = 2;
             this.mnuScriptAllColumnDefaults.Name = "mnuScriptAllColumnDefaults";
-            this.mnuScriptAllColumnDefaults.Size = new System.Drawing.Size(314, 22);
+            this.mnuScriptAllColumnDefaults.Size = new System.Drawing.Size(322, 22);
             this.mnuScriptAllColumnDefaults.Text = "Script To Reset Create/Update Column Defaults";
             this.mnuScriptAllColumnDefaults.Click += new System.EventHandler(this.mnuScriptAllColumnDefaults_Click);
             // 
@@ -742,7 +738,7 @@ namespace SqlSync
             this.openBuildManager.CheckFileExists = false;
             this.openBuildManager.DefaultExt = "xml";
             this.openBuildManager.Filter = "Sql Build Manager Project (*.sbm)|*.sbm|Sql Build Export File (*.sbe)|*.sbe|Zip F" +
-                "iles (*.zip)|*.zip|All Files|*.*";
+    "iles (*.zip)|*.zip|All Files|*.*";
             this.openBuildManager.Title = "Open SQL Sync Build Project File";
             // 
             // panel1
@@ -751,14 +747,14 @@ namespace SqlSync
             this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel1.Location = new System.Drawing.Point(0, 56);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(303, 568);
+            this.panel1.Size = new System.Drawing.Size(303, 592);
             this.panel1.TabIndex = 13;
             // 
             // grpDatabaseInfo
             // 
-            this.grpDatabaseInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpDatabaseInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpDatabaseInfo.Controls.Add(this.groupBox1);
             this.grpDatabaseInfo.Controls.Add(this.lnkCheckAll);
             this.grpDatabaseInfo.Controls.Add(this.label3);
@@ -769,7 +765,7 @@ namespace SqlSync
             this.grpDatabaseInfo.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.grpDatabaseInfo.Location = new System.Drawing.Point(2, 2);
             this.grpDatabaseInfo.Name = "grpDatabaseInfo";
-            this.grpDatabaseInfo.Size = new System.Drawing.Size(295, 560);
+            this.grpDatabaseInfo.Size = new System.Drawing.Size(295, 584);
             this.grpDatabaseInfo.TabIndex = 0;
             this.grpDatabaseInfo.TabStop = false;
             // 
@@ -779,7 +775,7 @@ namespace SqlSync
             this.groupBox1.Controls.Add(this.lblNotInDb);
             this.groupBox1.Controls.Add(this.lblPK);
             this.groupBox1.Controls.Add(this.lblMissingCols);
-            this.groupBox1.Location = new System.Drawing.Point(8, 522);
+            this.groupBox1.Location = new System.Drawing.Point(8, 546);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(260, 32);
             this.groupBox1.TabIndex = 16;
@@ -788,7 +784,7 @@ namespace SqlSync
             // lblNotInDb
             // 
             this.lblNotInDb.BackColor = System.Drawing.Color.White;
-            this.lblNotInDb.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblNotInDb.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lblNotInDb.ForeColor = System.Drawing.Color.LightGray;
             this.lblNotInDb.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lblNotInDb.Location = new System.Drawing.Point(154, 12);
@@ -802,7 +798,7 @@ namespace SqlSync
             // lblPK
             // 
             this.lblPK.BackColor = System.Drawing.SystemColors.Control;
-            this.lblPK.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblPK.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lblPK.ForeColor = System.Drawing.Color.Red;
             this.lblPK.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lblPK.Location = new System.Drawing.Point(85, 12);
@@ -812,11 +808,11 @@ namespace SqlSync
             this.lblPK.Text = "Missing PK";
             this.lblPK.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.toolTip1.SetToolTip(this.lblPK, "Included Table is missing either a PK or \"WHERE\" clause to allow for specific dat" +
-                    "a matches");
+        "a matches");
             // 
             // lblMissingCols
             // 
-            this.lblMissingCols.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMissingCols.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lblMissingCols.ForeColor = System.Drawing.Color.Orange;
             this.lblMissingCols.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lblMissingCols.Location = new System.Drawing.Point(14, 12);
@@ -826,13 +822,13 @@ namespace SqlSync
             this.lblMissingCols.Text = "Missing Cols";
             this.lblMissingCols.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.toolTip1.SetToolTip(this.lblMissingCols, "Included table is missing at least 1 audit column.\r\n(Refer to item tool tip for s" +
-                    "pecifics)");
+        "pecifics)");
             // 
             // splitter1
             // 
             this.splitter1.Location = new System.Drawing.Point(303, 56);
             this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(3, 568);
+            this.splitter1.Size = new System.Drawing.Size(3, 592);
             this.splitter1.TabIndex = 14;
             this.splitter1.TabStop = false;
             // 
@@ -842,7 +838,7 @@ namespace SqlSync
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel2.Location = new System.Drawing.Point(306, 56);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(638, 568);
+            this.panel2.Size = new System.Drawing.Size(638, 592);
             this.panel2.TabIndex = 15;
             // 
             // saveFileDialog1
@@ -859,7 +855,14 @@ namespace SqlSync
             // toolStripContainer1
             // 
             // 
-            // toolStripContainer1.ContentPanel
+            // 
+            // 
+            this.toolStripContainer1.BottomToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.BottomToolStripPanel.Name = "";
+            this.toolStripContainer1.BottomToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer1.BottomToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            // 
+            // 
             // 
             this.toolStripContainer1.ContentPanel.AutoScroll = true;
             this.toolStripContainer1.ContentPanel.Controls.Add(this.panel2);
@@ -867,17 +870,36 @@ namespace SqlSync
             this.toolStripContainer1.ContentPanel.Controls.Add(this.panel1);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.statusBar1);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.settingsControl1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(944, 646);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(944, 670);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            // 
+            // 
+            // 
+            this.toolStripContainer1.LeftToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.LeftToolStripPanel.Name = "";
+            this.toolStripContainer1.LeftToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer1.LeftToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
             this.toolStripContainer1.Name = "toolStripContainer1";
+            // 
+            // 
+            // 
+            this.toolStripContainer1.RightToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.RightToolStripPanel.Name = "";
+            this.toolStripContainer1.RightToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer1.RightToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.toolStripContainer1.Size = new System.Drawing.Size(944, 670);
             this.toolStripContainer1.TabIndex = 16;
             this.toolStripContainer1.Text = "toolStripContainer1";
             // 
-            // toolStripContainer1.TopToolStripPanel
+            // 
             // 
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.mainMenu1);
+            this.toolStripContainer1.TopToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.TopToolStripPanel.Name = "";
+            this.toolStripContainer1.TopToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.toolStripContainer1.TopToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.toolStripContainer1.TopToolStripPanel.Size = new System.Drawing.Size(944, 24);
             // 
             // settingsControl1
             // 
@@ -898,13 +920,13 @@ namespace SqlSync
             this.mnuAddCandidateTable,
             this.mnuAddNewTable});
             this.ctxCandidate.Name = "ctxCandidate";
-            this.ctxCandidate.Size = new System.Drawing.Size(290, 48);
+            this.ctxCandidate.Size = new System.Drawing.Size(297, 48);
             // 
             // mnuAddCandidateTable
             // 
             this.mnuAddCandidateTable.MergeIndex = 11;
             this.mnuAddCandidateTable.Name = "mnuAddCandidateTable";
-            this.mnuAddCandidateTable.Size = new System.Drawing.Size(289, 22);
+            this.mnuAddCandidateTable.Size = new System.Drawing.Size(296, 22);
             this.mnuAddCandidateTable.Text = "Add Candiate/Excluded Table(s) to Project";
             this.mnuAddCandidateTable.Click += new System.EventHandler(this.mnuAddCandidateTable_Click);
             // 
@@ -912,7 +934,7 @@ namespace SqlSync
             // 
             this.mnuAddNewTable.MergeIndex = 6;
             this.mnuAddNewTable.Name = "mnuAddNewTable";
-            this.mnuAddNewTable.Size = new System.Drawing.Size(289, 22);
+            this.mnuAddNewTable.Size = new System.Drawing.Size(296, 22);
             this.mnuAddNewTable.Text = "Add New Table to List";
             this.mnuAddNewTable.Click += new System.EventHandler(this.mnuAddNewTable_Click);
             // 
@@ -920,15 +942,15 @@ namespace SqlSync
             // 
             this.bgTriggerScript.WorkerReportsProgress = true;
             this.bgTriggerScript.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgTriggerScript_DoWork);
-            this.bgTriggerScript.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgTriggerScript_RunWorkerCompleted);
             this.bgTriggerScript.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgTriggerScript_ProgressChanged);
+            this.bgTriggerScript.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgTriggerScript_RunWorkerCompleted);
             // 
             // CodeTableScriptingForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(6, 14);
             this.ClientSize = new System.Drawing.Size(944, 670);
             this.Controls.Add(this.toolStripContainer1);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.mainMenu1;
             this.Name = "CodeTableScriptingForm";
@@ -936,9 +958,12 @@ namespace SqlSync
             this.Text = "Sql Build Manager ::  Code Table Scripting and Auditing";
             this.Load += new System.EventHandler(this.LookUpTable_Load);
             this.contextMenu1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.statStatus)).EndInit();
+            this.statusBar1.ResumeLayout(false);
+            this.statusBar1.PerformLayout();
             this.grpScripting.ResumeLayout(false);
             this.grpScripting.PerformLayout();
+            this.toolBar1.ResumeLayout(false);
+            this.toolBar1.PerformLayout();
             this.contextDatabase.ResumeLayout(false);
             this.mainMenu1.ResumeLayout(false);
             this.mainMenu1.PerformLayout();
@@ -947,10 +972,9 @@ namespace SqlSync
             this.groupBox1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.toolStripContainer1.ContentPanel.ResumeLayout(false);
+            this.toolStripContainer1.ContentPanel.PerformLayout();
             this.toolStripContainer1.TopToolStripPanel.ResumeLayout(false);
             this.toolStripContainer1.TopToolStripPanel.PerformLayout();
-            this.toolStripContainer1.ResumeLayout(false);
-            this.toolStripContainer1.PerformLayout();
             this.ctxCandidate.ResumeLayout(false);
             this.ResumeLayout(false);
 
