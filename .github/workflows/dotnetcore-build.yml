@@ -26,10 +26,10 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.100
-
-    #- name: Set build config variable
-    #  run: echo "::set-env name=BUILD_CONFIG::Release"        
-
+  
+    - name: Clean
+      run: dotnet clean --configuration Release && dotnet nuget locals all --clear  
+ 
     - name: Restore and build console app
       run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net5.0
 
