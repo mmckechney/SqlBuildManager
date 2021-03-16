@@ -181,3 +181,7 @@ steps:
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
+- task: WhiteSource Bolt@20
+  inputs:
+    cwd: '$(System.DefaultWorkingDirectory)'
+
