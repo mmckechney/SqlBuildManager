@@ -1,62 +1,56 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo> 
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup>
     <NoWarn>1701;1702;CA2100;CS0618</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
-    <EmbeddedResource Include="app.config" />
-    <EmbeddedResource Include="Resources\CleanLoggingTable.sql" />
-    <EmbeddedResource Include="Resources\CleanTestTable.sql" />
-    <EmbeddedResource Include="Resources\CreateDatabaseScript.sql" />
-    <EmbeddedResource Include="Resources\CreateTestTablesScript.sql" />
-    <EmbeddedResource Include="Resources\DBList.cfg" />
-    <EmbeddedResource Include="Resources\InsertPreRunScriptLogEntryScript.sql" />
-    <EmbeddedResource Include="Resources\LoggingTable.sql" />
-    <EmbeddedResource Include="Resources\LoggingTableCommitCheckIndex.sql" />
-    <EmbeddedResource Include="Resources\multi-query.MultiDbQ" />
-    <EmbeddedResource Include="Resources\MultiDb_WithQueryRowData.xml" />
-    <EmbeddedResource Include="Resources\NoTrans_MultiDb.multiDb" />
-    <EmbeddedResource Include="Resources\NoTrans_MultiDb.sbm" />
-    <EmbeddedResource Include="Resources\PlatunumSchema.dacpac" />
-    <EmbeddedResource Include="Resources\remote_server_list.txt" />
-    <EmbeddedResource Include="Resources\remote_server_list_with_spaces.txt" />
-    <EmbeddedResource Include="Resources\remote_server_list_with_spaces_and_blank_lines.txt" />
-    <EmbeddedResource Include="Resources\sbx_package_tester.sbx" />
-    <EmbeddedResource Include="Resources\SyncScriptRaw.sql" />
-    <EmbeddedResource Include="Resources\TableLockingScript.sql" />
-    <EmbeddedResource Include="Resources\TarnishedSchema.dacpac" />
-    <EmbeddedResource Include="Resources\XmlWithInvalidNamespace.txt" />
-    <EmbeddedResource Include="Resources\XmlWithNoNamespace.txt" />
+    <EmbeddedResource Include="app.config"/>
+    <EmbeddedResource Include="Resources\CleanLoggingTable.sql"/>
+    <EmbeddedResource Include="Resources\CleanTestTable.sql"/>
+    <EmbeddedResource Include="Resources\CreateDatabaseScript.sql"/>
+    <EmbeddedResource Include="Resources\CreateTestTablesScript.sql"/>
+    <EmbeddedResource Include="Resources\DBList.cfg"/>
+    <EmbeddedResource Include="Resources\InsertPreRunScriptLogEntryScript.sql"/>
+    <EmbeddedResource Include="Resources\LoggingTable.sql"/>
+    <EmbeddedResource Include="Resources\LoggingTableCommitCheckIndex.sql"/>
+    <EmbeddedResource Include="Resources\multi-query.MultiDbQ"/>
+    <EmbeddedResource Include="Resources\MultiDb_WithQueryRowData.xml"/>
+    <EmbeddedResource Include="Resources\NoTrans_MultiDb.multiDb"/>
+    <EmbeddedResource Include="Resources\NoTrans_MultiDb.sbm"/>
+    <EmbeddedResource Include="Resources\PlatunumSchema.dacpac"/>
+    <EmbeddedResource Include="Resources\remote_server_list.txt"/>
+    <EmbeddedResource Include="Resources\remote_server_list_with_spaces.txt"/>
+    <EmbeddedResource Include="Resources\remote_server_list_with_spaces_and_blank_lines.txt"/>
+    <EmbeddedResource Include="Resources\sbx_package_tester.sbx"/>
+    <EmbeddedResource Include="Resources\SyncScriptRaw.sql"/>
+    <EmbeddedResource Include="Resources\TableLockingScript.sql"/>
+    <EmbeddedResource Include="Resources\TarnishedSchema.dacpac"/>
+    <EmbeddedResource Include="Resources\XmlWithInvalidNamespace.txt"/>
+    <EmbeddedResource Include="Resources\XmlWithNoNamespace.txt"/>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.1" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1"/>
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3"/>
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3"/>
     <PackageReference Include="coverlet.collector" Version="3.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
-    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
-    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
-    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
-    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj"/>
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj"/>
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj"/>
+    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj"/>
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj"/>
+    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj"/>
   </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -64,7 +58,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
