@@ -1,32 +1,27 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
   </PropertyGroup>
-
   <ItemGroup>
-    <EmbeddedResource Include="Hash\Xml\DatabaseDiff_Summary.xslt" />
+    <EmbeddedResource Include="Hash\Xml\DatabaseDiff_Summary.xslt"/>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs"/>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.12" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.44091.28" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
-    <PackageReference Include="System.Diagnostics.EventLog" Version="5.0.0" />
+    <PackageReference Include="log4net" Version="2.0.12"/>
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46041.41"/>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0"/>
+    <PackageReference Include="System.Diagnostics.EventLog" Version="5.0.1"/>
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
-    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
-    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj"/>
+    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj"/>
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj"/>
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj"/>
   </ItemGroup>
-
   <PropertyGroup>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo> 
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
 </Project>

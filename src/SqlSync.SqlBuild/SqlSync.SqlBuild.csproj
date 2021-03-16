@@ -1,46 +1,38 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
   </PropertyGroup>
-  
   <ItemGroup>
-    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs"/>
   </ItemGroup>
-  
   <ItemGroup>
-    <EmbeddedResource Include="AdHocQuery\Xml\QueryResult_html.xslt" />
-    <EmbeddedResource Include="SqlLogging\LoggingTable.sql" />
-    <EmbeddedResource Include="SqlLogging\LoggingTableCommitCheckIndex.sql" />
-    <EmbeddedResource Include="SqlLogging\LogScript.sql" />
-    <EmbeddedResource Include="SqlLogging\VersionsInsert.sql" />
-    <EmbeddedResource Include="Status\Xml\ServerReport_csv.xslt" />
-    <EmbeddedResource Include="Status\Xml\ServerReport_html.xslt" />
-    <EmbeddedResource Include="Status\Xml\ServerReport_summary.xslt" />
+    <EmbeddedResource Include="AdHocQuery\Xml\QueryResult_html.xslt"/>
+    <EmbeddedResource Include="SqlLogging\LoggingTable.sql"/>
+    <EmbeddedResource Include="SqlLogging\LoggingTableCommitCheckIndex.sql"/>
+    <EmbeddedResource Include="SqlLogging\LogScript.sql"/>
+    <EmbeddedResource Include="SqlLogging\VersionsInsert.sql"/>
+    <EmbeddedResource Include="Status\Xml\ServerReport_csv.xslt"/>
+    <EmbeddedResource Include="Status\Xml\ServerReport_html.xslt"/>
+    <EmbeddedResource Include="Status\Xml\ServerReport_summary.xslt"/>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.12" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Polly" Version="7.2.1" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
-    
+    <PackageReference Include="log4net" Version="2.0.12"/>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2"/>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3"/>
+    <PackageReference Include="Polly" Version="7.2.1"/>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0"/>
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
-    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
-    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
-    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
-    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj"/>
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj"/>
+    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj"/>
+    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj"/>
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj"/>
   </ItemGroup>
-
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup>
     <NoWarn>1701;1702;CA2100</NoWarn>
   </PropertyGroup>
