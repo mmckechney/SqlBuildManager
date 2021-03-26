@@ -377,52 +377,33 @@ namespace SqlBuildManager.Console.Batch
 
         }
 
-        private void CombineBatchQueryOutputfiles(BlobServiceClient blobClient, string storageContainerName, string outputFile)
+        private void CombineBatchQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
         {
             outputFile = Path.GetFileName(outputFile);
-            var container = blobClient.GetBlobContainerClient(storageContainerName); //.GetContainerReference(storageContainerName);
+            var container = storageSvcClient.GetBlobContainerClient(storageContainerName); 
             var blobs = container.GetBlobs();
 
-            var destinationBlob = container.GetAppendBlobClient(outputFile); // .GetAppendBlobReference(outputFile);
-            try
+            foreach (var blob in blobs)
             {
-                destinationBlob.CreateIfNotExists();
-                //destinationBlob.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition(), null, null);
-            }
-            catch { }
-
-            var counter = 0;
-
-            foreach (var b in blobs)
-            {
-                var blobUri = new Uri(new Uri(container.Uri.AbsoluteUri), b.Name);
-                BlockBlobClient bbc = new BlockBlobClient(blobUri);
-                //if (counter == 0)
-                //{
-                    using (var stream = bbc.OpenRead())
+                if (blob.Properties.BlobType == BlobType.Block)
+                {
+                    if (blob.Name.ToLower().EndsWith(".csv"))
                     {
-                        destinationBlob.AppendBlock(stream);
+                        var sourceBlob = container.GetBlobClient(blob.Name);
+                        var destinationBlob = container.GetAppendBlobClient(outputFile);
+                        try
+                        {
+                            destinationBlob.CreateIfNotExists();
+                        }
+                        catch { }
+                        using (var stream = sourceBlob.OpenRead())
+                        {
+                            destinationBlob.AppendBlock(stream);
+                        }
+                        sourceBlob.Delete();
                     }
-                //}
-                //else
-                //{
-                //    using (var stream = bbc.OpenRead())
-                //    {
-                //        using (StreamReader sr = new StreamReader(stream))
-                //        {
-                //            sr.ReadLine();
-                //            while (sr.Peek() > 0)
-                //            {
-                //                destinationBlob.app
-                //                destinationBlob.AppendText(sr.ReadLine() + Environment.NewLine);
-                //            }
-
-                //        }
-                //    }
-                //}
-                //counter++;
+                }
             }
-
         }
 
         private int ValidateBatchArgs(CommandLineArgs cmdLine, BatchType batchType)
@@ -461,7 +442,7 @@ namespace SqlBuildManager.Console.Batch
         private (string jobId, string poolId, string storageContainerName) SetBatchJobAndStorageNames(CommandLineArgs cmdLine)
         {
             string jobId, poolId, storageContainerName;
-            string jobToken = DateTime.Now.ToString("yyyy-MM-dd-HHmm");
+            string jobToken = DateTime.Now.ToString("yyyy-MM-dd-HHmm-ss-fff");
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
             {
                 cmdLine.BatchArgs.BatchJobName = Regex.Replace(cmdLine.BatchArgs.BatchJobName, "[^a-zA-Z0-9]", "");
@@ -486,7 +467,7 @@ namespace SqlBuildManager.Console.Batch
 
         private void ConsolidateLogFiles(BlobServiceClient storageSvcClient, string outputContainerName, List<string> workerFiles)
         {
-            workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql","execution.log" });
+            workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql","execution.log"});
             var container = storageSvcClient.GetBlobContainerClient(outputContainerName);
             container.CreateIfNotExists();
             var blobs = container.GetBlobs();
@@ -496,7 +477,7 @@ namespace SqlBuildManager.Console.Batch
             {
                 if (blob.Properties.BlobType == BlobType.Block )
                 {
-                    if (workerFiles.Any(a => blob.Name.ToLower() == a.ToLower()))
+                    if (workerFiles.Any(a => blob.Name.ToLower().Contains(a)))
                     {
                         var sourceBlob = container.GetBlobClient(blob.Name);
                         var destBlob = container.GetBlobClient("Working/" + blob.Name);
@@ -504,6 +485,7 @@ namespace SqlBuildManager.Console.Batch
                         {
                             destBlob.Upload(stream);
                         }
+                        log.Info($"Moved {blob.Name} to storage as Working/{blob.Name}");
                         sourceBlob.Delete();
                     }
 
@@ -523,6 +505,7 @@ namespace SqlBuildManager.Console.Batch
                             {
                                 destinationBlob.AppendBlock(stream);
                             }
+                            log.Info($"Consolidated {blob.Name} to {append}");
                             sourceBlob.Delete();
                         }
                     }

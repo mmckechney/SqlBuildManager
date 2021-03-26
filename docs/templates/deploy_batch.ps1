@@ -137,19 +137,20 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName  -TemplateFi
 ##########################################
 # Build the solution
 ##########################################
-dotnet restore "..\..\src\sqlsync.sln" 
-dotnet build "..\..\src\sqlsync.sln" --configuration Debug
+# dotnet restore "..\..\src\sqlsync.sln" 
+# dotnet build "..\..\src\sqlsync.sln" --configuration Debug
 
 
 ##########################################
 # Create the application package zip files
 ##########################################
+$frameworkTarget = "net5.0"
 foreach ($env in $vars) {
 
 
     Write-Output "Publishing for $($env.OSName)"
-    dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r $env.BuildTarget --configuration Debug
-    $source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\$($env.BuildTarget)\publish"
+    dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r $env.BuildTarget --configuration Debug -f $frameworkTarget
+    $source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish"
     if($env.OSName -eq "Windows")
     {
         $version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion  #Get version for Batch application

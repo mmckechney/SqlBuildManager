@@ -812,10 +812,17 @@ namespace SqlBuildManager.Console
             if(!string.IsNullOrWhiteSpace(readOnlySas))
             {
                 log.Info("Downloading the consolidated output file,,,");
-                var cloudBlobContainer = new BlobContainerClient(new Uri(readOnlySas));
-                var blob = cloudBlobContainer.GetBlobClient(cmdLine.OutputFile.Name);
-                blob.DownloadTo(cmdLine.OutputFile.FullName);
-                log.Info($"Output file copied locally to {cmdLine.OutputFile.FullName}");
+                try
+                {
+                    var cloudBlobContainer = new BlobContainerClient(new Uri(readOnlySas));
+                    var blob = cloudBlobContainer.GetBlobClient(cmdLine.OutputFile.Name);
+                    blob.DownloadTo(cmdLine.OutputFile.FullName);
+                    log.Info($"Output file copied locally to {cmdLine.OutputFile.FullName}");
+                }
+                catch(Exception exe)
+                {
+                    log.Error($"Unable to download the output file:  {exe.Message}");
+                }
             }
 
             if (retVal == (int)ExecutionReturn.Successful)
@@ -1027,8 +1034,8 @@ namespace SqlBuildManager.Console
             try
             {
                 //var writeTasks = new List<Task>();
-                
-                var renameLogFiles = new string[] { "sqlbuildmanager" };
+                log.Info($"Writing log files to blob storage at {outputContainerSasUrl}");
+                var renameLogFiles = new string[] { "sqlbuildmanager", "csv" };
                 BlobContainerClient container = new BlobContainerClient(new Uri(outputContainerSasUrl));
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
                 string machine = Environment.MachineName;

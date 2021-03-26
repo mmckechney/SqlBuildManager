@@ -293,6 +293,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="queryResultFiles">List of raw report files from the runner objects</param>
         private bool CreateCombinedCsvFile(string fileName, List<string> queryResultsFiles)
         {
+            log.Info($"Creating combined CSV from {queryResultsFiles.Count} results files");
             try
             {
                 if (queryResultsFiles.Count == 1)
