@@ -154,17 +154,11 @@
   <data name="NoTrans_MultiDb1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NoTrans_MultiDb.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="PlatinumSchema_simple" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PlatinumSchema-simple.dacpac;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="PlatunumSchema" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PlatunumSchema.dacpac;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="remote_server_list" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\remote_server_list.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="remote_server_list_with_spaces" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\remote_server_list_with_spaces.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="remote_server_list_with_spaces_and_blank_lines" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\remote_server_list_with_spaces_and_blank_lines.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="sbx_package_tester" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\sbx_package_tester.sbx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -177,6 +171,9 @@
   </data>
   <data name="TarnishedSchema" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\TarnishedSchema.dacpac;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="TarnishedSchema_simple" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\TarnishedSchema-simple.dacpac;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="XmlWithInvalidNamespace" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\XmlWithInvalidNamespace.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>

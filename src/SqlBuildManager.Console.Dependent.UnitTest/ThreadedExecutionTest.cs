@@ -8,6 +8,7 @@ using SqlBuildManager.Interfaces.Console;
 using System.Data.SqlClient;
 using System.Threading;
 using System.Text.RegularExpressions;
+using SqlBuildManager.Console.Threaded;
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     
@@ -28,6 +29,21 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Initialization i = new Initialization();
             initObjs.Add(i);
             return i;
+        }
+        private static string GetLocalhostFolderName(string loggingRoot)
+        {
+            if(Directory.Exists(Path.Combine(loggingRoot, "(local)", "SQLEXPRESS")))
+            {
+                return Path.Combine(loggingRoot, "(local)", "SQLEXPRESS");
+            }
+            else if(Directory.Exists(Path.Combine(loggingRoot,"localhost", "SQLEXPRESS")))
+            {
+                return Path.Combine(loggingRoot, "localhost", "SQLEXPRESS");
+            }
+            else
+            {
+                throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}");
+            }
         }
         /// <summary>
         ///Gets or sets the test context which provides
@@ -64,6 +80,299 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
 
         #region ExecuteTest - Not Trial - Transactional
+        [TestMethod()]
+        public void ExecuteTest_ConcurrencyByNumber_1()
+        {
+            Initialization init = GetInitializationObject();
+            string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
+            File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
+            init.CopyDbConfigFileLongToTestPath();
+
+            string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
+
+            string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
+
+            string[] args = new string[8];
+            args[0] = "--rootloggingpath=\"" + loggingPath + "\"";
+            args[1] = "--transactional=true";
+            args[2] = "--trial=false";
+            args[3] = "--override=\"" + multiDbOverrideSettingFileName + "\"";
+            args[4] = "--packagename=\"" + sbmFileName + "\"";
+            args[5] = "--timeoutretrycount=0";
+            args[6] = "--concurrency=1";
+            args[7] = "--concurrencytype=Count";
+            ThreadedExecution target = new ThreadedExecution(args);
+            int actual;
+            actual = target.Execute();
+
+            try
+            {
+
+                if (actual == -600)
+                    Assert.Fail("Unable to completed test.");
+
+   
+                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+
+                //Should be all sequential!
+                Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest: Thread complete") > -1);
+
+                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest1: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[6].IndexOf("SqlBuildTest1: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[7].IndexOf("SqlBuildTest1: Thread complete") > -1);
+
+                Assert.IsTrue(executionLogFile[8].IndexOf("SqlBuildTest2: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[9].IndexOf("SqlBuildTest2: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[10].IndexOf("SqlBuildTest2: Thread complete") > -1);
+
+                Assert.IsTrue(executionLogFile[11].IndexOf("SqlBuildTest3: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[12].IndexOf("SqlBuildTest3: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[13].IndexOf("SqlBuildTest3: Thread complete") > -1);
+            }
+            finally
+            {
+                if (Directory.Exists(loggingPath))
+                    Directory.Delete(loggingPath, true);
+                if (File.Exists(sbmFileName))
+                    File.Delete(sbmFileName);
+                if (File.Exists(multiDbOverrideSettingFileName))
+                    File.Delete(multiDbOverrideSettingFileName);
+
+            }
+
+        }
+        [TestMethod()]
+        public void ExecuteTest_ConcurrencyByNumber_2()
+        {
+            Initialization init = GetInitializationObject();
+            string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
+            File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
+            init.CopyDbConfigFileLongToTestPath();
+
+            string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
+
+            string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
+
+            string[] args = new string[8];
+            args[0] = "--rootloggingpath=\"" + loggingPath + "\"";
+            args[1] = "--transactional=true";
+            args[2] = "--trial=false";
+            args[3] = "--override=\"" + multiDbOverrideSettingFileName + "\"";
+            args[4] = "--packagename=\"" + sbmFileName + "\"";
+            args[5] = "--timeoutretrycount=0";
+            args[6] = "--concurrency=2";
+            args[7] = "--concurrencytype=Count";
+            ThreadedExecution target = new ThreadedExecution(args);
+            int actual;
+            actual = target.Execute();
+
+            try
+            {
+
+                if (actual == -600)
+                    Assert.Fail("Unable to completed test.");
+
+ 
+                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+                //Should not all sequential!
+                Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
+
+                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest11: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest11: Starting up thread") > -1);
+
+            }
+            finally
+            {
+                if (Directory.Exists(loggingPath))
+                    Directory.Delete(loggingPath, true);
+                if (File.Exists(sbmFileName))
+                    File.Delete(sbmFileName);
+                if (File.Exists(multiDbOverrideSettingFileName))
+                    File.Delete(multiDbOverrideSettingFileName);
+
+            }
+
+        }
+        [TestMethod()]
+        public void ExecuteTest_ConcurrencyByNumber_4()
+        {
+            Initialization init = GetInitializationObject();
+            string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
+            File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
+            init.CopyDbConfigFileLongToTestPath();
+
+            string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
+
+            string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
+
+            string[] args = new string[8];
+            args[0] = "--rootloggingpath=\"" + loggingPath + "\"";
+            args[1] = "--transactional=true";
+            args[2] = "--trial=false";
+            args[3] = "--override=\"" + multiDbOverrideSettingFileName + "\"";
+            args[4] = "--packagename=\"" + sbmFileName + "\"";
+            args[5] = "--timeoutretrycount=0";
+            args[6] = "--concurrency=4";
+            args[7] = "--concurrencytype=Count";
+            ThreadedExecution target = new ThreadedExecution(args);
+            int actual;
+            actual = target.Execute();
+
+            try
+            {
+
+                if (actual == -600)
+                    Assert.Fail("Unable to completed test.");
+
+                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+                //Should not all sequential!
+                Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
+
+                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest6: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest6: Starting up thread") > -1);
+
+                Assert.IsTrue(executionLogFile[6].IndexOf("SqlBuildTest12: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[7].IndexOf("SqlBuildTest12: Starting up thread") > -1);
+
+                Assert.IsTrue(executionLogFile[8].IndexOf("SqlBuildTest18: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[9].IndexOf("SqlBuildTest18: Starting up thread") > -1);
+
+            }
+            finally
+            {
+                if (Directory.Exists(loggingPath))
+                    Directory.Delete(loggingPath, true);
+                if (File.Exists(sbmFileName))
+                    File.Delete(sbmFileName);
+                if (File.Exists(multiDbOverrideSettingFileName))
+                    File.Delete(multiDbOverrideSettingFileName);
+
+            }
+
+        }
+
+        [TestMethod()]
+        public void ExecuteTest_ConcurrencyByServer()
+        {
+            Initialization init = GetInitializationObject();
+            string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
+            File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
+            init.CopyDbConfigFileLongToTestPath();
+
+            string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
+
+            string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
+
+            string[] args = new string[8];
+            args[0] = "--rootloggingpath=\"" + loggingPath + "\"";
+            args[1] = "--transactional=true";
+            args[2] = "--trial=false";
+            args[3] = "--override=\"" + multiDbOverrideSettingFileName + "\"";
+            args[4] = "--packagename=\"" + sbmFileName + "\"";
+            args[5] = "--timeoutretrycount=0";
+            args[6] = "--concurrency=1";
+            args[7] = "--concurrencytype=Server";
+            ThreadedExecution target = new ThreadedExecution(args);
+            int actual;
+            actual = target.Execute();
+
+            try
+            {
+
+                if (actual == -600)
+                    Assert.Fail("Unable to completed test.");
+
+
+                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+
+                //Should be all sequential!
+                Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest: Thread complete") > -1);
+
+                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest1: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[6].IndexOf("SqlBuildTest1: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[7].IndexOf("SqlBuildTest1: Thread complete") > -1);
+
+                Assert.IsTrue(executionLogFile[8].IndexOf("SqlBuildTest2: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[9].IndexOf("SqlBuildTest2: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[10].IndexOf("SqlBuildTest2: Thread complete") > -1);
+
+                Assert.IsTrue(executionLogFile[11].IndexOf("SqlBuildTest3: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[12].IndexOf("SqlBuildTest3: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[13].IndexOf("SqlBuildTest3: Thread complete") > -1);
+            }
+            finally
+            {
+                if (Directory.Exists(loggingPath))
+                    Directory.Delete(loggingPath, true);
+                if (File.Exists(sbmFileName))
+                    File.Delete(sbmFileName);
+                if (File.Exists(multiDbOverrideSettingFileName))
+                    File.Delete(multiDbOverrideSettingFileName);
+
+            }
+
+        }
+        [TestMethod()]
+        public void ExecuteTest_ConcurrencyByMaxByServer_2()
+        {
+            Initialization init = GetInitializationObject();
+            string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
+            File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
+            init.CopyDbConfigFileLongToTestPath();
+
+            string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
+
+            string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
+
+            string[] args = new string[8];
+            args[0] = "--rootloggingpath=\"" + loggingPath + "\"";
+            args[1] = "--transactional=true";
+            args[2] = "--trial=false";
+            args[3] = "--override=\"" + multiDbOverrideSettingFileName + "\"";
+            args[4] = "--packagename=\"" + sbmFileName + "\"";
+            args[5] = "--timeoutretrycount=0";
+            args[6] = "--concurrency=2";
+            args[7] = "--concurrencytype=MaxPerServer";
+            ThreadedExecution target = new ThreadedExecution(args);
+            int expected = (int)ExecutionReturn.Successful;
+            int actual;
+            actual = target.Execute();
+
+            try
+            {
+
+                if (actual == -600)
+                    Assert.Fail("Unable to completed test.");
+
+                Assert.AreEqual(expected, actual);
+                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+                //Should not all sequential!
+                Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
+
+                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest11: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest11: Starting up thread") > -1);
+
+            }
+            finally
+            {
+                if (Directory.Exists(loggingPath))
+                    Directory.Delete(loggingPath, true);
+                if (File.Exists(sbmFileName))
+                    File.Delete(sbmFileName);
+                if (File.Exists(multiDbOverrideSettingFileName))
+                    File.Delete(multiDbOverrideSettingFileName);
+
+            }
+
+        }
+
         /// <summary>
         ///A test for Execute
         ///</summary>
@@ -103,7 +412,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 Assert.AreEqual(expected, actual);
 
                 //SqlBuildTest should still committed with no timeout messages
-                string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
+                string[] logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Error Message: Timeout expired.") == -1, "Log contains a 'Timeout expired message'");
@@ -114,7 +423,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
 
                 //SqlBuildTest1 should still committed with no timeout messages
-                logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest1\", "*.log");
+                logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest1"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest1 log file necessary to complete test");
                 logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Error Message: Timeout expired.") == -1, "SqlBuildTest1 Log contains a 'Timeout expired message'");
@@ -257,7 +566,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
                 //SqlBuildTest should have rolledback with 1 more timeout messages than is set for the retry value
                 Regex regFindTimeout = new Regex("imeout expired", RegexOptions.IgnoreCase);
-                string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
+                string[] logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
                 MatchCollection matches = regFindTimeout.Matches(logContents);
@@ -267,7 +576,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 Assert.IsTrue(logContents.IndexOf("use SqlBuildTest") > -1, "SqlBuildTest Log does not contain the proper database name");
 
                 //SqlBuildTest1 should have committed
-                logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest1\", "*.log");
+                logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest1"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest1 log file necessary to complete test");
                 logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Error Message: Timeout expired.") == -1, "SqlBuildTest1 Log contains a 'Timeout expired message'");
@@ -333,7 +642,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
                 //SqlBuildTest should have rolledback with 1 more timeout messages than is set for the retry value
                 Regex regFindTimeout = new Regex("Timeout Expired", RegexOptions.IgnoreCase);
-                string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
+                string[] logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
                 MatchCollection matches = regFindTimeout.Matches(logContents);
@@ -343,7 +652,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 Assert.IsTrue(logContents.IndexOf("use SqlBuildTest") > -1, "SqlBuildTest Log does not contain the proper database name");
 
                 //SqlBuildTest1 should have committed
-                logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest1\", "*.log");
+                logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest1"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest1 log file necessary to complete test");
                 logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Error Message: Timeout expired.") == -1, "SqlBuildTest1 Log contains a 'Timeout expired message'");
@@ -449,7 +758,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 Assert.AreEqual(expected, actual, "Run result was not the expected value of \"Success\"");
 
                 //SqlBuildTest should still committed with no timeout messages
-                string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
+                string[] logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Error Message: Timeout expired.") == -1, "Log contains a 'Timeout expired message'");
@@ -461,7 +770,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
 
                 //SqlBuildTest1 should still committed with no timeout messages
-                logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest1\", "*.log");
+                logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest1"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest1 log file necessary to complete test");
                 logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Error Message: Timeout expired.") == -1, "SqlBuildTest1 Log contains a 'Timeout expired message'");
@@ -568,7 +877,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
 
                 //SqlBuildTest should still committed with no timeout messages
-                string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\", "*.log");
+                string[] logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("COMMIT TRANSACTION") == -1, "SqlBuildTest Log contains a 'COMMIT' message");
@@ -579,7 +888,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
 
                 //SqlBuildTest1 should still committed with no timeout messages
-                logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest1\", "*.log");
+                logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest1"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest1 log file necessary to complete test");
                 logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Error Message: Timeout expired.") == -1, "SqlBuildTest1 Log contains a 'Timeout expired message'");

@@ -24,6 +24,8 @@ Replace the sample values with your own account values and keys
     --eventhubconnectionstring "Endpoint=sb://myeventhub.servicebus.windows.net/;SharedAccessKeyName=keyname;SharedAccessKey=KPnb2SyLfQz5jY1LqXl3TxnMBuJJn4id6OCJ7n4yYEo=;EntityPath=hubname"
 ```
 
+**IMPORTANT** If you want to customize the concurrency of the script execution, you can also add `--concurrency` and `--concurrencytype` values. See [Concurrency Options](Concurrency_Options.md) to understand their usage 
+
 ## 2. Pre-stage your Batch VM nodes
 This will create the VMs and get them ready to accept a build. Doing this in advance of your actual build time will eliminate the VM creation time from your overall build. It can take 10-30 minutes depending on your VM request
 

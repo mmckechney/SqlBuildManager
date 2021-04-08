@@ -60,7 +60,7 @@ namespace SqlSync.SqlBuild
                 else
                 {
                     log.Error(String.Format("Unable to add file {0} to zip package", zipFileName), e);
-                    throw e;
+                    throw;
                 }
             }
             return true;

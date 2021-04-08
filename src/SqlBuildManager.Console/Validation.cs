@@ -22,7 +22,7 @@ namespace SqlBuildManager.Console
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
-                    error = "The /UserName and /Password arguments are required when authentication type is set to Password or AzurePassword.";
+                    error = "The --username and --password arguments are required when authentication type is set to Password or AzurePassword.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
                     log.Error(error);
                     return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
@@ -34,7 +34,7 @@ namespace SqlBuildManager.Console
             {
                 if(string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
-                    error = "The /UserName and /Password arguments must be used together in command line of /SettingsFile Json.";
+                    error = "The --username and --password arguments must be used together in command line of --settingsfile Json.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
                     log.Error(error);
                     return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
@@ -61,7 +61,7 @@ namespace SqlBuildManager.Console
             //Validate and set the value for the root logging path
             if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
             {
-                string msg = "Invalid command line set. Missing /RootLoggingPath setting.";
+                string msg = "Invalid command line set. Missing --rootloggingpath setting.";
                 log.Error(msg);
                 return -99;
             }
@@ -69,7 +69,7 @@ namespace SqlBuildManager.Console
             //Check that they haven't set /Trial=true and /Transaction=false
             if (cmdLine.Transactional == false && cmdLine.Trial == true)
             {
-                error = "Invalid command line combination. You cannot have /Transaction=\"false\" and /Trial=\"true\".";
+                error = "Invalid command line combination. You cannot have --transactional=\"false\" and --trial=\"true\".";
                 errorMessages = new string[] { error, "Returning error code:" + (int)ExecutionReturn.InvalidTransactionAndTrialCombo };
                 log.Error(error);
                 return (int)ExecutionReturn.InvalidTransactionAndTrialCombo;
@@ -78,7 +78,7 @@ namespace SqlBuildManager.Console
             //Validate the presence of an /override setting
             if (string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName))
             {
-                error = "Invalid command line set. Missing /override setting.";
+                error = "Invalid command line set. Missing --override option.";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingOverrideFlag };
                 log.Error(error);
                 return (int)ExecutionReturn.MissingOverrideFlag;
@@ -89,7 +89,7 @@ namespace SqlBuildManager.Console
                 && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac)
                 && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource))
             {
-                error = "Invalid command line set. Missing /PackageName, /PlatinumDacpac, /ScriptSrcDir, or /PlatinumDbSource and /PlatinumServerSource settings.";
+                error = "Invalid command line set. Missing --packagename, --platinumdacpac, --scriptsrcdir, or --platinumdbsource and --platinumserversource options.";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
                 log.Error(error);
                 return (int)ExecutionReturn.MissingBuildFlag;
@@ -100,7 +100,7 @@ namespace SqlBuildManager.Console
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) || string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource))
                 {
-                    error = "The /PlatinumDbSource and /PlatinumServerSource arguments must be used together";
+                    error = "The --platinumdbsource and --platinumserversource options must be used together";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
                     log.Error(error);
                     return (int)ExecutionReturn.MissingBuildFlag;
@@ -112,7 +112,7 @@ namespace SqlBuildManager.Console
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
-                    error = "The /UserName and /Password arguments are required when using /PlatinumDbSource";
+                    error = "The --username and --password arguments are required when using --platinumdbsource";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
                     log.Error(error);
                     return (int)ExecutionReturn.MissingBuildFlag;
@@ -131,7 +131,7 @@ namespace SqlBuildManager.Console
             //Validate that the Platinum dacpac file exists if specified
             if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac) && !File.Exists(cmdLine.DacPacArgs.PlatinumDacpac))
             {
-                error = "Missing Platinum dacpac file. The  Platinum dacpa specified: " + cmdLine.DacPacArgs.PlatinumDacpac + " could not be found";
+                error = "Missing Platinum dacpac file. The  Platinum dacpac specified: " + cmdLine.DacPacArgs.PlatinumDacpac + " could not be found";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
                 log.Error(error);
                 return (int)ExecutionReturn.InvalidBuildFileNameValue;
@@ -141,7 +141,7 @@ namespace SqlBuildManager.Console
             {
                 if (!Directory.Exists(cmdLine.ScriptSrcDir))
                 {
-                    error = "Invalid /ScriptSrcDir setting. The directory '" + cmdLine.ScriptSrcDir + "' does not exist.";
+                    error = "Invalid --scriptsrcdir setting. The directory '" + cmdLine.ScriptSrcDir + "' does not exist.";
                     errorMessages =  new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidScriptSourceDirectory };
                     log.Error(error);
                     return (int)ExecutionReturn.InvalidScriptSourceDirectory;
@@ -151,7 +151,7 @@ namespace SqlBuildManager.Console
             if (cmdLine.TimeoutRetryCount < 0)
             {
               
-                    error = "The /TimeoutRetryCount setting is a negative number. This value needs to be a positive integer.";
+                    error = "The --timeoutretrycount setting is a negative number. This value needs to be a positive integer.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.NegativeTimeoutRetryCount };
                     log.Error(error);
                     return (int)ExecutionReturn.NegativeTimeoutRetryCount;
@@ -160,7 +160,7 @@ namespace SqlBuildManager.Console
             if (cmdLine.TimeoutRetryCount > 0 && !cmdLine.Transactional)
             {
 
-                error = "The /TimeoutRetryCount setting is not allowed when /Transactional=false";
+                error = "The --timeoutretrycount setting is not allowed when --transactional=false";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.BadRetryCountAndTransactionalCombo };
                 log.Error(error);
                 return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
@@ -171,7 +171,7 @@ namespace SqlBuildManager.Console
             {
                  if (!File.Exists(cmdLine.MultiDbRunConfigFileName))
                  {
-                     error = string.Format("Specified /Override file does not exist at path: {0}", cmdLine.MultiDbRunConfigFileName);
+                     error = string.Format("Specified --override file does not exist at path: {0}", cmdLine.MultiDbRunConfigFileName);
                      errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
                      log.Error(error);
                      return (int)ExecutionReturn.InvalidOverrideFlag;
@@ -184,7 +184,7 @@ namespace SqlBuildManager.Console
                 if(string.IsNullOrWhiteSpace(cmdLine.Database) || string.IsNullOrWhiteSpace(cmdLine.Server) || 
                     string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
-                    error = $"Invalid command line set. When the /Override setting specifies a SQL file, the following are also required:{System.Environment.NewLine} /Database, /Server - will be used as source to run scripts {System.Environment.NewLine} /Username, /Password - provide authentication to that database";
+                    error = $"Invalid command line set. When the --override setting specifies a SQL file, the following are also required:{System.Environment.NewLine} --database, --server - will be used as source to run scripts {System.Environment.NewLine} --username, --password - provide authentication to that database";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
                     log.Error(error);
                     return (int)ExecutionReturn.InvalidOverrideFlag;
@@ -196,7 +196,7 @@ namespace SqlBuildManager.Console
                 && !cmdLine.MultiDbRunConfigFileName.EndsWith(".cfg", StringComparison.InvariantCultureIgnoreCase))
             {
 
-                error = "Invalid command line set. The '/override' setting file value must be .multiDb, .multiDbQ or .cfg file.";
+                error = "Invalid command line set. The '--override' setting file value must be .multiDb, .multiDbQ or .cfg file.";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
                 log.Error(error);
                 return (int)ExecutionReturn.InvalidOverrideFlag;
@@ -229,9 +229,6 @@ namespace SqlBuildManager.Console
                 case ".multidbq":
                     multiData = MultiDbHelper.CreateMultiDbConfigFromQueryFile(multiDbOverrideSettingFileName, out message);
                     break;
-                case ".cfg":
-                    multiData = MultiDbHelper.ImportMultiDbTextConfig(multiDbOverrideSettingFileName);
-                    break;
                 case ".sql":
                     if(cmdLine != null)
                     {
@@ -245,6 +242,10 @@ namespace SqlBuildManager.Console
                         };
                         multiData = MultiDbHelper.CreateMultiDbConfigFromQuery(connData, File.ReadAllText(cmdLine.MultiDbRunConfigFileName), out message);
                     }
+                    break;
+                case ".cfg":
+                default:
+                    multiData = MultiDbHelper.ImportMultiDbTextConfig(multiDbOverrideSettingFileName);
                     break;
 
 
@@ -320,7 +321,7 @@ namespace SqlBuildManager.Console
                 }
                 else
                 {
-                    log.Info("Found ForceCustomDacPac setting. Skipping the creation of the single platinum SBM package. Individual dacpacs and SBMs will be created");
+                    log.Info("Found --forcecustomdacpac setting. Skipping the creation of the single platinum SBM package. Individual dacpacs and SBMs will be created");
                 }
             }
 
@@ -333,33 +334,33 @@ namespace SqlBuildManager.Console
             List<string> messages = new List<string>();
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
             {
-                messages.Add("BatchAccountName is required in command line or /SettingsFile Json");
+                messages.Add("--batchaccountname is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
             {
-                messages.Add("BatchAccountKey is required in command line or /SettingsFile Json");
+                messages.Add("--batchaccountkey is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
             {
-                messages.Add("BatchAccountUrl is required in command line or /SettingsFile Json");
+                messages.Add("--batchaccounturl is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountName))
             {
-                messages.Add("StorageAccountName is required in command line or /SettingsFile Json");
+                messages.Add("--storageaccountname is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountKey))
             {
-                messages.Add("StorageAccountKey is required in command line or /SettingsFile Json");
+                messages.Add("--storageaccountkey is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
 
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
             {
-                messages.Add("BatchVmSize is required in command line or /SettingsFile Json");
+                messages.Add("--batchvmsize, is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
 
@@ -373,22 +374,22 @@ namespace SqlBuildManager.Console
             List<string> messages = new List<string>();
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
             {
-                messages.Add("BatchAccountName is required in command line or /SettingsFile Json");
+                messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
             {
-                messages.Add("BatchAccountKey is required in command line or /SettingsFile Json");
+                messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
             {
-                messages.Add("BatchAccountUrl is required in command line or /SettingsFile Json");
+                messages.Add("--batchaccounturl is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
             {
-                messages.Add("BatchVmSize is required in command line or /SettingsFile Json");
+                messages.Add("--batchvmsize is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
 
@@ -402,20 +403,20 @@ namespace SqlBuildManager.Console
             List<string> messages = new List<string>();
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
             {
-                messages.Add("BatchAccountName is required in command line or /SettingsFile Json");
+                messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
             {
-                messages.Add("BatchAccountKey is required in command line or /SettingsFile Json");
+                messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
             {
-                messages.Add("BatchAccountUrl is required in command line or /SettingsFile Json");
+                messages.Add("--batchaccounturl is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
-            
+
             errorMessages = messages.ToArray();
             return returnVal;
         }

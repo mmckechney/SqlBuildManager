@@ -96,10 +96,10 @@ namespace SqlBuildManager.Console.ExternalTest
             THRerror.Start();
 
             this.prc.WaitForExit();
-
+#pragma warning disable SYSLIB0006
             if (!THRoutput.Join(new TimeSpan(0, 3, 0))) THRoutput.Abort();
             if (!THRerror.Join(new TimeSpan(0, 3, 0))) THRerror.Abort();
-
+#pragma warning restore SYSLIB0006
             this.endTime = DateTime.Now;
 
             return this.prc.ExitCode;
@@ -217,6 +217,76 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
             }
         }
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataTestMethod]
+        public void Batch_SBMSource_ServerConcurrency_Success(string batchMethod, string settingsFile)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--override {this.overrideFilePath}");
+            args.Add($"--packagename {sbmFileName}");
+            args.Add($"--concurrency 2");
+            args.Add($"--concurrencytype Server");
+
+
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "run")
+            {
+                Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            }
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            }
+        }
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataTestMethod]
+        public void Batch_SBMSource_MaxServerConcurrency_Success(string batchMethod, string settingsFile)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            List<string> args = new List<string>();
+            args.Add($"batch {batchMethod}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--override {this.overrideFilePath}");
+            args.Add($"--packagename {sbmFileName}");
+            args.Add($"--concurrency 2");
+            args.Add($"--concurrencytype MaxPerServer");
+
+
+
+            var result = ExecuteProcess(args);
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "run")
+            {
+                Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            }
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            }
+        }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
@@ -226,7 +296,7 @@ namespace SqlBuildManager.Console.ExternalTest
         {
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
             args.Add($"--override {this.overrideFilePath}");
 
             var result = ExecuteProcess(args);
@@ -241,7 +311,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedBatch_PlatinumDbSource_Success(string batchMethod, string settingsFile)
+        public void LocalThreadedAndBatch_PlatinumDbSource_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -254,7 +324,7 @@ namespace SqlBuildManager.Console.ExternalTest
             DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -290,7 +360,7 @@ namespace SqlBuildManager.Console.ExternalTest
             DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, secondOverride });
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -313,7 +383,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedBatch_PlatinumDbSource_ADbAlreadyInSync(string batchMethod, string settingsFile)
+        public void LocalThreadedAndBatch_PlatinumDbSource_ADbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -330,7 +400,7 @@ namespace SqlBuildManager.Console.ExternalTest
             DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, thirdDbOverride });
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -353,7 +423,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedBatch_DacpacSource_Success(string batchMethod, string settingsFile)
+        public void LocalThreadedAndBatch_DacpacSource_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -370,7 +440,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}"); 
-            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdacpac {dacpacName}");
 
@@ -390,7 +460,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedBatch_DacpacSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
+        public void LocalThreadedAndBatch_DacpacSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -411,7 +481,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}"); 
-            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdacpac {dacpacName}");
 
@@ -448,7 +518,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 List<string> args = new List<string>();
                 args.Add($"batch {batchMethod}");
-                args.Add($"--settingsfile {settingsFile}");
+                args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
                 args.Add($"--override {overrideFile}");
                 args.Add($"--outputfile {outputFile}");
                 args.Add($"--queryfile {selectquery}");
@@ -501,7 +571,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
             args.Add($"--override {overrideFile}");
             args.Add($"--outputfile {outputFile}");
             args.Add($"--queryfile {insertquery}");
@@ -530,7 +600,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
             args.Add($"--override {overrideFile}");
             args.Add($"--outputfile {outputFile}");
             args.Add($"--queryfile {deletequery}");

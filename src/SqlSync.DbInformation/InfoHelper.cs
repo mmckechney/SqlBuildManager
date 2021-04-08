@@ -468,7 +468,7 @@ namespace SqlSync.DbInformation
             catch(SqlException ex)
             {
                 if (ex.ToString().IndexOf("does not exist in database") == -1)
-                    throw ex;
+                    throw;
             }
             return tbl;
 		}

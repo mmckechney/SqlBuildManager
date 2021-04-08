@@ -121,7 +121,7 @@ namespace SqlBuildManager.Console.UnitTest
             int actual;
             actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].LastIndexOf("Missing /override setting.") > -1);
+            Assert.IsTrue(errorMessages[0].LastIndexOf("Missing --override option") > -1);
             Assert.AreEqual(expected, actual);
         }
 
@@ -142,7 +142,7 @@ namespace SqlBuildManager.Console.UnitTest
             int actual;
             actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].LastIndexOf("Invalid command line set. Missing /PackageName, /PlatinumDacpac, /ScriptSrcDir, or /PlatinumDbSource and /PlatinumServerSource settings.") > -1);
+            Assert.IsTrue(errorMessages[0].LastIndexOf("Invalid command line set. Missing --packagename, --platinumdacpac, --scriptsrcdir, or --platinumdbsource and --platinumserversource options.") > -1);
             Assert.AreEqual(expected, actual);
         }
 
@@ -190,7 +190,7 @@ namespace SqlBuildManager.Console.UnitTest
             actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             
             Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].LastIndexOf("The '/override' setting file value must be") > -1);
+            Assert.IsTrue(errorMessages[0].LastIndexOf("The '--override' setting file value must be") > -1);
             Assert.AreEqual(expected, actual);
 
             if (File.Exists(@"C:\temp\multicfg.BadExt"))
@@ -223,7 +223,7 @@ namespace SqlBuildManager.Console.UnitTest
             int actual;
             actual = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].LastIndexOf("Invalid /ScriptSrcDir setting.") > -1);
+            Assert.IsTrue(errorMessages[0].LastIndexOf("Invalid --scriptsrcdir setting.") > -1);
             Assert.AreEqual(expected, actual);
         }
 

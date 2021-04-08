@@ -6,27 +6,27 @@
     <Deterministic>false</Deterministic>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs"/>
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\DefaultScriptRegistry.txt"/>
-    <EmbeddedResource Include="Resources\DefaultScriptRegistryWithToken.txt"/>
-    <EmbeddedResource Include="Resources\EnterpriseConfig.txt"/>
+    <EmbeddedResource Include="Resources\DefaultScriptRegistry.txt" />
+    <EmbeddedResource Include="Resources\DefaultScriptRegistryWithToken.txt" />
+    <EmbeddedResource Include="Resources\EnterpriseConfig.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1"/>
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3"/>
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.3"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
     <PackageReference Include="coverlet.collector" Version="3.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj"/>
-    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj"/>
-    <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj"/>
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj"/>
+    <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" />
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="EnterpriseConfiguration.xml">
@@ -35,7 +35,7 @@
   </ItemGroup>
   <!-- START: This is a buildtime work around for https://github.com/dotnet/corefx/issues/22101 -->
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
-    <Copy SourceFiles="App.config" DestinationFiles="$(OutDir)\testhost.dll.config"/>
+    <Copy SourceFiles="App.config" DestinationFiles="$(OutDir)\testhost.dll.config" />
   </Target>
   <!-- END: This is a buildtime work around for https://github.com/dotnet/corefx/issues/22101 -->
 </Project>

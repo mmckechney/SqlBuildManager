@@ -36,7 +36,6 @@ using SqlSync.ObjectScript;
 using SqlSync.SqlBuild.CodeTable;
 using SqlSync.SqlBuild.DefaultScripts;
 using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Remote;
 using SqlSync.SqlBuild.Status;
 using SqlSync.TableScript;
 using SqlSync.Validator;
@@ -584,7 +583,7 @@ namespace SqlSync.SqlBuild
             }catch(Exception exe)
             {
                 log.Error(exe.ToString());
-                throw exe;
+                throw;
             }
         }
 
@@ -633,7 +632,7 @@ namespace SqlSync.SqlBuild
             }catch(Exception exe)
             {
                 log.Error(exe.ToString());
-                throw exe;
+                throw;
             }
         }
         private void SetPropertiesFromEnterpriseConfiguration(out bool tagsRequiredEnabled, out bool defaultScriptEnabled, out bool remoteExecutionEnabled, out bool policyCheckOnLoadEnabled, out bool scriptPkWithTable)
@@ -8597,7 +8596,7 @@ namespace SqlSync.SqlBuild
             {
                 base.OnPaint(e);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 this.Invalidate();  //attempt to redraw the control
 

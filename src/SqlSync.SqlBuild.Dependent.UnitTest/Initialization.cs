@@ -32,6 +32,25 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             testDatabaseNames = new List<string>();
             testDatabaseNames.Add("SqlBuildTest");
             testDatabaseNames.Add("SqlBuildTest1");
+            testDatabaseNames.Add("SqlBuildTest2");
+            testDatabaseNames.Add("SqlBuildTest3");
+            testDatabaseNames.Add("SqlBuildTest4");
+            testDatabaseNames.Add("SqlBuildTest5");
+            testDatabaseNames.Add("SqlBuildTest6");
+            testDatabaseNames.Add("SqlBuildTest7");
+            testDatabaseNames.Add("SqlBuildTest8");
+            testDatabaseNames.Add("SqlBuildTest9");
+            testDatabaseNames.Add("SqlBuildTest10");
+            testDatabaseNames.Add("SqlBuildTest11");
+            testDatabaseNames.Add("SqlBuildTest12");
+            testDatabaseNames.Add("SqlBuildTest13");
+            testDatabaseNames.Add("SqlBuildTest14");
+            testDatabaseNames.Add("SqlBuildTest15");
+            testDatabaseNames.Add("SqlBuildTest16");
+            testDatabaseNames.Add("SqlBuildTest17");
+            testDatabaseNames.Add("SqlBuildTest18");
+            testDatabaseNames.Add("SqlBuildTest19");
+            testDatabaseNames.Add("SqlBuildTest20");
 
             testDatabaseNames.Add("SqlBuildTest_SyncTest1");
             testDatabaseNames.Add("SqlBuildTest_SyncTest2");

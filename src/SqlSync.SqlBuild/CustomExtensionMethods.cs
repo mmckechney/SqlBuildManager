@@ -25,12 +25,17 @@ namespace SqlSync.SqlBuild
 
             int listCount = list.Count();
             double dblChunks = (double)numberOfChunks;
-            double tmp = listCount/dblChunks;
-            double chunkSize = Math.Ceiling(listCount / dblChunks);
-
-            if (listCount / chunkSize < numberOfChunks && 
-                (numberOfChunks % 2 == 0 || listCount / chunkSize % 2 == 0) && chunkSize != 1) //if the chunkSize is exactly half of the list, but we have an odd number of chunks. we'd leave one chunk empty!!
-                chunkSize--;
+            double maxChunkSize = Math.Ceiling(listCount / dblChunks);
+            double minChunkSize = Math.Floor(listCount / dblChunks);
+            double chunkSize;
+            if(Math.Ceiling(listCount / maxChunkSize) < numberOfChunks)
+            {
+                chunkSize = minChunkSize;
+            }
+            else
+            {
+                chunkSize = maxChunkSize;
+            }
 
             List<IEnumerable<T>> retVal = new List<IEnumerable<T>>();
             int index = 0;
@@ -38,9 +43,16 @@ namespace SqlSync.SqlBuild
             while (index < listCount && usedChunkCount < numberOfChunks)
             {
                 int count = listCount - index > chunkSize ? (int)chunkSize : listCount - index;
+                //If more than half way though and there are more items left than can fit in the remaining chunks -- start spreading them out. 
+               // if(usedChunkCount > numberOfChunks/2 && index > listCount/2 && 
+                if((listCount-(double)index)/(dblChunks - usedChunkCount) > chunkSize)
+                {
+                    count++;
+                }
+
                 retVal.Add(list.ToList().GetRange(index, count).AsEnumerable());
                 usedChunkCount++;
-                index += (int)chunkSize;
+                index += (int)count;
             }
 
             //any leftovers should go into last chunk.

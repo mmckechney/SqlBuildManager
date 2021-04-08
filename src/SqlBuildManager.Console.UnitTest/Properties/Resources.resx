@@ -124,12 +124,6 @@
   <data name="NoTrans_MultiDb_sbm" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NoTrans_MultiDb.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="remote_execution_file" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\remote_execution_file.txt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="remote_execution_file_bad_exeserver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\remote_execution_file_bad_exeserver.txt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
   <data name="SimpleSelect" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\simpleselect.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -147,5 +141,8 @@
   </data>
   <data name="dbconfig" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\dbconfig.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="concurrency" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\concurrency.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

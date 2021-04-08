@@ -18,6 +18,8 @@ using Azure.Storage.Sas;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Azure;
 using Azure.Storage;
+using SqlBuildManager.Console.Threaded;
+using SqlSync.Connection;
 
 namespace SqlBuildManager.Console.Batch
 {
@@ -178,13 +180,38 @@ namespace SqlBuildManager.Console.Batch
 
 
                 //Get the list of DB targets and distribute across batch count
-                var allTargets = GetTargetConfigValues(cmdLine.MultiDbRunConfigFileName);
-                var splitTargets = SplitLoadEvenly(allTargets, cmdLine.BatchArgs.BatchNodeCount);
-                if (splitTargets.Count < cmdLine.BatchArgs.BatchNodeCount)
+                int valRet = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, null, out MultiDbData multiDb, out errorMessages);
+                List<IEnumerable<(string, List<DatabaseOverride>)>> concurrencyBuckets = null;
+                if (valRet == 0)
                 {
-                    log.WarnFormat("NOTE! The number of targets ({0}) is less than the requested node count ({1}). Changing the pool node count to {0}", splitTargets.Count, cmdLine.BatchArgs.BatchNodeCount);
-                    cmdLine.BatchArgs.BatchNodeCount = splitTargets.Count;
+                    if(cmdLine.ConcurrencyType == ConcurrencyType.Count)
+                    {
+                        //If it's just by count.. split evenly by the number of nodes
+                        concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.BatchArgs.BatchNodeCount, cmdLine.ConcurrencyType);
+                    }
+                    else
+                    {
+                        //splitting by server is a little trickier, but run it and see what it does...
+                        concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.Concurrency, cmdLine.ConcurrencyType);
+                    }
+                   
+                    //If we end up with fewer splits, then reduce the node count...
+                    if(concurrencyBuckets.Count() < cmdLine.BatchArgs.BatchNodeCount)
+                    {
+                        log.WarnFormat($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
+                        cmdLine.BatchArgs.BatchNodeCount = concurrencyBuckets.Count();
+                    }
+                    else if(concurrencyBuckets.Count() > cmdLine.BatchArgs.BatchNodeCount) //need to do some consolidating
+                    {
+                        log.WarnFormat($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
+                        concurrencyBuckets = Concurrency.RecombineServersToFixedBucketCount(multiDb, cmdLine.BatchArgs.BatchNodeCount);
+                    }
                 }
+                else
+                {
+                    throw new ArgumentException($"Error parsing database targets. {String.Join(Environment.NewLine, errorMessages)}");
+                }
+                var splitTargets = Concurrency.ConvertBucketsToConfigLines(concurrencyBuckets);
 
                 //Write out each split file
                 string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
@@ -379,28 +406,53 @@ namespace SqlBuildManager.Console.Batch
 
         private void CombineBatchQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
         {
+            log.Info("Consolidating Query output files...");
             outputFile = Path.GetFileName(outputFile);
             var container = storageSvcClient.GetBlobContainerClient(storageContainerName); 
             var blobs = container.GetBlobs();
 
+            int counter = 0;
             foreach (var blob in blobs)
             {
+                var destinationBlob = container.GetAppendBlobClient(outputFile);
+                try
+                {
+                    destinationBlob.CreateIfNotExists();
+                }
+                catch { }
                 if (blob.Properties.BlobType == BlobType.Block)
                 {
+
                     if (blob.Name.ToLower().EndsWith(".csv"))
                     {
-                        var sourceBlob = container.GetBlobClient(blob.Name);
-                        var destinationBlob = container.GetAppendBlobClient(outputFile);
-                        try
+                        if (counter == 0)
                         {
-                            destinationBlob.CreateIfNotExists();
+                            var sourceBlob = container.GetBlobClient(blob.Name);
+                            using (var stream = sourceBlob.OpenRead())
+                            {
+                                destinationBlob.AppendBlock(stream);
+                            }
                         }
-                        catch { }
-                        using (var stream = sourceBlob.OpenRead())
+                        else // we need to trim the first line off 
                         {
-                            destinationBlob.AppendBlock(stream);
+                            var sourceBlob = container.GetBlobClient(blob.Name);
+                            var tmp = Path.GetTempFileName();
+                            sourceBlob.DownloadTo(tmp);
+                            using (StreamReader reader = new StreamReader(tmp))
+                            {
+                                var s = reader.ReadLine(); //dump the first line
+                                reader.BaseStream.Position = Encoding.UTF8.GetBytes(s).Length;
+                                destinationBlob.AppendBlock(reader.BaseStream);
+                           
+                            }
+
+                            if(File.Exists(tmp))
+                            {
+                                File.Delete(tmp);
+                            }
                         }
-                        sourceBlob.Delete();
+                        counter++;
+                        //sourceBlob.Delete();
                     }
                 }
             }
@@ -467,7 +519,7 @@ namespace SqlBuildManager.Console.Batch
 
         private void ConsolidateLogFiles(BlobServiceClient storageSvcClient, string outputContainerName, List<string> workerFiles)
         {
-            workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql","execution.log"});
+            workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql","execution.log", "csv"});
             var container = storageSvcClient.GetBlobContainerClient(outputContainerName);
             container.CreateIfNotExists();
             var blobs = container.GetBlobs();
@@ -643,19 +695,17 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Update the RootLoggingPath as appropriate
-                if (Program.cliVersion == SqlSync.Constants.CliVersion.NEW_CLI)
+                switch (os)
                 {
-                    switch (os)
-                    {
-                        case OsType.Windows:
-                            threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
-                            break;
+                    case OsType.Windows:
+                        threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
+                        break;
 
-                        case OsType.Linux:
-                            threadCmdLine.RootLoggingPath = "$AZ_BATCH_TASK_WORKING_DIR";
-                            break;
-                    }
+                    case OsType.Linux:
+                        threadCmdLine.RootLoggingPath = "$AZ_BATCH_TASK_WORKING_DIR";
+                        break;
                 }
+                
 
 
                 //Set the name of the output file (if set)
@@ -675,46 +725,35 @@ namespace SqlBuildManager.Console.Batch
                 threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
 
                 StringBuilder sb = new StringBuilder();
-                if (Program.cliVersion == SqlSync.Constants.CliVersion.NEW_CLI)
+                switch(os)
                 {
-                    switch(os)
-                    {
-                        case OsType.Windows:
-                            sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe batch ");
-                            switch (bType)
-                            {
-                                case BatchType.Run:
-                                    sb.Append(threadCmdLine.ToBatchThreadedExeString());
-                                    break;
-                                case BatchType.Query:
-                                    sb.Append(threadCmdLine.ToBatchQueryThreadedExeString());
-                                    break;
-                            }
-                            break;
+                    case OsType.Windows:
+                        sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe batch ");
+                        switch (bType)
+                        {
+                            case BatchType.Run:
+                                sb.Append(threadCmdLine.ToBatchThreadedExeString());
+                                break;
+                            case BatchType.Query:
+                                sb.Append(threadCmdLine.ToBatchQueryThreadedExeString());
+                                break;
+                        }
+                        break;
 
-                        case OsType.Linux:
-                            sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm batch ");
-                            switch (bType)
-                            {
-                                case BatchType.Run:
-                                    sb.Append(threadCmdLine.ToBatchThreadedExeString() + "'");
-                                    break;
-                                case BatchType.Query:
-                                    sb.Append(threadCmdLine.ToBatchQueryThreadedExeString() + "'");
-                                    break;
-                            }
-                            break;
-                    }
+                    case OsType.Linux:
+                        sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm batch ");
+                        switch (bType)
+                        {
+                            case BatchType.Run:
+                                sb.Append(threadCmdLine.ToBatchThreadedExeString() + "'");
+                                break;
+                            case BatchType.Query:
+                                sb.Append(threadCmdLine.ToBatchQueryThreadedExeString() + "'");
+                                break;
+                        }
+                        break;
+                }
  
-                }
-                else
-                {
-                    threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
-                    sb.Append("cmd /c %AZ_BATCH_APP_PACKAGE_SQLBUILDMANAGER%\\SqlBuildManager.Console.exe ");
-                    sb.Append(threadCmdLine.ToBatchThreadedExeString());
-                }
-       
-
                 commandLines.Add(sb.ToString());
             }
 

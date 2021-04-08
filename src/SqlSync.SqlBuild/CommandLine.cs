@@ -44,7 +44,7 @@ namespace SqlSync.SqlBuild
                 string settings = dict["settingsfile"];
                 if (!File.Exists(settings))
                 {
-                    log.Error($"The specified Settings file (/SettingsFile) does not exist at '{settings}'.");
+                    log.Error($"The specified Settings file (--settingsfile) does not exist at '{settings}'.");
                 }
                 else
                 {
@@ -250,6 +250,17 @@ namespace SqlSync.SqlBuild
             if (dict.ContainsKey("eventhubconnection"))
                 cmdLine.BatchArgs.EventHubConnectionString = dict["eventhubconnection"];
 
+            int concurrency;
+            if (dict.ContainsKey("concurrency") && int.TryParse(dict["concurrency"], out concurrency))
+            {
+                cmdLine.Concurrency = concurrency;
+            }
+
+            object cType;
+            if (dict.ContainsKey("concurrencytype") && Enum.TryParse(typeof(ConcurrencyType), dict["concurrencytype"], out cType))
+            {
+                cmdLine.ConcurrencyType = (ConcurrencyType)cType;
+            }
             bool poll = true;
             if(dict.ContainsKey("pollbatchpoolstatus") && Boolean.TryParse(dict["pollbatchpoolstatus"], out poll))
             {

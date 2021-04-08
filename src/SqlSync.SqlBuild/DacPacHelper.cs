@@ -9,6 +9,8 @@ using System.Text.RegularExpressions;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild;
 using System.Runtime.InteropServices;
+using Microsoft.SqlServer.Dac;
+using System.Data.SqlClient;
 namespace SqlSync.SqlBuild
 {
     public class DacPacHelper
@@ -29,7 +31,7 @@ namespace SqlSync.SqlBuild
                         lock (appRoots)
                         {
                             appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                            appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\Microsoft_SqlDB_DAC");
+                            appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\microsoft-sqlpackage-windows");
                             appRoots.Add(@"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\Microsoft");
                             appRoots.Add(@"C:\Program Files\Microsoft SQL Server\150\DAC\bin");
                         }
@@ -56,7 +58,7 @@ namespace SqlSync.SqlBuild
                 }
             }
         }
-        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, string userName, string password, string dacPacFileName)
+        public static bool ExtractDacPac_old(string sourceDatabase, string sourceServer, string userName, string password, string dacPacFileName)
         {
             log.InfoFormat("Extracting dacpac from {0} : {1}", sourceServer, sourceDatabase);
             ProcessHelper pHelper = new ProcessHelper();
@@ -91,7 +93,108 @@ namespace SqlSync.SqlBuild
             return true;
 
         }
-        
+        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, string userName, string password, string dacPacFileName)
+        {
+
+            try
+            {
+                log.Info($"Extracting dacpac from {sourceServer} : {sourceDatabase}");
+
+                DacExtractOptions opts = new DacExtractOptions();
+                opts.IgnoreExtendedProperties = true;
+                opts.IgnoreUserLoginMappings = true;
+
+
+                SqlConnectionStringBuilder connBuilder = new SqlConnectionStringBuilder();
+                connBuilder.UserID = userName;
+                connBuilder.Password = password;
+                connBuilder.DataSource = sourceServer;
+                connBuilder.InitialCatalog = sourceDatabase;
+
+                Version ver = Assembly.GetExecutingAssembly().GetName().Version;
+                DacServices service = new DacServices(connBuilder.ConnectionString);
+                service.Extract(dacPacFileName, sourceDatabase, "Sql Build Manager", ver);
+                log.Info($"dacpac from {sourceServer}.{sourceDatabase} saved to {dacPacFileName}");
+                return true;
+            }
+            catch(Exception exe)
+            {
+                log.Error($"Problem creating DACPAC from {sourceServer}.{sourceDatabase}: {exe.ToString()}");
+                return false;
+            }
+           
+
+        }
+
+        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName, string path)
+        {
+            try
+            {
+                log.Info($"Generating scripts: {Path.GetFileName(platinumDacPacFileName)} vs {Path.GetFileName(targetDacPacFileName)}");
+                string tmpFile = Path.Combine(path, Path.GetFileName(targetDacPacFileName) + ".sql");
+                DacDeployOptions opts = new DacDeployOptions();
+                opts.IgnoreExtendedProperties = true;
+                opts.BlockOnPossibleDataLoss = false;
+                opts.IgnoreUserSettingsObjects = true;
+
+
+                DacPackage platPackage = DacPackage.Load(platinumDacPacFileName);
+                DacPackage targPackage = DacPackage.Load(targetDacPacFileName);
+                string script =  DacServices.GenerateDeployScript(platPackage, targPackage, Path.GetFileNameWithoutExtension(targetDacPacFileName), opts);
+                return script;
+
+            }
+            catch (Exception exe)
+            {
+                log.Error($"Problem creating scripts between {platinumDacPacFileName} and {targetDacPacFileName}: {exe.ToString()}");
+                return string.Empty;
+            }
+
+           
+        }
+        internal static string ScriptDacPacDeltas_old(string platinumDacPacFileName, string targetDacPacFileName, string path)
+        {
+            log.InfoFormat("Generating scripts: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
+
+            string tmpFile = Path.Combine(path, Path.GetFileName(targetDacPacFileName) + ".sql");
+
+            ProcessHelper pHelper = new ProcessHelper();
+            pHelper.AddArgument("/Action", "Script");
+
+            pHelper.AddArgument("/SourceFile", platinumDacPacFileName);
+            pHelper.AddArgument("/TargetFile", targetDacPacFileName);
+            pHelper.AddArgument("/TargetDatabaseName", Path.GetFileNameWithoutExtension(targetDacPacFileName));
+
+            //Output
+            pHelper.AddArgument("/OutputPath", tmpFile);
+
+            //Scripting properties
+
+            pHelper.AddArgument("/p:IgnoreExtendedProperties", "True", "=");
+            pHelper.AddArgument("/p:BlockOnPossibleDataLoss", "False", "=");
+            pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
+
+
+            //pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
+            //pHelper.AddArgument("/p:IgnoreRoleMembership", "True", "=");
+            //pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
+
+            int result = pHelper.ExecuteProcess(sqlPackageExe);
+            log.Info(pHelper.Output);
+            if (result == 0)
+            {
+                string script = File.ReadAllText(tmpFile);
+                //File.Delete(tmpFile);
+                return script;
+            }
+            else
+            {
+                log.Error(pHelper.Error);
+                return string.Empty;
+            }
+        }
+
+
         public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, out string buildPackageName)
         {
             log.InfoFormat("Generating SBM build from dacpac differences: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
@@ -178,47 +281,7 @@ namespace SqlSync.SqlBuild
             }
             return files;
         }
-        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName, string path)
-        {
-            log.InfoFormat("Generating scripts: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
-
-            string tmpFile = Path.Combine(path, Path.GetFileName(targetDacPacFileName) + ".sql");
-
-            ProcessHelper pHelper = new ProcessHelper();
-            pHelper.AddArgument("/Action", "Script");
-
-            pHelper.AddArgument("/SourceFile", platinumDacPacFileName);
-            pHelper.AddArgument("/TargetFile", targetDacPacFileName);
-            pHelper.AddArgument("/TargetDatabaseName", Path.GetFileNameWithoutExtension(targetDacPacFileName));
-
-            //Output
-            pHelper.AddArgument("/OutputPath", tmpFile);
-
-            //Scripting properties
-
-            pHelper.AddArgument("/p:IgnoreExtendedProperties", "True","=");
-            pHelper.AddArgument("/p:BlockOnPossibleDataLoss", "False","=");
-            pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
-            
-            
-            //pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
-            //pHelper.AddArgument("/p:IgnoreRoleMembership", "True", "=");
-            //pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
-
-            int result = pHelper.ExecuteProcess(sqlPackageExe);
-            log.Info(pHelper.Output);
-            if(result == 0)
-            {
-                string script = File.ReadAllText(tmpFile);
-                //File.Delete(tmpFile);
-                return script;
-            }
-            else
-            {
-                log.Error(pHelper.Error);
-                return string.Empty;
-            }
-        }
+       
         /// <summary>
         /// Tries to eliminate the header information that the DACPAC tooling adds 
         /// </summary>
@@ -261,14 +324,14 @@ namespace SqlSync.SqlBuild
 
            string endofHeader = Regex.Escape(@"Please run the below section of statements against the database");
             MatchCollection endMatchs = Regex.Matches(dacPacGeneratedScript, endofHeader);
-            var endMatch = endMatchs.Cast<Match>().Select(m => m.Index).LastOrDefault();
-            if(endMatch == -1) //Odd, there should be something, but oh well...
+            var endMatch = endMatchs.Cast<Match>().LastOrDefault();
+            if(endMatch == null || endMatch.Index == -1 || string.IsNullOrWhiteSpace(endMatch.Value)) //Odd, there should be something, but oh well...
             {
                 return DacpacDeltasStatus.InSync;
             }
             else
             {
-                var endOfLineIndex = cleanedScript.IndexOf("\n", endMatch);
+                var endOfLineIndex = cleanedScript.IndexOf("\n", endMatch.Index);
                 cleanedScript = cleanedScript.Substring(endOfLineIndex + 1);
                // var lineNumber = dacPacGeneratedScript.Take(endMatch).Count(c => c == '\n') + 1;
 
