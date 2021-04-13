@@ -5,7 +5,7 @@ using SqlBuildManager.Console;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
 using System.IO;
-
+using SqlBuildManager.Console.Threaded;
 namespace SqlBuildManager.Console.UnitTest
 {
     class Initialization : IDisposable

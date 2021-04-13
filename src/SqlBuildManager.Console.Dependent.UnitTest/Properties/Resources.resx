@@ -121,6 +121,9 @@
   <data name="dbconfig" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dbconfig.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="dbconfig_long" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\dbconfig-long.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="InsertForThreadedTest" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\InsertForThreadedTest.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -132,12 +135,6 @@
   </data>
   <data name="NoTrans_MultiDb1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NoTrans_MultiDb.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="remote_execution_file" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\remote_execution_file.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="remote_execution_file_bad_exeserver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\remote_execution_file_bad_exeserver.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="SimpleSelect" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SimpleSelect.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

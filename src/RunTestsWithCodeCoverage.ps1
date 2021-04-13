@@ -14,7 +14,7 @@ try {
     foreach($proj in $list)
     {
         write-host "Running tests for" $proj  -ForegroundColor Cyan
-        dotnet test $proj --results-directory:$datedTestResultFolder --collect:"Code Coverage"
+        dotnet test $proj --results-directory:$datedTestResultFolder --collect:"Code Coverage" -l "console;verbosity=detailed"
     }
     write-host 'Tests Completed'  -ForegroundColor Green
 

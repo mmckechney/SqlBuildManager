@@ -1,6 +1,7 @@
 ﻿using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using System.IO;
+using SqlBuildManager.Console.Threaded;
 namespace SqlBuildManager.Console
 {
     class LogMsg

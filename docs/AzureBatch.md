@@ -1,8 +1,8 @@
 ﻿# Leveraging Azure Batch for distributed builds
 
 ## Set up your Batch Account
-To use Azure Batch, you will need to have an Azure Batch account and upload the Sql Build Manager code package zip file (either from a [GitHub release](https://github.com/mmckechney/SqlBuildManager/releases/latest) or a custom build) to the account. This setup is a one-time event and can be done via scripts or manually via the Azure portal
 
+To use Azure Batch, you will need to have an Azure Batch account and upload the Sql Build Manager code package zip file (either from a [GitHub release](https://github.com/mmckechney/SqlBuildManager/releases/latest) or a custom build) to the account. This setup is a one-time event and can be done via scripts or manually via the Azure portal
 
 _Note_: this will upload a build of the latest code version from a local build
 
@@ -105,13 +105,13 @@ If you prefer a one step execution, you can run the command line to create and d
 
 The following command contains all of the required arguments to run a Batch job:
 
-```bash
+``` bash
 sbm.exe batch run --override="C:\temp\override.cfg" --packagename="c:\temp\mybuild.sbm" --username=myname --password=P@ssw0rd! --deletebatchpool=false --batchnodecount=5 --batchvmsize=STANDARD_DS1_V2 --batchaccountname=mybatch --batchaccounturl=https://mybatch.eastus.batch.azure.com --batchaccountkey=x1hGLIIrdd3rroqXpfc2QXubzzCYOAtrNf23d3dCtOL9cQ+WV6r/raNrsAdV7xTaAyNGsEagbF0VhsaOTxk6A== --storageaccountname=mystorage --storageaccountkey=lt2e2dr7JYVnaswZJiv1J5g8v2ser20B0pcO0PacPaVl33AAsuT2zlxaobdQuqs0GHr8+CtlE6DUi0AH+oUIeg==
 ```
 
 The following command line uses a generated DACPAC and assumes that the Batch,  Storage and password settings are in the [`--settingsfile`](#azure-batch-save-settings):
 
-```bash
+``` bash
 sbm.exe batch run --settingsfile="C:\temp\my_settings.json" --override="C:\temp\override.cfg" --platinumdbsource="platinumDb" --platinumserversource="platinumdbserver" --database=targetDb --server="targetdbserver" 
 ```
 
@@ -121,6 +121,7 @@ sbm.exe batch run --settingsfile="C:\temp\my_settings.json" --override="C:\temp\
 
 `sbm batch prestage [options]`\
 _Note:_ You can also leverage the [--settingsfile](#azure-batch-save-settings) option to reuse most of the arguments
+
 - `--batchnodecount="##"` - Number of nodes to provision to run the batch job  (default is 10)
 - `--batchvmsize="<size>"` - Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
 - `--batchaccountname="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
@@ -135,9 +136,10 @@ _Note:_ You can also leverage the [--settingsfile](#azure-batch-save-settings) o
 `sbm batch run [options]`\
 In addition to the [authentication](commandline.md#General-Authentication-settings) and [runtime](commandline.md#General-Runtime-settings) arguments above, these are specifically needed for Azure Batch executions.
 \
-_Note:_ 
+_Note:_
+
 1. You can also leverage the [--settingsfile](#azure-batch-save-settings) option to reuse most of the arguments
-2. either --platinumdacpac _or_ --packagename are required. If both are given, then --packagename will be used.
+2. either `--platinumdacpac` _or_ `--packagename` are required. If both are given, then `--packagename` will be used.
 
 - `--platinumdacpac="<filename>"` - Name of the dacpac containing the platinum schema
 - `--packagename="<filename>"` - Name of the .sbm or .sbx file to execute save execution logs 
@@ -180,7 +182,7 @@ The next time you run a build action, use the `--settingsfile="<file path>"` in 
 
 - Authentication: `--username`, `--password`
 - Azure Batch: `--batchnodecount`, `--batchaccountname`, `--batchaccountkey`, `--batchaccounturl`, `--storageaccountname`, `--storageaccountkey`, `--batchvmsize`, `--deletebatchpool`, `--deletebatchjob`, `--pollbatchpoolstatus`, `--eventhubconnectionstring`
-- Run time settings: `--rootloggingpath`, `--logastext`
+- Run time settings: `--rootloggingpath`, `--logastext`, `--concurrency`, `--concurrencytype`
 
 _Note:_ 
 
@@ -251,6 +253,8 @@ The format for the saved settings Json file is below. You can include or exclude
   },
   "RootLoggingPath": "<valid folder path>",
   "DefaultScriptTimeout" : "<int>",
-  "TimeoutRetryCount" : "<int>"
+  "TimeoutRetryCount" : "<int>",
+  "Concurrency": "<int value>",
+  "ConcurrencyType": "[Count | Server | MaxPerServer]"
 }
 ```

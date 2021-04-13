@@ -250,7 +250,7 @@ namespace SqlBuildManager.ScriptHandling
             catch(Exception exe)
             {
                 log.Error("Error processing Script Optimization", exe);
-                throw exe;
+                throw;
             }
         }
 

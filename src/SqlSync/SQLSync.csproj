@@ -13,12 +13,12 @@
     <ApplicationIcon>SqlBuildManager.ico</ApplicationIcon>
     <AssemblyName>SqlBuildManager</AssemblyName>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="..\Microsoft_SqlDB_DAC\**\*.*">
-      <Link>Microsoft_SqlDB_DAC\%(RecursiveDir)%(FileName)%(Extension)</Link>
+  <!--<ItemGroup>
+    <Content Include="..\microsoft-sqlpackage-windows\**\*.*">
+      <Link>microsoft-sqlpackage-windows\%(RecursiveDir)%(FileName)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
+  </ItemGroup>-->
   
   <ItemGroup>
     <Compile Remove="Controls\CodeReviewControl.cs" />
@@ -340,6 +340,10 @@
     <Content Include="Validate\warning.JPG" />
     <Content Include="Validate\warning3.jpg" />
     <None Include="SQLSync_TemporaryKey.pfx" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="150.5084.2" />
   </ItemGroup>
   <ItemGroup>
     <None Update="log4net.config">

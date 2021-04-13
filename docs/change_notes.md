@@ -2,21 +2,29 @@
 # SQL Build Manager Change Notes
 
 
+### Version 11.4.0
+
+- **NOTE:** **Deprecated old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**
+- **NOTE:** Now built against .NET 5 and .NET Core 3.1
+- *ADDED:* New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](Concurrency_options.md)
+- *UPDATED:* Now leveraging `Microsoft.SqlServer.DACFx` Nuget package instead of `sqlpackage.exe` command line to manage DACPACs
+- *FIXED:* Updated `BlueSkyDev.Logging.AzureEventHubAppender` to v1.3.2 due to app hanging if EventHub connection string was incorrect
+
 ### Version 11.3.1
 
-- *UPDATED:* Changes tp the deployment templates and PowerShell files to be more friendly with Azure DevOps release pipelines 
-- *FIXED:* sbm batch run regression introduced with new query option
+- *UPDATED:* Changes to the deployment templates and PowerShell files to be more friendly with Azure DevOps release pipelines 
+- *FIXED:* `sbm batch run` regression introduced with new query option
 
 ### Version 11.3.0
 
-- **NOTE:** **The old style command line (leveraging the /Action=verb flag etc.) will be deprecated soon!**
-- *ADDED:* New querying across databases from command line for threaded and batch [sbm batch query] and [sbm threaded query]. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  
-- *UPDATED:* Running a threaded update is now performed via [sbm threaded run] (vs just [sbm threaded]}, now that there is also a query option for threaded runs
+- **NOTE:** **The old style command line (leveraging the `/Action=verb` flag etc.) will be deprecated soon!**
+- *ADDED:* New querying across databases from command line for threaded and batch [`sbm batch query`] and [`sbm threaded query`]. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  
+- *UPDATED:* Running a threaded update is now performed via [`sbm threaded run`] (vs just [`sbm threaded`]), now that there is also a query option for threaded runs
 
 ### Version 11.2.0
 
 - *ADDED:* The Batch processors now work on Linux worker nodes!
-- *UPDATED:* New batch command option to support Linux: --os [Windows,Linux]. Note also that the --batchpoolname option now has important relevance for Batch accounts that have both Linux and Windows pools
+- *UPDATED:* New batch command option to support Linux: `--os [Windows,Linux]`. Note also that the `--batchpoolname` option now has important relevance for Batch accounts that have both Linux and Windows pools
 - *UPDATED:* The Azure setup scripts (see /doc/setup_azure_environment) now also include setting up a Linux pool and the creation of settings files and application package zips for both environments
 
 ### Version 11.1.0

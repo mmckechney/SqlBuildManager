@@ -4,16 +4,16 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1"/>
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3"/>
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.3"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
     <PackageReference Include="coverlet.collector" Version="3.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj"/>
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\TestConfig\**\*.*">

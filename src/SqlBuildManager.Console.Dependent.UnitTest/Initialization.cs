@@ -5,12 +5,12 @@ using SqlBuildManager.Console;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
 using System.IO;
-
+using SqlBuildManager.Console.Threaded;
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     class Initialization : IDisposable
     {
-        public static string ConnectionString = @"Data Source=(local)\SQLEXPRESS;Initial Catalog={0}; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;";
+        public static string ConnectionString = @"Data Source=localhost\SQLEXPRESS;Initial Catalog={0}; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;";
 
         private static List<string> tempFiles;
         public static string SqlBuildZipFileName;
@@ -50,9 +50,13 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         {
             File.WriteAllBytes(Initialization.MultiDbFileName, Properties.Resources.NoTrans_MultiDb);
         }
-        public void CopyDbConfigFileeToTestPath()
+        public void CopyDbConfigFileToTestPath()
         {
             File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig);
+        }
+        public void CopyDbConfigFileLongToTestPath()
+        {
+            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_long);
         }
         public string GetTrulyUniqueFile(string extension)
         {

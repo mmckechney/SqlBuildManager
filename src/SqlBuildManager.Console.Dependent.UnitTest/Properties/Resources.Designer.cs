@@ -73,6 +73,16 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] dbconfig_long {
+            get {
+                object obj = ResourceManager.GetObject("dbconfig_long", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] InsertForThreadedTest {
             get {
                 object obj = ResourceManager.GetObject("InsertForThreadedTest", resourceCulture);
@@ -107,38 +117,6 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
             get {
                 object obj = ResourceManager.GetObject("NoTrans_MultiDb1", resourceCulture);
                 return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-        ///&lt;BuildSettings xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
-        ///  &lt;DistributionType&gt;EqualSplit&lt;/DistributionType&gt;
-        ///  &lt;RemoteExecutionServers&gt;
-        ///    &lt;ServerConfigData&gt;
-        ///      &lt;ServerName&gt;localhost&lt;/ServerName&gt;
-        ///      &lt;TcpServiceEndpoint&gt;net.tcp://localhost:8676/SqlBuildManager.Services/BuildService&lt;/TcpServiceEndpoint&gt;
-        ///      &lt;HttpServiceEndpoint&gt;http://localhost:8675/SqlBuildManager.Services/BuildService&lt;/HttpServiceE [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string remote_execution_file {
-            get {
-                return ResourceManager.GetString("remote_execution_file", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-        ///&lt;BuildSettings xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
-        ///  &lt;DistributionType&gt;EqualSplit&lt;/DistributionType&gt;
-        ///  &lt;RemoteExecutionServers&gt;
-        ///    &lt;ServerConfigData&gt;
-        ///      &lt;ServerName&gt;badServer_name&lt;/ServerName&gt;
-        ///      &lt;TcpServiceEndpoint&gt;net.tcp://badServer_name:8676/SqlBuildManager.Services/BuildService&lt;/TcpServiceEndpoint&gt;
-        ///      &lt;HttpServiceEndpoint&gt;http://badServer_name:8675/SqlBuildManager.Services/BuildServic [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string remote_execution_file_bad_exeserver {
-            get {
-                return ResourceManager.GetString("remote_execution_file_bad_exeserver", resourceCulture);
             }
         }
         

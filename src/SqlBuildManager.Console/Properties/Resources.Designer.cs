@@ -59,23 +59,6 @@ namespace SqlBuildManager.Console.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to 
-        ///Usage: SqlBuildManager.Console /Action=&lt;action&gt; | args below
-        ///
-        ///    /? or /help                      Show this help 
-        ///
-        ///Action value options (/Action=&lt;value&gt;)
-        ///    Build                    Performs a standard,local SBM execution via command line
-        ///    Threaded                 For updating multiple databases simultaneously from the current machine
-        ///    Remote                   For updating multiple databases simultaneously using remote execution servers to spread the processing 
-        ///    Batch                   [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string ConsoleHelp2 {
-            get {
-                return ResourceManager.GetString("ConsoleHelp2", resourceCulture);
-            }
-        }
+      
     }
 }

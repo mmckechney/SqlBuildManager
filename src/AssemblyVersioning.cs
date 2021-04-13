@@ -6,8 +6,8 @@
 // associated with an assembly.
 //
 [assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2020")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2020")]
+[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2021")]
+[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2021")]
 
 //
 // Version information for an assembly consists of the following four values:
@@ -25,7 +25,7 @@
 //   These can be found in SqlBuildManager.Setup -> Organize Your Setup -> General Information
 // ** Also, don't forget to update the change_notes.xml and .html files!
 
-[assembly: AssemblyVersion("11.3.1")]
-[assembly: AssemblyFileVersion("11.3.1")]
+[assembly: AssemblyVersion("11.4.0")]
+[assembly: AssemblyFileVersion("11.4.0")]
 
 

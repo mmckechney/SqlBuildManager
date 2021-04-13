@@ -23,8 +23,6 @@ namespace SqlSync.SqlBuild
 
         }
         [JsonIgnore]
-        public string CliVersion { get; set; }
-        [JsonIgnore]
         public ActionType Action { get; set; }
 
         #region Nested Object properties
@@ -59,8 +57,18 @@ namespace SqlSync.SqlBuild
                     this.RootLoggingPath = cmdLine.RootLoggingPath;
                     this.DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
                     this.TimeoutRetryCount = cmdLine.TimeoutRetryCount;
+                    this.Concurrency = cmdLine.Concurrency;
+                    this.ConcurrencyType = cmdLine.ConcurrencyType;
                 }
                 this.settingsFile = value;
+            }
+        }
+        [JsonIgnore]
+        public FileInfo SettingsFileInfo
+        {
+            set
+            {
+                this.SettingsFile = value.FullName;
             }
         }
         public string Override {
@@ -128,6 +136,9 @@ namespace SqlSync.SqlBuild
         }
         private string dacpacName = string.Empty;
         public virtual int DefaultScriptTimeout { get; set; } = 500;
+        public virtual int Concurrency { get; set; } = 10;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public virtual ConcurrencyType ConcurrencyType { get; set; } = ConcurrencyType.Count;
 
         [JsonIgnore]
         public bool Silent { get; set; }
@@ -373,15 +384,15 @@ namespace SqlSync.SqlBuild
         
         public override string ToString()
         {
-            return this.ToStringExtension(this.CliVersion, StringType.Basic);
+            return this.ToStringExtension(StringType.Basic);
         }
         public string ToBatchThreadedExeString()
         {
-            return this.ToStringExtension(this.CliVersion, StringType.BatchThreaded);
+            return this.ToStringExtension(StringType.BatchThreaded);
         }
         public string ToBatchQueryThreadedExeString()
         {
-            return this.ToStringExtension(this.CliVersion, StringType.BatchQuery);
+            return this.ToStringExtension(StringType.BatchQuery);
         }
 
         public object Clone()
@@ -404,9 +415,17 @@ namespace SqlSync.SqlBuild
         Linux
     }
 
+    [Serializable]
+    public enum ConcurrencyType
+    {
+        Count,
+        Server,
+        MaxPerServer
+    }
+
     public static class CommandLineExtensions
     {
-        public static string ToStringExtension(this object obj, string cliVersion, StringType toStringType)
+        public static string ToStringExtension(this object obj, StringType toStringType)
         {
             StringBuilder sb = new StringBuilder();
             foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
@@ -422,7 +441,7 @@ namespace SqlSync.SqlBuild
                 {
                     if (property.GetValue(obj) != null && toStringType == StringType.Basic)
                     {
-                        sb.Append(property.GetValue(obj).ToStringExtension(cliVersion, toStringType));
+                        sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
                     }
                 } 
                 else if (property.PropertyType == typeof(CommandLineArgs.Authentication) ||
@@ -431,7 +450,7 @@ namespace SqlSync.SqlBuild
                 {
                     if (property.GetValue(obj) != null)
                     {
-                        sb.Append(property.GetValue(obj).ToStringExtension(cliVersion, toStringType));
+                        sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
                     }
                 }
                 else
@@ -439,85 +458,44 @@ namespace SqlSync.SqlBuild
                     switch (property.Name)
                     {
                         case "AuthenticationType":
-                            if (cliVersion == CliVersion.NEW_CLI)
-                            {
-                                sb.Append("--authtype \"" + property.GetValue(obj).ToString() + "\" ");
-                            }
-                            else
-                            {
-                                sb.Append("/AuthType=\"" + property.GetValue(obj).ToString() + "\" ");
-                            }
+                            sb.Append("--authtype \"" + property.GetValue(obj).ToString() + "\" ");
                             break;
 
                         case "SettingsFile":
                             if (toStringType == StringType.Basic)
                             {
-                                if (cliVersion == CliVersion.NEW_CLI)
-                                {
-                                    sb.Append("--settingsfile \"" + property.GetValue(obj).ToString() + "\" ");
-                                }
-                                else
-                                {
-                                    sb.Append("/SettingsFile=\"" + property.GetValue(obj).ToString() + "\" ");
-                                }
+                                sb.Append("--settingsfile \"" + property.GetValue(obj).ToString() + "\" ");
                             }
                             break;
 
                         case "MultiDbRunConfigFileName":
                         case "ManualOverRideSets":
-                            if (cliVersion == CliVersion.NEW_CLI)
-                            {
                                 sb.Append("--override \"" + property.GetValue(obj).ToString() + "\" ");
-                            }
-                            else
-                            {
-                                sb.Append("/Override=\"" + property.GetValue(obj).ToString() + "\" ");
-                            }
                             break;
 
                         case "BuildFileName":
-                            if (cliVersion == CliVersion.NEW_CLI)
-                            {
                                 sb.Append("--packagename \"" + property.GetValue(obj).ToString() + "\" ");
-                            }
-                            else
-                            {
-                                sb.Append("/PackageName=\"" + property.GetValue(obj).ToString() + "\" ");
-                            }
                             break;
 
                         case "EventHubConnectionString":
-                            if (cliVersion == CliVersion.NEW_CLI)
-                            {
                                 sb.Append("--eventhubconnection \"" + property.GetValue(obj).ToString() + "\" ");
-                            }
-                            else
-                            {
-                                sb.Append("/eventhubconnection=\"" + property.GetValue(obj).ToString() + "\" ");
-                            }
                             break;
 
                         case "Action":
-                            if (cliVersion == CliVersion.NEW_CLI)
+                            switch (toStringType)
                             {
-                                switch (toStringType)
-                                {
-                                    case StringType.BatchThreaded:
-                                        sb.Append("runthreaded ");
-                                        break;
-                                    case StringType.BatchQuery:
-                                        sb.Append("querythreaded ");
-                                        break;
-                                    case StringType.Basic:
-                                    default:
-                                        sb.Append(property.GetValue(obj).ToString().ToLower() + " ");
-                                        break;
-                                }
+                                case StringType.BatchThreaded:
+                                    sb.Append("runthreaded ");
+                                    break;
+                                case StringType.BatchQuery:
+                                    sb.Append("querythreaded ");
+                                    break;
+                                case StringType.Basic:
+                                default:
+                                    sb.Append(property.GetValue(obj).ToString().ToLower() + " ");
+                                    break;
                             }
-                            else
-                            {
-                                sb.Append("/Action=\"" + property.GetValue(obj).ToString() + "\" ");
-                            }
+
                             break;
 
                         case "OverrideDesignated":
@@ -535,51 +513,23 @@ namespace SqlSync.SqlBuild
                                 }
                                 if (bool.Parse(property.GetValue(obj).ToString()) == true) //ignore anything not set
                                 {
-                                    if (cliVersion == CliVersion.NEW_CLI)
-                                    {
-                                        sb.Append("--" + property.Name.ToLower() + " true ");
-                                    }
-                                    else
-                                    {
-                                        sb.Append("/" + property.Name + "=true ");
-                                    }
+                                    sb.Append("--" + property.Name.ToLower() + " true ");
                                 }
                             }
                             else if (property.PropertyType == typeof(string))
                             {
-                                if (cliVersion == CliVersion.NEW_CLI)
-                                {
-                                    sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
-                                }
-                                else
-                                {
-                                    sb.Append("/" + property.Name + "=\"" + property.GetValue(obj).ToString() + "\" ");
-                                }
+                                sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
                             }
                             else
                             {
                                 double num;
                                 if (double.TryParse(property.GetValue(obj).ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out num))
                                 {
-                                    if (cliVersion == CliVersion.NEW_CLI)
-                                    {
-                                        sb.Append("--" + property.Name.ToLower() + " " + property.GetValue(obj).ToString() + " ");
-                                    }
-                                    else
-                                    {
-                                        sb.Append("/" + property.Name + "=" + property.GetValue(obj).ToString() + " ");
-                                    }
+                                    sb.Append("--" + property.Name.ToLower() + " " + property.GetValue(obj).ToString() + " ");
                                 }
                                 else
                                 {
-                                    if (cliVersion == CliVersion.NEW_CLI)
-                                    {
-                                        sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
-                                    }
-                                    else
-                                    {
-                                        sb.Append("/" + property.Name + "=\"" + property.GetValue(obj).ToString() + "\" ");
-                                    }
+                                    sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
                                 }
                             }
                             break;
