@@ -33,20 +33,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Assert.IsNotNull(result);
             Assert.IsFalse(string.IsNullOrEmpty(result));
         }
-        [TestMethod]
-        [Ignore]
-         public void ScriptDacPacDeltaMethodDiff_Test()
-        {
-            string workingDir = @"C:\temp"; // SqlBuildManager.Logging.Configure.AppDataPath;
-            File.WriteAllBytes(workingDir + @"\PlatinumSchema_simple.dacpac", Properties.Resources.PlatinumSchema_simple);
-            File.WriteAllBytes(workingDir + @"\TarnishedSchema_simple.dacpac", Properties.Resources.TarnishedSchema_simple);
-            
-            string result = DacPacHelper.ScriptDacPacDeltas(workingDir + @"\PlatinumSchema_simple.dacpac", workingDir + @"\TarnishedSchema_simple.dacpac", workingDir);
-            string result2 = DacPacHelper.ScriptDacPacDeltas_old(workingDir + @"\PlatinumSchema_simple.dacpac", workingDir + @"\TarnishedSchema_simple.dacpac", workingDir);
-            Assert.AreEqual(result, result2);
-            Assert.IsNotNull(result);
-            Assert.IsFalse(string.IsNullOrEmpty(result));
-        }
 
         [TestMethod]
         public void CreateSbmFromDacPacDifferences_Test()

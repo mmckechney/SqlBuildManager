@@ -16,83 +16,7 @@ namespace SqlSync.SqlBuild
     public class DacPacHelper
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static string sqlPack = null;
-        private static List<string> appRoots = new List<string> (new string[] { @"E:\approot", @"F:\approot", @"G:\approot" }); //This really should be dynamic, but we can see it now. 
-        private static string sqlPackageExe
-        {
-            get
-            {
-                var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
-                if (isWindows)
-                {
-                    if (string.IsNullOrWhiteSpace(sqlPack) || !File.Exists(sqlPack))
-                    {
-                        lock (appRoots)
-                        {
-                            appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                            appRoots.Insert(0, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\microsoft-sqlpackage-windows");
-                            appRoots.Add(@"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\Microsoft");
-                            appRoots.Add(@"C:\Program Files\Microsoft SQL Server\150\DAC\bin");
-                        }
-                        foreach (var dir in appRoots)
-                        {
-                            if (Directory.Exists(dir))
-                            {
-                                var files = Directory.GetFiles(dir, "sqlpackage.exe", SearchOption.AllDirectories);
-                                if (files.Any())
-                                {
-                                    sqlPack = files.First();
-                                    return sqlPack;
-                                }
-                            }
-                        }
-                        log.ErrorFormat("Unable to find sqlpackage.exe in directories: {0}", string.Join(" | ", appRoots.ToArray()));
-                        throw new ArgumentException("Can not file sqlpackage.exe");
-                    }
-                    return sqlPack;
-                }
-                else
-                {
-                    return "microsoft-sqlpackage-linux/sqlpackage";
-                }
-            }
-        }
-        public static bool ExtractDacPac_old(string sourceDatabase, string sourceServer, string userName, string password, string dacPacFileName)
-        {
-            log.InfoFormat("Extracting dacpac from {0} : {1}", sourceServer, sourceDatabase);
-            ProcessHelper pHelper = new ProcessHelper();
-
-            //Extract Action
-            pHelper.AddArgument("/Action", "Extract");
-            
-            //Connection settings
-            pHelper.AddArgument("/SourceServerName", sourceServer);
-            pHelper.AddArgument("/SourceDatabaseName", sourceDatabase);
-            pHelper.AddArgument("/SourceUser", userName);
-            pHelper.AddArgument("/SourcePassword", password);
-
-            //Output
-            pHelper.AddArgument("/TargetFile", dacPacFileName);
-            
-            //Extraction settings
-            pHelper.AddArgument("/p:IgnoreExtendedProperties", "True", "=");
-            pHelper.AddArgument("/p:IgnoreUserLoginMappings", "True", "=");
-            
-            //pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
-
-            int result =  pHelper.ExecuteProcess(sqlPackageExe);
-
-            log.Info(pHelper.Output);
-            if(result != 0)
-            {
-                log.Error(pHelper.Error);
-                return false;
-            }
-
-            return true;
-
-        }
+       
         public static bool ExtractDacPac(string sourceDatabase, string sourceServer, string userName, string password, string dacPacFileName)
         {
 
@@ -152,49 +76,7 @@ namespace SqlSync.SqlBuild
 
            
         }
-        internal static string ScriptDacPacDeltas_old(string platinumDacPacFileName, string targetDacPacFileName, string path)
-        {
-            log.InfoFormat("Generating scripts: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
-
-            string tmpFile = Path.Combine(path, Path.GetFileName(targetDacPacFileName) + ".sql");
-
-            ProcessHelper pHelper = new ProcessHelper();
-            pHelper.AddArgument("/Action", "Script");
-
-            pHelper.AddArgument("/SourceFile", platinumDacPacFileName);
-            pHelper.AddArgument("/TargetFile", targetDacPacFileName);
-            pHelper.AddArgument("/TargetDatabaseName", Path.GetFileNameWithoutExtension(targetDacPacFileName));
-
-            //Output
-            pHelper.AddArgument("/OutputPath", tmpFile);
-
-            //Scripting properties
-
-            pHelper.AddArgument("/p:IgnoreExtendedProperties", "True", "=");
-            pHelper.AddArgument("/p:BlockOnPossibleDataLoss", "False", "=");
-            pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
-
-
-            //pHelper.AddArgument("/p:IgnorePermissions", "True", "=");
-            //pHelper.AddArgument("/p:IgnoreRoleMembership", "True", "=");
-            //pHelper.AddArgument("/p:IgnoreUserSettingsObjects", "True", "=");
-
-            int result = pHelper.ExecuteProcess(sqlPackageExe);
-            log.Info(pHelper.Output);
-            if (result == 0)
-            {
-                string script = File.ReadAllText(tmpFile);
-                //File.Delete(tmpFile);
-                return script;
-            }
-            else
-            {
-                log.Error(pHelper.Error);
-                return string.Empty;
-            }
-        }
-
-
+      
         public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, out string buildPackageName)
         {
             log.InfoFormat("Generating SBM build from dacpac differences: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
