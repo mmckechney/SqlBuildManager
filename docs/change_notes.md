@@ -2,9 +2,9 @@
 # SQL Build Manager Change Notes
 
 
-### Version 11.4.0
+### Version 12.0.0
 
-- **NOTE:** **Deprecated old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**
+- **NOTE:** **Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**
 - **NOTE:** Now built against .NET 5 and .NET Core 3.1
 - *ADDED:* New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](Concurrency_options.md)
 - *UPDATED:* Now leveraging `Microsoft.SqlServer.DACFx` Nuget package instead of `sqlpackage.exe` command line to manage DACPACs
