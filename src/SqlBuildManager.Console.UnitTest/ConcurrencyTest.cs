@@ -39,14 +39,16 @@ namespace SqlBuildManager.Console.UnitTest
             return (tmpCfg, multiData);
         }
 
-        internal static (string, MultiDbData) CreateMultiDbData(int serverCount, int minDbCount, int maxDbCount)
+        internal static (string, MultiDbData) CreateMultiDbData(int serverCount, int minDbCount, int maxDbCount, out int[] matrix)
         {
             var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
             Random rnd = new Random();
             StringBuilder sb = new StringBuilder();
+            matrix = new int[serverCount];
             for (int s=0;s< serverCount;s++)
             {
                 var dbCount = rnd.Next(minDbCount, maxDbCount + 1);
+                matrix[s] = dbCount;
                 for(int d = 0;d<dbCount;d++)
                 {
                     sb.AppendLine($"server{s}:default,database{d}");
@@ -89,16 +91,17 @@ namespace SqlBuildManager.Console.UnitTest
                     serverCount = rnd.Next(targetBuckets + 1, 400);
                     minDbCount = rnd.Next(10, 201);
                     maxDbCount = rnd.Next(minDbCount+1 , 600);
-                    (tmpFile, multiData) = CreateMultiDbData(serverCount, minDbCount, maxDbCount);
+                    int[] matrix;
+                    (tmpFile, multiData) = CreateMultiDbData(serverCount, minDbCount, maxDbCount,out matrix);
                     
                     var buckets = Concurrency.RecombineServersToFixedBucketCount(multiData, targetBuckets);
                     var flattened = Concurrency.ConcurrencyByServer(multiData);
                     int maxBucket = flattened.Max(c => c.Count());
                     int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2)+1].Count();
                     var idealBucket = Math.Ceiling((double)flattened.Sum(c => c.Count()) / (double)targetBuckets);
-
-                    Assert.AreEqual(targetBuckets, buckets.Count());
-                    Assert.IsTrue(buckets.Max(c => c.Count()) <= idealBucket + maxBucket);
+                    string message = $"Buckets: {targetBuckets}; Servers: {serverCount}; Matrix: {string.Join(",", matrix)}";
+                    Assert.AreEqual(targetBuckets, buckets.Count(), message);
+                    Assert.IsTrue(buckets.Max(c => c.Count()) <= idealBucket + maxBucket, message);
 
                     var str = Concurrency.ConvertBucketsToConfigLines(buckets);
 
@@ -138,16 +141,18 @@ namespace SqlBuildManager.Console.UnitTest
                     serverCount = rnd.Next(targetBuckets + 1, 400);
                     minDbCount = rnd.Next(10, 201);
                     maxDbCount = rnd.Next(minDbCount + 1, 600);
-                    (tmpFile, multiData) = CreateMultiDbData(serverCount, minDbCount, maxDbCount);
+                    int[] matrix;
+                    (tmpFile, multiData) = CreateMultiDbData(serverCount, minDbCount, maxDbCount, out matrix);
 
                     var buckets = Concurrency.RecombineServersToFixedBucketCount(multiData, targetBuckets);
                     var str = Concurrency.ConvertBucketsToConfigLines(buckets);
-                    Assert.AreEqual(buckets.Count(), str.Count());
+                    string message = $"Buckets: {targetBuckets}; Servers: {serverCount}; Matrix: {string.Join(",", matrix)}";
+                    Assert.AreEqual(buckets.Count(), str.Count(), message);
                     for (int j = 0; j < buckets.Count(); j++)
                     {
-                        Assert.AreEqual(buckets[j].Count(), str[j].Count());
-                        Assert.AreEqual(buckets[j].First().Item1, str[j].First().Substring(0, str[j].First().IndexOf(":")));
-                        Assert.AreEqual(buckets[j].Last().Item1, str[j].Last().Substring(0, str[j].Last().IndexOf(":")));
+                        Assert.AreEqual(buckets[j].Count(), str[j].Count(), message);
+                        Assert.AreEqual(buckets[j].First().Item1, str[j].First().Substring(0, str[j].First().IndexOf(":")), message);
+                        Assert.AreEqual(buckets[j].Last().Item1, str[j].Last().Substring(0, str[j].Last().IndexOf(":")), message);
                     }
 
                     if (File.Exists(tmpFile))
