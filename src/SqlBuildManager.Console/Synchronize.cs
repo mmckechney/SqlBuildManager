@@ -5,12 +5,12 @@ using System.Text;
 using SqlSync.SqlBuild;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.Syncronizer;
-using log4net;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Console
 {
     public class Synchronize
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static string GetDatabaseRunHistoryTextDifference(CommandLineArgs cmdLine)
         {
             cmdLine = ValidateFlags(cmdLine);
@@ -57,7 +57,7 @@ namespace SqlBuildManager.Console
 
         static void dbSync_SyncronizationInfoEvent(string message)
         {
-            log.Info(message);
+            log.LogInformation(message);
         }
 
         internal static CommandLineArgs ValidateFlags(CommandLineArgs cmdLine)
@@ -65,25 +65,25 @@ namespace SqlBuildManager.Console
 
             if (string.IsNullOrEmpty(cmdLine.SynchronizeArgs.GoldDatabase))
             {
-                log.Error("Missing /GoldDatabase=\"<database>\" flag");
+                log.LogError("Missing /GoldDatabase=\"<database>\" flag");
                 return null;
             }
 
             if (string.IsNullOrEmpty(cmdLine.SynchronizeArgs.GoldServer))
             {
-                log.Error("Missing /GoldServer=\"<server>\" flag");
+                log.LogError("Missing /GoldServer=\"<server>\" flag");
                 return null;
             }
 
             if (string.IsNullOrEmpty(cmdLine.Database))
             {
-                log.Error("Missing /Database=\"<database>\" flag");
+                log.LogError("Missing /Database=\"<database>\" flag");
                 return null;
             }
 
             if (string.IsNullOrEmpty(cmdLine.Server))
             {
-                log.Error("Missing /Server=\"<server>\" flag");
+                log.LogError("Missing /Server=\"<server>\" flag");
                 return null;
             }
             return cmdLine;

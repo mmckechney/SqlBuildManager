@@ -17,7 +17,7 @@ namespace SqlBuildManager.Logging
 			.Enrich.WithThreadId()
 			.Enrich.WithThreadName()
 		   .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}")
-		   .WriteTo.RollingFile("logFileFromHelper.log", outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} -{Message}{NewLine}{Exception}")
+		   .WriteTo.RollingFile("logFileFromHelper.log", outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}")
 		   .CreateLogger();
 
 			factory.AddSerilog(serilogLogger);
@@ -38,5 +38,6 @@ namespace SqlBuildManager.Logging
 			set { _Factory = value; }
 		}
 		public static Microsoft.Extensions.Logging.ILogger CreateLogger<T>() => LoggerFactory.CreateLogger(typeof(T));
+		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type) => LoggerFactory.CreateLogger(type);
 	}
 }
