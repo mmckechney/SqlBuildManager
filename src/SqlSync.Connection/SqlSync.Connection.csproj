@@ -3,15 +3,16 @@
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs"/>
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.12"/>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2"/>
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.2"/>
+    <PackageReference Include="log4net" Version="2.0.12" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj"/>
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

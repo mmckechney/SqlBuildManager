@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Batch.Protocol.BatchRequests;
-using Microsoft.Data.SqlClient;
-using Microsoft.SqlServer.Management.Dmf;
+﻿using Microsoft.Data.SqlClient;
 using SqlSync.SqlBuild;
+using System;
+using System.Collections.Generic;
 
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {

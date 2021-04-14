@@ -15,7 +15,7 @@ namespace SqlSync.SqlBuild
 {
 
     [Serializable]
-    public partial class CommandLineArgs : ICloneable
+    public partial class CommandLineArgs //: System.ICloneable
     {
 
         public CommandLineArgs()
