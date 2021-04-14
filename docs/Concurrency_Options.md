@@ -48,7 +48,7 @@ When distributing load to the Batch nodes, the algorithm does an equal split of 
 
 ### Scenario 2
 
-You are concerned with over tasking your servers with too much load and only want to run 1 task per server at a time. For this you would run
+You are concerned with over tasking your SQL Servers with too much load and only want to run 1 task per SQL Server at a time. For this you would run
 
 ``` bash
 sbm batch run --concurrencytype Server ...
