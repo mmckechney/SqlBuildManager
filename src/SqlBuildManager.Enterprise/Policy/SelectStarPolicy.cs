@@ -5,11 +5,12 @@ using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 using System.Text.RegularExpressions;
 using System.Linq;
 using SqlBuildManager.ScriptHandling;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class SelectStarPolicy : p.IScriptPolicyWithArguments
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
         public string PolicyId
         {

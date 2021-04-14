@@ -3,7 +3,7 @@ using Azure.Storage.Blobs.Specialized;
 using BlueSkyDev.Logging;
 using Microsoft.Extensions.Logging;
 using log4net.Repository.Hierarchy;
-using Microsoft.Extensions.Logging;
+using log4net;
 using Newtonsoft.Json;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Enterprise.Policy;
@@ -21,7 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using log4net;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Console
 {
 

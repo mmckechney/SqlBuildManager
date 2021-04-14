@@ -11,12 +11,11 @@ using MoreLinq;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using log4net;
 namespace SqlBuildManager.Console.Threaded
 {
     public class ThreadedExecution
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ThreadedExecution>();// LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ThreadedExecution>();
         private static ILog logEvent = LogManager.GetLogger(System.Reflection.Assembly.GetExecutingAssembly(), "AzureEventHubAppenderLogger");
 
         StringBuilder sbSuccessDatabasesCfg = new System.Text.StringBuilder();

@@ -1,4 +1,4 @@
-using log4net;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace SqlSync.SqlBuild
     /// </summary>
     public class SqlBuildFileHelper
 	{
-        private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public const string FileMissing = "File Missing";
         public const string Sha1HashError = "SHA1 Hash Error";
         public static string DefaultScriptXmlFile = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Default Scripts", "DefaultScriptRegistry.xml");
@@ -45,7 +45,7 @@ namespace SqlSync.SqlBuild
                     if (SqlBuildFileHelper.InitilizeWorkingDirectory(ref workingDirectory, ref projectFilePath, ref projectFileName) == false)
                     {
                         result = "Unable to initialize working directory.";
-                        log.ErrorFormat("ExtractSqlBuildZipFile error: {0}", result);
+                        log.LogError($"ExtractSqlBuildZipFile error: {result}");
                         return false;
                     }
                 }
@@ -56,48 +56,48 @@ namespace SqlSync.SqlBuild
                         workingDirectory = workingDirectory + @"/";
                     }
                     projectFilePath = workingDirectory;
-                    log.DebugFormat("ExtractSqlBuildZipFile projectFilePath set to: {0}", projectFilePath);
+                    log.LogDebug($"ExtractSqlBuildZipFile projectFilePath set to: {projectFilePath}");
                 }
 
                 //Unpack the zip contents into the working directory
                 if (!ZipHelper.UnpackZipPackage(workingDirectory, fileName, overwriteExistingProjectFiles))
                 {
                     result = "Unable to unpack Sql Build Project File [" + fileName + "]";
-                    log.ErrorFormat("ExtractSqlBuildZipFile error: {0}", result);
+                    log.LogError($"ExtractSqlBuildZipFile error: {result}");
                     return false;
                 }
-                log.DebugFormat("Successfully UnZipped Sql Build Project file {0}", fileName);
+                log.LogDebug($"Successfully UnZipped Sql Build Project file {fileName}");
 
                 var mainProjectFilePath = Path.Combine(workingDirectory, XmlFileNames.MainProjectFile);
                 if (File.Exists(mainProjectFilePath))
                 {
-                    log.DebugFormat("Found MainProjectFile at: {0}", mainProjectFilePath);
+                    log.LogDebug($"Found MainProjectFile at: {mainProjectFilePath}");
                     string valErrorMessage;
                     if (SqlBuildFileHelper.ValidateAgainstSchema(mainProjectFilePath, out valErrorMessage))
                     {
                         projectFileName = mainProjectFilePath;
-                        log.Debug("MainProjectFile successfully validated against schema");
+                        log.LogDebug("MainProjectFile successfully validated against schema");
                         return true;
                     }
                     else
                     {
                         SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDirectory);
                         result = "Unable to validate the schema for: "+ mainProjectFilePath;
-                        log.ErrorFormat("ExtractSqlBuildZipFile error: {0}", result);
+                        log.LogError($"ExtractSqlBuildZipFile error: {result}");
                         return false;
                     }
                 }
                 else
                 {
-                    log.WarnFormat("The MainProjectFile not found at {0}", mainProjectFilePath);
+                    log.LogWarning($"The MainProjectFile not found at {mainProjectFilePath}");
                     string[] files = Directory.GetFiles(workingDirectory, "*.xml");
                     for (int i = 0; i < files.Length; i++)
                     {
-                        log.DebugFormat("Attempting to validate {0} against schema.", files[i]);
+                        log.LogDebug($"Attempting to validate {files[i]} against schema.");
                         string valErrorMessage;
                         if (SqlBuildFileHelper.ValidateAgainstSchema(files[i], out valErrorMessage))
                         {
-                            log.DebugFormat("Project file found at {0}. Using as main project metadata file.", files[i]);
+                            log.LogDebug($"Project file found at {files[i]}. Using as main project metadata file.");
                             projectFileName = files[i];
                             return true;
                         }
@@ -105,7 +105,7 @@ namespace SqlSync.SqlBuild
 
                     SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDirectory);
                     result = "Unable to validate the schema for any XML file in "+ workingDirectory;
-                    log.ErrorFormat("ExtractSqlBuildZipFile error: {0}", result);
+                    log.LogError($"ExtractSqlBuildZipFile error: {result}");
                     return false;
                 }
 
@@ -113,7 +113,7 @@ namespace SqlSync.SqlBuild
             catch (Exception exe)
             {
                 result = exe.Message;
-                log.ErrorFormat("ExtractSqlBuildZipFile exception: {0}", result);
+                log.LogError($"ExtractSqlBuildZipFile exception: {result}");
                 SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDirectory);
                 return false;
             }
@@ -127,7 +127,7 @@ namespace SqlSync.SqlBuild
             buildData = new SqlSyncBuildData();
             if (File.Exists(projFileName))
             {
-                log.DebugFormat("LoadSqlBuildProjectFile: found projectFile at {0}", projFileName);
+                log.LogDebug($"LoadSqlBuildProjectFile: found projectFile at {projFileName}");
                 //Read the table list
                 try
                 {
@@ -145,23 +145,23 @@ namespace SqlSync.SqlBuild
                     }
                     else
                     {
-                        log.Error("Unable to load Sql Project file. XML file is not valid");
+                        log.LogError("Unable to load Sql Project file. XML file is not valid");
                         successfulLoad = false;
                     }
                 }
                 catch(Exception exe)
                 {
-                    log.Error("Unable to load Sql Project file", exe);
+                    log.LogError(exe, "Unable to load Sql Project file");
                     successfulLoad = false;
                 }
             }
             else
             {
-                log.InfoFormat("LoadSqlBuildProjectFile: unable to find projectFile at {0}. Creating shell.", projFileName);
+                log.LogInformation($"LoadSqlBuildProjectFile: unable to find projectFile at {projFileName}. Creating shell.");
                 buildData = CreateShellSqlSyncBuildDataObject();
                 buildData.WriteXml(projFileName);
             }
-            log.DebugFormat("LoadSqlBuildProjectFile: Returning successfulLoad =  {0}.", successfulLoad.ToString());
+            log.LogDebug($"LoadSqlBuildProjectFile: Returning successfulLoad =  {successfulLoad.ToString()}.");
             return successfulLoad;
         }
         #endregion
@@ -392,7 +392,7 @@ namespace SqlSync.SqlBuild
             }
             catch(Exception exe)
             {
-                log.Error("Unable to package scripts", exe);
+                log.LogError(exe, "Unable to package scripts");
                 return false;
             }
 
@@ -409,14 +409,14 @@ namespace SqlSync.SqlBuild
             if (directoryName == null || directoryName.Length == 0)
             {
                 message = "Unable to package SBX files. Source directory parameter is empty";
-                log.Warn(message);
+                log.LogWarning(message);
                 return new List<string>();
             }
 
             if (!Directory.Exists(directoryName))
             {
                 message = String.Format("Unable to package SBX files. The specified source directory '{0}' does not exist.", directoryName);
-                log.Warn(message);
+                log.LogWarning(message);
                 return new List<string>();
             }
 
@@ -426,7 +426,7 @@ namespace SqlSync.SqlBuild
             if (sbxFiles.Length == 0)
             {
                 message = String.Format("No SBX files found in source directory '{0}' or any of it's subdirectories", directoryName);
-                log.Warn(message);
+                log.LogWarning(message);
                 return new List<string>();
             }
 
@@ -439,7 +439,7 @@ namespace SqlSync.SqlBuild
                 else
                 {
                     message = String.Format("Error packaging SBX file '{0}' - please check application log at \"{1}\"", sbx, GetLogFileName());
-                    log.Error(message);
+                    log.LogError(message);
                     return new List<string>();
                 }
             }
@@ -460,13 +460,13 @@ namespace SqlSync.SqlBuild
             {
                 if (sbxBuildControlFileName == null || sbxBuildControlFileName.Trim().Length == 0)
                 {
-                    log.Warn("Can't package SBX file into SBM package - SBX file name is empty");
+                    log.LogWarning("Can't package SBX file into SBM package - SBX file name is empty");
                     return false;
                 }
                 
                 if (File.Exists(sbmProjectFileName))
                 {
-                    log.WarnFormat("Deleting a pre-existing SBM file: {0}", sbmProjectFileName);
+                    log.LogWarning($"Deleting a pre-existing SBM file: {sbmProjectFileName}");
                     File.Delete(sbmProjectFileName);
                 }
 
@@ -474,7 +474,7 @@ namespace SqlSync.SqlBuild
                 bool successfulLoad = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, sbxBuildControlFileName, true);
                 if (!successfulLoad)
                 {
-                    log.ErrorFormat("Problem loading SBX file: {0}. ", sbxBuildControlFileName);
+                    log.LogError($"Problem loading SBX file: {sbxBuildControlFileName}. ");
                     return false;
                 }
               
@@ -486,7 +486,7 @@ namespace SqlSync.SqlBuild
                 //Just in case that file already exists...
                 if (File.Exists(mainProjectFileFullPath))
                 {
-                    log.WarnFormat("Renaming pre-existing XML \"main project file\": {0}", mainProjectFileFullPath);
+                    log.LogWarning($"Renaming pre-existing XML \"main project file\": {mainProjectFileFullPath}");
                     File.Copy(mainProjectFileFullPath, tmpMainProjectFileFullPath, true);
                     copied = true;
                 }
@@ -499,7 +499,7 @@ namespace SqlSync.SqlBuild
                 {
                     if (!File.Exists(Path.Combine(path, row.FileName)))
                     {
-                        log.ErrorFormat("A script file configured in the SBX file was not found: '{0}'. Unable to create SBM package.", Path.Combine(path + row.FileName));
+                        log.LogError($"A script file configured in the SBX file was not found: '{Path.Combine(path + row.FileName)}'. Unable to create SBM package.");
                         return false;
                     }
                 }
@@ -510,22 +510,22 @@ namespace SqlSync.SqlBuild
 
                 if (copied)
                 {
-                    log.WarnFormat("Moving pre-existing XML \"main project file\" back to  {0}", mainProjectFileFullPath);
+                    log.LogWarning($"Moving pre-existing XML \"main project file\" back to  {mainProjectFileFullPath}");
                     File.Copy(tmpMainProjectFileFullPath, mainProjectFileFullPath, true);
                     File.Delete(tmpMainProjectFileFullPath);
                 }
                 else
                 {
-                    log.DebugFormat("Deleting the temporary file {0}", mainProjectFileFullPath);
+                    log.LogDebug($"Deleting the temporary file {mainProjectFileFullPath}");
                     File.Delete(mainProjectFileFullPath);
                 }
 
-                log.DebugFormat("Successfully packaged SBX file '{0}' into SBM file '{1}'", sbxBuildControlFileName, sbmProjectFileName);
+                log.LogDebug($"Successfully packaged SBX file '{sbxBuildControlFileName}' into SBM file '{sbmProjectFileName}'");
                 return true;
             }
             catch (Exception exe)
             {
-                log.Error(String.Format("Error creating SBM package for {0}", sbxBuildControlFileName), exe);
+                log.LogError(exe, $"Error creating SBM package for {sbxBuildControlFileName}");
                 return false;
             }
 
@@ -536,16 +536,17 @@ namespace SqlSync.SqlBuild
 
         public static string GetLogFileName()
         {
-            log4net.Appender.IAppender[] appenders = log.Logger.Repository.GetAppenders();
-            foreach (log4net.Appender.IAppender appender in appenders)
-            {
-                if (appender is log4net.Appender.RollingFileAppender)
-                {
-                    string file = ((log4net.Appender.RollingFileAppender)appender).File;
-                    if (File.Exists(file))
-                        return file;
-                }
-            }
+            //TODO: FIX THIS!!!!!!!!!!!!
+            // log4net.Appender.IAppender[] appenders = log.Logger.Repository.GetAppenders();
+            // foreach (log4net.Appender.IAppender appender in appenders)
+            // {
+            //     if (appender is log4net.Appender.RollingFileAppender)
+            //     {
+            //         string file = ((log4net.Appender.RollingFileAppender)appender).File;
+            //         if (File.Exists(file))
+            //             return file;
+            //     }
+            // }
             return string.Empty;
         }
 
@@ -566,18 +567,18 @@ namespace SqlSync.SqlBuild
                 }
                 catch (IOException ioExe)
                 {
-                    log.Error(String.Format("Unable to delete file {0}", rows[i].FileName), ioExe);
+                    log.LogError(ioExe, $"Unable to delete file {rows[i].FileName}");
                     string message = String.Format("Unable to delete file {0}. Error message: {1}", rows[i].FileName, ioExe.Message);
                 }
                 catch (IndexOutOfRangeException iExe)
                 {
-                    log.Error(String.Format("Unable to delete file at index {0}", i.ToString()), iExe);
+                    log.LogError(iExe, $"Unable to delete file at index {i.ToString()}");
                     string message = String.Format("Unable to delete file at index {0}. Error message: {1}", i.ToString(), iExe.Message);
                     return false;
                 }
                 catch (Exception e)
                 {
-                    log.Error(String.Format("Unable to remove file file {0}", rows[i].FileName), e);
+                    log.LogError(e, $"Unable to remove file file {rows[i].FileName}");
                     string message = String.Format("Unable to delete file {0}. Error message: {1}", rows[i].FileName, e.Message);
                     return false;
                 }
@@ -639,7 +640,7 @@ namespace SqlSync.SqlBuild
 
             if (File.Exists(defaultScriptXmlFile) == false)
             {
-                log.WarnFormat("Unable to load Default Script Registry at {0}. File does not exist", defaultScriptXmlFile);
+                log.LogWarning($"Unable to load Default Script Registry at {defaultScriptXmlFile}. File does not exist");
                 return null;
             }
 
@@ -1266,8 +1267,7 @@ namespace SqlSync.SqlBuild
 		}
         public static bool UpdateObsoleteXmlNamespace(string fileName)
         {
-            log.DebugFormat("Updating XmlNamespace from legacy file '{0}'", fileName);
-
+            log.LogDebug($"Updating XmlNamespace from legacy file '{fileName}'");
             bool replaced = false;
             //valid namespace settings
             string xmlns = "xmlns=\"http://schemas.mckechney.com/";
@@ -1285,9 +1285,9 @@ namespace SqlSync.SqlBuild
             }
 
             if (replaced)
-                log.InfoFormat("Successfully updated the XmlNamespace in file {0}", fileName);
+                log.LogInformation($"Successfully updated the XmlNamespace in file {fileName}");
             else
-                log.InfoFormat("Unable to update the XmlNamespace in file {0}", fileName);
+                log.LogInformation($"Unable to update the XmlNamespace in file {fileName}");
             return replaced;
 
         }
@@ -1338,7 +1338,7 @@ namespace SqlSync.SqlBuild
 			}
 			catch(Exception e)
 			{
-                log.Error(String.Format("Unable to export script {0} to destination folder {1}", fileName, destinationFolder), e);
+                log.LogError(e, $"Unable to export script {fileName} to destination folder {destinationFolder}");
 				return false;
 			}
 		}
@@ -1527,7 +1527,7 @@ namespace SqlSync.SqlBuild
 			}
 			catch(Exception exe)
 			{
-                log.Warn("Unable to clean up working directory '" + workingDir + "'", exe);
+                log.LogWarning(exe, $"Unable to clean up working directory '{workingDir}'");
 				return false;
 			}
 		}
@@ -1550,13 +1550,13 @@ namespace SqlSync.SqlBuild
                 if (!Directory.Exists(workingDirectory))
                     Directory.CreateDirectory(workingDirectory);
 
-                log.DebugFormat("Successfully created working directory at '{0}'", workingDirectory);
+                log.LogDebug("Successfully created working directory at '{workingDirectory}'");
 
                 return true;
             }
             catch(Exception exe)
             {
-                log.Warn("Unable to clean up working directory '" + workingDirectory + "'", exe);
+                log.LogWarning(exe, $"Unable to clean up working directory '{workingDirectory}'" );
                 return false;
             }
         }

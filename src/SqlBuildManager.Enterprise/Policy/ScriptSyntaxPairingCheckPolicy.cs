@@ -5,11 +5,12 @@ using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 using System.Text.RegularExpressions;
 using System.Linq;
 using SqlBuildManager.ScriptHandling;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class ScriptSyntaxPairingCheckPolicy : p.IScriptPolicyMultiple
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public const string parentRegexKey = "ParentRegex";
         public const string childPairRegexKey = "ChildPairRegex";
@@ -92,7 +93,7 @@ namespace SqlBuildManager.Enterprise.Policy
                         case parentRegexKey:
                             if (parentRegex.Length > 0)
                             {
-                                log.WarnFormat("The ScriptSyntaxPairingCheckPolicy \"{0}\" already has a {3} value of \"{1}\". This is being overwritten by a value of \"{2}\"", this.ShortDescription, parentRegex, argument.Value, ScriptSyntaxPairingCheckPolicy.parentRegexKey);
+                                log.LogWarning($"The ScriptSyntaxPairingCheckPolicy \"{this.ShortDescription}\" already has a {ScriptSyntaxPairingCheckPolicy.parentRegexKey} value of \"{parentRegex}\". This is being overwritten by a value of \"{argument.Value}\"");
                             }
                             parentRegex = argument.Value;
                             break;
@@ -106,7 +107,7 @@ namespace SqlBuildManager.Enterprise.Policy
                             policyTargetDatabase = argument.Value;
                             break;
                         default:
-                            log.WarnFormat("The ScriptSyntaxPairingCheckPolicy \"{0}\" has an unrecognized argument. Name: {1}; Value:{2}", this.ShortDescription, argument.Name, argument.Value);
+                            log.LogWarning($"The ScriptSyntaxPairingCheckPolicy \"{this.ShortDescription}\" has an unrecognized argument. Name: {argument.Name}; Value:{argument.Value}");
                             break;
                     }
                 }
@@ -115,14 +116,14 @@ namespace SqlBuildManager.Enterprise.Policy
                 if (parentRegex.Length == 0)
                 {
                     message = String.Format("The ScriptSyntaxPairingCheckPolicy \"{0}\" does not have a {1} argument/value. Unable to process policy.", this.ShortDescription, ScriptSyntaxPairingCheckPolicy.parentRegexKey);
-                    log.WarnFormat(message);
+                    log.LogWarning(message);
                     return true;
                 }
 
                 if (childDontPairRegexList.Count == 0 && childPairRegexList.Count == 0)
                 {
                     message = String.Format("The ScriptSyntaxPairingCheckPolicy \"{0}\" does not have any {1} or {2} argument/values. Unable to process policy.", this.ShortDescription, ScriptSyntaxPairingCheckPolicy.childPairRegexKey, ScriptSyntaxPairingCheckPolicy.childDontPairRegexKey);
-                    log.WarnFormat(message);
+                    log.LogWarning(message);
                     return true;
                 }
 

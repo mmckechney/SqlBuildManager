@@ -8,6 +8,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 //using System.Linq;
+using Microsoft.Extensions.Logging;
 //http://www.codeproject.com/cs/miscctrl/SyntaxHighlighting.asp
 namespace UrielGuy.SyntaxHighlighting
 {
@@ -16,7 +17,7 @@ namespace UrielGuy.SyntaxHighlighting
 	/// </summary>
 	public class SyntaxHighlightingTextBox :	System.Windows.Forms.RichTextBox 
 	{
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private bool suspendHighlighting;
 
         public bool SuspendHighlighting

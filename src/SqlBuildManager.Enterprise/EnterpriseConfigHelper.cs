@@ -6,12 +6,13 @@ using System.Xml.Serialization;
 using System.IO;
 using SqlBuildManager.Enterprise.ActiveDirectory;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise
 {
 
     public class EnterpriseConfigHelper
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static EnterpriseConfiguration enterpriseConfig = null;
         private static List<string> adGroupMemberships = null;
 
@@ -41,7 +42,7 @@ namespace SqlBuildManager.Enterprise
                 }
                 if(EnterpriseConfigHelper.enterpriseConfig == null)
                 {
-                    log.Warn("Unable to load the EnterpriseConfiguration. Creating a new shell EnterpriseConfiguration object");
+                    log.LogWarn("Unable to load the EnterpriseConfiguration. Creating a new shell EnterpriseConfiguration object");
                     EnterpriseConfigHelper.enterpriseConfig = new EnterpriseConfiguration();
 
                 }
@@ -126,7 +127,7 @@ namespace SqlBuildManager.Enterprise
                     object tmp = xmlS.Deserialize(sr);
                     if (tmp != null)
                     {
-                        log.Debug("Successfully deserialized Enterprise Configuration");
+                        log.LogDebug("Successfully deserialized Enterprise Configuration");
                         return (EnterpriseConfiguration)tmp;
                     }
                 }
@@ -209,7 +210,7 @@ namespace SqlBuildManager.Enterprise
             }
             catch(Exception exe)
             {
-                log.Warn(string.Format("Unable to get Enterprise TimeoutSetting object for file '{0}'", scriptName), exe);
+                log.LogWarn(string.Format("Unable to get Enterprise TimeoutSetting object for file '{0}'", scriptName), exe);
             }
             return null;
         }

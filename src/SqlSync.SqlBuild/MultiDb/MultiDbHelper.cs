@@ -8,13 +8,13 @@ using SqlSync.Connection;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Xml;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public class MultiDbHelper
     {
-        private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static MultiDbData DeserializeMultiDbConfiguration(string fileName)
         {
             MultiDbData data = null;
@@ -144,8 +144,8 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             try
             {
-                log.InfoFormat("Generating database override configuation from {0} : {1}", connData.SQLServerName, connData.DatabaseName);
-                log.DebugFormat("Override generation script: {0}", query);
+                log.LogInformation($"Generating database override configuation from {connData.SQLServerName} : {connData.DatabaseName}");
+                log.LogDebug($"Override generation script: {query}");
 
                 SqlConnection conn = ConnectionHelper.GetConnection(connData);
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -183,7 +183,7 @@ namespace SqlSync.SqlBuild.MultiDb
 
                 message = string.Empty;
                 var dbs = multi.Sum(m => m.OverrideSequence.Count());
-                log.InfoFormat("Found {0} target databases across {1} target servers", dbs, multi.Count());
+                log.LogInformation($"Found {dbs} target databases across {multi.Count()} target servers");
                 return multi;
             }
             catch(Exception exe)

@@ -17,6 +17,7 @@ using SqlSync.DbInformation;
 using SqlSync.ObjectScript.Hash;
 using SqlSync.SqlBuild;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.ObjectScript
 {
 	/// <summary>
@@ -24,7 +25,7 @@ namespace SqlSync.ObjectScript
 	/// </summary>
 	public class ObjectScriptHelper
 	{
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private BackgroundWorker bgWorker;
         /// <summary>
         /// SMO server interface variable
@@ -248,7 +249,7 @@ namespace SqlSync.ObjectScript
                 InfoHelper.ExtractNameAndSchema(name, out name, out schemaOwner);
 
                 string objectType = objUpdate.ObjectType;
-                log.DebugFormat("Updating object: {0} from {1}.{2}", objUpdate.ShortFileName, tmpData.SQLServerName, tmpData.DatabaseName);
+                log.LogDebug($"Updating object: {objUpdate.ShortFileName} from { tmpData.SQLServerName}.{tmpData.DatabaseName}");
 
                 bool success = helper.ScriptDatabaseObjectWithHeader(Path.GetExtension(objUpdate.ShortFileName).ToUpper(), name, schemaOwner, ref script, ref objectType);
 
@@ -267,7 +268,7 @@ namespace SqlSync.ObjectScript
                 //Try to connect to the server, if already connected, it's handled ok
             if (!this.ConnectToServer())
             {
-                log.ErrorFormat("ScriptDatabaseObject - Failed to Connect to SQL Server '{0}' / Database '{1}'", this.ConnData.SQLServerName,this.ConnData.DatabaseName);
+                log.LogError($"ScriptDatabaseObject - Failed to Connect to SQL Server '{this.ConnData.SQLServerName}' / Database '{this.ConnData.DatabaseName}'");
                 message = "Failed to Connect to SQL Server.";
                 return false;
             }
@@ -327,7 +328,7 @@ namespace SqlSync.ObjectScript
                     break;
                 default:
                     message = "Unable to find object type " + dbObjectType.ToString();
-                    log.WarnFormat("ScriptDatabaseObject problem: {0}", message);
+                    log.LogWarning($"ScriptDatabaseObject problem: {message}");
                     success = false;
                     break;
 
@@ -1078,10 +1079,9 @@ namespace SqlSync.ObjectScript
 
                 if (this.smoDatabase == null || this.smoDatabase.Name != this.ConnData.DatabaseName)
                 {
-                    if (log.IsDebugEnabled)
+                    foreach (Database smoDb in this.smoServer.Databases)
                     {
-                        foreach (Database smoDb in this.smoServer.Databases)
-                            log.DebugFormat("SMO database found {0}", smoDb.Name);
+                        log.LogDebug($"SMO database found {smoDb.Name}");
                     }
 
                     var d = from Database db in this.smoServer.Databases
@@ -1090,7 +1090,7 @@ namespace SqlSync.ObjectScript
 
                     if (d == null || d.Count() == 0 || d.First() != 1)
                     {
-                        log.ErrorFormat("The selected database {0} is not included in the SMO.Databases collection for SMO server {1}", this.ConnData.DatabaseName, this.smoServer.Name);
+                        log.LogError("The selected database {this.ConnData.DatabaseName} is not included in the SMO.Databases collection for SMO server {this.smoServer.Name}");
                     }
                     else
                     {
@@ -1108,13 +1108,12 @@ namespace SqlSync.ObjectScript
             {
                 if (allowConnectRetry)
                 {
-                    log.InfoFormat("Connection retry required for {0}.{1}. Message: {2}", this.ConnData.SQLServerName,this.ConnData.DatabaseName,efe.Message);
-                    allowConnectRetry = false;
+                    log.LogInformation($"Connection retry required for {this.ConnData.SQLServerName}.{this.ConnData.DatabaseName}. Message: {efe.Message}");
                     return ConnectToServer();
                 }
                 else
                 {
-                    log.Error(string.Format("SMO Connection failure for {0}.{1}", this.ConnData.SQLServerName, this.ConnData.DatabaseName), efe);
+                    log.LogError(efe, $"SMO Connection failure for {this.ConnData.SQLServerName}.{this.ConnData.DatabaseName}");
                     return false;
                 }
             }
@@ -1124,7 +1123,7 @@ namespace SqlSync.ObjectScript
                 if (bgWorker != null)
                     bgWorker.ReportProgress(0, new DatabaseScriptEventArgs(string.Format("Failed to Connect to SQL Server '{0}' / Database '{1}'\r\n{2}", this.ConnData.SQLServerName, this.ConnData.DatabaseName, exe.ToString()), "Error", "", true));
 
-                log.Error(string.Format("Failed to Connect to SQL Server '{0}' / Database '{1}'", this.ConnData.SQLServerName, this.ConnData.DatabaseName), exe);
+                log.LogError(exe, $"Failed to Connect to SQL Server '{this.ConnData.SQLServerName}' / Database '{this.ConnData.DatabaseName}'");
                 return false;
                 //exceptions thrown due to inability to connect.
             }
@@ -1142,7 +1141,7 @@ namespace SqlSync.ObjectScript
 			}
 			catch(Exception exe)
 			{
-                log.Warn("Error disconnecting from SQL Server SMO connection", exe);
+                log.LogWarning(exe, "Error disconnecting from SQL Server SMO connection");
 				return false;
 			}
 		}
@@ -1381,7 +1380,7 @@ namespace SqlSync.ObjectScript
             if (smoTable == null)
             {
                 message = "Unable to find table '" + schemaOwner + "." + name + "' in database '" + this.smoDatabase.Name + "' on server '" + this.smoServer.Name + "'";
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
             try
@@ -1452,7 +1451,7 @@ namespace SqlSync.ObjectScript
             catch (Exception e)
             {
                 message = e.Message;
-                log.Error(string.Format("Unable to script table {0}", name), e);
+                log.LogError(e, $"Unable to script table {name}");
                 return false;
             }
         }
@@ -1466,7 +1465,7 @@ namespace SqlSync.ObjectScript
             if (tableAndTrigger.Length != 2)
             {
                 message = String.Format("Unable to determine trigger name from {0}", tableAndTrigger);
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
 
@@ -1482,7 +1481,7 @@ namespace SqlSync.ObjectScript
                     trigger,
                     this.smoServer,
                     this.smoDatabase);
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
             try
@@ -1584,7 +1583,7 @@ namespace SqlSync.ObjectScript
             catch (Exception e)
             {
                 message = e.Message;
-                log.Error(string.Format("Unable to script trigger {0}", name), e);
+                log.LogError(e, $"Unable to script trigger {name}");
                 return false;
             }
         }
@@ -1602,7 +1601,7 @@ namespace SqlSync.ObjectScript
             if (smoSp == null)
             {
                 message = "Unable to find Stored Procedure '" + schemaOwner + "." + name + "' in database '" + this.smoDatabase.Name + "' on server '" + this.smoServer.Name + "'";
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
 
@@ -1694,7 +1693,7 @@ namespace SqlSync.ObjectScript
             catch (Exception e)
             {
                 message = e.Message;
-                log.Error(string.Format("Unable to script stored procedure {0}", name), e);
+                log.LogError(e, $"Unable to script stored procedure {name}");
                 return false;
             }
 		}
@@ -1704,7 +1703,7 @@ namespace SqlSync.ObjectScript
             if (smoView == null)
             {
                 message = "Unable to find View '" + schemaOwner + "." + name + "' in database '" + this.smoDatabase.Name + "' on server '" + this.smoServer.Name + "'";
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
 
@@ -1805,7 +1804,7 @@ namespace SqlSync.ObjectScript
             catch (Exception e)
             {
                 message = e.Message;
-                log.Error(string.Format("Unable to script view {0}", name), e);
+                log.LogError(e, $"Unable to script view {name}");
                 return false;
             }
 
@@ -1819,7 +1818,7 @@ namespace SqlSync.ObjectScript
             if (smoFunc == null)
             {
                 message = "Unable to find Function '" + schemaOwner + "." + name + "' in database '" + this.smoDatabase.Name + "' on server '" + this.smoServer.Name + "'";
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
 
@@ -1908,7 +1907,7 @@ namespace SqlSync.ObjectScript
             catch (Exception e)
             {
                 message = e.Message;
-                log.Error(string.Format("Unable to script user defined function {0}", name), e);
+                log.LogError(e, $"Unable to script user defined function {name}");
                 return false;
             }
 
@@ -1923,7 +1922,7 @@ namespace SqlSync.ObjectScript
             if (smoUser == null)
             {
                 message = "Unable to find User '" + name + "' in database '" + this.smoDatabase.Name + "' on server '" + this.smoServer.Name + "'";
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
 
@@ -1955,7 +1954,8 @@ namespace SqlSync.ObjectScript
             catch (Exception e)
             {
                 message = e.Message;
-                log.Error(string.Format("Unable to script database user {0}", name), e);
+                
+                log.LogError(e, $"Unable to script database user {name}");
                 return false;
             }
         }
@@ -1966,7 +1966,7 @@ namespace SqlSync.ObjectScript
             if (smoLogin == null)
             {
                 message = "Unable to find Login '" + name + "' on server '" + this.smoServer.Name + "'";
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
 
@@ -2004,7 +2004,7 @@ namespace SqlSync.ObjectScript
             catch (Exception e)
             {
                 message = e.Message;
-                log.Error(string.Format("Unable to script database login {0}", name), e);
+                log.LogError(e, $"Unable to script database login {name}");
                 return false;
             }
 
@@ -2015,7 +2015,7 @@ namespace SqlSync.ObjectScript
             if (smoRole == null)
             {
                 message = "Unable to find Role '" + name + "' in database '" + this.smoDatabase.Name + "' on server '" + this.smoServer.Name + "'";
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
 
@@ -2047,7 +2047,7 @@ namespace SqlSync.ObjectScript
             catch (Exception e)
             {
                 message = e.Message;
-                log.Error(string.Format("Unable to script database role {0}", name),e);
+                log.LogError(e, $"Unable to script database role {name}");
                 return false;
             }
         }
@@ -2057,7 +2057,7 @@ namespace SqlSync.ObjectScript
             if (smoSchema == null)
             {
                 message = "Unable to find Schema '" + name + "' in database '" + this.smoDatabase.Name + "' on server '" + this.smoServer.Name + "'";
-                log.Warn(message);
+                log.LogWarning(message);
                 return false;
             }
 
@@ -2089,7 +2089,7 @@ namespace SqlSync.ObjectScript
             catch (Exception e)
             {
                 message = e.Message;
-                log.Error(string.Format("Unable to script database schema {0}", name), e);
+                log.LogError(e, $"Unable to script database schema {name}");
                 return false;
             }
         }

@@ -8,11 +8,12 @@ using SqlSync.SqlBuild.Objects;
 using System.ComponentModel;
 using SqlSync.Constants;
 using SqlSync.DbInformation;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.ObjectScript
 {
     public class BackoutPackage
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public static bool CreateBackoutPackage(ConnectionData connData,
                                                 List<SqlBuild.Objects.ObjectUpdates> objectUpdates,

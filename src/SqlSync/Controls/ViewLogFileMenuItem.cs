@@ -6,7 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.IO;
 namespace SqlSync.Controls
 {

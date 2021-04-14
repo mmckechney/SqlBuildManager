@@ -39,6 +39,7 @@ using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Status;
 using SqlSync.TableScript;
 using SqlSync.Validator;
+using Microsoft.Extensions.Logging;
 //using SqlBuildManager.Enterprise.CodeReview;
 namespace SqlSync.SqlBuild
 
@@ -53,7 +54,7 @@ namespace SqlSync.SqlBuild
                 Package currentViolations = new Package();
         private bool scriptPkWithTables = true;
         List<string> adGroupMemberships = new List<string>();
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         List<string> scriptsRequiringBuildDescription = new List<string>();
         private string sbxBuildControlFileName = string.Empty;
         private string externalScriptLogFileName = string.Empty;
@@ -641,9 +642,9 @@ namespace SqlSync.SqlBuild
 
             this.adGroupMemberships = AdHelper.GetGroupMemberships(System.Environment.UserName).ToList();
             if (this.adGroupMemberships.Count == 0)
-                log.WarnFormat("No Group Memberships found for {0}", System.Environment.UserName);
+                log.LogWarning($"No Group Memberships found for {System.Environment.UserName}");
             else if (log.IsDebugEnabled)
-                log.DebugFormat("Group memberships for {0}: {1}", System.Environment.UserName, String.Join("; ", adGroupMemberships.ToArray()));
+                log.LogDebug($"Group memberships for {System.Environment.UserName}: {String.Join("; ", adGroupMemberships.ToArray())}");
 
 
             tagsRequiredEnabled = true;
@@ -3993,7 +3994,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Warn("Unable to refresh list view for " + row.FileName, exe);
+                log.LogWarn("Unable to refresh list view for " + row.FileName, exe);
                 this.statGeneral.Text = "Changes Saved, but unable to update script display. See error log.";
             }
 
@@ -4415,11 +4416,11 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    log.WarnFormat("Unable to run policy check. DoWorkEventArgs Argument is not of type {0}", "ListRefreshSettings");
+                    log.LogWarning($"Unable to run policy check. DoWorkEventArgs Argument is not of type ListRefreshSettings");
                 }
             }catch(Exception exe)
             {
-                log.WarnFormat("Error when executing policy check.", exe);
+                log.LogWarning(exe,"Error when executing policy check.");
                 bg.ReportProgress(0, "Problem running policy checks.");
             }
            
@@ -6023,7 +6024,7 @@ namespace SqlSync.SqlBuild
                     }
                     catch (Exception exe)
                     {
-                        log.WarnFormat("Unable to delete temporary file '{0}' when trying to add to project temp path\r\n{1}", fileList[i], exe.ToString());
+                        log.LogWarning($"Unable to delete temporary file '{fileList[i]}' when trying to add to project temp path\r\n{exe.ToString()}");
                     }
                 }
 
@@ -6384,7 +6385,7 @@ namespace SqlSync.SqlBuild
             }
             catch(Exception exe)
             {
-                log.Warn("Unable to determine if build description is required", exe);
+                log.LogWarn("Unable to determine if build description is required", exe);
             }
 
             
@@ -8033,7 +8034,7 @@ namespace SqlSync.SqlBuild
             {
                 verData.UpdateFileReadError = true;
                 verData.CheckIntervalElapsed = true;
-                log.Warn("Error Checking for updates", exe);
+                log.LogWarn("Error Checking for updates", exe);
                 //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error Checking for updates.\r\n" + exe.ToString(), EventLogEntryType.Error, 901);
 
             }
@@ -8065,7 +8066,7 @@ namespace SqlSync.SqlBuild
                 }
                 catch (Exception exe)
                 {
-                    log.Warn("Unable to display New Version alert window", exe);
+                    log.LogWarn("Unable to display New Version alert window", exe);
                 }
             }
         }

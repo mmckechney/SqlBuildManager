@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using System.Configuration;
 using System.IO;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 using Newtonsoft.Json;
 
@@ -13,7 +13,7 @@ namespace SqlSync.SqlBuild
 {
     public class CommandLine
     {
-        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         /// <summary>
         /// Parses out the command line arguments array and populates a CommandLineArgs object
         /// </summary>
@@ -44,7 +44,7 @@ namespace SqlSync.SqlBuild
                 string settings = dict["settingsfile"];
                 if (!File.Exists(settings))
                 {
-                    log.Error($"The specified Settings file (--settingsfile) does not exist at '{settings}'.");
+                    log.LogError($"The specified Settings file (--settingsfile) does not exist at '{settings}'.");
                 }
                 else
                 {
@@ -56,7 +56,7 @@ namespace SqlSync.SqlBuild
                     }
                     catch (Exception exe)
                     {
-                        log.Error($"Unable to deserialize the specified Settings File at '{settings}'.\r\n{exe.Message}");
+                        log.LogError($"Unable to deserialize the specified Settings File at '{settings}'.\r\n{exe.Message}");
                     }
                 }
             }

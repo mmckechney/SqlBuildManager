@@ -5,14 +5,14 @@ using System.Windows.Forms;
 using System.IO;
 using SqlSync.SqlBuild;
 using System.Collections.Specialized;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 namespace SqlSync
 {
     class Program
     {
         private static string logFileName = string.Empty;
-        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static int returnCode = 0;
         /// <summary>
         /// The main entry point for the application.
@@ -24,9 +24,9 @@ namespace SqlSync
             log4net.Config.XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
             SqlBuildManager.Logging.Configure.SetLoggingPath();
 
-            log.Debug("Sql Build Manager Staring...");
+            log.LogDebug("Sql Build Manager Staring...");
             if(args.Length > 0)
-                log.Info("Received Command: " + String.Join(" | ", args));
+                log.LogInformation("Received Command: " + String.Join(" | ", args));
 
             Application.EnableVisualStyles();
             try
@@ -155,7 +155,7 @@ namespace SqlSync
                 returnCode = 9999;
             }
 
-            log.Debug("Sql Build Manager Exiting with return code: "+returnCode.ToString());
+            log.LogDebug("Sql Build Manager Exiting with return code: "+returnCode.ToString());
             log4net.LogManager.Shutdown();
             Environment.Exit(returnCode);
             return returnCode;

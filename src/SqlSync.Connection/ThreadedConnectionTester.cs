@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using Microsoft.Extensions.Logging;
 namespace SqlSync.Connection
 {
     public class ThreadedConnectionTester
     {
         private static SyncObject SyncObj = new SyncObject();
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private class SyncObject
         {
             private int workingRunners = 0;
@@ -37,7 +37,7 @@ namespace SqlSync.Connection
                     ConnectionTestResult obj = new ConnectionTestResult() { DatabaseName = db, ServerName = server.Key, DbUserName = userName,DbPassword = password, AuthenticationType = authType };
                     results.Add(obj);
                     string msg = "Queuing up thread for " + obj.ServerName + "." + obj.DatabaseName;
-                    log.Debug(msg);
+                    log.LogDebug(msg);
                     System.Threading.ThreadPool.QueueUserWorkItem(TestSingleConnection, obj);
                 }
             }
@@ -57,7 +57,7 @@ namespace SqlSync.Connection
             {
                 ThreadedConnectionTester.SyncObj.WorkingRunners--;
             }
-            log.Debug("Thread Complete for "+result.ServerName +"."+result.DatabaseName + " :: Successful="+result.Successful.ToString());
+            log.LogDebug("Thread Complete for "+result.ServerName +"."+result.DatabaseName + " :: Successful="+result.Successful.ToString());
         }
     }
 }

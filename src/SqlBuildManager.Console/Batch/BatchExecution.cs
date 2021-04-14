@@ -20,7 +20,7 @@ using Microsoft.Extensions.Azure;
 using Azure.Storage;
 using SqlBuildManager.Console.Threaded;
 using SqlSync.Connection;
-
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Console.Batch
 {
     public class Execution
@@ -30,7 +30,7 @@ namespace SqlBuildManager.Console.Batch
             Run,
             Query
         }
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private CommandLineArgs cmdLine;
 
         // Batch resource settings
@@ -100,7 +100,7 @@ namespace SqlBuildManager.Console.Batch
             }
 
             //Check for the platinum dacpac and configure it if necessary
-            log.Info("Validating database overrides");
+            log.LogInformation("Validating database overrides");
             MultiDbData buildData;
             int? myExitCode = 0;
 
@@ -130,8 +130,8 @@ namespace SqlBuildManager.Console.Batch
             //Get the batch and storage values
             string jobId, poolId, storageContainerName;
             (jobId, poolId, storageContainerName) = SetBatchJobAndStorageNames(cmdLine);
-            log.Info($"Using Azure Batch account: {cmdLine.BatchArgs.BatchAccountName} ({cmdLine.BatchArgs.BatchAccountUrl})");
-            log.Info($"Setting job id to: {jobId}");
+            log.LogInformation($"Using Azure Batch account: {cmdLine.BatchArgs.BatchAccountName} ({cmdLine.BatchArgs.BatchAccountUrl})");
+            log.LogInformation($"Setting job id to: {jobId}");
 
             string readOnlySasToken = string.Empty;
             try
@@ -147,7 +147,7 @@ namespace SqlBuildManager.Console.Batch
                 string containerSasToken = GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, false);
                 if (log.IsDebugEnabled)
                 {
-                    log.DebugFormat($"Output write SAS token: {containerSasToken}");
+                    log.de($"Output write SAS token: {containerSasToken}");
                 }
 
 
@@ -198,12 +198,12 @@ namespace SqlBuildManager.Console.Batch
                     //If we end up with fewer splits, then reduce the node count...
                     if(concurrencyBuckets.Count() < cmdLine.BatchArgs.BatchNodeCount)
                     {
-                        log.WarnFormat($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
+                        log.LogWarn($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
                         cmdLine.BatchArgs.BatchNodeCount = concurrencyBuckets.Count();
                     }
                     else if(concurrencyBuckets.Count() > cmdLine.BatchArgs.BatchNodeCount) //need to do some consolidating
                     {
-                        log.WarnFormat($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
+                        log.LogWarn($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
                         concurrencyBuckets = Concurrency.RecombineServersToFixedBucketCount(multiDb, cmdLine.BatchArgs.BatchNodeCount);
                     }
                 }
@@ -234,7 +234,7 @@ namespace SqlBuildManager.Console.Batch
                 //Create the individual command lines for each node
                 IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, applicationPackage, this.batchType);
                 foreach (var s in commandLines)
-                    log.Debug(s);
+                    log.LogDebug(s);
 
                 try
                 {
@@ -296,31 +296,31 @@ namespace SqlBuildManager.Console.Batch
 
                 batchClient.Utilities.CreateTaskStateMonitor().WaitAll(addedTasks, TaskState.Completed, timeout);
 
-                log.Info("All tasks reached state Completed.");
+                log.LogInformation("All tasks reached state Completed.");
 
                 // Print task output
-                log.Info("Printing task output...\r\n");
+                log.LogInformation("Printing task output...\r\n");
 
                 IEnumerable<CloudTask> completedtasks = batchClient.JobOperations.ListTasks(jobId);
 
                 foreach (CloudTask task in completedtasks)
                 {
                     string nodeId = String.Format(task.ComputeNodeInformation.ComputeNodeId);
-                    log.Info("---------------------------------");
+                    log.LogInformation("---------------------------------");
                     log.InfoFormat("Task: {0}", task.Id);
                     log.InfoFormat("Node: {0}", nodeId);
                     log.InfoFormat("Exit Code: {0}", task.ExecutionInformation.ExitCode);
                     if (log.IsDebugEnabled)
                     {
-                        log.DebugFormat("Standard out:");
-                        log.DebugFormat(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
+                        log.LogDebug("Standard out:");
+                        log.LogDebug(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
                     }
                     if (task.ExecutionInformation.ExitCode != 0)
                     {
                         myExitCode = task.ExecutionInformation.ExitCode;
                     }
                 }
-                log.Info("---------------------------------");
+                log.LogInformation("---------------------------------");
 
                 // Print out some timing info
                 timer.Stop();
@@ -338,7 +338,7 @@ namespace SqlBuildManager.Console.Batch
                     batchClient.PoolOperations.DeletePool(poolId);
                 }
 
-                log.Info("Consolidating log files");
+                log.LogInformation("Consolidating log files");
                 ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
 
                 if(batchType == BatchType.Query)
@@ -349,13 +349,13 @@ namespace SqlBuildManager.Console.Batch
                 //Finish the job out
                 if (myExitCode == 0)
                 {
-                    log.Info($"Setting job {jobId} status to Finished");
+                    log.LogInformation($"Setting job {jobId} status to Finished");
                     CloudJob j = batchClient.JobOperations.GetJob(jobId);
                     j.Terminate("Finished");
                 }
                 else
                 {
-                    log.Info($"Setting job {jobId} status to exit code: {myExitCode}");
+                    log.LogInformation($"Setting job {jobId} status to exit code: {myExitCode}");
                     CloudJob j = batchClient.JobOperations.GetJob(jobId);
                     j.Terminate("Error");
                 }                    
@@ -363,15 +363,15 @@ namespace SqlBuildManager.Console.Batch
 
                 readOnlySasToken = GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, true);
                 log.InfoFormat("Log files can be found here: {0}", readOnlySasToken);
-                log.Info("The read-only SAS token URL is valid for 7 days.");
-                log.Info("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
-                log.Info("You can also get details on your Azure Batch execution from the \"Azure Batch Explorer\" found here: https://azure.github.io/BatchExplorer/");
+                log.LogInformation("The read-only SAS token URL is valid for 7 days.");
+                log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
+                log.LogInformation("You can also get details on your Azure Batch execution from the \"Azure Batch Explorer\" found here: https://azure.github.io/BatchExplorer/");
 
             }
             catch(Exception exe)
             {
                 log.ErrorFormat($"Exception when running batch job\r\n{exe.ToString()}");
-                log.Info($"Setting job {jobId} status to Failed");
+                log.LogInformation($"Setting job {jobId} status to Failed");
                 try
                 {
                     CloudJob j = batchClient.JobOperations.GetJob(jobId);
@@ -406,7 +406,7 @@ namespace SqlBuildManager.Console.Batch
 
         private void CombineBatchQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
         {
-            log.Info("Consolidating Query output files...");
+            log.LogInformation("Consolidating Query output files...");
             outputFile = Path.GetFileName(outputFile);
             var container = storageSvcClient.GetBlobContainerClient(storageContainerName); 
             var blobs = container.GetBlobs();
@@ -464,7 +464,7 @@ namespace SqlBuildManager.Console.Batch
             string[] errorMessages;
             if (batchType == BatchType.Run)
             {
-                log.Info("Validating general command parameters");
+                log.LogInformation("Validating general command parameters");
 
                 tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
                 if (tmpReturn != 0)
@@ -477,7 +477,7 @@ namespace SqlBuildManager.Console.Batch
                 }
             }
 
-            log.Info("Validating batch command parameters");
+            log.LogInformation("Validating batch command parameters");
             tmpReturn = Validation.ValidateBatchArguments(ref cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
@@ -537,7 +537,7 @@ namespace SqlBuildManager.Console.Batch
                         {
                             destBlob.Upload(stream);
                         }
-                        log.Info($"Moved {blob.Name} to storage as Working/{blob.Name}");
+                        log.LogInformation($"Moved {blob.Name} to storage as Working/{blob.Name}");
                         sourceBlob.Delete();
                     }
 
@@ -557,7 +557,7 @@ namespace SqlBuildManager.Console.Batch
                             {
                                 destinationBlob.AppendBlock(stream);
                             }
-                            log.Info($"Consolidated {blob.Name} to {append}");
+                            log.LogInformation($"Consolidated {blob.Name} to {append}");
                             sourceBlob.Delete();
                         }
                     }
@@ -611,28 +611,28 @@ namespace SqlBuildManager.Console.Batch
                         log.InfoFormat("Pre-existing node count {0}", pool.CurrentDedicatedComputeNodes);
                         if (pool.CurrentDedicatedComputeNodes != nodeCount)
                         {
-                            log.WarnFormat("The pool {0} node count of {1} does not match the requested node count of {2}", poolId, pool.CurrentDedicatedComputeNodes, nodeCount);
+                            log.LogWarn($"The pool {poolId} node count of {pool.CurrentDedicatedComputeNodes} does not match the requested node count of {nodeCount}");
                             if (pool.CurrentDedicatedComputeNodes < nodeCount)
                             {
-                                log.WarnFormat("Requested node count is greater then existing node count. Resizing pool to {0}", nodeCount);
+                                log.LogWarn($"Requested node count is greater then existing node count. Resizing pool to {nodeCount}");
                                 pool.Resize(targetDedicatedComputeNodes: nodeCount);
                             }
                             else
                             {
-                                log.Warn("Existing node count is larger than requested node count. No pool changes bring made");
+                                log.LogWarn("Existing node count is larger than requested node count. No pool changes bring made");
                             }
                         }
                     }
                     catch (Exception exe)
                     {
-                        log.WarnFormat($"Unable to get information on existing pool. {exe.ToString()}");
+                        log.LogWarn($"Unable to get information on existing pool. {exe.ToString()}");
                         return false;
                     }
                 }
                 else
                 {
-                    log.Error($"Received unexpected pool status: {be.RequestInformation?.BatchError.Code}");
-                    log.Error("Unable to proceed!");
+                    log.LogError($"Received unexpected pool status: {be.RequestInformation?.BatchError.Code}");
+                    log.LogError("Unable to proceed!");
                     throw; // Any other exception is unexpected
                 }
             }
@@ -860,7 +860,7 @@ namespace SqlBuildManager.Console.Batch
         public int PreStageBatchNodes()
         {
             string[] errorMessages;
-            log.Info("Validating batch pre-stage command parameters");
+            log.LogInformation("Validating batch pre-stage command parameters");
             int tmpReturn = Validation.ValidateBatchPreStageArguments(ref cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
@@ -871,7 +871,7 @@ namespace SqlBuildManager.Console.Batch
                 return tmpReturn;
             }
 
-            log.Info("Creating Batch pool nodes ");
+            log.LogInformation("Creating Batch pool nodes ");
 
             // Get a Batch client using account creds, and create the pool
             BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchArgs.BatchAccountUrl, cmdLine.BatchArgs.BatchAccountName, cmdLine.BatchArgs.BatchAccountKey);
@@ -882,13 +882,13 @@ namespace SqlBuildManager.Console.Batch
 
             if (cmdLine.BatchArgs.PollBatchPoolStatus)
             {
-                log.Info($"Waiting for pool {this.PoolName} to be created");
+                log.LogInformation($"Waiting for pool {this.PoolName} to be created");
                 while (true)
                 {
                     var status = batchClient.PoolOperations.GetPool(PoolName, null, null);
                     if (status.AllocationState != AllocationState.Steady)
                     {
-                        log.Info($"Pool status: {status.AllocationState}");
+                        log.LogInformation($"Pool status: {status.AllocationState}");
                         System.Threading.Thread.Sleep(10000);
                     }
                     else
@@ -897,7 +897,7 @@ namespace SqlBuildManager.Console.Batch
                     }
                 }
 
-                log.Info("Waiting for all nodes to complete creation");
+                log.LogInformation("Waiting for all nodes to complete creation");
                 while (true)
                 {
                     var status = batchClient.PoolOperations.GetPool(PoolName, null, null);
@@ -908,7 +908,7 @@ namespace SqlBuildManager.Console.Batch
                         {
                             nodes.ForEachAsync(n =>
                             {
-                                log.Info($"Node '{n.Id}' state = '{n.State}'");
+                                log.LogInformation($"Node '{n.Id}' state = '{n.State}'");
                             });
                         }
                         else
@@ -917,7 +917,7 @@ namespace SqlBuildManager.Console.Batch
                             grp.ToList().ForEach(g =>
                            {
                                var cnt = g.First().State;
-                               log.Info($"State: {g.Count().ToString().PadLeft(2, '0')} nodes at {g.First().State}");
+                               log.LogInformation($"State: {g.Count().ToString().PadLeft(2, '0')} nodes at {g.First().State}");
                            });
                         }
 
@@ -928,21 +928,21 @@ namespace SqlBuildManager.Console.Batch
 
                         nodes.ToList().ForEach(n =>
                         {
-                            log.Info($"Node '{n.Id}' state = '{n.State}'");
+                            log.LogInformation($"Node '{n.Id}' state = '{n.State}'");
                         });
-                        log.Info("All nodes ready for work!");
+                        log.LogInformation("All nodes ready for work!");
                         break;
                     }
                 }
             }
             else
             {
-                log.Info($"PollBatchPoolStatus set to 'false'. Pool is being created, but you will not get updates on the status. If you want to attach to pool to get status, you rerun the same command with /PollBatchPoolStatus=true at any time.");
+                log.LogInformation($"PollBatchPoolStatus set to 'false'. Pool is being created, but you will not get updates on the status. If you want to attach to pool to get status, you rerun the same command with /PollBatchPoolStatus=true at any time.");
             }
         
             if(success)
             {
-                log.Info($"Batch pool of {cmdLine.BatchArgs.BatchNodeCount} nodes created for account {cmdLine.BatchArgs.BatchAccountName} ");
+                log.LogInformation($"Batch pool of {cmdLine.BatchArgs.BatchNodeCount} nodes created for account {cmdLine.BatchArgs.BatchAccountName} ");
                 return 0;
             }
             else
@@ -956,7 +956,7 @@ namespace SqlBuildManager.Console.Batch
         public int CleanUpBatchNodes()
         {
             string[] errorMessages;
-            log.Info("Validating batch pre-stage command parameters");
+            log.LogInformation("Validating batch pre-stage command parameters");
             int tmpReturn = Validation.ValidateBatchCleanUpArguments(ref cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
@@ -967,7 +967,7 @@ namespace SqlBuildManager.Console.Batch
                 return tmpReturn;
             }
 
-            log.Info("Cleaning up (deleting) Batch pool nodes ");
+            log.LogInformation("Cleaning up (deleting) Batch pool nodes ");
 
             try
             {
@@ -976,7 +976,7 @@ namespace SqlBuildManager.Console.Batch
                 var batchClient = BatchClient.Open(cred);
 
 
-                log.Info($"Deleting batch pool {this.PoolName} from Batch account {cmdLine.BatchArgs.BatchAccountName}");
+                log.LogInformation($"Deleting batch pool {this.PoolName} from Batch account {cmdLine.BatchArgs.BatchAccountName}");
 
                 if (cmdLine.BatchArgs.PollBatchPoolStatus)
                 {
@@ -990,18 +990,18 @@ namespace SqlBuildManager.Console.Batch
                         while (status != null && status.State == PoolState.Deleting && count > 0)
                         {
                             count = batchClient.PoolOperations.ListComputeNodes(PoolName, null, null).Count();
-                            log.Info($"Pool delete in progress. Current node count: {count}");
+                            log.LogInformation($"Pool delete in progress. Current node count: {count}");
                             System.Threading.Thread.Sleep(15000);
 
                         }
 
-                        log.Info($"Pool {this.PoolName} successfully deleted");
+                        log.LogInformation($"Pool {this.PoolName} successfully deleted");
                     }
                     return 0;
                 }
                 else
                 {
-                    log.Info($"PollBatchPoolStatus set to 'false'. Pool is being delted, but you will not get updates on the status. If you want to attach to pool to get status, you rerun the same command with /PollBatchPoolStatus=true at any time.");
+                    log.LogInformation($"PollBatchPoolStatus set to 'false'. Pool is being delted, but you will not get updates on the status. If you want to attach to pool to get status, you rerun the same command with /PollBatchPoolStatus=true at any time.");
                     return 0;
                 }
 
@@ -1010,7 +1010,7 @@ namespace SqlBuildManager.Console.Batch
             {
                 if (exe.Message.ToLower().IndexOf("notfound") > -1)
                 {
-                    log.Info($"The {this.PoolName} pool was not found. Was it already deleted?");
+                    log.LogInformation($"The {this.PoolName} pool was not found. Was it already deleted?");
                     return 0;
                 }
                 else

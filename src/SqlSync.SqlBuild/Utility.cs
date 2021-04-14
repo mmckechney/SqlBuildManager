@@ -10,12 +10,12 @@ using SqlSync.Connection;
 using SqlSync.SqlBuild;
 using System.Linq;
 using Microsoft.Win32;
-
+using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
     public class UtilityHelper
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public const string ConfigFileName = "SqlSync.cfg";
         public static List<string> GetRecentServers(out ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl)
         {
@@ -71,7 +71,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Error("Error updating Recent Server List", exe);
+                log.LogError(exe,"Error updating Recent Server List");
             }
 
 

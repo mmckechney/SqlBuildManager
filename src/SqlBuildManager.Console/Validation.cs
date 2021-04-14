@@ -8,11 +8,12 @@ using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.Connection;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Console
 {
     class Validation
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static int ValidateUserNameAndPassword(ref CommandLineArgs cmdLine, out string[] errorMessages)
         {
             string error = string.Empty;
@@ -214,7 +215,7 @@ namespace SqlBuildManager.Console
         /// <returns>Zero (0) if no errors, otherwise an error code</returns>
         public static int ValidateAndLoadMultiDbData(string multiDbOverrideSettingFileName, CommandLineArgs cmdLine, out MultiDbData multiData, out string[] errorMessages)
         {
-            log.Info("Validating target database settings");
+            log.LogInformation("Validating target database settings");
             string message = string.Empty;
             string error;
             errorMessages = new string[0];
@@ -321,7 +322,7 @@ namespace SqlBuildManager.Console
                 }
                 else
                 {
-                    log.Info("Found --forcecustomdacpac setting. Skipping the creation of the single platinum SBM package. Individual dacpacs and SBMs will be created");
+                    log.LogInformation("Found --forcecustomdacpac setting. Skipping the creation of the single platinum SBM package. Individual dacpacs and SBMs will be created");
                 }
             }
 
@@ -448,7 +449,7 @@ namespace SqlBuildManager.Console
                 var keypressed = System.Console.ReadKey();
                 if (keypressed.Key != ConsoleKey.Y)
                 {
-                    log.Info("Exiting");
+                    log.LogInformation("Exiting");
                     return 1;
                 }
             }

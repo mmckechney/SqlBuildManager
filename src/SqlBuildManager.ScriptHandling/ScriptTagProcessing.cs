@@ -6,12 +6,12 @@ using System.Text.RegularExpressions;
 using SqlSync.SqlBuild;
 using SqlBuildManager.Interfaces.ScriptHandling.Tags;
 using System.IO;
-using log4net;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.ScriptHandling
 {
     public class ScriptTagProcessing
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region .: Methods to infer script tags :.
         /// <summary>
         /// Used to infer script tags for an entire build package
@@ -153,13 +153,13 @@ namespace SqlBuildManager.ScriptHandling
         /// <returns>The extracted script tag or empty string if not found</returns>
         public static string InferScriptTag(TagInferenceSource source, List<string> regexFormats, string scriptName, string scriptPath)
         {
-            log.DebugFormat("InferScriptTag: TagInferenceSource for {0} is {1}", scriptName, Enum.GetName(typeof(TagInferenceSource),source));
+            log.LogDebug($"InferScriptTag: TagInferenceSource for {scriptName} is {Enum.GetName(typeof(TagInferenceSource),source)}");
             if (source == TagInferenceSource.None)
                 return string.Empty;
  
             if (regexFormats == null)
             {
-                log.WarnFormat("InferScriptTag: RegularExpression formats is null when processing {0}", scriptName);
+                log.LogWarning($"InferScriptTag: RegularExpression formats is null when processing {scriptName}");
                 return string.Empty;
             }
 
@@ -184,7 +184,7 @@ namespace SqlBuildManager.ScriptHandling
                 //If we get here, we will need to get the file contents...
                 if (!File.Exists(Path.Combine(scriptPath , scriptName)))
                 {
-                    log.WarnFormat("Unable to find file for Script Tag Inference for file {0} in path {1}", scriptName, scriptPath);
+                    log.LogWarning($"Unable to find file for Script Tag Inference for file {scriptName} in path {scriptPath}");
                     return string.Empty;
                 }
 
@@ -198,7 +198,7 @@ namespace SqlBuildManager.ScriptHandling
             }
             catch (Exception exe)
             {
-                log.Error(String.Format("Error Inferring Script Tag for file {0} in path {1}.", scriptName, scriptPath), exe);
+                log.LogError(exe, $"Error Inferring Script Tag for file {scriptName} in path {scriptPath}.");
             }
             return string.Empty;
         }

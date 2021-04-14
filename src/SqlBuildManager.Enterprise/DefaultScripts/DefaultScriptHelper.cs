@@ -5,11 +5,12 @@ using System.Text;
 using SqlSync.SqlBuild;
 using System.IO;
 using sb = SqlSync.SqlBuild.DefaultScripts;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.DefaultScripts
 {
     public class DefaultScriptHelper
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static bool SetEnterpriseDefaultScripts(List<DefaultScriptRegistryFile> defaultScriptRegs, List<string> groupMemberships)
         {
             DefaultScriptRegistryFile defaultReg = GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
@@ -30,7 +31,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
 
             if (reg.Items == null)
             {
-                log.WarnFormat("The enterprise default script registry file contains no default script items! ({0})", Path.Combine(defaultReg.Path, defaultReg.FileName));
+                log.LogWarning($"The enterprise default script registry file contains no default script items! ({Path.Combine(defaultReg.Path, defaultReg.FileName)}");
                 return false;
             }
 
@@ -50,7 +51,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
         internal static sb.DefaultScriptRegistry GetEnterpriseRegistrySetting(string filePath)
         {
             sb.DefaultScriptRegistry registry = null;
-            log.DebugFormat("Deserializing DefaultScriptRegistry file from '{0}'", filePath);
+            log.LogDebug($"Deserializing DefaultScriptRegistry file from '{filePath}'");
             try
             {
 
@@ -64,7 +65,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             }
             catch (Exception exe)
             {
-                log.Error("Unable to deserialize the DefaultScriptRegistry object XML file at " + filePath, exe);
+                log.LogError(exe,$"Unable to deserialize the DefaultScriptRegistry object XML file at {filePath}");
             }
             return registry;
         }
@@ -73,13 +74,13 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
         {
             if (!File.Exists(localFilePath))
             {
-                log.InfoFormat("Unable to validate local default script. File does not exist at {0}", localFilePath);
+                log.LogInformation($"Unable to validate local default script. File does not exist at {localFilePath}" );
                 return false;
             }
 
             if (!File.Exists(enterpriseFilePath))
             {
-                log.WarnFormat("Unable to validate enterprise default script. File does not exist at {0}", enterpriseFilePath);
+                log.LogWarning($"Unable to validate enterprise default script. File does not exist at {enterpriseFilePath}" );
                 return true;
             }
 
@@ -87,11 +88,11 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             try
             {
                 SqlBuildFileHelper.GetSHA1Hash(new string[] { File.ReadAllText(localFilePath) }, out localHash);
-                log.DebugFormat("Local file name and hash: {0} | {1}", localFilePath, localHash);
+                log.LogDebug($"Local file name and hash: {localFilePath} | {localHash}");
             }
             catch (Exception exe)
             {
-                log.Error("Unable to get file hash on local default script: " + localFilePath, exe);
+                log.LogError(exe, $"Unable to get file hash on local default script: {localFilePath}" );
             }
 
 
@@ -99,16 +100,18 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             try
             {
                 SqlBuildFileHelper.GetSHA1Hash(new string[] { File.ReadAllText(enterpriseFilePath) }, out enterpriseHash);
-                log.DebugFormat("Enterprise file name and hash: {0} | {1}", enterpriseFilePath, enterpriseHash);
+                log.LogDebug($"Enterprise file name and hash: {enterpriseFilePath} | {enterpriseHash}");
             }
             catch (Exception exe)
             {
-                log.Error("Unable to get file hash on enterprise default script: " + enterpriseFilePath, exe);
+                log.LogError(exe, $"Unable to get file hash on enterprise default script: {enterpriseFilePath}");
             }
 
             bool match = localHash == enterpriseHash;
             if (!match)
-                log.DebugFormat("File mismatch found: {0} <--> {1}", enterpriseHash, localHash);
+            {
+                log.LogDebug($"File mismatch found: {enterpriseHash} <--> {localHash}");
+            }
 
             return match;
 
@@ -117,7 +120,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
         {
             if (!File.Exists(enterpriseFilePath))
             {
-                log.WarnFormat("Unable to move enterprise file to local. Enterprise file does not exist: {0}", enterpriseFilePath);
+                log.LogWarning("Unable to move enterprise file to local. Enterprise file does not exist: {enterpriseFilePath}");
                 return false;
             }
 
@@ -131,7 +134,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 }
                 catch (Exception exe)
                 {
-                    log.Error("Unable to delete local file at:" + localFilePath, exe);
+                    log.Error(exe, "Unable to delete local file at:" + localFilePath);
                     return false;
                 }
             }

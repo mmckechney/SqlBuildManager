@@ -8,7 +8,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Text.RegularExpressions;
 using SqlSync.DbInformation.ChangeDates;
-using log4net;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.DbInformation
 {
 	/// <summary>
@@ -17,9 +17,9 @@ namespace SqlSync.DbInformation
 	public class InfoHelper
 	{
 
-        private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public InfoHelper()
+        public InfoHelper()
 		{
 		}
         //private static DatabaseRoutineChangeDates databaseRoutineChangeDates;
@@ -444,7 +444,7 @@ namespace SqlSync.DbInformation
             }
             catch (Exception exe)
             {
-                log.Error("Error getting database list", exe);
+                log.LogError(exe, "Error getting database list");
                 hasError = true;
             }
 
@@ -747,7 +747,7 @@ namespace SqlSync.DbInformation
 
             if (overrides == null)
             {
-                log.Warn("overrides parameter was null!");
+                log.LogWarning("overrides parameter was null!");
                 return;
             }
 
@@ -781,7 +781,7 @@ namespace SqlSync.DbInformation
                 }
                 catch (Exception rExe)
                 {
-                    log.WarnFormat("Unable to get modify date information for routines: {0}", rExe.Message);
+                    log.LogWarning($"Unable to get modify date information for routines: { rExe.Message}");
                     if (rExe.Message.ToLowerInvariant().IndexOf("login failed") > -1)
                     {
                         continue;
@@ -812,7 +812,7 @@ namespace SqlSync.DbInformation
                 }
                 catch (Exception vExe)
                 {
-                    log.WarnFormat("Unable to get modify date information for routines: {0}", vExe.Message);
+                    log.LogWarning($"Unable to get modify date information for routines: {vExe.Message}");
                     if (vExe.Message.ToLowerInvariant().IndexOf("login failed") > -1)
                     {
                         continue;
@@ -843,7 +843,7 @@ namespace SqlSync.DbInformation
                 }
                 catch (Exception tExe)
                 {
-                    log.WarnFormat("Unable to get modify date information for routines: {0}", tExe.Message);
+                    log.LogWarning($"Unable to get modify date information for routines: {tExe.Message}");
                     if (tExe.Message.ToLowerInvariant().IndexOf("login failed") > -1)
                     {
                         continue;
@@ -874,7 +874,7 @@ namespace SqlSync.DbInformation
                 }
                 catch (Exception trExe)
                 {
-                    log.WarnFormat("Unable to get modify date information for routines: {0}", trExe.Message);
+                    log.LogWarning($"Unable to get modify date information for routines: {trExe.Message}");
                     if (trExe.Message.ToLowerInvariant().IndexOf("login failed") > -1)
                     {
                         continue;

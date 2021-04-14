@@ -4,11 +4,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.ScriptHandling
 {
     public class ScriptOptimization
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static string ProcessNoLockOptimization(string rawScript)
         {
             return ProcessNoLockOptimization(rawScript, null);
