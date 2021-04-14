@@ -3,7 +3,7 @@
     <Version Major="12" Minor="0" Revision="0">
         <note>**Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**</note>
         <note>Now built against .NET 5 and .NET Core 3.1</note>
-        <added>New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](Concurrency_options.md)</added>
+        <added>New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](Concurrency_Options.md)</added>
         <updated>Now leveraging `Microsoft.SqlServer.DACFx` Nuget package instead of `sqlpackage.exe` command line to manage DACPACs</updated>
         <!-- <updated>New version of sqlpackage.exe (18.7). Changed Windows version to .NET Core build</updated> -->
         <fixed>Updated `BlueSkyDev.Logging.AzureEventHubAppender` to v1.3.2 due to app hanging if EventHub connection string was incorrect</fixed>
