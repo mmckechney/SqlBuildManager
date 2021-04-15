@@ -46,10 +46,6 @@ namespace SQLSync
 			//
 			InitializeComponent();
 			this.remainingDatabases = remainingDatabases;
-
-			//
-			// TODO: Add any constructor code after InitializeComponent call
-			//
 		}
 
 		/// <summary>

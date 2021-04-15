@@ -15,7 +15,7 @@ namespace SqlBuildManager.Console.Threaded
 {
     public class ThreadedExecution
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ThreadedExecution>();
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static ILog logEvent = LogManager.GetLogger(System.Reflection.Assembly.GetExecutingAssembly(), "AzureEventHubAppenderLogger");
 
         StringBuilder sbSuccessDatabasesCfg = new System.Text.StringBuilder();

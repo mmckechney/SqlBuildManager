@@ -31,7 +31,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            QualifiedNamesPolicy target = new QualifiedNamesPolicy(); // TODO: Initialize to an appropriate value
+            QualifiedNamesPolicy target = new QualifiedNamesPolicy(); 
             string actual;
             actual = target.ShortDescription;
             Assert.AreEqual("Qualified Names (beta)", actual);
@@ -43,7 +43,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LongDescriptionTest()
         {
-            QualifiedNamesPolicy target = new QualifiedNamesPolicy(); // TODO: Initialize to an appropriate value
+            QualifiedNamesPolicy target = new QualifiedNamesPolicy(); 
             string actual;
             actual = target.LongDescription;
             Assert.AreEqual("Checks that object references are fully qualified (<schema>.<object name>) - in beta", actual);

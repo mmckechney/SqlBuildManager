@@ -438,7 +438,8 @@ namespace SqlSync.SqlBuild
                     sbmFiles.Add(tmpSbmFile);
                 else
                 {
-                    message = String.Format("Error packaging SBX file '{0}' - please check application log at \"{1}\"", sbx, GetLogFileName());
+                    string logFileName = SqlBuildManager.Logging.ApplicationLogging.LogFileName;
+                    message = String.Format("Error packaging SBX file '{0}' - please check application log at \"{1}\"", sbx, logFileName);
                     log.LogError(message);
                     return new List<string>();
                 }
@@ -533,22 +534,6 @@ namespace SqlSync.SqlBuild
         }
         
         #endregion
-
-        public static string GetLogFileName()
-        {
-            //TODO: FIX THIS!!!!!!!!!!!!
-            // log4net.Appender.IAppender[] appenders = log.Logger.Repository.GetAppenders();
-            // foreach (log4net.Appender.IAppender appender in appenders)
-            // {
-            //     if (appender is log4net.Appender.RollingFileAppender)
-            //     {
-            //         string file = ((log4net.Appender.RollingFileAppender)appender).File;
-            //         if (File.Exists(file))
-            //             return file;
-            //     }
-            // }
-            return string.Empty;
-        }
 
         #region .: Add / Remove scripts from build :.
         public static bool RemoveScriptFilesFromBuild(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, SqlSyncBuildData.ScriptRow[] rows, bool deleteFiles)

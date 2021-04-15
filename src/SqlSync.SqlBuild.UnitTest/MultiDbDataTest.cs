@@ -148,7 +148,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void BuildDataTest()
         {
-            MultiDbData target = new MultiDbData(); // TODO: Initialize to an appropriate value
+            MultiDbData target = new MultiDbData(); 
             SqlSyncBuildData expected = new SqlSyncBuildData();
             SqlSyncBuildData actual;
             target.BuildData = expected;

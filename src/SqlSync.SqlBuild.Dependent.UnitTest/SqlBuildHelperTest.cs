@@ -945,8 +945,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null; // TODO: Initialize to an appropriate value
-            SqlSyncBuildData.BuildRow myBuild = null; // TODO: Initialize to an appropriate value
+            DataView filteredScripts = null; 
+            SqlSyncBuildData.BuildRow myBuild = null; 
             target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(1, filteredScripts.Count);
@@ -1061,8 +1061,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null; // TODO: Initialize to an appropriate value
-            SqlSyncBuildData.BuildRow myBuild = null; // TODO: Initialize to an appropriate value
+            DataView filteredScripts = null; 
+            SqlSyncBuildData.BuildRow myBuild = null; 
             target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(null, filteredScripts);
@@ -1085,8 +1085,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = true;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null; // TODO: Initialize to an appropriate value
-            SqlSyncBuildData.BuildRow myBuild = null; // TODO: Initialize to an appropriate value
+            DataView filteredScripts = null; 
+            SqlSyncBuildData.BuildRow myBuild = null; 
             target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(null, filteredScripts);

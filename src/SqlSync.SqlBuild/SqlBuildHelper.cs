@@ -859,7 +859,6 @@ namespace SqlSync.SqlBuild
                 if (this.isTransactional && failureDueToScriptTimeout)
                 {
                     myBuild.FinalStatus = BuildItemStatus.FailedDueToScriptTimeout;
-                    //TODO: need to run "this.connectDictionary.Clear();" here for multiDbRun???
                 }
             }
             else

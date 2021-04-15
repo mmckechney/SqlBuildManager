@@ -84,8 +84,8 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod(), Ignore("Don't have the setup scripts ready yet")]
         public void GetDatabaseRunHistoryDifferenceTest1()
         {
-            CommandLineArgs cmdLine = null; // TODO: Initialize to an appropriate value
-            DatabaseRunHistory expected = null; // TODO: Initialize to an appropriate value
+            CommandLineArgs cmdLine = null; 
+            DatabaseRunHistory expected = null; 
             DatabaseRunHistory actual;
             actual = Synchronize.GetDatabaseRunHistoryDifference(cmdLine);
             Assert.AreEqual(expected, actual);
@@ -99,8 +99,8 @@ namespace SqlBuildManager.Console.UnitTest
         [DeploymentItem("SqlBuildManager.Console.exe")]
         public void ParseAndValidateFlagsTest()
         {
-            string[] args = null; // TODO: Initialize to an appropriate value
-            CommandLineArgs expected = null; // TODO: Initialize to an appropriate value
+            string[] args = null; 
+            CommandLineArgs expected = null; 
             CommandLineArgs actual;
             var cmdLine = CommandLine.ParseCommandLineArg(args);
             actual = Synchronize.ValidateFlags(cmdLine);
