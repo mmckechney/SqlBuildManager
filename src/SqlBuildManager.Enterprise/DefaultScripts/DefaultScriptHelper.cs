@@ -134,7 +134,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 }
                 catch (Exception exe)
                 {
-                    log.Error(exe, "Unable to delete local file at:" + localFilePath);
+                    log.LogError(exe, $"Unable to delete local file at: {localFilePath}");
                     return false;
                 }
             }
@@ -142,12 +142,12 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             try
             {
                 File.Copy(enterpriseFilePath, localFilePath, true);
-                log.DebugFormat("Copied enterprise file to local path:  '{0}' --> '{1}'", enterpriseFilePath, localFilePath);
+                log.LogDebug($"Copied enterprise file to local path:  '{enterpriseFilePath}' --> '{localFilePath}'");
                 return true;
             }
             catch(Exception exe)
             {
-                log.Error("Unable to move enterprise file '" + enterpriseFilePath + "' to local file '" + localFilePath + "'", exe);
+                log.LogError(exe, $"Unable to move enterprise file '{enterpriseFilePath}' to local file '{localFilePath}");
                 return false;
             }
         }
@@ -164,20 +164,20 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
 
                 if (myDefaults.Count() == 0)
                 {
-                    log.InfoFormat("No DefaultScriptRegistryFile matches found for groups: {0}", String.Join("; ", groupMemberships.ToArray()));
+                    log.LogInformation($"No DefaultScriptRegistryFile matches found for groups: {String.Join("; ", groupMemberships.ToArray())}");
                     return null;
                 }
                 else
                 {
                     DefaultScriptRegistryFile tmp = myDefaults.ToList()[0].defReg;
-                    log.DebugFormat("Matched default script registry: {0} to {1}", tmp.FileName, myDefaults.ToList()[0].grp);
+                    log.LogDebug($"Matched default script registry: {tmp.FileName} to {myDefaults.ToList()[0].grp}");
 
                     return tmp;
                 }
             }
             catch (Exception exe)
             {
-                log.Error("Error matching DefaultScriptRegistryFile to group memberships", exe);
+                log.LogError(exe, "Error matching DefaultScriptRegistryFile to group memberships");
                 return null;
             }
 

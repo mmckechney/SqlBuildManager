@@ -40,9 +40,12 @@ namespace SqlSync.ObjectScript
             string projectFileName = string.Empty;
 
             SqlBuildFileHelper.InitilizeWorkingDirectory(ref workingDir, ref projectPath, ref projectFileName);
-            string message = "Initialized working directory {0}";
-            log.DebugFormat(message, workingDir);
-            if (reportProgress) bg.ReportProgress(-1, String.Format(message, ""));
+            string message = $"Initialized working directory {workingDir}";
+            log.LogDebug(message);
+            if (reportProgress) 
+            { 
+                bg.ReportProgress(-1, "Initialized working directory");
+            }
 
 
             //Extract destination package into working folder
@@ -51,11 +54,11 @@ namespace SqlSync.ObjectScript
                                                                      ref projectPath, ref projectFileName, out result);
             if (success)
             {
-                log.DebugFormat("Successfully extracted build file {0} to {1}", destinationBuildZipFileName, workingDir);
+                log.LogDebug($"Successfully extracted build file {destinationBuildZipFileName} to {workingDir}");
             }
             else
             {
-                log.Error("Unable to proceed with Backout package. See previous errors");
+                log.LogError("Unable to proceed with Backout package. See previous errors");
                 return false;
             }
 
@@ -65,7 +68,7 @@ namespace SqlSync.ObjectScript
             bool successfulLoad = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projectFileName, false);
             if (!successfulLoad)
             {
-                log.Error("Unable to load SBM project data");
+                log.LogError("Unable to load SBM project data");
                 return false;
             }
 
@@ -90,15 +93,14 @@ namespace SqlSync.ObjectScript
             if (notUpdated.Any())
             {
                 foreach (string file in notUpdated)
-                    log.ErrorFormat("Unable to create new script for {0}", file);
+                    log.LogError($"Unable to create new script for {file}");
 
                 return false;
             }
 
             if (lstScripts.Count() != objectUpdates.Count())
             {
-                log.ErrorFormat("Not all scripts were updated. Expected {0}, only {1} were updated",
-                                lstScripts.Count().ToString(), objectUpdates.Count().ToString());
+                log.LogError($"Not all scripts were updated. Expected {lstScripts.Count().ToString()}, only {objectUpdates.Count().ToString()} were updated");
                 return false;
             }
 
@@ -129,7 +131,7 @@ namespace SqlSync.ObjectScript
                     catch (Exception exe)
                     {
                         errorWriting = true;
-                        log.Error("Unable to save updated script file to " + obj.ScriptName, exe);
+                        log.LogError(exe, $"Unable to save updated script file to {obj.ScriptName}");
                     }
                 }
             }
@@ -192,13 +194,11 @@ namespace SqlSync.ObjectScript
                         errorWriting = true;
                         if (removeNewObjectsFromPackage)
                         {
-                            log.Error(String.Format("Unable to remove new object script '{0}' from package",
-                                                    obj.ShortFileName, exe));
+                            log.LogError(exe, $"Unable to remove new object script '{obj.ShortFileName}' from package");
                         }
                         else
                         {
-                            log.Error(String.Format("Unable to mark new object script {0} as run once",
-                                                    obj.ShortFileName, exe));
+                            log.LogError(exe, $"Unable to mark new object script {obj.ShortFileName} as run once");
                         }
                     }
                 }
@@ -234,7 +234,7 @@ namespace SqlSync.ObjectScript
                     catch (Exception exe)
                     {
                         errorWriting = true;
-                        log.Error(String.Format("Unable to mark script {0} as run once", scr, exe));
+                        log.LogError(exe, $"Unable to mark script {scr} as run once");
                     }
                 }
             }
@@ -284,11 +284,11 @@ namespace SqlSync.ObjectScript
             bg.WorkerReportsProgress = true;
 
             //Extract and load the build data...
-            log.DebugFormat("Extracting SBM zip file for {0}", sourceBuildZipFileName);
+            log.LogDebug($"Extracting SBM zip file for {sourceBuildZipFileName}");
             bool success = SqlBuildFileHelper.ExtractSqlBuildZipFile(sourceBuildZipFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, out result);
             if (success)
             {
-                log.DebugFormat("Loading SqlSyncBuldData object from {0}", projectFileName);
+                log.LogDebug($"Loading SqlSyncBuldData object from {projectFileName}");
                 success = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projectFileName, false);
                 if (!success)
                     return string.Empty;
@@ -299,23 +299,23 @@ namespace SqlSync.ObjectScript
             }
 
             //Get the scriptable objects
-            log.DebugFormat("Getting the scriptable objects from {0}", sourceBuildZipFileName);
+            log.LogDebug($"Getting the scriptable objects from {sourceBuildZipFileName}");
             SqlBuildFileHelper.GetFileDataForObjectUpdates(ref buildData, projectFileName, out initialCanUpdateList, out manualScriptsCanNotUpdate);
 
             //Get object that are also on the target (ie are "existing") -- only these will be updated
-            log.DebugFormat("Getting list of objects can be rolled back from {0}:{1}", sourceServer, sourceDb);
+            log.LogDebug($"Getting list of objects can be rolled back from {sourceServer}:{sourceDb}");
             List<ObjectUpdates> canUpdate = GetObjectThatCanBeUpdated(initialCanUpdateList, connData, sourceServer, sourceDb);
             SetBackoutSourceDatabaseAndServer(ref canUpdate,sourceServer,sourceDb);
 
             //Get the scriptable objects that are not found on the target (i.e. are "new") -- these will be dropped
-            log.DebugFormat("Getting list of objects can not be rolled back from {0}:{1}", sourceServer, sourceDb);
+            log.LogDebug($"Getting list of objects can not be rolled back from {sourceServer}:{sourceDb}");
             List<ObjectUpdates> notPresentOnTarget = GetObjectsNotPresentTargetDatabase(initialCanUpdateList, connData, sourceServer, sourceDb);
 
             //Get the name of the new package
             string backoutPackageName = GetDefaultPackageName(sourceBuildZipFileName);
           
             //Create the package!!
-            log.DebugFormat("Creating backout package {0} from source package {1}", backoutPackageName,sourceBuildZipFileName);
+            log.LogDebug($"Creating backout package {backoutPackageName} from source package {sourceBuildZipFileName}");
             success = CreateBackoutPackage(connData, canUpdate, notPresentOnTarget, manualScriptsCanNotUpdate,
                                                 sourceBuildZipFileName, backoutPackageName,
                                                 sourceServer, sourceDb, true, true, true, ref bg);
@@ -325,7 +325,7 @@ namespace SqlSync.ObjectScript
 
             if (!success)
             {
-                log.ErrorFormat("Unable to create backout package!");
+                log.LogError("Unable to create backout package!");
                 return string.Empty;
             }
 
@@ -397,16 +397,14 @@ namespace SqlSync.ObjectScript
 
         private static bool CopyOriginalToBackout(string sourceBuildZipFileName, string destinationBuildZipFileName)
         {
-            log.DebugFormat("Copying SBM from '{0}' to '{1}'", sourceBuildZipFileName, destinationBuildZipFileName);
+            log.LogDebug($"Copying SBM from '{sourceBuildZipFileName}' to '{destinationBuildZipFileName}'");
             try
             {
                 File.Copy(sourceBuildZipFileName, destinationBuildZipFileName, true);
             }
             catch (Exception exe)
             {
-                log.Error(
-                    String.Format("Unable to copy SBM from '{0}' to '{1}'", sourceBuildZipFileName,
-                                  destinationBuildZipFileName), exe);
+                log.LogError(exe, $"Unable to copy SBM from '{sourceBuildZipFileName}' to '{destinationBuildZipFileName}'");
                 return false;
             }
             return true;

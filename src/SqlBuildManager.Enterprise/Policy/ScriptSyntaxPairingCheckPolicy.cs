@@ -234,7 +234,7 @@ namespace SqlBuildManager.Enterprise.Policy
             catch (Exception exe)
             {
                 message = String.Format("Error processing script policy {0}. See application log file for details", this.ShortDescription);
-                log.Error(message, exe);
+                log.LogError(exe, message);
                 return false;
             }
         }

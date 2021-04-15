@@ -10,7 +10,7 @@ using System.Text;
 using MoreLinq;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using log4net;
 namespace SqlBuildManager.Console.Threaded
 {
     public class ThreadedExecution

@@ -109,7 +109,7 @@ namespace SqlBuildManager.Enterprise.Policy
                             catch (ArgumentException exe)
                             {
                                 int line = PolicyHelper.GetLineNumber(rawScript, start);
-                                log.LogWarn("Error validating QualifiedNamesPolicy. Issue on line "+ line.ToString() +". Problem with generated RegularExpression:  " + regString, exe);
+                                log.LogWarning(exe, $"Error validating QualifiedNamesPolicy. Issue on line {line.ToString()}. Problem with generated RegularExpression:  {regString}");
                                 message = "Error running Qualified Named Policy. This script will need to be manually checked. (See log file for details)";
                                     return false;
                             }
@@ -150,7 +150,7 @@ namespace SqlBuildManager.Enterprise.Policy
             catch (Exception exe)
             {
                 message = "Error processing script policy. See application log file for details";
-                log.Error(message, exe);
+                log.LogError(exe, message);
                 passed = false;
             }
 

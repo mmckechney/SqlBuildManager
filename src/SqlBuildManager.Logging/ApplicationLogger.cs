@@ -22,6 +22,7 @@ namespace SqlBuildManager.Logging
 
 			factory.AddSerilog(serilogLogger);
 			
+	
 		}
 
 		public static ILoggerFactory LoggerFactory
@@ -39,5 +40,10 @@ namespace SqlBuildManager.Logging
 		}
 		public static Microsoft.Extensions.Logging.ILogger CreateLogger<T>() => LoggerFactory.CreateLogger(typeof(T));
 		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type) => LoggerFactory.CreateLogger(type);
+
+		public static bool IsDebug()
+		{
+			return Log.IsEnabled(Serilog.Events.LogEventLevel.Debug);
+		}
 	}
 }

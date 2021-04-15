@@ -42,9 +42,9 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.ErrorFormat("Failure to retrive groups", exe);
+                log.LogError(exe, "Failure to retrive groups");
             }
-            log.DebugFormat("Retrieved groups for {0}: {1}", userName, String.Join(", ", groups.ToArray()));
+            log.LogDebug($"Retrieved groups for {userName}: {String.Join(", ", groups.ToArray())}");
 
             return groups;
         }
@@ -83,9 +83,9 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.ErrorFormat("Failure to retrive groups", exe);
+                log.LogError(exe, "Failure to retrive groups");
             }
-            log.DebugFormat("Retrieved members for {0}: {1}", groupName, String.Join(", ", groups.ToArray()));
+            log.LogDebug($"Retrieved members for {groupName}: {String.Join(", ", groups.ToArray())}");
 
             return groups;
         }

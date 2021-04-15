@@ -25,7 +25,7 @@ namespace SqlBuildManager.Console
                 {
                     error = "The --username and --password arguments are required when authentication type is set to Password or AzurePassword.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
-                    log.Error(error);
+                    log.LogError(error);
                     return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
                 }
             }
@@ -37,7 +37,7 @@ namespace SqlBuildManager.Console
                 {
                     error = "The --username and --password arguments must be used together in command line of --settingsfile Json.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
-                    log.Error(error);
+                    log.LogError(error);
                     return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
                 }
             }
@@ -63,7 +63,7 @@ namespace SqlBuildManager.Console
             if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
             {
                 string msg = "Invalid command line set. Missing --rootloggingpath setting.";
-                log.Error(msg);
+                log.LogError(msg);
                 return -99;
             }
 
@@ -72,7 +72,7 @@ namespace SqlBuildManager.Console
             {
                 error = "Invalid command line combination. You cannot have --transactional=\"false\" and --trial=\"true\".";
                 errorMessages = new string[] { error, "Returning error code:" + (int)ExecutionReturn.InvalidTransactionAndTrialCombo };
-                log.Error(error);
+                log.LogError(error);
                 return (int)ExecutionReturn.InvalidTransactionAndTrialCombo;
             }
 
@@ -81,7 +81,7 @@ namespace SqlBuildManager.Console
             {
                 error = "Invalid command line set. Missing --override option.";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingOverrideFlag };
-                log.Error(error);
+                log.LogError(error);
                 return (int)ExecutionReturn.MissingOverrideFlag;
             }
 
@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console
             {
                 error = "Invalid command line set. Missing --packagename, --platinumdacpac, --scriptsrcdir, or --platinumdbsource and --platinumserversource options.";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
-                log.Error(error);
+                log.LogError(error);
                 return (int)ExecutionReturn.MissingBuildFlag;
             }
 
@@ -103,7 +103,7 @@ namespace SqlBuildManager.Console
                 {
                     error = "The --platinumdbsource and --platinumserversource options must be used together";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
-                    log.Error(error);
+                    log.LogError(error);
                     return (int)ExecutionReturn.MissingBuildFlag;
                 }
             }
@@ -115,7 +115,7 @@ namespace SqlBuildManager.Console
                 {
                     error = "The --username and --password arguments are required when using --platinumdbsource";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
-                    log.Error(error);
+                    log.LogError(error);
                     return (int)ExecutionReturn.MissingBuildFlag;
                 }
             }
@@ -125,7 +125,7 @@ namespace SqlBuildManager.Console
             {
                 error = "Missing Build file. The build file specified: " + cmdLine.BuildFileName + " could not be found";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
-                log.Error(error);
+                log.LogError(error);
                 return (int)ExecutionReturn.InvalidBuildFileNameValue;
             }
 
@@ -134,7 +134,7 @@ namespace SqlBuildManager.Console
             {
                 error = "Missing Platinum dacpac file. The  Platinum dacpac specified: " + cmdLine.DacPacArgs.PlatinumDacpac + " could not be found";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidBuildFileNameValue };
-                log.Error(error);
+                log.LogError(error);
                 return (int)ExecutionReturn.InvalidBuildFileNameValue;
             }
 
@@ -144,7 +144,7 @@ namespace SqlBuildManager.Console
                 {
                     error = "Invalid --scriptsrcdir setting. The directory '" + cmdLine.ScriptSrcDir + "' does not exist.";
                     errorMessages =  new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidScriptSourceDirectory };
-                    log.Error(error);
+                    log.LogError(error);
                     return (int)ExecutionReturn.InvalidScriptSourceDirectory;
                 }
             }
@@ -154,7 +154,7 @@ namespace SqlBuildManager.Console
               
                     error = "The --timeoutretrycount setting is a negative number. This value needs to be a positive integer.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.NegativeTimeoutRetryCount };
-                    log.Error(error);
+                    log.LogError(error);
                     return (int)ExecutionReturn.NegativeTimeoutRetryCount;
              }
 
@@ -163,7 +163,7 @@ namespace SqlBuildManager.Console
 
                 error = "The --timeoutretrycount setting is not allowed when --transactional=false";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.BadRetryCountAndTransactionalCombo };
-                log.Error(error);
+                log.LogError(error);
                 return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
             }
 
@@ -174,7 +174,7 @@ namespace SqlBuildManager.Console
                  {
                      error = string.Format("Specified --override file does not exist at path: {0}", cmdLine.MultiDbRunConfigFileName);
                      errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
-                     log.Error(error);
+                     log.LogError(error);
                      return (int)ExecutionReturn.InvalidOverrideFlag;
                  }
             }
@@ -187,7 +187,7 @@ namespace SqlBuildManager.Console
                 {
                     error = $"Invalid command line set. When the --override setting specifies a SQL file, the following are also required:{System.Environment.NewLine} --database, --server - will be used as source to run scripts {System.Environment.NewLine} --username, --password - provide authentication to that database";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
-                    log.Error(error);
+                    log.LogError(error);
                     return (int)ExecutionReturn.InvalidOverrideFlag;
                 }
 
@@ -199,7 +199,7 @@ namespace SqlBuildManager.Console
 
                 error = "Invalid command line set. The '--override' setting file value must be .multiDb, .multiDbQ or .cfg file.";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
-                log.Error(error);
+                log.LogError(error);
                 return (int)ExecutionReturn.InvalidOverrideFlag;
             }
 
@@ -263,7 +263,7 @@ namespace SqlBuildManager.Console
             {
                 error = "Unable to read in configuration file " + multiDbOverrideSettingFileName + ((message.Length > 0) ? " :: " + message : "");
                 errorMessages =  new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullMultiDbConfig };
-                log.Error(error);
+                log.LogError(error);
                 return (int)ExecutionReturn.NullMultiDbConfig;
             }
 
@@ -271,7 +271,7 @@ namespace SqlBuildManager.Console
             {
                 error = "One or more scripts is missing a default or target override database setting. Run has been halted. Please correct the error and try again";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingTargetDbOverrideSetting };
-                log.Error(error);
+                log.LogError(error);
                 return (int)ExecutionReturn.MissingTargetDbOverrideSetting;
             }
             return 0;
@@ -285,14 +285,14 @@ namespace SqlBuildManager.Console
                 if (!File.Exists(cmdLine.DacPacArgs.PlatinumDacpac))
                 {
                     string err = String.Format("A Platinum Dacpac file was specified but could not be located at '{0}'", cmdLine.DacPacArgs.PlatinumDacpac);
-                    log.Error(err);
+                    log.LogError(err);
                     return -729;
                 }
 
                 if (!String.IsNullOrEmpty(cmdLine.DacPacArgs.TargetDacpac) && !File.Exists(cmdLine.DacPacArgs.TargetDacpac))
                 {
                     string err = String.Format("A Target Dacpac file was specified but could not be located at '{0}'", cmdLine.DacPacArgs.TargetDacpac);
-                    log.Error(err);
+                    log.LogError(err);
                     return -728;
                 }
             }
@@ -316,7 +316,7 @@ namespace SqlBuildManager.Console
                     }
                     else
                     {
-                        log.Error("Error creating SBM package from Platinum dacpac");
+                        log.LogError("Error creating SBM package from Platinum dacpac");
                         return -5120;
                     }
                 }
@@ -427,7 +427,7 @@ namespace SqlBuildManager.Console
 
             if (!cmdLine.QueryFile.Exists)
             {
-                log.Error("The --queryfile file was not found. Please check the name or path and try again");
+                log.LogError("The --queryfile file was not found. Please check the name or path and try again");
                 return 2;
             }
 
@@ -435,12 +435,12 @@ namespace SqlBuildManager.Console
             var query = File.ReadAllText(cmdLine.QueryFile.FullName);
             if (noNo.Match(query).Success)
             {
-                log.Error($"{Environment.NewLine}An INSERT, UPDATE or DELETE keyword was found. You can not use the query function to modify data.{Environment.NewLine}Instead, please run your data modification script as a SQL Build Package or DACPAC update");
+                log.LogError($"{Environment.NewLine}An INSERT, UPDATE or DELETE keyword was found. You can not use the query function to modify data.{Environment.NewLine}Instead, please run your data modification script as a SQL Build Package or DACPAC update");
                 return 5;
             }
             if (!File.Exists(cmdLine.MultiDbRunConfigFileName))
             {
-                log.Error("The --override file was not found. Please check the name or path and try again");
+                log.LogError("The --override file was not found. Please check the name or path and try again");
                 return 3;
             }
             if (cmdLine.OutputFile.Exists && !cmdLine.Silent)

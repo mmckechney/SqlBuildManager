@@ -42,7 +42,7 @@ namespace SqlBuildManager.Enterprise
                 }
                 if(EnterpriseConfigHelper.enterpriseConfig == null)
                 {
-                    log.LogWarn("Unable to load the EnterpriseConfiguration. Creating a new shell EnterpriseConfiguration object");
+                    log.LogWarning("Unable to load the EnterpriseConfiguration. Creating a new shell EnterpriseConfiguration object");
                     EnterpriseConfigHelper.enterpriseConfig = new EnterpriseConfiguration();
 
                 }
@@ -93,11 +93,11 @@ namespace SqlBuildManager.Enterprise
                     File.SetAttributes(localConfigPath, FileAttributes.Normal);
 
                 File.WriteAllText(localConfigPath, configuration);
-                log.DebugFormat("Loaded Enterprise Configuration from {0} and saved to {1}", configPath, localConfigPath);
+                log.LogDebug($"Loaded Enterprise Configuration from {configPath} and saved to {localConfigPath}");
             }
             catch(Exception exe)
             {
-                log.Error(String.Format("Unable to load Enterprise configuration from {0}",configPath), exe);
+                log.LogError(exe, $"Unable to load Enterprise configuration from {configPath}");
             }
 
             if (configuration.Length > 0)
@@ -107,12 +107,12 @@ namespace SqlBuildManager.Enterprise
             //If we get here, then we need to try the local copy.
             if(File.Exists(localConfigPath))
             {
-                log.DebugFormat("Reading EnterpriseConfig from local path:{0}", localConfigPath);
+                log.LogDebug($"Reading EnterpriseConfig from local path:{localConfigPath}");
                 configuration = File.ReadAllText(localConfigPath);
                 return DeserializeConfiguration(configuration);
             }
 
-            log.ErrorFormat("Unable to load EnterpriseConfig from configuation file!");
+            log.LogError("Unable to load EnterpriseConfig from configuation file!");
             return null;
 
            
@@ -135,7 +135,7 @@ namespace SqlBuildManager.Enterprise
             }
             catch(Exception exe)
             {
-                log.Error("Error deserializing enterprise configuration file from: " + configuration, exe);
+                log.LogError(exe, $"Error deserializing enterprise configuration file from: {configuration}");
             }
 
             return null;
@@ -210,7 +210,7 @@ namespace SqlBuildManager.Enterprise
             }
             catch(Exception exe)
             {
-                log.LogWarn(string.Format("Unable to get Enterprise TimeoutSetting object for file '{0}'", scriptName), exe);
+                log.LogWarning(exe, $"Unable to get Enterprise TimeoutSetting object for file '{scriptName}'");
             }
             return null;
         }

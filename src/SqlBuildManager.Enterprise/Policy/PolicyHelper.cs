@@ -308,7 +308,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
                 catch (Exception exe)
                 {
-                    log.Error(String.Format("Unable to read file '{0}' for policy check validation", extractedProjectPath + row.FileName), exe);
+                    log.LogError(exe, $"Unable to read file '{extractedProjectPath + row.FileName}' for policy check validation");
                 }
             }
             return scriptPackage;
@@ -333,7 +333,7 @@ namespace SqlBuildManager.Enterprise.Policy
             }
             catch (Exception exe)
             {
-                log.Error("Unable to serialize violations", exe);
+                log.LogError(exe, "Unable to serialize violations");
                 return string.Empty;
             }
                 
@@ -371,7 +371,7 @@ namespace SqlBuildManager.Enterprise.Policy
             }
             catch (Exception exe)
             {
-                log.Error("Error saving violations", exe);
+                log.LogError(exe, "Error saving violations");
                 return false;
             }
         }
@@ -440,9 +440,9 @@ namespace SqlBuildManager.Enterprise.Policy
 
                     //Add messages to log
                     if(violation.Severity == ViolationSeverity.High.ToString())
-                        log.Error(message);   
+                        log.LogError(message);   
                     else if(violation.Severity == ViolationSeverity.Medium.ToString())
-                        log.LogWarn(message);
+                        log.LogWarning(message);
                     else 
                         log.LogInformation(message);
                 }
