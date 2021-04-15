@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using System.IO;
+using Microsoft.Extensions.Configuration;
+
 
 namespace SqlBuildManager.Logging
 {
@@ -11,18 +14,29 @@ namespace SqlBuildManager.Logging
 		private static ILoggerFactory _Factory = null;
 		private static string _LogFileName = string.Empty;
 
+
 		public static void ConfigureLogger(ILoggerFactory factory)
 		{
-			var serilogLogger = new LoggerConfiguration()
-				.MinimumLevel.Debug()
-				.Enrich.WithThreadId()
-				.Enrich.WithThreadName()
-				.WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}")
-				.WriteTo.RollingFile("logFileFromHelper.log", outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}")
+			// var serilogLogger = new LoggerConfiguration()
+			// 	.MinimumLevel.Debug()
+			// 	.Enrich.WithThreadId()
+			// 	.Enrich.WithThreadName()
+			// 	.WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}")
+			// 	.WriteTo.RollingFile("logFileFromHelper.log", outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}")
+			// 	.CreateLogger();
+
+			// factory.AddSerilog(serilogLogger);
+
+			 var configuration = new ConfigurationBuilder()
+				.SetBasePath(Directory.GetCurrentDirectory())
+				.AddJsonFile("appsettings.json")
+				.Build();
+
+			var logger = new LoggerConfiguration()
+				.ReadFrom.Configuration(configuration)
 				.CreateLogger();
 
-			factory.AddSerilog(serilogLogger);
-			
+			factory.AddSerilog(logger);
 	
 		}
 

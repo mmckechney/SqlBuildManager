@@ -34,9 +34,10 @@ namespace SqlBuildManager.Console
 
         static int Main(string[] args)
         {
-
+            var logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", "SqlBuildManager.Console.log");
+            Environment.SetEnvironmentVariable("sbm-loggingfile", logFile);
+            
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Program>();
-            //var args = argumentProvider.Arguments;
             var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             var currentPath = Path.GetDirectoryName(fn);
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
