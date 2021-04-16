@@ -46,7 +46,7 @@
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.1" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.10.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="6.10.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="6.10.2" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.10.1" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="3.0.3" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="4.0.3" />
