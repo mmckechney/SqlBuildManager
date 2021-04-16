@@ -49,7 +49,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.12" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46041.41" />

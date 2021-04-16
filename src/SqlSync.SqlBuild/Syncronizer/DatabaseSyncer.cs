@@ -8,7 +8,7 @@ using SqlSync.Connection;
 using System.Data;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
-using log4net;
+
 namespace SqlSync.SqlBuild.Syncronizer
 {
     public class DatabaseSyncer

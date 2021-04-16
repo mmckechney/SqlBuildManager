@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Core;
 using System;
 using System.IO;
 
@@ -9,20 +10,12 @@ namespace SqlBuildManager.Logging
     public class ApplicationLogging
 	{
 		private static ILoggerFactory Factory = null;
-
 		private static string _rootLoggingFile = string.Empty;
 		private static bool resetPath = false;
+		private static LogLevel logLevel = LogLevel.Information;
+		private static LoggingLevelSwitch levelSwitch = new LoggingLevelSwitch();
 		public static void ConfigureStandardLogger(ILoggerFactory factory)
 		{
-			// var serilogLogger = new LoggerConfiguration()
-			// 	.MinimumLevel.Debug()
-			// 	.Enrich.WithThreadId()
-			// 	.Enrich.WithThreadName()
-			// 	.WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}")
-			// 	.WriteTo.RollingFile("logFileFromHelper.log", outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}")
-			// 	.CreateLogger();
-
-			// factory.AddSerilog(serilogLogger);
 
 			var configuration = new ConfigurationBuilder()
 				.SetBasePath(Directory.GetCurrentDirectory())
@@ -37,8 +30,11 @@ namespace SqlBuildManager.Logging
 			catch
             {
 				fileOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}";
-
 			}
+
+			//Get log level 
+			 Enum.TryParse<LogLevel>(configuration["Serilog:MinimumLevel"], out logLevel);
+
 
 			Serilog.Core.Logger logger;
 
@@ -48,6 +44,7 @@ namespace SqlBuildManager.Logging
 
 				logger = new LoggerConfiguration()
 					.ReadFrom.Configuration(configuration)
+					.MinimumLevel.ControlledBy(levelSwitch)
 					.CreateLogger();
 			}
 			else
@@ -55,6 +52,7 @@ namespace SqlBuildManager.Logging
 				logFileName = Path.Combine(_rootLoggingFile, "SqlBuildManager.Console.log");
 				logger = new LoggerConfiguration()
 					.ReadFrom.Configuration(configuration)
+					.MinimumLevel.ControlledBy(levelSwitch)
 					.WriteTo.File(logFileName, outputTemplate : fileOutputTemplate)
 					.CreateLogger();
 			}
@@ -89,6 +87,44 @@ namespace SqlBuildManager.Logging
 		public static bool IsDebug()
 		{
 			return Log.IsEnabled(Serilog.Events.LogEventLevel.Debug);
+		}
+		public static LogLevel GetLogLevel()
+        {
+			return logLevel;
+
+		}
+		public static void SetLogLevel(LogLevel level)
+		{
+			switch(level)
+            {
+				case LogLevel.Trace:
+					levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Verbose;
+					break;
+
+				case LogLevel.Debug:
+					levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
+					break;
+
+
+				case LogLevel.Warning:
+					levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Warning;
+					break;
+
+				case LogLevel.Error:
+					levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Error;
+					break;
+
+				case LogLevel.Critical:
+					levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Fatal;
+					break;
+
+				case LogLevel.Information:
+				default:
+					levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
+					break;
+			}
+			
+
 		}
 
 		private static string logFileName = string.Empty;
