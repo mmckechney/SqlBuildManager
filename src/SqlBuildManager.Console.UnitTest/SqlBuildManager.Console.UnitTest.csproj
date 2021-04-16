@@ -39,9 +39,4 @@
     <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" />
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Update="log4net.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

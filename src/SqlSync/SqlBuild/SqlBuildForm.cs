@@ -3687,7 +3687,7 @@ namespace SqlSync.SqlBuild
                 else
                 {
                     //EventLog.WriteEntry("SqlSync", "Build File Load Error.", EventLogEntryType.Error, 867);
-                    Program.WriteLog("Build File Load Error");
+                    log.LogError("Build File Load Error");
                     if (this.UnattendedProcessingCompleteEvent != null)
                         this.UnattendedProcessingCompleteEvent(867);
                 }
@@ -3731,7 +3731,7 @@ namespace SqlSync.SqlBuild
             {
 
                 //If we are running unattended, write to the console and go at it!
-                Program.WriteLog("Build File Loaded Successfully.");
+                log.LogInformation("Build File Loaded Successfully.");
 
                 //What kind of unattended run-- single or multiDb?
                 if (this.multiDbRunData != null)
@@ -7241,8 +7241,9 @@ namespace SqlSync.SqlBuild
             else if (e.UserState is GeneralStatusEventArgs) //Update the general run status
             {
                 if (this.runningUnattended)
-                    Program.WriteLog(((GeneralStatusEventArgs)e.UserState).StatusMessage);
-
+                {
+                    log.LogInformation(((GeneralStatusEventArgs)e.UserState).StatusMessage);
+                }
                 statGeneral.Text = ((GeneralStatusEventArgs)e.UserState).StatusMessage;
             }
             else if (e.UserState is ScriptRunStatusEventArgs) //Update the status on a currently running script.
@@ -7296,31 +7297,32 @@ namespace SqlSync.SqlBuild
                 if (!this.runningUnattended)
                     MessageBox.Show(((CommitFailureEventArgs)e.UserState).ErrorMessage, "Failed to Commit Build", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 else
-                    Program.WriteLog("Failed to Commit Build " + ((CommitFailureEventArgs)e.UserState).ErrorMessage);
+                    log.LogError("Failed to Commit Build " + ((CommitFailureEventArgs)e.UserState).ErrorMessage);
             }
             else if (e.UserState is ScriptRunProjectFileSavedEventArgs)
             {
                 if (this.runningUnattended)
-                    Program.WriteLog("ScriptRunProjectFileSavedEventArgs captured");
+                    log.LogInformation("ScriptRunProjectFileSavedEventArgs captured");
 
                 //Reload the file
                 if (this.runningUnattended)
-                    Program.WriteLog("Reloading updated build XML");
+                    log.LogInformation("Reloading updated build XML");
+                
                 LoadSqlBuildProjectFileData(ref this.buildData, this.projectFileName, true);
 
                 if (this.runningUnattended)
-                    Program.WriteLog("Saving updated build file to disk");
+                    log.LogInformation("Saving updated build file to disk");
 
                 try
                 {
                     SqlBuildFileHelper.PackageProjectFileIntoZip(this.buildData, this.projectFilePath, this.buildZipFileName);
-                    Program.WriteLog("Build file saved to disk");
+                    log.LogInformation("Build file saved to disk");
 
                 }
                 catch (Exception exe)
                 {
                     if (this.runningUnattended)
-                        Program.WriteLog("ERROR!" + exe.ToString());
+                        log.LogError(exe.ToString());
                     else
                         MessageBox.Show(e.ToString(), "Error Saving Build File", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -7329,8 +7331,8 @@ namespace SqlSync.SqlBuild
 
                 if (this.runningUnattended)
                 {
-                    Program.WriteLog("Completed with return code " + this.returnCode.ToString());
-                    Program.WriteLog("************************************************");
+                    log.LogInformation("Completed with return code " + this.returnCode.ToString());
+                    log.LogInformation("************************************************");
                 }
 
                 if (this.runningUnattended && this.returnCode != -1 && this.UnattendedProcessingCompleteEvent != null)
@@ -7347,7 +7349,7 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    Program.WriteLog("ERROR!" + ((Exception)e.UserState).Message);
+                    log.LogError("ERROR!" + ((Exception)e.UserState).Message);
                 }
             }
 

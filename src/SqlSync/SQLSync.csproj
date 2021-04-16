@@ -364,9 +364,6 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="log4net.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy &quot;$(ProjectDir)SqlBuild\Utility&quot; &quot;$(TargetDir)Utility\&quot; /K /D /H /Y&#xD;&#xA;xcopy &quot;$(ProjectDir)SqlBuild\Default Scripts&quot; &quot;$(TargetDir)Default Scripts\&quot; /K /D /H /Y" />

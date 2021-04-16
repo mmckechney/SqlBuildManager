@@ -11,18 +11,18 @@ namespace SqlSync
 {
     class Program
     {
-        private static string logFileName = string.Empty;
-        private static ILogger log;
+         private static ILogger log;
         public static int returnCode = 0;
+        private static readonly string applicationLogFileName = "SqlBuildManager.log"; 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static int Main(string[] args)
         {
+            SqlBuildManager.Logging.ApplicationLogging.LogFileName = applicationLogFileName;
             Environment.SetEnvironmentVariable("sbm-loggingfile", SqlBuildManager.Logging.ApplicationLogging.LogFileName);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
 
             log.LogDebug("Sql Build Manager Staring...");
             if(args.Length > 0)
@@ -62,7 +62,7 @@ namespace SqlSync
                 }
                 else if (args.Length > 1) //this is a "real" command line execution...
                 {
-                    MessageBox.Show("Looks like you are trying to perform a command line operation. Please use \"SqlbuildManager.Console.exe\" instead");
+                    MessageBox.Show("Looks like you are trying to perform a command line operation. Please use \"sbm.exe\" instead");
                     returnCode = -1;
                     #region
                     //CommandLineArgs cmdLine = SqlSync.SqlBuild.CommandLine.ParseCommandLineArg(args);
@@ -161,29 +161,7 @@ namespace SqlSync
             return returnCode;
         }
 
-        public static void WriteLog(string message)
-        {
-            if (Program.logFileName.Length > 0)
-                WriteLog(message,0);
 
-            Console.WriteLine(message);
-        }
-        private static void WriteLog(string message, int attempt)
-        {
-            try
-            {
-                string msg = "[" + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + "]\t\t" + message;
-                File.AppendAllText(logFileName, msg + "\r\n");
-            }
-            catch (Exception)
-            {
-                if (attempt < 5)
-                {
-                    System.Threading.Thread.Sleep(50);
-                    WriteLog(message, attempt + 1);
-                }
-            }
-        }
         private static void buildForm_UnattendedProcessingCompleteEvent(int rtrnCode)
         {
             returnCode = rtrnCode;

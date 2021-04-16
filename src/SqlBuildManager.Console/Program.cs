@@ -27,14 +27,15 @@ namespace SqlBuildManager.Console
 
 
         private static Microsoft.Extensions.Logging.ILogger log;
+        private static readonly string applicationLogFileName = "SqlBuildManager.Console.log";
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
         static int Main(string[] args)
         {
-            
+            SqlBuildManager.Logging.ApplicationLogging.LogFileName = applicationLogFileName;
             Environment.SetEnvironmentVariable("sbm-loggingfile", SqlBuildManager.Logging.ApplicationLogging.LogFileName);
-            
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program));
+
             var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             var currentPath = Path.GetDirectoryName(fn);
 
