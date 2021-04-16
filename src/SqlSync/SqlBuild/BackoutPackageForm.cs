@@ -117,7 +117,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Error("Error loading the Backout Package form", exe);
+                log.LogError(exe, "Error loading the Backout Package form");
                 MessageBox.Show("Error loading form. Please see log file for details", "Whoops!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 this.bgCheckTargetObjects = null;

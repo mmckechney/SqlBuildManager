@@ -1,9 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
-using BlueSkyDev.Logging;
 using Microsoft.Extensions.Logging;
-using log4net.Repository.Hierarchy;
-using log4net;
 using Newtonsoft.Json;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Enterprise.Policy;
@@ -34,16 +31,12 @@ namespace SqlBuildManager.Console
 
         static int Main(string[] args)
         {
-            var logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", "SqlBuildManager.Console.log");
-            Environment.SetEnvironmentVariable("sbm-loggingfile", logFile);
             
-            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Program>();
+            Environment.SetEnvironmentVariable("sbm-loggingfile", SqlBuildManager.Logging.ApplicationLogging.LogFileName);
+            
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program));
             var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             var currentPath = Path.GetDirectoryName(fn);
-            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
-
-            log4net.Config.XmlConfigurator.Configure(logRepository, new FileInfo(Path.Combine(currentPath, "log4net.config")));
-            SqlBuildManager.Logging.Configure.SetLoggingPath();
 
             log.LogDebug("Received Command: " + String.Join(" | ", args));
 
@@ -57,8 +50,9 @@ namespace SqlBuildManager.Console
                 int result = val.Result;
                 log.LogInformation($"Exiting with code {result}");
 
-                LogManager.Flush(5000);
-                logRepository = null;
+                //LogManager.Flush(5000);
+                //logRepository = null;
+                Logging.ApplicationLogging.FlushLogs();
                 return result;
             }
             catch (Exception exe)
@@ -72,13 +66,9 @@ namespace SqlBuildManager.Console
         internal static int QueryDatabases(CommandLineArgs cmdLine)
         {
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
-            {
-                SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
-            }
             if (!string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
             {
-                SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
+                log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
             }
 
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
@@ -165,10 +155,10 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchExecution(CommandLineArgs cmdLine)
         {
-            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
+
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
-            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.LogDebug("Entering Batch Execution");
             log.LogInformation("Running...");
             int retVal;
@@ -199,13 +189,14 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchQuery(CommandLineArgs cmdLine)
         {
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
+
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
             if (outpt != 0)
             {
                 return outpt;
             }
 
-            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
             //Always run the remote Batch as silent or it will get hung up
             if (cmdLine.Silent == false)
             {
@@ -213,7 +204,7 @@ namespace SqlBuildManager.Console
             }
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine, cmdLine.QueryFile.FullName, Path.Combine(cmdLine.RootLoggingPath, cmdLine.OutputFile.Name));
-            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
+
             log.LogDebug("Entering Batch Query Execution");
             log.LogInformation("Running...");
             int retVal;
@@ -361,9 +352,9 @@ namespace SqlBuildManager.Console
 
         internal static int RunLocalBuildAsync(CommandLineArgs cmdLine)
         {
-            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
+
             DateTime start = DateTime.Now;
-            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.LogDebug("Entering Local Build Execution");
             log.LogInformation("Running  Local Build...");
 
@@ -401,9 +392,9 @@ namespace SqlBuildManager.Console
 
         internal static int RunThreadedExecution(CommandLineArgs cmdLine)
         {
-            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
+
             DateTime start = DateTime.Now;
-            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
             log.LogDebug("Entering Threaded Execution");
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
             log.LogDebug(cmdLine.ToStringExtension(StringType.BatchQuery));
@@ -510,57 +501,6 @@ namespace SqlBuildManager.Console
             {
                 log.LogError($"Unable to upload log files to blob storage.{Environment.NewLine}{exe.Message}");
                 return false;
-            }
-        }
-
-        private static void SetWorkingDirectoryLogger(string rootLoggingPath)
-        {
-
-            try
-            {
-
-                if (!string.IsNullOrEmpty(rootLoggingPath))
-                {
-                    if (!Directory.Exists(rootLoggingPath))
-                    {
-                        Directory.CreateDirectory(rootLoggingPath);
-                    }
-
-                    var appender = LogManager.GetRepository(Assembly.GetEntryAssembly()).GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender" || a.Name == "StandardRollingLogFileAppender");
-                    if (appender != null)
-                    {
-                        foreach (var app in appender)
-                        {
-                            var thr = app as log4net.Appender.FileAppender;
-                            thr.File = Path.Combine(rootLoggingPath, Path.GetFileName(thr.File));
-                            thr.ActivateOptions();
-                        }
-
-                    }
-                }
-            }
-            catch (Exception exe)
-            {
-                log.LogError(string.Format("Unable to set local root logging path to {0}", rootLoggingPath), exe);
-            }
-
-
-        }
-
-        internal static void SetEventHubAppenderConnection(string connectionString)
-        {
-            Hierarchy hier = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly()) as Hierarchy;
-            if (hier != null)
-            {
-                var ehAppender = (AzureEventHubAppender)LogManager.GetRepository(Assembly.GetEntryAssembly()).GetAppenders().Where(a => a.Name.Contains("AzureEventHubAppender")).FirstOrDefault();
-                if (ehAppender != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(connectionString))
-                    {
-                        ehAppender.ConnectionString = connectionString;
-                        ehAppender.ActivateOptions();
-                    }
-                }
             }
         }
 

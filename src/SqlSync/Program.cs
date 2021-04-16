@@ -12,7 +12,7 @@ namespace SqlSync
     class Program
     {
         private static string logFileName = string.Empty;
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log;
         public static int returnCode = 0;
         /// <summary>
         /// The main entry point for the application.
@@ -20,9 +20,9 @@ namespace SqlSync
         [STAThread]
         static int Main(string[] args)
         {
-            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
-            log4net.Config.XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
-            SqlBuildManager.Logging.Configure.SetLoggingPath();
+            Environment.SetEnvironmentVariable("sbm-loggingfile", SqlBuildManager.Logging.ApplicationLogging.LogFileName);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 
             log.LogDebug("Sql Build Manager Staring...");
             if(args.Length > 0)
@@ -151,7 +151,7 @@ namespace SqlSync
             }
             catch (Exception exe)
             {
-                log.Fatal("Catastrophic Error!!", exe);
+                log.LogCritical(exe, "Catastrophic Error!!");
                 returnCode = 9999;
             }
 

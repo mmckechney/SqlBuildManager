@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using System;
 using System.IO;
-using Microsoft.Extensions.Configuration;
-
 
 namespace SqlBuildManager.Logging
 {
-	public class ApplicationLogging
+    public class ApplicationLogging
 	{
-		private static ILoggerFactory _Factory = null;
-		private static string _LogFileName = string.Empty;
+		private static ILoggerFactory Factory = null;
 
-
-		public static void ConfigureLogger(ILoggerFactory factory)
+		private static string _rootLoggingFile = string.Empty;
+		private static bool resetPath = false;
+		public static void ConfigureStandardLogger(ILoggerFactory factory)
 		{
 			// var serilogLogger = new LoggerConfiguration()
 			// 	.MinimumLevel.Debug()
@@ -27,15 +24,40 @@ namespace SqlBuildManager.Logging
 
 			// factory.AddSerilog(serilogLogger);
 
-			 var configuration = new ConfigurationBuilder()
+			var configuration = new ConfigurationBuilder()
 				.SetBasePath(Directory.GetCurrentDirectory())
 				.AddJsonFile("appsettings.json")
 				.Build();
 
-			var logger = new LoggerConfiguration()
-				.ReadFrom.Configuration(configuration)
-				.CreateLogger();
+			string fileOutputTemplate;
+			try
+			{
+				fileOutputTemplate = configuration["Serilog:WriteTo:1:Args:outputTemplate"];
+			}
+			catch
+            {
+				fileOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}";
 
+			}
+
+			Serilog.Core.Logger logger;
+
+			if (string.IsNullOrWhiteSpace(_rootLoggingFile))
+			{
+				logFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", "SqlBuildManager.Console.log");
+
+				logger = new LoggerConfiguration()
+					.ReadFrom.Configuration(configuration)
+					.CreateLogger();
+			}
+			else
+            {
+				logFileName = Path.Combine(_rootLoggingFile, "SqlBuildManager.Console.log");
+				logger = new LoggerConfiguration()
+					.ReadFrom.Configuration(configuration)
+					.WriteTo.File(logFileName, outputTemplate : fileOutputTemplate)
+					.CreateLogger();
+			}
 			factory.AddSerilog(logger);
 	
 		}
@@ -44,30 +66,45 @@ namespace SqlBuildManager.Logging
 		{
 			get
 			{
-				if (_Factory == null)
+				if (Factory == null || resetPath)
 				{
-					_Factory = new LoggerFactory();
-					ConfigureLogger(_Factory);
+					Factory = new LoggerFactory();
+					ConfigureStandardLogger(Factory);
+					resetPath = false;
 				}
-				return _Factory;
+				return Factory;
 			}
-			set { _Factory = value; }
+			set { Factory = value; }
 		}
 		public static Microsoft.Extensions.Logging.ILogger CreateLogger<T>() => LoggerFactory.CreateLogger(typeof(T));
 		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type) => LoggerFactory.CreateLogger(type);
+		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type, string rootLoggingPath)
+		{
+			resetPath = true;
+			_rootLoggingFile = rootLoggingPath;
+			return LoggerFactory.CreateLogger(type);
+		}
+ 
 
 		public static bool IsDebug()
 		{
 			return Log.IsEnabled(Serilog.Events.LogEventLevel.Debug);
 		}
 
+		private static string logFileName = string.Empty;
 		public static string LogFileName
 		{
 			get
 			{
-				//TODO: Actually set the file name!
-				return _LogFileName;
+				return logFileName;
 			}
 		}
+
+		public static void FlushLogs()
+        {
+			Log.CloseAndFlush();
+        }
+
+
 	}
 }

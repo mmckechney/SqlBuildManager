@@ -133,7 +133,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
             catch(Exception exe)
             {
-                log.Error("Unable to create test databases", exe);
+                log.LogError(exe, "Unable to create test databases");
                 return false;
             }
         }
@@ -591,7 +591,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
             catch(Exception exe)
             {
-                log.Error("Unable to get count for build file", exe);
+                log.LogError(exe, "Unable to get count for build file");
                 return -1;
             }
 

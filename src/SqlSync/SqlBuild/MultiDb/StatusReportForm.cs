@@ -134,7 +134,7 @@ namespace SqlSync.SqlBuild.MultiDb
             }
             else if (e.Result is Exception)
             {
-                log.Error("Error executing query", (Exception)e.Result);
+                log.LogError((Exception)e.Result, "Error executing query");
                 MessageBox.Show("An error was encountered during execution!\r\n(How much data were you expecting anyway!?!)\r\n\r\n" + ((Exception)e.Result).Message, "Sorry.. I died", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 statGeneral.Text = "Error!!";
 

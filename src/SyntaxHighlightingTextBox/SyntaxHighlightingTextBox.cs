@@ -414,7 +414,7 @@ namespace UrielGuy.SyntaxHighlighting
             }
             catch (Exception exe)
             {
-                log.Error("Error setting SyntaxHighlighting. Type=" + this.highlightType.ToString(), exe);
+                log.LogError(exe, $"Error setting SyntaxHighlighting. Type={this.highlightType.ToString()}");
             }
 		}
 
