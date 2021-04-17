@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Transactions;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using SqlSync.Constants;
@@ -94,6 +95,7 @@ namespace SqlSync.SqlBuild
         [JsonIgnore]
         public virtual string Database { get; set; } = string.Empty;
         public virtual string RootLoggingPath { get; set; } = string.Empty;
+        public virtual LogLevel LogLevel { get; set; } = LogLevel.Information;
         [JsonIgnore]
         public virtual bool Trial { get; set; } = false;
         [JsonIgnore]

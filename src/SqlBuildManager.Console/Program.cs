@@ -32,9 +32,7 @@ namespace SqlBuildManager.Console
 
         static int Main(string[] args)
         {
-            SqlBuildManager.Logging.ApplicationLogging.LogFileName = applicationLogFileName;
-            Environment.SetEnvironmentVariable("sbm-loggingfile", SqlBuildManager.Logging.ApplicationLogging.LogFileName);
-            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program));
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
 
             var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             var currentPath = Path.GetDirectoryName(fn);
@@ -66,10 +64,10 @@ namespace SqlBuildManager.Console
 
         internal static int QueryDatabases(CommandLineArgs cmdLine)
         {
-
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             if (!string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
             {
-                log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
+                log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
             }
 
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
@@ -156,7 +154,8 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchExecution(CommandLineArgs cmdLine)
         {
-            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
@@ -190,7 +189,8 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchQuery(CommandLineArgs cmdLine)
         {
-            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
             if (outpt != 0)
@@ -353,7 +353,8 @@ namespace SqlBuildManager.Console
 
         internal static int RunLocalBuildAsync(CommandLineArgs cmdLine)
         {
-            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
             DateTime start = DateTime.Now;
             log.LogDebug("Entering Local Build Execution");
@@ -393,7 +394,8 @@ namespace SqlBuildManager.Console
 
         internal static int RunThreadedExecution(CommandLineArgs cmdLine)
         {
-            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), cmdLine.RootLoggingPath);
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
             DateTime start = DateTime.Now;
             log.LogDebug("Entering Threaded Execution");

@@ -7,6 +7,7 @@ using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using SqlSync.SqlBuild;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace SqlBuildManager.Console
 {
@@ -220,6 +221,10 @@ namespace SqlBuildManager.Console
             var threadedConcurrencyTypeOption = new Option(new string[] { "--concurrencytype" }, "Type of concurrency, used in conjunction with --concurrency ")
             {
                 Argument = new Argument<ConcurrencyType>("concurrencytype", () => ConcurrencyType.Count)
+            };
+            var logLevelOption = new Option(new string[] { "--loglevel" }, "Logging level for console and log file")
+            {
+                Argument = new Argument<LogLevel>("loglevel", () => LogLevel.Information)
             };
 
 
@@ -621,6 +626,7 @@ namespace SqlBuildManager.Console
 
 
             RootCommand rootCommand = new RootCommand(description: "Tool to manage your SQL server database updates and releases");
+            rootCommand.Add(logLevelOption);
             rootCommand.Add(buildCommand);
             rootCommand.Add(threadedCommand);
             rootCommand.Add(batchCommand);

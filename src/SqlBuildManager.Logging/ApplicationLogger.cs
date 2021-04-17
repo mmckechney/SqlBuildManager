@@ -4,56 +4,32 @@ using Serilog;
 using Serilog.Core;
 using System;
 using System.IO;
-
+using System.Collections.Generic;
 namespace SqlBuildManager.Logging
 {
     public class ApplicationLogging
 	{
 		private static ILoggerFactory Factory = null;
 		private static string _rootLoggingFile = string.Empty;
-		private static bool resetPath = false;
-		private static LogLevel logLevel = LogLevel.Information;
+		private static string _logFileName = string.Empty;
+		private static bool addPath = false;
+		private static Microsoft.Extensions.Logging.LogLevel logLevel = Microsoft.Extensions.Logging.LogLevel.Information;
 		private static LoggingLevelSwitch levelSwitch = new LoggingLevelSwitch();
+		private static List<string> loggingPaths = new List<string>();
 		public static void ConfigureStandardLogger(ILoggerFactory factory)
 		{
 
-			var configuration = new ConfigurationBuilder()
-				.SetBasePath(Directory.GetCurrentDirectory())
-				.AddJsonFile("appsettings.json")
-				.Build();
+			var logOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}";
+			var consoleOutput = "{Message}{NewLine}{Exception}";
 
-			string fileOutputTemplate;
-			try
-			{
-				fileOutputTemplate = configuration["Serilog:WriteTo:1:Args:outputTemplate"];
-			}
-			catch
-            {
-				fileOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}";
-			}
-
-			//Get log level 
-			 Enum.TryParse<LogLevel>(configuration["Serilog:MinimumLevel"], out logLevel);
-
-
-			Serilog.Core.Logger logger;
-
-			if (string.IsNullOrWhiteSpace(_rootLoggingFile))
-			{
-				logger = new LoggerConfiguration()
-					.ReadFrom.Configuration(configuration)
-					.MinimumLevel.ControlledBy(levelSwitch)
-					.CreateLogger();
-			}
-			else
-            {
-				logFileName = Path.Combine(_rootLoggingFile, Path.GetFileName(logFileName));
-				logger = new LoggerConfiguration()
-					.ReadFrom.Configuration(configuration)
-					.MinimumLevel.ControlledBy(levelSwitch)
-					.WriteTo.File(logFileName, outputTemplate : fileOutputTemplate)
-					.CreateLogger();
-			}
+			var logger =  new LoggerConfiguration()
+                    .MinimumLevel.ControlledBy(levelSwitch)
+                    .Enrich.WithThreadId()
+                    .Enrich.WithThreadName()
+                    .WriteTo.Console(outputTemplate: consoleOutput)
+                    .WriteTo.File(_logFileName, outputTemplate: logOutputTemplate, rollOnFileSizeLimit: true)
+                    .CreateLogger();
+           
 			factory.AddSerilog(logger);
 	
 		}
@@ -62,11 +38,11 @@ namespace SqlBuildManager.Logging
 		{
 			get
 			{
-				if (Factory == null || resetPath)
+				if (Factory == null || addPath)
 				{
 					Factory = new LoggerFactory();
 					ConfigureStandardLogger(Factory);
-					resetPath = false;
+					addPath = false;
 				}
 				return Factory;
 			}
@@ -74,10 +50,18 @@ namespace SqlBuildManager.Logging
 		}
 		public static Microsoft.Extensions.Logging.ILogger CreateLogger<T>() => LoggerFactory.CreateLogger(typeof(T));
 		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type) => LoggerFactory.CreateLogger(type);
-		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type, string rootLoggingPath)
+		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type, string logFileName) => CreateLogger(type, logFileName, string.Empty);
+		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type, string logFileName, string rootLoggingPath)
 		{
-			resetPath = true;
-			_rootLoggingFile = rootLoggingPath;
+			if(string.IsNullOrWhiteSpace(rootLoggingPath))
+            {
+				LogFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", logFileName);
+			}
+			else
+            {
+				LogFileName = Path.Combine(rootLoggingPath, logFileName);
+            }
+			addPath = true;
 			return LoggerFactory.CreateLogger(type);
 		}
  
@@ -93,6 +77,7 @@ namespace SqlBuildManager.Logging
 		}
 		public static void SetLogLevel(LogLevel level)
 		{
+			logLevel = level;
 			switch(level)
             {
 				case LogLevel.Trace:
@@ -125,24 +110,25 @@ namespace SqlBuildManager.Logging
 
 		}
 
-		private static string logFileName = string.Empty;
+
 		public static string LogFileName
 		{
 			get
 			{
-				return logFileName;
+				return _logFileName;
 			}
-            set
+            private set
             {
 				if (!Path.IsPathFullyQualified(value))
                 {
-					logFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", value);
+					_logFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", value);
 				}
 				else
                 {
-					logFileName = value;
+					_logFileName = value;
 
 				}
+				loggingPaths.Add(_logFileName);
 
 			}
 		}
