@@ -67,6 +67,7 @@ $batchAcctName = $batchprefix + "batchacct"
 $storageAcctName = $batchprefix + "storage"
 $namespaceName = $batchprefix + "eventhubnamespace"
 $eventHubName = $batchprefix + "eventhub"
+$serviceBusName = $batchprefix + "servicebus"
 
 
 if("" -eq $batchPoolName)
@@ -100,6 +101,7 @@ $batch = Get-AzBatchAccountKey -AccountName $batchAcctName -ResourceGroupName $r
 $t = Get-AzBatchAccount -AccountName $batchAcctName -ResourceGroupName $resourceGroupName
 $s = Get-AzStorageAccountKey -Name $storageAcctName -ResourceGroupName $resourceGroupName
 $e = Get-AzEventHubKey -ResourceGroupName $resourceGroupName -NamespaceName $namespaceName -EventHubName $eventHubName -AuthorizationRuleName batchbuilder
+$sb = Get-AzServiceBusKey -ResourceGroup $resourceGroupName -Namespace $serviceBusName -Queue sqlbuildmanager -Name sbmpolicy
 
 $settingsFile = [PSCustomObject]@{
     AuthenticationArgs = @{
@@ -121,6 +123,7 @@ $settingsFile = [PSCustomObject]@{
         BatchPoolOs =  $batchPoolOs
         BatchPoolName = $batchPoolName
         BatchApplicationPackage = $batchApplicationPackage
+        ServiceBusConnectionString = "$(sb.PrimaryConnectionString)"
     }
     RootLoggingPath = "C:\temp"
     TimeoutRetryCount = 0

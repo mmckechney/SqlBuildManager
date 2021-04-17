@@ -125,11 +125,11 @@ foreach($db in $dbs)
 }
 
 
-############################################################
-# Call to deploy_batch.ps to create the batch infrastructure
-############################################################
+#########################################################################################
+# Call to deploy_batch.ps to create the batch, storage, eventhub and queue infrastructure
+#########################################################################################
 $SubscriptionId = (Get-AzContext).Subscription.Id
-./deploy_batch.ps1 -subscriptionId $SubscriptionId -resourceGroupName $ResourceGroupName -resourceGroupLocation $Location -batchprefix $batchprefix -outputpath $outputPath
+./deploy_azure_resources.ps1 -subscriptionId $SubscriptionId -resourceGroupName $ResourceGroupName -resourceGroupLocation $Location -batchprefix $batchprefix -outputpath $outputPath
 
 
 #############################################################

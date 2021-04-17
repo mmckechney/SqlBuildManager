@@ -89,9 +89,9 @@ $vars = $winenv, $linuxenv
 
 $ErrorActionPreference = "Stop"
 
-#########################################################
-# ARM template deployment for batch, storage and eventhub
-#########################################################
+#######################################################################
+# ARM template deployment for batch, storage,  eventhub and service bus
+#######################################################################
 # select subscription
 Write-Host "Selecting subscription '$subscriptionId'";
 Select-AzSubscription -SubscriptionID $subscriptionId;
@@ -130,16 +130,8 @@ else{
 
 # Start the deployment
 Write-Host "Starting deployment...";
-Write-Host "Creating batch, storage and eventhub accounts...";
+Write-Host "Creating batch, storage, service bus and eventhub accounts...";
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName  -TemplateFile $templateFile -TemplateParameterObject $params -Verbose
-
-
-##########################################
-# Build the solution
-##########################################
-# dotnet restore "..\..\src\sqlsync.sln" 
-# dotnet build "..\..\src\sqlsync.sln" --configuration Debug
-
 
 ##########################################
 # Create the application package zip files

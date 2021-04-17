@@ -43,7 +43,8 @@
         "batchAccountName" : "[concat(parameters('namePrefix'), 'batchacct')]",
         "storageAccountName" : "[concat(parameters('namePrefix'), 'storage')]",
         "namespaceName" : "[concat(parameters('namePrefix'), 'eventhubnamespace')]",
-        "eventHubName" : "[concat(parameters('namePrefix'), 'eventhub')]"
+        "eventHubName" : "[concat(parameters('namePrefix'), 'eventhub')]",
+        "serviceBusName" : "[concat(parameters('namePrefix'), 'servicebus')]"
     },
     "resources": [
         {
@@ -126,6 +127,74 @@
             "dependsOn": [
                 "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('namespaceName'),  variables('eventHubName'))]",
                 "[resourceId('Microsoft.EventHub/namespaces', variables('namespaceName'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen",
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces",
+            "apiVersion": "2018-01-01-preview",
+            "name": "[variables('serviceBusName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "properties": {
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/AuthorizationRules",
+            "apiVersion": "2017-04-01",
+            "name": "[concat(variables('serviceBusName'), '/RootManageSharedAccessKey')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen",
+                    "Manage",
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/queues",
+            "apiVersion": "2018-01-01-preview",
+            "name": "[concat(variables('serviceBusName'), '/sqlbuildmanager')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
+            ],
+            "properties": {
+                "lockDuration": "PT30S",
+                "maxSizeInMegabytes": 10240,
+                "requiresDuplicateDetection": false,
+                "requiresSession": false,
+                "defaultMessageTimeToLive": "P14D",
+                "deadLetteringOnMessageExpiration": false,
+                "enableBatchedOperations": true,
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "maxDeliveryCount": 10,
+                "status": "Active",
+                "enablePartitioning": true,
+                "enableExpress": false
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/queues/authorizationRules",
+            "apiVersion": "2018-01-01-preview",
+            "name": "[concat(variables('serviceBusName'), '/sqlbuildmanager/sbmpolicy')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('serviceBusName'), 'sqlbuildmanager')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
             ],
             "properties": {
                 "rights": [
