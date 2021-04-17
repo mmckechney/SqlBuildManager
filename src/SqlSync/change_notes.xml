@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+    <Version Major="12" Minor="1" Revision="0">
+      <updated>Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Loggging. Implements Serilog</updated>
+    </Version>
     <Version Major="12" Minor="0" Revision="0">
         <note>**Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**</note>
         <note>Now built against .NET 5 and .NET Core 3.1</note>

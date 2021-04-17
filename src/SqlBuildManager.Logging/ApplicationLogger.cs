@@ -20,7 +20,7 @@ namespace SqlBuildManager.Logging
 		{
 
 			var logOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}";
-			var consoleOutput = "{Message}{NewLine}{Exception}";
+			var consoleOutput = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,2}] {Message}{NewLine}{Exception}";
 
 			var logger =  new LoggerConfiguration()
                     .MinimumLevel.ControlledBy(levelSwitch)
