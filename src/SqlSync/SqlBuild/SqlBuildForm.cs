@@ -39,6 +39,8 @@ using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Status;
 using SqlSync.TableScript;
 using SqlSync.Validator;
+using Microsoft.Extensions.Logging;
+using SqlBuildManager.Logging;
 //using SqlBuildManager.Enterprise.CodeReview;
 namespace SqlSync.SqlBuild
 
@@ -53,7 +55,7 @@ namespace SqlSync.SqlBuild
                 Package currentViolations = new Package();
         private bool scriptPkWithTables = true;
         List<string> adGroupMemberships = new List<string>();
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         List<string> scriptsRequiringBuildDescription = new List<string>();
         private string sbxBuildControlFileName = string.Empty;
         private string externalScriptLogFileName = string.Empty;
@@ -551,7 +553,7 @@ namespace SqlSync.SqlBuild
             }
             catch(Exception exe)
             {
-                log.ErrorFormat("Sorry...There was an error loading. Returing with code 998.", exe);
+                log.LogError(exe, "Sorry...There was an error loading. Returing with code 998.");
 
                 //Any errors?... Close out with a non-Zero exit code
                 if (this.UnattendedProcessingCompleteEvent != null)
@@ -566,7 +568,7 @@ namespace SqlSync.SqlBuild
             }
             catch(Exception exe)
             {
-                log.Error(exe.ToString());
+                log.LogError(exe.ToString());
             }
 
             
@@ -582,7 +584,7 @@ namespace SqlSync.SqlBuild
                 e.Result = new List<bool>(new bool[] { tagsRequiredEnabled, defaultScriptEnabled, remoteExecutionEnabled, policyCheckOnLoadEnabled, scriptPkWithTable });
             }catch(Exception exe)
             {
-                log.Error(exe.ToString());
+                log.LogError(exe.ToString());
                 throw;
             }
         }
@@ -631,7 +633,7 @@ namespace SqlSync.SqlBuild
                 }
             }catch(Exception exe)
             {
-                log.Error(exe.ToString());
+                log.LogError(exe.ToString());
                 throw;
             }
         }
@@ -641,10 +643,13 @@ namespace SqlSync.SqlBuild
 
             this.adGroupMemberships = AdHelper.GetGroupMemberships(System.Environment.UserName).ToList();
             if (this.adGroupMemberships.Count == 0)
-                log.WarnFormat("No Group Memberships found for {0}", System.Environment.UserName);
-            else if (log.IsDebugEnabled)
-                log.DebugFormat("Group memberships for {0}: {1}", System.Environment.UserName, String.Join("; ", adGroupMemberships.ToArray()));
-
+            {
+                log.LogWarning($"No Group Memberships found for {System.Environment.UserName}");
+            }
+            else if (SqlBuildManager.Logging.ApplicationLogging.IsDebug())
+            {
+                log.LogDebug($"Group memberships for {System.Environment.UserName}: {String.Join("; ", adGroupMemberships.ToArray())}");
+            }
 
             tagsRequiredEnabled = true;
             defaultScriptEnabled = true;
@@ -3682,7 +3687,7 @@ namespace SqlSync.SqlBuild
                 else
                 {
                     //EventLog.WriteEntry("SqlSync", "Build File Load Error.", EventLogEntryType.Error, 867);
-                    Program.WriteLog("Build File Load Error");
+                    log.LogError("Build File Load Error");
                     if (this.UnattendedProcessingCompleteEvent != null)
                         this.UnattendedProcessingCompleteEvent(867);
                 }
@@ -3726,7 +3731,7 @@ namespace SqlSync.SqlBuild
             {
 
                 //If we are running unattended, write to the console and go at it!
-                Program.WriteLog("Build File Loaded Successfully.");
+                log.LogInformation("Build File Loaded Successfully.");
 
                 //What kind of unattended run-- single or multiDb?
                 if (this.multiDbRunData != null)
@@ -3993,7 +3998,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Warn("Unable to refresh list view for " + row.FileName, exe);
+                log.LogWarning(exe, $"Unable to refresh list view for {row.FileName}");
                 this.statGeneral.Text = "Changes Saved, but unable to update script display. See error log.";
             }
 
@@ -4134,7 +4139,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Error(String.Format("Unable to read file at {0} for list refresh", Path.Combine(this.projectFilePath, row.FileName)), exe);
+                log.LogError(exe, $"Unable to read file at {Path.Combine(this.projectFilePath, row.FileName)} for list refresh");
             }
 
             //Determine if this script requires a build message...  
@@ -4225,7 +4230,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Error("List refresh error", exe);
+                log.LogError(exe, "List refresh error");
             }
 
         }
@@ -4365,7 +4370,7 @@ namespace SqlSync.SqlBuild
                             }
                             catch (Exception exe)
                             {
-                                log.Error(String.Format("Unable to read file '{0}' for policy check validation", Path.Combine(this.projectFilePath, row.FileName)), exe);
+                                log.LogError(exe, $"Unable to read file '{Path.Combine(this.projectFilePath, row.FileName)}' for policy check validation");
                             }
                         }); 
                     }
@@ -4408,18 +4413,18 @@ namespace SqlSync.SqlBuild
                         }
                         catch (Exception exe)
                         {
-                            log.Error("Unable to read file '{0}' for single file policy check validation", exe);
+                            log.LogWarning(exe, "Unable to read file '{0}' for single file policy check validation");
                         }
 
                     }
                 }
                 else
                 {
-                    log.WarnFormat("Unable to run policy check. DoWorkEventArgs Argument is not of type {0}", "ListRefreshSettings");
+                    log.LogWarning($"Unable to run policy check. DoWorkEventArgs Argument is not of type ListRefreshSettings");
                 }
             }catch(Exception exe)
             {
-                log.WarnFormat("Error when executing policy check.", exe);
+                log.LogWarning(exe,"Error when executing policy check.");
                 bg.ReportProgress(0, "Problem running policy checks.");
             }
            
@@ -5513,7 +5518,7 @@ namespace SqlSync.SqlBuild
             }
             catch(Exception exe)
             {
-                log.Error("Error loading project file:" + fileName, exe);
+                log.LogError(exe, $"Error loading project file: {fileName}");
                 MessageBox.Show("Unable to load project file. The following error has been recorded in the log file: \r\n"+ exe.ToString(), "An error has occurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -5964,7 +5969,7 @@ namespace SqlSync.SqlBuild
                 }
                 catch (Exception exe)
                 {
-                    log.Error("Unable to move new file to project temp folder", exe);
+                    log.LogError(exe, "Unable to move new file to project temp folder");
                     fileAdded = false;
                     MessageBox.Show("Unable to move the file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -6023,7 +6028,7 @@ namespace SqlSync.SqlBuild
                     }
                     catch (Exception exe)
                     {
-                        log.WarnFormat("Unable to delete temporary file '{0}' when trying to add to project temp path\r\n{1}", fileList[i], exe.ToString());
+                        log.LogWarning($"Unable to delete temporary file '{fileList[i]}' when trying to add to project temp path\r\n{exe.ToString()}");
                     }
                 }
 
@@ -6384,7 +6389,7 @@ namespace SqlSync.SqlBuild
             }
             catch(Exception exe)
             {
-                log.Warn("Unable to determine if build description is required", exe);
+                log.LogWarning(exe, "Unable to determine if build description is required");
             }
 
             
@@ -7236,8 +7241,9 @@ namespace SqlSync.SqlBuild
             else if (e.UserState is GeneralStatusEventArgs) //Update the general run status
             {
                 if (this.runningUnattended)
-                    Program.WriteLog(((GeneralStatusEventArgs)e.UserState).StatusMessage);
-
+                {
+                    log.LogInformation(((GeneralStatusEventArgs)e.UserState).StatusMessage);
+                }
                 statGeneral.Text = ((GeneralStatusEventArgs)e.UserState).StatusMessage;
             }
             else if (e.UserState is ScriptRunStatusEventArgs) //Update the status on a currently running script.
@@ -7291,31 +7297,32 @@ namespace SqlSync.SqlBuild
                 if (!this.runningUnattended)
                     MessageBox.Show(((CommitFailureEventArgs)e.UserState).ErrorMessage, "Failed to Commit Build", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 else
-                    Program.WriteLog("Failed to Commit Build " + ((CommitFailureEventArgs)e.UserState).ErrorMessage);
+                    log.LogError("Failed to Commit Build " + ((CommitFailureEventArgs)e.UserState).ErrorMessage);
             }
             else if (e.UserState is ScriptRunProjectFileSavedEventArgs)
             {
                 if (this.runningUnattended)
-                    Program.WriteLog("ScriptRunProjectFileSavedEventArgs captured");
+                    log.LogInformation("ScriptRunProjectFileSavedEventArgs captured");
 
                 //Reload the file
                 if (this.runningUnattended)
-                    Program.WriteLog("Reloading updated build XML");
+                    log.LogInformation("Reloading updated build XML");
+                
                 LoadSqlBuildProjectFileData(ref this.buildData, this.projectFileName, true);
 
                 if (this.runningUnattended)
-                    Program.WriteLog("Saving updated build file to disk");
+                    log.LogInformation("Saving updated build file to disk");
 
                 try
                 {
                     SqlBuildFileHelper.PackageProjectFileIntoZip(this.buildData, this.projectFilePath, this.buildZipFileName);
-                    Program.WriteLog("Build file saved to disk");
+                    log.LogInformation("Build file saved to disk");
 
                 }
                 catch (Exception exe)
                 {
                     if (this.runningUnattended)
-                        Program.WriteLog("ERROR!" + exe.ToString());
+                        log.LogError(exe.ToString());
                     else
                         MessageBox.Show(e.ToString(), "Error Saving Build File", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -7324,8 +7331,8 @@ namespace SqlSync.SqlBuild
 
                 if (this.runningUnattended)
                 {
-                    Program.WriteLog("Completed with return code " + this.returnCode.ToString());
-                    Program.WriteLog("************************************************");
+                    log.LogInformation("Completed with return code " + this.returnCode.ToString());
+                    log.LogInformation("************************************************");
                 }
 
                 if (this.runningUnattended && this.returnCode != -1 && this.UnattendedProcessingCompleteEvent != null)
@@ -7342,7 +7349,7 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    Program.WriteLog("ERROR!" + ((Exception)e.UserState).Message);
+                    log.LogError("ERROR!" + ((Exception)e.UserState).Message);
                 }
             }
 
@@ -7673,7 +7680,7 @@ namespace SqlSync.SqlBuild
             catch (Exception exe)
             {
                 string fileName = (row == null ? "unknown" : row.FileName);
-                log.Error(String.Format("Error trying to get object history for {0}", fileName), exe);
+                log.LogError(exe, $"Error trying to get object history for {fileName}");
                 MessageBox.Show(String.Format("Unable to get object history.\r\n{0}", exe.Message), "Whoops!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -7762,7 +7769,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Error("Unable to Script object from database", exe);
+                log.LogError(exe, "Unable to Script object from database");
                 MessageBox.Show("Unable to Script object from database.\r\nCheck Event Log for details", "Error Scripting from Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -8033,7 +8040,7 @@ namespace SqlSync.SqlBuild
             {
                 verData.UpdateFileReadError = true;
                 verData.CheckIntervalElapsed = true;
-                log.Warn("Error Checking for updates", exe);
+                log.LogWarning(exe, "Error Checking for updates");
                 //System.Diagnostics.EventLog.WriteEntry("SqlSync", "Error Checking for updates.\r\n" + exe.ToString(), EventLogEntryType.Error, 901);
 
             }
@@ -8065,7 +8072,7 @@ namespace SqlSync.SqlBuild
                 }
                 catch (Exception exe)
                 {
-                    log.Warn("Unable to display New Version alert window", exe);
+                    log.LogWarning(exe, "Unable to display New Version alert window");
                 }
             }
         }
@@ -8558,7 +8565,7 @@ namespace SqlSync.SqlBuild
             {
                 if (!PolicyHelper.TransformViolationstoCsv(fileName, this.currentViolations))
                 {
-                    log.ErrorFormat("Error saving violations to file {0}", fileName);
+                    log.LogError($"Error saving violations to file {fileName}");
                 }
             }
             else
@@ -8570,7 +8577,7 @@ namespace SqlSync.SqlBuild
                 }
                 catch(Exception exe)
                 {
-                    log.Error("Unable to write violations XML to file",exe);
+                    log.LogError(exe, "Unable to write violations XML to file");
                 }
             }
         }

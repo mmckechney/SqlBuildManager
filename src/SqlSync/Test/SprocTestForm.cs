@@ -10,10 +10,12 @@ using System.Xml.Serialization;
 using SqlSync.SprocTest;
 using SqlSync.SprocTest.Configuration;
 using  SqlSync.Connection;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.Test
 {
     public partial class SprocTestForm : Form
     {
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         string logFileName = string.Empty;
         string configurationFileName = string.Empty;
         SprocTestResults testResults = new SprocTestResults();
@@ -130,7 +132,7 @@ namespace SqlSync.Test
             if (this.logFileName.Length > 0)
             {
                 SaveTestResults(this.logFileName);
-                Program.WriteLog("Stored Procedure Testing Complete.\r\nResults saved to: " + this.logFileName);
+                log.LogInformation("Stored Procedure Testing Complete.\r\nResults saved to: " + this.logFileName);
                 this.Close();
             }
             btnCancel.Text = "Close";
@@ -150,7 +152,7 @@ namespace SqlSync.Test
             }
             catch (Exception exe)
             {
-                Program.WriteLog("Error saving Stored Procedure Test Results.\r\n" + exe.ToString());
+                log.LogError("Error saving Stored Procedure Test Results.\r\n" + exe.ToString());
                 return exe.ToString();
             }
         }

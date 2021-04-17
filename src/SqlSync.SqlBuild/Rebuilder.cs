@@ -6,12 +6,12 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.IO;
 using SqlSync.DbInformation;
-using log4net;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
     public class Rebuilder
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private ConnectionData connData;
         //private string committedBuildFileName;
         //private DateTime commitDate;
@@ -246,12 +246,11 @@ namespace SqlSync.SqlBuild
             }
             catch (SqlException sExe)
             {
-                log.Error(string.Format("Unable to get committed SBM package list from {0}.{1}", connData.SQLServerName, databaseName), sExe);
+                log.LogError(sExe, $"Unable to get committed SBM package list from {connData.SQLServerName}.{databaseName}");
             }
             catch (Exception exe)
             {
-                log.Error(string.Format("Unable to get committed SBM package list from {0}.{1}", connData.SQLServerName, databaseName), exe);
-                return new List<CommittedBuildData>();
+                log.LogError(exe, $"Unable to get committed SBM package list from {connData.SQLServerName}.{databaseName}");
             }
             finally
             {

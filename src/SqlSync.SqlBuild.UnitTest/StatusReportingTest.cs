@@ -73,10 +73,10 @@ namespace SqlSync.SqlBuild.UnitTest
         //{
         //    Initialization init = new Initialization();
 
-        //    SqlSyncBuildData buildData = null; // TODO: Initialize to an appropriate value
-        //    MultiDbData multiDbData = null; // TODO: Initialize to an appropriate value
-        //    string projectFilePath = string.Empty; // TODO: Initialize to an appropriate value
-        //    StatusReporting target = new StatusReporting(buildData, multiDbData, projectFilePath); // TODO: Initialize to an appropriate value
+        //    SqlSyncBuildData buildData = null; 
+        //    MultiDbData multiDbData = null; 
+        //    string projectFilePath = string.Empty; 
+        //    StatusReporting target = new StatusReporting(buildData, multiDbData, projectFilePath); 
         //    target.GetScriptStatus();
         //    Assert.Inconclusive("A method that does not return a value cannot be verified.");
         //}

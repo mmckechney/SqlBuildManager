@@ -5,28 +5,26 @@ using System.Windows.Forms;
 using System.IO;
 using SqlSync.SqlBuild;
 using System.Collections.Specialized;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 namespace SqlSync
 {
     class Program
     {
-        private static string logFileName = string.Empty;
-        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+         private static ILogger log;
         public static int returnCode = 0;
+        private static readonly string applicationLogFileName = "SqlBuildManager.log"; 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static int Main(string[] args)
         {
-            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
-            log4net.Config.XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
-            SqlBuildManager.Logging.Configure.SetLoggingPath();
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, applicationLogFileName);
 
-            log.Debug("Sql Build Manager Staring...");
+            log.LogDebug("Sql Build Manager Staring...");
             if(args.Length > 0)
-                log.Info("Received Command: " + String.Join(" | ", args));
+                log.LogInformation("Received Command: " + String.Join(" | ", args));
 
             Application.EnableVisualStyles();
             try
@@ -62,7 +60,7 @@ namespace SqlSync
                 }
                 else if (args.Length > 1) //this is a "real" command line execution...
                 {
-                    MessageBox.Show("Looks like you are trying to perform a command line operation. Please use \"SqlbuildManager.Console.exe\" instead");
+                    MessageBox.Show("Looks like you are trying to perform a command line operation. Please use \"sbm.exe\" instead");
                     returnCode = -1;
                     #region
                     //CommandLineArgs cmdLine = SqlSync.SqlBuild.CommandLine.ParseCommandLineArg(args);
@@ -151,39 +149,17 @@ namespace SqlSync
             }
             catch (Exception exe)
             {
-                log.Fatal("Catastrophic Error!!", exe);
+                log.LogCritical(exe, "Catastrophic Error!!");
                 returnCode = 9999;
             }
 
-            log.Debug("Sql Build Manager Exiting with return code: "+returnCode.ToString());
-            log4net.LogManager.Shutdown();
+            log.LogDebug("Sql Build Manager Exiting with return code: "+returnCode.ToString());
+            SqlBuildManager.Logging.ApplicationLogging.FlushLogs();
             Environment.Exit(returnCode);
             return returnCode;
         }
 
-        public static void WriteLog(string message)
-        {
-            if (Program.logFileName.Length > 0)
-                WriteLog(message,0);
 
-            Console.WriteLine(message);
-        }
-        private static void WriteLog(string message, int attempt)
-        {
-            try
-            {
-                string msg = "[" + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + "]\t\t" + message;
-                File.AppendAllText(logFileName, msg + "\r\n");
-            }
-            catch (Exception)
-            {
-                if (attempt < 5)
-                {
-                    System.Threading.Thread.Sleep(50);
-                    WriteLog(message, attempt + 1);
-                }
-            }
-        }
         private static void buildForm_UnattendedProcessingCompleteEvent(int rtrnCode)
         {
             returnCode = rtrnCode;

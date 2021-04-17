@@ -75,7 +75,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod()]
         public void SyncronizeDatabasesTest_SyncWorked()
         {
-            DatabaseSyncer target = new DatabaseSyncer(); // TODO: Initialize to an appropriate value
+            DatabaseSyncer target = new DatabaseSyncer(); 
             ConnectionData gold = new ConnectionData()
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",
@@ -99,7 +99,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod()]
         public void SyncronizeDatabasesTest_SyncWorkedAndSticks()
         {
-            DatabaseSyncer target = new DatabaseSyncer(); // TODO: Initialize to an appropriate value
+            DatabaseSyncer target = new DatabaseSyncer(); 
             ConnectionData gold = new ConnectionData()
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",

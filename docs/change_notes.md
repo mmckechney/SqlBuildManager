@@ -2,6 +2,10 @@
 # SQL Build Manager Change Notes
 
 
+### Version 12.1.0
+
+- *UPDATED:* Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Loggging. Implements Serilog
+
 ### Version 12.0.0
 
 - **NOTE:** **Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**

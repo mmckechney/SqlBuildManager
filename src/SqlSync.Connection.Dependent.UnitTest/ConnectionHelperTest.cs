@@ -13,9 +13,7 @@ namespace SqlSync.Connection.Dependent.UnitTest
     {
         public ConnectionHelperTest()
         {
-            //
-            // TODO: Add constructor logic here
-            //
+
         }
 
         private TestContext testContextInstance;

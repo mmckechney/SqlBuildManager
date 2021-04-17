@@ -10,11 +10,12 @@ using SqlSync.ObjectScript.Hash;
 using SqlSync.SqlBuild.AdHocQuery;
 using SqlSync.SqlBuild.Status;
 using SqlSync.Connection;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class StatusReportForm : Form
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private SqlSyncBuildData buildData;
         protected MultiDb.MultiDbData multiDbData;
         private string projectFilePath;
@@ -133,7 +134,7 @@ namespace SqlSync.SqlBuild.MultiDb
             }
             else if (e.Result is Exception)
             {
-                log.Error("Error executing query", (Exception)e.Result);
+                log.LogError((Exception)e.Result, "Error executing query");
                 MessageBox.Show("An error was encountered during execution!\r\n(How much data were you expecting anyway!?!)\r\n\r\n" + ((Exception)e.Result).Message, "Sorry.. I died", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 statGeneral.Text = "Error!!";
 

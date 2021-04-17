@@ -8,12 +8,13 @@ using System.Data.SqlClient;
 using System.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     public class Initialization : IDisposable
     {
         public int TableLockingLoopCount = 1000000;
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static string MissingDatabaseErrorMessage = "NOTE: To succesfully test, please make sure you have a a (local)\\SQLEXPRESS database instance installed and running";
         public List<string> testDatabaseNames = null;
         public List<string> tempFiles = null;
@@ -132,7 +133,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
             catch(Exception exe)
             {
-                log.Error("Unable to create test databases", exe);
+                log.LogError(exe, "Unable to create test databases");
                 return false;
             }
         }
@@ -590,7 +591,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
             catch(Exception exe)
             {
-                log.Error("Unable to get count for build file", exe);
+                log.LogError(exe, "Unable to get count for build file");
                 return -1;
             }
 

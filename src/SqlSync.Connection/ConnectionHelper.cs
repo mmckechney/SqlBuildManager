@@ -2,7 +2,7 @@ using System;
 using Microsoft.Data.SqlClient;
 using System.Data.Common;
 using System.Collections.Generic;
-using log4net;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.Connection
 {
 	/// <summary>
@@ -18,7 +18,7 @@ namespace SqlSync.Connection
             }
         }
       
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static string appName = "Application Name=Sql Build Manager v{0} [{1}];";
         static ConnectionHelper()
         {
@@ -151,7 +151,7 @@ namespace SqlSync.Connection
             }
             catch (Exception exe)
             {
-                log.Warn("TestConnection failed", exe);
+                log.LogWarning(exe, "TestConnection failed");
                 return false;
             }
             finally

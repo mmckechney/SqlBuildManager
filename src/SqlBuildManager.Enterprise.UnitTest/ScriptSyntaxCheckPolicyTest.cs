@@ -456,7 +456,7 @@ TABLE MyTable
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            ScriptSyntaxCheckPolicy target = new ScriptSyntaxCheckPolicy(); // TODO: Initialize to an appropriate value
+            ScriptSyntaxCheckPolicy target = new ScriptSyntaxCheckPolicy(); 
             string expected = "My Short Desc";
             string actual;
             target.ShortDescription = expected;

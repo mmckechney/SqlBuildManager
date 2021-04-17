@@ -1,4 +1,4 @@
-﻿using log4net;
+﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
@@ -10,12 +10,20 @@ using System.Text;
 using MoreLinq;
 using System.Linq;
 using System.Threading.Tasks;
+
 namespace SqlBuildManager.Console.Threaded
 {
     public class ThreadedExecution
     {
-        private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static ILog logEvent = LogManager.GetLogger(System.Reflection.Assembly.GetExecutingAssembly(), "AzureEventHubAppenderLogger");
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger logEventHub;
+        private static ILogger logCommitRun;
+        private static ILogger logErrorRun;
+        private static ILogger logFailures;
+        private static ILogger logSuccess;
+        private static ILogger logRuntime;
+
+        //private static ILog logEvent = LogManager.GetLogger(System.Reflection.Assembly.GetExecutingAssembly(), "AzureEventHubAppenderLogger");
 
         StringBuilder sbSuccessDatabasesCfg = new System.Text.StringBuilder();
         StringBuilder sbFailureDatabasesCfg = new System.Text.StringBuilder();
@@ -96,7 +104,7 @@ namespace SqlBuildManager.Console.Threaded
         private static SqlSyncBuildData buildData = null;
         /// <summary>
         /// The runtime metadata object for the build execution
-        /// </summary>
+        ///// </summary>
         internal static SqlSyncBuildData BuildData
         {
             get { return buildData; }
@@ -117,13 +125,23 @@ namespace SqlBuildManager.Console.Threaded
         /// <returns></returns>
         public int Execute()
         {
-            log.Debug("Entering Execute method of ThreadedExecution");
+
+            log.LogDebug("Entering Execute method of ThreadedExecution");
             string[] errorMessages;
             //Parse out the command line options
             if (cmdLine == null)
             {
                 cmdLine = CommandLine.ParseCommandLineArg(args);
             }
+
+            logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.BatchArgs.EventHubConnectionString);
+            logRuntime = SqlBuildManager.Logging.Threaded.RuntimeLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+
+            logFailures = SqlBuildManager.Logging.Threaded.FailureDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+            logSuccess = SqlBuildManager.Logging.Threaded.SuccessDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+            
+            logCommitRun = SqlBuildManager.Logging.Threaded.CommitLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+            logErrorRun = SqlBuildManager.Logging.Threaded.ErrorLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
 
             if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
             {
@@ -132,7 +150,7 @@ namespace SqlBuildManager.Console.Threaded
 
             SetLoggingPaths(cmdLine.RootLoggingPath);
 
-            log.Info("Validating command parameters");
+            log.LogInformation("Validating command parameters");
             int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
@@ -142,7 +160,7 @@ namespace SqlBuildManager.Console.Threaded
             }
 
             //Start logging
-            WriteToLog("**** Starting log for Run ID: " + ThreadedExecution.RunID + " ****", LogType.Message);
+            WriteToLog(new LogMsg() { Message = "**** Starting log for Run ID: " + ThreadedExecution.RunID + " ****", LogType = LogType.Message });
 
             //If we don't have a pre-constructed build file, but rather a script source directory, we'll build one from there...
             if (!string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir))
@@ -153,20 +171,20 @@ namespace SqlBuildManager.Console.Threaded
             {
                 ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
                 string msg = "--packagename setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source";
-                WriteToLog(msg, LogType.Message);
-                log.Info(msg);
+                WriteToLog(new LogMsg() { Message = msg, LogType = LogType.Message });
+                log.LogInformation(msg);
             }
             else if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac)) //using a platinum dacpac as a source
             {
                 ThreadedExecution.platinumDacPacFileName = cmdLine.DacPacArgs.PlatinumDacpac;
                 string msg = "--platinumdacpac setting found. Using '" + ThreadedExecution.platinumDacPacFileName + "' as build source";
-                WriteToLog(msg, LogType.Message);
-                log.Info(msg);
+                WriteToLog(new LogMsg() { Message = msg, LogType = LogType.Message }); ;
+                log.LogInformation(msg);
 
             }
             else if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource)) //using a platinum database as the source
             {
-                log.InfoFormat("Extracting Platinum Dacpac from {0} : {1}", cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.DacPacArgs.PlatinumDbSource);
+                log.LogInformation($"Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
                 string dacpacName = Path.Combine(ThreadedExecution.rootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
 
                 if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
@@ -261,7 +279,7 @@ namespace SqlBuildManager.Console.Threaded
                 try
                 {
                     startTime = DateTime.Now;
-                    log.InfoFormat("Starting Threaded processing at {0}", startTime.ToString());
+                    log.LogInformation($"Starting Threaded processing at {startTime.ToString()}");
                     //Load up the batched scripts into a shared object so that we can conserve memory
                     if (!forceCustomDacpac)
                     {
@@ -277,7 +295,7 @@ namespace SqlBuildManager.Console.Threaded
                 }
                 catch (Exception exe)
                 {
-                    WriteToLog(exe.ToString(), LogType.Error);
+                    WriteToLog(new LogMsg() { Message = exe.ToString(), LogType = LogType.Error });
                 }
 
                 //Wait for all of the tasks to finish
@@ -291,10 +309,11 @@ namespace SqlBuildManager.Console.Threaded
                 WriteToLog(finalMsg);
                 finalMsg.Message = $"Total number of targets: {targetTotal.ToString()}";
                 WriteToLog(finalMsg);
+
+                WriteToLog(new LogMsg() { LogType = LogType.SuccessDatabases });
                 if (this.hasError)
                 {
-                    WriteToLog("", LogType.SuccessDatabases);
-                    WriteToLog("", LogType.FailureDatabases);
+                    WriteToLog(new LogMsg() { LogType = LogType.FailureDatabases });
                     finalMsg.Message = "Finishing with Errors";
                     finalMsg.LogType = LogType.Error;
                     WriteToLog(finalMsg);
@@ -304,14 +323,13 @@ namespace SqlBuildManager.Console.Threaded
                 }
                 else
                 {
-                    WriteToLog("", LogType.SuccessDatabases);
-                    log.Info("Successful");
+                    log.LogInformation("Successful");
                     return (int)ExecutionReturn.Successful;
                 }
             }
             catch (Exception bigExe)
             {
-                log.FatalFormat("Big problem running the threaded build...", bigExe);
+                log.LogCritical($"Big problem running the threaded build...{bigExe.ToString()}");
                 return (int)ExecutionReturn.NullBuildData;
 
             }
@@ -386,13 +404,13 @@ namespace SqlBuildManager.Console.Threaded
         {
             try
             {
-                log.InfoFormat("Initializing logging paths: {0}", rootLoggingPath);
+                log.LogInformation($"Initializing logging paths: {rootLoggingPath}");
 
                 //Set the logging folders, etc...s
                 string expanded = System.Environment.ExpandEnvironmentVariables(rootLoggingPath);
                 ThreadedExecution.rootLoggingPath = Path.GetFullPath(expanded);
 
-                log.InfoFormat("Logging path expanded to: {0}", ThreadedExecution.rootLoggingPath);
+                log.LogInformation($"Logging path expanded to: {ThreadedExecution.rootLoggingPath}");
 
                 if (!Directory.Exists(ThreadedExecution.rootLoggingPath))
                 {
@@ -414,8 +432,8 @@ namespace SqlBuildManager.Console.Threaded
 
             }
             catch (Exception exe)
-            {
-                log.Error("Unable to set root logging path for " + rootLoggingPath, exe);
+            { 
+                log.LogError(exe, "Unable to set root logging path for " + rootLoggingPath );
                 throw;
             }
 
@@ -426,7 +444,7 @@ namespace SqlBuildManager.Console.Threaded
 
         private int ExtractAndLoadBuildFile(string sqlBuildProjectFileName, out SqlSyncBuildData buildData)
         {
-            log.InfoFormat("Extracting build file '{0}' to working directory '{1}'", sqlBuildProjectFileName, this.workingDirectory);
+            log.LogInformation($"Extracting build file '{sqlBuildProjectFileName}' to working directory '{this.workingDirectory}'");
 
             buildData = null;
 
@@ -461,7 +479,7 @@ namespace SqlBuildManager.Console.Threaded
 
         private void ConstructBuildFileFromScriptDirectory(string directoryName)
         {
-            log.Info("Constructing build file from script directory");
+            log.LogInformation("Constructing build file from script directory");
             string shortFileName = string.Empty;
             ThreadedExecution.buildZipFileName = Path.Combine(ThreadedExecution.rootLoggingPath, ThreadedExecution.RunID + ".sbm");
             string projFileName = Path.Combine(this.workingDirectory, SqlSync.SqlBuild.XmlFileNames.MainProjectFile);
@@ -493,81 +511,41 @@ namespace SqlBuildManager.Console.Threaded
 
         }
 
-        private void WriteToLog(string[] message, LogType type, int iteration)
-        {
-
-            string initLog = string.Empty;
-            if (!haveWrittenToCommit || !haveWrittenToError)
-            {
-                initLog = "[" + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff") + "]\t\t***Log for Run ID:" + ThreadedExecution.RunID + System.Environment.NewLine;
-            }
-            string log = string.Empty;
-            for (int i = 0; i < message.Length; i++)
-            {
-                DateTime now = DateTime.Now;
-                log += "[" + now.ToString("MM/dd/yyyy HH:mm:ss.fff") + "]\t\t" + message[i] + "\r\n";
-            }
-            try
-            {
-                string fileName;
-                switch (type)
-                {
-                    case LogType.FailureDatabases:
-                        fileName = this.failureDatabaseConfigLogName;
-                        File.WriteAllText(fileName, this.sbFailureDatabasesCfg.ToString());
-                        return;
-                    case LogType.SuccessDatabases:
-                        fileName = this.successDatabaseConfigLogName;
-                        File.WriteAllText(fileName, this.sbSuccessDatabasesCfg.ToString());
-                        return;
-                    case LogType.Commit:
-                        fileName = this.commitLogName;
-                        if (!haveWrittenToCommit)
-                        {
-                            log = initLog + log;
-                            haveWrittenToCommit = true;
-                        }
-                        break;
-                    case LogType.Error:
-                        fileName = this.errorFileName;
-                        if (!haveWrittenToError)
-                        {
-                            log = initLog + log;
-                            haveWrittenToError = true;
-                        }
-                        break;
-                    case LogType.Message:
-                    default:
-                        fileName = this.logFileName;
-                        break;
-
-                }
-                if (iteration < 5)
-                    File.AppendAllText(fileName, log);
-            }
-            catch
-            {
-                iteration++;
-                WriteToLog(message, type, iteration);
-
-            }
-        }
-        private void WriteToLog(string message, LogType type)
-        {
-            WriteToLog(new string[] { message }, type, 0);
-        }
+      
         private void WriteToLog(LogMsg msg)
         {
-            if (msg.LogType == LogType.Error)
+            log.LogInformation($"{ThreadedExecution.RunID}  {msg.ServerName}  {msg.DatabaseName}:{msg.Message}");
+
+            if (logEventHub != null && !string.IsNullOrWhiteSpace(msg.DatabaseName))
             {
-                log.Error(msg.ToString());
+                logEventHub.LogInformation("{@LogMsg}", msg);
             }
-            else
+
+            switch (msg.LogType)
             {
-                log.Info(msg.ToString());
+                case LogType.FailureDatabases:
+                    logFailures.LogInformation(this.sbFailureDatabasesCfg.ToString());
+                    return;
+
+                case LogType.SuccessDatabases:
+                    logSuccess.LogInformation(this.sbSuccessDatabasesCfg.ToString());
+                    return;
+
+                case LogType.Commit:
+                    logCommitRun.LogInformation($"{ThreadedExecution.RunID}  {msg.ServerName}  {msg.DatabaseName}: {msg.Message}");
+                    return;
+
+                case LogType.Error:
+                    logErrorRun.LogInformation($"{ThreadedExecution.RunID}  {msg.ServerName}  {msg.DatabaseName}: {msg.Message}");
+                    return;
+
+                case LogType.Message:
+                default:
+                    logRuntime.LogInformation($"{ThreadedExecution.RunID}  {msg.ServerName}  {msg.DatabaseName}: {msg.Message}");
+
+                    return;
             }
-            logEvent.Info(msg.Message);
-            WriteToLog(msg.ToString(), msg.LogType);
+
         }
 
     }

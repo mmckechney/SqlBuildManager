@@ -4,25 +4,25 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using SqlSync.SqlBuild;
-using log4net;
+using Microsoft.Extensions.Logging;
 using SqlSync.ObjectScript;
 using SqlSync.Connection;
 namespace SqlBuildManager.Console
 {
     class BackoutCommandLine
     {
-        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         internal static string CreateBackoutPackage(CommandLineArgs cmdLine)
         {
             
             if(string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
-                log.Error("--PackageName argument is required when creating a backout package");
+                log.LogError("--PackageName argument is required when creating a backout package");
             }
             string sourcePackageName = cmdLine.BuildFileName;
             if (cmdLine.Server.Length == 0 || cmdLine.Database.Length == 0)
             {
-                log.Error("--server and --database arguments are required when creating a backout package");
+                log.LogError("--server and --database arguments are required when creating a backout package");
                 return string.Empty;
             }
 

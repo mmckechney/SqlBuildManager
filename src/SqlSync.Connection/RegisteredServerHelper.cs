@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Xml.Serialization;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.Connection
 {
     public class RegisteredServerHelper
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string resisteredServerFileName = string.Empty;
         public static string RegisteredServerFileName
         {
@@ -61,7 +62,7 @@ namespace SqlSync.Connection
         {
             if (regServers == null)
             {
-                log.Warn("Unable to save registered servers. \"RegisteredServers\" object is null");
+                log.LogWarning("Unable to save registered servers. \"RegisteredServers\" object is null");
                 return false;
             }
 
@@ -88,13 +89,13 @@ namespace SqlSync.Connection
                 //Write this file to the local path, in case it is unavailable next time.
                 if (!File.Exists(localRegisteredServerPath))
                 {
-                    log.DebugFormat("Copying Registered Server file to local path {0}", localRegisteredServerPath);
+                    log.LogDebug($"Copying Registered Server file to local path {localRegisteredServerPath}");
                     File.WriteAllText(localRegisteredServerPath, serverFileContents);
                 }
             }
             catch(Exception exe)
             {
-                log.Error(String.Format("Unable to load Registered Servers file at {0}", RegisteredServerHelper.RegisteredServerFileName), exe);
+                log.LogError(exe, $"Unable to load Registered Servers file at {RegisteredServerHelper.RegisteredServerFileName}");
             }
 
             if (serverFileContents.Length > 0)
@@ -121,7 +122,7 @@ namespace SqlSync.Connection
             }
             catch(Exception exe)
             {
-                log.Error("Error deserializing registered server contents", exe);
+                log.LogError("Error deserializing registered server contents", exe);
             }
 
             return null;
@@ -130,13 +131,13 @@ namespace SqlSync.Connection
         {
             if (fileName == null || fileName.Length == 0)
             {
-                log.Warn("Unable to serialize registered servers. The destination fileName is null or empty");
+                log.LogWarning("Unable to serialize registered servers. The destination fileName is null or empty");
                 return false;
             }
 
             if (regServers == null)
             {
-                log.WarnFormat("Unable to serialize registered servers to {0}. \"RegisteredServers\" object is null", fileName);
+                log.LogWarning($"Unable to serialize registered servers to {fileName}. \"RegisteredServers\" object is null");
                 return false;
             }
             try
@@ -158,7 +159,7 @@ namespace SqlSync.Connection
             }
             catch (System.UnauthorizedAccessException exe)
             {
-                log.Error(String.Format("Unable to serialze file to {0}", fileName), exe);
+                log.LogError(exe, $"Unable to serialze file to {fileName}");
                 return false;
             }
         }

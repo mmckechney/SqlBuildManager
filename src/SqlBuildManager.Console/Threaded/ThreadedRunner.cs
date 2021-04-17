@@ -9,12 +9,12 @@ using SqlSync.DbInformation;
 using System.ComponentModel;
 using SqlBuildManager.Interfaces.Console;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Console.Threaded
 {
     class ThreadedRunner
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private string defaultDatabaseName = string.Empty;
 
         /// <summary>
@@ -174,11 +174,11 @@ namespace SqlBuildManager.Console.Threaded
                             break;
                         case DacpacDeltasStatus.InSync:
                         case DacpacDeltasStatus.OnlyPostDeployment:
-                            log.InfoFormat("Target database {0} is already in sync with {1}. Nothing to do!", targetDatabase, cmdArgs.DacPacArgs.PlatinumDacpac);
+                            log.LogInformation($"Target database {targetDatabase} is already in sync with {cmdArgs.DacPacArgs.PlatinumDacpac}. Nothing to do!");
                             this.returnValue = (int)RunnerReturn.DacpacDatabasesInSync;
                             break;
                         default:
-                            log.ErrorFormat("Error creating custom dacpac and scripts for{0}. No update was performed", targetDatabase);
+                            log.LogError($"Error creating custom dacpac and scripts for {targetDatabase}. No update was performed");
                             this.returnValue = (int)RunnerReturn.PackageCreationError;
                             return (int)RunnerReturn.PackageCreationError; ;
                             
@@ -226,13 +226,13 @@ namespace SqlBuildManager.Console.Threaded
             }
             catch (Exception exe)
             {
-                log.Error("Error Initializing run for "+ this.TargetTag, exe);
+                log.LogError(exe, $"Error Initializing run for {this.TargetTag}");
                 WriteErrorLog(loggingDirectory, exe.ToString());
                 this.returnValue = (int)ExecutionReturn.RunInitializationError;
                 return (int)ExecutionReturn.RunInitializationError; ;
             }
 
-            log.Debug("Initializing run for " + this.TargetTag + ". Starting \"ProcessBuild\"");
+            log.LogDebug("Initializing run for " + this.TargetTag + ". Starting \"ProcessBuild\"");
 
             try
             {
@@ -248,7 +248,7 @@ namespace SqlBuildManager.Console.Threaded
             }
             catch (Exception exe)
             {
-                log.Error("Error Processing run for " + this.TargetTag, exe);
+                log.LogError("Error Processing run for " + this.TargetTag, exe);
                 WriteErrorLog(loggingDirectory, exe.ToString());
                 this.returnValue = (int)ExecutionReturn.ProcessBuildError;
                 return (int)ExecutionReturn.ProcessBuildError; ;
@@ -259,7 +259,7 @@ namespace SqlBuildManager.Console.Threaded
 
         void helper_BuildSuccessTrialRolledBackEvent(object sender, EventArgs e)
         {
-            log.Debug(this.TargetTag + " BuildSuccessTrialRolledBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.SuccessWithTrialRolledBack));
+            log.LogDebug(this.TargetTag + " BuildSuccessTrialRolledBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.SuccessWithTrialRolledBack));
             this.returnValue = (int)RunnerReturn.SuccessWithTrialRolledBack;
         }
 
@@ -267,19 +267,19 @@ namespace SqlBuildManager.Console.Threaded
         {
             if (this.IsTransactional)
             {
-                log.Debug(this.TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.RolledBack));
+                log.LogDebug(this.TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.RolledBack));
                 this.returnValue = (int)RunnerReturn.RolledBack;
             }
             else
             {
-                log.Debug(this.TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.BuildErrorNonTransactional));
+                log.LogDebug(this.TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.BuildErrorNonTransactional));
                 this.returnValue = (int)RunnerReturn.BuildErrorNonTransactional;
             }
         }
 
         void helper_BuildCommittedEvent(object sender,RunnerReturn returnValue)
         {
-            log.Debug(this.TargetTag + " BuildCommittedEvent status: " + Enum.GetName(typeof(RunnerReturn), returnValue));
+            log.LogDebug(this.TargetTag + " BuildCommittedEvent status: " + Enum.GetName(typeof(RunnerReturn), returnValue));
             this.returnValue = (int)returnValue;
         }
 

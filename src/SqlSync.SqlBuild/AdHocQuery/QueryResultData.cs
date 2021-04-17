@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using SqlSync.Connection;
 using System.IO;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 namespace SqlSync.SqlBuild.AdHocQuery
 {
     [Serializable()]
     public class QueryResultData
     {
-        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private QueryResultData()
         {
         }
@@ -87,7 +87,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (OutOfMemoryException omExe)
             {
-                log.Error("Error in GetRowValuesCsvString", omExe);
+                log.LogError(omExe, "Error in GetRowValuesCsvString");
                 return string.Empty;
             }
 
@@ -127,7 +127,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (OutOfMemoryException omExe)
             {
-                log.Error("Error in GetColumnsCsvString", omExe);
+                log.LogError(omExe, "Error in GetColumnsCsvString");
                 return string.Empty;
             }
         }

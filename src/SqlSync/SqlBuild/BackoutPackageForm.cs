@@ -10,11 +10,12 @@ using SqlSync.Connection;
 using System.IO;
 using SqlSync.ObjectScript;
 using SqlSync.DbInformation;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
     public partial class BackoutPackageForm : Form
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private ConnectionData connData = null;
         private List<SqlBuild.Objects.ObjectUpdates> initialCanUpdateList;
         private List<SqlBuild.Objects.ObjectUpdates> currentTargetCanUpdateList = new List<Objects.ObjectUpdates>();
@@ -116,7 +117,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Error("Error loading the Backout Package form", exe);
+                log.LogError(exe, "Error loading the Backout Package form");
                 MessageBox.Show("Error loading form. Please see log file for details", "Whoops!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 this.bgCheckTargetObjects = null;

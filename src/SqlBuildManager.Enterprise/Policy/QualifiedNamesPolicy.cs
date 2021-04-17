@@ -4,11 +4,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 using SqlBuildManager.ScriptHandling;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class QualifiedNamesPolicy : p.IScriptPolicy  
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
         public string PolicyId
         {
@@ -108,7 +109,7 @@ namespace SqlBuildManager.Enterprise.Policy
                             catch (ArgumentException exe)
                             {
                                 int line = PolicyHelper.GetLineNumber(rawScript, start);
-                                log.Warn("Error validating QualifiedNamesPolicy. Issue on line "+ line.ToString() +". Problem with generated RegularExpression:  " + regString, exe);
+                                log.LogWarning(exe, $"Error validating QualifiedNamesPolicy. Issue on line {line.ToString()}. Problem with generated RegularExpression:  {regString}");
                                 message = "Error running Qualified Named Policy. This script will need to be manually checked. (See log file for details)";
                                     return false;
                             }
@@ -149,7 +150,7 @@ namespace SqlBuildManager.Enterprise.Policy
             catch (Exception exe)
             {
                 message = "Error processing script policy. See application log file for details";
-                log.Error(message, exe);
+                log.LogError(exe, message);
                 passed = false;
             }
 

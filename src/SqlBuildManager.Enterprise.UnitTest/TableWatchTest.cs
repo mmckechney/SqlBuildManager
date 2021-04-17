@@ -62,7 +62,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void FoundTablesTest()
         {
-            TableWatch target = new TableWatch(); // TODO: Initialize to an appropriate value
+            TableWatch target = new TableWatch(); 
             List<string> expected = new List<string>();
             expected.Add("Table1");
             expected.Add("Table2");

@@ -12,12 +12,12 @@ using System.IO;
 using SqlSync.Controls;
 using System.Text.RegularExpressions;
 using SqlSync.Connection;
-
+using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class AdHocQueryExecution : SqlSync.SqlBuild.MultiDb.StatusReportForm, IMRUClient
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         MRUManager mruManager = new MRUManager();
         QueryCollector collector;
         string query = string.Empty;

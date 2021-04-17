@@ -36,7 +36,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void GetDistinguishedNameTest_PassWithGoodDn()
         {
             string userName = "mmckechn";
-            string expected = string.Empty; // TODO: Initialize to an appropriate value
+            string expected = string.Empty; 
             string actual;
             actual = AdHelper.GetDistinguishedName(userName);
             Assert.IsTrue(actual.Length > 0, "Expected a DN back. If this test failed, check the userName value and make sure you are connected to a domain.");
@@ -50,7 +50,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void GetDistinguishedNameTest_PassWithNoDnReturned()
         {
             string userName = "ThisISJUnk";
-            string expected = string.Empty; // TODO: Initialize to an appropriate value
+            string expected = string.Empty; 
             string actual;
             actual = AdHelper.GetDistinguishedName(userName);
             Assert.IsTrue(actual.Length == 0, "No DN was expected a back.");

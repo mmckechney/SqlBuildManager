@@ -12,11 +12,13 @@ using System.Xml.Serialization;
 using System.Xml.XPath;
 using System.Xml.Xsl;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using Microsoft.Extensions.Logging;
+
 namespace SqlBuildManager.Enterprise.Policy
 {
     public class PolicyHelper
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public const string LineNumberToken = "{lineNumber}";
         internal static Dictionary<string, p.IScriptPolicy> allPolicies;
         internal static List<p.IScriptPolicy> activePolicies = null;
@@ -153,15 +155,15 @@ namespace SqlBuildManager.Enterprise.Policy
                     }
                     else
                     {
-                        log.WarnFormat("Unable to load unknown ScriptPolicy \"{0}\"", policy.PolicyId);
+                        log.LogWarning($"Unable to load unknown ScriptPolicy \"{policy.PolicyId}\"");
                     }
 
                 }
-                log.DebugFormat("Loaded {0} script policy objects from EnterpriseConfiguration", activePolicies.Count.ToString());
+                log.LogDebug("Loaded {activePolicies.Count.ToString()} script policy objects from EnterpriseConfiguration");
             }
             else
             {
-                log.Warn("No EnterpriseConfiguration settings found for ScriptPolicies. Loading all default policies");
+                log.LogWarning("No EnterpriseConfiguration settings found for ScriptPolicies. Loading all default policies");
                 activePolicies.AddRange(allPolicies.Values);
             }
             
@@ -170,7 +172,7 @@ namespace SqlBuildManager.Enterprise.Policy
             if(a.Count() > 0)
                 activePolicies = a.ToList();
 
-            log.DebugFormat("Loaded {0} script policy objects", activePolicies.Count.ToString());
+            log.LogDebug($"Loaded {activePolicies.Count.ToString()} script policy objects");
 
             return activePolicies;
         }
@@ -306,7 +308,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
                 catch (Exception exe)
                 {
-                    log.Error(String.Format("Unable to read file '{0}' for policy check validation", extractedProjectPath + row.FileName), exe);
+                    log.LogError(exe, $"Unable to read file '{extractedProjectPath + row.FileName}' for policy check validation");
                 }
             }
             return scriptPackage;
@@ -326,12 +328,12 @@ namespace SqlBuildManager.Enterprise.Policy
                     return sb.ToString();
                 }
 
-                log.Info("No violations to serialize");
+                log.LogInformation("No violations to serialize");
                 return string.Empty;
             }
             catch (Exception exe)
             {
-                log.Error("Unable to serialize violations", exe);
+                log.LogError(exe, "Unable to serialize violations");
                 return string.Empty;
             }
                 
@@ -369,7 +371,7 @@ namespace SqlBuildManager.Enterprise.Policy
             }
             catch (Exception exe)
             {
-                log.Error("Error saving violations", exe);
+                log.LogError(exe, "Error saving violations");
                 return false;
             }
         }
@@ -438,11 +440,11 @@ namespace SqlBuildManager.Enterprise.Policy
 
                     //Add messages to log
                     if(violation.Severity == ViolationSeverity.High.ToString())
-                        log.Error(message);   
+                        log.LogError(message);   
                     else if(violation.Severity == ViolationSeverity.Medium.ToString())
-                        log.Warn(message);
+                        log.LogWarning(message);
                     else 
-                        log.Info(message);
+                        log.LogInformation(message);
                 }
                 return policyReturns;   
             }

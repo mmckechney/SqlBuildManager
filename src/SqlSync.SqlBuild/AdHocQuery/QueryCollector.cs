@@ -10,13 +10,13 @@ using System.Xml.Xsl;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Status;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 namespace SqlSync.SqlBuild.AdHocQuery
 {
     public class QueryCollector
     {
-        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         MultiDbData multiDbData;
         private static SyncObject SyncObj = new SyncObject();
         private List<QueryCollectionRunner> runners = new List<QueryCollectionRunner>();
@@ -62,7 +62,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             catch (Exception exe)
             {
                 string message = String.Format("Unable to create working temp directory at {0}: {1}", this.resultsFilePath, exe.Message);
-                log.Error(message, exe);
+                log.LogError(exe, message);
                 if (bgWorker != null && bgWorker.WorkerReportsProgress)
                 {
                     bgWorker.ReportProgress(-1, message);
@@ -157,7 +157,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (Exception exe)
             {
-                log.Error($"Error with QueryCollectionRunner{Environment.NewLine}{exe.ToString()}");
+                log.LogError ($"Error with QueryCollectionRunner{Environment.NewLine}{exe.ToString()}");
             }
             finally
             {
@@ -221,12 +221,12 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (IOException ioEXe)
             {
-                log.Error("IO Error in GenerateReport", ioEXe);
+                log.LogError(ioEXe, "IO Error in GenerateReport");
                 return false;
             }
             catch (Exception exe)
             {
-                log.Error("Error in GenerateReport", exe);
+                log.LogError(exe, "Error in GenerateReport");
                 return false;
             }
             finally
@@ -278,11 +278,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (IOException ioExe)
             {
-                log.Error("IO Error in CombineQueryResultsFiles", ioExe);
+                log.LogError(ioExe, "IO Error in CombineQueryResultsFiles");
             }
             catch (Exception exe)
             {
-                log.Error("Error in CombineQueryResultsFiles", exe);
+                log.LogError(exe, "Error in CombineQueryResultsFiles");
             }
             return tmpCombined;
         }
@@ -293,7 +293,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="queryResultFiles">List of raw report files from the runner objects</param>
         private bool CreateCombinedCsvFile(string fileName, List<string> queryResultsFiles)
         {
-            log.Info($"Creating combined CSV from {queryResultsFiles.Count} results files");
+            log.LogInformation($"Creating combined CSV from {queryResultsFiles.Count} results files");
             try
             {
                 if (queryResultsFiles.Count == 1)
@@ -327,12 +327,12 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (IOException ioExe)
             {
-                log.Error($"IO Error in CreateCombinedCsvFile{Environment.NewLine}{ioExe.ToString()}");
+                log.LogError($"IO Error in CreateCombinedCsvFile{Environment.NewLine}{ioExe.ToString()}");
                 return false;
             }
             catch (Exception exe)
             {
-                log.Error($"Error in CreateCombinedCsvFile{Environment.NewLine}{exe.ToString()}");
+                log.LogError($"Error in CreateCombinedCsvFile{Environment.NewLine}{exe.ToString()}");
                 return false;
             }
         

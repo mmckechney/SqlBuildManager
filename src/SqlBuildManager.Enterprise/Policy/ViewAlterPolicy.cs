@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class ViewAlterPolicy : p.IScriptPolicy
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
 
         public string PolicyId

@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using log4net;
-using System.IO;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace SqlSync.Controls
 {
     public partial class SetLoggingLevelMenuItem : ToolStripMenuItem
     {
-        log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private ToolStripMenuItem dEBUGToolStripMenuItem;
         private ToolStripMenuItem iNFOToolStripMenuItem;
@@ -46,28 +39,28 @@ namespace SqlSync.Controls
             // 
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.dEBUGToolStripMenuItem.Text = "DEBUG";
+            this.dEBUGToolStripMenuItem.Text = "Debug";
             this.dEBUGToolStripMenuItem.Click += new System.EventHandler(this.mnuLoggingLevel_Click);
             // 
             // iNFOToolStripMenuItem
             // 
             this.iNFOToolStripMenuItem.Name = "iNFOToolStripMenuItem";
             this.iNFOToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.iNFOToolStripMenuItem.Text = "INFO";
+            this.iNFOToolStripMenuItem.Text = "Informnation";
             this.iNFOToolStripMenuItem.Click += new System.EventHandler(this.mnuLoggingLevel_Click);
             // 
             // wARNToolStripMenuItem
             // 
             this.wARNToolStripMenuItem.Name = "wARNToolStripMenuItem";
             this.wARNToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.wARNToolStripMenuItem.Text = "WARN";
+            this.wARNToolStripMenuItem.Text = "Warning";
             this.wARNToolStripMenuItem.Click += new System.EventHandler(this.mnuLoggingLevel_Click);
             // 
             // eRRORToolStripMenuItem
             // 
             this.eRRORToolStripMenuItem.Name = "eRRORToolStripMenuItem";
             this.eRRORToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.eRRORToolStripMenuItem.Text = "ERROR";
+            this.eRRORToolStripMenuItem.Text = "Error";
             this.eRRORToolStripMenuItem.Click += new System.EventHandler(this.mnuLoggingLevel_Click);
 
 
@@ -80,21 +73,20 @@ namespace SqlSync.Controls
             eRRORToolStripMenuItem.Checked = false;
             iNFOToolStripMenuItem.Checked = false;
 
-             log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)log4net.LogManager.GetRepository(Assembly.GetEntryAssembly());
-            log4net.Repository.Hierarchy.Logger rootLogger = h.Root;
-            string level = rootLogger.Level.DisplayName.ToUpper();
+
+            LogLevel level = SqlBuildManager.Logging.ApplicationLogging.GetLogLevel();
             switch (level)
             {
-                case "DEBUG":
+                case LogLevel.Debug:
                     dEBUGToolStripMenuItem.Checked = true;
                     break;
-                case "WARN":
+                case LogLevel.Warning:
                     wARNToolStripMenuItem.Checked = true;
                     break;
-                case "ERROR":
+                case LogLevel.Error:
                     eRRORToolStripMenuItem.Checked = true;
                     break;
-                case "INFO":
+                case LogLevel.Information:
                     iNFOToolStripMenuItem.Checked = true;
                     break;
             }
@@ -110,28 +102,14 @@ namespace SqlSync.Controls
         }
         private void SetDynamicLoggingLevel(string level)
         {
-            //There is only the root logger at the moment, but this is good code so I'll keep it around...
-            //Found at: http://geekswithblogs.net/rakker/archive/2007/08/22/114900.aspx
-
-            //log4net.Repository.ILoggerRepository[] repositories = log4net.LogManager.GetAllRepositories();
-
-            //foreach (log4net.Repository.ILoggerRepository repository in repositories)
-            //{
-            //    repository.Threshold = repository.LevelMap[level];
-            //    log4net.Repository.Hierarchy.Hierarchy hier = (log4net.Repository.Hierarchy.Hierarchy)repository;
-            //    log4net.Core.ILogger[] loggers = hier.GetCurrentLoggers();
-            //    foreach (log4net.Core.ILogger logger in loggers)
-            //    {
-            //        ((log4net.Repository.Hierarchy.Logger)logger).Level = hier.LevelMap[level];
-            //    }
-            //}
-
-            //Configure the root logger.
-            log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)log4net.LogManager.GetRepository(Assembly.GetEntryAssembly());
-            log4net.Repository.Hierarchy.Logger rootLogger = h.Root;
-            rootLogger.Level = h.LevelMap[level];
-
-            log.InfoFormat("Logging level set to {0}", level);
+            if(!Enum.TryParse<LogLevel>(level, out LogLevel tmp))
+            {
+                tmp = LogLevel.Information;
+            }
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(tmp);
+          
+           
+            log.LogInformation($"Logging level set to {tmp.ToString()}");
 
         }
     }

@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.DirectoryServices;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.ActiveDirectory
 {
     public class AdHelper
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public AdHelper()
         {
         }
@@ -41,9 +42,9 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.ErrorFormat("Failure to retrive groups", exe);
+                log.LogError(exe, "Failure to retrive groups");
             }
-            log.DebugFormat("Retrieved groups for {0}: {1}", userName, String.Join(", ", groups.ToArray()));
+            log.LogDebug($"Retrieved groups for {userName}: {String.Join(", ", groups.ToArray())}");
 
             return groups;
         }
@@ -82,9 +83,9 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.ErrorFormat("Failure to retrive groups", exe);
+                log.LogError(exe, "Failure to retrive groups");
             }
-            log.DebugFormat("Retrieved members for {0}: {1}", groupName, String.Join(", ", groups.ToArray()));
+            log.LogDebug($"Retrieved members for {groupName}: {String.Join(", ", groups.ToArray())}");
 
             return groups;
         }
@@ -101,7 +102,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
                     if (dnResult != null && dnResult.Properties.Contains("distinguishedname"))
                     {
                         string distinguishedName = dnResult.Properties["distinguishedname"][0].ToString();
-                        log.DebugFormat("Distinguished name for {0} is {1}", userName, distinguishedName);
+                        log.LogDebug($"Distinguished name for {userName} is {distinguishedName}");
                         return distinguishedName;
                     }
 
@@ -109,11 +110,11 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.Error("Failure to retrived Distinguished Name value. Returning empty string.", exe);
+                log.LogError(exe,"Failure to retrived Distinguished Name value. Returning empty string.");
                 return string.Empty;
             }
 
-            log.WarnFormat("Unable to find distinguished name for {0}.", userName);
+            log.LogWarning("Unable to find distinguished name for {userName}.");
             return string.Empty;
         }
         internal static string GetDistinguishedNameForGroup(string groupName)
@@ -129,7 +130,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
                     if (dnResult != null && dnResult.Properties.Contains("distinguishedname"))
                     {
                         string distinguishedName = dnResult.Properties["distinguishedname"][0].ToString();
-                        log.DebugFormat("Distinguished name for {0} is {1}", groupName, distinguishedName);
+                        log.LogDebug($"Distinguished name for {groupName} is {distinguishedName}");
                         return distinguishedName;
                     }
 
@@ -137,11 +138,11 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.Error("Failure to retrived Distinguished Name value. Returning empty string.", exe);
+                log.LogError(exe,"Failure to retrived Distinguished Name value. Returning empty string.");
                 return string.Empty;
             }
 
-            log.WarnFormat("Unable to find distinguished name for {0}.", groupName);
+            log.LogWarning($"Unable to find distinguished name for {groupName}.");
             return string.Empty;
         }
     }

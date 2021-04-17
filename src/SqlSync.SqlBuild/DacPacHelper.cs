@@ -11,18 +11,19 @@ using SqlSync.SqlBuild;
 using System.Runtime.InteropServices;
 using Microsoft.SqlServer.Dac;
 using System.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
     public class DacPacHelper
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
        
         public static bool ExtractDacPac(string sourceDatabase, string sourceServer, string userName, string password, string dacPacFileName)
         {
 
             try
             {
-                log.Info($"Extracting dacpac from {sourceServer} : {sourceDatabase}");
+                log.LogInformation($"Extracting dacpac from {sourceServer} : {sourceDatabase}");
 
                 DacExtractOptions opts = new DacExtractOptions();
                 opts.IgnoreExtendedProperties = true;
@@ -38,12 +39,12 @@ namespace SqlSync.SqlBuild
                 Version ver = Assembly.GetExecutingAssembly().GetName().Version;
                 DacServices service = new DacServices(connBuilder.ConnectionString);
                 service.Extract(dacPacFileName, sourceDatabase, "Sql Build Manager", ver);
-                log.Info($"dacpac from {sourceServer}.{sourceDatabase} saved to {dacPacFileName}");
+                log.LogInformation($"dacpac from {sourceServer}.{sourceDatabase} saved to {dacPacFileName}");
                 return true;
             }
             catch(Exception exe)
             {
-                log.Error($"Problem creating DACPAC from {sourceServer}.{sourceDatabase}: {exe.ToString()}");
+                log.LogError($"Problem creating DACPAC from {sourceServer}.{sourceDatabase}: {exe.ToString()}");
                 return false;
             }
            
@@ -54,7 +55,7 @@ namespace SqlSync.SqlBuild
         {
             try
             {
-                log.Info($"Generating scripts: {Path.GetFileName(platinumDacPacFileName)} vs {Path.GetFileName(targetDacPacFileName)}");
+                log.LogInformation($"Generating scripts: {Path.GetFileName(platinumDacPacFileName)} vs {Path.GetFileName(targetDacPacFileName)}");
                 string tmpFile = Path.Combine(path, Path.GetFileName(targetDacPacFileName) + ".sql");
                 DacDeployOptions opts = new DacDeployOptions();
                 opts.IgnoreExtendedProperties = true;
@@ -70,7 +71,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Error($"Problem creating scripts between {platinumDacPacFileName} and {targetDacPacFileName}: {exe.ToString()}");
+                log.LogError($"Problem creating scripts between {platinumDacPacFileName} and {targetDacPacFileName}: {exe.ToString()}");
                 return string.Empty;
             }
 
@@ -79,7 +80,7 @@ namespace SqlSync.SqlBuild
       
         public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, out string buildPackageName)
         {
-            log.InfoFormat("Generating SBM build from dacpac differences: {0} vs {1}", Path.GetFileName(platinumDacPacFileName), Path.GetFileName(targetDacPacFileName));
+            log.LogInformation($"Generating SBM build from dacpac differences: {Path.GetFileName(platinumDacPacFileName)} vs { Path.GetFileName(targetDacPacFileName)}");
             string path = Path.GetDirectoryName(targetDacPacFileName);
             buildPackageName = string.Empty;
             string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path);
@@ -140,7 +141,7 @@ namespace SqlSync.SqlBuild
 
             
             List<string> files = new List<string>();
-            log.Info("Parsing our master update script into batch scripts");
+            log.LogInformation("Parsing our master update script into batch scripts");
             var batched = SqlBuildHelper.ReadBatchFromScriptText(masterScript, true, false);
             foreach (var script in batched)
             {
@@ -266,7 +267,7 @@ namespace SqlSync.SqlBuild
             string projectFileName = null;
             string result;
 
-            log.InfoFormat("Preparing build package for processing");
+            log.LogInformation("Preparing build package for processing");
             if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, false,out result))
             {
                 return DacpacDeltasStatus.SbmProcessingFailure;
@@ -282,7 +283,7 @@ namespace SqlSync.SqlBuild
             runData.BuildFileName = sbmFileName;
             runData.ProjectFileName = projectFileName;
 
-            log.InfoFormat("Build package ready");
+            log.LogInformation("Build package ready");
             return DacpacDeltasStatus.Success;
         }
 
@@ -296,7 +297,7 @@ namespace SqlSync.SqlBuild
                 Directory.CreateDirectory(workingFolder);
             }
 
-            log.Info("Starting process: create SBM build file from dacpac settings");
+            log.LogInformation("Starting process: create SBM build file from dacpac settings");
             DacpacDeltasStatus stat = DacpacDeltasStatus.Processing;
             sbmName = string.Empty;
 
@@ -309,7 +310,7 @@ namespace SqlSync.SqlBuild
                 string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
                 if (!DacPacHelper.ExtractDacPac(database, server, username, password, targetDacPac))
                 {
-                    log.Error(string.Format("Error extracting dacpac from {0} : {1}", database, server));
+                    log.LogError($"Error extracting dacpac from {database} : {server}");
                     return DacpacDeltasStatus.ExtractionFailure;
                 }
                 stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, false, buildRevision, defaultScriptTimeout, out sbmName);
@@ -327,19 +328,19 @@ namespace SqlSync.SqlBuild
                         string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
                         if (!DacPacHelper.ExtractDacPac(database, server, username, password, targetDacPac))
                         {
-                            log.Error(string.Format("Error extracting dacpac from {0} : {1}", server, database));
+                            log.LogError($"Error extracting dacpac from {server} : {database}");
                             return DacpacDeltasStatus.ExtractionFailure;
                         }
                         stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, false, buildRevision, defaultScriptTimeout, out sbmName);
 
                         if (stat == DacpacDeltasStatus.InSync)
                         {
-                            log.InfoFormat("{0} and {1} are already in  sync. Looping to next database.", Path.GetFileName(platinumDacPac), Path.GetFileName(targetDacPac));
+                            log.LogInformation($"{Path.GetFileName(platinumDacPac)} and {Path.GetFileName(targetDacPac)} are already in  sync. Looping to next database.");
                             stat = DacpacDeltasStatus.Processing;
                         }
                         else if (stat == DacpacDeltasStatus.OnlyPostDeployment)
                         {
-                            log.InfoFormat("{0} to {1} appears to have only Post-Deployment steps. Will not be used as a source - looping to next database.", Path.GetFileName(platinumDacPac), Path.GetFileName(targetDacPac));
+                            log.LogInformation($"{Path.GetFileName(platinumDacPac)} to { Path.GetFileName(targetDacPac)} appears to have only Post-Deployment steps. Will not be used as a source - looping to next database.");
                             stat = DacpacDeltasStatus.Processing;
                         }
                         else
@@ -356,18 +357,18 @@ namespace SqlSync.SqlBuild
             switch (stat)
             {
                 case DacpacDeltasStatus.Success:
-                    log.Info("Successfully created SBM from two dacpacs");
+                    log.LogInformation("Successfully created SBM from two dacpacs");
                     break;
                 case DacpacDeltasStatus.InSync:
                 case DacpacDeltasStatus.OnlyPostDeployment:
-                    log.Info("The database is already in sync with platinum dacpac");
+                    log.LogInformation("The database is already in sync with platinum dacpac");
                     break;
                 case DacpacDeltasStatus.Processing: //we've looped through them all and they are in sync!
                     stat = DacpacDeltasStatus.InSync;
-                    log.Info("All databases are already in sync with platinum dacpac");
+                    log.LogInformation("All databases are already in sync with platinum dacpac");
                     break;
                 default:
-                    log.Error("Error creating build package from supplied Platinum and Target dacpac files");
+                    log.LogError("Error creating build package from supplied Platinum and Target dacpac files");
                     break;
 
             }

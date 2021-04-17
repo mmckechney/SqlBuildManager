@@ -6,13 +6,13 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.IO;
 namespace SqlSync.Controls
 {
     public partial class ViewLogFileMenuItem : ToolStripMenuItem
     {
-        log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         BackgroundWorker bg;
         public ViewLogFileMenuItem()
         {
@@ -38,34 +38,26 @@ namespace SqlSync.Controls
             bg.ReportProgress(0);
             try
             {
-                log4net.Appender.IAppender[] appenders = log.Logger.Repository.GetAppenders();
-                foreach (log4net.Appender.IAppender appender in appenders)
+                string file = SqlBuildManager.Logging.ApplicationLogging.LogFileName;
+                if (File.Exists(file))
                 {
-                    if (appender is log4net.Appender.RollingFileAppender)
+
+                    string contents;
+                    using (FileStream fs = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
-                        string file = ((log4net.Appender.RollingFileAppender)appender).File;
-                        if (File.Exists(file))
+                        using (StreamReader sr = new StreamReader(fs))
                         {
-
-                            string contents;
-                            using (FileStream fs = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            {
-                                using (StreamReader sr = new StreamReader(fs))
-                                {
-                                    contents = sr.ReadToEnd();
-                                }
-                            }
-
-                            e.Result = contents;
-
-                            return;
+                            contents = sr.ReadToEnd();
                         }
                     }
+                    e.Result = contents;
+
+                    return;
                 }
             }
             catch (Exception exe)
             {
-                log.Error("Error loading application log file.", exe);
+                log.LogError(exe, "Error loading application log file.");
                 e.Result = exe;
             }
             bg.ReportProgress(100);

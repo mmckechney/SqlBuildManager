@@ -16,6 +16,7 @@ using SqlSync.SqlBuild.SqlLogging;
 using SqlSync.Constants;
 using System.Linq;
 using SqlBuildManager.Interfaces.Console;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
 	/// <summary>
@@ -23,7 +24,7 @@ namespace SqlSync.SqlBuild
 	/// </summary>
 	public class SqlBuildHelper
 	{
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         internal bool isTransactional = true;
         internal List<DatabaseOverride> targetDatabaseOverrides = null;
         public List<DatabaseOverride> TargetDatabaseOverrides
@@ -274,7 +275,7 @@ namespace SqlSync.SqlBuild
                 buildRetries++;
                 if (buildResults.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout)
                 {
-                    log.WarnFormat("Timeout encountered. Incrementing retries to {0}", buildRetries);
+                    log.LogWarning($"Timeout encountered. Incrementing retries to {buildRetries}");
                 }
             }
 
@@ -284,13 +285,13 @@ namespace SqlSync.SqlBuild
             {
                 var database = ((SqlSyncBuildData.ScriptRow)filteredScripts[0].Row).Database;
                 string targetDatabase = GetTargetDatabase(database);
-                log.WarnFormat("Custom dacpac required for {0} : {1}. Generating file.", serverName, targetDatabase);
+                log.LogWarning($"Custom dacpac required for {serverName} : {targetDatabase}. Generating file.");
                 var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, this.connData.UserId, this.connData.Password, projectFilePath, runData.BuildRevision, runData.DefaultScriptTimeout);
 
                 if(stat == DacpacDeltasStatus.Success)
                 {
                     runData.PlatinumDacPacFileName = string.Empty; //Keep this from becoming an infinite loop by taking out the dacpac name
-                    log.InfoFormat("Executing custom dacpac on {0}", targetDatabase);
+                    log.LogInformation($"Executing custom dacpac on {targetDatabase}");
                     var dacStat =  ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                     if(dacStat.FinalStatus ==  BuildItemStatus.Committed || dacStat.FinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
                     {
@@ -418,7 +419,7 @@ namespace SqlSync.SqlBuild
             else
                 this.buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
 
-            log.InfoFormat("Prepared build for run. Build Package hash = {0}", this.buildPackageHash);
+            log.LogInformation($"Prepared build for run. Build Package hash = {this.buildPackageHash}");
 		}
         /// <summary>
         /// Method that performs the splitting of the scripts into their batch and then executes the scripts
@@ -430,7 +431,7 @@ namespace SqlSync.SqlBuild
         internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun,  ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
 		{
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Proceeding with Build"));
-            log.DebugFormat("Processing with build for build Package hash = {0}", this.buildPackageHash);
+            log.LogDebug($"Processing with build for build Package hash = {this.buildPackageHash}");
 			int overallIndex = 0;
 			int runSequence = 0;
 			bool buildFailure = false;
@@ -441,7 +442,7 @@ namespace SqlSync.SqlBuild
 			{
                 if (view == null)
                 {
-                    log.Error("No scripts selected for execution.");
+                    log.LogError("No scripts selected for execution.");
                     throw new ApplicationException("No scripts selected for execution.");
                 }
 
@@ -496,7 +497,7 @@ namespace SqlSync.SqlBuild
                     }
                     catch (Exception e)
                     {
-                        log.Error(String.Format("Database connection to {0}.{1} failed", serverName, targetDatabase), e);
+                        log.LogError(e, $"Database connection to {serverName}.{targetDatabase} failed");
                         this.myRunRow.Results += "Database connection to " + targetDatabase + " failed\r\n" + e.Message;
                         this.myRunRow.Success = false;
                        	this.myRunRow.RunEnd = DateTime.Now;
@@ -529,7 +530,7 @@ namespace SqlSync.SqlBuild
 
                             if(hasBlockingSqlLog)
 							{
-                                log.InfoFormat("Skipping pre-run script {0}", myRow.FileName);
+                                log.LogInformation($"Skipping pre-run script { myRow.FileName}");
 								//don't allow the script to be run again
                                 bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Skipped Pre-Run script", TimeSpan.Zero));
 								continue;
@@ -557,7 +558,7 @@ namespace SqlSync.SqlBuild
 					}
 					catch(Exception mye)
 					{
-                        log.Warn(String.Format("Error creating Transaction save point on {0}.{1} for script {2}", serverName, targetDatabase, myRow.FileName), mye);
+                        log.LogWarning(mye, $"Error creating Transaction save point on {serverName}.{targetDatabase} for script {myRow.FileName}");
 					}
 
                     DateTime start = DateTime.Now;
@@ -567,7 +568,7 @@ namespace SqlSync.SqlBuild
                         //Check to see if there is a pending cancellation. If so, break out.
                         if(this.bgWorker.CancellationPending)
                         {
-                            log.InfoFormat("Encountered cancellation pending directive. Breaking out of build");
+                            log.LogInformation("Encountered cancellation pending directive. Breaking out of build");
                             workEventArgs.Cancel = true;
                             break;
                         }
@@ -637,7 +638,7 @@ namespace SqlSync.SqlBuild
 						{
                             if (e.Message.Trim().ToLower().IndexOf("timeout expired.",StringComparison.CurrentCultureIgnoreCase) > -1)
                             {
-                                log.WarnFormat("Encountered a Timeout exception for script: \"{0}\"", cmd.CommandText);
+                                log.LogWarning($"Encountered a Timeout exception for script: \"{cmd.CommandText}\"");
                                 failureDueToScriptTimeout = true;
                             }
 
@@ -651,7 +652,7 @@ namespace SqlSync.SqlBuild
 							}
 							this.myRunRow.Success = false;
 							this.myRunRow.Results += sb.ToString();
-						    log.Debug(sb.ToString(),e);
+						    log.LogDebug(sb.ToString(),e);
 
 							//Write the error to the log...
                             if(ScriptLogWriteEvent != null)
@@ -795,7 +796,7 @@ namespace SqlSync.SqlBuild
 			}
 			catch(Exception e)
 			{
-                log.Error("General build failure", e);
+                log.LogError(e, "General build failure");
 				this.ErrorOccured = true;
                 buildFailure = true;
                 bgWorker.ReportProgress(100, e);
@@ -842,7 +843,7 @@ namespace SqlSync.SqlBuild
             if (buildFailure)
             {
                
-                log.Error("Build failure. Check execution logs for details");
+                log.LogError("Build failure. Check execution logs for details");
                 if (!isMultiDbRun)
                 {
                     PerformRunScriptFinalization(buildFailure, myBuild, ref workEventArgs);
@@ -858,7 +859,6 @@ namespace SqlSync.SqlBuild
                 if (this.isTransactional && failureDueToScriptTimeout)
                 {
                     myBuild.FinalStatus = BuildItemStatus.FailedDueToScriptTimeout;
-                    //TODO: need to run "this.connectDictionary.Clear();" here for multiDbRun???
                 }
             }
             else
@@ -868,7 +868,7 @@ namespace SqlSync.SqlBuild
                     myBuild.FinalStatus = BuildItemStatus.Pending;
                 else
                     PerformRunScriptFinalization(buildFailure, myBuild, ref workEventArgs);
-                log.DebugFormat("Build Successful!");
+                log.LogDebug("Build Successful!");
             }
 
             return myBuild;
@@ -1192,11 +1192,11 @@ namespace SqlSync.SqlBuild
                         createTableCmd.Transaction = ((BuildConnectData)this.connectDictionary[key]).Transaction;
 
 					createTableCmd.ExecuteNonQuery();
-                    log.DebugFormat("EnsureLogTablePresence Table Sql Messages for {0}.{1}:\r\n{2}",createTableCmd.Connection.DataSource, createTableCmd.Connection.Database,this.sqlInfoMessage);
+                    log.LogDebug($"EnsureLogTablePresence Table Sql Messages for {createTableCmd.Connection.DataSource}.{ createTableCmd.Connection.Database}:\r\n{this.sqlInfoMessage}");
 				}
 				catch(Exception e)
 				{
-                    log.Error(String.Format("Error ensuring log table presence for {0}.{1}", createTableCmd.Connection.DataSource, createTableCmd.Connection.Database), e);
+                    log.LogError(e, $"Error ensuring log table presence for {createTableCmd.Connection.DataSource}.{ createTableCmd.Connection.Database}");
 	    		}
 			}
             //SqlCommand createCommitIndex = new SqlCommand(GetFromResources("SqlSync.SqlBuild.SqlLogging.LoggingTableCommitCheckIndex.sql"));
@@ -1220,16 +1220,16 @@ namespace SqlSync.SqlBuild
                         createCommitIndex.Transaction = ((BuildConnectData)this.connectDictionary[key]).Transaction;
 
                     createCommitIndex.ExecuteNonQuery();
-                    log.DebugFormat("EnsureLogTablePresence Index Sql Messages for {0}.{1}:\r\n{2}",createTableCmd.Connection.DataSource, createTableCmd.Connection.Database,this.sqlInfoMessage);
+                    log.LogDebug($"EnsureLogTablePresence Index Sql Messages for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}:\r\n{this.sqlInfoMessage}");
 
                 }
                 catch (Exception e)
                 {
-                    log.Error(String.Format("Error ensuring log table commit check index for {0}.{1}",createTableCmd.Connection.DataSource, createTableCmd.Connection.Database) , e);
+                    log.LogError(e, $"Error ensuring log table commit check index for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
                 }
             }
-            log.DebugFormat("sqlInfoMessage value: {0}", this.sqlInfoMessage);
-            log.Debug("Exiting EnsureLogPresence method");
+            log.LogDebug($"sqlInfoMessage value: {this.sqlInfoMessage}");
+            log.LogDebug("Exiting EnsureLogPresence method");
             this.sqlInfoMessage = string.Empty;
 		}
         /// <summary>
@@ -1295,7 +1295,7 @@ namespace SqlSync.SqlBuild
             catch
             {
                 commitDate = DateTime.Now;
-                log.InfoFormat("Unable to getdate() from server/database {0}-{1}", this.connData.SQLServerName, this.connData.DatabaseName);
+                log.LogInformation($"Unable to getdate() from server/database {this.connData.SQLServerName}-{this.connData.DatabaseName}");
             }
             finally
             {
@@ -1374,7 +1374,7 @@ namespace SqlSync.SqlBuild
 				}
 				catch(Exception sqlexe)
 				{
-                    log.Error(String.Format("Unable to log full text value for script {0}. Inserting \"Error\" instead",logCmd.Parameters["@ScriptFileName"].Value.ToString()),sqlexe);
+                    log.LogError(sqlexe, $"Unable to log full text value for script {logCmd.Parameters["@ScriptFileName"].Value.ToString()}. Inserting \"Error\" instead");
 					try
 					{
 						logCmd.Parameters["@ScriptText"].Value = "Error";
@@ -1385,7 +1385,7 @@ namespace SqlSync.SqlBuild
 					}
 					catch(Exception exe)
 					{
-                        log.Error(String.Format("Unable to log commit for script {0}.", logCmd.Parameters["@ScriptFileName"].Value.ToString()), exe);
+                        log.LogError(exe, $"Unable to log commit for script {logCmd.Parameters["@ScriptFileName"].Value.ToString()}.");
                         returnValue = false;
 					}
 				}
@@ -1445,7 +1445,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Warn(string.Format("Unable to check for blocking SQL for script {0} on database {1}.{2}", scriptId.ToString(), cmd.Connection.DataSource, cmd.Connection.Database), exe);
+                log.LogWarning(exe, $"Unable to check for blocking SQL for script {scriptId.ToString()} on database {cmd.Connection.DataSource}.{cmd.Connection.Database}");
                 return false;
             }
 			finally
@@ -1498,7 +1498,7 @@ namespace SqlSync.SqlBuild
 			}
 			catch(Exception e)
 			{
-                log.Error(String.Format("Unable to retrieve script run log for {0} on database {1}.{2}", scriptId.ToString(), connData.SQLServerName, connData.DatabaseName), e);
+                log.LogError(e,$"Unable to retrieve script run log for {scriptId.ToString()} on database {connData.SQLServerName}.{connData.DatabaseName}");
 				throw new ApplicationException("Error retrieving Script Run Log",e);
 			}
 		}
@@ -1524,7 +1524,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception e)
             {
-                log.Error(String.Format("Unable to retrieve object history for {0} on database {1}.{2}", objectFileName, connData.SQLServerName, connData.DatabaseName), e);
+                log.LogError(e, $"Unable to retrieve object history for {objectFileName} on database {connData.SQLServerName}.{connData.DatabaseName}");
                 throw new ApplicationException("Error retrieving Script Run Log", e);
             }
         }
@@ -1652,7 +1652,7 @@ namespace SqlSync.SqlBuild
                 list[i] = RemoveUseStatement(list[i]);
 
 
-            log.DebugFormat("Batched build package into {0} scripts", list.Count.ToString());
+            log.LogDebug($"Batched build package into {list.Count.ToString()} scripts");
             return list;
 
         }
@@ -1903,23 +1903,23 @@ namespace SqlSync.SqlBuild
             {
 				try
 				{
-                    log.InfoFormat("Committing transaction for {0}", key);
+                    log.LogInformation($"Committing transaction for {key}");
                     ((BuildConnectData)this.connectDictionary[key]).Transaction.Commit();
 				}
 				catch(Exception e)
 				{
-                    log.Error(String.Format("Error in CommitBuild Transaction.Commit() for database '{0}'", key), e);
+                    log.LogError(e, $"Error in CommitBuild Transaction.Commit() for database '{key}'");
 					bgWorker.ReportProgress(100, new CommitFailureEventArgs(e.Message));
 					success = false;
 				}
 				try
 				{
-                    log.DebugFormat("Closing connection for {0}", key);
+                    log.LogDebug($"Closing connection for {key}");
                     ((BuildConnectData)this.connectDictionary[key]).Connection.Close();
 				}
 				catch(Exception e)
 				{
-                    log.WarnFormat(String.Format("Error in CommitBuild Connection.Close() for database '{0}'", key), e);
+                    log.LogWarning(e, $"Error in CommitBuild Connection.Close() for database '{e}'");
                     bgWorker.ReportProgress(100, new CommitFailureEventArgs(e.Message));
 					success = false;
 				}
@@ -1932,7 +1932,7 @@ namespace SqlSync.SqlBuild
             //If we're not in a transaction, we can't roll back...
             if (!this.isTransactional)
             {
-                log.Warn("Build is non-transactional. Unable to rollback");
+                log.LogWarning("Build is non-transactional. Unable to rollback");
                 return false;
             }
 
@@ -1941,21 +1941,21 @@ namespace SqlSync.SqlBuild
 			{
 				try
 				{
-                    log.InfoFormat("Rolling back transaction for {0}", key);
+                    log.LogInformation($"Rolling back transaction for {key}");
                     ((BuildConnectData)this.connectDictionary[key]).Transaction.Rollback();
 				}
 				catch(Exception e)
 				{
-                    log.Error(String.Format("Error in RollbackBuild Transaction.Rollback() for database '{0}'", key), e);
+                    log.LogError(e, $"Error in RollbackBuild Transaction.Rollback() for database '{key}'");
 				}
 				try
 				{
-                    log.DebugFormat("Closing connection for {0}", key);
+                    log.LogDebug($"Closing connection for {key}");
                     ((BuildConnectData)this.connectDictionary[key]).Connection.Close();
 				}
 				catch(Exception e)
 				{
-                    log.Error(String.Format("Error in RollbackBuild Connection.Close() for database '{0}'", key), e);
+                    log.LogError(e, $"Error in RollbackBuild Connection.Close() for database '{key}'");
 				}
 			}
            
@@ -2048,12 +2048,12 @@ namespace SqlSync.SqlBuild
 		{
             if (buildData == null)
             {
-                log.Warn("The SqlSyncBuildData object passed into \"GetScriptSourceTable\" was null. Unable to process build");
+                log.LogWarning("The SqlSyncBuildData object passed into \"GetScriptSourceTable\" was null. Unable to process build");
                 return null;
             }
             if (buildData.Script == null)
             {
-                log.Warn("The SqlSyncBuildData.ScriptTable object passed into \"GetScriptSourceTable\" was null. Unable to process build");
+                log.LogWarning("The SqlSyncBuildData.ScriptTable object passed into \"GetScriptSourceTable\" was null. Unable to process build");
                 return null;
             }
 
@@ -2072,7 +2072,7 @@ namespace SqlSync.SqlBuild
             }
             catch(Exception exe)
             {
-                log.Error("Unable to get script rows from SqlSyncBuildData object", exe);
+                log.LogError(exe, "Unable to get script rows from SqlSyncBuildData object");
             }
 			return null;
 		}

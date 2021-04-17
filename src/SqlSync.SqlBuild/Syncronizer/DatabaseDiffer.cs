@@ -5,13 +5,13 @@ using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using SqlSync.Connection;
-using log4net;
+using Microsoft.Extensions.Logging;
 
 namespace SqlSync.SqlBuild.Syncronizer
 {
     public class DatabaseDiffer
     {
-        private static ILog log = log4net.LogManager.GetLogger(typeof (DatabaseDiffer));
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public DatabaseRunHistory GetDatabaseHistoryDifference(string goldServer, string goldDatabase,
                                                                string toUpdateServer, string toUpdateDatabase)
@@ -105,9 +105,7 @@ namespace SqlSync.SqlBuild.Syncronizer
                 if (exe.Message.IndexOf("FIRST_VALUE", 0, StringComparison.InvariantCultureIgnoreCase) > -1)
                     return GetDatabaseRunHistoryOldSqlServer(dbConnData);
 
-                log.Error(
-                    String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName,
-                                  dbConnData.DatabaseName), exe);
+                log.LogError(exe, $"Unable to get build history for {dbConnData.SQLServerName}.{dbConnData.DatabaseName}");
             }
             return history;
         }
@@ -180,9 +178,7 @@ namespace SqlSync.SqlBuild.Syncronizer
             }
             catch (Exception exe)
             {
-                log.Error(
-                    String.Format("Unable to get build history for {0}.{1}", dbConnData.SQLServerName,
-                                  dbConnData.DatabaseName), exe);
+                log.LogError(exe,$"Unable to get build history for {dbConnData.SQLServerName}.{dbConnData.DatabaseName}");
             }
             return history;
         }

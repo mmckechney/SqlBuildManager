@@ -1,8 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
-using BlueSkyDev.Logging;
-using log4net;
-using log4net.Repository.Hierarchy;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Enterprise.Policy;
@@ -14,8 +12,6 @@ using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.ComponentModel;
 using System.IO;
@@ -27,20 +23,21 @@ namespace SqlBuildManager.Console
 
     class Program
     {
-       
-        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+
+
+        private static Microsoft.Extensions.Logging.ILogger log;
+        private static readonly string applicationLogFileName = "SqlBuildManager.Console.log";
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
         static int Main(string[] args)
         {
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
+
             var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             var currentPath = Path.GetDirectoryName(fn);
-            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
 
-            log4net.Config.XmlConfigurator.Configure(logRepository, new FileInfo(Path.Combine(currentPath, "log4net.config")));
-            SqlBuildManager.Logging.Configure.SetLoggingPath();
-
-            log.Debug("Received Command: " + String.Join(" | ", args));
+            log.LogDebug("Received Command: " + String.Join(" | ", args));
 
             RootCommand rootCommand = CommandLineConfig.SetUp();
 
@@ -50,41 +47,31 @@ namespace SqlBuildManager.Console
                 val.Wait();
                 rootCommand = null;
                 int result = val.Result;
-                log.Info($"Exiting with code {result}");
-                
-                LogManager.Flush(5000);
-                logRepository = null;
+                log.LogInformation($"Exiting with code {result}");
+
+                //LogManager.Flush(5000);
+                //logRepository = null;
+                Logging.ApplicationLogging.FlushLogs();
                 return result;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 System.Console.WriteLine($"Error closing: {exe.Message}");
                 System.Environment.FailFast("");
                 return -100000;
             }
-
-        }
-
-
-        internal static void RunQueryExecution(CommandLineArgs arg1, string arg2, string arg3)
-        {
-            throw new NotImplementedException();
         }
 
         internal static int QueryDatabases(CommandLineArgs cmdLine)
         {
-
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
-            {
-                SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
-            }
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             if (!string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
             {
-                SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
+                log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
             }
 
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
-            if(outpt != 0)
+            if (outpt != 0)
             {
                 return outpt;
             }
@@ -102,12 +89,12 @@ namespace SqlBuildManager.Console
             var serverCount = multiData.Count();
             var dbCount = multiData.Sum(d => d.OverrideSequence.Count);
 
-            log.Info($"Running query across {serverCount} servers and {dbCount} databases...");
+            log.LogInformation($"Running query across {serverCount} servers and {dbCount} databases...");
             bool success = collector.GetQueryResults(ref bg, cmdLine.OutputFile.FullName, SqlSync.SqlBuild.Status.ReportType.CSV, query, cmdLine.DefaultScriptTimeout);
 
             if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
-                log.Info("Writing log files to storage...");
+                log.LogInformation("Writing log files to storage...");
                 var blobTask = WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
                 blobTask.Wait();
             }
@@ -115,11 +102,11 @@ namespace SqlBuildManager.Console
 
             if (success)
             {
-                log.Info($"Query complete. The results are in the output file: {cmdLine.OutputFile.FullName}");
+                log.LogInformation($"Query complete. The results are in the output file: {cmdLine.OutputFile.FullName}");
             }
             else
             {
-                log.Error("There was an issue collecting and aggregating the query results");
+                log.LogError("There was an issue collecting and aggregating the query results");
                 return 6;
             }
 
@@ -130,12 +117,12 @@ namespace SqlBuildManager.Console
         {
             if (e.UserState is string)
             {
-                log.Info(e.UserState);
+                log.LogInformation(e.UserState.ToString());
             }
-            else if(e.UserState is QueryCollectionRunnerUpdateEventArgs)
+            else if (e.UserState is QueryCollectionRunnerUpdateEventArgs)
             {
-               // var x = (QueryCollectionRunnerUpdateEventArgs)e.UserState;
-                //log.Info($"{x.Server}:{x.Database} -- {x.Message}");
+                // var x = (QueryCollectionRunnerUpdateEventArgs)e.UserState;
+                //log.LogInformation($"{x.Server}:{x.Database} -- {x.Message}");
             }
         }
 
@@ -147,7 +134,7 @@ namespace SqlBuildManager.Console
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
-            log.Info(msg);
+            log.LogInformation(msg);
 
             return retVal;
         }
@@ -160,54 +147,57 @@ namespace SqlBuildManager.Console
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
-            log.Info(msg);
+            log.LogInformation(msg);
 
             return retVal;
         }
 
         internal static int RunBatchExecution(CommandLineArgs cmdLine)
         {
-            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
+
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
-            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
-            log.Debug("Entering Batch Execution");
-            log.Info("Running...");
+            log.LogDebug("Entering Batch Execution");
+            log.LogInformation("Running...");
             int retVal;
             string readOnlySas;
-            (retVal,readOnlySas) =  batchExe.StartBatch();
+            (retVal, readOnlySas) = batchExe.StartBatch();
             if (retVal == (int)ExecutionReturn.Successful)
             {
-                log.Info("Completed Successfully");
+                log.LogInformation("Completed Successfully");
             }
             else if (retVal == (int)ExecutionReturn.DacpacDatabasesInSync)
             {
-                log.Info("Datbases already in sync");
+                log.LogInformation("Datbases already in sync");
                 retVal = (int)ExecutionReturn.Successful;
             }
             else
             {
-                log.Warn("Completed with Errors - check log");
+                log.LogWarning("Completed with Errors - check log");
             }
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
-            log.Info(msg);
+            log.LogInformation(msg);
 
-            log.Debug("Exiting Batch Execution");
+            log.LogDebug("Exiting Batch Execution");
 
             return retVal;
         }
 
         internal static int RunBatchQuery(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
+
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
             if (outpt != 0)
             {
                 return outpt;
             }
 
-            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
             //Always run the remote Batch as silent or it will get hung up
             if (cmdLine.Silent == false)
             {
@@ -215,44 +205,44 @@ namespace SqlBuildManager.Console
             }
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine, cmdLine.QueryFile.FullName, Path.Combine(cmdLine.RootLoggingPath, cmdLine.OutputFile.Name));
-            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
-            log.Debug("Entering Batch Query Execution");
-            log.Info("Running...");
+
+            log.LogDebug("Entering Batch Query Execution");
+            log.LogInformation("Running...");
             int retVal;
             string readOnlySas;
-            
-            (retVal,readOnlySas) = batchExe.StartBatch();
 
-            if(!string.IsNullOrWhiteSpace(readOnlySas))
+            (retVal, readOnlySas) = batchExe.StartBatch();
+
+            if (!string.IsNullOrWhiteSpace(readOnlySas))
             {
-                log.Info("Downloading the consolidated output file...");
+                log.LogInformation("Downloading the consolidated output file...");
                 try
                 {
                     var cloudBlobContainer = new BlobContainerClient(new Uri(readOnlySas));
                     var blob = cloudBlobContainer.GetBlobClient(cmdLine.OutputFile.Name);
                     blob.DownloadTo(cmdLine.OutputFile.FullName);
-                    log.Info($"Output file copied locally to {cmdLine.OutputFile.FullName}");
+                    log.LogInformation($"Output file copied locally to {cmdLine.OutputFile.FullName}");
                 }
-                catch(Exception exe)
+                catch (Exception exe)
                 {
-                    log.Error($"Unable to download the output file:  {exe.Message}");
+                    log.LogError($"Unable to download the output file:  {exe.Message}");
                 }
             }
 
             if (retVal == (int)ExecutionReturn.Successful)
             {
-                log.Info("Completed Successfully");
+                log.LogInformation("Completed Successfully");
             }
             else
             {
-                log.Warn("Completed with Errors - check log");
+                log.LogWarning("Completed with Errors - check log");
             }
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
-            log.Info(msg);
+            log.LogInformation(msg);
 
-            log.Debug("Exiting Batch Execution");
+            log.LogDebug("Exiting Batch Execution");
 
             return retVal;
         }
@@ -260,9 +250,9 @@ namespace SqlBuildManager.Console
         internal static void SaveAndEncryptSettings(CommandLineArgs cmdLine, bool clearText)
         {
 
-            if(string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
+            if (string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
-                log.Error("When 'sbm batch savesettings' is specified the --settingsfile argument is also required");
+                log.LogError("When 'sbm batch savesettings' is specified the --settingsfile argument is also required");
                 return;
             }
 
@@ -279,7 +269,7 @@ namespace SqlBuildManager.Console
             try
             {
                 string write = "y";
-                if(File.Exists(cmdLine.SettingsFile) && !cmdLine.Silent)
+                if (File.Exists(cmdLine.SettingsFile) && !cmdLine.Silent)
                 {
                     System.Console.WriteLine($"The settings file '{cmdLine.SettingsFile}' already exists. Overwrite (Y/N)?");
                     write = System.Console.ReadLine();
@@ -288,18 +278,18 @@ namespace SqlBuildManager.Console
                 if (write.ToLower() == "y")
                 {
                     File.WriteAllText(cmdLine.SettingsFile, mystuff);
-                    log.Info($"Settings file saved to '{cmdLine.SettingsFile}'");
+                    log.LogInformation($"Settings file saved to '{cmdLine.SettingsFile}'");
                 }
                 else
                 {
-                    log.Info("Settings file not saved");
+                    log.LogInformation("Settings file not saved");
                 }
             }
             catch (Exception exe)
             {
-                log.Error($"Unable to save settings file.\r\n{exe.ToString()}");
+                log.LogError($"Unable to save settings file.\r\n{exe.ToString()}");
             }
-           
+
         }
 
         internal static void ScriptExtraction(CommandLineArgs cmdLine)
@@ -307,41 +297,41 @@ namespace SqlBuildManager.Console
             #region Validate flags
             if (string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
             {
-                log.Error("--platinumdacpac flag is required");
+                log.LogError("--platinumdacpac flag is required");
                 System.Environment.Exit(-1);
             }
             if (string.IsNullOrWhiteSpace(cmdLine.Database))
             {
-                log.Error("--database flag is required");
+                log.LogError("--database flag is required");
                 System.Environment.Exit(-1);
             }
             if (string.IsNullOrWhiteSpace(cmdLine.Server))
             {
-                log.Error("--server flag is required");
+                log.LogError("--server flag is required");
                 System.Environment.Exit(-1);
             }
             string[] errorMessages;
-            int pwVal = Validation.ValidateUserNameAndPassword(ref cmdLine,out errorMessages);
-            if(pwVal != 0)
+            int pwVal = Validation.ValidateUserNameAndPassword(ref cmdLine, out errorMessages);
+            if (pwVal != 0)
             {
-                log.Error(errorMessages.Aggregate((a, b) => a + "; " + b));
+                log.LogError(errorMessages.Aggregate((a, b) => a + "; " + b));
             }
 
             if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
-                log.Error("--username and --password flags are required");
+                log.LogError("--username and --password flags are required");
                 System.Environment.Exit(-1);
             }
 
             if (string.IsNullOrWhiteSpace(cmdLine.OutputSbm))
             {
-                log.Error("--outputsbm flag is required");
+                log.LogError("--outputsbm flag is required");
                 System.Environment.Exit(-1);
             }
 
-            if(File.Exists(cmdLine.OutputSbm))
+            if (File.Exists(cmdLine.OutputSbm))
             {
-                log.ErrorFormat("The --outputsbm file already exists at {0}. Please choose another name or delete the existing file.", cmdLine.OutputSbm);
+                log.LogError($"The --outputsbm file already exists at {cmdLine.OutputSbm}. Please choose another name or delete the existing file.");
                 System.Environment.Exit(-1);
             }
             #endregion
@@ -350,24 +340,25 @@ namespace SqlBuildManager.Console
             cmdLine.RootLoggingPath = Path.GetDirectoryName(cmdLine.OutputSbm);
 
             var status = DacPacHelper.GetSbmFromDacPac(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), out name);
-            if(status == DacpacDeltasStatus.Success)
+            if (status == DacpacDeltasStatus.Success)
             {
                 File.Move(name, cmdLine.OutputSbm);
-                log.InfoFormat("SBM package successfully created at {0}", cmdLine.OutputSbm);
+                log.LogInformation($"SBM package successfully created at {cmdLine.OutputSbm}");
             }
             else
             {
-                log.ErrorFormat("Error creating SBM package: {0}", status.ToString());
+                log.LogError($"Error creating SBM package: {status.ToString()}");
             }
         }
 
         internal static int RunLocalBuildAsync(CommandLineArgs cmdLine)
         {
-            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
+
             DateTime start = DateTime.Now;
-            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
-            log.Debug("Entering Local Build Execution");
-            log.Info("Running  Local Build...");
+            log.LogDebug("Entering Local Build Execution");
+            log.LogInformation("Running  Local Build...");
 
             //We need an override setting. if not provided, we need to glean it from the SqlSyncBuildProject.xml file 
             if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
@@ -376,7 +367,7 @@ namespace SqlBuildManager.Console
             }
 
             var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
-            if(string.IsNullOrEmpty(cmdLine.RootLoggingPath))
+            if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
             {
                 cmdLine.RootLoggingPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             }
@@ -387,59 +378,60 @@ namespace SqlBuildManager.Console
             int retVal = runner.Execute();
             if (retVal == (int)ExecutionReturn.Successful)
             {
-                log.Info("Completed Successfully");
+                log.LogInformation("Completed Successfully");
             }
             else
             {
-                log.Warn("Completed with Errors - check log");
+                log.LogWarning("Completed with Errors - check log");
             }
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
-            log.Info(msg);
-            log.Debug("Exiting Single Build Execution");
+            log.LogInformation(msg);
+            log.LogDebug("Exiting Single Build Execution");
 
             return retVal;
         }
 
         internal static int RunThreadedExecution(CommandLineArgs cmdLine)
         {
-            SetEventHubAppenderConnection(cmdLine.BatchArgs.EventHubConnectionString);
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
+
             DateTime start = DateTime.Now;
-            SetWorkingDirectoryLogger(cmdLine.RootLoggingPath);
-            log.Debug("Entering Threaded Execution");
-            log.Debug(cmdLine.ToStringExtension(StringType.Basic));
-            log.Debug(cmdLine.ToStringExtension(StringType.BatchQuery));
-            log.Debug(cmdLine.ToStringExtension(StringType.BatchThreaded));
-            log.Info("Running...");
+            log.LogDebug("Entering Threaded Execution");
+            log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
+            log.LogDebug(cmdLine.ToStringExtension(StringType.BatchQuery));
+            log.LogDebug(cmdLine.ToStringExtension(StringType.BatchThreaded));
+            log.LogInformation("Running...");
             ThreadedExecution runner = new ThreadedExecution(cmdLine);
             int retVal = runner.Execute();
             if (retVal == (int)ExecutionReturn.Successful)
             {
-                log.Info("Completed Successfully");
+                log.LogInformation("Completed Successfully");
             }
             else if (retVal == (int)ExecutionReturn.DacpacDatabasesInSync)
             {
-                log.Info("Datbases already in sync");
+                log.LogInformation("Datbases already in sync");
                 retVal = (int)ExecutionReturn.Successful;
             }
             else
             {
-                log.Warn("Completed with Errors - check log");
-            }     
+                log.LogWarning("Completed with Errors - check log");
+            }
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
-            log.Info(msg);
+            log.LogInformation(msg);
 
-            if(!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
+            if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
-                log.Info("Writing log files to storage...");
+                log.LogInformation("Writing log files to storage...");
                 var blobTask = WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
                 blobTask.Wait();
             }
-          
-            log.Debug("Exiting Threaded Execution");
-  
+
+            log.LogDebug("Exiting Threaded Execution");
+
             return retVal;
 
         }
@@ -450,13 +442,13 @@ namespace SqlBuildManager.Console
             try
             {
                 //var writeTasks = new List<Task>();
-                log.Info($"Writing log files to blob storage at {outputContainerSasUrl}");
+                log.LogInformation($"Writing log files to blob storage at {outputContainerSasUrl}");
                 var renameLogFiles = new string[] { "sqlbuildmanager", "csv" };
                 BlobContainerClient container = new BlobContainerClient(new Uri(outputContainerSasUrl));
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
                 string machine = Environment.MachineName;
 
-                foreach(var f in fileList)
+                foreach (var f in fileList)
                 {
                     try
                     {
@@ -466,7 +458,7 @@ namespace SqlBuildManager.Console
                         {
 
                             tmp = machine + "-" + tmp;
-                            log.InfoFormat($"Saving File '{f}' as '{tmp}'");
+                            log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var rename = container.GetBlockBlobClient(tmp);
                             using (var fs = new FileStream(f, FileMode.Open))
                             {
@@ -481,7 +473,7 @@ namespace SqlBuildManager.Console
                             tmp = machine + "-" + tmp;
                             var localTemp = Path.Combine(Path.GetDirectoryName(f), tmp);
                             File.Copy(f, localTemp);
-                            log.InfoFormat($"Saving File '{f}' as '{tmp}'");
+                            log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var rename = container.GetBlockBlobClient(tmp);
                             using (var fs = new FileStream(localTemp, FileMode.Open))
                             {
@@ -492,7 +484,7 @@ namespace SqlBuildManager.Console
                         }
                         else
                         {
-                            log.InfoFormat($"Saving File '{f}' as '{tmp}'");
+                            log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var b = container.GetBlockBlobClient(tmp);
                             using (var fs = new FileStream(f, FileMode.Open))
                             {
@@ -503,65 +495,15 @@ namespace SqlBuildManager.Console
                     }
                     catch (Exception e)
                     {
-                        log.ErrorFormat($"Unable to upload log file '{f}' to blob storage: {e.Message}");
+                        log.LogError($"Unable to upload log file '{f}' to blob storage: {e.Message}");
                     }
                 }
                 return true;
             }
             catch (Exception exe)
             {
-                log.Error($"Unable to upload log files to blob storage.{Environment.NewLine}{exe.Message}");
+                log.LogError($"Unable to upload log files to blob storage.{Environment.NewLine}{exe.Message}");
                 return false;
-            }
-        }
-
-        private static void SetWorkingDirectoryLogger(string rootLoggingPath)
-        {
-   
-            try
-            {
-
-                if (!string.IsNullOrEmpty(rootLoggingPath))
-                {
-                    if (!Directory.Exists(rootLoggingPath))
-                    {
-                        Directory.CreateDirectory(rootLoggingPath);
-                    }
-
-                    var appender = LogManager.GetRepository(Assembly.GetEntryAssembly()).GetAppenders().Where(a => a.Name == "ThreadedExecutionWorkingAppender" || a.Name == "StandardRollingLogFileAppender");
-                    if (appender != null)
-                    {
-                        foreach(var app in appender)
-                        {
-                            var thr = app as log4net.Appender.FileAppender;
-                            thr.File = Path.Combine(rootLoggingPath, Path.GetFileName(thr.File));
-                            thr.ActivateOptions();
-                        }
-                        
-                    }
-                }
-            }catch(Exception exe)
-            {
-                log.Error(string.Format("Unable to set local root logging path to {0}", rootLoggingPath), exe);
-            }
-
-            
-        }
-
-        internal static void SetEventHubAppenderConnection(string connectionString)
-        {
-            Hierarchy hier = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly()) as Hierarchy;
-            if (hier != null)
-            {
-                var ehAppender = (AzureEventHubAppender)LogManager.GetRepository(Assembly.GetEntryAssembly()).GetAppenders().Where(a => a.Name.Contains("AzureEventHubAppender")).FirstOrDefault();
-                if (ehAppender != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(connectionString))
-                    {
-                        ehAppender.ConnectionString = connectionString;
-                        ehAppender.ActivateOptions();
-                    }
-                }
             }
         }
 
@@ -577,12 +519,12 @@ namespace SqlBuildManager.Console
 
             if (!DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName))
             {
-                log.Error($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
+                log.LogError($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
             }
             else
             {
-                log.Info($"DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {fullName}");
+                log.LogInformation($"DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {fullName}");
             }
             return 0;
         }
@@ -599,7 +541,7 @@ namespace SqlBuildManager.Console
         internal static void GetDifferences(CommandLineArgs cmdLine)
         {
             string history = Synchronize.GetDatabaseRunHistoryTextDifference(cmdLine);
-            log.Info(history);
+            log.LogInformation(history);
             System.Environment.Exit(0);
         }
 
@@ -608,7 +550,7 @@ namespace SqlBuildManager.Console
             string packageName = BackoutCommandLine.CreateBackoutPackage(cmdLine);
             if (!String.IsNullOrEmpty(packageName))
             {
-                log.Info(packageName);
+                log.LogInformation(packageName);
                 System.Environment.Exit(0);
             }
             else
@@ -619,9 +561,9 @@ namespace SqlBuildManager.Console
 
         internal static void GetPackageHash(CommandLineArgs cmdLine)
         {
-            if(string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
+            if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
-                log.Error("No --packagename was specified. This is required for 'sbm gethash' command");
+                log.LogError("No --packagename was specified. This is required for 'sbm gethash' command");
                 System.Environment.Exit(626);
 
             }
@@ -629,7 +571,7 @@ namespace SqlBuildManager.Console
             string hash = SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
             if (!String.IsNullOrEmpty(hash))
             {
-                log.Info(hash);
+                log.LogInformation(hash);
                 System.Environment.Exit(0);
             }
             else
@@ -642,7 +584,7 @@ namespace SqlBuildManager.Console
         {
             if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
-                log.Error("No --packagename was specified. This is required for 'sbm policycheck' command");
+                log.LogError("No --packagename was specified. This is required for 'sbm policycheck' command");
                 System.Environment.Exit(34536);
 
             }
@@ -652,10 +594,10 @@ namespace SqlBuildManager.Console
             List<string> policyMessages = helper.CommandLinePolicyCheck(packageName, out passed);
             if (policyMessages.Count > 0)
             {
-                log.Info("Script Policy Messages:");
+                log.LogInformation("Script Policy Messages:");
                 foreach (var policyMessage in policyMessages)
                 {
-                    log.Info(policyMessage);
+                    log.LogInformation(policyMessage);
                 }
             }
 
@@ -673,7 +615,7 @@ namespace SqlBuildManager.Console
         {
             if (string.IsNullOrWhiteSpace(cmdLine.Directory))
             {
-                log.Error("The --directory argument is required for 'sbm package' command");
+                log.LogError("The --directory argument is required for 'sbm package' command");
                 System.Environment.Exit(9835);
             }
             string directory = cmdLine.Directory;
@@ -682,13 +624,13 @@ namespace SqlBuildManager.Console
             if (sbmFiles.Count > 0)
             {
                 foreach (string sbm in sbmFiles)
-                    log.Info(sbm);
+                    log.LogInformation(sbm);
 
                 System.Environment.Exit(0);
             }
             else if (message.Length > 0)
             {
-                log.Warn(message);
+                log.LogWarning(message);
                 System.Environment.Exit(604);
             }
             else
@@ -700,6 +642,7 @@ namespace SqlBuildManager.Console
 
         #endregion
     }
-
-
 }
+   
+
+

@@ -1,4 +1,4 @@
-using log4net;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +11,7 @@ namespace SqlSync.SqlBuild
     /// </summary>
     public class ZipHelper
     {
-        private static ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public ZipHelper()
         {
@@ -59,7 +59,7 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    log.Error(String.Format("Unable to add file {0} to zip package", zipFileName), e);
+                    log.LogError(e, $"Unable to add file {zipFileName} to zip package");
                     throw;
                 }
             }
@@ -82,7 +82,7 @@ namespace SqlSync.SqlBuild
             try
             {
                 string fileUnzipFullName;
-                log.DebugFormat("Unzipping {0} to folder: {1}", zipFileName, destinationDir);
+                log.LogDebug($"Unzipping {zipFileName} to folder: {destinationDir}");
                 if (!Directory.Exists(destinationDir))
                 {
                     Directory.CreateDirectory(destinationDir);
@@ -105,7 +105,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Error("Unable to unzip package file", exe);
+                log.LogError(exe, "Unable to unzip package file");
                 return false;
             }
         }
@@ -118,7 +118,7 @@ namespace SqlSync.SqlBuild
                 {
                     foreach (var file in filesToZip)
                     {
-                        log.DebugFormat("Adding files '{0}' to package zip file '{1}'", file, filesToZip);
+                        log.LogDebug($"Adding files '{file}' to package zip file '{filesToZip}'");
                         modFile.CreateEntryFromFile(file, Path.GetFileName(file),CompressionLevel.Fastest);
                     }
 
@@ -127,7 +127,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.Error("Error adding files to package zip", exe);
+                log.LogError(exe,"Error adding files to package zip");
                 return false;
             }
 

@@ -9,7 +9,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using SqlSync.SqlBuild.Status;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 using Polly;
 namespace SqlSync.SqlBuild.AdHocQuery
@@ -17,7 +17,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
     public class QueryCollectionRunner : IDisposable
     {
         private ConnectionData masterConnData = null;
-        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private string serverName;
         private string databaseName;
         private Policy pollyRetryPolicy = null;
@@ -144,12 +144,12 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (OutOfMemoryException omExe)
             {
-                log.Error("Ran out of memory running Query: " + query + " on " + connData.SQLServerName + "." + connData.DatabaseName, omExe);
+                log.LogError(omExe, $"Ran out of memory running Query: {query} on {connData.SQLServerName}.{connData.DatabaseName}" );
             }
             catch (Exception exe)
             {
                 errorMessage = exe.Message;
-                log.Error("Error Executing Query: " + query, exe);
+                log.LogError(exe, "Error Executing Query: {query}");
                 Result r = new Result();
                 r.Add("","** Execution Error: "+errorMessage);
                 results.Results.Add(r);
