@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using SqlBuildManager.Console.Queue;
 namespace SqlBuildManager.Console
 {
 
@@ -636,6 +637,34 @@ namespace SqlBuildManager.Console
             else
             {
                 System.Environment.Exit(0);
+            }
+        }
+
+        internal async static Task<int> QueueOverrideTargets(CommandLineArgs cmdLine)
+        {
+            if(string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusConnectionString))
+            {
+                log.LogError("A --servicebusconnection value is required. Please include this in either the settings file content or as a specific command option");
+                return 9839;
+            }
+
+            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out MultiDbData multiData, out string[] errorMessages);
+            if (tmpValReturn != 0)
+            {
+                log.LogError(String.Join(";", errorMessages));
+                return tmpValReturn;
+            }
+
+            bool success = await  QueueManager.SendTargetsToQueue(cmdLine.BatchArgs.ServiceBusConnectionString, cmdLine.BatchArgs.BatchJobName, multiData);
+            if(success)
+            {
+                log.LogInformation("Successfully sent messages to Service Bus queue");
+                return 0;
+            }
+            else
+            {
+                log.LogError("Error sending messages to Service Bus queue");
+                return 2355;
             }
         }
 

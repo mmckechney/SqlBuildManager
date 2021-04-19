@@ -23,8 +23,6 @@ namespace SqlBuildManager.Console.Threaded
         private static ILogger logSuccess;
         private static ILogger logRuntime;
 
-        //private static ILog logEvent = LogManager.GetLogger(System.Reflection.Assembly.GetExecutingAssembly(), "AzureEventHubAppenderLogger");
-
         StringBuilder sbSuccessDatabasesCfg = new System.Text.StringBuilder();
         StringBuilder sbFailureDatabasesCfg = new System.Text.StringBuilder();
 
@@ -43,15 +41,7 @@ namespace SqlBuildManager.Console.Threaded
             get { return ThreadedExecution.projectFileName; }
         }
         string projectFilePath = string.Empty;
-        private string logFileName;
-        private string errorFileName;
-        private string commitLogName;
-        private string successDatabaseConfigLogName;
-        private string failureDatabaseConfigLogName;
 
-        private bool haveWrittenToError;
-        private bool haveWrittenToCommit;
-        private bool loggingPathsInitialized = false;
         private string buildRequestedBy = string.Empty;
 
         private static string buildZipFileName = string.Empty;
@@ -134,6 +124,12 @@ namespace SqlBuildManager.Console.Threaded
                 cmdLine = CommandLine.ParseCommandLineArg(args);
             }
 
+            //Create Threaded Run specific loggers
+            if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
+            {
+                cmdLine.RootLoggingPath = @"C:/tmp-sqlbuildlogging";
+            }
+
             logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.BatchArgs.EventHubConnectionString);
             logRuntime = SqlBuildManager.Logging.Threaded.RuntimeLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
 
@@ -143,12 +139,6 @@ namespace SqlBuildManager.Console.Threaded
             logCommitRun = SqlBuildManager.Logging.Threaded.CommitLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
             logErrorRun = SqlBuildManager.Logging.Threaded.ErrorLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
 
-            if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
-            {
-                cmdLine.RootLoggingPath = @"C:/tmp-sqlbuildlogging";
-            }
-
-            SetLoggingPaths(cmdLine.RootLoggingPath);
 
             log.LogInformation("Validating command parameters");
             int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
@@ -251,11 +241,6 @@ namespace SqlBuildManager.Console.Threaded
                 ThreadedExecution.buildZipFileName = buildZipFileName;
 
                 this.buildRequestedBy = buildRequestedBy;
-
-                if (!this.loggingPathsInitialized)
-                {
-                    SetLoggingPaths(rootLoggingPath);
-                }
 
                 //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
 
@@ -400,48 +385,7 @@ namespace SqlBuildManager.Console.Threaded
             return returnVal;
         }
 
-        private void SetLoggingPaths(string rootLoggingPath)
-        {
-            try
-            {
-                log.LogInformation($"Initializing logging paths: {rootLoggingPath}");
-
-                //Set the logging folders, etc...s
-                string expanded = System.Environment.ExpandEnvironmentVariables(rootLoggingPath);
-                ThreadedExecution.rootLoggingPath = Path.GetFullPath(expanded);
-
-                log.LogInformation($"Logging path expanded to: {ThreadedExecution.rootLoggingPath}");
-
-                if (!Directory.Exists(ThreadedExecution.rootLoggingPath))
-                {
-                    Directory.CreateDirectory(ThreadedExecution.rootLoggingPath);
-                }
-
-                this.workingDirectory = Path.Combine(ThreadedExecution.rootLoggingPath, "Working");
-                if (!Directory.Exists(this.workingDirectory))
-                {
-                    Directory.CreateDirectory(this.workingDirectory);
-                }
-
-                this.logFileName = Path.Combine(rootLoggingPath, "Execution.log");
-                this.successDatabaseConfigLogName = Path.Combine(rootLoggingPath, "SuccessDatabases.cfg");
-                this.failureDatabaseConfigLogName = Path.Combine(rootLoggingPath, "FailureDatabases.cfg");
-
-                this.errorFileName = Path.Combine(rootLoggingPath, "Errors.log");
-                this.commitLogName = Path.Combine(rootLoggingPath, "Commits.log");
-
-            }
-            catch (Exception exe)
-            { 
-                log.LogError(exe, "Unable to set root logging path for " + rootLoggingPath );
-                throw;
-            }
-
-
-            this.loggingPathsInitialized = true;
-
-        }
-
+        
         private int ExtractAndLoadBuildFile(string sqlBuildProjectFileName, out SqlSyncBuildData buildData)
         {
             log.LogInformation($"Extracting build file '{sqlBuildProjectFileName}' to working directory '{this.workingDirectory}'");

@@ -123,7 +123,7 @@ $settingsFile = [PSCustomObject]@{
         BatchPoolOs =  $batchPoolOs
         BatchPoolName = $batchPoolName
         BatchApplicationPackage = $batchApplicationPackage
-        ServiceBusConnectionString = "$(sb.PrimaryConnectionString)"
+        ServiceBusConnectionString = "$($sb.PrimaryConnectionString)"
     }
     RootLoggingPath = "C:\temp"
     TimeoutRetryCount = 0

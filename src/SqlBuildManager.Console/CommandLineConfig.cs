@@ -176,6 +176,10 @@ namespace SqlBuildManager.Console
             {
                 Argument = new Argument<string>("eventhubconnection")
             };
+            var serviceBusconnectionOption = new Option(new string[] { "--servicebusconnection" }, "Service Bus connection string for Service Bus queue distribution in batch execution")
+            {
+                Argument = new Argument<string>("servicebusconnection")
+            };
             var pollbatchpoolstatusOption = new Option(new string[] { "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true, default) or fire and forget (false)")
             {
                 Argument = new Argument<bool>("pollbatchpoolstatus")
@@ -344,6 +348,8 @@ namespace SqlBuildManager.Console
                 defaultscripttimeoutOption,
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
                 //Other run command options
                 platinumdacpacOption,
                 packagenameOption.Copy(false),
@@ -384,6 +390,8 @@ namespace SqlBuildManager.Console
                 defaultscripttimeoutOption,
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
                 //Batch to threaded node options
                 platinumdacpacOption,
                 packagenameOption.Copy(false),
@@ -457,6 +465,8 @@ namespace SqlBuildManager.Console
                 defaultscripttimeoutOption,
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
                 //Additional settings
                 timeoutretrycountOption,
                 pollbatchpoolstatusOption,
@@ -464,6 +474,15 @@ namespace SqlBuildManager.Console
                 cleartextOption
             };
             saveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.SaveAndEncryptSettings);
+
+            var batchQueueTargetsCommand = new Command("queue", "Sends database override targets to Service Bus Queue")
+            {
+                batchjobnameOption.Copy(true),
+                settingsfileOption,
+                serviceBusconnectionOption,
+                overrideOption.Copy(true)
+            };
+            batchQueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.QueueOverrideTargets);
 
             //Batch query 
             var batchQueryCommand = new Command("query", "Run a SELECT query across multiple databases using Azure Batch")
@@ -495,7 +514,9 @@ namespace SqlBuildManager.Console
                 eventhubconnectionOption,
                 defaultscripttimeoutOption,
                 threadedConcurrencyOption,
-                threadedConcurrencyTypeOption
+                threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
 
             };
             batchQueryCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunBatchQuery);
@@ -542,6 +563,7 @@ namespace SqlBuildManager.Console
 
             //Azure Batch base command
             var batchCommand = new Command("batch", "Commands for setting and executing a batch run or batch query");
+            batchCommand.Add(batchQueueTargetsCommand);
             batchCommand.Add(saveSettingsCommand);
             batchCommand.Add(batchPreStageCommand);
             batchCommand.Add(batchCleanUpCommand);
