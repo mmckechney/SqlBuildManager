@@ -365,6 +365,12 @@ namespace SqlBuildManager.Console
                 returnVal = -888;
             }
 
+            if (!String.IsNullOrEmpty(cmdLine.BatchArgs.ServiceBusConnectionString) && string.IsNullOrEmpty(cmdLine.BatchArgs.BatchJobName))
+            {
+                messages.Add("When --servicebusconnection is provided in command line or --settingsfile Json, then --batchjobname is required");
+                returnVal = -888;
+            }
+
             errorMessages = messages.ToArray();
             return returnVal;
         }

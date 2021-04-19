@@ -107,15 +107,16 @@ namespace SqlBuildManager.Console.Batch
             MultiDbData buildData;
             int? myExitCode = 0;
 
-            //Validate the override settings
             int tmpReturn = 0;
+            //Validate the override settings (not needed if --servicebusconnection is provided
             string[] errorMessages;
             int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out buildData, out errorMessages);
             if (tmpVal != 0)
             {
                 log.LogError($"Unable to validate database config\r\n{string.Join("\r\n", errorMessages)}");
-                return (tmpVal, string.Empty); 
+                return (tmpVal, string.Empty);
             }
+            //TODO
 
             //Validate the platinum dacpac
             var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref buildData);

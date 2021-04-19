@@ -60,7 +60,7 @@ namespace SqlBuildManager.Console.Queue
                     {
                         var data = new { ServerName = target.Item1, DbOverrideSequence = target.Item2 };
                         var msg = new ServiceBusMessage(JsonSerializer.Serialize(data, options));
-                        msg.Subject = batchJobName;
+                        msg.SessionId = batchJobName;
                         msgs.Add(msg);
                     }
                 }
@@ -74,6 +74,12 @@ namespace SqlBuildManager.Console.Queue
             
         }
 
+        public static ServiceBusReceiver GetQueueReceiver(string queueConnectionString)
+        {
+            ServiceBusClient client = new ServiceBusClient(queueConnectionString);
+            var receiver = client.CreateReceiver("sqlbuildmanager");
+            return receiver;
+        }
 
     }
 }

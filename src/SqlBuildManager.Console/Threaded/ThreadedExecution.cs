@@ -222,12 +222,43 @@ namespace SqlBuildManager.Console.Threaded
             }
 
             //Set the number of allowed retries...
-            multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;
+            this.multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;
             //Set Trial
-            multiData.RunAsTrial = cmdLine.Trial;
-            multiData.BuildRevision = cmdLine.BuildRevision;
+            this.multiData.RunAsTrial = cmdLine.Trial;
+            this.multiData.BuildRevision = cmdLine.BuildRevision;
 
             return Execute(ThreadedExecution.buildZipFileName, cmdLine.DacPacArgs.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName, cmdLine.DacPacArgs.ForceCustomDacPac, cmdLine.Concurrency, cmdLine.ConcurrencyType);
+        }
+
+        private int PrepBuildAndScripts(string buildZipFileName, string buildRequestedBy, bool forceCustomDacpac)
+        {
+            ThreadedExecution.buildZipFileName = buildZipFileName;
+            this.buildRequestedBy = buildRequestedBy;
+
+            //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
+
+            if (!forceCustomDacpac)
+            {
+                ExtractAndLoadBuildFile(ThreadedExecution.buildZipFileName, out ThreadedExecution.buildData);
+                if (buildData == null)
+                {
+                    var msg = new LogMsg()
+                    {
+                        Message = "Unable to procees. SqlSyncBuild data object is null, Returning error code: " + (int)ExecutionReturn.NullBuildData,
+                        LogType = LogType.Error
+                    };
+                    WriteToLog(msg);
+                    return (int)ExecutionReturn.NullBuildData;
+                }
+                else
+                {
+                    //Load up the batched scripts into a shared object so that we can conserve memory
+                    ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, this.projectFilePath);
+                }
+              
+            }
+            return 0;
+
         }
 
         /// <summary>
@@ -238,25 +269,10 @@ namespace SqlBuildManager.Console.Threaded
         {
             try
             {
-                ThreadedExecution.buildZipFileName = buildZipFileName;
-
-                this.buildRequestedBy = buildRequestedBy;
-
-                //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
-
-                if (forceCustomDacpac == false)
+                var prep = PrepBuildAndScripts(buildZipFileName, buildRequestedBy, forceCustomDacpac);
+                if(prep != 0)
                 {
-                    ExtractAndLoadBuildFile(ThreadedExecution.buildZipFileName, out ThreadedExecution.buildData);
-                    if (buildData == null)
-                    {
-                        var msg = new LogMsg()
-                        {
-                            Message = "Unable to procees. SqlSyncBuild data object is null, Returning error code: " + (int)ExecutionReturn.NullBuildData,
-                            LogType = LogType.Error
-                        };
-                        WriteToLog(msg);
-                        return (int)ExecutionReturn.NullBuildData;
-                    }
+                    return prep;
                 }
 
                 var tasks = new List<Task<int>>();
@@ -265,12 +281,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     startTime = DateTime.Now;
                     log.LogInformation($"Starting Threaded processing at {startTime.ToString()}");
-                    //Load up the batched scripts into a shared object so that we can conserve memory
-                    if (!forceCustomDacpac)
-                    {
-                        ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, this.projectFilePath);
-                    }
-
+ 
                     var concurrencyBuckets = Concurrency.ConcurrencyByType(multiData, concurrency, concurrencyType);
                     targetTotal = concurrencyBuckets.Sum(c => c.Count());
                     foreach (var bucket in concurrencyBuckets)
@@ -318,6 +329,21 @@ namespace SqlBuildManager.Console.Threaded
                 return (int)ExecutionReturn.NullBuildData;
 
             }
+        }
+        private async Task<int> ExecuteFromQueue(CommandLineArgs cmdLine, string buildRequestedBy)
+        {
+            var prep = PrepBuildAndScripts(ThreadedExecution.BuildZipFileName, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
+            if(prep != 0)
+            {
+                return prep;
+            }
+
+            var receiver = Queue.QueueManager.GetQueueReceiver(cmdLine.BatchArgs.ServiceBusConnectionString);
+            var messages = await receiver.ReceiveMessagesAsync(cmdLine.Concurrency);
+            var filter = new CorrelationFilter();
+            filter.Label = "Important";
+
+            return 0;
         }
         private async Task<int> ProcessConcurrencyBucket(IEnumerable<(string, List<DatabaseOverride>)> bucket, bool forceCustomDacpac)
         {
