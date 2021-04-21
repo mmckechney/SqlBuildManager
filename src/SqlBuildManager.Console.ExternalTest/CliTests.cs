@@ -59,17 +59,21 @@ namespace SqlBuildManager.Console.ExternalTest
         private string overrideFilePath;
         private string settingsFilePath;
         private string linuxSettingsFilePath;
+        private string settingsFileKeyPath;
 
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
             this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-windows.json");
+            this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-linux.json");
             this.overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
             this.cmdLine = new CommandLineArgs();
             this.cmdLine.SettingsFile = this.settingsFilePath;
-
+            this.cmdLine.SettingsFileKey = this.settingsFileKeyPath;
+            bool ds;
+            (ds, this.cmdLine)= Cryptography.DecryptSensitiveFields(cmdLine);
             this.overrideFileContents = File.ReadAllLines(this.overrideFilePath).ToList();
         }
 
@@ -199,6 +203,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
 
@@ -232,6 +237,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
             args.Add($"--concurrency 2");
@@ -267,6 +273,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
             args.Add($"--concurrency 2");
@@ -297,6 +304,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {this.overrideFilePath}");
 
             var result = ExecuteProcess(args);
@@ -325,6 +333,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -361,6 +370,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -401,6 +411,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -441,6 +452,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}"); 
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdacpac {dacpacName}");
 
@@ -482,6 +494,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}"); 
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdacpac {dacpacName}");
 
@@ -519,6 +532,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 List<string> args = new List<string>();
                 args.Add($"batch {batchMethod}");
                 args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+                args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
                 args.Add($"--override {overrideFile}");
                 args.Add($"--outputfile {outputFile}");
                 args.Add($"--queryfile {selectquery}");
@@ -572,6 +586,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {overrideFile}");
             args.Add($"--outputfile {outputFile}");
             args.Add($"--queryfile {insertquery}");
@@ -601,6 +616,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {overrideFile}");
             args.Add($"--outputfile {outputFile}");
             args.Add($"--queryfile {deletequery}");
@@ -630,6 +646,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {overrideFile}");
             args.Add($"--outputfile {outputFile}");
             args.Add($"--queryfile {updatequery}");

@@ -16,13 +16,14 @@ namespace SqlBuildManager.Logging
 		private static Microsoft.Extensions.Logging.LogLevel logLevel = Microsoft.Extensions.Logging.LogLevel.Information;
 		private static LoggingLevelSwitch levelSwitch = new LoggingLevelSwitch();
 		private static List<string> loggingPaths = new List<string>();
+		private static Serilog.Core.Logger serilogLogger = null;
 		public static void ConfigureStandardLogger(ILoggerFactory factory)
 		{
 
 			var logOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}";
 			var consoleOutput = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,2}] {Message}{NewLine}{Exception}";
 
-			var logger =  new LoggerConfiguration()
+			serilogLogger =  new LoggerConfiguration()
                     .MinimumLevel.ControlledBy(levelSwitch)
                     .Enrich.WithThreadId()
                     .Enrich.WithThreadName()
@@ -30,7 +31,7 @@ namespace SqlBuildManager.Logging
                     .WriteTo.File(_logFileName, outputTemplate: logOutputTemplate, rollOnFileSizeLimit: true)
                     .CreateLogger();
            
-			factory.AddSerilog(logger);
+			factory.AddSerilog(serilogLogger);
 	
 		}
 
@@ -133,10 +134,15 @@ namespace SqlBuildManager.Logging
 			}
 		}
 
-		public static void FlushLogs()
-        {
-			Log.CloseAndFlush();
-        }
+		internal static void CloseAndFlush()
+		{
+			if (serilogLogger != null)
+			{
+				serilogLogger.Dispose();
+			}
+			Factory = null;
+
+		}
 
 
 	}

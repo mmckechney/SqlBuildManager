@@ -20,6 +20,10 @@ namespace SqlBuildManager.Console
                 Argument = new Argument<FileInfo>("settingsfile").ExistingOnly(),
                 Name = "SettingsFileInfo",
             };
+            var settingsfileKeyOption = new Option(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive informtation in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable. If not provided a machine value will be used.")
+            {
+                Argument = new Argument<string>("settingsfilekey"),
+            };
             var overrideOption = new Option(new string[] { "--override" }, "File containing the target database settings (usually a formatted .cfg file)")
             {
                 Argument = new Argument<string>("override")
@@ -323,6 +327,7 @@ namespace SqlBuildManager.Console
                 passwordOption,
                 usernameOption,
                 overrideOption.Copy(true),
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,
@@ -363,6 +368,7 @@ namespace SqlBuildManager.Console
                 usernameOption,
                 authtypeOption,
                 overrideOption,
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,
@@ -403,6 +409,7 @@ namespace SqlBuildManager.Console
             //Batch pre-stage
             var batchPreStageCommand = new Command("prestage", "Pre-stage the Azure Batch VM nodes")
             {
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,
@@ -422,6 +429,7 @@ namespace SqlBuildManager.Console
             //Batch node cleanup
             var batchCleanUpCommand = new Command("cleanup", "Azure Batch Clean Up - remove VM nodes")
             {
+                settingsfileKeyOption,
                 settingsfileOption,
                 batchaccountnameOption,
                 batchaccountkeyOption,
@@ -436,6 +444,7 @@ namespace SqlBuildManager.Console
             {
                 passwordOption,
                 usernameOption,
+                settingsfileKeyOption,
                 settingsfileOption.Copy(true),
                 //Batch account options
                 batchaccountnameOption,
@@ -475,6 +484,7 @@ namespace SqlBuildManager.Console
                 queryFileOption.Copy(true),
                 outputFileOption.Copy(true),
                 silentOption,
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,
@@ -510,6 +520,7 @@ namespace SqlBuildManager.Console
                 overrideOption.Copy(true),
                 queryFileOption.Copy(true),
                 outputFileOption.Copy(true),
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,

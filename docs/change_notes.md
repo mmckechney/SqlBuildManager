@@ -2,6 +2,11 @@
 # SQL Build Manager Change Notes
 
 
+### Version 12.2.0
+
+- *ADDED:* New command option `--settingsfilekey`, a key for the encryption of sensitive informtation in the settings file. If provided when saving the settings file, it of course must also be provided when using the settings file. This version moved away from a static (and not really secure) encryption key used prior. The argument value can be either the key string or a file path to a key file. The key may also be 'silently' provided by setting a `sbm-settingsfilekey` Environment variable. If not provided a machine value will be used.
+- *FIXED:* Modified unit tests to Close and Flush loggers to avoid file locking issues
+
 ### Version 12.1.0
 
 - *UPDATED:* Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Loggging. Implements Serilog

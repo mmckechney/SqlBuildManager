@@ -51,7 +51,8 @@ namespace SqlSync.SqlBuild
                     try
                     {
                         cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(settings));
-                        cmdLine = Cryptography.DecryptSensitiveFields(cmdLine);
+                        bool success;
+                        (success, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
 
                     }
                     catch (Exception exe)

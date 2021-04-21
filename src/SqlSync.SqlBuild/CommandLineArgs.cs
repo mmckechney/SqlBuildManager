@@ -23,6 +23,7 @@ namespace SqlSync.SqlBuild
         {
 
         }
+        private bool decrypted = false;
         [JsonIgnore]
         public ActionType Action { get; set; }
 
@@ -52,7 +53,7 @@ namespace SqlSync.SqlBuild
                 {
 
                     CommandLineArgs cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(value));
-                    cmdLine = Cryptography.DecryptSensitiveFields(cmdLine);
+                    //cmdLine = Cryptography.DecryptSensitiveFields(cmdLine);
                     this.BatchArgs = cmdLine.BatchArgs;
                     this.AuthenticationArgs = cmdLine.AuthenticationArgs;
                     this.RootLoggingPath = cmdLine.RootLoggingPath;
@@ -90,6 +91,8 @@ namespace SqlSync.SqlBuild
                 }
             }
         }
+        [JsonIgnore]
+        public string SettingsFileKey { get; set; }
         [JsonIgnore]
         public virtual string Server { get; set; } = string.Empty;
         [JsonIgnore]
@@ -180,7 +183,9 @@ namespace SqlSync.SqlBuild
         [Serializable]
         public class Authentication
         {
+            [Encrypt]
             public virtual string UserName { get; set; } = string.Empty;
+            [Encrypt]
             public virtual string Password { get; set; } = string.Empty;
 
             [JsonIgnore]
@@ -275,9 +280,11 @@ namespace SqlSync.SqlBuild
  
             public int BatchNodeCount { get; set; } = 10;
             public string BatchAccountName { get; set; } = null;
+            [Encrypt]
             public string BatchAccountKey { get; set; } = null;
             public string BatchAccountUrl { get; set; } = null;
             public string StorageAccountName { get; set; } = null;
+            [Encrypt]
             public string StorageAccountKey { get; set; } = null;
             public string BatchVmSize { get; set; } = null;
             [JsonIgnore]
@@ -290,6 +297,7 @@ namespace SqlSync.SqlBuild
             public string BatchPoolName { get; set; } = null;
             [JsonConverter(typeof(StringEnumConverter))]
             public OsType BatchPoolOs { get; set; }
+            [Encrypt]
             public string EventHubConnectionString { get; set; } = string.Empty;
             public string ApplicationPackage { get; set; } = string.Empty;
         }
@@ -503,6 +511,7 @@ namespace SqlSync.SqlBuild
                         case "OverrideDesignated":
                         case "CliVersion":
                         case "WhatIf":
+                        case "LogLevel":
                             //ignore these
                             break;
 

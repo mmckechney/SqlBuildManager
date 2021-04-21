@@ -728,7 +728,8 @@ namespace SqlBuildManager.Console.Batch
                 switch(os)
                 {
                     case OsType.Windows:
-                        sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe batch ");
+                        sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe ");
+                        sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
                         switch (bType)
                         {
                             case BatchType.Run:
@@ -741,7 +742,8 @@ namespace SqlBuildManager.Console.Batch
                         break;
 
                     case OsType.Linux:
-                        sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm batch ");
+                        sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm ");
+                        sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
                         switch (bType)
                         {
                             case BatchType.Run:

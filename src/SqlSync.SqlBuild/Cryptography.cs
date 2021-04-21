@@ -6,13 +6,16 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.IO;
 using SqlSync.Connection;
+using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
+   
     /// <summary>
     /// http://www.codeproject.com/Articles/769741/Csharp-AES-bits-Encryption-Library-with-Salt
     /// </summary>
     public static class Cryptography
     {
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static string EncryptText(string input, string password)
         {
             try
@@ -36,7 +39,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        public static string DecryptText(string input, string password)
+        public static (bool, string) DecryptText(string input, string password, string description)
         {
             try
             {
@@ -49,11 +52,12 @@ namespace SqlSync.SqlBuild
 
                 string result = Encoding.UTF8.GetString(bytesDecrypted);
 
-                return result;
+                return (true, result);
             }
-            catch
+            catch(Exception exe)
             {
-                return input;
+                log.LogWarning($"Failed to decrypt {description} value. Returning unmodified string");
+                return (false, input);
             }
         }
 
@@ -134,59 +138,128 @@ namespace SqlSync.SqlBuild
 
         public static CommandLineArgs EncryptSensitiveFields(CommandLineArgs cmdLine)
         {
+            string key = GetSettingsFileEncryptionKey(cmdLine);
+
             if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
-                cmdLine.AuthenticationArgs.UserName = Cryptography.EncryptText(cmdLine.AuthenticationArgs.UserName, ConnectionHelper.ConnectCryptoKey);
+                cmdLine.AuthenticationArgs.UserName = Cryptography.EncryptText(cmdLine.AuthenticationArgs.UserName, key);
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
-                cmdLine.AuthenticationArgs.Password = Cryptography.EncryptText(cmdLine.AuthenticationArgs.Password, ConnectionHelper.ConnectCryptoKey);
+                cmdLine.AuthenticationArgs.Password = Cryptography.EncryptText(cmdLine.AuthenticationArgs.Password, key);
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchAccountKey))
             {
-                cmdLine.BatchArgs.BatchAccountKey = Cryptography.EncryptText(cmdLine.BatchArgs.BatchAccountKey, ConnectionHelper.ConnectCryptoKey);
+                cmdLine.BatchArgs.BatchAccountKey = Cryptography.EncryptText(cmdLine.BatchArgs.BatchAccountKey, key);
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.StorageAccountKey))
             {
-                cmdLine.BatchArgs.StorageAccountKey = Cryptography.EncryptText(cmdLine.BatchArgs.StorageAccountKey, ConnectionHelper.ConnectCryptoKey);
+                cmdLine.BatchArgs.StorageAccountKey = Cryptography.EncryptText(cmdLine.BatchArgs.StorageAccountKey, key);
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
             {
-                cmdLine.BatchArgs.EventHubConnectionString = Cryptography.EncryptText(cmdLine.BatchArgs.EventHubConnectionString, ConnectionHelper.ConnectCryptoKey);
+                cmdLine.BatchArgs.EventHubConnectionString = Cryptography.EncryptText(cmdLine.BatchArgs.EventHubConnectionString, key);
             }
 
             return cmdLine;
         }
 
-        public static CommandLineArgs DecryptSensitiveFields(CommandLineArgs cmdLine)
+        public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine)
         {
+            //Nothing to do if none of the settings came from a settings file!
+            if(string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
+            {
+                return (true,cmdLine);
+            }
+            bool consolidated = true;
+            bool success;
+            string key = GetSettingsFileEncryptionKey(cmdLine);
+
             if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
-                cmdLine.AuthenticationArgs.UserName = Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, ConnectionHelper.ConnectCryptoKey);
+                (success,  cmdLine.AuthenticationArgs.UserName) = Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, key, "--username");
+                consolidated = consolidated & success;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
-                cmdLine.AuthenticationArgs.Password = Cryptography.DecryptText(cmdLine.AuthenticationArgs.Password, ConnectionHelper.ConnectCryptoKey);
+                (success, cmdLine.AuthenticationArgs.Password) = Cryptography.DecryptText(cmdLine.AuthenticationArgs.Password, key, "--password");
+                consolidated = consolidated & success;
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchAccountKey))
             {
-                cmdLine.BatchArgs.BatchAccountKey = Cryptography.DecryptText(cmdLine.BatchArgs.BatchAccountKey, ConnectionHelper.ConnectCryptoKey);
+                (success, cmdLine.BatchArgs.BatchAccountKey) = Cryptography.DecryptText(cmdLine.BatchArgs.BatchAccountKey, key, "--batchaccountkey");
+                consolidated = consolidated & success;
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.StorageAccountKey))
             {
-                cmdLine.BatchArgs.StorageAccountKey = Cryptography.DecryptText(cmdLine.BatchArgs.StorageAccountKey, ConnectionHelper.ConnectCryptoKey);
+                (success, cmdLine.BatchArgs.StorageAccountKey) = Cryptography.DecryptText(cmdLine.BatchArgs.StorageAccountKey, key, "--storageaccountkey");
+                consolidated = consolidated & success;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
             {
-                cmdLine.BatchArgs.EventHubConnectionString = Cryptography.DecryptText(cmdLine.BatchArgs.EventHubConnectionString, ConnectionHelper.ConnectCryptoKey);
+                (success, cmdLine.BatchArgs.EventHubConnectionString) = Cryptography.DecryptText(cmdLine.BatchArgs.EventHubConnectionString, key, "--eventhubconnection");
+                consolidated = consolidated & success;
             }
 
-            return cmdLine;
+            return (consolidated, cmdLine);
+        }
+
+
+        private static string GetSettingsFileEncryptionKey(CommandLineArgs cmdLine)
+        {
+            if (!string.IsNullOrWhiteSpace(cmdLine.SettingsFileKey))
+            {
+               if(File.Exists(cmdLine.SettingsFileKey))
+                {
+                    return File.ReadAllText(cmdLine.SettingsFileKey).Trim();
+                }
+               else
+                {
+                    return cmdLine.SettingsFileKey;
+                }
+            }
+           
+            var ev = Environment.GetEnvironmentVariable(keyEnvronmentVariableName);
+            if (!string.IsNullOrWhiteSpace(ev))
+            {
+                return ev;
+            }
+
+            return GetDerivedKey();
+        }
+        private static readonly string keyEnvronmentVariableName = "sbm-settingsfilekey";
+        private static readonly string store = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", "sbm-store.txt");
+        private static readonly string kek = "x/A?D(G+KbPeShVmYq3t6w9y$B&E)H@McQfTjWnZr4u7x!A%C*F-JaNdRgUkXp2s5v8y/B?E(G+KbPeShVmYq3t6w9z$C&F)J@McQfTjWnZr4u7x!A%D*G-KaPdRgUkXp2s5v8y/B?E(H+MbQeThVmYq3t6w9z$C&F)J@NcRfUjXnZr4u7x!A%D*G-KaPdSgVkYp3s5v8y/B?E(H+MbQeThWmZq4t7w9z$C&F)J@NcRfUjXn2r5u8x/A%D*G-KaP";
+        private static string GetDerivedKey()
+        {
+
+
+            if(!File.Exists(store))
+            {
+                SetDerivedKey();
+            }
+            string e = File.ReadAllText(store);
+            (bool success,string pt) = DecryptText(e, kek,"");
+            return pt;
+        }
+        private static bool SetDerivedKey()
+        {
+            string key = GenerateEncryptionKey();
+            string wrapped = EncryptText(key, kek);
+            File.WriteAllText(store,wrapped);
+            return true;
+        }
+        private static string GenerateEncryptionKey()
+        {
+            var a = Aes.Create();
+            a.GenerateKey();
+           var encoded =  Convert.ToBase64String(a.Key);
+            return encoded;
         }
     }
 }

@@ -32,6 +32,7 @@ Once the script is done running, it will save two files to the `src\TestConfig` 
 
 1. `databasetargets.cfg` - a pre-configured database listing file for use in a batch or threaded execution targeting the SQL Azure databases just created
 2. `settingsfile.json` - a batch settings file that contains all of the SQL, Batch and Storage endpoints and connection keys for use in testing
+3. `settingsfilekey.txt` - a text file containing the encryption key for the settings file 
 
 **These files will be used by the tests located in the `SqlBuildManager.Console.ExternalTest` project, and can also be leveraged for any manual testing you need to perform**
 
