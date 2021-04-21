@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.Threaded
 {
-    public class ThreadedExecution
+    public class ThreadedExecution 
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static ILogger logEventHub;
@@ -299,7 +299,7 @@ namespace SqlBuildManager.Console.Threaded
 
 
                 TimeSpan interval = DateTime.Now - startTime;
-                var finalMsg = new LogMsg() { RunId = ThreadedExecution.runID, Message = $"Ending threaded processing at {DateTime.Now.ToUniversalTime()}", LogType = LogType.Message };
+                var finalMsg = new LogMsg() { RunId = ThreadedExecution.RunID, Message = $"Ending threaded processing at {DateTime.Now.ToUniversalTime()}", LogType = LogType.Message };
                 WriteToLog(finalMsg);
                 finalMsg.Message = $"Execution Duration: {interval.ToString()}";
                 WriteToLog(finalMsg);
@@ -329,6 +329,11 @@ namespace SqlBuildManager.Console.Threaded
                 return (int)ExecutionReturn.NullBuildData;
 
             }
+            finally
+            {
+                //Really only needed when running unit tests, but still a good idea.
+                ResetStaticValues();
+            }
         }
         private async Task<int> ExecuteFromQueue(CommandLineArgs cmdLine, string buildRequestedBy)
         {
@@ -345,6 +350,18 @@ namespace SqlBuildManager.Console.Threaded
 
             return 0;
         }
+
+	    private void ResetStaticValues()
+	        {
+	            ThreadedExecution.runID = string.Empty;
+	            ThreadedExecution.platinumDacPacFileName = string.Empty;
+	            ThreadedExecution.buildZipFileName = string.Empty;
+	            ThreadedExecution.projectFileName = string.Empty;
+	            ThreadedExecution.rootLoggingPath = string.Empty;
+	            ThreadedExecution.batchColl = null;
+	            ThreadedExecution.buildData = null;
+	        }
+
         private async Task<int> ProcessConcurrencyBucket(IEnumerable<(string, List<DatabaseOverride>)> bucket, bool forceCustomDacpac)
         {
             foreach( (string server, List<DatabaseOverride> ovr) in bucket)

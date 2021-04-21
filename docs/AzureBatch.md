@@ -120,7 +120,7 @@ sbm.exe batch run --settingsfile="C:\temp\my_settings.json" --override="C:\temp\
 ## Azure Batch - Pre-Stage Batch nodes
 
 `sbm batch prestage [options]`\
-_Note:_ You can also leverage the [--settingsfile](#azure-batch-save-settings) option to reuse most of the arguments
+_Note:_ You can also leverage the [--settingsfile](#azure-batch-save-settings) and `--settingsfilekey` options to reuse most of the arguments
 
 - `--batchnodecount="##"` - Number of nodes to provision to run the batch job  (default is 10)
 - `--batchvmsize="<size>"` - Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]
@@ -138,7 +138,7 @@ In addition to the [authentication](commandline.md#General-Authentication-settin
 \
 _Note:_
 
-1. You can also leverage the [--settingsfile](#azure-batch-save-settings) option to reuse most of the arguments
+1. You can also leverage the [--settingsfile](#azure-batch-save-settings) and `--settingsfilekey` options to reuse most of the arguments
 2. either `--platinumdacpac` _or_ `--packagename` are required. If both are given, then `--packagename` will be used.
 
 - `--platinumdacpac="<filename>"` - Name of the dacpac containing the platinum schema
@@ -164,7 +164,7 @@ If you don't run the `sbm batch prestage`  and `sbm batch cleanup [options]` com
 ## Azure Batch Clean Up (delete) nodes
 
 `sbm batch cleanup [options]`\
-_Note:_ You can also leverage the [--settingsfile](#azure-batch-save-settings) option to reuse most of the arguments
+_Note:_ You can also leverage the [--settingsfile](#azure-batch-save-settings) and `--settingsfilekey` options to reuse most of the arguments
 
 - `--batchaccountname="<batch acct name>"` - String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]
 - `--batchaccountkey="<batch acct key>"` - Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]
@@ -180,13 +180,15 @@ This utility action will save a reusable Json file to make running the command l
 
 The next time you run a build action, use the `--settingsfile="<file path>"` in place of the arguments below.
 
+Can also optionally provide a `--settingsfilekey` value to provide a custom encryption key for encryption of the sensitive values (listed below)
+
 - Authentication: `--username`, `--password`
 - Azure Batch: `--batchnodecount`, `--batchaccountname`, `--batchaccountkey`, `--batchaccounturl`, `--storageaccountname`, `--storageaccountkey`, `--batchvmsize`, `--deletebatchpool`, `--deletebatchjob`, `--pollbatchpoolstatus`, `--eventhubconnectionstring`
 - Run time settings: `--rootloggingpath`, `--logastext`, `--concurrency`, `--concurrencytype`
 
 _Note:_ 
 
-1. the values for `--username`, `--password`, `--batchaccountkey`, `--storageaccountkey` and  `--eventhubconnectionstring` will be encrypted.
+1. the values for `--username`, `--password`, `--batchaccountkey`, `--storageaccountkey` and  `--eventhubconnectionstring` will be encrypted. Use a `--settingsfilekey` value to manage encryption
 2. If there are duplicate values in the `--settingsfile` and the command line, the command line argument will take precedence. 
 3. You can hand-craft the Json yourself in the [format below](#settings-file-format) but the password and keys will not be encrypted (which may be OK depending on where you save the files)
 

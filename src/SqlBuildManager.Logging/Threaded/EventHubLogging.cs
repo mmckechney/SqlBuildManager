@@ -13,14 +13,14 @@ namespace SqlBuildManager.Logging.Threaded
 
 		private static ILoggerFactory _LoggerFactory = null;
 		private static string _EventHubConnectionString = string.Empty;
-
+		private static Serilog.Core.Logger serilogLogger = null;
 		public static void ConfigureEventHubLogger(ILoggerFactory factory)
 		{
 
 			EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(_EventHubConnectionString);
 
 
-			var serilogLogger = new LoggerConfiguration()
+			serilogLogger = new LoggerConfiguration()
 				.MinimumLevel.Verbose()
 				.WriteTo.AzureEventHub(new JsonFormatter(), eventHubClient, writeInBatches: true, batchPostingLimit: 50)
 				.CreateLogger();
@@ -52,6 +52,15 @@ namespace SqlBuildManager.Logging.Threaded
 			{
 				return null;
 			}
+		}
+
+		internal static void CloseAndFlush()
+		{
+			if (serilogLogger != null)
+			{
+				serilogLogger.Dispose();
+			}
+			_LoggerFactory = null;
 		}
 	}
 }

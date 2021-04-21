@@ -10,11 +10,11 @@ namespace SqlBuildManager.Logging.Threaded
     {
 		private static ILoggerFactory _LoggerFactory = null;
 		private static string _rootLoggingPath = string.Empty;
-
+		private static Serilog.Core.Logger serilogLogger = null;
 		public static void ConfigureLogger(ILoggerFactory factory)
 		{
 
-			var serilogLogger = new LoggerConfiguration()
+			serilogLogger = new LoggerConfiguration()
 			   .MinimumLevel.Debug()
 			   .WriteTo.File(Path.Combine(_rootLoggingPath, "FailureDatabases.cfg"), outputTemplate: "{Message}{NewLine}")
 			   .CreateLogger();
@@ -46,6 +46,15 @@ namespace SqlBuildManager.Logging.Threaded
 			{
 				return null;
 			}
+		}
+
+		internal static void CloseAndFlush()
+		{
+			if (serilogLogger != null)
+			{
+				serilogLogger.Dispose();
+			}
+			_LoggerFactory = null;
 		}
 	}
 }

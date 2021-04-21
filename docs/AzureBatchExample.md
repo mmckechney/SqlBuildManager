@@ -8,7 +8,8 @@ Replace the sample values with your own account values and keys
 
 ```bash
  sbm.exe batch savesettings ^
-    --settingsfil "C:\temp\my_settings.json" ^
+    --settingsfile "C:\temp\my_settings.json" ^
+    --settingsfilekey [ "C:\opt\path_to_key_file.txt" or "key string"] ^
     --username myusernameId ^
     --password SuperSecurePassword ^
     --batchnodecount 2 ^
@@ -21,7 +22,7 @@ Replace the sample values with your own account values and keys
     --deletebatchpool False ^
     --deletebatchjob False ^
     --rootloggingpath "C:\temp" ^
-    --eventhubconnectionstring "Endpoint=sb://myeventhub.servicebus.windows.net/;SharedAccessKeyName=keyname;SharedAccessKey=KPnb2SyLfQz5jY1LqXl3TxnMBuJJn4id6OCJ7n4yYEo=;EntityPath=hubname"
+    --eventhubconnection "Endpoint=sb://myeventhub.servicebus.windows.net/;SharedAccessKeyName=keyname;SharedAccessKey=KPnb2SyLfQz5jY1LqXl3TxnMBuJJn4id6OCJ7n4yYEo=;EntityPath=hubname"
 ```
 
 **IMPORTANT** If you want to customize the concurrency of the script execution, you can also add `--concurrency` and `--concurrencytype` values. See [Concurrency Options](Concurrency_Options.md) to understand their usage 
@@ -30,7 +31,7 @@ Replace the sample values with your own account values and keys
 This will create the VMs and get them ready to accept a build. Doing this in advance of your actual build time will eliminate the VM creation time from your overall build. It can take 10-30 minutes depending on your VM request
 
 ```bash
-sbm.exe batch prestage --settingsfile "C:\temp\my_settings.json"
+sbm.exe batch prestage --settingsfile "C:\temp\my_settings.json" --settingsfilekey [ "C:\opt\path_to_key_file.txt" or "key string"]
 ```
 
 ## 3. Run your Build (schema changes)
@@ -41,6 +42,7 @@ If a database throws an error and rolls back the build, the process will create 
 ```bash
 sbm.exe batch run ^
     --settingsfile "C:\temp\my_settings.json" ^
+    --settingsfilekey [ "C:\opt\path_to_key_file.txt" or "key string"] ^
     --override azuredb.cfg ^
     --platinumdbsource "MyPlatinumDb" ^
     --platinumserversource "platinumserver.database.windows.net" ^
@@ -55,6 +57,7 @@ This command will run data updates - for example fact/lookup table values or dat
 ```bash
 sbm.exe batch run ^
     --settingsfile "C:\temp\my_settings.json" ^
+    --settingsfilekey [ "C:\opt\path_to_key_file.txt" or "key string"] ^
     --override azuredb.cfg ^
     --packagename "myBuildPackage.sbm" ^
     --batchjobname "Release 27 data"
@@ -64,5 +67,5 @@ sbm.exe batch run ^
 Once you have completed your build via Azure Batch, you should delete your compute nodes so that you are no longer getting charged for them
 
 ```bash
-sbm.exe batch cleanup --settingsfile "C:\temp\my_settings.json" ^
+sbm.exe batch cleanup --settingsfile "C:\temp\my_settings.json"  --settingsfilekey [ "C:\opt\path_to_key_file.txt" or "key string"] 
 ```

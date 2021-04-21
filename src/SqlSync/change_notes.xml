@@ -1,5 +1,9 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+    <Version Major="12" Minor="2" Revision="0">
+      <added>New command option `--settingsfilekey`, a key for the encryption of sensitive informtation in the settings file. If provided when saving the settings file, it of course must also be provided when using the settings file. This version moved away from a static (and not really secure) encryption key used prior. The argument value can be either the key string or a file path to a key file. The key may also be 'silently' provided by setting a `sbm-settingsfilekey` Environment variable. If not provided a machine value will be used.</added>
+      <fixed>Modified unit tests to Close and Flush loggers to avoid file locking issues</fixed>
+    </Version>
     <Version Major="12" Minor="1" Revision="0">
       <updated>Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Loggging. Implements Serilog</updated>
     </Version>

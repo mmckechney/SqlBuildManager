@@ -2,7 +2,8 @@
 using System;
 using System.IO;
 using System.Reflection;
-
+using SqlBuildManager.Logging.Threaded;
+using System.Threading;
 namespace SqlBuildManager.Logging
 {
     public class Configure
@@ -13,6 +14,20 @@ namespace SqlBuildManager.Logging
             {
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager");
             }
+        }
+
+        public static void CloseAndFlushAllLoggers()
+        {
+            CommitLogging.CloseAndFlush();
+            ErrorLogging.CloseAndFlush();
+            EventHubLogging.CloseAndFlush();
+            FailureDatabaseLogging.CloseAndFlush();
+            RuntimeLogging.CloseAndFlush();
+            SuccessDatabaseLogging.CloseAndFlush();
+            ApplicationLogging.CloseAndFlush();
+
+            //Needed to make sure all files are saved and flushed
+            Thread.Sleep(3000);
         }
         
     }
