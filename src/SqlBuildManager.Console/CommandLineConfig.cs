@@ -20,6 +20,11 @@ namespace SqlBuildManager.Console
                 Argument = new Argument<FileInfo>("settingsfile").ExistingOnly(),
                 Name = "SettingsFileInfo",
             };
+            var settingsfileNewOption = new Option(new string[] { "--settingsfile" }, "Saved settings file to load parameters from")
+            {
+                Argument = new Argument<FileInfo>("settingsfile"),
+                Name = "SettingsFileInfo",
+            };
             var settingsfileKeyOption = new Option(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive informtation in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable. If not provided a machine value will be used.")
             {
                 Argument = new Argument<string>("settingsfilekey"),
@@ -445,7 +450,7 @@ namespace SqlBuildManager.Console
                 passwordOption,
                 usernameOption,
                 settingsfileKeyOption,
-                settingsfileOption.Copy(true),
+                settingsfileNewOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,

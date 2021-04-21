@@ -22,7 +22,7 @@ Replace the sample values with your own account values and keys
     --deletebatchpool False ^
     --deletebatchjob False ^
     --rootloggingpath "C:\temp" ^
-    --eventhubconnectionstring "Endpoint=sb://myeventhub.servicebus.windows.net/;SharedAccessKeyName=keyname;SharedAccessKey=KPnb2SyLfQz5jY1LqXl3TxnMBuJJn4id6OCJ7n4yYEo=;EntityPath=hubname"
+    --eventhubconnection "Endpoint=sb://myeventhub.servicebus.windows.net/;SharedAccessKeyName=keyname;SharedAccessKey=KPnb2SyLfQz5jY1LqXl3TxnMBuJJn4id6OCJ7n4yYEo=;EntityPath=hubname"
 ```
 
 **IMPORTANT** If you want to customize the concurrency of the script execution, you can also add `--concurrency` and `--concurrencytype` values. See [Concurrency Options](Concurrency_Options.md) to understand their usage 
