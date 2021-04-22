@@ -260,9 +260,9 @@ namespace SqlSync.SqlBuild
             set { BatchArgs.EventHubConnectionString = value; }
         }
         [JsonIgnore]
-        public virtual string ServiceBusConnection
+        public virtual string ServiceBusTopicConnectionString
         {
-            set { BatchArgs.ServiceBusConnectionString = value; }
+            set { BatchArgs.ServiceBusTopicConnectionString = value; }
         }
         [JsonIgnore]
         public virtual bool PollBatchPoolStatus
@@ -305,7 +305,7 @@ namespace SqlSync.SqlBuild
             [Encrypt]
             public string EventHubConnectionString { get; set; } = string.Empty;
             public string ApplicationPackage { get; set; } = string.Empty;
-            public string ServiceBusConnectionString { get; set; } = string.Empty;
+            public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
         }
         #endregion
 

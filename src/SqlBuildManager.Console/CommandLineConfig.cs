@@ -185,9 +185,9 @@ namespace SqlBuildManager.Console
             {
                 Argument = new Argument<string>("eventhubconnection")
             };
-            var serviceBusconnectionOption = new Option(new string[] { "--servicebusconnection" }, "Service Bus connection string for Service Bus queue distribution in batch execution")
+            var serviceBusconnectionOption = new Option(new string[] { "--servicebustopicconnection" }, "Service Bus connection string for Service Bus topic distribution of batch execution")
             {
-                Argument = new Argument<string>("servicebusconnection")
+                Argument = new Argument<string>("servicebustopicconnection")
             };
             var pollbatchpoolstatusOption = new Option(new string[] { "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true, default) or fire and forget (false)")
             {
@@ -489,14 +489,25 @@ namespace SqlBuildManager.Console
             };
             saveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.SaveAndEncryptSettings);
 
-            var batchQueueTargetsCommand = new Command("queue", "Sends database override targets to Service Bus Queue")
+            var batchQueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
             {
                 batchjobnameOption.Copy(true),
                 settingsfileOption,
+                settingsfileKeyOption,
                 serviceBusconnectionOption,
                 overrideOption.Copy(true)
             };
             batchQueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.QueueOverrideTargets);
+
+            var batchDeQueueTargetsCommand = new Command("dequeue", "Pull database override targets to Service Bus Topic")
+            {
+                batchjobnameOption.Copy(true),
+                settingsfileOption,
+                settingsfileKeyOption,
+                serviceBusconnectionOption,
+                overrideOption.Copy(true)
+            };
+            batchDeQueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.DeQueueOverrideTargets);
 
             //Batch query 
             var batchQueryCommand = new Command("query", "Run a SELECT query across multiple databases using Azure Batch")
@@ -587,6 +598,7 @@ namespace SqlBuildManager.Console
             batchCommand.Add(batchQueryCommand);
             batchCommand.Add(batchRunThreadedCommand);
             batchCommand.Add(batchQueryThreadedCommand);
+            batchCommand.Add(batchDeQueueTargetsCommand);
 
 
             /****************************************

@@ -636,6 +636,7 @@ namespace SqlBuildManager.Console
                 System.Environment.Exit(954);
         }
 
+
         internal static void GetDifferences(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
@@ -791,7 +792,9 @@ namespace SqlBuildManager.Console
 
         internal async static Task<int> QueueOverrideTargets(CommandLineArgs cmdLine)
         {
-            if(string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusConnectionString))
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
             {
                 log.LogError("A --servicebusconnection value is required. Please include this in either the settings file content or as a specific command option");
                 return 9839;
@@ -804,15 +807,40 @@ namespace SqlBuildManager.Console
                 return tmpValReturn;
             }
 
-            bool success = await  QueueManager.SendTargetsToQueue(cmdLine.BatchArgs.ServiceBusConnectionString, cmdLine.BatchArgs.BatchJobName, multiData);
-            if(success)
+            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
+            int messages = await qManager.SendTargetsToQueue(multiData);
+            if(messages > 0)
             {
-                log.LogInformation("Successfully sent messages to Service Bus queue");
+                log.LogInformation($"Successfully sent {messages} targets to Service Bus queue");
                 return 0;
             }
             else
             {
                 log.LogError("Error sending messages to Service Bus queue");
+                return 2355;
+            }
+        }
+        
+        internal static async Task<int> DeQueueOverrideTargets(CommandLineArgs cmdLine)
+        {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            {
+                log.LogError("A --servicebustopicconnection value is required. Please include this in either the settings file content or as a specific command option");
+                return 9839;
+            }
+
+            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
+            bool success = await qManager.RetrieveTargetsFromQueue();
+            if (success)
+            {
+                log.LogInformation("Successfully received messages to Service Bus queue");
+                return 0;
+            }
+            else
+            {
+                log.LogError("Error receiving messages to Service Bus queue");
                 return 2355;
             }
         }

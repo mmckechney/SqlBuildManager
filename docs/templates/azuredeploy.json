@@ -141,8 +141,9 @@
             "name": "[variables('serviceBusName')]",
             "location": "[parameters('location')]",
             "sku": {
-                "name": "Basic",
-                "tier": "Basic"
+                "name": "Standard",
+                "tier": "Standard",
+                "capacity": 1
             },
             "properties": {
                 "zoneRedundant": false
@@ -165,42 +166,62 @@
             }
         },
         {
-            "type": "Microsoft.ServiceBus/namespaces/queues",
+            "type": "Microsoft.ServiceBus/namespaces/topics",
             "apiVersion": "2018-01-01-preview",
             "name": "[concat(variables('serviceBusName'), '/sqlbuildmanager')]",
-            "location": "[parameters('location')]",
+            "location": "East US",
             "dependsOn": [
                 "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
             ],
             "properties": {
-                "lockDuration": "PT30S",
-                "maxSizeInMegabytes": 10240,
-                "requiresDuplicateDetection": false,
-                "requiresSession": false,
                 "defaultMessageTimeToLive": "P14D",
-                "deadLetteringOnMessageExpiration": false,
-                "enableBatchedOperations": true,
+                "maxSizeInMegabytes": 4096,
+                "requiresDuplicateDetection": false,
                 "duplicateDetectionHistoryTimeWindow": "PT10M",
-                "maxDeliveryCount": 10,
+                "enableBatchedOperations": true,
                 "status": "Active",
+                "supportOrdering": true,
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
                 "enablePartitioning": true,
                 "enableExpress": false
             }
         },
         {
-            "type": "Microsoft.ServiceBus/namespaces/queues/authorizationRules",
+            "type": "Microsoft.ServiceBus/namespaces/topics/authorizationRules",
             "apiVersion": "2018-01-01-preview",
-            "name": "[concat(variables('serviceBusName'), '/sqlbuildmanager/sbmpolicy')]",
+            "name": "[concat(variables('serviceBusName'), '/sqlbuildmanager/sbmtopicpolicy')]",
             "location": "East US",
             "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('serviceBusName'), 'sqlbuildmanager')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', variables('serviceBusName'), 'sqlbuildmanager')]",
                 "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
             ],
             "properties": {
                 "rights": [
+                    "Manage",
                     "Listen",
                     "Send"
                 ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+            "apiVersion": "2018-01-01-preview",
+            "name": "[concat(variables('serviceBusName'), '/sqlbuildmanager/sbmsubscription')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', variables('serviceBusName'), 'sqlbuildmanager')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
+            ],
+            "properties": {
+                "lockDuration": "PT30S",
+                "requiresSession": false,
+                "defaultMessageTimeToLive": "P14D",
+                "deadLetteringOnMessageExpiration": true,
+                "deadLetteringOnFilterEvaluationExceptions": true,
+                "maxDeliveryCount": 10,
+                "status": "Active",
+                "enableBatchedOperations": true,
+                "autoDeleteOnIdle": "P14D"
             }
         }
     ]

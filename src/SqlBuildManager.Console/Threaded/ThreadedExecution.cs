@@ -343,10 +343,10 @@ namespace SqlBuildManager.Console.Threaded
                 return prep;
             }
 
-            var receiver = Queue.QueueManager.GetQueueReceiver(cmdLine.BatchArgs.ServiceBusConnectionString);
+            var qManager = new Queue.QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
+            var receiver = qManager.GetQueueReceiver();
             var messages = await receiver.ReceiveMessagesAsync(cmdLine.Concurrency);
-            var filter = new CorrelationFilter();
-            filter.Label = "Important";
+
 
             return 0;
         }

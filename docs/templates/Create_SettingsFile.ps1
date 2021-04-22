@@ -101,7 +101,7 @@ $batch = Get-AzBatchAccountKey -AccountName $batchAcctName -ResourceGroupName $r
 $t = Get-AzBatchAccount -AccountName $batchAcctName -ResourceGroupName $resourceGroupName
 $s = Get-AzStorageAccountKey -Name $storageAcctName -ResourceGroupName $resourceGroupName
 $e = Get-AzEventHubKey -ResourceGroupName $resourceGroupName -NamespaceName $namespaceName -EventHubName $eventHubName -AuthorizationRuleName batchbuilder
-$sb = Get-AzServiceBusKey -ResourceGroup $resourceGroupName -Namespace $serviceBusName -Queue sqlbuildmanager -Name sbmpolicy
+$sb = Get-AzServiceBusKey -ResourceGroup $resourceGroupName -Namespace $serviceBusName -TopicName sqlbuildmanager -Name sbmtopicpolicy
 
 $settingsFile = [PSCustomObject]@{
     AuthenticationArgs = @{
@@ -123,7 +123,7 @@ $settingsFile = [PSCustomObject]@{
         BatchPoolOs =  $batchPoolOs
         BatchPoolName = $batchPoolName
         BatchApplicationPackage = $batchApplicationPackage
-        ServiceBusConnectionString = "$($sb.PrimaryConnectionString)"
+        ServiceBusTopicConnectionString = "$($sb.PrimaryConnectionString)"
     }
     RootLoggingPath = "C:\temp"
     TimeoutRetryCount = 0

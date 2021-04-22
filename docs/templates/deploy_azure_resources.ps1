@@ -97,7 +97,7 @@ Write-Host "Selecting subscription '$subscriptionId'";
 Select-AzSubscription -SubscriptionID $subscriptionId;
 
 # Register RPs
-$resourceProviders = @("microsoft.storage","microsoft.batch","microsoft.eventhub");
+$resourceProviders = @("microsoft.storage","microsoft.batch","microsoft.eventhub","microsoft.servicebus");
 if($resourceProviders.length) {
     Write-Host "Registering resource providers"
     foreach($resourceProvider in $resourceProviders) {
@@ -128,7 +128,9 @@ else{
     Write-Host "Using existing resource group '$resourceGroupName'";
 }
 
-# Start the deployment
+###############################################
+# Start the ARM template deployment of resource
+###############################################
 Write-Host "Starting deployment...";
 Write-Host "Creating batch, storage, service bus and eventhub accounts...";
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName  -TemplateFile $templateFile -TemplateParameterObject $params -Verbose
