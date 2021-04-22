@@ -119,14 +119,14 @@ namespace SqlBuildManager.Console.Batch
             //TODO
 
             //Validate the platinum dacpac
-            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref buildData);
-            if (tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
+            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(cmdLine, buildData);
+            if (tmpValReturn.Item1 == (int)ExecutionReturn.DacpacDatabasesInSync)
             {
                 return ((int)ExecutionReturn.DacpacDatabasesInSync, string.Empty);
             }
             else if (tmpReturn != 0)
             {
-                return (tmpValReturn, string.Empty);
+                return (tmpValReturn.Item1, string.Empty);
             }
 
             BatchClient batchClient = null;
@@ -467,7 +467,7 @@ namespace SqlBuildManager.Console.Batch
             {
                 log.LogInformation("Validating general command parameters");
 
-                tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
+                tmpReturn = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
                 if (tmpReturn != 0)
                 {
                     foreach (var msg in errorMessages)
@@ -479,7 +479,7 @@ namespace SqlBuildManager.Console.Batch
             }
 
             log.LogInformation("Validating batch command parameters");
-            tmpReturn = Validation.ValidateBatchArguments(ref cmdLine, out errorMessages);
+            tmpReturn = Validation.ValidateBatchArguments(cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
                 foreach (var msg in errorMessages)

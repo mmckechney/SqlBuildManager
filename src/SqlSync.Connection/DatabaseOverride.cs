@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Data;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
-using System.Runtime.Serialization;
+
 namespace SqlSync.Connection
 {
     public class DatabaseOverride
@@ -43,6 +43,7 @@ namespace SqlSync.Connection
         }
         private List<QueryRowItem> queryRowData = new List<QueryRowItem>();
 
+        [JsonIgnore]
         public List<QueryRowItem> QueryRowData
         {
             get { return queryRowData; }

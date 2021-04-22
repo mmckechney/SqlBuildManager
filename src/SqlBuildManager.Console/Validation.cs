@@ -14,7 +14,7 @@ namespace SqlBuildManager.Console
     class Validation
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public static int ValidateUserNameAndPassword(ref CommandLineArgs cmdLine, out string[] errorMessages)
+        public static int ValidateUserNameAndPassword(CommandLineArgs cmdLine, out string[] errorMessages)
         {
             string error = string.Empty;
             errorMessages = new string[0];
@@ -50,9 +50,9 @@ namespace SqlBuildManager.Console
         /// <param name="cmdLine">Incomming CommandLineArgs object</param>
         /// <param name="errorMessages">Any errors that are generated</param>
         /// <returns>Zero (0) if valid, otherwise an error code</returns>
-        public static int ValidateCommonCommandLineArgs(ref CommandLineArgs cmdLine, out string[] errorMessages)
+        public static int ValidateCommonCommandLineArgs(CommandLineArgs cmdLine, out string[] errorMessages)
         {
-            int pwVal = ValidateUserNameAndPassword(ref cmdLine, out errorMessages);
+            int pwVal = ValidateUserNameAndPassword(cmdLine, out errorMessages);
             if(pwVal != 0)
             {
                  return pwVal;
@@ -277,7 +277,7 @@ namespace SqlBuildManager.Console
             return 0;
         }
 
-        public static int ValidateAndLoadPlatinumDacpac(ref CommandLineArgs cmdLine, ref MultiDbData multiDb)
+        public static (int, CommandLineArgs) ValidateAndLoadPlatinumDacpac(CommandLineArgs cmdLine, MultiDbData multiDb)
         {
             //DacPac settings validation
             if (!String.IsNullOrEmpty(cmdLine.DacPacArgs.PlatinumDacpac))
@@ -286,14 +286,14 @@ namespace SqlBuildManager.Console
                 {
                     string err = String.Format("A Platinum Dacpac file was specified but could not be located at '{0}'", cmdLine.DacPacArgs.PlatinumDacpac);
                     log.LogError(err);
-                    return -729;
+                    return (-729, cmdLine);
                 }
 
                 if (!String.IsNullOrEmpty(cmdLine.DacPacArgs.TargetDacpac) && !File.Exists(cmdLine.DacPacArgs.TargetDacpac))
                 {
                     string err = String.Format("A Target Dacpac file was specified but could not be located at '{0}'", cmdLine.DacPacArgs.TargetDacpac);
                     log.LogError(err);
-                    return -728;
+                    return (-728, cmdLine);
                 }
             }
 
@@ -308,16 +308,16 @@ namespace SqlBuildManager.Console
                     if (stat == DacpacDeltasStatus.Success)
                     {
                         cmdLine.BuildFileName = sbmName;
-                        return (int)ExecutionReturn.Successful;
+                        return ((int)ExecutionReturn.Successful, cmdLine);
                     }
                     else if (stat == DacpacDeltasStatus.InSync)
                     {
-                        return (int)ExecutionReturn.DacpacDatabasesInSync;
+                        return ((int)ExecutionReturn.DacpacDatabasesInSync, cmdLine);
                     }
                     else
                     {
                         log.LogError("Error creating SBM package from Platinum dacpac");
-                        return -5120;
+                        return (-5120, cmdLine);
                     }
                 }
                 else
@@ -326,10 +326,10 @@ namespace SqlBuildManager.Console
                 }
             }
 
-            return 0;
+            return (0, cmdLine);
         }
 
-        public static int ValidateBatchArguments(ref CommandLineArgs cmdLine, out string[] errorMessages)
+        public static int ValidateBatchArguments(CommandLineArgs cmdLine, out string[] errorMessages)
         {
             int returnVal = 0;
             List<string> messages = new List<string>();

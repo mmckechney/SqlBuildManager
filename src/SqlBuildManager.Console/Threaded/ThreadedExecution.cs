@@ -10,6 +10,7 @@ using System.Text;
 using MoreLinq;
 using System.Linq;
 using System.Threading.Tasks;
+using SqlBuildManager.Console.Queue;
 
 namespace SqlBuildManager.Console.Threaded
 {
@@ -29,6 +30,7 @@ namespace SqlBuildManager.Console.Threaded
         MultiDbData multiData = null;
         DateTime startTime;
         bool hasError = false;
+        bool theadedLoggingInitiated = false;
         private string[] args;
         private CommandLineArgs cmdLine = null;
         string workingDirectory = string.Empty;
@@ -107,7 +109,10 @@ namespace SqlBuildManager.Console.Threaded
         public ThreadedExecution(string[] args)
         {
             this.args = args;
+
         }
+
+      
 
         /// <summary>
         /// Execute method that is used from a straight command-line execution
@@ -118,30 +123,25 @@ namespace SqlBuildManager.Console.Threaded
 
             log.LogDebug("Entering Execute method of ThreadedExecution");
             string[] errorMessages;
-            //Parse out the command line options
+
+            //Parse out the command line options if needed (should only be coming from unit tests)
             if (cmdLine == null)
             {
                 cmdLine = CommandLine.ParseCommandLineArg(args);
             }
 
-            //Create Threaded Run specific loggers
+            //Create Threaded Run specific loggers -- these are init'd when the first logs are written
             if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
             {
                 cmdLine.RootLoggingPath = @"C:/tmp-sqlbuildlogging";
             }
 
-            logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.BatchArgs.EventHubConnectionString);
-            logRuntime = SqlBuildManager.Logging.Threaded.RuntimeLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+            //Set paths
+            SetRootAndWorkingPaths(cmdLine.RootLoggingPath);
 
-            logFailures = SqlBuildManager.Logging.Threaded.FailureDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
-            logSuccess = SqlBuildManager.Logging.Threaded.SuccessDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
-            
-            logCommitRun = SqlBuildManager.Logging.Threaded.CommitLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
-            logErrorRun = SqlBuildManager.Logging.Threaded.ErrorLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
-
-
+            //Validate all of the arguments
             log.LogInformation("Validating command parameters");
-            int tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
+            int tmpReturn = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
                 var msg = new LogMsg() { Message = String.Join(";", errorMessages), LogType = LogType.Error };
@@ -149,131 +149,67 @@ namespace SqlBuildManager.Console.Threaded
                 return tmpReturn;
             }
 
+            //Determine where to get the scripts from (SBM, DACPAC, generated DACPAC, scripts?)
+            int success;
+            (success, cmdLine) = ConfigureScriptSource(cmdLine);
+            if(success != 0)
+            {
+                return success;
+            }
+
+            //This will set the static variable for the script collection
+            var prep = PrepBuildAndScripts(buildZipFileName, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
+            if (prep != 0)
+            {
+                return prep;
+            }
+
             //Start logging
             WriteToLog(new LogMsg() { Message = "**** Starting log for Run ID: " + ThreadedExecution.RunID + " ****", LogType = LogType.Message });
 
-            //If we don't have a pre-constructed build file, but rather a script source directory, we'll build one from there...
-            if (!string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir))
+            try
             {
-                ConstructBuildFileFromScriptDirectory(cmdLine.ScriptSrcDir);
-            }
-            else if (!string.IsNullOrWhiteSpace(cmdLine.BuildFileName)) //using SBM as a source
-            {
-                ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
-                string msg = "--packagename setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source";
-                WriteToLog(new LogMsg() { Message = msg, LogType = LogType.Message });
-                log.LogInformation(msg);
-            }
-            else if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac)) //using a platinum dacpac as a source
-            {
-                ThreadedExecution.platinumDacPacFileName = cmdLine.DacPacArgs.PlatinumDacpac;
-                string msg = "--platinumdacpac setting found. Using '" + ThreadedExecution.platinumDacPacFileName + "' as build source";
-                WriteToLog(new LogMsg() { Message = msg, LogType = LogType.Message }); ;
-                log.LogInformation(msg);
-
-            }
-            else if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource)) //using a platinum database as the source
-            {
-                log.LogInformation($"Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
-                string dacpacName = Path.Combine(ThreadedExecution.rootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
-
-                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
+                //Run from override settings or from a Service Bus topic?
+                if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
                 {
-                    var m = new LogMsg()
-                    {
-                        Message = $"Error creating the Platinum dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}",
-                        LogType = LogType.Error
-                    };
-                    WriteToLog(m);
-                    return (int)ExecutionReturn.BuildFileExtractionError;
-
-                }
-                cmdLine.DacPacArgs.PlatinumDacpac = dacpacName;
-                ThreadedExecution.platinumDacPacFileName = dacpacName;
-
-            }
-
-
-            //Load the multi database configuration data from XML or flat file or SQL...
-            string message = string.Empty;
-
-            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
-            if (tmpValReturn != 0)
-            {
-                var msg = new LogMsg() { Message = String.Join(";", errorMessages), LogType = LogType.Error };
-                WriteToLog(msg);
-                return tmpValReturn;
-            }
-
-
-            //Check for the platinum dacpac and configure it if necessary
-            tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref multiData);
-            if (tmpValReturn == 0 && string.IsNullOrEmpty(ThreadedExecution.buildZipFileName))
-            {
-                ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
-            }
-            else if (tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
-            {
-                return (int)ExecutionReturn.DacpacDatabasesInSync;
-            }
-            else if (tmpReturn != 0)
-            {
-                return tmpValReturn;
-            }
-
-            //Set the number of allowed retries...
-            this.multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;
-            //Set Trial
-            this.multiData.RunAsTrial = cmdLine.Trial;
-            this.multiData.BuildRevision = cmdLine.BuildRevision;
-
-            return Execute(ThreadedExecution.buildZipFileName, cmdLine.DacPacArgs.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName, cmdLine.DacPacArgs.ForceCustomDacPac, cmdLine.Concurrency, cmdLine.ConcurrencyType);
-        }
-
-        private int PrepBuildAndScripts(string buildZipFileName, string buildRequestedBy, bool forceCustomDacpac)
-        {
-            ThreadedExecution.buildZipFileName = buildZipFileName;
-            this.buildRequestedBy = buildRequestedBy;
-
-            //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
-
-            if (!forceCustomDacpac)
-            {
-                ExtractAndLoadBuildFile(ThreadedExecution.buildZipFileName, out ThreadedExecution.buildData);
-                if (buildData == null)
-                {
-                    var msg = new LogMsg()
-                    {
-                        Message = "Unable to procees. SqlSyncBuild data object is null, Returning error code: " + (int)ExecutionReturn.NullBuildData,
-                        LogType = LogType.Error
-                    };
-                    WriteToLog(msg);
-                    return (int)ExecutionReturn.NullBuildData;
+                    Task<int> queueTask = ExecuteFromQueue(cmdLine, System.Environment.UserName);
+                    queueTask.Wait();
+                    return queueTask.Result;
                 }
                 else
                 {
-                    //Load up the batched scripts into a shared object so that we can conserve memory
-                    ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, this.projectFilePath);
-                }
-              
-            }
-            return 0;
+                    int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
+                    if (tmpValReturn != 0)
+                    {
+                        var msg = new LogMsg() { Message = String.Join(";", errorMessages), LogType = LogType.Error };
+                        WriteToLog(msg);
+                        return tmpValReturn;
+                    }
 
+                    //Set the number of allowed retries...
+                    this.multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;
+                    //Set Trial
+                    this.multiData.RunAsTrial = cmdLine.Trial;
+                    this.multiData.BuildRevision = cmdLine.BuildRevision;
+
+                    return ExecuteFromOverrideFile(ThreadedExecution.buildZipFileName, cmdLine.DacPacArgs.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName, cmdLine.DacPacArgs.ForceCustomDacPac, cmdLine.Concurrency, cmdLine.ConcurrencyType);
+                }
+            }
+            finally
+            {
+                //Really only needed when running unit tests, but still a good idea.
+                ResetStaticValues();
+            }
         }
 
         /// <summary>
         /// Execute method that is used inherently from the Execute() 
         /// </summary>
         /// <returns></returns>
-        private int Execute(string buildZipFileName, string platinumDacPacFileName, MultiDbData multiData, string rootLoggingPath, string description, string buildRequestedBy, bool forceCustomDacpac, int concurrency = 20, ConcurrencyType concurrencyType = ConcurrencyType.Count)
+        private int ExecuteFromOverrideFile(string buildZipFileName, string platinumDacPacFileName, MultiDbData multiData, string rootLoggingPath, string description, string buildRequestedBy, bool forceCustomDacpac, int concurrency = 20, ConcurrencyType concurrencyType = ConcurrencyType.Count)
         {
             try
             {
-                var prep = PrepBuildAndScripts(buildZipFileName, buildRequestedBy, forceCustomDacpac);
-                if(prep != 0)
-                {
-                    return prep;
-                }
 
                 var tasks = new List<Task<int>>();
                 int targetTotal = 0;
@@ -329,38 +265,143 @@ namespace SqlBuildManager.Console.Threaded
                 return (int)ExecutionReturn.NullBuildData;
 
             }
-            finally
-            {
-                //Really only needed when running unit tests, but still a good idea.
-                ResetStaticValues();
-            }
+           
         }
         private async Task<int> ExecuteFromQueue(CommandLineArgs cmdLine, string buildRequestedBy)
         {
-            var prep = PrepBuildAndScripts(ThreadedExecution.BuildZipFileName, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
-            if(prep != 0)
-            {
-                return prep;
-            }
+
 
             var qManager = new Queue.QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
-            var receiver = qManager.GetQueueReceiver();
-            var messages = await receiver.ReceiveMessagesAsync(cmdLine.Concurrency);
 
-
-            return 0;
+            int finalReturn = 0;
+            int retVal = 0;
+            while(true)
+            {
+                var message = await qManager.GetDatabaseTargetFromQueue();
+               
+                if(message == null)
+                {
+                    log.LogInformation("No more messages found in Service Bus Topic. Exiting.");
+                    break;
+                }
+                else
+                {
+                    var target = message.As<TargetMessage>();
+                    ThreadedRunner runner = new ThreadedRunner(target.ServerName, target.DbOverrideSequence, cmdLine, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
+                    var msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, RunId = ThreadedExecution.RunID, Message = "Queuing up thread", LogType = LogType.Message };
+                    WriteToLog(msg);
+                    retVal = await ProcessThreadedBuild(runner);
+                    if(retVal == 0)
+                    {
+                        await qManager.CompleteMessage(message);
+                    }else
+                    {
+                        await qManager.DeadletterMessage(message);
+                        finalReturn = -453453;
+                    }
+                }
+            }
+            return finalReturn;
         }
 
-	    private void ResetStaticValues()
-	        {
-	            ThreadedExecution.runID = string.Empty;
-	            ThreadedExecution.platinumDacPacFileName = string.Empty;
-	            ThreadedExecution.buildZipFileName = string.Empty;
-	            ThreadedExecution.projectFileName = string.Empty;
-	            ThreadedExecution.rootLoggingPath = string.Empty;
-	            ThreadedExecution.batchColl = null;
-	            ThreadedExecution.buildData = null;
-	        }
+
+        /// <summary>
+        /// Using the CommandLineArgs values, determines where the scripts will come from (raw scripts, SBM, DACPAC or generated DACPAC)
+        /// </summary>
+        /// <param name="cmdLine"></param>
+        /// <returns></returns>
+        private (int, CommandLineArgs) ConfigureScriptSource(CommandLineArgs cmdLine)
+        {
+            //If we don't have a pre-constructed build file, but rather a script source directory, we'll build one from there...
+            if (!string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir))
+            {
+                ConstructBuildFileFromScriptDirectory(cmdLine.ScriptSrcDir);
+            }
+            else if (!string.IsNullOrWhiteSpace(cmdLine.BuildFileName)) //using SBM as a source
+            {
+                ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
+                string msg = "--packagename setting found. Using '" + ThreadedExecution.buildZipFileName + "' as build source";
+                WriteToLog(new LogMsg() { Message = msg, LogType = LogType.Message });
+                log.LogInformation(msg);
+            }
+            else if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac)) //using a platinum dacpac as a source
+            {
+                ThreadedExecution.platinumDacPacFileName = cmdLine.DacPacArgs.PlatinumDacpac;
+                string msg = "--platinumdacpac setting found. Using '" + ThreadedExecution.platinumDacPacFileName + "' as build source";
+                WriteToLog(new LogMsg() { Message = msg, LogType = LogType.Message }); ;
+                log.LogInformation(msg);
+
+            }
+            else if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource)) //using a platinum database as the source
+            {
+                log.LogInformation($"Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
+                string dacpacName = Path.Combine(ThreadedExecution.rootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
+
+                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
+                {
+                    var m = new LogMsg()
+                    {
+                        Message = $"Error creating the Platinum dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}",
+                        LogType = LogType.Error
+                    };
+                    WriteToLog(m);
+                    return ((int)ExecutionReturn.BuildFileExtractionError, cmdLine);
+
+                }
+                cmdLine.DacPacArgs.PlatinumDacpac = dacpacName;
+                ThreadedExecution.platinumDacPacFileName = dacpacName;
+
+            }
+
+            int tmpValReturn;
+            //Check for the platinum dacpac and configure it if necessary
+            (tmpValReturn, cmdLine) = Validation.ValidateAndLoadPlatinumDacpac(cmdLine, multiData);
+            if (tmpValReturn == 0 && string.IsNullOrEmpty(ThreadedExecution.buildZipFileName))
+            {
+                ThreadedExecution.buildZipFileName = cmdLine.BuildFileName;
+            }
+            else if (tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
+            {
+                return ((int)ExecutionReturn.DacpacDatabasesInSync, cmdLine);
+            }
+            else if (tmpValReturn != 0)
+            {
+                return (tmpValReturn, cmdLine);
+            }
+
+            return (0, cmdLine);
+        }
+
+        private int PrepBuildAndScripts(string buildZipFileName, string buildRequestedBy, bool forceCustomDacpac)
+        {
+            ThreadedExecution.buildZipFileName = buildZipFileName;
+            this.buildRequestedBy = buildRequestedBy;
+
+            //Looks like we're good to go... extract the build Zip file (.sbm) into a working folder...
+
+            if (!forceCustomDacpac)
+            {
+                ExtractAndLoadBuildFile(ThreadedExecution.buildZipFileName, out ThreadedExecution.buildData);
+                if (buildData == null)
+                {
+                    var msg = new LogMsg()
+                    {
+                        Message = "Unable to procees. SqlSyncBuild data object is null, Returning error code: " + (int)ExecutionReturn.NullBuildData,
+                        LogType = LogType.Error
+                    };
+                    WriteToLog(msg);
+                    return (int)ExecutionReturn.NullBuildData;
+                }
+                else
+                {
+                    //Load up the batched scripts into a shared object so that we can conserve memory
+                    ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, this.projectFilePath);
+                }
+
+            }
+            return 0;
+
+        }
 
         private async Task<int> ProcessConcurrencyBucket(IEnumerable<(string, List<DatabaseOverride>)> bucket, bool forceCustomDacpac)
         {
@@ -427,7 +468,6 @@ namespace SqlBuildManager.Console.Threaded
             }
             return returnVal;
         }
-
         
         private int ExtractAndLoadBuildFile(string sqlBuildProjectFileName, out SqlSyncBuildData buildData)
         {
@@ -498,9 +538,35 @@ namespace SqlBuildManager.Console.Threaded
 
         }
 
-      
+        private void ResetStaticValues()
+        {
+            ThreadedExecution.runID = string.Empty;
+            ThreadedExecution.platinumDacPacFileName = string.Empty;
+            ThreadedExecution.buildZipFileName = string.Empty;
+            ThreadedExecution.projectFileName = string.Empty;
+            ThreadedExecution.rootLoggingPath = string.Empty;
+            ThreadedExecution.batchColl = null;
+            ThreadedExecution.buildData = null;
+        }
+        private void InitThreadedLogging()
+        {
+            logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.BatchArgs.EventHubConnectionString);
+            logRuntime = SqlBuildManager.Logging.Threaded.RuntimeLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+
+            logFailures = SqlBuildManager.Logging.Threaded.FailureDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+            logSuccess = SqlBuildManager.Logging.Threaded.SuccessDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+
+            logCommitRun = SqlBuildManager.Logging.Threaded.CommitLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+            logErrorRun = SqlBuildManager.Logging.Threaded.ErrorLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+
+            this.theadedLoggingInitiated = true;
+        }
         private void WriteToLog(LogMsg msg)
         {
+            if(!theadedLoggingInitiated)
+            {
+                InitThreadedLogging();
+            }
             log.LogInformation($"{ThreadedExecution.RunID}  {msg.ServerName}  {msg.DatabaseName}:{msg.Message}");
 
             if (logEventHub != null && !string.IsNullOrWhiteSpace(msg.DatabaseName))
@@ -533,6 +599,36 @@ namespace SqlBuildManager.Console.Threaded
                     return;
             }
 
+        }
+
+        private void SetRootAndWorkingPaths(string rootLoggingPath)
+        {
+            try
+            {
+                log.LogInformation($"Initializing logging paths: {rootLoggingPath}");
+
+                //Set the logging folders, etc...s
+                string expanded = System.Environment.ExpandEnvironmentVariables(rootLoggingPath);
+                ThreadedExecution.rootLoggingPath = Path.GetFullPath(expanded);
+
+                log.LogInformation($"Logging path expanded to: {ThreadedExecution.rootLoggingPath}");
+
+                if (!Directory.Exists(ThreadedExecution.rootLoggingPath))
+                {
+                    Directory.CreateDirectory(ThreadedExecution.rootLoggingPath);
+                }
+
+                this.workingDirectory = Path.Combine(ThreadedExecution.rootLoggingPath, "Working");
+                if (!Directory.Exists(this.workingDirectory))
+                {
+                    Directory.CreateDirectory(this.workingDirectory);
+                }
+            }
+            catch (Exception exe)
+            {
+                log.LogError(exe, "Unable to set root logging path for " + rootLoggingPath);
+                throw;
+            }
         }
 
     }

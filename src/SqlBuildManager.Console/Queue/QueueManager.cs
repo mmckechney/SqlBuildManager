@@ -28,6 +28,8 @@ namespace SqlBuildManager.Console.Queue
 
         private ServiceBusClient _client = null;
         private ServiceBusAdministrationClient _adminClient = null;
+        private ServiceBusReceiver _messageReceiver = null;
+       
         public QueueManager(string topicConnectionString, string batchJobName)
         {
             this.topicConnectionString = topicConnectionString;
@@ -45,7 +47,6 @@ namespace SqlBuildManager.Console.Queue
                 return _client;
             }
         }
-
         public ServiceBusAdministrationClient AdminClient
         {
             get
@@ -55,6 +56,17 @@ namespace SqlBuildManager.Console.Queue
                     _adminClient = new ServiceBusAdministrationClient(topicConnectionString);
                 }
                 return _adminClient;
+            }
+        }
+        public ServiceBusReceiver MessageReceiver
+        {
+            get
+            {
+                if (_messageReceiver == null)
+                {
+                    _messageReceiver = this.Client.CreateReceiver(this.topicName, this.topicSubscriptionName, new ServiceBusReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock });
+                }
+                return _messageReceiver;
             }
         }
 
@@ -92,7 +104,6 @@ namespace SqlBuildManager.Console.Queue
             }
 
         }
-
         private List<ServiceBusMessage> CreateMessages(List<IEnumerable<(string, List<DatabaseOverride>)>> buckets, string batchJobName)
         {
             try
@@ -105,7 +116,7 @@ namespace SqlBuildManager.Console.Queue
                 {
                     foreach (var target in bucket)
                     {
-                        var data = new { ServerName = target.Item1, DbOverrideSequence = target.Item2 };
+                        var data = new TargetMessage(){ ServerName = target.Item1, DbOverrideSequence = target.Item2 };
                         var msg = data.AsMessage();
                         msg.Subject = batchJobName;
                         msg.SessionId = target.Item1;
@@ -122,6 +133,79 @@ namespace SqlBuildManager.Console.Queue
 
         }
 
+        public async Task<ServiceBusReceivedMessage> GetDatabaseTargetFromQueue()
+        {
+           var message = await this.MessageReceiver.ReceiveMessageAsync(new TimeSpan(0,0,20));
+            if(message == null)
+            {
+                return null;
+            }
+            if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+            {
+                await this.MessageReceiver.DeadLetterMessageAsync(message);
+                log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                return await GetDatabaseTargetFromQueue();
+            }
+            else
+            {
+                return message;
+            }
+            var tgtMsg = message.As<TargetMessage>();
+        }
+        public async Task CompleteMessage(ServiceBusReceivedMessage message)
+        {
+            var t = message.As<TargetMessage>();
+            log.LogInformation($"Completing {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+            await this.MessageReceiver.CompleteMessageAsync(message);
+        }
+        public async Task AbandonMessage(ServiceBusReceivedMessage message)
+        {
+            var t = message.As<TargetMessage>();
+            log.LogInformation($"Abandoning {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+            await this.MessageReceiver.DeadLetterMessageAsync(message);
+            await this.MessageReceiver.AbandonMessageAsync(message);
+        }
+        public async Task DeadletterMessage(ServiceBusReceivedMessage message)
+        {
+            var t = message.As<TargetMessage>();
+            log.LogInformation($"Deadlettering {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+            await this.MessageReceiver.DeadLetterMessageAsync(message);
+        }
+
+
+        internal async Task<bool> RetrieveTargetsFromQueue()
+        {
+            var receiver = this.Client.CreateReceiver(this.topicName, this.topicSubscriptionName, new ServiceBusReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock });
+
+            while (true)
+            {
+                IReadOnlyList<ServiceBusReceivedMessage> messages = await receiver.ReceiveMessagesAsync(maxMessages: 100);
+                if (messages.Any())
+                {
+                    foreach (ServiceBusReceivedMessage message in messages)
+                    {
+                        if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                        {
+                            await receiver.DeadLetterMessageAsync(message);
+                            log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                        }
+                        else
+                        {
+                            string msg = $"{Environment.NewLine}JobName: {message.Subject}{Environment.NewLine}{Encoding.UTF8.GetString(message.Body.ToArray())}";
+                            log.LogInformation(msg);
+                            await receiver.CompleteMessageAsync(message);
+                        }
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            log.LogInformation("Compelted message receive");
+            return true;
+
+        }
         public ServiceBusReceiver GetQueueReceiver()
         {
             ServiceBusClient client = new ServiceBusClient(this.topicConnectionString);
@@ -168,7 +252,6 @@ namespace SqlBuildManager.Console.Queue
 
             return;
         }
-
         private async Task CreateBatchJobFilter()
         {
             try
@@ -204,8 +287,6 @@ namespace SqlBuildManager.Console.Queue
             }
             return;
         }
-
-
         private async Task CleanUpCustomFilters()
         {
 
@@ -236,39 +317,7 @@ namespace SqlBuildManager.Console.Queue
         }
 
 
-        internal async Task<bool> RetrieveTargetsFromQueue()
-        {
-            var receiver = this.Client.CreateReceiver(this.topicName, this.topicSubscriptionName, new ServiceBusReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock });
 
-            while (true)
-            {
-                IReadOnlyList<ServiceBusReceivedMessage> messages = await receiver.ReceiveMessagesAsync(maxMessages: 100);
-                if (messages.Any())
-                {
-                    foreach (ServiceBusReceivedMessage message in messages)
-                    {
-                        if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
-                        {
-                            await receiver.DeadLetterMessageAsync(message);
-                            log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
-                        }
-                        else
-                        {
-                            string msg = $"{Environment.NewLine}JobName: {message.Subject}{Environment.NewLine}{Encoding.UTF8.GetString(message.Body.ToArray())}";
-                            log.LogInformation(msg);
-                            await receiver.CompleteMessageAsync(message);
-                        }
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-            log.LogInformation("Compelted message receive");
-            return true;
-
-        }
     }
 
 }

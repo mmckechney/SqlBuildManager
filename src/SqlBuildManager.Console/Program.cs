@@ -371,7 +371,7 @@ namespace SqlBuildManager.Console
                 System.Environment.Exit(-1);
             }
             string[] errorMessages;
-            int pwVal = Validation.ValidateUserNameAndPassword(ref cmdLine, out errorMessages);
+            int pwVal = Validation.ValidateUserNameAndPassword(cmdLine, out errorMessages);
             if (pwVal != 0)
             {
                 log.LogError(errorMessages.Aggregate((a, b) => a + "; " + b));
