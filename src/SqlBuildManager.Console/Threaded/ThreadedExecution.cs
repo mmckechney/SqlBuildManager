@@ -11,6 +11,7 @@ using MoreLinq;
 using System.Linq;
 using System.Threading.Tasks;
 using SqlBuildManager.Console.Queue;
+using Azure.Messaging.ServiceBus;
 
 namespace SqlBuildManager.Console.Threaded
 {
@@ -33,6 +34,8 @@ namespace SqlBuildManager.Console.Threaded
         bool theadedLoggingInitiated = false;
         private string[] args;
         private CommandLineArgs cmdLine = null;
+        private QueueManager qManager = null;
+        private int queueReturnValue = 0;
         string workingDirectory = string.Empty;
         private static string projectFileName = string.Empty;
         /// <summary>
@@ -269,39 +272,36 @@ namespace SqlBuildManager.Console.Threaded
         }
         private async Task<int> ExecuteFromQueue(CommandLineArgs cmdLine, string buildRequestedBy)
         {
-
-
-            var qManager = new Queue.QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
+            this.qManager = new Queue.QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
 
             int finalReturn = 0;
             int retVal = 0;
             while(true)
             {
-                var message = await qManager.GetDatabaseTargetFromQueue();
+                var messages = await qManager.GetDatabaseTargetFromQueue(cmdLine.Concurrency);
                
-                if(message == null)
+                if(messages.Count == 0)
                 {
                     log.LogInformation("No more messages found in Service Bus Topic. Exiting.");
                     break;
                 }
                 else
                 {
-                    var target = message.As<TargetMessage>();
-                    ThreadedRunner runner = new ThreadedRunner(target.ServerName, target.DbOverrideSequence, cmdLine, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
-                    var msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, RunId = ThreadedExecution.RunID, Message = "Queuing up thread", LogType = LogType.Message };
-                    WriteToLog(msg);
-                    retVal = await ProcessThreadedBuild(runner);
-                    if(retVal == 0)
+                    var tasks = new List<Task<int>>();
+                    foreach(var message in messages)
                     {
-                        await qManager.CompleteMessage(message);
-                    }else
-                    {
-                        await qManager.DeadletterMessage(message);
-                        finalReturn = -453453;
+                        var target = message.As<TargetMessage>();
+                        ThreadedRunner runner = new ThreadedRunner(target.ServerName, target.DbOverrideSequence, cmdLine, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
+                        var msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, RunId = ThreadedExecution.RunID, Message = "Queuing up thread", LogType = LogType.Message };
+                        WriteToLog(msg);
+                        tasks.Add(ProcessThreadedBuildWithQueue(runner, message));
                     }
+                    Task.WaitAll(tasks.ToArray());
+                   
+                  
                 }
             }
-            return finalReturn;
+            return queueReturnValue;
         }
 
 
@@ -413,6 +413,23 @@ namespace SqlBuildManager.Console.Threaded
                 await ProcessThreadedBuild(runner);
             }
             return 0;
+        }
+        private async Task<int> ProcessThreadedBuildWithQueue(ThreadedRunner runner, ServiceBusReceivedMessage message)
+        {
+            int retVal = await ProcessThreadedBuild(runner);
+
+            if (retVal == 0)
+            {
+                await this.qManager.CompleteMessage(message);
+                return 0;
+            }
+            else
+            {
+                await this.qManager.DeadletterMessage(message);
+                queueReturnValue += -42;
+                return -42;
+            }
+            
         }
         private async Task<int> ProcessThreadedBuild(ThreadedRunner runner)
         {

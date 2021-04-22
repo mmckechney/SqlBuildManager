@@ -133,24 +133,24 @@ namespace SqlBuildManager.Console.Queue
 
         }
 
-        public async Task<ServiceBusReceivedMessage> GetDatabaseTargetFromQueue()
+        public async Task<List<ServiceBusReceivedMessage>> GetDatabaseTargetFromQueue(int maxMessages)
         {
-           var message = await this.MessageReceiver.ReceiveMessageAsync(new TimeSpan(0,0,20));
-            if(message == null)
+            var lstMsg = new List<ServiceBusReceivedMessage>();
+            var messages = await this.MessageReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
+
+            foreach (var message in messages)
             {
-                return null;
+                if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                {
+                    await this.MessageReceiver.DeadLetterMessageAsync(message);
+                    log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                }
+                else
+                {
+                    lstMsg.Add(message);
+                }
             }
-            if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
-            {
-                await this.MessageReceiver.DeadLetterMessageAsync(message);
-                log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
-                return await GetDatabaseTargetFromQueue();
-            }
-            else
-            {
-                return message;
-            }
-            var tgtMsg = message.As<TargetMessage>();
+            return lstMsg;
         }
         public async Task CompleteMessage(ServiceBusReceivedMessage message)
         {
