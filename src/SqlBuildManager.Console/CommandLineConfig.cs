@@ -47,7 +47,7 @@ namespace SqlBuildManager.Console
             };
             var trialOption = new Option(new string[] { "--trial" }, "Whether or not to run in trial mode(default is false)")
             {
-                Argument = new Argument<bool>("trial")
+                Argument = new Argument<bool>("trial", () => false)
             };
             var scriptsrcdirOption = new Option(new string[] { "--scriptsrcdir" }, " [Not recommended] Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)")
             {
@@ -81,7 +81,7 @@ namespace SqlBuildManager.Console
             };
             var transactionalOption = new Option(new string[] { "--transactional" }, "Whether or not to run with a wrapping transaction (default is true)")
             {
-                Argument = new Argument<bool>("transactional")
+                Argument = new Argument<bool>("transactional", () => true)
             };
             var timeoutretrycountOption = new Option(new string[] { "--timeoutretrycount" }, "How many retries to attempt if a timeout exception occurs")
             {
@@ -129,43 +129,43 @@ namespace SqlBuildManager.Console
             {
                 Argument = new Argument<string>("outputsbm")
             };
-            var deletebatchpoolOption = new Option(new string[] { "--deletebatchpool" }, "Whether or not to delete the batch pool servers after an execution (default is false)")
+            var deletebatchpoolOption = new Option(new string[] { "--deletebatchpool" }, "Whether or not to delete the batch pool servers after an execution")
             {
-                Argument = new Argument<bool>("deletebatchpool")
+                Argument = new Argument<bool>("deletebatchpool", () => false)
             };
-            var deletebatchjobOption = new Option(new string[] { "--deletebatchjob" }, "Whether or not to delete the batch job after an execution (default is true)")
+            var deletebatchjobOption = new Option(new string[] { "--deletebatchjob" }, "Whether or not to delete the batch job after an execution")
             {
-                Argument = new Argument<bool>("deletebatchjob")
+                Argument = new Argument<bool>("deletebatchjob", () => true)
             };
-            var batchnodecountOption = new Option(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job  (default is 10)")
+            var batchnodecountOption = new Option(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job")
             {
-                Argument = new Argument<int>("batchnodecount")
+                Argument = new Argument<int>("batchnodecount", () => 10)
             };
-            var batchjobnameOption = new Option(new string[] { "--jobname", "--batchjobname" }, "[Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed")
+            var batchjobnameOption = new Option(new string[] { "--jobname", "--batchjobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed")
             {
                 Argument = new Argument<string>("batchjobname")
             };
-            var batchaccountnameOption = new Option(new string[] { "--batchaccountname" }, "String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]")
+            var batchaccountnameOption = new Option(new string[] { "--batchaccountname" }, "String name of the Azure Batch account")
             {
                 Argument = new Argument<string>("batchaccountname")
             };
-            var batchaccountkeyOption = new Option(new string[] { "--batchaccountkey" }, "Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]")
+            var batchaccountkeyOption = new Option(new string[] { "--batchaccountkey" }, "Account Key for the Azure Batch account")
             {
                 Argument = new Argument<string>("batchaccountkey")
             };
-            var batchaccounturlOption = new Option(new string[] { "--batchaccounturl" }, "URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]")
+            var batchaccounturlOption = new Option(new string[] { "--batchaccounturl" }, "URL for the Azure Batch account")
             {
                 Argument = new Argument<string>("batchaccounturl")
             };
-            var storageaccountnameOption = new Option(new string[] { "--storageaccountname" }, "Name of storage account associated with the Azure Batch account  [can also be set via StorageAccountName app settings key]")
+            var storageaccountnameOption = new Option(new string[] { "--storageaccountname" }, "Name of storage account associated with the Azure Batch account")
             {
                 Argument = new Argument<string>("storageaccountname")
             };
-            var storageaccountkeyOption = new Option(new string[] { "--storageaccountkey" }, "Account Key for the storage account  [can also be set via StorageAccountKey app settings key]")
+            var storageaccountkeyOption = new Option(new string[] { "--storageaccountkey" }, "Account Key for the storage account")
             {
                 Argument = new Argument<string>("storageaccountkey")
             };
-            var batchvmsizeOption = new Option(new string[] { "--vmsize", "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]")
+            var batchvmsizeOption = new Option(new string[] { "--vmsize", "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) ")
             {
                 Argument = new Argument<string>("batchvmsize")
             };
@@ -175,7 +175,7 @@ namespace SqlBuildManager.Console
             };
             var batchpoolOsOption = new Option(new string[] { "--os", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default")
             {
-                Argument = new Argument<OsType>("batchpoolos")
+                Argument = new Argument<OsType>("batchpoolos", () => OsType.Windows)
             };
             var batchApplicationOption = new Option(new string[] { "--apppackage", "--applicationpackage" }, "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux")
             {
@@ -189,13 +189,13 @@ namespace SqlBuildManager.Console
             {
                 Argument = new Argument<string>("servicebustopicconnection")
             };
-            var pollbatchpoolstatusOption = new Option(new string[] { "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true, default) or fire and forget (false)")
+            var pollbatchpoolstatusOption = new Option(new string[] { "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true) or fire and forget (false)")
             {
-                Argument = new Argument<bool>("pollbatchpoolstatus")
+                Argument = new Argument<bool>("pollbatchpoolstatus", () => true)
             };
-            var defaultscripttimeoutOption = new Option(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC (default is 500)")
+            var defaultscripttimeoutOption = new Option(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC")
             {
-                Argument = new Argument<int>("defaultscripttimeout")
+                Argument = new Argument<int>("defaultscripttimeout", () => 500)
             };
             var authtypeOption = new Option(new string[] { "--authtype" }, "SQL Authentication type to use.")
             {
@@ -204,7 +204,7 @@ namespace SqlBuildManager.Console
             };
             var silentOption = new Option(new string[] { "--silent" }, "Suppresses overwrite prompt if file already exists")
             {
-                Argument = new Argument<bool>("silent")
+                Argument = new Argument<bool>("silent", () => false)
             };
             var outputcontainersasurlOption = new Option(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command")
             {
@@ -217,7 +217,7 @@ namespace SqlBuildManager.Console
             };
             var cleartextOption = new Option(new string[] { "--cleartext" }, "Flag to save settings file in clear text (vs. encrypted)")
             {
-                Argument = new Argument<bool>("cleartext")
+                Argument = new Argument<bool>("cleartext", () => false)
             };
             var queryFileOption = new Option(new string[] { "--queryfile" }, "File containing the SELECT query to run across the databases")
             {
@@ -239,7 +239,6 @@ namespace SqlBuildManager.Console
             {
                 Argument = new Argument<LogLevel>("loglevel", () => LogLevel.Information)
             };
-
 
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")

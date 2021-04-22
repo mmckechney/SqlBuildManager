@@ -16,7 +16,7 @@ using System.Text;
 
 namespace SqlBuildManager.Console.Queue
 {
-    public class QueueManager
+    public class QueueManager : IDisposable
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -28,7 +28,9 @@ namespace SqlBuildManager.Console.Queue
 
         private ServiceBusClient _client = null;
         private ServiceBusAdministrationClient _adminClient = null;
+        private ServiceBusSessionReceiver _sessionReceiver = null;
         private ServiceBusReceiver _messageReceiver = null;
+
        
         public QueueManager(string topicConnectionString, string batchJobName)
         {
@@ -133,11 +135,54 @@ namespace SqlBuildManager.Console.Queue
 
         }
 
-        public async Task<List<ServiceBusReceivedMessage>> GetDatabaseTargetFromQueue(int maxMessages)
+        public async Task<List<ServiceBusReceivedMessage>> GetDatabaseTargetFromQueue(int maxMessages, ConcurrencyType cType)
+        {
+            switch(cType)
+            {
+                case ConcurrencyType.Server:
+                    return await GetSessionBasedTargetsFromQueue(1, false);
+                
+                case ConcurrencyType.MaxPerServer:
+                    return await GetSessionBasedTargetsFromQueue(maxMessages, false);
+
+                case ConcurrencyType.Count:
+                default:
+                    return await GetCountBasedTargetsFromQueue(maxMessages);
+            }
+            
+        }
+        private async Task<List<ServiceBusReceivedMessage>> GetCountBasedTargetsFromQueue(int maxMessages)
         {
             var lstMsg = new List<ServiceBusReceivedMessage>();
             var messages = await this.MessageReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
 
+            foreach (var message in messages)
+            {
+                if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                {
+                    await this.MessageReceiver.DeadLetterMessageAsync(message);
+                    log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                }
+                else
+                {
+                    lstMsg.Add(message);
+                }
+            }
+            return lstMsg;
+        }
+        private async Task<List<ServiceBusReceivedMessage>> GetSessionBasedTargetsFromQueue(int maxMessages, bool resetSession)
+        {
+            var lstMsg = new List<ServiceBusReceivedMessage>();
+            if(_sessionReceiver == null || resetSession)
+            {
+                _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock });
+            }
+
+            var messages = await _sessionReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
+            if(messages.Count == 0 && resetSession == false)
+            {
+               return await GetSessionBasedTargetsFromQueue(maxMessages, true);
+            }
             foreach (var message in messages)
             {
                 if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
@@ -316,7 +361,21 @@ namespace SqlBuildManager.Console.Queue
             return;
         }
 
+        public void Dispose()
+        {
+            var tasks = new List<Task>();
+            if(_messageReceiver != null)
+            {
+                tasks.Add(_messageReceiver.DisposeAsync().AsTask());
+            }
+            if (_client != null)
+            {
+                tasks.Add(_client.DisposeAsync().AsTask());
+            }
 
+            Task.WaitAll(tasks.ToArray());
+
+        }
 
     }
 

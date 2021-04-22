@@ -51,7 +51,6 @@ namespace SqlSync.SqlBuild
             {
                 if (File.Exists(value))
                 {
-
                     CommandLineArgs cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(value));
                     //cmdLine = Cryptography.DecryptSensitiveFields(cmdLine);
                     this.BatchArgs = cmdLine.BatchArgs;
@@ -98,6 +97,8 @@ namespace SqlSync.SqlBuild
         [JsonIgnore]
         public virtual string Database { get; set; } = string.Empty;
         public virtual string RootLoggingPath { get; set; } = string.Empty;
+
+        [JsonIgnore]
         public virtual LogLevel LogLevel { get; set; } = LogLevel.Information;
         [JsonIgnore]
         public virtual bool Trial { get; set; } = false;

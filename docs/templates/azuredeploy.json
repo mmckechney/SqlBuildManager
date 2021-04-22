@@ -214,7 +214,7 @@
             ],
             "properties": {
                 "lockDuration": "PT30S",
-                "requiresSession": false,
+                "requiresSession": true,
                 "defaultMessageTimeToLive": "P14D",
                 "deadLetteringOnMessageExpiration": true,
                 "deadLetteringOnFilterEvaluationExceptions": true,

@@ -202,6 +202,11 @@ namespace SqlBuildManager.Console.Threaded
             {
                 //Really only needed when running unit tests, but still a good idea.
                 ResetStaticValues();
+
+                if(this.qManager != null)
+                {
+                    this.qManager.Dispose();
+                }
             }
         }
 
@@ -274,11 +279,9 @@ namespace SqlBuildManager.Console.Threaded
         {
             this.qManager = new Queue.QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
 
-            int finalReturn = 0;
-            int retVal = 0;
             while(true)
             {
-                var messages = await qManager.GetDatabaseTargetFromQueue(cmdLine.Concurrency);
+                var messages = await qManager.GetDatabaseTargetFromQueue(cmdLine.Concurrency, cmdLine.ConcurrencyType);
                
                 if(messages.Count == 0)
                 {
