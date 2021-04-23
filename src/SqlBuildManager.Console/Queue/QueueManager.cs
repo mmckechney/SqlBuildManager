@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Polly;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace SqlBuildManager.Console.Queue
 {
@@ -21,6 +22,7 @@ namespace SqlBuildManager.Console.Queue
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly string topicSubscriptionName = "sbmsubscription";
+        private readonly string topicSessionSubscriptionName = "sbmsubscriptionsession";
         private readonly string topicName = "sqlbuildmanager";
 
         private string topicConnectionString;
@@ -73,14 +75,14 @@ namespace SqlBuildManager.Console.Queue
         }
 
 
-        public async Task<int> SendTargetsToQueue(MultiDbData multiDb)
+        public async Task<int> SendTargetsToQueue(MultiDbData multiDb, ConcurrencyType cType)
         {
             try
             {
                 log.LogInformation($"Setting up Topic Subscription with Batch Job filter name '{this.batchJobName}'");
                 await RemoveDefaultFilters();
                 await CleanUpCustomFilters();
-                await CreateBatchJobFilter();
+                await CreateBatchJobFilter(cType == ConcurrencyType.Count ? false : true );
 
                   var sender = this.Client.CreateSender(topicName);
 
@@ -173,48 +175,102 @@ namespace SqlBuildManager.Console.Queue
         private async Task<List<ServiceBusReceivedMessage>> GetSessionBasedTargetsFromQueue(int maxMessages, bool resetSession)
         {
             var lstMsg = new List<ServiceBusReceivedMessage>();
-            if(_sessionReceiver == null || resetSession)
+            try
             {
-                _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock });
-            }
+                if (_sessionReceiver == null || resetSession)
+                {
+                    log.LogInformation("Attempting to get new queue session for next Server...");
+                    var token = sessionTokenSource.Token;
+                    StartCancellationTimer();
+                    try
+                    {
+                        _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock }, token);
+                    }catch(TaskCanceledException)
+                    {
+                        return lstMsg;
+                    }
+                }
 
-            var messages = await _sessionReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
-            if(messages.Count == 0 && resetSession == false)
-            {
-               return await GetSessionBasedTargetsFromQueue(maxMessages, true);
-            }
-            foreach (var message in messages)
-            {
-                if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                var messages = await _sessionReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
+                if (messages.Count == 0 && resetSession == false)
                 {
-                    await this.MessageReceiver.DeadLetterMessageAsync(message);
-                    log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                    return await GetSessionBasedTargetsFromQueue(maxMessages, true);
                 }
-                else
+                foreach (var message in messages)
                 {
-                    lstMsg.Add(message);
+                    if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                    {
+                        await this.MessageReceiver.DeadLetterMessageAsync(message);
+                        log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                    }
+                    else
+                    {
+                        lstMsg.Add(message);
+                    }
                 }
+            } 
+            catch (ServiceBusException sbe)
+            {
+                switch(sbe.Reason)
+                {
+                    case ServiceBusFailureReason.ServiceTimeout:  //This execption is thrown when no session is available, return empty list to indicate no more messages
+                        return lstMsg;
+                    
+                    case ServiceBusFailureReason.SessionLockLost: //Try to get a new session
+                       return await GetSessionBasedTargetsFromQueue(maxMessages, true);
+
+                    default:
+                        throw;
+                }
+                
             }
             return lstMsg;
         }
+
+        CancellationTokenSource sessionTokenSource = new CancellationTokenSource();
+        private void StartCancellationTimer()
+        {
+            sessionTokenSource.CancelAfter(5000);
+        }
+
         public async Task CompleteMessage(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
             log.LogInformation($"Completing {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
-            await this.MessageReceiver.CompleteMessageAsync(message);
+            if (this._sessionReceiver != null)
+            {
+                await this._sessionReceiver.CompleteMessageAsync(message);
+            }
+            else
+            {
+                await this.MessageReceiver.CompleteMessageAsync(message);
+            }
         }
         public async Task AbandonMessage(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
             log.LogInformation($"Abandoning {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
-            await this.MessageReceiver.DeadLetterMessageAsync(message);
-            await this.MessageReceiver.AbandonMessageAsync(message);
+            if (this._sessionReceiver != null)
+            {
+                await this._sessionReceiver.AbandonMessageAsync(message);
+            }
+            else
+            {
+                await this.MessageReceiver.AbandonMessageAsync(message);
+            }
         }
         public async Task DeadletterMessage(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
             log.LogInformation($"Deadlettering {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
-            await this.MessageReceiver.DeadLetterMessageAsync(message);
+            if (this._sessionReceiver != null)
+            {
+                await this._sessionReceiver.DeadLetterMessageAsync(message);
+            }
+            else
+            { 
+                await this.MessageReceiver.DeadLetterMessageAsync(message);
+            }
         }
 
 
@@ -264,30 +320,34 @@ namespace SqlBuildManager.Console.Queue
         private async Task RemoveDefaultFilters()
         {
             log.LogDebug($"Starting to remove default filters.");
-
+            string[] subs = new[] { this.topicSubscriptionName, this.topicSessionSubscriptionName };
             try
             {
-                try
+                foreach (var sub in subs)
                 {
-                    var defRule = await this.AdminClient.GetRuleAsync(this.topicName, this.topicSubscriptionName, CreateRuleOptions.DefaultRuleName);
-                }
-                catch (Exception ex)
-                {
-                    if (ex.Message.ToLower().Contains("not found"))
+                    try
                     {
-                        log.LogDebug($"No default filter found.");
-                        return;
+                        var defRule = await this.AdminClient.GetRuleAsync(this.topicName, sub, CreateRuleOptions.DefaultRuleName);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        var pollyRetryPolicyForDefaultRemove = Policy.Handle<Exception>(ex => !ex.Message.Contains("could not be found")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
-                        await pollyRetryPolicyForDefaultRemove.ExecuteAsync(async () =>
+                        if (ex.Message.ToLower().Contains("not found"))
                         {
-                            await AdminClient.DeleteRuleAsync(this.topicName, this.topicSubscriptionName, CreateRuleOptions.DefaultRuleName);
-                        });
+                            log.LogDebug($"No default filter found.");
+                            return;
+                        }
+                        else
+                        {
+                            var pollyRetryPolicyForDefaultRemove = Policy.Handle<Exception>(ex => !ex.Message.Contains("could not be found")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
+                            await pollyRetryPolicyForDefaultRemove.ExecuteAsync(async () =>
+                            {
+                                await AdminClient.DeleteRuleAsync(this.topicName, sub, CreateRuleOptions.DefaultRuleName);
+                            });
+                        }
                     }
+                    log.LogDebug($"Default filter for subscription '{this.topicSubscriptionName}' has been removed.");
                 }
-                log.LogDebug($"Default filter for subscription '{this.topicSubscriptionName}' has been removed.");
+               
 
             }
             catch (Exception ex)
@@ -297,8 +357,17 @@ namespace SqlBuildManager.Console.Queue
 
             return;
         }
-        private async Task CreateBatchJobFilter()
+        private async Task CreateBatchJobFilter(bool withSession)
         {
+            string subName;
+            if(withSession)
+            {
+                subName = this.topicSessionSubscriptionName;
+            }
+            else
+            {
+                subName = this.topicSubscriptionName;
+            }
             try
             {
                 log.LogDebug($"Creating Topic filter for Batch job name: {this.batchJobName}");
@@ -306,7 +375,7 @@ namespace SqlBuildManager.Console.Queue
                 var pollyRetryPolicyForCreate= Policy.Handle<Exception>(ex => !ex.Message.Contains("already exists")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
                 await pollyRetryPolicyForCreate.ExecuteAsync(async ()  =>
                 {
-                    await this.AdminClient.CreateRuleAsync(topicName, topicSubscriptionName, new CreateRuleOptions()
+                    await this.AdminClient.CreateRuleAsync(topicName, subName, new CreateRuleOptions()
                     {
                         Filter = new CorrelationRuleFilter()
                         {
@@ -317,7 +386,7 @@ namespace SqlBuildManager.Console.Queue
                     });
                 });
                
-                       log.LogDebug($"Filter named {batchJobName} has been added for subscription `{topicSubscriptionName}`.");
+                       log.LogDebug($"Filter named {batchJobName} has been added for subscription `{subName}`.");
             }
             catch (Exception ex)
             {
@@ -334,29 +403,30 @@ namespace SqlBuildManager.Console.Queue
         }
         private async Task CleanUpCustomFilters()
         {
-
+            string[] subs = new[] { this.topicSubscriptionName, this.topicSessionSubscriptionName };
             try
             {
-  
-                IAsyncEnumerator<RuleProperties> rules = this.AdminClient.GetRulesAsync(this.topicName, this.topicSubscriptionName).GetAsyncEnumerator();
-                while (await rules.MoveNextAsync())
+                foreach (var sub in subs)
                 {
-                    var pollyRetryPolicyForClean = Policy.Handle<Exception>(ex => !ex.Message.Contains("already exists")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
-                    await pollyRetryPolicyForClean.ExecuteAsync(async () =>
+                    IAsyncEnumerator<RuleProperties> rules = this.AdminClient.GetRulesAsync(this.topicName, sub).GetAsyncEnumerator();
+                    while (await rules.MoveNextAsync())
                     {
-                        if (rules.Current.Name != this.batchJobName)
+                        var pollyRetryPolicyForClean = Policy.Handle<Exception>(ex => !ex.Message.Contains("already exists")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
+                        await pollyRetryPolicyForClean.ExecuteAsync(async () =>
                         {
-                            await this.AdminClient.DeleteRuleAsync(this.topicName, this.topicSubscriptionName, rules.Current.Name);
-                            log.LogDebug($"Rule {rules.Current.Name} has been removed.");
-                        }
-                    });
+                            if (rules.Current.Name != this.batchJobName)
+                            {
+                                await this.AdminClient.DeleteRuleAsync(this.topicName, sub, rules.Current.Name);
+                                log.LogDebug($"Rule {rules.Current.Name} has been removed.");
+                            }
+                        });
+                    }
                 }
             }
             catch (Exception ex)
             {
                 log.LogError(ex, "Problem deleting customer filters");
             }
-
             log.LogInformation("All existing filters have been removed.");
             return;
         }

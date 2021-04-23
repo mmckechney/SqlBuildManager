@@ -808,7 +808,7 @@ namespace SqlBuildManager.Console
             }
 
             var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
-            int messages = await qManager.SendTargetsToQueue(multiData);
+            int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
             if(messages > 0)
             {
                 log.LogInformation($"Successfully sent {messages} targets to Service Bus queue");

@@ -233,7 +233,7 @@ namespace SqlBuildManager.Console
             };
             var threadedConcurrencyTypeOption = new Option(new string[] { "--concurrencytype" }, "Type of concurrency, used in conjunction with --concurrency ")
             {
-                Argument = new Argument<ConcurrencyType>("concurrencytype", () => ConcurrencyType.Count)
+                Argument = new Argument<ConcurrencyType>("concurrencytype")
             };
             var logLevelOption = new Option(new string[] { "--loglevel" }, "Logging level for console and log file")
             {
@@ -491,6 +491,7 @@ namespace SqlBuildManager.Console
             var batchQueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
             {
                 batchjobnameOption.Copy(true),
+                threadedConcurrencyTypeOption.Copy(true),
                 settingsfileOption,
                 settingsfileKeyOption,
                 serviceBusconnectionOption,
@@ -501,6 +502,8 @@ namespace SqlBuildManager.Console
             var batchDeQueueTargetsCommand = new Command("dequeue", "Pull database override targets to Service Bus Topic")
             {
                 batchjobnameOption.Copy(true),
+                threadedConcurrencyOption.Copy(true),
+                threadedConcurrencyTypeOption.Copy(true),
                 settingsfileOption,
                 settingsfileKeyOption,
                 serviceBusconnectionOption,

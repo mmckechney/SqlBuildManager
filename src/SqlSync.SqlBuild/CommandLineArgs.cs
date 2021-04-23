@@ -142,8 +142,10 @@ namespace SqlSync.SqlBuild
         }
         private string dacpacName = string.Empty;
         public virtual int DefaultScriptTimeout { get; set; } = 500;
+
+        [JsonIgnore]
         public virtual int Concurrency { get; set; } = 10;
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonIgnore]
         public virtual ConcurrencyType ConcurrencyType { get; set; } = ConcurrencyType.Count;
 
         [JsonIgnore]
