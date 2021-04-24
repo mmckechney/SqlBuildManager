@@ -141,11 +141,11 @@ $settingsFileKey = [System.Convert]::ToBase64String($AESKey);
 
 $tmpPath = Resolve-Path $settingsJsonWindows
 Write-Output "Saving settings file to $tmpPath"
-./..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --settingsfilekey $settingsFileKey
+./..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --settingsfilekey $settingsFileKey
 
 $tmpPath = Resolve-Path $settingsJsonLinux
 Write-Output "Saving settings file to $tmpPath"
-./..\..\src\SqlBuildManager.Console\bin\Debug\netcoreapp3.1\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux --settingsfilekey $settingsFileKey
+./..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux --settingsfilekey $settingsFileKey
 
 $keyFile = Join-Path $outputpath "settingsfilekey.txt"
 $settingsFileKey |  Set-Content -Path $keyFile

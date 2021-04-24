@@ -1,10 +1,22 @@
 # SQL Build Manager
 
-SQL Build Manager is a multi-faceted tool to allow you to manage the lifecyle of your databases. It started as a forms based application for the management of a handful of databases and then switched focus to command line automation for the management of thousands of databases.
+SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases. It provides a comprehensive set command line options for the management of one to many thousands of databases.
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
-### [Change notes](docs/change_notes.md)
+## Contents
+
+- [Command Line Quickstart](docs/commandline.md)
+- [Key Features](#key-features)
+- [The Basics](#the-basics)
+  - [Build package meta-data](#build-package-meta-data)
+  - [Creating a build package](#creating-a-build-package)
+- [Running Locally](/docs/local_build.md)
+- [Leverage Azure Batch for massively parallel updates](/docs/azure_batch.md)
+- [Change notes](docs/change_notes.md)
+- For contributors: [Notes on Building and Unit Testing](/docs/setup_azure_environment.md)
+
+----
 
 ## Key Features
 
@@ -14,7 +26,7 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the lifecyle of
 * Full script run management. Control the script order, target database, and transaction handling
 * Trial mode - runs scripts to test against database, then rolls back to leave in pristine state.
 * Automatic logging and version tracking of scripts on a per-server/per-database level
-* Full SHA-1 hashing of individual scripts and complete .sbm package files to ensure integrity of the scripts
+* Full SHA-1 hashing of individual scripts and complete `.sbm` package files to ensure integrity of the scripts
 * Execution of a build package (see below) is recorded in the database for full tracking of update history, script validation and potential rebuilding of packages
 * Massively parallel execution across thousands of databases utilizing local threading or an Azure Batch execution
 
@@ -85,7 +97,7 @@ Using the `sbm threaded run` command will allow for updating multiple databases 
 
 ### **Batch**
 
-Using the `sbm batch query` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](docs/AzureBatch.md). 
+Using the `sbm batch query` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](docs/azure_batch.md). 
 An excellent tool for viewing and monitoring your Azure batch accounts and jobs can be found here [https://azure.github.io/BatchExplorer/](https://azure.github.io/BatchExplorer/)
 
 ----
@@ -100,11 +112,5 @@ Using the `sbm threaded query` command will allow for querying multiple database
 
 ### **Batch**
 
-Using the `sbm batch query` command leverages Azure Batch to permit massively parallel queries across thousands of databases. (For information on how to get started with Azure Batch, go [here](docs/AzureBatch.md))
+Using the `sbm batch query` command leverages Azure Batch to permit massively parallel queries across thousands of databases. (For information on how to get started with Azure Batch, go [here](docs/azure_batch.md))
 
-----
-## Additional Documentation
-
-- ### Full command line reference details: [here](docs/commandline.md)
-- ### Detailed information on leveraging Azure Batch for massively parallel deployments: [here](docs/AzureBatch.md)
-- ### For help on building and unit testing:  [here](docs/setup_azure_environment.md)

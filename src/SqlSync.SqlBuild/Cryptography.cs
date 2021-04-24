@@ -39,7 +39,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        public static (bool, string) DecryptText(string input, string password, string description)
+        public static (bool, string) DecryptText(string input, string password, string description, bool suppressLog = false)
         {
             try
             {
@@ -54,9 +54,12 @@ namespace SqlSync.SqlBuild
 
                 return (true, result);
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
-                log.LogWarning($"Failed to decrypt {description} value. Returning unmodified string");
+                if (!suppressLog)
+                {
+                    log.LogWarning($"Failed to decrypt {description} value. Returning unmodified string");
+                }
                 return (false, input);
             }
         }
@@ -138,6 +141,9 @@ namespace SqlSync.SqlBuild
 
         public static CommandLineArgs EncryptSensitiveFields(CommandLineArgs cmdLine)
         {
+            //Don't double in encrypt..
+            bool tmp;
+            (tmp,cmdLine) = DecryptSensitiveFields(cmdLine, true); 
             string key = GetSettingsFileEncryptionKey(cmdLine);
 
             if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
@@ -164,10 +170,15 @@ namespace SqlSync.SqlBuild
                 cmdLine.BatchArgs.EventHubConnectionString = Cryptography.EncryptText(cmdLine.BatchArgs.EventHubConnectionString, key);
             }
 
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            {
+                cmdLine.BatchArgs.ServiceBusTopicConnectionString = Cryptography.EncryptText(cmdLine.BatchArgs.ServiceBusTopicConnectionString, key);
+            }
+
             return cmdLine;
         }
 
-        public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine)
+        public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine, bool suppressLog  = false)
         {
             //Nothing to do if none of the settings came from a settings file!
             if(string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
@@ -180,29 +191,34 @@ namespace SqlSync.SqlBuild
 
             if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
-                (success,  cmdLine.AuthenticationArgs.UserName) = Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, key, "--username");
+                (success,  cmdLine.AuthenticationArgs.UserName) = Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, key, "--username", suppressLog);
                 consolidated = consolidated & success;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
-                (success, cmdLine.AuthenticationArgs.Password) = Cryptography.DecryptText(cmdLine.AuthenticationArgs.Password, key, "--password");
+                (success, cmdLine.AuthenticationArgs.Password) = Cryptography.DecryptText(cmdLine.AuthenticationArgs.Password, key, "--password", suppressLog);
                 consolidated = consolidated & success;
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchAccountKey))
             {
-                (success, cmdLine.BatchArgs.BatchAccountKey) = Cryptography.DecryptText(cmdLine.BatchArgs.BatchAccountKey, key, "--batchaccountkey");
+                (success, cmdLine.BatchArgs.BatchAccountKey) = Cryptography.DecryptText(cmdLine.BatchArgs.BatchAccountKey, key, "--batchaccountkey", suppressLog);
                 consolidated = consolidated & success;
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.StorageAccountKey))
             {
-                (success, cmdLine.BatchArgs.StorageAccountKey) = Cryptography.DecryptText(cmdLine.BatchArgs.StorageAccountKey, key, "--storageaccountkey");
+                (success, cmdLine.BatchArgs.StorageAccountKey) = Cryptography.DecryptText(cmdLine.BatchArgs.StorageAccountKey, key, "--storageaccountkey", suppressLog);
                 consolidated = consolidated & success;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
             {
-                (success, cmdLine.BatchArgs.EventHubConnectionString) = Cryptography.DecryptText(cmdLine.BatchArgs.EventHubConnectionString, key, "--eventhubconnection");
+                (success, cmdLine.BatchArgs.EventHubConnectionString) = Cryptography.DecryptText(cmdLine.BatchArgs.EventHubConnectionString, key, "--eventhubconnection", suppressLog);
+                consolidated = consolidated & success;
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            {
+                (success, cmdLine.BatchArgs.ServiceBusTopicConnectionString) = Cryptography.DecryptText(cmdLine.BatchArgs.ServiceBusTopicConnectionString, key, "--servicebustopicconnection", suppressLog);
                 consolidated = consolidated & success;
             }
 

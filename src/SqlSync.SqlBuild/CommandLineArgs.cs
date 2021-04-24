@@ -308,6 +308,7 @@ namespace SqlSync.SqlBuild
             [Encrypt]
             public string EventHubConnectionString { get; set; } = string.Empty;
             public string ApplicationPackage { get; set; } = string.Empty;
+            [Encrypt]
             public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
         }
         #endregion
