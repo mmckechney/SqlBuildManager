@@ -658,6 +658,53 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.IsTrue(this.output.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An UPDATE statement should have been found");
         }
 
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataTestMethod]
+        public void Batch_Queue_SBMSource_Success(string batchMethod, string settingsFile)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+            string jobName = Guid.NewGuid().ToString().Replace("-", "");
+            List<string> args = new List<string>();
+            args.Add($"batch enqueue");
+            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
+            args.Add($"--override {this.overrideFilePath}");
+            args.Add($"--concurrencytype {ConcurrencyType.Server}");
+            args.Add($"--jobname {jobName}");
+
+            var result = ExecuteProcess(args);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+
+            args = new List<string>();
+            args.Add($"batch {batchMethod}");
+            args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
+            args.Add($"--override {this.overrideFilePath}");
+            args.Add($"--packagename {sbmFileName}");
+            args.Add($"--concurrencytype {ConcurrencyType.Server}");
+            args.Add($"--concurrency 2");
+            args.Add($"--jobname {jobName}");
+
+
+            result = ExecuteProcess(args);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+
+            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "run")
+            {
+                Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            }
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            }
+        }
 
 
 

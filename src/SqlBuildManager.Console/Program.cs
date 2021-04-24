@@ -794,6 +794,14 @@ namespace SqlBuildManager.Console
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return 3424;
+            }
+
             if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
             {
                 log.LogError("A --servicebusconnection value is required. Please include this in either the settings file content or as a specific command option");
@@ -824,6 +832,15 @@ namespace SqlBuildManager.Console
         internal static async Task<int> DeQueueOverrideTargets(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -53443;
+            }
+
 
             if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
             {

@@ -152,23 +152,32 @@ namespace SqlBuildManager.Console.Threaded
                 return tmpReturn;
             }
 
+            //Start logging
+            WriteToLog(new LogMsg() { Message = "**** Starting log for Run ID: " + ThreadedExecution.RunID + " ****", LogType = LogType.Message });
+
+            //Load multi-db data. Won't be used for a queue run, but will be needed to help build the script package
+            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
+            if (tmpValReturn != 0)
+            {
+                var msg = new LogMsg() { Message = String.Join(";", errorMessages), LogType = LogType.Error };
+                WriteToLog(msg);
+                return tmpValReturn;
+            }
+
             //Determine where to get the scripts from (SBM, DACPAC, generated DACPAC, scripts?)
             int success;
             (success, cmdLine) = ConfigureScriptSource(cmdLine);
-            if(success != 0)
+            if (success != 0)
             {
                 return success;
             }
 
             //This will set the static variable for the script collection
-            var prep = PrepBuildAndScripts(buildZipFileName, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
+            var prep = PrepBuildAndScripts(ThreadedExecution.buildZipFileName, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
             if (prep != 0)
             {
                 return prep;
             }
-
-            //Start logging
-            WriteToLog(new LogMsg() { Message = "**** Starting log for Run ID: " + ThreadedExecution.RunID + " ****", LogType = LogType.Message });
 
             try
             {
@@ -181,13 +190,7 @@ namespace SqlBuildManager.Console.Threaded
                 }
                 else
                 {
-                    int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
-                    if (tmpValReturn != 0)
-                    {
-                        var msg = new LogMsg() { Message = String.Join(";", errorMessages), LogType = LogType.Error };
-                        WriteToLog(msg);
-                        return tmpValReturn;
-                    }
+                
 
                     //Set the number of allowed retries...
                     this.multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;

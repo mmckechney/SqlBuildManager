@@ -135,11 +135,11 @@ namespace SqlBuildManager.Console
             };
             var deletebatchjobOption = new Option(new string[] { "--deletebatchjob" }, "Whether or not to delete the batch job after an execution")
             {
-                Argument = new Argument<bool>("deletebatchjob", () => true)
+                Argument = new Argument<bool>("deletebatchjob", () => false)
             };
             var batchnodecountOption = new Option(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job")
             {
-                Argument = new Argument<int>("batchnodecount", () => 10)
+                Argument = new Argument<int>("batchnodecount")
             };
             var batchjobnameOption = new Option(new string[] { "--jobname", "--batchjobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed")
             {
@@ -175,7 +175,7 @@ namespace SqlBuildManager.Console
             };
             var batchpoolOsOption = new Option(new string[] { "--os", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default")
             {
-                Argument = new Argument<OsType>("batchpoolos", () => OsType.Windows)
+                Argument = new Argument<OsType>("batchpoolos")
             };
             var batchApplicationOption = new Option(new string[] { "--apppackage", "--applicationpackage" }, "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux")
             {
@@ -191,15 +191,15 @@ namespace SqlBuildManager.Console
             };
             var pollbatchpoolstatusOption = new Option(new string[] { "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true) or fire and forget (false)")
             {
-                Argument = new Argument<bool>("pollbatchpoolstatus", () => true)
+                Argument = new Argument<bool>("pollbatchpoolstatus")
             };
             var defaultscripttimeoutOption = new Option(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC")
             {
-                Argument = new Argument<int>("defaultscripttimeout", () => 500)
+                Argument = new Argument<int>("defaultscripttimeout")
             };
             var authtypeOption = new Option(new string[] { "--authtype" }, "SQL Authentication type to use.")
             {
-                Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType", () => SqlSync.Connection.AuthenticationType.Password),
+                Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType"),
                 Name = "AuthenticationType"
             };
             var silentOption = new Option(new string[] { "--silent" }, "Suppresses overwrite prompt if file already exists")
@@ -229,7 +229,7 @@ namespace SqlBuildManager.Console
             };
             var threadedConcurrencyOption = new Option(new string[] { "--concurrency" }, "Maximum concurrency for threaded executions")
             {
-                Argument = new Argument<int>("concurrency", () => 8)
+                Argument = new Argument<int>("concurrency")
             };
             var threadedConcurrencyTypeOption = new Option(new string[] { "--concurrencytype" }, "Type of concurrency, used in conjunction with --concurrency ")
             {
@@ -237,7 +237,7 @@ namespace SqlBuildManager.Console
             };
             var logLevelOption = new Option(new string[] { "--loglevel" }, "Logging level for console and log file")
             {
-                Argument = new Argument<LogLevel>("loglevel", () => LogLevel.Information)
+                Argument = new Argument<LogLevel>("loglevel")
             };
 
             //Create DACPAC from target database

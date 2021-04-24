@@ -186,6 +186,12 @@ foreach ($env in $vars)
 foreach ($env in $vars)
 {
     $file = Join-Path $outputpath "settingsfile-$($env.OSName.ToLower()).json"
-    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file
+    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file -withQueue $false
+}
+
+foreach ($env in $vars)
+{
+    $file = Join-Path $outputpath "settingsfile-$($env.OSName.ToLower())-queue.json"
+    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file -withQueue $true
 }
 

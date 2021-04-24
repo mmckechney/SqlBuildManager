@@ -54,7 +54,10 @@ param(
 
  [Parameter(Mandatory=$True)]
  [string]
- $settingsFileName
+ $settingsFileName,
+
+ [bool]
+ $withQueue = $true
 )
 
 if("" -ne $subscriptionId)
@@ -103,13 +106,23 @@ $s = Get-AzStorageAccountKey -Name $storageAcctName -ResourceGroupName $resource
 $e = Get-AzEventHubKey -ResourceGroupName $resourceGroupName -NamespaceName $namespaceName -EventHubName $eventHubName -AuthorizationRuleName batchbuilder
 $sb = Get-AzServiceBusKey -ResourceGroup $resourceGroupName -Namespace $serviceBusName -TopicName sqlbuildmanager -Name sbmtopicpolicy
 
+if($withQueue -eq $true)
+{
+    $sb = Get-AzServiceBusKey -ResourceGroup $resourceGroupName -Namespace $serviceBusName -TopicName sqlbuildmanager -Name sbmtopicpolicy
+    $sbConn = $sb.PrimaryConnectionString
+}
+else 
+{
+    $sbConn = ""
+}
+$sbConnection
 $settingsFile = [PSCustomObject]@{
     AuthenticationArgs = @{
         UserName = ""
         Password = ""
     }
     BatchArgs = @{
-        BatchNodeCount = "2"
+        BatchNodeCount = 2
         BatchAccountName = $batchAcctName
         BatchAccountKey = "$($batch.PrimaryAccountKey)"
         BatchAccountUrl = "https://$($t.AccountEndpoint)"
@@ -123,7 +136,7 @@ $settingsFile = [PSCustomObject]@{
         BatchPoolOs =  $batchPoolOs
         BatchPoolName = $batchPoolName
         BatchApplicationPackage = $batchApplicationPackage
-        ServiceBusTopicConnectionString = "$($sb.PrimaryConnectionString)"
+        ServiceBusTopicConnectionString = "$($sbConn)"
     }
     RootLoggingPath = "C:\temp"
     TimeoutRetryCount = 0
@@ -132,3 +145,6 @@ $settingsFile = [PSCustomObject]@{
 
 $settingsFile | ConvertTo-Json | Set-Content -Path $settingsFileName
 Write-Host "Saved settings file to " (Resolve-Path  $settingsFileName)
+
+
+

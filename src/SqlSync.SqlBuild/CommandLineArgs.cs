@@ -23,7 +23,7 @@ namespace SqlSync.SqlBuild
         {
 
         }
-        private bool decrypted = false;
+
         [JsonIgnore]
         public ActionType Action { get; set; }
 
@@ -52,14 +52,12 @@ namespace SqlSync.SqlBuild
                 if (File.Exists(value))
                 {
                     CommandLineArgs cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(value));
-                    //cmdLine = Cryptography.DecryptSensitiveFields(cmdLine);
                     this.BatchArgs = cmdLine.BatchArgs;
                     this.AuthenticationArgs = cmdLine.AuthenticationArgs;
+
                     this.RootLoggingPath = cmdLine.RootLoggingPath;
                     this.DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
                     this.TimeoutRetryCount = cmdLine.TimeoutRetryCount;
-                    this.Concurrency = cmdLine.Concurrency;
-                    this.ConcurrencyType = cmdLine.ConcurrencyType;
                 }
                 this.settingsFile = value;
             }
@@ -522,6 +520,7 @@ namespace SqlSync.SqlBuild
                         case "CliVersion":
                         case "WhatIf":
                         case "LogLevel":
+                        case "SettingsFileKey":
                             //ignore these
                             break;
 

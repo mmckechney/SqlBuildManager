@@ -230,7 +230,7 @@ namespace SqlSync.SqlBuild
         {
             if (!string.IsNullOrWhiteSpace(cmdLine.SettingsFileKey))
             {
-               if(File.Exists(cmdLine.SettingsFileKey))
+               if(File.Exists(Path.GetFullPath(cmdLine.SettingsFileKey)))
                 {
                     return File.ReadAllText(cmdLine.SettingsFileKey).Trim();
                 }

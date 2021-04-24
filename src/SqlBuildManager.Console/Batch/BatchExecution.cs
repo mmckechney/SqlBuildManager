@@ -181,46 +181,50 @@ namespace SqlBuildManager.Console.Batch
 
 
                 //Get the list of DB targets and distribute across batch count
-                int valRet = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, null, out MultiDbData multiDb, out errorMessages);
-                List<IEnumerable<(string, List<DatabaseOverride>)>> concurrencyBuckets = null;
-                if (valRet == 0)
+                var splitTargets = new List<string[]>();
+                if (string.IsNullOrEmpty(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
                 {
-                    if(cmdLine.ConcurrencyType == ConcurrencyType.Count)
+                    int valRet = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, null, out MultiDbData multiDb, out errorMessages);
+                    List<IEnumerable<(string, List<DatabaseOverride>)>> concurrencyBuckets = null;
+                    if (valRet == 0)
                     {
-                        //If it's just by count.. split evenly by the number of nodes
-                        concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.BatchArgs.BatchNodeCount, cmdLine.ConcurrencyType);
+                        if (cmdLine.ConcurrencyType == ConcurrencyType.Count)
+                        {
+                            //If it's just by count.. split evenly by the number of nodes
+                            concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.BatchArgs.BatchNodeCount, cmdLine.ConcurrencyType);
+                        }
+                        else
+                        {
+                            //splitting by server is a little trickier, but run it and see what it does...
+                            concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.Concurrency, cmdLine.ConcurrencyType);
+                        }
+
+                        //If we end up with fewer splits, then reduce the node count...
+                        if (concurrencyBuckets.Count() < cmdLine.BatchArgs.BatchNodeCount)
+                        {
+                            log.LogWarning($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
+                            cmdLine.BatchArgs.BatchNodeCount = concurrencyBuckets.Count();
+                        }
+                        else if (concurrencyBuckets.Count() > cmdLine.BatchArgs.BatchNodeCount) //need to do some consolidating
+                        {
+                            log.LogWarning($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
+                            concurrencyBuckets = Concurrency.RecombineServersToFixedBucketCount(multiDb, cmdLine.BatchArgs.BatchNodeCount);
+                        }
                     }
                     else
                     {
-                        //splitting by server is a little trickier, but run it and see what it does...
-                        concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.Concurrency, cmdLine.ConcurrencyType);
+                        throw new ArgumentException($"Error parsing database targets. {String.Join(Environment.NewLine, errorMessages)}");
                     }
-                   
-                    //If we end up with fewer splits, then reduce the node count...
-                    if(concurrencyBuckets.Count() < cmdLine.BatchArgs.BatchNodeCount)
-                    {
-                        log.LogWarning($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
-                        cmdLine.BatchArgs.BatchNodeCount = concurrencyBuckets.Count();
-                    }
-                    else if(concurrencyBuckets.Count() > cmdLine.BatchArgs.BatchNodeCount) //need to do some consolidating
-                    {
-                        log.LogWarning($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
-                        concurrencyBuckets = Concurrency.RecombineServersToFixedBucketCount(multiDb, cmdLine.BatchArgs.BatchNodeCount);
-                    }
-                }
-                else
-                {
-                    throw new ArgumentException($"Error parsing database targets. {String.Join(Environment.NewLine, errorMessages)}");
-                }
-                var splitTargets = Concurrency.ConvertBucketsToConfigLines(concurrencyBuckets);
+                    splitTargets = Concurrency.ConvertBucketsToConfigLines(concurrencyBuckets);
 
-                //Write out each split file
-                string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
-                for (int i = 0; i < splitTargets.Count; i++)
-                {
-                    var tmpName = Path.Combine(rootPath,string.Format(baseTargetFormat, i));
-                    File.WriteAllLines(tmpName, splitTargets[i]);
-                    inputFilePaths.Add(tmpName);
+                    //Write out each split file
+                    string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
+                    for (int i = 0; i < splitTargets.Count; i++)
+                    {
+                        var tmpName = Path.Combine(rootPath, string.Format(baseTargetFormat, i));
+                        File.WriteAllLines(tmpName, splitTargets[i]);
+                        inputFilePaths.Add(tmpName);
+                    }
                 }
 
                 // Upload the data files to Azure Storage. This is the data that will be processed by each of the tasks that are
@@ -260,7 +264,14 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 // Create a collection to hold the tasks that we'll be adding to the job
-                log.LogInformation($"Adding {splitTargets.Count} tasks to job [{jobId}]...");
+                if (splitTargets.Count != 0)
+                {
+                    log.LogInformation($"Adding {splitTargets.Count} tasks to job [{jobId}]...");
+                }
+                else if(!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+                {
+                    log.LogInformation($"Adding tasks to job [{jobId}]...");
+                }
 
                 List<CloudTask> tasks = new List<CloudTask>();
 
@@ -720,7 +731,10 @@ namespace SqlBuildManager.Console.Batch
                 //Set the override file for this node.
                 var tmp = string.Format(baseTargetFormat, i);
                 var target = inputFiles.Where(x => x.FilePath.ToLower().Contains(tmp.ToLower())).FirstOrDefault();
-                threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
+                if (target != null)
+                {
+                    threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
+                }
 
                 //Set set the Sas URL
                 threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;

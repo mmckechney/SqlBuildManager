@@ -38,6 +38,8 @@ $outputDbConfigFile = Join-Path $outputPath "databasetargets.cfg"
 $clientDbConfigFile = Join-Path $outputPath "clientdbtargets.cfg"
 $settingsJsonWindows = Join-Path $outputPath "settingsfile-windows.json"
 $settingsJsonLinux = Join-Path $outputPath "settingsfile-linux.json"
+$settingsJsonWindowsQueue = Join-Path $outputPath "settingsfile-windows-queue.json"
+$settingsJsonLinuxQueue = Join-Path $outputPath "settingsfile-linux-queue.json"
 
 ###################################################
 # Create the resource Group for your test resources
@@ -146,6 +148,15 @@ Write-Output "Saving settings file to $tmpPath"
 $tmpPath = Resolve-Path $settingsJsonLinux
 Write-Output "Saving settings file to $tmpPath"
 ./..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux --settingsfilekey $settingsFileKey
+
+$tmpPath = Resolve-Path $settingsJsonWindowsQueue
+Write-Output "Saving settings file to $tmpPath"
+./..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --settingsfilekey $settingsFileKey
+
+$tmpPath = Resolve-Path $settingsJsonLinuxQueue
+Write-Output "Saving settings file to $tmpPath"
+./..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux --settingsfilekey $settingsFileKey
+
 
 $keyFile = Join-Path $outputpath "settingsfilekey.txt"
 $settingsFileKey |  Set-Content -Path $keyFile

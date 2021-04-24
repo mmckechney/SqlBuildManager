@@ -17,7 +17,8 @@ This deployment process will get everything ready for you to start leveraging Az
   - Service Bus Namespace and Topic - used as a source for the database target list (this is an optional service and can be removed if you do not want to leverage Service Bus and instead leverage an `--override` database target file
 - Compile the `SqlBuildManager.Console.csproj` targeting .NET 5.0 to produce the `sbm` executable (it will build two sets of binaries, one targeting Windows and one for Linux)
 - Create a Zip file of each package (Windows and Linux), upload them to the Azure Batch account and register each as a Batch Application
-- Call the [Create_SettingsFile.ps1](templates/Create_SettingsFile.ps1) PowerShell to collect the accounts names, keys and connection strings and save them to two JSON files `settingsfile-windows.json` and `settingsfile-linux.json`. **NOTE**: this file will have the account secrets in _plain text_. It is highly recommended that you don't skip the `savesettings` command as below
+- Call the [Create_SettingsFile.ps1](templates/Create_SettingsFile.ps1) PowerShell to collect the accounts names, keys and connection strings and save them to four JSON files `settingsfile-windows.json`,  `settingsfile-linux.json`, `settingsfile-windows-queue.json` and `settingsfile-linux-queue.json`. The files with the `-queue` suffix have the Service Bus Topic connection value set, the others do not.\
+**NOTE**:  these files will have the account secrets in _plain text_. It is highly recommended that you don't skip the `savesettings` command as below
 
 ## Deployment
 
@@ -46,6 +47,8 @@ Connect-AzAccount
 ``` bash
 sbm batch savesettings --settingsfile <path>\settingsfile-windows.json --settingsfilekey <16 characters or more>
 sbm batch savesettings --settingsfile <path>\settingsfile-linux.json --settingsfilekey <16 characters or more>
+sbm batch savesettings --settingsfile <path>\settingsfile-windows-queue.json --settingsfilekey <16 characters or more>
+sbm batch savesettings --settingsfile <path>\settingsfile-linux-queue.json --settingsfilekey <16 characters or more>
 ```
 
 **Important:** Don't forget your settings file key! This will be used at runtime to decrypt the file and access the keys and connection strings. If you do lose the setting file key, you can run the `Create_SettingsFile.ps1` directly to re-created it and `sbm batch savesettings` command to encrypt it.
