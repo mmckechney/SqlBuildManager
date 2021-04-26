@@ -3,7 +3,7 @@
 Starting with version 12.0.0, there are two new command line options for `sbm batch` and `sbm threaded` options. More specifically under their `run` and `query` sub-commands.
 The two options are `--concurrency` and `--concurrencytype`. While their meaning for both batch and threaded are similar, there are some distinctions and subtleties when used together
 
-## Option definitions 
+## Option definitions
 
 ### --concurrencytype
 

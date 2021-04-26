@@ -11,14 +11,23 @@ using Microsoft.Extensions.Logging;
 
 namespace SqlBuildManager.Console
 {
-    class CommandLineConfig
+    public class CommandLineConfig
     {
-        internal static RootCommand SetUp()
+        public static RootCommand SetUp()
         {
             var settingsfileOption = new Option(new string[] { "--settingsfile" }, "Saved settings file to load parameters from")
             {
                 Argument = new Argument<FileInfo>("settingsfile").ExistingOnly(),
                 Name = "SettingsFileInfo",
+            };
+            var settingsfileNewOption = new Option(new string[] { "--settingsfile" }, "Saved settings file to load parameters from")
+            {
+                Argument = new Argument<FileInfo>("settingsfile"),
+                Name = "SettingsFileInfo",
+            };
+            var settingsfileKeyOption = new Option(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive informtation in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable. If not provided a machine value will be used.")
+            {
+                Argument = new Argument<string>("settingsfilekey"),
             };
             var overrideOption = new Option(new string[] { "--override" }, "File containing the target database settings (usually a formatted .cfg file)")
             {
@@ -36,9 +45,9 @@ namespace SqlBuildManager.Console
             {
                 Argument = new Argument<string>("rootloggingpath")
             };
-            var trialOption = new Option(new string[] { "--trial" }, "Whether or not to run in trial mode(default is false)")
+            var trialOption = new Option(new string[] { "--trial" }, "Whether or not to run in trial mode (default is false)")
             {
-                Argument = new Argument<bool>("trial")
+                Argument = new Argument<bool>("trial", () => false)
             };
             var scriptsrcdirOption = new Option(new string[] { "--scriptsrcdir" }, " [Not recommended] Alternative ability to run against a directory of scripts (vs .sbm or .sbx file)")
             {
@@ -72,7 +81,7 @@ namespace SqlBuildManager.Console
             };
             var transactionalOption = new Option(new string[] { "--transactional" }, "Whether or not to run with a wrapping transaction (default is true)")
             {
-                Argument = new Argument<bool>("transactional")
+                Argument = new Argument<bool>("transactional", () => true)
             };
             var timeoutretrycountOption = new Option(new string[] { "--timeoutretrycount" }, "How many retries to attempt if a timeout exception occurs")
             {
@@ -120,43 +129,43 @@ namespace SqlBuildManager.Console
             {
                 Argument = new Argument<string>("outputsbm")
             };
-            var deletebatchpoolOption = new Option(new string[] { "--deletebatchpool" }, "Whether or not to delete the batch pool servers after an execution (default is false)")
+            var deletebatchpoolOption = new Option(new string[] { "--deletebatchpool" }, "Whether or not to delete the batch pool servers after an execution")
             {
-                Argument = new Argument<bool>("deletebatchpool")
+                Argument = new Argument<bool>("deletebatchpool", () => false)
             };
-            var deletebatchjobOption = new Option(new string[] { "--deletebatchjob" }, "Whether or not to delete the batch job after an execution (default is true)")
+            var deletebatchjobOption = new Option(new string[] { "--deletebatchjob" }, "Whether or not to delete the batch job after an execution")
             {
-                Argument = new Argument<bool>("deletebatchjob")
+                Argument = new Argument<bool>("deletebatchjob", () => false)
             };
-            var batchnodecountOption = new Option(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job  (default is 10)")
+            var batchnodecountOption = new Option(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job")
             {
                 Argument = new Argument<int>("batchnodecount")
             };
-            var batchjobnameOption = new Option(new string[] { "--jobname", "--batchjobname" }, "[Optional] User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed")
+            var batchjobnameOption = new Option(new string[] { "--jobname", "--batchjobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed")
             {
                 Argument = new Argument<string>("batchjobname")
             };
-            var batchaccountnameOption = new Option(new string[] { "--batchaccountname" }, "String name of the Azure Batch account  [can also be set via BatchAccountName app settings key]")
+            var batchaccountnameOption = new Option(new string[] { "--batchaccountname" }, "String name of the Azure Batch account")
             {
                 Argument = new Argument<string>("batchaccountname")
             };
-            var batchaccountkeyOption = new Option(new string[] { "--batchaccountkey" }, "Account Key for the Azure Batch account [can also be set via BatchAccountKey app settings key]")
+            var batchaccountkeyOption = new Option(new string[] { "--batchaccountkey" }, "Account Key for the Azure Batch account")
             {
                 Argument = new Argument<string>("batchaccountkey")
             };
-            var batchaccounturlOption = new Option(new string[] { "--batchaccounturl" }, "URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]")
+            var batchaccounturlOption = new Option(new string[] { "--batchaccounturl" }, "URL for the Azure Batch account")
             {
                 Argument = new Argument<string>("batchaccounturl")
             };
-            var storageaccountnameOption = new Option(new string[] { "--storageaccountname" }, "Name of storage account associated with the Azure Batch account  [can also be set via StorageAccountName app settings key]")
+            var storageaccountnameOption = new Option(new string[] { "--storageaccountname" }, "Name of storage account associated with the Azure Batch account")
             {
                 Argument = new Argument<string>("storageaccountname")
             };
-            var storageaccountkeyOption = new Option(new string[] { "--storageaccountkey" }, "Account Key for the storage account  [can also be set via StorageAccountKey app settings key]")
+            var storageaccountkeyOption = new Option(new string[] { "--storageaccountkey" }, "Account Key for the storage account")
             {
                 Argument = new Argument<string>("storageaccountkey")
             };
-            var batchvmsizeOption = new Option(new string[] { "--vmsize", "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) [can also be set via BatchVmSize app settings key]")
+            var batchvmsizeOption = new Option(new string[] { "--vmsize", "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) ")
             {
                 Argument = new Argument<string>("batchvmsize")
             };
@@ -176,22 +185,26 @@ namespace SqlBuildManager.Console
             {
                 Argument = new Argument<string>("eventhubconnection")
             };
-            var pollbatchpoolstatusOption = new Option(new string[] { "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true, default) or fire and forget (false)")
+            var serviceBusconnectionOption = new Option(new string[] { "--servicebustopicconnection" }, "Service Bus connection string for Service Bus topic distribution of batch execution")
+            {
+                Argument = new Argument<string>("servicebustopicconnection")
+            };
+            var pollbatchpoolstatusOption = new Option(new string[] { "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true) or fire and forget (false)")
             {
                 Argument = new Argument<bool>("pollbatchpoolstatus")
             };
-            var defaultscripttimeoutOption = new Option(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC (default is 500)")
+            var defaultscripttimeoutOption = new Option(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC")
             {
                 Argument = new Argument<int>("defaultscripttimeout")
             };
             var authtypeOption = new Option(new string[] { "--authtype" }, "SQL Authentication type to use.")
             {
-                Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType", () => SqlSync.Connection.AuthenticationType.Password),
+                Argument = new Argument<SqlSync.Connection.AuthenticationType>("AuthenticationType"),
                 Name = "AuthenticationType"
             };
             var silentOption = new Option(new string[] { "--silent" }, "Suppresses overwrite prompt if file already exists")
             {
-                Argument = new Argument<bool>("silent")
+                Argument = new Argument<bool>("silent", () => false)
             };
             var outputcontainersasurlOption = new Option(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command")
             {
@@ -204,7 +217,7 @@ namespace SqlBuildManager.Console
             };
             var cleartextOption = new Option(new string[] { "--cleartext" }, "Flag to save settings file in clear text (vs. encrypted)")
             {
-                Argument = new Argument<bool>("cleartext")
+                Argument = new Argument<bool>("cleartext", () => false)
             };
             var queryFileOption = new Option(new string[] { "--queryfile" }, "File containing the SELECT query to run across the databases")
             {
@@ -216,17 +229,16 @@ namespace SqlBuildManager.Console
             };
             var threadedConcurrencyOption = new Option(new string[] { "--concurrency" }, "Maximum concurrency for threaded executions")
             {
-                Argument = new Argument<int>("concurrency", () => 8)
+                Argument = new Argument<int>("concurrency")
             };
             var threadedConcurrencyTypeOption = new Option(new string[] { "--concurrencytype" }, "Type of concurrency, used in conjunction with --concurrency ")
             {
-                Argument = new Argument<ConcurrencyType>("concurrencytype", () => ConcurrencyType.Count)
+                Argument = new Argument<ConcurrencyType>("concurrencytype")
             };
             var logLevelOption = new Option(new string[] { "--loglevel" }, "Logging level for console and log file")
             {
-                Argument = new Argument<LogLevel>("loglevel", () => LogLevel.Information)
+                Argument = new Argument<LogLevel>("loglevel")
             };
-
 
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
@@ -323,6 +335,7 @@ namespace SqlBuildManager.Console
                 passwordOption,
                 usernameOption,
                 overrideOption.Copy(true),
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,
@@ -344,6 +357,8 @@ namespace SqlBuildManager.Console
                 defaultscripttimeoutOption,
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
                 //Other run command options
                 platinumdacpacOption,
                 packagenameOption.Copy(false),
@@ -363,6 +378,7 @@ namespace SqlBuildManager.Console
                 usernameOption,
                 authtypeOption,
                 overrideOption,
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,
@@ -384,6 +400,8 @@ namespace SqlBuildManager.Console
                 defaultscripttimeoutOption,
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
                 //Batch to threaded node options
                 platinumdacpacOption,
                 packagenameOption.Copy(false),
@@ -403,6 +421,7 @@ namespace SqlBuildManager.Console
             //Batch pre-stage
             var batchPreStageCommand = new Command("prestage", "Pre-stage the Azure Batch VM nodes")
             {
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,
@@ -422,6 +441,7 @@ namespace SqlBuildManager.Console
             //Batch node cleanup
             var batchCleanUpCommand = new Command("cleanup", "Azure Batch Clean Up - remove VM nodes")
             {
+                settingsfileKeyOption,
                 settingsfileOption,
                 batchaccountnameOption,
                 batchaccountkeyOption,
@@ -436,7 +456,8 @@ namespace SqlBuildManager.Console
             {
                 passwordOption,
                 usernameOption,
-                settingsfileOption.Copy(true),
+                settingsfileKeyOption,
+                settingsfileNewOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
@@ -457,6 +478,8 @@ namespace SqlBuildManager.Console
                 defaultscripttimeoutOption,
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
                 //Additional settings
                 timeoutretrycountOption,
                 pollbatchpoolstatusOption,
@@ -464,6 +487,29 @@ namespace SqlBuildManager.Console
                 cleartextOption
             };
             saveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.SaveAndEncryptSettings);
+
+            var batchQueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
+            {
+                batchjobnameOption.Copy(true),
+                threadedConcurrencyTypeOption.Copy(true),
+                settingsfileOption,
+                settingsfileKeyOption,
+                serviceBusconnectionOption,
+                overrideOption.Copy(true)
+            };
+            batchQueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.QueueOverrideTargets);
+
+            var batchDeQueueTargetsCommand = new Command("dequeue", "Pull database override targets to Service Bus Topic")
+            {
+                batchjobnameOption.Copy(true),
+                threadedConcurrencyOption.Copy(true),
+                threadedConcurrencyTypeOption.Copy(true),
+                settingsfileOption,
+                settingsfileKeyOption,
+                serviceBusconnectionOption,
+                overrideOption.Copy(true)
+            };
+            batchDeQueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.DeQueueOverrideTargets);
 
             //Batch query 
             var batchQueryCommand = new Command("query", "Run a SELECT query across multiple databases using Azure Batch")
@@ -475,6 +521,7 @@ namespace SqlBuildManager.Console
                 queryFileOption.Copy(true),
                 outputFileOption.Copy(true),
                 silentOption,
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,
@@ -495,7 +542,9 @@ namespace SqlBuildManager.Console
                 eventhubconnectionOption,
                 defaultscripttimeoutOption,
                 threadedConcurrencyOption,
-                threadedConcurrencyTypeOption
+                threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
 
             };
             batchQueryCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunBatchQuery);
@@ -510,6 +559,7 @@ namespace SqlBuildManager.Console
                 overrideOption.Copy(true),
                 queryFileOption.Copy(true),
                 outputFileOption.Copy(true),
+                settingsfileKeyOption,
                 settingsfileOption,
                 //Batch account options
                 batchaccountnameOption,
@@ -542,6 +592,7 @@ namespace SqlBuildManager.Console
 
             //Azure Batch base command
             var batchCommand = new Command("batch", "Commands for setting and executing a batch run or batch query");
+            batchCommand.Add(batchQueueTargetsCommand);
             batchCommand.Add(saveSettingsCommand);
             batchCommand.Add(batchPreStageCommand);
             batchCommand.Add(batchCleanUpCommand);
@@ -549,6 +600,7 @@ namespace SqlBuildManager.Console
             batchCommand.Add(batchQueryCommand);
             batchCommand.Add(batchRunThreadedCommand);
             batchCommand.Add(batchQueryThreadedCommand);
+            //batchCommand.Add(batchDeQueueTargetsCommand);
 
 
             /****************************************

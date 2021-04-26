@@ -1,6 +1,16 @@
-# Setting up a test Azure Environment
+# Development and Testing
 
-## Create Test Target databases
+
+- [Setting up a test Azure Environment](#setting-up-a-test-azure-environment)
+- [Notes on Unit Testing](#notes-on-unit-testing)
+- [SQL Express for local testing](#sql-express)
+- [Visual Studio Installer Project](#Visual-studio-installer-project)
+
+----
+
+## Setting up a test Azure Environment
+
+### Create Test Target databases
 
 To test against Azure databases, you will need some in Azure! The following PowerShell will:
 
@@ -12,12 +22,12 @@ To test against Azure databases, you will need some in Azure! The following Powe
 
 It is important to note that you can re-run this script at any time to ensure your environment is set up properly. It will not impact running resources if run multiple times. 
 
-## Steps
+### Steps
 
+0. _Prerequisite_: Make sure you have the [Azure PowerShell Modules installed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 1. In a PowerShell window, navigate to the `docs/templates` folder
-2. Run the `Login-AzAccount` command to connect to your Azure account
+2. Run the `Connect-AzAccount` command to connect to your Azure account
 3. Run the `Create_AzureTestEnvironment.ps1` file. You will be prompted for parameters:
-
     - `ResourceGroupName` - Azure resource group to create and put the resources into
     - `Location` - the Azure region to deploy the resources
     - `SqlServerName` - the name of the Azure SQL PaaS server to create
@@ -31,12 +41,12 @@ It is important to note that you can re-run this script at any time to ensure yo
 Once the script is done running, it will save two files to the `src\TestConfig` folder:
 
 1. `databasetargets.cfg` - a pre-configured database listing file for use in a batch or threaded execution targeting the SQL Azure databases just created
-2. `settingsfile.json` - a batch settings file that contains all of the SQL, Batch and Storage endpoints and connection keys for use in testing
+2. `settingsfile-windows.json` and `settingsfile-linux.json` - batch settings files that contains all of the SQL, Batch, Storage and Service Bus endpoints and connection keys for use in testing
+3. `settingsfilekey.txt` - a text file containing the encryption key for the settings file
 
 **These files will be used by the tests located in the `SqlBuildManager.Console.ExternalTest` project, and can also be leveraged for any manual testing you need to perform**
 
-
-# Notes on Unit Testing
+## Notes on Unit Testing
 
 **NOTE: There are currently some concurrency issues with the unit tests. You may get some failures in a full run that will then succeed after running aain, selecting only the failed tests** 
 
@@ -46,13 +56,6 @@ There are two types of Unit Tests included in the solution. Those that are depen
 
 In order to get some of the unit tests to succeed, you need to have a local install of SQLExpress. You can find the installer from here [https://www.microsoft.com/en-us/sql-server/sql-server-editions-express] (https://www.microsoft.com/en-us/sql-server/sql-server-editions-express). You should be able to leverage the basic install.
 
-## sqlpackage.exe
-
-`sqlpackage` is needed for the use of the DACPAC features of the tool. It should already be available in the `Microsoft_SqlDB_DAC` subfolder (Windows) or the `microsoft-sqlpackage-linux` subfolder (Linux) where you are running your tests. If not, you can install or update the package from here [https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download](https://docs.microsoft.com/en-us/sql/tools/sqlpackage-download).
-
-The unit tests should find the executable but if not, you may need to add the path to `\SqlBuildManager\SqlSync.SqlBuild\DacPacHelper.cs` in the getter for `sqlPackageExe`.
-
------
 
 # Visual Studio Installer Project
 For Visual Studio 2015 and beyond, you will need to install an extension to load the installer project (.vdproj)

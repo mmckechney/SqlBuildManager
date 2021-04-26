@@ -104,28 +104,31 @@ namespace SqlBuildManager.Console.Batch
 
             //Check for the platinum dacpac and configure it if necessary
             log.LogInformation("Validating database overrides");
-            MultiDbData buildData;
+            MultiDbData multiData;
             int? myExitCode = 0;
 
-            //Validate the override settings
             int tmpReturn = 0;
+
+            //TODO: fix this for queue!!!!
+            //Validate the override settings (not needed if --servicebusconnection is provided
             string[] errorMessages;
-            int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out buildData, out errorMessages);
+            int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
             if (tmpVal != 0)
             {
                 log.LogError($"Unable to validate database config\r\n{string.Join("\r\n", errorMessages)}");
-                return (tmpVal, string.Empty); 
+                return (tmpVal, string.Empty);
             }
+            
 
             //Validate the platinum dacpac
-            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(ref cmdLine, ref buildData);
-            if (tmpValReturn == (int)ExecutionReturn.DacpacDatabasesInSync)
+            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(cmdLine, multiData);
+            if (tmpValReturn.Item1 == (int)ExecutionReturn.DacpacDatabasesInSync)
             {
                 return ((int)ExecutionReturn.DacpacDatabasesInSync, string.Empty);
             }
             else if (tmpReturn != 0)
             {
-                return (tmpValReturn, string.Empty);
+                return (tmpValReturn.Item1, string.Empty);
             }
 
             BatchClient batchClient = null;
@@ -180,46 +183,50 @@ namespace SqlBuildManager.Console.Batch
 
 
                 //Get the list of DB targets and distribute across batch count
-                int valRet = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, null, out MultiDbData multiDb, out errorMessages);
-                List<IEnumerable<(string, List<DatabaseOverride>)>> concurrencyBuckets = null;
-                if (valRet == 0)
+                var splitTargets = new List<string[]>();
+                if (string.IsNullOrEmpty(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
                 {
-                    if(cmdLine.ConcurrencyType == ConcurrencyType.Count)
+                    int valRet = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, null, out MultiDbData multiDb, out errorMessages);
+                    List<IEnumerable<(string, List<DatabaseOverride>)>> concurrencyBuckets = null;
+                    if (valRet == 0)
                     {
-                        //If it's just by count.. split evenly by the number of nodes
-                        concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.BatchArgs.BatchNodeCount, cmdLine.ConcurrencyType);
+                        if (cmdLine.ConcurrencyType == ConcurrencyType.Count)
+                        {
+                            //If it's just by count.. split evenly by the number of nodes
+                            concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.BatchArgs.BatchNodeCount, cmdLine.ConcurrencyType);
+                        }
+                        else
+                        {
+                            //splitting by server is a little trickier, but run it and see what it does...
+                            concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.Concurrency, cmdLine.ConcurrencyType);
+                        }
+
+                        //If we end up with fewer splits, then reduce the node count...
+                        if (concurrencyBuckets.Count() < cmdLine.BatchArgs.BatchNodeCount)
+                        {
+                            log.LogWarning($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
+                            cmdLine.BatchArgs.BatchNodeCount = concurrencyBuckets.Count();
+                        }
+                        else if (concurrencyBuckets.Count() > cmdLine.BatchArgs.BatchNodeCount) //need to do some consolidating
+                        {
+                            log.LogWarning($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
+                            concurrencyBuckets = Concurrency.RecombineServersToFixedBucketCount(multiDb, cmdLine.BatchArgs.BatchNodeCount);
+                        }
                     }
                     else
                     {
-                        //splitting by server is a little trickier, but run it and see what it does...
-                        concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, cmdLine.Concurrency, cmdLine.ConcurrencyType);
+                        throw new ArgumentException($"Error parsing database targets. {String.Join(Environment.NewLine, errorMessages)}");
                     }
-                   
-                    //If we end up with fewer splits, then reduce the node count...
-                    if(concurrencyBuckets.Count() < cmdLine.BatchArgs.BatchNodeCount)
-                    {
-                        log.LogWarning($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
-                        cmdLine.BatchArgs.BatchNodeCount = concurrencyBuckets.Count();
-                    }
-                    else if(concurrencyBuckets.Count() > cmdLine.BatchArgs.BatchNodeCount) //need to do some consolidating
-                    {
-                        log.LogWarning($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
-                        concurrencyBuckets = Concurrency.RecombineServersToFixedBucketCount(multiDb, cmdLine.BatchArgs.BatchNodeCount);
-                    }
-                }
-                else
-                {
-                    throw new ArgumentException($"Error parsing database targets. {String.Join(Environment.NewLine, errorMessages)}");
-                }
-                var splitTargets = Concurrency.ConvertBucketsToConfigLines(concurrencyBuckets);
+                    splitTargets = Concurrency.ConvertBucketsToConfigLines(concurrencyBuckets);
 
-                //Write out each split file
-                string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
-                for (int i = 0; i < splitTargets.Count; i++)
-                {
-                    var tmpName = Path.Combine(rootPath,string.Format(baseTargetFormat, i));
-                    File.WriteAllLines(tmpName, splitTargets[i]);
-                    inputFilePaths.Add(tmpName);
+                    //Write out each split file
+                    string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
+                    for (int i = 0; i < splitTargets.Count; i++)
+                    {
+                        var tmpName = Path.Combine(rootPath, string.Format(baseTargetFormat, i));
+                        File.WriteAllLines(tmpName, splitTargets[i]);
+                        inputFilePaths.Add(tmpName);
+                    }
                 }
 
                 // Upload the data files to Azure Storage. This is the data that will be processed by each of the tasks that are
@@ -259,7 +266,14 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 // Create a collection to hold the tasks that we'll be adding to the job
-                log.LogInformation($"Adding {splitTargets.Count} tasks to job [{jobId}]...");
+                if (splitTargets.Count != 0)
+                {
+                    log.LogInformation($"Adding {splitTargets.Count} tasks to job [{jobId}]...");
+                }
+                else if(!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+                {
+                    log.LogInformation($"Adding tasks to job [{jobId}]...");
+                }
 
                 List<CloudTask> tasks = new List<CloudTask>();
 
@@ -278,10 +292,27 @@ namespace SqlBuildManager.Console.Batch
                     task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
-                                filePattern: @"..\std*.txt",
+                                filePattern: @"../std*.txt",
                                 destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
-                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
+                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))//,
+
+                            //new OutputFile(
+                            //    filePattern: @"../wd/*",
+                            //    destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: $"{taskId}/wd")),
+                            //    uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
+
+                            //new OutputFile(
+                            //    filePattern: @"../wd/working/*",
+                            //    destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: $"{taskId}/working")),
+                            //    uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))//, 
+
+                             //new OutputFile(
+                             //   filePattern: @"../*.cfg",
+                             //   destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken)),
+                             //   uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
+
                         };
+ 
                     tasks.Add(task);
                 }
 
@@ -338,6 +369,7 @@ namespace SqlBuildManager.Console.Batch
                     batchClient.PoolOperations.DeletePool(poolId);
                 }
 
+                SqlBuildManager.Logging.Threaded.Configure.CloseAndFlushAllLoggers();
                 log.LogInformation("Consolidating log files");
                 ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
 
@@ -466,7 +498,7 @@ namespace SqlBuildManager.Console.Batch
             {
                 log.LogInformation("Validating general command parameters");
 
-                tmpReturn = Validation.ValidateCommonCommandLineArgs(ref cmdLine, out errorMessages);
+                tmpReturn = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
                 if (tmpReturn != 0)
                 {
                     foreach (var msg in errorMessages)
@@ -478,7 +510,7 @@ namespace SqlBuildManager.Console.Batch
             }
 
             log.LogInformation("Validating batch command parameters");
-            tmpReturn = Validation.ValidateBatchArguments(ref cmdLine, out errorMessages);
+            tmpReturn = Validation.ValidateBatchArguments(cmdLine, out errorMessages);
             if (tmpReturn != 0)
             {
                 foreach (var msg in errorMessages)
@@ -527,39 +559,59 @@ namespace SqlBuildManager.Console.Batch
             //Move worker files to "Working" directory
             foreach (var blob in blobs)
             {
-                if (blob.Properties.BlobType == BlobType.Block )
+                try
                 {
-                    if (workerFiles.Any(a => blob.Name.ToLower().Contains(a)))
+                    if (blob.Properties.BlobType == BlobType.Block)
                     {
                         var sourceBlob = container.GetBlobClient(blob.Name);
-                        var destBlob = container.GetBlobClient("Working/" + blob.Name);
-                        using (var stream = sourceBlob.OpenRead())
+                        if(sourceBlob.GetProperties().Value.ContentLength == 0)
                         {
-                            destBlob.Upload(stream);
+                            continue;
                         }
-                        log.LogInformation($"Moved {blob.Name} to storage as Working/{blob.Name}");
-                        sourceBlob.Delete();
-                    }
-
-                    foreach (string append in Program.AppendLogFiles)
-                    {
-                        if (blob.Name.ToLower() == append.ToLower())
+                        foreach (string append in Program.AppendLogFiles)
                         {
-                            var destinationBlob = container.GetAppendBlobClient(append);
                             try
                             {
-                                destinationBlob.CreateIfNotExists();
-                            }
-                            catch { }
+                                if (blob.Name.ToLower().Contains(append.ToLower()))
+                                {
+                                    var destinationBlob = container.GetAppendBlobClient(append);
+                                    try
+                                    {
+                                        destinationBlob.CreateIfNotExists();
+                                    }
+                                    catch { }
 
-                            var sourceBlob = container.GetBlobClient(blob.Name);
-                            using (var stream = sourceBlob.OpenRead())
-                            {
-                                destinationBlob.AppendBlock(stream);
+
+                                    using (var stream = sourceBlob.OpenRead())
+                                    {
+                                        destinationBlob.AppendBlock(stream);
+                                    }
+                                    log.LogInformation($"Consolidated {blob.Name} to {append}");
+                                }
                             }
-                            log.LogInformation($"Consolidated {blob.Name} to {append}");
-                            sourceBlob.Delete();
+                            catch (Azure.RequestFailedException exe)
+                            {
+                                if (exe.ErrorCode == "BlobAlreadyExists")
+                                {
+                                    log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists");
+                                }
+                                else if (exe.ErrorCode == "InvalidHeaderValue")
+                                {
+                                    log.LogWarning($"Unable to consolidate log file, '{blob.Name}': Problem with appendind the consolidated file. {Environment.NewLine}{exe.Message}");
+                                }
+                                else
+                                {
+                                    throw;
+                                }
+                            }
                         }
+                    }
+                }
+                catch (Azure.RequestFailedException exe)
+                {
+                    if (exe.ErrorCode == "BlobAlreadyExists")
+                    {
+                        log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists. This can happen when you run two Batch jobs with the same job name");
                     }
                 }
             }
@@ -719,7 +771,10 @@ namespace SqlBuildManager.Console.Batch
                 //Set the override file for this node.
                 var tmp = string.Format(baseTargetFormat, i);
                 var target = inputFiles.Where(x => x.FilePath.ToLower().Contains(tmp.ToLower())).FirstOrDefault();
-                threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
+                if (target != null)
+                {
+                    threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
+                }
 
                 //Set set the Sas URL
                 threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
@@ -728,7 +783,8 @@ namespace SqlBuildManager.Console.Batch
                 switch(os)
                 {
                     case OsType.Windows:
-                        sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe batch ");
+                        sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe ");
+                        sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
                         switch (bType)
                         {
                             case BatchType.Run:
@@ -741,7 +797,8 @@ namespace SqlBuildManager.Console.Batch
                         break;
 
                     case OsType.Linux:
-                        sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm batch ");
+                        sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm ");
+                        sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
                         switch (bType)
                         {
                             case BatchType.Run:

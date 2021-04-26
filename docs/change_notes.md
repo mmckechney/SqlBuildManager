@@ -2,6 +2,12 @@
 # SQL Build Manager Change Notes
 
 
+### Version 13.0.0
+
+- *ADDED:* New option to leverage Azure Service Bus Topic as a database target source. See the [Azure Batch](azure_batch.md) docs for more detail
+- *ADDED:* New command option `--settingsfilekey`, a key for the encryption of sensitive information in the settings file. If provided when saving the settings file, it of course must also be provided when using the settings file. This version moved away from a static (and not really secure) encryption key used prior. The argument value can be either the key string or a file path to a key file. The key may also be 'silently' provided by setting a `sbm-settingsfilekey` Environment variable. If not provided a machine value will be used.
+- *FIXED:* Modified unit tests to Close and Flush loggers to avoid file locking issues
+
 ### Version 12.1.0
 
 - *UPDATED:* Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Loggging. Implements Serilog
@@ -10,7 +16,7 @@
 
 - **NOTE:** **Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**
 - **NOTE:** Now built against .NET 5 and .NET Core 3.1
-- *ADDED:* New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](Concurrency_Options.md)
+- *ADDED:* New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](concurrency_options.md)
 - *UPDATED:* Now leveraging `Microsoft.SqlServer.DACFx` Nuget package instead of `sqlpackage.exe` command line to manage DACPACs
 - *FIXED:* Updated `BlueSkyDev.Logging.AzureEventHubAppender` to v1.3.2 due to app hanging if EventHub connection string was incorrect
 

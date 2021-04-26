@@ -1,12 +1,17 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+    <Version Major="13" Minor="0" Revision="0">
+      <added>New option to leverage Azure Service Bus Topic as a database target source. See the [Azure Batch](azure_batch.md) docs for more detail</added>
+      <added>New command option `--settingsfilekey`, a key for the encryption of sensitive information in the settings file. If provided when saving the settings file, it of course must also be provided when using the settings file. This version moved away from a static (and not really secure) encryption key used prior. The argument value can be either the key string or a file path to a key file. The key may also be 'silently' provided by setting a `sbm-settingsfilekey` Environment variable. If not provided a machine value will be used.</added>
+      <fixed>Modified unit tests to Close and Flush loggers to avoid file locking issues</fixed>
+    </Version>
     <Version Major="12" Minor="1" Revision="0">
       <updated>Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Loggging. Implements Serilog</updated>
     </Version>
     <Version Major="12" Minor="0" Revision="0">
         <note>**Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**</note>
         <note>Now built against .NET 5 and .NET Core 3.1</note>
-        <added>New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](Concurrency_Options.md)</added>
+        <added>New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](concurrency_options.md)</added>
         <updated>Now leveraging `Microsoft.SqlServer.DACFx` Nuget package instead of `sqlpackage.exe` command line to manage DACPACs</updated>
         <!-- <updated>New version of sqlpackage.exe (18.7). Changed Windows version to .NET Core build</updated> -->
         <fixed>Updated `BlueSkyDev.Logging.AzureEventHubAppender` to v1.3.2 due to app hanging if EventHub connection string was incorrect</fixed>

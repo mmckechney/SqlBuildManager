@@ -23,6 +23,7 @@ namespace SqlSync.SqlBuild
         {
 
         }
+
         [JsonIgnore]
         public ActionType Action { get; set; }
 
@@ -50,16 +51,13 @@ namespace SqlSync.SqlBuild
             {
                 if (File.Exists(value))
                 {
-
                     CommandLineArgs cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(value));
-                    cmdLine = Cryptography.DecryptSensitiveFields(cmdLine);
                     this.BatchArgs = cmdLine.BatchArgs;
                     this.AuthenticationArgs = cmdLine.AuthenticationArgs;
+
                     this.RootLoggingPath = cmdLine.RootLoggingPath;
                     this.DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
                     this.TimeoutRetryCount = cmdLine.TimeoutRetryCount;
-                    this.Concurrency = cmdLine.Concurrency;
-                    this.ConcurrencyType = cmdLine.ConcurrencyType;
                 }
                 this.settingsFile = value;
             }
@@ -91,10 +89,14 @@ namespace SqlSync.SqlBuild
             }
         }
         [JsonIgnore]
+        public string SettingsFileKey { get; set; }
+        [JsonIgnore]
         public virtual string Server { get; set; } = string.Empty;
         [JsonIgnore]
         public virtual string Database { get; set; } = string.Empty;
         public virtual string RootLoggingPath { get; set; } = string.Empty;
+
+        [JsonIgnore]
         public virtual LogLevel LogLevel { get; set; } = LogLevel.Information;
         [JsonIgnore]
         public virtual bool Trial { get; set; } = false;
@@ -138,8 +140,10 @@ namespace SqlSync.SqlBuild
         }
         private string dacpacName = string.Empty;
         public virtual int DefaultScriptTimeout { get; set; } = 500;
+
+        [JsonIgnore]
         public virtual int Concurrency { get; set; } = 10;
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonIgnore]
         public virtual ConcurrencyType ConcurrencyType { get; set; } = ConcurrencyType.Count;
 
         [JsonIgnore]
@@ -180,7 +184,9 @@ namespace SqlSync.SqlBuild
         [Serializable]
         public class Authentication
         {
+            [Encrypt]
             public virtual string UserName { get; set; } = string.Empty;
+            [Encrypt]
             public virtual string Password { get; set; } = string.Empty;
 
             [JsonIgnore]
@@ -255,6 +261,11 @@ namespace SqlSync.SqlBuild
             set { BatchArgs.EventHubConnectionString = value; }
         }
         [JsonIgnore]
+        public virtual string ServiceBusTopicConnection
+        {
+            set { BatchArgs.ServiceBusTopicConnectionString = value; }
+        }
+        [JsonIgnore]
         public virtual bool PollBatchPoolStatus
         {
             set { BatchArgs.PollBatchPoolStatus = value; }
@@ -275,9 +286,11 @@ namespace SqlSync.SqlBuild
  
             public int BatchNodeCount { get; set; } = 10;
             public string BatchAccountName { get; set; } = null;
+            [Encrypt]
             public string BatchAccountKey { get; set; } = null;
             public string BatchAccountUrl { get; set; } = null;
             public string StorageAccountName { get; set; } = null;
+            [Encrypt]
             public string StorageAccountKey { get; set; } = null;
             public string BatchVmSize { get; set; } = null;
             [JsonIgnore]
@@ -290,8 +303,11 @@ namespace SqlSync.SqlBuild
             public string BatchPoolName { get; set; } = null;
             [JsonConverter(typeof(StringEnumConverter))]
             public OsType BatchPoolOs { get; set; }
+            [Encrypt]
             public string EventHubConnectionString { get; set; } = string.Empty;
             public string ApplicationPackage { get; set; } = string.Empty;
+            [Encrypt]
+            public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
         }
         #endregion
 
@@ -445,7 +461,7 @@ namespace SqlSync.SqlBuild
                     {
                         sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
                     }
-                } 
+                }
                 else if (property.PropertyType == typeof(CommandLineArgs.Authentication) ||
                          property.PropertyType == typeof(CommandLineArgs.DacPac) ||
                          property.PropertyType == typeof(CommandLineArgs.Batch))
@@ -472,7 +488,15 @@ namespace SqlSync.SqlBuild
 
                         case "MultiDbRunConfigFileName":
                         case "ManualOverRideSets":
+                            if ((toStringType == StringType.BatchThreaded || toStringType == StringType.BatchQuery) &&
+                                    (!string.IsNullOrWhiteSpace(((CommandLineArgs)obj).BatchArgs.ServiceBusTopicConnectionString)))
+                            {
+                                break;
+                            }
+                            else
+                            {
                                 sb.Append("--override \"" + property.GetValue(obj).ToString() + "\" ");
+                            }
                             break;
 
                         case "BuildFileName":
@@ -481,6 +505,10 @@ namespace SqlSync.SqlBuild
 
                         case "EventHubConnectionString":
                                 sb.Append("--eventhubconnection \"" + property.GetValue(obj).ToString() + "\" ");
+                            break;
+
+                        case "ServiceBusTopicConnectionString":
+                            sb.Append("--servicebustopicconnection \"" + property.GetValue(obj).ToString() + "\" ");
                             break;
 
                         case "Action":
@@ -503,6 +531,8 @@ namespace SqlSync.SqlBuild
                         case "OverrideDesignated":
                         case "CliVersion":
                         case "WhatIf":
+                        case "LogLevel":
+                        case "SettingsFileKey":
                             //ignore these
                             break;
 

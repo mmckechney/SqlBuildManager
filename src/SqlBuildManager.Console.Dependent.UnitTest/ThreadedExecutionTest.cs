@@ -9,6 +9,9 @@ using System.Data.SqlClient;
 using System.Threading;
 using System.Text.RegularExpressions;
 using SqlBuildManager.Console.Threaded;
+using Microsoft.Extensions.Logging;
+using System.Text;
+using System.Linq;
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     
@@ -79,6 +82,19 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 i.Dispose();
         }
 
+        public static IEnumerable<string> ReadLines(string path)
+        {
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
+            using (var sr = new StreamReader(fs, Encoding.UTF8))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    yield return line;
+                }
+            }
+        }
+
         #region ExecuteTest - Not Trial - Transactional
         [TestMethod()]
         public void ExecuteTest_ConcurrencyByNumber_1()
@@ -111,8 +127,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
 
-   
-                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
+                string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
@@ -133,12 +149,16 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
             finally
             {
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
 
             }
 
@@ -174,8 +194,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
 
- 
-                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
+                string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
                 //Should not all sequential!
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
                 Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
@@ -186,12 +206,16 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
             finally
             {
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
 
             }
 
@@ -227,7 +251,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
 
-                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
+                string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
                 //Should not all sequential!
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
                 Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
@@ -244,12 +269,16 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
             finally
             {
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
 
             }
 
@@ -287,7 +316,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                     Assert.Fail("Unable to completed test.");
 
 
-                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
+                string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
@@ -308,12 +338,16 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
             finally
             {
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
 
             }
 
@@ -351,7 +385,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                     Assert.Fail("Unable to completed test.");
 
                 Assert.AreEqual(expected, actual);
-                string[] executionLogFile = File.ReadAllLines(Path.Combine(loggingPath, "Execution.log"));
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
+                string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
                 //Should not all sequential!
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
                 Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
@@ -362,12 +397,16 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
             finally
             {
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
 
             }
 
@@ -410,6 +449,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     Assert.Fail("Unable to completed test.");
 
                 Assert.AreEqual(expected, actual);
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
                 //SqlBuildTest should still committed with no timeout messages
                 string[] logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest"), "*.log");
@@ -433,12 +473,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
 
             }
 
@@ -484,6 +528,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     Assert.Fail("Unable to complete test!");
 
                 Assert.AreEqual(expected, actual);
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
                 //SqlBuildTest should still committed with at least one timeout message
                 string[] logFiles = Directory.GetFiles(loggingPath + @"\localhost\SQLEXPRESS\SqlBuildTest\","*.log");
@@ -514,12 +559,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 if (THRInfinite != null)
                     THRInfinite.Interrupt();
 
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
             }
         }
         /// <summary>
@@ -563,6 +612,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     Assert.Fail("Unable to complete test!");
 
                 Assert.AreEqual(expected, actual);
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
                 //SqlBuildTest should have rolledback with 1 more timeout messages than is set for the retry value
                 Regex regFindTimeout = new Regex("imeout expired", RegexOptions.IgnoreCase);
@@ -589,13 +639,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             {
                 if (THRInfinite != null)
                     THRInfinite.Interrupt();
-
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
             }
         }
         /// <summary>
@@ -639,6 +692,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     Assert.Fail("Unable to complete test!");
 
                 Assert.AreEqual(expected, actual);
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
                 //SqlBuildTest should have rolledback with 1 more timeout messages than is set for the retry value
                 Regex regFindTimeout = new Regex("Timeout Expired", RegexOptions.IgnoreCase);
@@ -665,12 +719,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 if (THRInfinite != null)
                     THRInfinite.Interrupt();
 
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
             }
         }
         /// <summary>
@@ -702,18 +760,26 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
             int expected = (int)ExecutionReturn.NegativeTimeoutRetryCount;
             int actual;
             actual = target.Execute();
+            SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
-            if (Directory.Exists(loggingPath))
-                Directory.Delete(loggingPath, true);
-            if (File.Exists(sbmFileName))
-                File.Delete(sbmFileName);
-            if (File.Exists(multiDbOverrideSettingFileName))
-                File.Delete(multiDbOverrideSettingFileName);
+
+           
 
             if (actual == -600)
                 Assert.Fail("Unable to complete test!");
 
             Assert.AreEqual(expected, actual);
+
+            try
+            {
+                if (File.Exists(sbmFileName))
+                    File.Delete(sbmFileName);
+                if (File.Exists(multiDbOverrideSettingFileName))
+                    File.Delete(multiDbOverrideSettingFileName);
+                if (Directory.Exists(loggingPath))
+                    Directory.Delete(loggingPath, true);
+            }
+            catch { }
         }
 
         #endregion
@@ -748,7 +814,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.Successful;
             int actual;
             actual = target.Execute();
-
+            SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             try
             {
 
@@ -781,12 +847,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
 
             }
 
@@ -816,7 +886,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             ThreadedExecution target = new ThreadedExecution(args);
             int expected = (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
             int actual;
-
+            SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             try
             {
                 actual = target.Execute();
@@ -824,10 +894,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
             }
 
         }
@@ -869,7 +945,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
               
 
                 actual = target.Execute();
-
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
 
@@ -901,14 +977,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             {
                 if (THRInfinite != null)
                     THRInfinite.Interrupt();
-
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
-
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
             }
 
         }
@@ -951,7 +1029,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 THRInfinite.Start(200000);
 
                 actual = target.Execute();
-
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
 
@@ -982,13 +1060,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             {
                 if (THRInfinite != null)
                     THRInfinite.Interrupt();
-
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch {}
             }
         }
 
@@ -1028,7 +1109,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 THRInfinite.Start(10000000);
 
                 actual = target.Execute();
-
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
 
@@ -1060,12 +1141,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 if (THRInfinite != null)
                     THRInfinite.Interrupt();
 
-                if (Directory.Exists(loggingPath))
-                    Directory.Delete(loggingPath, true);
-                if (File.Exists(sbmFileName))
-                    File.Delete(sbmFileName);
-                if (File.Exists(multiDbOverrideSettingFileName))
-                    File.Delete(multiDbOverrideSettingFileName);
+                try
+                {
+                    if (File.Exists(sbmFileName))
+                        File.Delete(sbmFileName);
+                    if (File.Exists(multiDbOverrideSettingFileName))
+                        File.Delete(multiDbOverrideSettingFileName);
+                    if (Directory.Exists(loggingPath))
+                        Directory.Delete(loggingPath, true);
+                }
+                catch { }
             }
         }
         #endregion

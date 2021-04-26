@@ -154,7 +154,7 @@ namespace SqlSync
             }
 
             log.LogDebug("Sql Build Manager Exiting with return code: "+returnCode.ToString());
-            SqlBuildManager.Logging.ApplicationLogging.FlushLogs();
+            SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             Environment.Exit(returnCode);
             return returnCode;
         }

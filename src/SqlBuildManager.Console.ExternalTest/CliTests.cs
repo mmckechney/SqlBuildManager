@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using SqlSync.SqlBuild;
-
+using System.CommandLine;
+using System.Threading.Tasks;
+using SqlBuildManager.Console;
 namespace SqlBuildManager.Console.ExternalTest
 {
     /// <summary>
@@ -59,17 +61,21 @@ namespace SqlBuildManager.Console.ExternalTest
         private string overrideFilePath;
         private string settingsFilePath;
         private string linuxSettingsFilePath;
+        private string settingsFileKeyPath;
 
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
             this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-windows.json");
+            this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-linux.json");
             this.overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
             this.cmdLine = new CommandLineArgs();
             this.cmdLine.SettingsFile = this.settingsFilePath;
-
+            this.cmdLine.SettingsFileKey = this.settingsFileKeyPath;
+            bool ds;
+            (ds, this.cmdLine)= Cryptography.DecryptSensitiveFields(cmdLine);
             this.overrideFileContents = File.ReadAllLines(this.overrideFilePath).ToList();
         }
 
@@ -129,6 +135,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 return null;
             }
 
+        }
+        private static string GetUniqueBatchJobName()
+        {
+            string name = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 6);
+            return name;
         }
         #endregion
 
@@ -199,6 +210,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
 
@@ -232,6 +244,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
             args.Add($"--concurrency 2");
@@ -267,6 +280,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {this.overrideFilePath}");
             args.Add($"--packagename {sbmFileName}");
             args.Add($"--concurrency 2");
@@ -297,6 +311,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {this.overrideFilePath}");
 
             var result = ExecuteProcess(args);
@@ -325,6 +340,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -361,6 +377,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -401,6 +418,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdbsource {database}");
             args.Add($"--platinumserversource {server}");
@@ -441,6 +459,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}"); 
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdacpac {dacpacName}");
 
@@ -482,6 +501,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}"); 
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {minusFirst}");
             args.Add($"--platinumdacpac {dacpacName}");
 
@@ -519,6 +539,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 List<string> args = new List<string>();
                 args.Add($"batch {batchMethod}");
                 args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+                args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
                 args.Add($"--override {overrideFile}");
                 args.Add($"--outputfile {outputFile}");
                 args.Add($"--queryfile {selectquery}");
@@ -572,6 +593,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {overrideFile}");
             args.Add($"--outputfile {outputFile}");
             args.Add($"--queryfile {insertquery}");
@@ -601,6 +623,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {overrideFile}");
             args.Add($"--outputfile {outputFile}");
             args.Add($"--queryfile {deletequery}");
@@ -630,6 +653,7 @@ namespace SqlBuildManager.Console.ExternalTest
             List<string> args = new List<string>();
             args.Add($"batch {batchMethod}");
             args.Add($"--settingsfile {settingsFile}");
+            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
             args.Add($"--override {overrideFile}");
             args.Add($"--outputfile {outputFile}");
             args.Add($"--queryfile {updatequery}");
@@ -641,6 +665,60 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.IsTrue(this.output.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An UPDATE statement should have been found");
         }
 
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataTestMethod]
+        public void Batch_Queue_SBMSource_Success(string batchMethod, string settingsFile)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+            string jobName = GetUniqueBatchJobName();
+
+            var args = new string[]{ 
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override" , this.overrideFilePath,
+                "--concurrencytype",  ConcurrencyType.Server.ToString(),
+                "--jobname", jobName};
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            Task<int> val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+
+            args = new string[]{
+            "batch",  batchMethod,
+            "--settingsfile", settingsFile,
+            "--settingsfilekey", this.settingsFileKeyPath,
+            "--override", this.overrideFilePath,
+            "--packagename", sbmFileName,
+            "--concurrencytype", ConcurrencyType.Server.ToString(),
+            "--concurrency", "2",
+            "--jobname", jobName };
+
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            //TODO: Get output to examine
+            //Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            //if (batchMethod == "run")
+            //{
+            //    Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            //}
+            //if (batchMethod == "runthreaded")
+            //{
+            //    Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            //}
+        }
 
 
 

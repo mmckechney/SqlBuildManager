@@ -9,12 +9,12 @@ namespace SqlBuildManager.Console
 {
     public static class CommandLineExtension
     {
-        public static Option Copy(this Option opt, bool reqired)
+        public static Option Copy(this Option opt, bool required)
         {
             Option newOpt = new Option(opt.RawAliases.ToArray(), opt.Description);
             newOpt.Argument = opt.Argument;
             newOpt.Name = opt.Name;
-            newOpt.Required = reqired;
+            newOpt.Required = required;
 
             return newOpt;
         }

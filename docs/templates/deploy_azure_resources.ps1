@@ -46,7 +46,11 @@ param(
  $outputpath,
 
  [string]
- $templateFile = "azuredeploy.json"
+ $templateFile = "azuredeploy.json",
+
+ [Boolean]
+ $deployService = $true
+
 
 )
 
@@ -89,58 +93,54 @@ $vars = $winenv, $linuxenv
 
 $ErrorActionPreference = "Stop"
 
-#########################################################
-# ARM template deployment for batch, storage and eventhub
-#########################################################
-# select subscription
-Write-Host "Selecting subscription '$subscriptionId'";
-Select-AzSubscription -SubscriptionID $subscriptionId;
-
-# Register RPs
-$resourceProviders = @("microsoft.storage","microsoft.batch","microsoft.eventhub");
-if($resourceProviders.length) {
-    Write-Host "Registering resource providers"
-    foreach($resourceProvider in $resourceProviders) {
-        RegisterRP($resourceProvider);
-    }
-}
-
-
-$params = @{}
-$params.Add("namePrefix", $batchprefix);
-$params.Add("eventhubSku", "Standard");
-$params.Add("skuCapacity", 1);
-$params.Add("location", $resourceGroupLocation)
-
-
-#Create or check for existing resource group
-$resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
-if(!$resourceGroup)
+if($deployService -eq $true)
 {
-    Write-Host "Resource group '$resourceGroupName' does not exist. To create a new resource group, please enter a location.";
-    if(!$resourceGroupLocation) {
-        $resourceGroupLocation = Read-Host "resourceGroupLocation";
+    #######################################################################
+    # ARM template deployment for batch, storage,  eventhub and service bus
+    #######################################################################
+    # select subscription
+    Write-Host "Selecting subscription '$subscriptionId'";
+    Select-AzSubscription -SubscriptionID $subscriptionId;
+
+    # Register RPs
+    $resourceProviders = @("microsoft.storage","microsoft.batch","microsoft.eventhub","microsoft.servicebus");
+    if($resourceProviders.length) {
+        Write-Host "Registering resource providers"
+        foreach($resourceProvider in $resourceProviders) {
+            RegisterRP($resourceProvider);
+        }
     }
-    Write-Host "Creating resource group '$resourceGroupName' in location '$resourceGroupLocation'";
-    New-AzResourceGroup -Name $resourceGroupName -Location $resourceGroupLocation
+
+
+    $params = @{}
+    $params.Add("namePrefix", $batchprefix);
+    $params.Add("eventhubSku", "Standard");
+    $params.Add("skuCapacity", 1);
+    $params.Add("location", $resourceGroupLocation)
+
+
+    #Create or check for existing resource group
+    $resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
+    if(!$resourceGroup)
+    {
+        Write-Host "Resource group '$resourceGroupName' does not exist. To create a new resource group, please enter a location.";
+        if(!$resourceGroupLocation) {
+            $resourceGroupLocation = Read-Host "resourceGroupLocation";
+        }
+        Write-Host "Creating resource group '$resourceGroupName' in location '$resourceGroupLocation'";
+        New-AzResourceGroup -Name $resourceGroupName -Location $resourceGroupLocation
+    }
+    else{
+        Write-Host "Using existing resource group '$resourceGroupName'";
+    }
+
+    ###############################################
+    # Start the ARM template deployment of resource
+    ###############################################
+    Write-Host "Starting deployment...";
+    Write-Host "Creating batch, storage, service bus and eventhub accounts...";
+    New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName  -TemplateFile $templateFile -TemplateParameterObject $params -Verbose
 }
-else{
-    Write-Host "Using existing resource group '$resourceGroupName'";
-}
-
-# Start the deployment
-Write-Host "Starting deployment...";
-Write-Host "Creating batch, storage and eventhub accounts...";
-New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName  -TemplateFile $templateFile -TemplateParameterObject $params -Verbose
-
-
-##########################################
-# Build the solution
-##########################################
-# dotnet restore "..\..\src\sqlsync.sln" 
-# dotnet build "..\..\src\sqlsync.sln" --configuration Debug
-
-
 ##########################################
 # Create the application package zip files
 ##########################################
@@ -192,6 +192,12 @@ foreach ($env in $vars)
 foreach ($env in $vars)
 {
     $file = Join-Path $outputpath "settingsfile-$($env.OSName.ToLower()).json"
-    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file
+    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file -withQueue $false
+}
+
+foreach ($env in $vars)
+{
+    $file = Join-Path $outputpath "settingsfile-$($env.OSName.ToLower())-queue.json"
+    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file -withQueue $true
 }
 

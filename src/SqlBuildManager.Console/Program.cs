@@ -18,16 +18,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using SqlBuildManager.Console.Queue;
 namespace SqlBuildManager.Console
 {
 
     class Program
     {
-
-
-
         private static Microsoft.Extensions.Logging.ILogger log;
         private static readonly string applicationLogFileName = "SqlBuildManager.Console.log";
+
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
         static int Main(string[] args)
@@ -49,9 +48,8 @@ namespace SqlBuildManager.Console
                 int result = val.Result;
                 log.LogInformation($"Exiting with code {result}");
 
-                //LogManager.Flush(5000);
-                //logRepository = null;
-                Logging.ApplicationLogging.FlushLogs();
+
+                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 return result;
             }
             catch (Exception exe)
@@ -64,10 +62,19 @@ namespace SqlBuildManager.Console
 
         internal static int QueryDatabases(CommandLineArgs cmdLine)
         {
+
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             if (!string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
             {
                 log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
+            }
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -8675;
             }
 
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
@@ -128,6 +135,16 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchCleanUp(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -8675;
+            }
+
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
             var retVal = batchExe.CleanUpBatchNodes();
@@ -141,6 +158,15 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchPreStage(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -8675;
+            }
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
             var retVal = batchExe.PreStageBatchNodes();
@@ -154,8 +180,17 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchExecution(CommandLineArgs cmdLine)
         {
+            
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -8675;
+            }
 
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
@@ -191,6 +226,14 @@ namespace SqlBuildManager.Console
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -8675;
+            }
 
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
             if (outpt != 0)
@@ -255,6 +298,11 @@ namespace SqlBuildManager.Console
                 log.LogError("When 'sbm batch savesettings' is specified the --settingsfile argument is also required");
                 return;
             }
+            if(!string.IsNullOrWhiteSpace(cmdLine.SettingsFileKey) && cmdLine.SettingsFileKey.Length < 16)
+            {
+                log.LogError("The value for the --settingsfilekey must be at least 16 characters long");
+                return;
+            }
 
             if (!clearText)
             {
@@ -294,6 +342,16 @@ namespace SqlBuildManager.Console
 
         internal static void ScriptExtraction(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return;
+            }
+
             #region Validate flags
             if (string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
             {
@@ -311,7 +369,7 @@ namespace SqlBuildManager.Console
                 System.Environment.Exit(-1);
             }
             string[] errorMessages;
-            int pwVal = Validation.ValidateUserNameAndPassword(ref cmdLine, out errorMessages);
+            int pwVal = Validation.ValidateUserNameAndPassword(cmdLine, out errorMessages);
             if (pwVal != 0)
             {
                 log.LogError(errorMessages.Aggregate((a, b) => a + "; " + b));
@@ -356,6 +414,15 @@ namespace SqlBuildManager.Console
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -8675;
+            }
+
             DateTime start = DateTime.Now;
             log.LogDebug("Entering Local Build Execution");
             log.LogInformation("Running  Local Build...");
@@ -397,6 +464,14 @@ namespace SqlBuildManager.Console
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -8675;
+            }
+
             DateTime start = DateTime.Now;
             log.LogDebug("Entering Threaded Execution");
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
@@ -431,7 +506,6 @@ namespace SqlBuildManager.Console
             }
 
             log.LogDebug("Exiting Threaded Execution");
-
             return retVal;
 
         }
@@ -446,6 +520,7 @@ namespace SqlBuildManager.Console
                 var renameLogFiles = new string[] { "sqlbuildmanager", "csv" };
                 BlobContainerClient container = new BlobContainerClient(new Uri(outputContainerSasUrl));
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
+                var taskId = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_ID");
                 string machine = Environment.MachineName;
 
                 foreach (var f in fileList)
@@ -457,36 +532,34 @@ namespace SqlBuildManager.Console
                         if (Program.AppendLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
 
-                            tmp = machine + "-" + tmp;
+                            tmp = $"{taskId}/{tmp}";
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var rename = container.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open))
+                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 await rename.UploadAsync(fs);
 
                             }
-
-
                         }
                         else if (renameLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
-                            tmp = machine + "-" + tmp;
-                            var localTemp = Path.Combine(Path.GetDirectoryName(f), tmp);
-                            File.Copy(f, localTemp);
+                            
+                            //var localTemp = Path.Combine(Path.GetDirectoryName(f), tmp);
+                            //File.Copy(f, localTemp);
+                            tmp = $"{taskId}/{tmp}";
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var rename = container.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(localTemp, FileMode.Open))
+                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 await rename.UploadAsync(fs);
 
                             }
-
                         }
                         else
                         {
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var b = container.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open))
+                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 await b.UploadAsync(fs);
 
@@ -510,6 +583,17 @@ namespace SqlBuildManager.Console
         #region .: Helper Processes :.
         internal static int CreateDacpac(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -8675;
+            }
+
+
             string fullName = Path.GetFullPath(cmdLine.DacpacName);
             string path = Path.GetDirectoryName(fullName);
             if (!Directory.Exists(path))
@@ -531,6 +615,16 @@ namespace SqlBuildManager.Console
 
         internal static void SyncronizeDatabase(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return;
+            }
+
             bool success = Synchronize.SyncDatabases(cmdLine);
             if (success)
                 System.Environment.Exit(0);
@@ -538,8 +632,19 @@ namespace SqlBuildManager.Console
                 System.Environment.Exit(954);
         }
 
+
         internal static void GetDifferences(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return;
+            }
+
             string history = Synchronize.GetDatabaseRunHistoryTextDifference(cmdLine);
             log.LogInformation(history);
             System.Environment.Exit(0);
@@ -547,6 +652,16 @@ namespace SqlBuildManager.Console
 
         internal static void CreateBackout(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return;
+            }
+
             string packageName = BackoutCommandLine.CreateBackoutPackage(cmdLine);
             if (!String.IsNullOrEmpty(packageName))
             {
@@ -561,6 +676,16 @@ namespace SqlBuildManager.Console
 
         internal static void GetPackageHash(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.LogError("No --packagename was specified. This is required for 'sbm gethash' command");
@@ -582,6 +707,17 @@ namespace SqlBuildManager.Console
 
         internal static void ExecutePolicyCheck(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return;
+            }
+
+
             if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.LogError("No --packagename was specified. This is required for 'sbm policycheck' command");
@@ -613,6 +749,17 @@ namespace SqlBuildManager.Console
 
         internal static void PackageSbxFilesIntoSbmFiles(CommandLineArgs cmdLine)
         {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(cmdLine.Directory))
             {
                 log.LogError("The --directory argument is required for 'sbm package' command");
@@ -636,6 +783,80 @@ namespace SqlBuildManager.Console
             else
             {
                 System.Environment.Exit(0);
+            }
+        }
+
+        internal async static Task<int> QueueOverrideTargets(CommandLineArgs cmdLine)
+        {
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName, cmdLine.RootLoggingPath);
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return 3424;
+            }
+
+            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            {
+                log.LogError("A --servicebusconnection value is required. Please include this in either the settings file content or as a specific command option");
+                return 9839;
+            }
+
+            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out MultiDbData multiData, out string[] errorMessages);
+            if (tmpValReturn != 0)
+            {
+                log.LogError(String.Join(";", errorMessages));
+                return tmpValReturn;
+            }
+
+            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
+            int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
+            if(messages > 0)
+            {
+                log.LogInformation($"Successfully sent {messages} targets to Service Bus queue");
+                return 0;
+            }
+            else
+            {
+                log.LogError("Error sending messages to Service Bus queue");
+                return 2355;
+            }
+        }
+        
+        internal static async Task<int> DeQueueOverrideTargets(CommandLineArgs cmdLine)
+        {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -53443;
+            }
+
+
+            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            {
+                log.LogError("A --servicebustopicconnection value is required. Please include this in either the settings file content or as a specific command option");
+                return 9839;
+            }
+
+            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
+            bool success = await qManager.RetrieveTargetsFromQueue();
+            if (success)
+            {
+                log.LogInformation("Successfully received messages to Service Bus queue");
+                return 0;
+            }
+            else
+            {
+                log.LogError("Error receiving messages to Service Bus queue");
+                return 2355;
             }
         }
 

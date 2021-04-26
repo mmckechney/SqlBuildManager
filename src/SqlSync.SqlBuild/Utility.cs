@@ -78,6 +78,7 @@ namespace SqlSync.SqlBuild
         }
         public static AuthenticationType GetServerCredentials(ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl, string serverName, out string username, out string password)
         {
+            bool s;
             if (serverConfigTbl != null)
             {
                 var row = serverConfigTbl.Where(r => r.Name.Trim().ToLower() == serverName.Trim().ToLower());
@@ -86,8 +87,8 @@ namespace SqlSync.SqlBuild
                     var r = row.First();
                     if (!string.IsNullOrWhiteSpace(r.UserName))
                     {
-
-                        username = Cryptography.DecryptText(r.UserName, ConnectionHelper.ConnectCryptoKey);
+                       
+                        (s, username) = Cryptography.DecryptText(r.UserName, ConnectionHelper.ConnectCryptoKey, "UserName");
                     }
                     else
                     {
@@ -96,7 +97,7 @@ namespace SqlSync.SqlBuild
 
                     if (!string.IsNullOrWhiteSpace(r.Password))
                     {
-                        password = Cryptography.DecryptText(r.Password, ConnectionHelper.ConnectCryptoKey);
+                        (s, password) = Cryptography.DecryptText(r.Password, ConnectionHelper.ConnectCryptoKey, "Password");
                     }
                     else
                     {
