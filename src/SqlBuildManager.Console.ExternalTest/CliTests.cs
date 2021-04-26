@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using SqlSync.SqlBuild;
-
+using System.CommandLine;
+using System.Threading.Tasks;
+using SqlBuildManager.Console;
 namespace SqlBuildManager.Console.ExternalTest
 {
     /// <summary>
@@ -670,29 +672,36 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
             string jobName = Guid.NewGuid().ToString().Replace("-", "");
-            List<string> args = new List<string>();
-            args.Add($"batch enqueue");
-            args.Add($"--settingsfile {settingsFile}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {this.overrideFilePath}");
-            args.Add($"--concurrencytype {ConcurrencyType.Server}");
-            args.Add($"--jobname {jobName}");
+ 
+            var args = new string[]{ 
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override" , this.overrideFilePath,
+                "--concurrencytype",  ConcurrencyType.Server.ToString(),
+                "--jobname", jobName};
 
-            var result = ExecuteProcess(args);
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            Task<int> val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
             Assert.AreEqual(0, result, StandardExecutionErrorMessage());
 
-            args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {settingsFile}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {this.overrideFilePath}");
-            args.Add($"--packagename {sbmFileName}");
-            args.Add($"--concurrencytype {ConcurrencyType.Server}");
-            args.Add($"--concurrency 2");
-            args.Add($"--jobname {jobName}");
+            args = new string[]{
+            "batch",  batchMethod,
+            "--settingsfile", settingsFile,
+            "--settingsfilekey", this.settingsFileKeyPath,
+            "--override", this.overrideFilePath,
+            "--packagename", sbmFileName,
+            "--concurrencytype", ConcurrencyType.Server.ToString(),
+            "--concurrency", "2",
+            "--jobname", jobName };
 
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
 
-            result = ExecuteProcess(args);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage());
 
             Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");

@@ -200,6 +200,7 @@ namespace SqlBuildManager.Console.Queue
                 {
                     if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
                     {
+                        log.LogWarning($"Message {message.MessageId} has incorrect Batch Job name");
                         await this.MessageReceiver.DeadLetterMessageAsync(message);
                         log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
                     }
@@ -219,6 +220,9 @@ namespace SqlBuildManager.Console.Queue
                     case ServiceBusFailureReason.SessionLockLost: //Try to get a new session
                        return await GetSessionBasedTargetsFromQueue(maxMessages, true);
 
+                    case ServiceBusFailureReason.MessageLockLost:
+                        log.LogError($"Lock lost for message! There may be a issue with the messages in the topic: '{this.topicSessionSubscriptionName}");
+                        break;
                     default:
                         throw;
                 }

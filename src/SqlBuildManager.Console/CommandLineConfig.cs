@@ -11,9 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace SqlBuildManager.Console
 {
-    class CommandLineConfig
+    public class CommandLineConfig
     {
-        internal static RootCommand SetUp()
+        public static RootCommand SetUp()
         {
             var settingsfileOption = new Option(new string[] { "--settingsfile" }, "Saved settings file to load parameters from")
             {
@@ -45,7 +45,7 @@ namespace SqlBuildManager.Console
             {
                 Argument = new Argument<string>("rootloggingpath")
             };
-            var trialOption = new Option(new string[] { "--trial" }, "Whether or not to run in trial mode(default is false)")
+            var trialOption = new Option(new string[] { "--trial" }, "Whether or not to run in trial mode (default is false)")
             {
                 Argument = new Argument<bool>("trial", () => false)
             };

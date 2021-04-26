@@ -53,9 +53,9 @@ namespace SqlBuildManager.Console
         public static int ValidateCommonCommandLineArgs(CommandLineArgs cmdLine, out string[] errorMessages)
         {
             int pwVal = ValidateUserNameAndPassword(cmdLine, out errorMessages);
-            if(pwVal != 0)
+            if (pwVal != 0)
             {
-                 return pwVal;
+                return pwVal;
             }
             string error = string.Empty;
 
@@ -67,7 +67,7 @@ namespace SqlBuildManager.Console
                 return -99;
             }
 
-            //Check that they haven't set /Trial=true and /Transaction=false
+            //Check that they haven't set --trial=true and --transaction=false
             if (cmdLine.Transactional == false && cmdLine.Trial == true)
             {
                 error = "Invalid command line combination. You cannot have --transactional=\"false\" and --trial=\"true\".";
@@ -76,8 +76,8 @@ namespace SqlBuildManager.Console
                 return (int)ExecutionReturn.InvalidTransactionAndTrialCombo;
             }
 
-            //Validate the presence of an /override setting
-            if (string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName))
+            //Validate the presence of an --override setting
+            if (string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
             {
                 error = "Invalid command line set. Missing --override option.";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingOverrideFlag };
@@ -143,7 +143,7 @@ namespace SqlBuildManager.Console
                 if (!Directory.Exists(cmdLine.ScriptSrcDir))
                 {
                     error = "Invalid --scriptsrcdir setting. The directory '" + cmdLine.ScriptSrcDir + "' does not exist.";
-                    errorMessages =  new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidScriptSourceDirectory };
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidScriptSourceDirectory };
                     log.LogError(error);
                     return (int)ExecutionReturn.InvalidScriptSourceDirectory;
                 }
@@ -151,12 +151,12 @@ namespace SqlBuildManager.Console
 
             if (cmdLine.TimeoutRetryCount < 0)
             {
-              
-                    error = "The --timeoutretrycount setting is a negative number. This value needs to be a positive integer.";
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.NegativeTimeoutRetryCount };
-                    log.LogError(error);
-                    return (int)ExecutionReturn.NegativeTimeoutRetryCount;
-             }
+
+                error = "The --timeoutretrycount setting is a negative number. This value needs to be a positive integer.";
+                errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.NegativeTimeoutRetryCount };
+                log.LogError(error);
+                return (int)ExecutionReturn.NegativeTimeoutRetryCount;
+            }
 
             if (cmdLine.TimeoutRetryCount > 0 && !cmdLine.Transactional)
             {
@@ -167,40 +167,43 @@ namespace SqlBuildManager.Console
                 return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
             }
 
-            
+
             if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName))
             {
-                 if (!File.Exists(cmdLine.MultiDbRunConfigFileName))
-                 {
-                     error = string.Format("Specified --override file does not exist at path: {0}", cmdLine.MultiDbRunConfigFileName);
-                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
-                     log.LogError(error);
-                     return (int)ExecutionReturn.InvalidOverrideFlag;
-                 }
-            }
-           
-            if(cmdLine.MultiDbRunConfigFileName.EndsWith(".sql", StringComparison.InvariantCultureIgnoreCase))
-            {
-   
-                if(string.IsNullOrWhiteSpace(cmdLine.Database) || string.IsNullOrWhiteSpace(cmdLine.Server) || 
-                    string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+                if (!File.Exists(cmdLine.MultiDbRunConfigFileName))
                 {
-                    error = $"Invalid command line set. When the --override setting specifies a SQL file, the following are also required:{System.Environment.NewLine} --database, --server - will be used as source to run scripts {System.Environment.NewLine} --username, --password - provide authentication to that database";
+                    error = string.Format("Specified --override file does not exist at path: {0}", cmdLine.MultiDbRunConfigFileName);
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
                     log.LogError(error);
                     return (int)ExecutionReturn.InvalidOverrideFlag;
                 }
-
             }
-            else if (!cmdLine.MultiDbRunConfigFileName.EndsWith(".multidb", StringComparison.InvariantCultureIgnoreCase)
-                && !cmdLine.MultiDbRunConfigFileName.EndsWith(".multidbq", StringComparison.InvariantCultureIgnoreCase)
-                && !cmdLine.MultiDbRunConfigFileName.EndsWith(".cfg", StringComparison.InvariantCultureIgnoreCase))
-            {
 
-                error = "Invalid command line set. The '--override' setting file value must be .multiDb, .multiDbQ or .cfg file.";
-                errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
-                log.LogError(error);
-                return (int)ExecutionReturn.InvalidOverrideFlag;
+            if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName)) //should have already seen if this was required up above
+            { 
+                if (cmdLine.MultiDbRunConfigFileName.EndsWith(".sql", StringComparison.InvariantCultureIgnoreCase))
+                {
+
+                    if (string.IsNullOrWhiteSpace(cmdLine.Database) || string.IsNullOrWhiteSpace(cmdLine.Server) ||
+                        string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+                    {
+                        error = $"Invalid command line set. When the --override setting specifies a SQL file, the following are also required:{System.Environment.NewLine} --database, --server - will be used as source to run scripts {System.Environment.NewLine} --username, --password - provide authentication to that database";
+                        errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
+                        log.LogError(error);
+                        return (int)ExecutionReturn.InvalidOverrideFlag;
+                    }
+
+                }
+                else if (!cmdLine.MultiDbRunConfigFileName.EndsWith(".multidb", StringComparison.InvariantCultureIgnoreCase)
+                    && !cmdLine.MultiDbRunConfigFileName.EndsWith(".multidbq", StringComparison.InvariantCultureIgnoreCase)
+                    && !cmdLine.MultiDbRunConfigFileName.EndsWith(".cfg", StringComparison.InvariantCultureIgnoreCase))
+                {
+
+                    error = "Invalid command line set. The '--override' setting file value must be .multiDb, .multiDbQ or .cfg file.";
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidOverrideFlag };
+                    log.LogError(error);
+                    return (int)ExecutionReturn.InvalidOverrideFlag;
+                }
             }
 
             return 0;

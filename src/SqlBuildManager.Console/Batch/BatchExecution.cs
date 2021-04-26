@@ -104,22 +104,24 @@ namespace SqlBuildManager.Console.Batch
 
             //Check for the platinum dacpac and configure it if necessary
             log.LogInformation("Validating database overrides");
-            MultiDbData buildData;
+            MultiDbData multiData;
             int? myExitCode = 0;
 
             int tmpReturn = 0;
+
+            //TODO: fix this for queue!!!!
             //Validate the override settings (not needed if --servicebusconnection is provided
             string[] errorMessages;
-            int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out buildData, out errorMessages);
+            int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
             if (tmpVal != 0)
             {
                 log.LogError($"Unable to validate database config\r\n{string.Join("\r\n", errorMessages)}");
                 return (tmpVal, string.Empty);
             }
-            //TODO
+            
 
             //Validate the platinum dacpac
-            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(cmdLine, buildData);
+            var tmpValReturn = Validation.ValidateAndLoadPlatinumDacpac(cmdLine, multiData);
             if (tmpValReturn.Item1 == (int)ExecutionReturn.DacpacDatabasesInSync)
             {
                 return ((int)ExecutionReturn.DacpacDatabasesInSync, string.Empty);
@@ -539,39 +541,58 @@ namespace SqlBuildManager.Console.Batch
             //Move worker files to "Working" directory
             foreach (var blob in blobs)
             {
-                if (blob.Properties.BlobType == BlobType.Block )
+                try
                 {
-                    if (workerFiles.Any(a => blob.Name.ToLower().Contains(a)))
+                    if (blob.Properties.BlobType == BlobType.Block)
                     {
-                        var sourceBlob = container.GetBlobClient(blob.Name);
-                        var destBlob = container.GetBlobClient("Working/" + blob.Name);
-                        using (var stream = sourceBlob.OpenRead())
+                        if (workerFiles.Any(a => blob.Name.ToLower().Contains(a)))
                         {
-                            destBlob.Upload(stream);
-                        }
-                        log.LogInformation($"Moved {blob.Name} to storage as Working/{blob.Name}");
-                        sourceBlob.Delete();
-                    }
-
-                    foreach (string append in Program.AppendLogFiles)
-                    {
-                        if (blob.Name.ToLower() == append.ToLower())
-                        {
-                            var destinationBlob = container.GetAppendBlobClient(append);
-                            try
-                            {
-                                destinationBlob.CreateIfNotExists();
-                            }
-                            catch { }
-
                             var sourceBlob = container.GetBlobClient(blob.Name);
+                            var destBlob = container.GetBlobClient("Working/" + blob.Name);
                             using (var stream = sourceBlob.OpenRead())
                             {
-                                destinationBlob.AppendBlock(stream);
+                                destBlob.Upload(stream);
                             }
-                            log.LogInformation($"Consolidated {blob.Name} to {append}");
+                            log.LogInformation($"Moved {blob.Name} to storage as Working/{blob.Name}");
                             sourceBlob.Delete();
                         }
+
+                        foreach (string append in Program.AppendLogFiles)
+                        {
+                            try
+                            {
+                                if (blob.Name.ToLower() == append.ToLower())
+                                {
+                                    var destinationBlob = container.GetAppendBlobClient(append);
+                                    try
+                                    {
+                                        destinationBlob.CreateIfNotExists();
+                                    }
+                                    catch { }
+
+                                    var sourceBlob = container.GetBlobClient(blob.Name);
+                                    using (var stream = sourceBlob.OpenRead())
+                                    {
+                                        destinationBlob.AppendBlock(stream);
+                                    }
+                                    log.LogInformation($"Consolidated {blob.Name} to {append}");
+                                    sourceBlob.Delete();
+                                }
+                            }
+                            catch (Azure.RequestFailedException exe)
+                            {
+                                if (exe.ErrorCode == "BlobAlreadyExists")
+                                {
+                                    log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists");
+                                }
+                            }
+                        }
+                    }
+                }catch(Azure.RequestFailedException exe)
+                {
+                    if(exe.ErrorCode == "BlobAlreadyExists")
+                    {
+                        log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists. This can happen when you run two Batch jobs with the same job name");
                     }
                 }
             }

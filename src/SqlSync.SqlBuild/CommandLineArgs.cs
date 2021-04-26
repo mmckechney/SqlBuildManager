@@ -261,7 +261,7 @@ namespace SqlSync.SqlBuild
             set { BatchArgs.EventHubConnectionString = value; }
         }
         [JsonIgnore]
-        public virtual string ServiceBusTopicConnectionString
+        public virtual string ServiceBusTopicConnection
         {
             set { BatchArgs.ServiceBusTopicConnectionString = value; }
         }
@@ -461,7 +461,7 @@ namespace SqlSync.SqlBuild
                     {
                         sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
                     }
-                } 
+                }
                 else if (property.PropertyType == typeof(CommandLineArgs.Authentication) ||
                          property.PropertyType == typeof(CommandLineArgs.DacPac) ||
                          property.PropertyType == typeof(CommandLineArgs.Batch))
@@ -488,7 +488,15 @@ namespace SqlSync.SqlBuild
 
                         case "MultiDbRunConfigFileName":
                         case "ManualOverRideSets":
+                            if ((toStringType == StringType.BatchThreaded || toStringType == StringType.BatchQuery) &&
+                                    (!string.IsNullOrWhiteSpace(((CommandLineArgs)obj).BatchArgs.ServiceBusTopicConnectionString)))
+                            {
+                                break;
+                            }
+                            else
+                            {
                                 sb.Append("--override \"" + property.GetValue(obj).ToString() + "\" ");
+                            }
                             break;
 
                         case "BuildFileName":
@@ -497,6 +505,10 @@ namespace SqlSync.SqlBuild
 
                         case "EventHubConnectionString":
                                 sb.Append("--eventhubconnection \"" + property.GetValue(obj).ToString() + "\" ");
+                            break;
+
+                        case "ServiceBusTopicConnectionString":
+                            sb.Append("--servicebustopicconnection \"" + property.GetValue(obj).ToString() + "\" ");
                             break;
 
                         case "Action":

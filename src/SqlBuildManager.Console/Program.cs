@@ -537,13 +537,11 @@ namespace SqlBuildManager.Console
                             tmp = machine + "-" + tmp;
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var rename = container.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open))
+                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 await rename.UploadAsync(fs);
 
                             }
-
-
                         }
                         else if (renameLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
@@ -552,18 +550,17 @@ namespace SqlBuildManager.Console
                             File.Copy(f, localTemp);
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var rename = container.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(localTemp, FileMode.Open))
+                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 await rename.UploadAsync(fs);
 
                             }
-
                         }
                         else
                         {
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var b = container.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open))
+                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 await b.UploadAsync(fs);
 

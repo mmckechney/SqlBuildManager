@@ -155,15 +155,18 @@ namespace SqlBuildManager.Console.Threaded
             //Start logging
             WriteToLog(new LogMsg() { Message = "**** Starting log for Run ID: " + ThreadedExecution.RunID + " ****", LogType = LogType.Message });
 
-            //Load multi-db data. Won't be used for a queue run, but will be needed to help build the script package
-            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
-            if (tmpValReturn != 0)
-            {
-                var msg = new LogMsg() { Message = String.Join(";", errorMessages), LogType = LogType.Error };
-                WriteToLog(msg);
-                return tmpValReturn;
-            }
 
+            //Load multi-db data. Won't be used for a queue run
+            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            {
+                int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
+                if (tmpValReturn != 0)
+                {
+                    var msg = new LogMsg() { Message = String.Join(";", errorMessages), LogType = LogType.Error };
+                    WriteToLog(msg);
+                    return tmpValReturn;
+                }
+            }
             //Determine where to get the scripts from (SBM, DACPAC, generated DACPAC, scripts?)
             int success;
             (success, cmdLine) = ConfigureScriptSource(cmdLine);
@@ -190,8 +193,6 @@ namespace SqlBuildManager.Console.Threaded
                 }
                 else
                 {
-                
-
                     //Set the number of allowed retries...
                     this.multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;
                     //Set Trial

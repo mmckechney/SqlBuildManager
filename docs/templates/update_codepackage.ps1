@@ -1,0 +1,2 @@
+
+.\deploy_azure_resources.ps1  -subscriptionId "1e1dcefc-d832-4de0-889a-2a48494c441b" -ResourceGroupName "sqllab1" -resourceGroupLocation "EastUS"  -Batchprefix "sqll1" -outputpath -deployService $false
