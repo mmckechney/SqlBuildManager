@@ -13,11 +13,11 @@ To leverage Azure Batch, you will need an [Azure subscription](https://azure.mic
 3. [Run a Batch build](#running-a-batch-build) 
 
     - [Settings File](#settings-file) - simplify your command line by saving the most re-used arguments in an encrypted JSON file
-    - [Pre-stage your Batch Nodes](#1.-pre-stage-the-azure-batch-pool-vms)
-    - [Queue the Database Targets in Service Bus](#2.-queue-the-database-targets)
-    - [Execute batch build](#3.-execute-batch-build)
-    - [Inspect logs if an issue is reported](#4.-inspect-logs-if-an-issue-is-reported)
-    - [Cleanup resources post build](#5.-cleanup-post-build)
+    - [Pre-stage your Batch Nodes](#1-pre-stage-the-azure-batch-pool-vms)
+    - [Queue the Database Targets in Service Bus](#2-queue-the-database-targets)
+    - [Execute batch build](#3-execute-batch-build)
+    - [Inspect logs if an issue is reported](#4-inspect-logs-if-an-issue-is-reported)
+    - [Cleanup resources post build](#5-cleanup-post-build)
 
 4. Additional information
 
