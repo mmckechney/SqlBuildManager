@@ -600,7 +600,7 @@ namespace SqlBuildManager.Console
             batchCommand.Add(batchQueryCommand);
             batchCommand.Add(batchRunThreadedCommand);
             batchCommand.Add(batchQueryThreadedCommand);
-            batchCommand.Add(batchDeQueueTargetsCommand);
+            //batchCommand.Add(batchDeQueueTargetsCommand);
 
 
             /****************************************

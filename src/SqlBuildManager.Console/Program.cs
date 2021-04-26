@@ -24,11 +24,9 @@ namespace SqlBuildManager.Console
 
     class Program
     {
-
-
-
         private static Microsoft.Extensions.Logging.ILogger log;
         private static readonly string applicationLogFileName = "SqlBuildManager.Console.log";
+
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
         static int Main(string[] args)
@@ -790,6 +788,8 @@ namespace SqlBuildManager.Console
 
         internal async static Task<int> QueueOverrideTargets(CommandLineArgs cmdLine)
         {
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName, cmdLine.RootLoggingPath);
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
             bool decryptSuccess;
