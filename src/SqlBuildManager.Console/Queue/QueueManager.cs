@@ -90,14 +90,19 @@ namespace SqlBuildManager.Console.Queue
                 var concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, 1, ConcurrencyType.Count);
                 var messages = CreateMessages(concurrencyBuckets, batchJobName);
                 int count = messages.Count();
-                //send in batches of 20
-                var msgBatch = messages.Batch(20);
-                foreach (var b in msgBatch)
-                {
-                    var sbb = await sender.CreateMessageBatchAsync();
-                    b.ForEach(m => sbb.TryAddMessage(m));
+                
+                //because of partitiioning, can't batch across session Id, so group by SessionId first, then batch
+                var bySessionId = messages.GroupBy(s => s.SessionId);
+                foreach (var sessionSet in bySessionId)
+                    {
+                    var msgBatch = sessionSet.Batch(20); //send in batches of 20
+                        foreach (var b in msgBatch)
+                        {
+                            var sbb = await sender.CreateMessageBatchAsync();
+                            b.ForEach(m => sbb.TryAddMessage(m));
 
-                    await sender.SendMessagesAsync(sbb);
+                            await sender.SendMessagesAsync(sbb);
+                        }
                 }
                 return count;
             }
@@ -124,6 +129,7 @@ namespace SqlBuildManager.Console.Queue
                         var msg = data.AsMessage();
                         msg.Subject = batchJobName;
                         msg.SessionId = target.Item1;
+                        msg.MessageId = Guid.NewGuid().ToString();
                         msgs.Add(msg);
                     }
                 }

@@ -133,7 +133,7 @@ namespace SqlBuildManager.Console.Threaded
             DoWorkEventArgs e = null;
             SqlBuildRunData runData = new SqlBuildRunData();
             string targetDatabase = overrides[0].OverrideDbTarget;
-            string loggingDirectory = Path.Combine(ThreadedExecution.RootLoggingPath, server, targetDatabase); 
+            string loggingDirectory = Path.Combine(ThreadedExecution.WorkingDirectory, server, targetDatabase); 
             try
             {
                  //Start setting properties on the object that contains the run configuration data.

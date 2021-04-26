@@ -508,7 +508,6 @@ namespace SqlBuildManager.Console
             }
 
             log.LogDebug("Exiting Threaded Execution");
-
             return retVal;
 
         }
@@ -523,6 +522,7 @@ namespace SqlBuildManager.Console
                 var renameLogFiles = new string[] { "sqlbuildmanager", "csv" };
                 BlobContainerClient container = new BlobContainerClient(new Uri(outputContainerSasUrl));
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
+                var taskId = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_ID");
                 string machine = Environment.MachineName;
 
                 foreach (var f in fileList)
@@ -534,7 +534,7 @@ namespace SqlBuildManager.Console
                         if (Program.AppendLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
 
-                            tmp = machine + "-" + tmp;
+                            tmp = $"{taskId}/{tmp}";
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var rename = container.GetBlockBlobClient(tmp);
                             using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -545,9 +545,10 @@ namespace SqlBuildManager.Console
                         }
                         else if (renameLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
-                            tmp = machine + "-" + tmp;
-                            var localTemp = Path.Combine(Path.GetDirectoryName(f), tmp);
-                            File.Copy(f, localTemp);
+                            
+                            //var localTemp = Path.Combine(Path.GetDirectoryName(f), tmp);
+                            //File.Copy(f, localTemp);
+                            tmp = $"{taskId}/{tmp}";
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
                             var rename = container.GetBlockBlobClient(tmp);
                             using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))

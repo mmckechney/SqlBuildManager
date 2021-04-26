@@ -220,3 +220,4 @@ pip-log.txt
 .mr.developer.cfg
 /src/TestConfig
 /docs/templates/runme.ps1
+/docs/templates/update_apppackage.ps1

@@ -292,10 +292,27 @@ namespace SqlBuildManager.Console.Batch
                     task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
-                                filePattern: @"..\std*.txt",
+                                filePattern: @"../std*.txt",
                                 destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
-                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
+                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))//,
+
+                            //new OutputFile(
+                            //    filePattern: @"../wd/*",
+                            //    destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: $"{taskId}/wd")),
+                            //    uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
+
+                            //new OutputFile(
+                            //    filePattern: @"../wd/working/*",
+                            //    destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: $"{taskId}/working")),
+                            //    uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))//, 
+
+                             //new OutputFile(
+                             //   filePattern: @"../*.cfg",
+                             //   destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken)),
+                             //   uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
+
                         };
+ 
                     tasks.Add(task);
                 }
 
@@ -352,6 +369,7 @@ namespace SqlBuildManager.Console.Batch
                     batchClient.PoolOperations.DeletePool(poolId);
                 }
 
+                SqlBuildManager.Logging.Threaded.Configure.CloseAndFlushAllLoggers();
                 log.LogInformation("Consolidating log files");
                 ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
 
@@ -545,23 +563,16 @@ namespace SqlBuildManager.Console.Batch
                 {
                     if (blob.Properties.BlobType == BlobType.Block)
                     {
-                        if (workerFiles.Any(a => blob.Name.ToLower().Contains(a)))
+                        var sourceBlob = container.GetBlobClient(blob.Name);
+                        if(sourceBlob.GetProperties().Value.ContentLength == 0)
                         {
-                            var sourceBlob = container.GetBlobClient(blob.Name);
-                            var destBlob = container.GetBlobClient("Working/" + blob.Name);
-                            using (var stream = sourceBlob.OpenRead())
-                            {
-                                destBlob.Upload(stream);
-                            }
-                            log.LogInformation($"Moved {blob.Name} to storage as Working/{blob.Name}");
-                            sourceBlob.Delete();
+                            continue;
                         }
-
                         foreach (string append in Program.AppendLogFiles)
                         {
                             try
                             {
-                                if (blob.Name.ToLower() == append.ToLower())
+                                if (blob.Name.ToLower().Contains(append.ToLower()))
                                 {
                                     var destinationBlob = container.GetAppendBlobClient(append);
                                     try
@@ -570,13 +581,12 @@ namespace SqlBuildManager.Console.Batch
                                     }
                                     catch { }
 
-                                    var sourceBlob = container.GetBlobClient(blob.Name);
+
                                     using (var stream = sourceBlob.OpenRead())
                                     {
                                         destinationBlob.AppendBlock(stream);
                                     }
                                     log.LogInformation($"Consolidated {blob.Name} to {append}");
-                                    sourceBlob.Delete();
                                 }
                             }
                             catch (Azure.RequestFailedException exe)
@@ -585,12 +595,21 @@ namespace SqlBuildManager.Console.Batch
                                 {
                                     log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists");
                                 }
+                                else if (exe.ErrorCode == "InvalidHeaderValue")
+                                {
+                                    log.LogWarning($"Unable to consolidate log file, '{blob.Name}': Problem with appendind the consolidated file. {Environment.NewLine}{exe.Message}");
+                                }
+                                else
+                                {
+                                    throw;
+                                }
                             }
                         }
                     }
-                }catch(Azure.RequestFailedException exe)
+                }
+                catch (Azure.RequestFailedException exe)
                 {
-                    if(exe.ErrorCode == "BlobAlreadyExists")
+                    if (exe.ErrorCode == "BlobAlreadyExists")
                     {
                         log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists. This can happen when you run two Batch jobs with the same job name");
                     }

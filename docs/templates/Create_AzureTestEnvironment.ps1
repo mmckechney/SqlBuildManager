@@ -55,47 +55,72 @@ if($null -eq (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName -Locatio
 ########################################################
 $password = $SqlServerPassword | ConvertTo-SecureString -AsPlainText -Force
 $SqlCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SqlServerUserName,  $password
-if($null -eq (Get-AzSqlServer -ResourceGroupName $ResourceGroupName  -ServerName $SqlServerName -ErrorAction SilentlyContinue))
-{
-    Write-Host "Creating new SQL Server: $SqlServerName"
-    New-AzSqlServer -ResourceGroupName $ResourceGroupName -Location $Location -ServerName $SqlServerName -ServerVersion "12.0" -SqlAdministratorCredentials $SqlCredential
-}
-else 
-{
-    Write-Host "Updating admin password on SQL Server: $SqlServerName"
-    Set-AzSqlServer -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -SqlAdministratorPassword $password
-}
 
-if($null -eq (Get-AzSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName.ToLower() -ErrorAction SilentlyContinue))
+$nameSuffixes = @("A", "B")
+$outputDbConfig = @()
+$ClientDbConfig = @()
+foreach($suffix in $nameSuffixes)
 {
-    Write-Host "Updating firewall rules on SQL Server: $SqlServerName"
-    New-AzSqlServerFirewallRule -AllowAllAzureIPs -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName.ToLower()
-}
 
-if($null -eq (Get-AzSqlElasticPool -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -ElasticPoolName $ElasticPoolName -ErrorAction SilentlyContinue))
-{
-    Write-Host "Creating Elastic pool $ElasticPoolName for SQL Server: $SqlServerName"
-    New-AzSqlElasticPool -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -ElasticPoolName $ElasticPoolName -Edition "Basic" -Dtu 50 
-}
-For ($i=1; $i -lt  $TestDatabaseCount+1; $i++) 
-{
-    $dbNumber = $DatabaseNameRoot + $i.ToString("000")
-    if($null -eq (Get-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -DatabaseName $dbNumber -ErrorAction SilentlyContinue))
+    $tmpServer = $SqlServerName + "-" + $suffix
+    $tmpPool = $ElasticPoolName + "-" + $suffix
+    if($null -eq (Get-AzSqlServer -ResourceGroupName $ResourceGroupName  -ServerName $tmpServer -ErrorAction SilentlyContinue))
     {
-        Write-Host "Creating database: $dbNumber"
-        New-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $SqlServerName -ElasticPoolName $ElasticPoolName -DatabaseName $dbNumber
+        Write-Host "Creating new SQL Server: $tmpServer"
+        New-AzSqlServer -ResourceGroupName $ResourceGroupName -Location $Location -ServerName $tmpServer -ServerVersion "12.0" -SqlAdministratorCredentials $SqlCredential
     }
     else 
     {
-        Write-Host "Database already exists: $dbNumber"
+        Write-Host "Updating admin password on SQL Server: $tmpServer"
+        Set-AzSqlServer -ResourceGroupName $ResourceGroupName -ServerName $tmpServer -SqlAdministratorPassword $password
+    }
+
+    if($null -eq (Get-AzSqlServerFirewallRule -ResourceGroupName $ResourceGroupName -ServerName $tmpServer.ToLower() -ErrorAction SilentlyContinue))
+    {
+        Write-Host "Updating firewall rules on SQL Server: $tmpServer"
+        New-AzSqlServerFirewallRule -AllowAllAzureIPs -ResourceGroupName $ResourceGroupName -ServerName $tmpServer.ToLower()
+    }
+
+    if($null -eq (Get-AzSqlElasticPool -ResourceGroupName $ResourceGroupName -ServerName $tmpServer -ElasticPoolName $tmpPool -ErrorAction SilentlyContinue))
+    {
+        Write-Host "Creating Elastic pool $tmpPool for SQL Server: $tmpServer"
+        New-AzSqlElasticPool -ResourceGroupName $ResourceGroupName -ServerName $tmpServer -ElasticPoolName $tmpPool -Edition "Basic" -Dtu 50 
+    }
+    For ($i=1; $i -lt  $TestDatabaseCount+1; $i++) 
+    {
+        $dbNumber = $DatabaseNameRoot + $i.ToString("000")
+        if($null -eq (Get-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $tmpServer -DatabaseName $dbNumber -ErrorAction SilentlyContinue))
+        {
+            Write-Host "Creating database: $dbNumber"
+            New-AzSqlDatabase -ResourceGroupName $ResourceGroupName -ServerName $tmpServer -ElasticPoolName $tmpPool -DatabaseName $dbNumber
+        }
+        else 
+        {
+            Write-Host "Database already exists: $dbNumber"
+        }
+    }
+
+    ########################################################
+    # Output the target database configuration file
+    ########################################################
+    $server = Get-AzSqlServer -ResourceGroupName $ResourceGroupName  -ServerName $tmpServer
+    $dbs = Get-AzSqlDatabase -ResourceGroupName $server.ResourceGroupName -ServerName $server.ServerName | Sort-Object -Property DatabaseName
+
+    foreach($db in $dbs)
+    {
+        if($db.DatabaseName -ne "master")
+        {
+            $outputDbConfig += ,@($server.FullyQualifiedDomainName + ":SqlBuildTest,"+$db.DatabaseName) # | Out-File -Append $outputDbConfigFile
+            $ClientDbConfig += ,@($server.FullyQualifiedDomainName + ":client,"+$db.DatabaseName) # | Out-File -Append $clientDbConfigFile
+        }
     }
 }
 
 ########################################################
 # Output the target database configuration file
 ########################################################
-$server = Get-AzSqlServer -ResourceGroupName $ResourceGroupName  -ServerName $SqlServerName
-$dbs = Get-AzSqlDatabase -ResourceGroupName $server.ResourceGroupName -ServerName $server.ServerName | Sort-Object -Property DatabaseName
+#$server = Get-AzSqlServer -ResourceGroupName $ResourceGroupName  -ServerName $SqlServerName
+#$dbs = Get-AzSqlDatabase -ResourceGroupName $server.ResourceGroupName -ServerName $server.ServerName | Sort-Object -Property DatabaseName
 
 
 # check to see if the folder is there, if not, create it
@@ -117,14 +142,22 @@ if( (Test-Path $clientDbConfigFile) -eq $True)
 
 
 Write-Host "Creating database config file for unit testing: $outputDbConfigFile "
-foreach($db in $dbs)
+foreach($item  in  $outputDbConfig)
 {
-    if($db.DatabaseName -ne "master")
-    {
-        $server.FullyQualifiedDomainName + ":SqlBuildTest,"+$db.DatabaseName | Out-File -Append $outputDbConfigFile
-        $server.FullyQualifiedDomainName + ":client,"+$db.DatabaseName | Out-File -Append $clientDbConfigFile
-    }
+    $item | Out-File -Append $outputDbConfigFile
 }
+foreach($item  in  $ClientDbConfig)
+{
+    $item | Out-File -Append $clientDbConfigFile
+}
+# foreach($db in $dbs)
+# {
+#     if($db.DatabaseName -ne "master")
+#     {
+#         $server.FullyQualifiedDomainName + ":SqlBuildTest,"+$db.DatabaseName | Out-File -Append $outputDbConfigFile
+#         $server.FullyQualifiedDomainName + ":client,"+$db.DatabaseName | Out-File -Append $clientDbConfigFile
+#     }
+# }
 
 
 #########################################################################################

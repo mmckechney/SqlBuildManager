@@ -25,9 +25,6 @@ namespace SqlBuildManager.Console.Threaded
         private static ILogger logSuccess;
         private static ILogger logRuntime;
 
-        StringBuilder sbSuccessDatabasesCfg = new System.Text.StringBuilder();
-        StringBuilder sbFailureDatabasesCfg = new System.Text.StringBuilder();
-
         MultiDbData multiData = null;
         DateTime startTime;
         bool hasError = false;
@@ -36,7 +33,6 @@ namespace SqlBuildManager.Console.Threaded
         private CommandLineArgs cmdLine = null;
         private QueueManager qManager = null;
         private int queueReturnValue = 0;
-        string workingDirectory = string.Empty;
         private static string projectFileName = string.Empty;
         /// <summary>
         /// Path and file name to the XML metadata configuration project file (SqlSyncBuildProject.xml)
@@ -70,6 +66,15 @@ namespace SqlBuildManager.Console.Threaded
         internal static string RootLoggingPath
         {
             get { return ThreadedExecution.rootLoggingPath; }
+        }
+
+        private static string workingDirectory = string.Empty;
+        /// <summary>
+        /// The root folder where the logging should start
+        /// </summary>
+        internal static string WorkingDirectory
+        {
+            get { return ThreadedExecution.workingDirectory; }
         }
 
         private static string runID = string.Empty;
@@ -134,7 +139,12 @@ namespace SqlBuildManager.Console.Threaded
             }
 
             //Create Threaded Run specific loggers -- these are init'd when the first logs are written
-            if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
+            var batchWorking = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_WORKING_DIR");
+            if (!string.IsNullOrWhiteSpace(batchWorking)) //if running in Batch, set the root directory to the node working dir
+            {
+                cmdLine.RootLoggingPath = batchWorking;
+            }
+            else if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
             {
                 cmdLine.RootLoggingPath = @"C:/tmp-sqlbuildlogging";
             }
@@ -187,6 +197,7 @@ namespace SqlBuildManager.Console.Threaded
                 //Run from override settings or from a Service Bus topic?
                 if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
                 {
+                    log.LogInformation($"Sourcing targets from Service Bus topic with Concurrency Type: {cmdLine.ConcurrencyType} and Concurency setting: {cmdLine.Concurrency}");
                     Task<int> queueTask = ExecuteFromQueue(cmdLine, System.Environment.UserName);
                     queueTask.Wait();
                     return queueTask.Result;
@@ -198,7 +209,7 @@ namespace SqlBuildManager.Console.Threaded
                     //Set Trial
                     this.multiData.RunAsTrial = cmdLine.Trial;
                     this.multiData.BuildRevision = cmdLine.BuildRevision;
-
+                    log.LogInformation($"Sourcing targets from target override file with Concurrency Type: {cmdLine.ConcurrencyType} and Concurency setting: {cmdLine.Concurrency}");
                     return ExecuteFromOverrideFile(ThreadedExecution.buildZipFileName, cmdLine.DacPacArgs.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName, cmdLine.DacPacArgs.ForceCustomDacPac, cmdLine.Concurrency, cmdLine.ConcurrencyType);
                 }
             }
@@ -465,7 +476,7 @@ namespace SqlBuildManager.Console.Threaded
                     case (int)RunnerReturn.SuccessWithTrialRolledBack:
                         msg.LogType = LogType.Commit;
                         WriteToLog(msg);
-                        sbSuccessDatabasesCfg.AppendLine(cfgString);
+                        WriteToLog(new LogMsg() { LogType = LogType.SuccessDatabases, Message = cfgString });
                         break;
 
                     case (int)RunnerReturn.RolledBack:
@@ -473,7 +484,7 @@ namespace SqlBuildManager.Console.Threaded
                     default:
                         msg.LogType = LogType.Error;
                         WriteToLog(msg);
-                        sbFailureDatabasesCfg.AppendLine(cfgString);
+                        WriteToLog(new LogMsg() { LogType = LogType.FailureDatabases, Message = cfgString });
                         this.hasError = true;
                         break;
                 }
@@ -495,14 +506,14 @@ namespace SqlBuildManager.Console.Threaded
         
         private int ExtractAndLoadBuildFile(string sqlBuildProjectFileName, out SqlSyncBuildData buildData)
         {
-            log.LogInformation($"Extracting build file '{sqlBuildProjectFileName}' to working directory '{this.workingDirectory}'");
+            log.LogInformation($"Extracting build file '{sqlBuildProjectFileName}' to working directory '{ThreadedExecution.WorkingDirectory}'");
 
             buildData = null;
 
-            Directory.CreateDirectory(this.workingDirectory);
+            Directory.CreateDirectory(ThreadedExecution.WorkingDirectory);
 
             string result;
-            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sqlBuildProjectFileName, ref this.workingDirectory, ref this.projectFilePath, ref ThreadedExecution.projectFileName, false, true, out result))
+            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sqlBuildProjectFileName, ref ThreadedExecution.workingDirectory, ref this.projectFilePath, ref ThreadedExecution.projectFileName, false, true, out result))
             {
                 var msg = new LogMsg()
                 {
@@ -533,7 +544,7 @@ namespace SqlBuildManager.Console.Threaded
             log.LogInformation("Constructing build file from script directory");
             string shortFileName = string.Empty;
             ThreadedExecution.buildZipFileName = Path.Combine(ThreadedExecution.rootLoggingPath, ThreadedExecution.RunID + ".sbm");
-            string projFileName = Path.Combine(this.workingDirectory, SqlSync.SqlBuild.XmlFileNames.MainProjectFile);
+            string projFileName = Path.Combine(ThreadedExecution.WorkingDirectory, SqlSync.SqlBuild.XmlFileNames.MainProjectFile);
             SqlSyncBuildData localBuildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
             List<string> fileList = new List<string>(Directory.GetFiles(directoryName, "*.sql", SearchOption.TopDirectoryOnly));
             fileList.Sort();
@@ -541,7 +552,7 @@ namespace SqlBuildManager.Console.Threaded
             for (int i = 0; i < fileList.Count; i++)
             {
                 shortFileName = Path.GetFileName(fileList[i]);
-                File.Copy(fileList[i], Path.Combine(this.workingDirectory, shortFileName), true);
+                File.Copy(fileList[i], Path.Combine(ThreadedExecution.WorkingDirectory, shortFileName), true);
 
                 SqlBuildFileHelper.AddScriptFileToBuild(ref localBuildData,
                     projFileName,
@@ -569,6 +580,7 @@ namespace SqlBuildManager.Console.Threaded
             ThreadedExecution.buildZipFileName = string.Empty;
             ThreadedExecution.projectFileName = string.Empty;
             ThreadedExecution.rootLoggingPath = string.Empty;
+            ThreadedExecution.workingDirectory = string.Empty;
             ThreadedExecution.batchColl = null;
             ThreadedExecution.buildData = null;
         }
@@ -601,11 +613,11 @@ namespace SqlBuildManager.Console.Threaded
             switch (msg.LogType)
             {
                 case LogType.FailureDatabases:
-                    logFailures.LogInformation(this.sbFailureDatabasesCfg.ToString());
+                    logFailures.LogInformation(msg.Message);
                     return;
 
                 case LogType.SuccessDatabases:
-                    logSuccess.LogInformation(this.sbSuccessDatabasesCfg.ToString());
+                    logSuccess.LogInformation(msg.Message);
                     return;
 
                 case LogType.Commit:
@@ -642,10 +654,10 @@ namespace SqlBuildManager.Console.Threaded
                     Directory.CreateDirectory(ThreadedExecution.rootLoggingPath);
                 }
 
-                this.workingDirectory = Path.Combine(ThreadedExecution.rootLoggingPath, "Working");
-                if (!Directory.Exists(this.workingDirectory))
+                ThreadedExecution.workingDirectory = Path.Combine(ThreadedExecution.rootLoggingPath, "Working");
+                if (!Directory.Exists(ThreadedExecution.WorkingDirectory))
                 {
-                    Directory.CreateDirectory(this.workingDirectory);
+                    Directory.CreateDirectory(ThreadedExecution.WorkingDirectory);
                 }
             }
             catch (Exception exe)

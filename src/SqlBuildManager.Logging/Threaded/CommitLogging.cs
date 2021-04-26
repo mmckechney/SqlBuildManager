@@ -48,7 +48,7 @@ namespace SqlBuildManager.Logging.Threaded
 				return null;
 			}
 		}
-		internal static void CloseAndFlush()
+		public static void CloseAndFlush()
 		{
 			if (serilogLogger != null)
 			{
