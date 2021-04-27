@@ -93,7 +93,7 @@ namespace SqlBuildManager.Console.Threaded
 
         public static List<IEnumerable<(string, List<DatabaseOverride>)>> RecombineServersToFixedBucketCount(MultiDbData multiData, int fixedBucketCount)
         {
-            List<IEnumerable<(string, List<DatabaseOverride>)>> consolidated = new List<IEnumerable<(string, List<DatabaseOverride>)>>();
+             List<IEnumerable<(string, List<DatabaseOverride>)>> consolidated = new List<IEnumerable<(string, List<DatabaseOverride>)>>();
             //Get a bucket per server
             var buckets = ConcurrencyByServer(multiData);
             int itemCheckSum = buckets.Sum(b => b.Count());
@@ -111,10 +111,10 @@ namespace SqlBuildManager.Console.Threaded
 
             //Special case... is the number of buckets close to the number of servers? If so, do minumum consolidation
             var gap = Math.Abs((consolidated.Count() + buckets.Count()) - fixedBucketCount);
-            if (gap / Math.Abs(consolidated.Count() + buckets.Count()) < 0.17)
+            if (gap <= 6 && fixedBucketCount / gap > 2)
             {
                 //Combine the smallest buckets until we hit the fixed bucket count
-                while(consolidated.Count() + buckets.Count() > fixedBucketCount)
+                while(buckets.Count() > 0 &&  consolidated.Count() + buckets.Count() > fixedBucketCount)
                 {
                     var nextTwo = buckets.OrderBy(b => b.Count()).Take(2).ToList();
                     var tmp = new List<(string, List<DatabaseOverride>)>();
