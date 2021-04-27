@@ -38,8 +38,41 @@ namespace SqlBuildManager.Console.UnitTest
 
             return (tmpCfg, multiData);
         }
+        internal static (string, MultiDbData) CreateDefinedMultiDbData(int serverCount, int[] dbCount)
+        {
+            if(serverCount != dbCount.Length)
+            {
+                return ("", null);
+            }
+            var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
+            StringBuilder sb = new StringBuilder();
+            for (int s = 0; s < serverCount; s++)
+            {
+                int tmpDbCount = dbCount[s];
+                for (int d = 0; d < tmpDbCount; d++)
+                {
+                    sb.AppendLine($"server{s}:default,database{d}");
+                }
+            }
+            File.WriteAllText(tmpCfg, sb.ToString());
+            MultiDbData multiData;
+            string[] errorMessages;
+            CommandLineArgs cmdLine = new CommandLineArgs()
+            {
+                MultiDbRunConfigFileName = tmpCfg
+            };
+            string message = string.Empty;
 
-        internal static (string, MultiDbData) CreateMultiDbData(int serverCount, int minDbCount, int maxDbCount, out int[] matrix)
+            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
+            if (tmpValReturn != 0)
+            {
+                var msg = new LogMsg() { Message = String.Join(";", errorMessages), LogType = LogType.Error };
+                throw new Exception(String.Join(";", errorMessages));
+            }
+
+            return (tmpCfg, multiData);
+        }
+        internal static (string, MultiDbData) CreateRandomizedMultiDbData(int serverCount, int minDbCount, int maxDbCount, out int[] matrix)
         {
             var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
             Random rnd = new Random();
@@ -92,7 +125,7 @@ namespace SqlBuildManager.Console.UnitTest
                     minDbCount = rnd.Next(10, 201);
                     maxDbCount = rnd.Next(minDbCount+1 , 600);
                     int[] matrix;
-                    (tmpFile, multiData) = CreateMultiDbData(serverCount, minDbCount, maxDbCount,out matrix);
+                    (tmpFile, multiData) = CreateRandomizedMultiDbData(serverCount, minDbCount, maxDbCount,out matrix);
                     
                     var buckets = Concurrency.RecombineServersToFixedBucketCount(multiData, targetBuckets);
                     var flattened = Concurrency.ConcurrencyByServer(multiData);
@@ -122,6 +155,47 @@ namespace SqlBuildManager.Console.UnitTest
             
         }
 
+        [DataRow(26, 27, new int[] { 554, 436, 194, 441, 382, 440, 337, 242, 85, 449, 513, 426, 475, 151, 507, 460, 138, 425, 529, 120, 262, 117, 123, 391, 344, 260, 119 })] //Actual:<23>
+        [DataRow(32, 38, new int[] { 218, 532, 396, 63, 227, 207, 185, 106, 556, 453, 528, 476, 512, 395, 73, 487, 121, 75, 450, 560, 456, 199, 488, 413, 311, 439, 132, 405, 448, 238, 266, 101, 368, 84, 133, 171, 31, 276 })] //Actual:<30>
+        [DataRow(48, 52, new int[] { 155, 365, 406, 341, 92, 116, 294, 268, 495, 239, 260, 250, 214, 101, 190, 212, 319, 277, 137, 316, 199, 428, 198, 353, 166, 408, 239, 45, 71, 458, 231, 140, 129, 117, 451, 211, 168, 320, 378, 448, 337, 161, 149, 99, 178, 198, 43, 151, 131, 211, 407, 361 })] // Actual:<46>.
+        [DataRow(39, 40, new int[] { 475, 159, 167, 155, 263, 279, 342, 258, 255, 303, 433, 473, 356, 352, 188, 405, 395, 467, 431, 474, 162, 411, 427, 208, 458, 370, 295, 419, 135, 130, 455, 273, 440, 247, 233, 252, 406, 346, 445, 417 })] //Actual:<37>
+        [DataRow(34, 37, new int[] { 512, 68, 299, 503, 442, 170, 200, 336, 435, 507, 124, 264, 509, 449, 18, 406, 238, 491, 42, 485, 240, 152, 388, 468, 510, 536, 380, 336, 371, 404, 334, 365, 161, 274, 135, 19, 153 })] //Actual:<31>
+        [DataRow(32, 36, new int[] { 429, 295, 251, 206, 436, 155, 285, 203, 214, 89, 53, 70, 232, 194, 298, 87, 315, 298, 377, 412, 231, 270, 392, 286, 354, 299, 320, 235, 98, 87, 130, 75, 247, 56, 141, 441 })] //Actual:<30>
+        [DataRow(21, 22, new int[] { 259, 68, 318, 114, 406, 462, 159, 322, 233, 288, 382, 151, 397, 294, 76, 347, 337, 282, 398, 444, 207, 128 })] //Actual:<19>
+        [DataTestMethod]
+        public void MatchDefinedServersToFixedBucket(int targetBuckets, int serverCount, int[] dbsPerServer)
+        {
+            string tmpFile = string.Empty;
+            MultiDbData multiData;
+            try
+            {
+                (tmpFile, multiData) = CreateDefinedMultiDbData(serverCount, dbsPerServer);
+
+                var buckets = Concurrency.RecombineServersToFixedBucketCount(multiData, targetBuckets);
+                var flattened = Concurrency.ConcurrencyByServer(multiData);
+                int maxBucket = flattened.Max(c => c.Count());
+                int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2) + 1].Count();
+                var idealBucket = Math.Ceiling((double)flattened.Sum(c => c.Count()) / (double)targetBuckets);
+                string message = $"Buckets: {targetBuckets}; Servers: {serverCount}; Matrix: {string.Join(",", dbsPerServer)}";
+                Assert.AreEqual(targetBuckets, buckets.Count(), message);
+                Assert.IsTrue(buckets.Max(c => c.Count()) <= idealBucket + maxBucket, message);
+
+                var str = Concurrency.ConvertBucketsToConfigLines(buckets);
+
+                if (File.Exists(tmpFile))
+                {
+                    File.Delete(tmpFile);
+                }
+            }
+            finally
+            {
+                if (File.Exists(tmpFile))
+                {
+                    File.Delete(tmpFile);
+                }
+            }
+        }
+
         [TestMethod]
         public void MatchServersToFixedBucket_ToConfigLines()
         {
@@ -142,7 +216,7 @@ namespace SqlBuildManager.Console.UnitTest
                     minDbCount = rnd.Next(10, 201);
                     maxDbCount = rnd.Next(minDbCount + 1, 600);
                     int[] matrix;
-                    (tmpFile, multiData) = CreateMultiDbData(serverCount, minDbCount, maxDbCount, out matrix);
+                    (tmpFile, multiData) = CreateRandomizedMultiDbData(serverCount, minDbCount, maxDbCount, out matrix);
 
                     var buckets = Concurrency.RecombineServersToFixedBucketCount(multiData, targetBuckets);
                     var str = Concurrency.ConvertBucketsToConfigLines(buckets);
@@ -364,5 +438,7 @@ namespace SqlBuildManager.Console.UnitTest
 
 
         }
+
+       
     }
 }

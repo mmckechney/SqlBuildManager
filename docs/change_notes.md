@@ -2,6 +2,10 @@
 # SQL Build Manager Change Notes
 
 
+### Version 13.0.1
+
+- *FIXED:* Updated distribution algorithm for `--concurrencytype` of `Server` and `MaxPerServer` when number of Batch nodes is very close to the number of SQL Server targets. Was yielding less than the number of nodes.  
+
 ### Version 13.0.0
 
 - *ADDED:* New option to leverage Azure Service Bus Topic as a database target source. See the [Azure Batch](azure_batch.md) docs for more detail

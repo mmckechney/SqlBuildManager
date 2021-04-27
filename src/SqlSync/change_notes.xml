@@ -1,5 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="13" Minor="0" Revision="1">
+    <fixed>Updated distribution algorithm for `--concurrencytype` of `Server` and `MaxPerServer` when number of Batch nodes is very close to the number of SQL Server targets. Was yielding less than the number of nodes.  </fixed>
+  </Version>
     <Version Major="13" Minor="0" Revision="0">
       <added>New option to leverage Azure Service Bus Topic as a database target source. See the [Azure Batch](azure_batch.md) docs for more detail</added>
       <added>New command option `--settingsfilekey`, a key for the encryption of sensitive information in the settings file. If provided when saving the settings file, it of course must also be provided when using the settings file. This version moved away from a static (and not really secure) encryption key used prior. The argument value can be either the key string or a file path to a key file. The key may also be 'silently' provided by setting a `sbm-settingsfilekey` Environment variable. If not provided a machine value will be used.</added>
