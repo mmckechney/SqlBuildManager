@@ -40,7 +40,7 @@ namespace SqlBuildManager.Console.UnitTest
         }
         internal static (string, MultiDbData) CreateDefinedMultiDbData(int serverCount, int[] dbCount)
         {
-            if(serverCount != dbCount.Length)
+            if (serverCount != dbCount.Length)
             {
                 return ("", null);
             }
@@ -78,11 +78,11 @@ namespace SqlBuildManager.Console.UnitTest
             Random rnd = new Random();
             StringBuilder sb = new StringBuilder();
             matrix = new int[serverCount];
-            for (int s=0;s< serverCount;s++)
+            for (int s = 0; s < serverCount; s++)
             {
                 var dbCount = rnd.Next(minDbCount, maxDbCount + 1);
                 matrix[s] = dbCount;
-                for(int d = 0;d<dbCount;d++)
+                for (int d = 0; d < dbCount; d++)
                 {
                     sb.AppendLine($"server{s}:default,database{d}");
                 }
@@ -155,14 +155,16 @@ namespace SqlBuildManager.Console.UnitTest
                     }
                 }
             }
-            catch(OutOfMemoryException)
+            catch (OutOfMemoryException)
             {
                 //GitHub actions sometimes will run out of memory running this test!
             }
-            
+
         }
 
-        [DataRow(3, 8, new int[] { 92, 225, 126, 135, 266, 186, 280, 115 })]
+
+       // [DataRow(39, 47, new int[] { 175, 179, 203, 92, 153, 230, 154, 166, 247, 213, 39, 207, 192, 208, 42, 211, 212, 35, 282, 66, 82, 45, 94, 72, 124, 212, 118, 235, 263, 138, 30, 239, 99, 271, 114, 189, 25, 80, 31, 217, 255, 192, 81, 40, 84, 244, 178 })] //Actual:<38>
+        [DataRow( 3,  8, new int[] { 92, 225, 126, 135, 266, 186, 280, 115 })]
         [DataRow(26, 27, new int[] { 554, 436, 194, 441, 382, 440, 337, 242, 85, 449, 513, 426, 475, 151, 507, 460, 138, 425, 529, 120, 262, 117, 123, 391, 344, 260, 119 })] //Actual:<23>
         [DataRow(32, 38, new int[] { 218, 532, 396, 63, 227, 207, 185, 106, 556, 453, 528, 476, 512, 395, 73, 487, 121, 75, 450, 560, 456, 199, 488, 413, 311, 439, 132, 405, 448, 238, 266, 101, 368, 84, 133, 171, 31, 276 })] //Actual:<30>
         [DataRow(48, 52, new int[] { 155, 365, 406, 341, 92, 116, 294, 268, 495, 239, 260, 250, 214, 101, 190, 212, 319, 277, 137, 316, 199, 428, 198, 353, 166, 408, 239, 45, 71, 458, 231, 140, 129, 117, 451, 211, 168, 320, 378, 448, 337, 161, 149, 99, 178, 198, 43, 151, 131, 211, 407, 361 })] // Actual:<46>.

@@ -111,7 +111,7 @@ namespace SqlBuildManager.Console.Threaded
 
             //Special case... is the number of buckets close to the number of servers? If so, do minumum consolidation
             var gap = Math.Abs((consolidated.Count() + buckets.Count()) - fixedBucketCount);
-            if (gap <= 6 && fixedBucketCount / gap > 2)
+            if (gap != 0 && gap <= 6 && fixedBucketCount / gap > 2)
             {
                 //Combine the smallest buckets until we hit the fixed bucket count
                 while(buckets.Count() > 0 &&  consolidated.Count() + buckets.Count() > fixedBucketCount)
