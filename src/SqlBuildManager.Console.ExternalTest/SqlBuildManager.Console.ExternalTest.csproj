@@ -25,6 +25,14 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Content Remove="..\TestConfig\sbm-linux-11.4.0.zip" />
+    <Content Remove="..\TestConfig\sbm-linux-12.1.0.zip" />
+    <Content Remove="..\TestConfig\sbm-linux-12.2.0.zip" />
+    <Content Remove="..\TestConfig\sbm-windows-11.4.0.zip" />
+    <Content Remove="..\TestConfig\sbm-windows-12.1.0.zip" />
+    <Content Remove="..\TestConfig\sbm-windows-12.2.0.zip" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

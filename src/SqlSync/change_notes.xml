@@ -2,6 +2,7 @@
 <SqlBuildManagerChangeNotes>
   <Version Major="13" Minor="0" Revision="1">
     <fixed>Updated distribution algorithm for `--concurrencytype` of `Server` and `MaxPerServer` when number of Batch nodes is very close to the number of SQL Server targets. Was yielding less than the number of nodes.  </fixed>
+    <fixed>Updated Service Bus message retrieval to better manage when messages not matching the job name are in large quantity</fixed>
   </Version>
     <Version Major="13" Minor="0" Revision="0">
       <added>New option to leverage Azure Service Bus Topic as a database target source. See the [Azure Batch](azure_batch.md) docs for more detail</added>

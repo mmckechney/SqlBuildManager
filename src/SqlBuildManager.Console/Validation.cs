@@ -374,8 +374,27 @@ namespace SqlBuildManager.Console
                 returnVal = -888;
             }
 
+            (int ret, string msg) = ValidateBatchjobName(cmdLine.BatchArgs.BatchJobName);
+            if(ret != 0)
+            {
+                messages.Add(msg);
+                returnVal = ret;
+            }
+
             errorMessages = messages.ToArray();
             return returnVal;
+        }
+
+        public static (int, string) ValidateBatchjobName(string batchJobName)
+        {
+            if (!String.IsNullOrEmpty(batchJobName))
+            {
+                if (batchJobName.Length < 3 || batchJobName.Length > 41 || !Regex.IsMatch(batchJobName, @"^[a-z0-9]+(-[a-z0-9]+)*$"))
+                {
+                    return(-888, $"The value for --jobname must be: lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'{Environment.NewLine}\tThis requirement is because the job name is also the storage container name and needs to accomodate a timestamp: https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Containers--Blobs--and-Metadata");
+                }
+            }
+            return (0, "");
         }
 
         public static int ValidateBatchPreStageArguments(ref CommandLineArgs cmdLine, out string[] errorMessages)

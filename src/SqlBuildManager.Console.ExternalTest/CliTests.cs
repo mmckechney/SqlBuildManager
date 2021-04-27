@@ -63,6 +63,7 @@ namespace SqlBuildManager.Console.ExternalTest
         private string linuxSettingsFilePath;
         private string settingsFileKeyPath;
 
+        private string logFile;
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
@@ -77,6 +78,12 @@ namespace SqlBuildManager.Console.ExternalTest
             bool ds;
             (ds, this.cmdLine)= Cryptography.DecryptSensitiveFields(cmdLine);
             this.overrideFileContents = File.ReadAllLines(this.overrideFilePath).ToList();
+
+        }
+        [TestCleanup]
+        public void CleanUp()
+        {
+
         }
 
         #region Helpers
@@ -138,7 +145,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
         private static string GetUniqueBatchJobName()
         {
-            string name = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 6);
+            string name = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().ToLower().Replace("-", "").Substring(0, 6);
             return name;
         }
         #endregion
@@ -669,8 +676,9 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
         [DataTestMethod]
-        public void Batch_Queue_SBMSource_Success(string batchMethod, string settingsFile)
+        public void Batch_Queue_SBMSource_ByServer_Success(string batchMethod, string settingsFile)
         {
+           
             string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
             if (!File.Exists(sbmFileName))
             {
@@ -708,16 +716,101 @@ namespace SqlBuildManager.Console.ExternalTest
             result = val.Result;
 
             Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            //TODO: Get output to examine
-            //Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            //if (batchMethod == "run")
-            //{
-            //    Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
-            //}
-            //if (batchMethod == "runthreaded")
-            //{
-            //    Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
-            //}
+
+        }
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataTestMethod]
+        public void Batch_Queue_SBMSource_MaxPerserver_Success(string batchMethod, string settingsFile)
+        {
+
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+            string jobName = GetUniqueBatchJobName();
+
+            var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override" , this.overrideFilePath,
+                "--concurrencytype",  ConcurrencyType.MaxPerServer.ToString(),
+                "--jobname", jobName};
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            Task<int> val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+
+            args = new string[]{
+            "batch",  batchMethod,
+            "--settingsfile", settingsFile,
+            "--settingsfilekey", this.settingsFileKeyPath,
+            "--override", this.overrideFilePath,
+            "--packagename", sbmFileName,
+            "--concurrencytype", ConcurrencyType.Server.ToString(),
+            "--concurrency", "5",
+            "--jobname", jobName };
+
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+
+        }
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataTestMethod]
+        public void Batch_Queue_SBMSource_Count_Success(string batchMethod, string settingsFile)
+        {
+
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+            string jobName = GetUniqueBatchJobName();
+
+            var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override" , this.overrideFilePath,
+                "--concurrencytype",  ConcurrencyType.Count.ToString(),
+                "--jobname", jobName};
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            Task<int> val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+
+            args = new string[]{
+            "batch",  batchMethod,
+            "--settingsfile", settingsFile,
+            "--settingsfilekey", this.settingsFileKeyPath,
+            "--override", this.overrideFilePath,
+            "--packagename", sbmFileName,
+            "--concurrencytype", ConcurrencyType.Server.ToString(),
+            "--concurrency", "5",
+            "--jobname", jobName };
+
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+
         }
 
 

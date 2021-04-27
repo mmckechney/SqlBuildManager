@@ -529,15 +529,14 @@ namespace SqlBuildManager.Console.Batch
             string jobToken = DateTime.Now.ToString("yyyy-MM-dd-HHmm-ss-fff");
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
             {
-                cmdLine.BatchArgs.BatchJobName = Regex.Replace(cmdLine.BatchArgs.BatchJobName, "[^a-zA-Z0-9]", "");
-                cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.ToLower();
-                if (cmdLine.BatchArgs.BatchJobName.Length > 47)
+                if (cmdLine.BatchArgs.BatchJobName.Length < 3 || cmdLine.BatchArgs.BatchJobName.Length > 41 || !Regex.IsMatch(cmdLine.BatchArgs.BatchJobName, @"^[a-z0-9]+(-[a-z0-9]+)*$"))
                 {
-                    cmdLine.BatchArgs.BatchJobName = cmdLine.BatchArgs.BatchJobName.Substring(0, 47);
+                    throw new ArgumentException("The batch job name must be  lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'");
                 }
-                jobId = cmdLine.BatchArgs.BatchJobName + "-" + jobToken;
+
+                jobId = cmdLine.BatchArgs.BatchJobName;
                 poolId = PoolName;
-                storageContainerName = cmdLine.BatchArgs.BatchJobName;
+                storageContainerName = cmdLine.BatchArgs.BatchJobName + "-" + jobToken; ;
             }
             else
             {

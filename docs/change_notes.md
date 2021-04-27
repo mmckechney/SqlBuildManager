@@ -5,6 +5,7 @@
 ### Version 13.0.1
 
 - *FIXED:* Updated distribution algorithm for `--concurrencytype` of `Server` and `MaxPerServer` when number of Batch nodes is very close to the number of SQL Server targets. Was yielding less than the number of nodes.  
+- *FIXED:* Updated Service Bus message retrieval to better manage when messages not matching the job name are in large quantity
 
 ### Version 13.0.0
 

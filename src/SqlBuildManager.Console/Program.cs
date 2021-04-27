@@ -805,6 +805,12 @@ namespace SqlBuildManager.Console
                 log.LogError("A --servicebusconnection value is required. Please include this in either the settings file content or as a specific command option");
                 return 9839;
             }
+            (int ret, string msg) = Validation.ValidateBatchjobName(cmdLine.BatchArgs.BatchJobName);
+            if(ret != 0)
+            {
+                log.LogError(msg);
+                return ret;
+            }
 
             int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out MultiDbData multiData, out string[] errorMessages);
             if (tmpValReturn != 0)

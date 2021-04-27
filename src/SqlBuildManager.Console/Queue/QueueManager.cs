@@ -178,11 +178,16 @@ namespace SqlBuildManager.Console.Queue
             }
             return lstMsg;
         }
-        private async Task<List<ServiceBusReceivedMessage>> GetSessionBasedTargetsFromQueue(int maxMessages, bool resetSession)
+
+
+        private async Task<List<ServiceBusReceivedMessage>> GetSessionBasedTargetsFromQueue(int maxMessages, bool resetSession, int retry = 0)
         {
             var lstMsg = new List<ServiceBusReceivedMessage>();
+            bool foundMessages = false;
             try
             {
+
+                //Init the receiver and try to acquire a session
                 if (_sessionReceiver == null || resetSession)
                 {
                     log.LogInformation("Attempting to get new queue session for next Server...");
@@ -191,29 +196,69 @@ namespace SqlBuildManager.Console.Queue
                     try
                     {
                         _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock }, token);
-                    }catch(TaskCanceledException)
+                    }
+                    catch(TaskCanceledException)
                     {
-                        return lstMsg;
+                        return lstMsg ;
                     }
                 }
 
                 var messages = await _sessionReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
+
+                //If no messages in the current session, try to acquire a new session
                 if (messages.Count == 0 && resetSession == false)
                 {
                     return await GetSessionBasedTargetsFromQueue(maxMessages, true);
                 }
-                foreach (var message in messages)
+                else
                 {
-                    if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                    foundMessages = true;
+                }
+
+                //Got messages, not try to see if they are a match for the current job, if not, deadletter. Keep looking until some for the current job are found
+                if (foundMessages)
+                {
+                    while (foundMessages || lstMsg.Count() == 0)
                     {
-                        log.LogWarning($"Message {message.MessageId} has incorrect Batch Job name");
-                        await this.MessageReceiver.DeadLetterMessageAsync(message);
-                        log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                        foreach (var message in messages)
+                        {
+                            if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                            {
+                                log.LogWarning($"Message {message.MessageId} has incorrect Batch Job name '{batchJobName}'");
+                                try
+                                {
+                                    await _sessionReceiver.DeadLetterMessageAsync(message);
+                                    log.LogWarning($"Send message '{message.MessageId}' to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                                }
+                                catch (Exception exe)
+                                {
+                                    log.LogWarning($"Failed to deadletter message '{message.MessageId}': {exe.Message}");
+                                }
+                            }
+                            else
+                            {
+                                lstMsg.Add(message);
+                            }
+                        }
+
+                        //if they all got deadlettered, try to get some more, until there are none left!
+                        if(lstMsg.Count == 0)
+                        {
+                            messages = await _sessionReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
+                            if(messages.Count == 0)
+                            {
+                                foundMessages = false;
+                            }
+                        }
+                        else
+                        {
+                            return lstMsg;
+                        }
                     }
-                    else
-                    {
-                        lstMsg.Add(message);
-                    }
+                }
+                else
+                {
+                    return lstMsg;
                 }
             } 
             catch (ServiceBusException sbe)
@@ -228,7 +273,12 @@ namespace SqlBuildManager.Console.Queue
 
                     case ServiceBusFailureReason.MessageLockLost:
                         log.LogError($"Lock lost for message! There may be a issue with the messages in the topic: '{this.topicSessionSubscriptionName}");
-                        break;
+                        if(retry == 5)
+                        {
+                            throw;
+                        }
+                        return await GetSessionBasedTargetsFromQueue(maxMessages, true, retry++);
+
                     default:
                         throw;
                 }
