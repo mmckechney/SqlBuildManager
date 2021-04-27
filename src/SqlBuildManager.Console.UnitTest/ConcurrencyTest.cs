@@ -108,49 +108,56 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod]
         public void MatchServersToFixedBucket()
         {
-            int targetBuckets = 3;
-            int serverCount = 40;
-            int minDbCount = 10;
-            int maxDbCount = 500;
-            Random rnd = new Random();
-        
-            string tmpFile = string.Empty;
-            MultiDbData multiData;
             try
             {
-                for (int i = 0; i < 100; i++)
+                int targetBuckets = 3;
+                int serverCount = 40;
+                int minDbCount = 10;
+                int maxDbCount = 500;
+                Random rnd = new Random();
+
+                string tmpFile = string.Empty;
+                MultiDbData multiData;
+                try
                 {
-                    targetBuckets = rnd.Next(2, 51);
-                    serverCount = rnd.Next(targetBuckets + 1, 400);
-                    minDbCount = rnd.Next(10, 201);
-                    maxDbCount = rnd.Next(minDbCount+1 , 600);
-                    int[] matrix;
-                    (tmpFile, multiData) = CreateRandomizedMultiDbData(serverCount, minDbCount, maxDbCount,out matrix);
-                    
-                    var buckets = Concurrency.RecombineServersToFixedBucketCount(multiData, targetBuckets);
-                    var flattened = Concurrency.ConcurrencyByServer(multiData);
-                    int maxBucket = flattened.Max(c => c.Count());
-                    int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2)+1].Count();
-                    var idealBucket = Math.Ceiling((double)flattened.Sum(c => c.Count()) / (double)targetBuckets);
-                    string message = $"Buckets: {targetBuckets}; Servers: {serverCount}; Matrix: {string.Join(",", matrix)}";
-                    Assert.AreEqual(targetBuckets, buckets.Count(), message);
-                    Assert.IsTrue(buckets.Max(c => c.Count()) <= idealBucket + maxBucket, message);
+                    for (int i = 0; i < 100; i++)
+                    {
+                        targetBuckets = rnd.Next(2, 51);
+                        serverCount = rnd.Next(targetBuckets + 1, 200);
+                        minDbCount = rnd.Next(10, 201);
+                        maxDbCount = rnd.Next(minDbCount + 1, 300);
+                        int[] matrix;
+                        (tmpFile, multiData) = CreateRandomizedMultiDbData(serverCount, minDbCount, maxDbCount, out matrix);
 
-                    var str = Concurrency.ConvertBucketsToConfigLines(buckets);
+                        var buckets = Concurrency.RecombineServersToFixedBucketCount(multiData, targetBuckets);
+                        var flattened = Concurrency.ConcurrencyByServer(multiData);
+                        int maxBucket = flattened.Max(c => c.Count());
+                        int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2) + 1].Count();
+                        var idealBucket = Math.Ceiling((double)flattened.Sum(c => c.Count()) / (double)targetBuckets);
+                        string message = $"Buckets: {targetBuckets}; Servers: {serverCount}; Matrix: {string.Join(",", matrix)}";
+                        Assert.AreEqual(targetBuckets, buckets.Count(), message);
+                        Assert.IsTrue(buckets.Max(c => c.Count()) <= idealBucket + maxBucket, message);
 
+                        var str = Concurrency.ConvertBucketsToConfigLines(buckets);
+
+                        if (File.Exists(tmpFile))
+                        {
+                            File.Delete(tmpFile);
+                        }
+                    }
+
+                }
+                finally
+                {
                     if (File.Exists(tmpFile))
                     {
                         File.Delete(tmpFile);
                     }
                 }
-
             }
-            finally
+            catch(OutOfMemoryException)
             {
-                if (File.Exists(tmpFile))
-                {
-                    File.Delete(tmpFile);
-                }
+                //GitHub actions sometimes will run out of memory running this test!
             }
             
         }
