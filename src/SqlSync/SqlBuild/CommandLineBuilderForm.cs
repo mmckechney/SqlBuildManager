@@ -98,7 +98,7 @@ namespace SqlSync.SqlBuild
         }
         private void btnConstructCommand_Click(object sender, EventArgs e)
         {
-            string exePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "SqlBuildManager.Console.exe");
+            string exePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "sbm.exe");
             StringBuilder sb = new StringBuilder();
 
             sb.Append("\"" + exePath + "\" ");
