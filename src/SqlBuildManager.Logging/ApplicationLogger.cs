@@ -134,7 +134,7 @@ namespace SqlBuildManager.Logging
 			}
 		}
 
-		internal static void CloseAndFlush()
+		public static void CloseAndFlush()
 		{
 			if (serilogLogger != null)
 			{
