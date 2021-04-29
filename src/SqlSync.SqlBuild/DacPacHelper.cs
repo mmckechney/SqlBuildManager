@@ -214,8 +214,8 @@ namespace SqlSync.SqlBuild
             }
             else
             {
-                var endOfLineIndex = cleanedScript.IndexOf("\n", endMatch.Index);
-                cleanedScript = cleanedScript.Substring(endOfLineIndex + 1);
+                var endOfLineIndex = dacPacGeneratedScript.IndexOf(Environment.NewLine, endMatch.Index);
+                cleanedScript = dacPacGeneratedScript.Substring(endOfLineIndex + 1);
                // var lineNumber = dacPacGeneratedScript.Take(endMatch).Count(c => c == '\n') + 1;
 
             }

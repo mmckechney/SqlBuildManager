@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console.Batch
             //if extracting scripts from a platinum copy.. create the DACPAC here
             if(!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource)) //using a platinum database as the source
             {
-                log.LogInformation("$Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
+                log.LogInformation($"Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
                 string dacpacName = Path.Combine(cmdLine.RootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
 
                 if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
@@ -330,7 +330,7 @@ namespace SqlBuildManager.Console.Batch
                 log.LogInformation("All tasks reached state Completed.");
 
                 // Print task output
-                log.LogInformation("Printing task output...\r\n");
+                log.LogInformation("Printing task output...");
 
                 IEnumerable<CloudTask> completedtasks = batchClient.JobOperations.ListTasks(jobId);
 

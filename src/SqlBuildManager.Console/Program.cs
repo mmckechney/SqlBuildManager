@@ -22,10 +22,10 @@ using SqlBuildManager.Console.Queue;
 namespace SqlBuildManager.Console
 {
 
-    class Program
+    public class Program
     {
         private static Microsoft.Extensions.Logging.ILogger log;
-        private static readonly string applicationLogFileName = "SqlBuildManager.Console.log";
+        public static readonly string applicationLogFileName = "SqlBuildManager.Console.log";
 
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
@@ -195,7 +195,7 @@ namespace SqlBuildManager.Console
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
             log.LogDebug("Entering Batch Execution");
-            log.LogInformation("Running...");
+            log.LogInformation("Running Batch Execution...");
             int retVal;
             string readOnlySas;
             (retVal, readOnlySas) = batchExe.StartBatch();
@@ -250,7 +250,7 @@ namespace SqlBuildManager.Console
             Batch.Execution batchExe = new Batch.Execution(cmdLine, cmdLine.QueryFile.FullName, Path.Combine(cmdLine.RootLoggingPath, cmdLine.OutputFile.Name));
 
             log.LogDebug("Entering Batch Query Execution");
-            log.LogInformation("Running...");
+            log.LogInformation("Running Batch Query Execution...");
             int retVal;
             string readOnlySas;
 
@@ -477,7 +477,7 @@ namespace SqlBuildManager.Console
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
             log.LogDebug(cmdLine.ToStringExtension(StringType.BatchQuery));
             log.LogDebug(cmdLine.ToStringExtension(StringType.BatchThreaded));
-            log.LogInformation("Running...");
+            log.LogInformation("Running Threaded Execution...");
             ThreadedExecution runner = new ThreadedExecution(cmdLine);
             int retVal = runner.Execute();
             if (retVal == (int)ExecutionReturn.Successful)
@@ -818,7 +818,7 @@ namespace SqlBuildManager.Console
                 log.LogError(String.Join(";", errorMessages));
                 return tmpValReturn;
             }
-
+            log.LogInformation("Sending database targets to Service Bus");
             var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
             int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
             if(messages > 0)

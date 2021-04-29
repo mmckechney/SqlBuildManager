@@ -122,21 +122,26 @@ namespace SqlBuildManager.Console.UnitTest
                 {
                     for (int i = 0; i < 100; i++)
                     {
-                        targetBuckets = rnd.Next(2, 51);
-                        serverCount = rnd.Next(targetBuckets + 1, 200);
-                        minDbCount = rnd.Next(10, 201);
-                        maxDbCount = rnd.Next(minDbCount + 1, 300);
+                        targetBuckets = rnd.Next(2, 90);
+                        serverCount = rnd.Next(targetBuckets + 1, 300);
+                        minDbCount = rnd.Next(10, 150);
+                        maxDbCount = rnd.Next(minDbCount + 1, 500);
                         int[] matrix;
                         (tmpFile, multiData) = CreateRandomizedMultiDbData(serverCount, minDbCount, maxDbCount, out matrix);
 
+                        //The real work 
                         var buckets = Concurrency.RecombineServersToFixedBucketCount(multiData, targetBuckets);
+
+                        //Numbers for comparisons
                         var flattened = Concurrency.ConcurrencyByServer(multiData);
-                        int maxBucket = flattened.Max(c => c.Count());
-                        int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2) + 1].Count();
                         var idealBucket = Math.Ceiling((double)flattened.Sum(c => c.Count()) / (double)targetBuckets);
+                        int maxBucket = flattened.Where(c => c.Count() <= idealBucket).Max(c => c.Count()); //exclude the buckets that were already above the ideal
+                        int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2) + 1].Count();
+
                         string message = $"Buckets: {targetBuckets}; Servers: {serverCount}; Matrix: {string.Join(",", matrix)}";
                         Assert.AreEqual(targetBuckets, buckets.Count(), message);
-                        Assert.IsTrue(buckets.Max(c => c.Count()) <= idealBucket + maxBucket, message);
+                        Assert.IsTrue(buckets.Max(c => c.Count()) < maxBucket + (idealBucket * 1.2), message);
+
 
                         var str = Concurrency.ConvertBucketsToConfigLines(buckets);
 
@@ -161,9 +166,9 @@ namespace SqlBuildManager.Console.UnitTest
             }
 
         }
-
-
-       // [DataRow(39, 47, new int[] { 175, 179, 203, 92, 153, 230, 154, 166, 247, 213, 39, 207, 192, 208, 42, 211, 212, 35, 282, 66, 82, 45, 94, 72, 124, 212, 118, 235, 263, 138, 30, 239, 99, 271, 114, 189, 25, 80, 31, 217, 255, 192, 81, 40, 84, 244, 178 })] //Actual:<38>
+        [DataRow(88,91,  new int[] { 170, 26, 159, 252, 249, 268, 225, 253, 255, 151, 37, 235, 179, 259, 189, 88, 130, 58, 115, 85, 266, 65, 204, 27, 103, 72, 90, 258, 170, 163, 217, 196, 267, 137, 282, 171, 244, 280, 199, 190, 114, 238, 175, 178, 268, 258, 131, 220, 101, 187, 263, 58, 27, 78, 108, 131, 110, 158, 174, 203, 203, 256, 108, 118, 223, 130, 257, 67, 265, 43, 132, 138, 147, 213, 259, 54, 178, 52, 47, 133, 229, 159, 182, 272, 188, 184, 194, 215, 55, 177, 87 } )] //Actual 86
+        [DataRow(80, 81, new int[] { 185, 159, 72, 186, 41, 39, 101, 74, 75, 177, 27, 151, 243, 22, 48, 64, 141, 123, 102, 24, 38, 166, 19, 57, 26, 148, 23, 56, 97, 171, 138, 49, 29, 240, 84, 246, 58, 243, 151, 45, 170, 125, 174, 251, 225, 219, 199, 116, 135, 60, 248, 245, 79, 186, 93, 29, 150, 25, 169, 156, 26, 55, 240, 167, 49, 242, 132, 13, 201, 65, 16, 162, 235, 66, 117, 176, 256, 31, 95, 71, 213 })]
+        [DataRow(39, 47, new int[] { 175, 179, 203, 92, 153, 230, 154, 166, 247, 213, 39, 207, 192, 208, 42, 211, 212, 35, 282, 66, 82, 45, 94, 72, 124, 212, 118, 235, 263, 138, 30, 239, 99, 271, 114, 189, 25, 80, 31, 217, 255, 192, 81, 40, 84, 244, 178 })] //Actual:<38>
         [DataRow( 3,  8, new int[] { 92, 225, 126, 135, 266, 186, 280, 115 })]
         [DataRow(26, 27, new int[] { 554, 436, 194, 441, 382, 440, 337, 242, 85, 449, 513, 426, 475, 151, 507, 460, 138, 425, 529, 120, 262, 117, 123, 391, 344, 260, 119 })] //Actual:<23>
         [DataRow(32, 38, new int[] { 218, 532, 396, 63, 227, 207, 185, 106, 556, 453, 528, 476, 512, 395, 73, 487, 121, 75, 450, 560, 456, 199, 488, 413, 311, 439, 132, 405, 448, 238, 266, 101, 368, 84, 133, 171, 31, 276 })] //Actual:<30>
@@ -181,14 +186,19 @@ namespace SqlBuildManager.Console.UnitTest
             {
                 (tmpFile, multiData) = CreateDefinedMultiDbData(serverCount, dbsPerServer);
 
+                //The real work
                 var buckets = Concurrency.RecombineServersToFixedBucketCount(multiData, targetBuckets);
+
+                //Numbers for comparisons
                 var flattened = Concurrency.ConcurrencyByServer(multiData);
-                int maxBucket = flattened.Max(c => c.Count());
-                int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2) + 1].Count();
                 var idealBucket = Math.Ceiling((double)flattened.Sum(c => c.Count()) / (double)targetBuckets);
+                int maxBucket = flattened.Where(c => c.Count() <= idealBucket).Max(c => c.Count()); //exclude the buckets that were already above the ideal
+                int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2) + 1].Count();
+                
                 string message = $"Buckets: {targetBuckets}; Servers: {serverCount}; Matrix: {string.Join(",", dbsPerServer)}";
                 Assert.AreEqual(targetBuckets, buckets.Count(), message);
-                Assert.IsTrue(buckets.Max(c => c.Count()) <= idealBucket + maxBucket, message);
+                Assert.IsTrue(buckets.Max(c => c.Count()) < maxBucket + idealBucket + (idealBucket * 1.2), message);
+  
 
                 var str = Concurrency.ConvertBucketsToConfigLines(buckets);
 

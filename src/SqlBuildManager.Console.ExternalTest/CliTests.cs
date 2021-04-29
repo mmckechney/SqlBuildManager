@@ -18,43 +18,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class CliTests
     {
-        private System.Diagnostics.Process prc;
-        private string output { get; set; }
-        private string error { get; set; }
-        private void StdOutReader()
-        {
-            try
-            {
-                this.output = "";
-                string stdOutput = this.prc.StandardOutput.ReadToEnd();
-                lock (this)
-                {
-                    this.output = stdOutput;
-                }
-            }
-            catch (Exception e)
-            {
-                this.output += e.ToString();
-            }
-        }
-        private void StdErrorReader()
-        {
-            try
-            {
-                this.error = "";
-                string stdError = this.prc.StandardError.ReadToEnd();
-                lock (this)
-                {
-                    this.error = stdError;
-                }
-            }
-            catch (Exception e)
-            {
-                this.error += e.ToString();
-            }
-        }
-        private DateTime startTime;
-        private DateTime endTime;
+ 
         private CommandLineArgs cmdLine;
         private List<string> overrideFileContents;
 
@@ -76,7 +40,7 @@ namespace SqlBuildManager.Console.ExternalTest
             this.cmdLine.SettingsFile = this.settingsFilePath;
             this.cmdLine.SettingsFileKey = this.settingsFileKeyPath;
             bool ds;
-            (ds, this.cmdLine)= Cryptography.DecryptSensitiveFields(cmdLine);
+            (ds, this.cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             this.overrideFileContents = File.ReadAllLines(this.overrideFilePath).ToList();
 
         }
@@ -87,53 +51,29 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
         #region Helpers
-        public int ExecuteProcess(List<string> args)
+
+        string StandardExecutionErrorMessage(string logContents)
         {
-            string arguments = string.Join(" ", args.Select(a => a).ToArray());
-
-            this.startTime = DateTime.Now;
-            this.prc = new System.Diagnostics.Process();
-            this.prc.StartInfo.FileName = "sbm.exe";
-            this.prc.StartInfo.Arguments = arguments;
-            this.prc.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            this.prc.StartInfo.CreateNoWindow = true;
-            this.prc.StartInfo.UseShellExecute = false;
-            this.prc.StartInfo.RedirectStandardOutput = true;
-            this.prc.StartInfo.RedirectStandardError = true;
-            prc.Start();
-            Thread THRoutput = new Thread(new ThreadStart(StdOutReader));
-            Thread THRerror = new Thread(new ThreadStart(StdErrorReader));
-            THRoutput.Name = "StdOutReader";
-            THRerror.Name = "StdErrorReader";
-            THRoutput.Start();
-            THRerror.Start();
-
-            this.prc.WaitForExit();
-#pragma warning disable SYSLIB0006
-            if (!THRoutput.Join(new TimeSpan(0, 3, 0))) THRoutput.Abort();
-            if (!THRerror.Join(new TimeSpan(0, 3, 0))) THRerror.Abort();
-#pragma warning restore SYSLIB0006
-            this.endTime = DateTime.Now;
-
-            return this.prc.ExitCode;
-
-        }
-        string StandardExecutionErrorMessage()
-        {
-            return this.error + System.Environment.NewLine + this.output + System.Environment.NewLine + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
+            return logContents + System.Environment.NewLine + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
         }
         private string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
         {
             string fullname = Path.GetFullPath($"TestConfig/{database}.dacpac");
-            List<string> args = new List<string>();
-            args.Add("dacpac");
-            args.Add($"--username {cmdLine.AuthenticationArgs.UserName}");
-            args.Add($"--password {cmdLine.AuthenticationArgs.Password}");
-            args.Add($"--dacpacname {fullname}");
-            args.Add($"--database {database}");
-            args.Add($"--server {server}");
 
-            if (ExecuteProcess(args) == 0)
+            var args = new string[]{
+                "dacpac",
+                "--username", cmdLine.AuthenticationArgs.UserName,
+                "--password", cmdLine.AuthenticationArgs.Password,
+                "--dacpacname", fullname,
+                "--database", database,
+                "--server", server };
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            if (result == 0)
             {
                 return fullname;
             }
@@ -148,6 +88,43 @@ namespace SqlBuildManager.Console.ExternalTest
             string name = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().ToLower().Replace("-", "").Substring(0, 6);
             return name;
         }
+        public static IEnumerable<string> ReadLines(string path)
+        {
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
+            using (var sr = new StreamReader(fs, Encoding.UTF8))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    yield return line;
+                }
+            }
+        }
+        public static string LogFileName
+        {
+            get
+            {
+                return Path.GetFileNameWithoutExtension(SqlBuildManager.Console.Program.applicationLogFileName) + DateTime.Now.ToString("yyyyMMdd") + Path.GetExtension(SqlBuildManager.Console.Program.applicationLogFileName);
+            }
+        }
+        public static int LogFileCurrentLineCount()
+        {
+            string logFile = Path.Combine(@"C:\temp", LogFileName);
+            int startingLines = 0;
+            if (File.Exists(logFile))
+            {
+                startingLines = ReadLines(logFile).Count() -1;
+            }
+
+            return startingLines;
+        }
+        public string ReleventLogFileContents(int startingLine)
+        {
+
+            string logFile = Path.Combine(@"C:\temp", LogFileName);
+           return string.Join(Environment.NewLine, ReadLines(logFile).Skip(startingLine).ToArray());
+        }
+ 
         #endregion
 
         [TestMethod]
@@ -158,20 +135,28 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            List<string> args = new List<string>();
-            args.Add("threaded run");
-            args.Add($"--override {this.overrideFilePath}");
-            args.Add($"--packagename {sbmFileName}");
-            args.Add($"--username {this.cmdLine.AuthenticationArgs.UserName}");
-            args.Add($"--password {this.cmdLine.AuthenticationArgs.Password}");
-            args.Add($"--rootloggingpath {this.cmdLine.RootLoggingPath}");
+            var args = new string[]{
+                "threaded",  "run",
+                "--override", this.overrideFilePath,
+                "--packagename", sbmFileName,
+               "--username", this.cmdLine.AuthenticationArgs.UserName,
+                "--password", this.cmdLine.AuthenticationArgs.Password,
+                 "--rootloggingpath", this.cmdLine.RootLoggingPath                
+                };
 
-            var result = ExecuteProcess(args);
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
         }
 
         [TestMethod]
@@ -183,23 +168,29 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
 
-            List<string> args = new List<string>();
-            args.Add("build");
-            args.Add($"--override \"{this.overrideFileContents[0].Split(":")[1]}\"");
-            args.Add($"--packagename {sbmFileName}");
-            args.Add($"--username {this.cmdLine.AuthenticationArgs.UserName}");
-            args.Add($"--password {this.cmdLine.AuthenticationArgs.Password}");
-            args.Add($"--rootloggingpath {this.cmdLine.RootLoggingPath}");
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            args.Add($"--server  {this.overrideFileContents[0].Split(":")[0]}");
+            var args = new string[]{
+                "build",
+            "--override", this.overrideFileContents[0].Split(":")[1],
+            "--packagename", sbmFileName,
+            "--username", this.cmdLine.AuthenticationArgs.UserName,
+            "--password", this.cmdLine.AuthenticationArgs.Password,
+            "--rootloggingpath", this.cmdLine.RootLoggingPath,
+            "--server", this.overrideFileContents[0].Split(":")[0] };
 
-            
 
-            var result = ExecuteProcess(args);
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(this.output.Contains("Total number of targets: 1"), "Should have run against a single database");
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            Assert.IsTrue(logFileContents.Contains("Total number of targets: 1"), "Should have run against a single database");
         }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
@@ -214,26 +205,34 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
 
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {settingsFile}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {this.overrideFilePath}");
-            args.Add($"--packagename {sbmFileName}");
+            settingsFile = Path.GetFullPath(settingsFile);
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", this.overrideFilePath,
+                "--packagename", sbmFileName};
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
 
 
-
-            var result = ExecuteProcess(args);
-
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
             {
-                Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+                Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
             }
             if (batchMethod == "runthreaded")
             {
-                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
             }
         }
         [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
@@ -248,28 +247,36 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
 
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {this.overrideFilePath}");
-            args.Add($"--packagename {sbmFileName}");
-            args.Add($"--concurrency 2");
-            args.Add($"--concurrencytype Server");
+            settingsFile = Path.GetFullPath(settingsFile);
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", this.overrideFilePath,
+               "--packagename", sbmFileName,
+                "--concurrency", "2",
+                "--concurrencytype","Server" };
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
 
 
-
-            var result = ExecuteProcess(args);
-
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
             {
-                Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+                Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
             }
             if (batchMethod == "runthreaded")
             {
-                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
             }
         }
         [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
@@ -284,28 +291,36 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
 
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {this.overrideFilePath}");
-            args.Add($"--packagename {sbmFileName}");
-            args.Add($"--concurrency 2");
-            args.Add($"--concurrencytype MaxPerServer");
+            settingsFile = Path.GetFullPath(settingsFile);
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", this.overrideFilePath,
+               "--packagename", sbmFileName,
+                "--concurrency", "2",
+                "--concurrencytype","MaxPerServer" };
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
 
 
-
-            var result = ExecuteProcess(args);
-
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
             {
-                Assert.IsTrue(this.output.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+                Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
             }
             if (batchMethod == "runthreaded")
             {
-                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
             }
         }
 
@@ -315,17 +330,26 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void Batch_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
         {
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {this.overrideFilePath}");
+            settingsFile = Path.GetFullPath(settingsFile);
 
-            var result = ExecuteProcess(args);
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            Assert.AreEqual(-101, result, this.error);
-            Assert.IsTrue(this.output.Contains("Completed with Errors"), "This test was supposed to have errors in the run");
-            Assert.IsTrue(this.output.Contains("Invalid command line set") && this.output.ToLower().Contains("packagename"), "This test should report a missing commandline");
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", this.overrideFilePath };
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            Assert.AreEqual(-101, result);
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.IsTrue(logFileContents.Contains("Completed with Errors"), "This test was supposed to have errors in the run");
+            Assert.IsTrue(logFileContents.Contains("Invalid command line set") && logFileContents.ToLower().Contains("packagename"), "This test should report a missing commandline");
         }
         
 
@@ -333,7 +357,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedAndBatch_PlatinumDbSource_Success(string batchMethod, string settingsFile)
+        public void LocalThreadedAndBatch_PlatinumDbSource_Succes(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -344,21 +368,31 @@ namespace SqlBuildManager.Console.ExternalTest
             File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
 
             DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {minusFirst}");
-            args.Add($"--platinumdbsource {database}");
-            args.Add($"--platinumserversource {server}");
+            settingsFile = Path.GetFullPath(settingsFile);
 
-            var result = ExecuteProcess(args);
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", minusFirst,
+                "--platinumdbsource", database,
+                "--platinumserversource", server };
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "runthreaded")
             {
-                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
             }
         }
 
@@ -381,28 +415,37 @@ namespace SqlBuildManager.Console.ExternalTest
             File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
 
             DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, secondOverride });
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {minusFirst}");
-            args.Add($"--platinumdbsource {database}");
-            args.Add($"--platinumserversource {server}");
 
-            var result = ExecuteProcess(args);
+            settingsFile = Path.GetFullPath(settingsFile);
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(this.output.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
-            
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", minusFirst,
+                "--platinumdbsource", database,
+                "--platinumserversource", server };
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
+
             if (batchMethod == "runthreaded")
             {
-                Assert.IsTrue(this.output.Contains($"{database2}: Dacpac Databases In Sync"), "The second database should already be in sync with the first");
-                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+                Assert.IsTrue(logFileContents.Contains($"{database2}:Dacpac Databases In Sync"), "The second database should already be in sync with the first");
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
             }
 
         }
-
         [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
@@ -422,23 +465,35 @@ namespace SqlBuildManager.Console.ExternalTest
             File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
 
             DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, thirdDbOverride });
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {minusFirst}");
-            args.Add($"--platinumdbsource {database}");
-            args.Add($"--platinumserversource {server}");
 
-            var result = ExecuteProcess(args);
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
+
+            settingsFile = Path.GetFullPath(settingsFile);
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", minusFirst,
+                "--platinumdbsource", database,
+                "--platinumserversource", server };
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "runthreaded")
             {
-                Assert.IsTrue(this.output.Contains($"Generating publish script for database '{database3}'."), "Should create a custom DACPAC for this database since the update would have failed b/c they are in sync.");
-                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
-                Assert.IsTrue(this.output.Contains($"{database3}: Dacpac Databases In Sync"), "The third database should already be in sync with the first");
+                
+               Assert.IsTrue(logFileContents.Contains($"Custom dacpac required for {server3} : {database3}. Generating file"), "Should create a custom DACPAC for this database since the update would have failed b/c they are in sync.");
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+                Assert.IsTrue(logFileContents.Contains($"{database3}:Dacpac Databases In Sync"), "The third database should already be in sync with the first");
             }
 
 
@@ -461,23 +516,33 @@ namespace SqlBuildManager.Console.ExternalTest
             DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
 
             string dacpacName = CreateDacpac(this.cmdLine, server, database);
-            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test\r\n{StandardExecutionErrorMessage()}");
+            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
 
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}"); 
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {minusFirst}");
-            args.Add($"--platinumdacpac {dacpacName}");
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            var result = ExecuteProcess(args);
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(this.output.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
+            settingsFile = Path.GetFullPath(settingsFile);
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", minusFirst,
+                "--platinumdacpac", dacpacName };
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            ;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
             if (batchMethod == "runthreaded")
             {
-                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
             }
 
         }
@@ -503,25 +568,35 @@ namespace SqlBuildManager.Console.ExternalTest
             DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, secondOverride });
 
             string dacpacName = CreateDacpac(this.cmdLine, server, database);
-            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test\r\n{StandardExecutionErrorMessage()}");
+            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
 
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}"); 
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {minusFirst}");
-            args.Add($"--platinumdacpac {dacpacName}");
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            var result = ExecuteProcess(args);
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(this.output.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
+            settingsFile = Path.GetFullPath(settingsFile);
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", minusFirst,
+                "--platinumdacpac", dacpacName };
+
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            ;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
             
             if (batchMethod == "runthreaded")
             {
-                Assert.IsTrue(this.output.Contains($"{database2}: Dacpac Databases In Sync"), "The second database should already be in sync with the first");
-                Assert.IsTrue(this.output.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+                Assert.IsTrue(logFileContents.Contains($"{database2}:Dacpac Databases In Sync"), "The second database should already be in sync with the first");
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
             }
 
         }
@@ -543,26 +618,35 @@ namespace SqlBuildManager.Console.ExternalTest
                     File.WriteAllText(selectquery, Properties.Resources.selectquery);
                 }
 
-                List<string> args = new List<string>();
-                args.Add($"batch {batchMethod}");
-                args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-                args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-                args.Add($"--override {overrideFile}");
-                args.Add($"--outputfile {outputFile}");
-                args.Add($"--queryfile {selectquery}");
-                args.Add($"--silent");
+                //get the size of the log file before we start
+                int startingLine = LogFileCurrentLineCount();
 
-                var result = ExecuteProcess(args);
+                settingsFile = Path.GetFullPath(settingsFile);
+                var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", overrideFile,
+                "--outputfile", outputFile,
+                "--queryfile", selectquery,
+                "--silent"};
 
-                Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+                RootCommand rootCommand = CommandLineConfig.SetUp();
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                var result = val.Result;
+                ;
+
+                var logFileContents = ReleventLogFileContents(startingLine);
+                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
                 switch (batchMethod)
                 {
                     case "querythreaded":
-                        Assert.IsTrue(this.output.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                        Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
                         break;
 
                     case "query":
-                        Assert.IsTrue(this.output.Contains("Output file copied locally to"), "Should have copied output file locally");
+                        Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                         break;
                 }
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
@@ -597,19 +681,28 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllText(insertquery, Properties.Resources.insertquery);
             }
 
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {overrideFile}");
-            args.Add($"--outputfile {outputFile}");
-            args.Add($"--queryfile {insertquery}");
-            args.Add($"--silent");
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            var result = ExecuteProcess(args);
+            settingsFile = Path.GetFullPath(settingsFile);
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", overrideFile,
+                "--outputfile", outputFile,
+                "--queryfile", insertquery,
+                "--silent"};
 
-            Assert.AreEqual(5, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An INSERT statement should have been found");
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            ;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An INSERT statement should have been found");
         }
 
         [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
@@ -627,19 +720,28 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllText(deletequery, Properties.Resources.deletequery);
             }
 
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {Path.GetFullPath(settingsFile)}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {overrideFile}");
-            args.Add($"--outputfile {outputFile}");
-            args.Add($"--queryfile {deletequery}");
-            args.Add($"--silent");
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            var result = ExecuteProcess(args);
+            settingsFile = Path.GetFullPath(settingsFile);
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", overrideFile,
+                "--outputfile", outputFile,
+                "--queryfile", deletequery,
+                "--silent"};
 
-            Assert.AreEqual(5, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("An INSERT, UPDATE or DELETE keyword was found"), "A DELETE statement should have been found");
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            
+            SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "A DELETE statement should have been found");
         }
 
         [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
@@ -656,20 +758,28 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 File.WriteAllText(updatequery, Properties.Resources.updatequery);
             }
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
 
-            List<string> args = new List<string>();
-            args.Add($"batch {batchMethod}");
-            args.Add($"--settingsfile {settingsFile}");
-            args.Add($"--settingsfilekey {this.settingsFileKeyPath}");
-            args.Add($"--override {overrideFile}");
-            args.Add($"--outputfile {outputFile}");
-            args.Add($"--queryfile {updatequery}");
-            args.Add($"--silent");
+            settingsFile = Path.GetFullPath(settingsFile);
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", overrideFile,
+                "--outputfile", outputFile,
+                "--queryfile", updatequery,
+                "--silent"};
 
-            var result = ExecuteProcess(args);
+            RootCommand rootCommand = CommandLineConfig.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            ;
 
-            Assert.AreEqual(5, result, StandardExecutionErrorMessage());
-            Assert.IsTrue(this.output.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An UPDATE statement should have been found");
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
+            //Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An UPDATE statement should have been found");
         }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
@@ -686,6 +796,8 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             string jobName = GetUniqueBatchJobName();
 
+            int startingLine = LogFileCurrentLineCount();
+
             var args = new string[]{ 
                 "batch", "enqueue",
                 "--settingsfile", settingsFile,
@@ -699,7 +811,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
             "batch",  batchMethod,
@@ -715,8 +828,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
-
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
@@ -732,7 +845,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
             string jobName = GetUniqueBatchJobName();
-
+            int startingLine = LogFileCurrentLineCount();
             var args = new string[]{
                 "batch", "enqueue",
                 "--settingsfile", settingsFile,
@@ -746,7 +859,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
             "batch",  batchMethod,
@@ -762,7 +876,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
         }
 
@@ -779,7 +894,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
             string jobName = GetUniqueBatchJobName();
-
+            int startingLine = LogFileCurrentLineCount();
             var args = new string[]{
                 "batch", "enqueue",
                 "--settingsfile", settingsFile,
@@ -793,7 +908,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
             "batch",  batchMethod,
@@ -809,7 +925,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
         }
 
@@ -825,11 +942,13 @@ namespace SqlBuildManager.Console.ExternalTest
             string firstOverride = this.overrideFileContents.First();
             (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
 
+            DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
+
             string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
             File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
 
             string jobName = GetUniqueBatchJobName();
-
+            int startingLine = LogFileCurrentLineCount();
             var args = new string[]{
                 "batch", "enqueue",
                 "--settingsfile", settingsFile,
@@ -843,7 +962,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
                 "batch",  batchMethod,
@@ -860,7 +980,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
@@ -881,9 +1002,10 @@ namespace SqlBuildManager.Console.ExternalTest
             DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
 
             string dacpacName = CreateDacpac(this.cmdLine, server, database);
-            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test\r\n{StandardExecutionErrorMessage()}");
+            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
 
            string jobName = GetUniqueBatchJobName();
+           int startingLine = LogFileCurrentLineCount();
 
             var args = new string[]{
                 "batch", "enqueue",
@@ -898,7 +1020,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
                 "batch",  batchMethod,
@@ -914,7 +1037,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage());
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
 

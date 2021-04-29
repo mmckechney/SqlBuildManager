@@ -44,6 +44,7 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.2.0-dev-00266" />
+    <PackageReference Include="Serilog.Sinks.Async" Version="1.4.0" />
     <PackageReference Include="Serilog.Sinks.AzureEventHub" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
@@ -51,7 +52,7 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
     <PackageReference Include="System.DirectoryServices" Version="5.0.0" />
     <PackageReference Include="Microsoft.Azure.Batch" Version="14.0.0" />
-    <PackageReference Include="Microsoft.Azure.EventHubs" Version="4.3.1" />
+    <PackageReference Include="Microsoft.Azure.EventHubs" Version="4.3.2" />
     <PackageReference Include="Microsoft.Azure.KeyVault.Core" Version="3.0.5" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.1" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
@@ -61,7 +62,7 @@
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="3.0.3" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="4.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.8.2" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.8.3" />
   </ItemGroup>
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

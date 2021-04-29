@@ -463,7 +463,7 @@ namespace SqlBuildManager.Console
             var query = File.ReadAllText(cmdLine.QueryFile.FullName);
             if (noNo.Match(query).Success)
             {
-                log.LogError($"{Environment.NewLine}An INSERT, UPDATE or DELETE keyword was found. You can not use the query function to modify data.{Environment.NewLine}Instead, please run your data modification script as a SQL Build Package or DACPAC update");
+                log.LogError($"An INSERT, UPDATE or DELETE keyword was found. You can not use the query function to modify data. Instead, please run your data modification script as a SQL Build Package or DACPAC update");
                 return 5;
             }
             if (!File.Exists(cmdLine.MultiDbRunConfigFileName))

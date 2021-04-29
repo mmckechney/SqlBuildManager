@@ -93,7 +93,7 @@ namespace SqlBuildManager.Console.Threaded
 
         public static List<IEnumerable<(string, List<DatabaseOverride>)>> RecombineServersToFixedBucketCount(MultiDbData multiData, int fixedBucketCount)
         {
-             List<IEnumerable<(string, List<DatabaseOverride>)>> consolidated = new List<IEnumerable<(string, List<DatabaseOverride>)>>();
+            List<IEnumerable<(string, List<DatabaseOverride>)>> consolidated = new List<IEnumerable<(string, List<DatabaseOverride>)>>();
             //Get a bucket per server
             var buckets = ConcurrencyByServer(multiData);
             int itemCheckSum = buckets.Sum(b => b.Count());
@@ -103,84 +103,98 @@ namespace SqlBuildManager.Console.Threaded
 
             //Get any that are already over the ideal size
             var over = buckets.Where(b => b.Count() >= idealBucketSize);
-            if(over.Count() > 0)
+            if (over.Count() > 0)
             {
                 consolidated.AddRange(over);
                 over.ToList().ForEach(o => buckets.Remove(o));
             }
 
-            //Special case... is the number of buckets close to the number of servers? If so, do minumum consolidation
-            var gap = Math.Abs((consolidated.Count() + buckets.Count()) - fixedBucketCount);
-            if (gap != 0 && gap <= 6 && fixedBucketCount / gap > 2)
+            //If we have taken some oversize items out, we need to re-calc the ideal bucket size for the remaining buckets
+            idealBucketSize = Math.Ceiling((double)buckets.Sum(b => b.Count()) / ((double)fixedBucketCount - consolidated.Count()));
+
+
+            //Start creating -- fill as best to start, but not exceeding the ideal size and equalling the bucket count
+            while (buckets.Count() > 0)
             {
-                //Combine the smallest buckets until we hit the fixed bucket count
-                while(buckets.Count() > 0 &&  consolidated.Count() + buckets.Count() > fixedBucketCount)
-                {
-                    var nextTwo = buckets.OrderBy(b => b.Count()).Take(2).ToList();
-                    var tmp = new List<(string, List<DatabaseOverride>)>();
-                    nextTwo.ForEach(n => tmp.AddRange(n));
-                    consolidated.Add(tmp);
-                    nextTwo.ForEach(o => buckets.Remove(o));
-                }
 
-                //now just add the remaining buckets to the consolidated collection
-                buckets.ForEach(b => consolidated.Add(b));
-                buckets.Clear();
-            }
-            else
-            {
-                //Start creating -- fill as best to start, but not exceeding the ideal size and equalling the bucket cound
-                while (buckets.Count() > 0)
+                int bucketSum = 0;
+                //get the next group -- note this will actually return a collection that is just over the ideal size
+                var nextSet = buckets.OrderByDescending(b => b.Count()).TakeWhile(p =>
                 {
-                    int bucketSum = 0;
-                    var nextSet = buckets.OrderByDescending(b => b.Count()).TakeWhile(p =>
+                    bool exceeded = bucketSum > idealBucketSize;
+                    bucketSum += p.Count();
+                    return !exceeded;
+                });
+
+                var nextTmp = nextSet.ToList();
+                if (nextTmp.Count() > 0)
+                {
+                    //trim the next group so that it's not too large
+                    while (nextTmp.Sum(n => n.Count()) > idealBucketSize && nextTmp.Count() > 1)
                     {
-                        bool exceeded = bucketSum > idealBucketSize;
-                        bucketSum += p.Count();
-                        return !exceeded;
-                    });
-                    var nextTmp = nextSet.ToList();
-                    if (nextTmp.Count() > 0)
-                    {
-                        while (nextTmp.Sum(n => n.Count()) > idealBucketSize)
-                        {
-                            nextTmp.RemoveAt(nextTmp.Count() - 1);
-                        }
-                        var tmp = new List<(string, List<DatabaseOverride>)>();
-                        foreach (var n in nextTmp)
-                        {
-                            tmp.AddRange(n);
-                        }
-                        nextTmp.ForEach(o => buckets.Remove(o));
-                        consolidated.Add(tmp);
+                        nextTmp.RemoveAt(nextTmp.Count() - 1);
                     }
-                    if (consolidated.Count() == fixedBucketCount)
-                    {
-                        break;
-                    }
-                }
 
-                //Capture any left over buckets
-                if (buckets.Count() > 0)
-                {
-                    consolidated = consolidated.OrderBy(c => c.Count()).ToList();
-                    while (buckets.Count() > 0)
+                    //If doing this combining would put us under the number of buckets needed, then add individual buckets to the desired count and let the clean up take care of the rest.
+                    if(consolidated.Count + buckets.Count - nextTmp.Count < fixedBucketCount)
                     {
-                        for (int i = 0; i < consolidated.Count(); i++)
-
+                        while(consolidated.Count() < fixedBucketCount && buckets.Count != 0)
                         {
-                            if (buckets.Count() == 0) break;
-                            var t = consolidated[i].ToList();
-                            t.AddRange(buckets.First());
-                            consolidated[i] = t;
+                            consolidated.Add(buckets.First());
                             buckets.RemoveAt(0);
                         }
+                        break;
+                    }
+                    //Combine the set into a single entry
+                    var tmp = new List<(string, List<DatabaseOverride>)>();
+                    foreach (var n in nextTmp)
+                    {
+                        tmp.AddRange(n);
+                    }
+                    //Remove those selected items from the original set of buckets
+                    nextTmp.ForEach(o => buckets.Remove(o));
+
+                    //Add the combined set into the consolidated list
+                    consolidated.Add(tmp);
+
+                    //if any further grouping will result in too few buckets, then add the remaining buckets individually
+                    if(consolidated.Count() + buckets.Count() == fixedBucketCount && buckets.Count() > 0)
+                    {
+                        buckets.ForEach(b => consolidated.Add(b));
+                        buckets.Clear();
+                        break;
+                    }
+
+
+                }
+                //did we hit the max number of buckets? if so, break out. We'll deal with any left overs next
+                if (consolidated.Count() == fixedBucketCount)
+                {
+                    break;
+                }
+            }
+
+            //Capture any left over buckets, loop to add the largest remaining buckets to the smallest buckets in the consolidated list
+            if (buckets.Count() > 0)
+            {
+                buckets = buckets.OrderByDescending(c => c.Count()).ToList();
+                consolidated = consolidated.OrderBy(c => c.Count()).ToList();
+                while (buckets.Count() > 0)
+                {
+                    for (int i = 0; i < consolidated.Count(); i++)
+
+                    {
+                        if (buckets.Count() == 0) break;
+                        var t = consolidated[i].ToList();
+                        t.AddRange(buckets.First());
+                        consolidated[i] = t;
+                        buckets.RemoveAt(0);
                     }
                 }
             }
 
-          
-            if(itemCheckSum != consolidated.Sum(c => c.Count()))
+            //Make sure we didn't lose anything!!
+            if (itemCheckSum != consolidated.Sum(c => c.Count()))
             {
                 throw new Exception($"While filling concurrency buckets, the end count of {consolidated.Sum(c => c.Count())} does not equal the start count of {itemCheckSum}");
             }

@@ -43,7 +43,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllBytes(workingDir + @"\TarnishedSchema_simple.dacpac", Properties.Resources.TarnishedSchema_simple);
             string buildFileName = Path.GetTempFileName();
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(workingDir + @"\PlatunumSchema.dacpac", workingDir + @"\TarnishedSchema.dacpac", false, string.Empty,500, out buildFileName);
+            var result = DacPacHelper.CreateSbmFromDacPacDifferences(workingDir + @"\PlatinumSchema_simple.dacpac", workingDir + @"\TarnishedSchema_simple.dacpac", false, string.Empty,500, out buildFileName);
 
             Assert.IsTrue(result == DacpacDeltasStatus.Success);
             Assert.IsTrue(File.ReadAllBytes(buildFileName).Length > 0);
@@ -57,8 +57,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             var stat = DacPacHelper.CleanDacPacScript(raw, out cleaned);
 
             Assert.AreEqual(DacpacDeltasStatus.Success, stat);
-            Assert.AreNotEqual(raw,cleaned);
             Assert.IsTrue(raw.Length > cleaned.Length);
+            Assert.AreNotEqual(raw,cleaned);
+            
         }
     }
 }

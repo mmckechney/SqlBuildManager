@@ -16,7 +16,7 @@ namespace SqlBuildManager.Logging.Threaded
 
             serilogLogger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
-				 .WriteTo.File(Path.Combine(_rootLoggingPath, "SqlBuildManager.ThreadedExecution.log"), outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff }] {Message}{NewLine}")
+				 .WriteTo.Async(a => a.File(Path.Combine(_rootLoggingPath, "SqlBuildManager.ThreadedExecution.log"), outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff }] {Message}{NewLine}"))
 				.CreateLogger();
 
 			_LoggerFactory.AddSerilog(serilogLogger);
