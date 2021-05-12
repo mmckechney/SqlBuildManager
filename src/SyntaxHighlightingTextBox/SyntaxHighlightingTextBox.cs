@@ -196,6 +196,7 @@ namespace UrielGuy.SyntaxHighlighting
 		/// <param name="e"></param>
 		protected override void OnTextChanged(EventArgs e)
 		{
+			string initialText = Text;
             try
             {
                 if (this.suspendHighlighting)
@@ -222,7 +223,7 @@ namespace UrielGuy.SyntaxHighlighting
                     StringBuilder((int)(Text.Length * 1.5 + 150));
 
                 //Adding RTF header
-                sb.Append(@"{\rtf1\fbidis\ansi\ansicpg1255\deff0\deflang1037{\fonttbl{");
+                sb.Append(@"{\rtf1\fbidis\ansi\ansicpg1255\deff0\nouicompat\deflang1037{\fonttbl{");
 
                 //Font table creation
                 int fontCounter = 0;
@@ -388,9 +389,9 @@ namespace UrielGuy.SyntaxHighlighting
                         }
                     }
                 }
-
-                //			System.Diagnostics.Debug.WriteLine(sb.ToString());
-                Rtf = sb.ToString();
+				sb.Append("}");
+				var rtfSTring = sb.ToString();
+                base.Rtf = sb.ToString();
 
                 //Restore cursor and scrollbars location.
                 SelectionStart = cursorLoc;
@@ -415,7 +416,9 @@ namespace UrielGuy.SyntaxHighlighting
             catch (Exception exe)
             {
                 log.LogError(exe, $"Error setting SyntaxHighlighting. Type={this.highlightType.ToString()}");
-            }
+				base.Text = initialText;
+
+			}
 		}
 
 

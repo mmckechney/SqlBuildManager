@@ -15,6 +15,8 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 - [Leverage Azure Batch for massively parallel updates](/docs/azure_batch.md)
 - [Change notes](docs/change_notes.md)
 - For contributors: [Notes on Building and Unit Testing](/docs/setup_azure_environment.md)
+- For users of the Windows Form app: [SQL Build Manager Manual](docs/SqlBuildManagerManual.md)\
+  (Note: this isn't 100% up to date, so the screen shots may vary from the current app)
 
 ----
 

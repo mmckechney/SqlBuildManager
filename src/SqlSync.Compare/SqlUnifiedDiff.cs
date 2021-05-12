@@ -48,8 +48,8 @@ namespace SqlSync.Compare
             List<FileCompareResults> tmpLst = new List<FileCompareResults>();
             for (int i = 0; i < fileList.Count; i++)
             {
-                string leftFullPath = Path.Combine(basePath , fileList[i].LeftScriptRow.FileName);
-                string rightFullPath  = Path.Combine(basePath, fileList[i].RightScriptRow.FileName);
+                string leftFullPath = (fileList[i].LeftScriptRow != null)? Path.Combine(basePath , fileList[i].LeftScriptRow.FileName) : "";
+                string rightFullPath  = (fileList[i].RightScriptRow != null) ? Path.Combine(basePath, fileList[i].RightScriptRow.FileName) : "";
 
                 if (fileList[i].LeftScriptRow != null && File.Exists(leftFullPath))
                 {

@@ -1,5 +1,12 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="13" Minor="0" Revision="2">
+    <fixed>Update to ensure all Queue messages are retrieved efficiently</fixed>
+    <added>New utility method `sbm batch dequeue` to remove all messages from the Service Bus Queue topic (without processing them)</added>
+    <updated>Code clean up and refactoring to accommodate latest version of System.CommandLine</updated>
+    <fixed>Issue with SQL text syntax higlighting formatting in .NET 5.0</fixed>
+    <note>Removed "Construct Command Line" menu options from Windows UI. Users should leverage the generated help docs for sbm.exe</note>
+  </Version>
   <Version Major="13" Minor="0" Revision="1">
     <fixed>Updated distribution algorithm for `--concurrencytype` of `Server` and `MaxPerServer` when number of Batch nodes is very close to the number of SQL Server targets. Was yielding less than the number of nodes.  </fixed>
     <fixed>Updated Service Bus message retrieval to better manage when messages not matching the job name are in large quantity</fixed>

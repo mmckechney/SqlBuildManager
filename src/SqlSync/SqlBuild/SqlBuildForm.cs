@@ -2207,7 +2207,7 @@ namespace SqlSync.SqlBuild
             this.mnuExportScriptText,
             this.menuItem15,
             this.startConfigureMultiServerDatabaseRunToolStripMenuItem,
-            this.remoteExecutionServiceToolStripMenuItem,
+            //this.remoteExecutionServiceToolStripMenuItem,
             this.toolStripSeparator7,
             this.mnuFileMRU,
             this.toolStripSeparator13,
@@ -2963,7 +2963,7 @@ namespace SqlSync.SqlBuild
             this.mnuAutoScripting,
             this.menuItem11,
             this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem,
-            this.constructCommandLineStringToolStripMenuItem,
+            //this.constructCommandLineStringToolStripMenuItem,
             this.toolStripSeparator14,
             this.scriptPolicyCheckingToolStripMenuItem,
             this.calculateScriptPackageHashSignatureToolStripMenuItem});

@@ -2,11 +2,12 @@
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
-using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.AdHocQuery;
 using SqlSync.SqlBuild.MultiDb;
 using System;
@@ -16,29 +17,27 @@ using System.CommandLine.Parsing;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using SqlBuildManager.Console.Queue;
+using sb = SqlSync.SqlBuild;
 namespace SqlBuildManager.Console
 {
 
     public class Program
     {
-        private static Microsoft.Extensions.Logging.ILogger log;
-        public static readonly string applicationLogFileName = "SqlBuildManager.Console.log";
+        public const string applicationLogFileName = "SqlBuildManager.Console.log";
+        private static Microsoft.Extensions.Logging.ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
+        
 
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
         static int Main(string[] args)
         {
-            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
-
             var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             var currentPath = Path.GetDirectoryName(fn);
 
             log.LogDebug("Received Command: " + String.Join(" | ", args));
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
 
             try
             {
@@ -148,6 +147,28 @@ namespace SqlBuildManager.Console
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
             var retVal = batchExe.CleanUpBatchNodes();
+
+            TimeSpan span = DateTime.Now - start;
+            string msg = "Total Run time: " + span.ToString();
+            log.LogInformation(msg);
+
+            return retVal;
+        }
+
+        internal static int RunBatchJobDelete(CommandLineArgs cmdLine)
+        {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            bool decryptSuccess;
+            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            if (!decryptSuccess)
+            {
+                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                return -8675;
+            }
+
+            DateTime start = DateTime.Now;
+            var retVal = Batch.BatchCleaner.DeleteAllCompletedJobs(cmdLine);
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
@@ -397,8 +418,8 @@ namespace SqlBuildManager.Console
             string name;
             cmdLine.RootLoggingPath = Path.GetDirectoryName(cmdLine.OutputSbm);
 
-            var status = DacPacHelper.GetSbmFromDacPac(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), out name);
-            if (status == DacpacDeltasStatus.Success)
+            var status = Program.GetSbmFromDacPac(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), out name);
+            if (status == sb.DacpacDeltasStatus.Success)
             {
                 File.Move(name, cmdLine.OutputSbm);
                 log.LogInformation($"SBM package successfully created at {cmdLine.OutputSbm}");
@@ -430,7 +451,7 @@ namespace SqlBuildManager.Console
             //We need an override setting. if not provided, we need to glean it from the SqlSyncBuildProject.xml file 
             if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
-                cmdLine.ManualOverRideSets = SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName);
+                cmdLine.ManualOverRideSets = sb.SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName);
             }
 
             var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
@@ -475,8 +496,7 @@ namespace SqlBuildManager.Console
             DateTime start = DateTime.Now;
             log.LogDebug("Entering Threaded Execution");
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
-            log.LogDebug(cmdLine.ToStringExtension(StringType.BatchQuery));
-            log.LogDebug(cmdLine.ToStringExtension(StringType.BatchThreaded));
+            log.LogDebug(cmdLine.ToStringExtension(StringType.Batch));
             log.LogInformation("Running Threaded Execution...");
             ThreadedExecution runner = new ThreadedExecution(cmdLine);
             int retVal = runner.Execute();
@@ -601,7 +621,7 @@ namespace SqlBuildManager.Console
                 Directory.CreateDirectory(path);
             }
 
-            if (!DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName))
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName))
             {
                 log.LogError($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -693,7 +713,7 @@ namespace SqlBuildManager.Console
 
             }
             string packageName = cmdLine.BuildFileName;
-            string hash = SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
+            string hash = sb.SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
             if (!String.IsNullOrEmpty(hash))
             {
                 log.LogInformation(hash);
@@ -767,7 +787,7 @@ namespace SqlBuildManager.Console
             }
             string directory = cmdLine.Directory;
             string message;
-            List<string> sbmFiles = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directory, out message);
+            List<string> sbmFiles = sb.SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directory, out message);
             if (sbmFiles.Count > 0)
             {
                 foreach (string sbm in sbmFiles)
@@ -791,7 +811,7 @@ namespace SqlBuildManager.Console
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName, cmdLine.RootLoggingPath);
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
-
+            var start = DateTime.Now;
             bool decryptSuccess;
             (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             if (!decryptSuccess)
@@ -821,7 +841,13 @@ namespace SqlBuildManager.Console
             log.LogInformation("Sending database targets to Service Bus");
             var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
             int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
-            if(messages > 0)
+
+
+            TimeSpan span = DateTime.Now - start;
+            msg = "Total Run time: " + span.ToString();
+            log.LogInformation(msg);
+
+            if (messages > 0)
             {
                 log.LogInformation($"Successfully sent {messages} targets to Service Bus queue");
                 return 0;
@@ -836,7 +862,7 @@ namespace SqlBuildManager.Console
         internal static async Task<int> DeQueueOverrideTargets(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
-
+            var start = DateTime.Now;
             bool decryptSuccess;
             (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             if (!decryptSuccess)
@@ -853,10 +879,14 @@ namespace SqlBuildManager.Console
             }
 
             var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
-            bool success = await qManager.RetrieveTargetsFromQueue();
+            bool success = await qManager.ClearQueueMessages();
+
+            TimeSpan span = DateTime.Now - start;
+            string msg = "Total Run time: " + span.ToString();
+            log.LogInformation(msg);
             if (success)
             {
-                log.LogInformation("Successfully received messages to Service Bus queue");
+                log.LogInformation("Successfully removed messages from Service Bus queue topics");
                 return 0;
             }
             else
@@ -866,6 +896,36 @@ namespace SqlBuildManager.Console
             }
         }
 
+        internal static sb.DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName)
+        {
+            if (cmd.MultiDbRunConfigFileName.Trim().ToLower().EndsWith("sql"))
+            {
+                //if we are getting the list from a SQL statement, then the database and server settings mean something different! Dont pass them in.
+                return sb.DacPacHelper.GetSbmFromDacPac(cmd.RootLoggingPath,
+                   cmd.DacPacArgs.PlatinumDacpac,
+                   cmd.DacPacArgs.TargetDacpac,
+                   string.Empty,
+                   string.Empty,
+                   cmd.AuthenticationArgs.UserName,
+                   cmd.AuthenticationArgs.Password,
+                   cmd.BuildRevision,
+                   cmd.DefaultScriptTimeout,
+                   multiDb, out sbmName);
+            }
+            else
+            {
+                return sb.DacPacHelper.GetSbmFromDacPac(cmd.RootLoggingPath,
+                    cmd.DacPacArgs.PlatinumDacpac,
+                    cmd.DacPacArgs.TargetDacpac,
+                    cmd.Database,
+                    cmd.Server,
+                    cmd.AuthenticationArgs.UserName,
+                    cmd.AuthenticationArgs.Password,
+                    cmd.BuildRevision,
+                    cmd.DefaultScriptTimeout,
+                    multiDb, out sbmName);
+            }
+        }
 
         #endregion
     }

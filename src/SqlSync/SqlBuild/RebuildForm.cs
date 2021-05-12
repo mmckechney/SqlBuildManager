@@ -101,9 +101,17 @@ namespace SqlSync.SqlBuild
                 {
                     if (DialogResult.Yes == MessageBox.Show("Reconstruction Complete. Open New Build File?", "Finished", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
                     {
-                        System.Diagnostics.Process prc = new System.Diagnostics.Process();
-                        prc.StartInfo.FileName = openFileDialog1.FileName;
-                        prc.Start();
+                        try
+                        {
+                            System.Diagnostics.Process prc = new System.Diagnostics.Process();
+                            var me = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                            prc.StartInfo.FileName = me;
+                            prc.StartInfo.Arguments = openFileDialog1.FileName;
+                            prc.Start();
+                        }catch(Exception exe)
+                        {
+                            MessageBox.Show($"Oops..something went wrong. Please try to open the file manually.{Environment.NewLine}{exe.Message}");
+                        }
                     }
                 }
                 this.Cursor = Cursors.Default;

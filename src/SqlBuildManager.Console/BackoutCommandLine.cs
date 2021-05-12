@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using SqlSync.SqlBuild;
-using Microsoft.Extensions.Logging;
-using SqlSync.ObjectScript;
+﻿using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 namespace SqlBuildManager.Console
 {

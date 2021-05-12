@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SqlSync.SqlBuild;
-using SqlSync.Connection;
+﻿using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CommandLine;
 using SqlSync.SqlBuild.Syncronizer;
-using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
 namespace SqlBuildManager.Console
 {
     public class Synchronize
@@ -33,6 +30,10 @@ namespace SqlBuildManager.Console
         }
         public static DatabaseRunHistory GetDatabaseRunHistoryDifference(CommandLineArgs cmdLine)
         {
+            if(cmdLine == null)
+            {
+                return null;
+            }
             DatabaseDiffer differ = new DatabaseDiffer();
             return differ.GetDatabaseHistoryDifference(cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server,
                                                 cmdLine.Database);
@@ -65,25 +66,25 @@ namespace SqlBuildManager.Console
 
             if (string.IsNullOrEmpty(cmdLine.SynchronizeArgs.GoldDatabase))
             {
-                log.LogError("Missing /GoldDatabase=\"<database>\" flag");
+                log.LogError("Missing --golddatabase=\"<database>\" flag");
                 return null;
             }
 
             if (string.IsNullOrEmpty(cmdLine.SynchronizeArgs.GoldServer))
             {
-                log.LogError("Missing /GoldServer=\"<server>\" flag");
+                log.LogError("Missing --goldserver=\"<server>\" flag");
                 return null;
             }
 
             if (string.IsNullOrEmpty(cmdLine.Database))
             {
-                log.LogError("Missing /Database=\"<database>\" flag");
+                log.LogError("Missing --database=\"<database>\" flag");
                 return null;
             }
 
             if (string.IsNullOrEmpty(cmdLine.Server))
             {
-                log.LogError("Missing /Server=\"<server>\" flag");
+                log.LogError("Missing --server=\"<server>\" flag");
                 return null;
             }
             return cmdLine;

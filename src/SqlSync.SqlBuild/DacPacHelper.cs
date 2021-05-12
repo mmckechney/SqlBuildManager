@@ -1,17 +1,13 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.SqlServer.Dac;
+using SqlSync.SqlBuild.MultiDb;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild;
-using System.Runtime.InteropServices;
-using Microsoft.SqlServer.Dac;
-using System.Data.SqlClient;
-using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
     public class DacPacHelper
@@ -378,38 +374,7 @@ namespace SqlSync.SqlBuild
         {
             return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName);
         }
-        public static DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName)
-        {
-
-            if (cmd.MultiDbRunConfigFileName.Trim().ToLower().EndsWith("sql"))
-            {
-                //if we are getting the list from a SQL statement, then the database and server settings mean something different! Dont pass them in.
-                 return GetSbmFromDacPac(cmd.RootLoggingPath,
-                    cmd.DacPacArgs.PlatinumDacpac,
-                    cmd.DacPacArgs.TargetDacpac,
-                    string.Empty,
-                    string.Empty,
-                    cmd.AuthenticationArgs.UserName,
-                    cmd.AuthenticationArgs.Password,
-                    cmd.BuildRevision,
-                    cmd.DefaultScriptTimeout,
-                    multiDb, out sbmName);
-            }
-            else
-            {
-                return GetSbmFromDacPac(cmd.RootLoggingPath,
-                    cmd.DacPacArgs.PlatinumDacpac,
-                    cmd.DacPacArgs.TargetDacpac,
-                    cmd.Database,
-                    cmd.Server,
-                    cmd.AuthenticationArgs.UserName,
-                    cmd.AuthenticationArgs.Password,
-                    cmd.BuildRevision,
-                    cmd.DefaultScriptTimeout,
-                    multiDb, out sbmName);
-            }
-
-        }
+      
 
     }
 

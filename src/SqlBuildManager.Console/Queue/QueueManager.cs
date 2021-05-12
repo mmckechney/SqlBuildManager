@@ -2,19 +2,18 @@
 using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Extensions.Logging;
 using MoreLinq;
+using Polly;
+using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Threaded;
 using SqlSync.Connection;
-using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Polly;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
-
+using System.Threading.Tasks;
 namespace SqlBuildManager.Console.Queue
 {
     public class QueueManager : IDisposable
@@ -32,6 +31,7 @@ namespace SqlBuildManager.Console.Queue
         private ServiceBusAdministrationClient _adminClient = null;
         private ServiceBusSessionReceiver _sessionReceiver = null;
         private ServiceBusReceiver _messageReceiver = null;
+        private CancellationTokenSource tokenSource = null;
 
        
         public QueueManager(string topicConnectionString, string batchJobName)
@@ -178,8 +178,6 @@ namespace SqlBuildManager.Console.Queue
             }
             return lstMsg;
         }
-
-
         private async Task<List<ServiceBusReceivedMessage>> GetSessionBasedTargetsFromQueue(int maxMessages, bool resetSession, int retry = 0)
         {
             var lstMsg = new List<ServiceBusReceivedMessage>();
@@ -191,14 +189,15 @@ namespace SqlBuildManager.Console.Queue
                 if (_sessionReceiver == null || resetSession)
                 {
                     log.LogInformation("Attempting to get new queue session for next Server...");
-                    var token = sessionTokenSource.Token;
-                    StartCancellationTimer();
+                    var token = GetCancellationToken();
                     try
                     {
                         _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock }, token);
+                        log.LogInformation($"Obtained new subscription for batch job '{batchJobName}' and subscription Id '{_sessionReceiver.SessionId}' ");
                     }
-                    catch(TaskCanceledException)
+                    catch(TaskCanceledException tce)
                     {
+                        log.LogInformation("No session available by wait time expiration");
                         return lstMsg ;
                     }
                 }
@@ -287,10 +286,14 @@ namespace SqlBuildManager.Console.Queue
             return lstMsg;
         }
 
-        CancellationTokenSource sessionTokenSource = new CancellationTokenSource();
-        private void StartCancellationTimer()
+
+        private CancellationToken GetCancellationToken(int waitMs = 5000)
         {
-            sessionTokenSource.CancelAfter(5000);
+            tokenSource = new CancellationTokenSource();
+            tokenSource.CancelAfter(waitMs);
+            var token = tokenSource.Token;
+            return token;
+     
         }
 
         public async Task CompleteMessage(ServiceBusReceivedMessage message)
@@ -334,46 +337,96 @@ namespace SqlBuildManager.Console.Queue
         }
 
 
-        internal async Task<bool> RetrieveTargetsFromQueue()
+        internal async Task<bool> ClearQueueMessages()
         {
-            var receiver = this.Client.CreateReceiver(this.topicName, this.topicSubscriptionName, new ServiceBusReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock });
-
-            while (true)
+            try
             {
-                IReadOnlyList<ServiceBusReceivedMessage> messages = await receiver.ReceiveMessagesAsync(maxMessages: 100);
-                if (messages.Any())
+                //Clear regular messages
+                var subNames = new List<string>() { this.topicSubscriptionName, $"{this.topicSubscriptionName}/$deadletterqueue", $"{this.topicSessionSubscriptionName}/$deadletterqueue" };
+                foreach (var subname in subNames)
                 {
-                    foreach (ServiceBusReceivedMessage message in messages)
+                    log.LogInformation($"Clearing all messages from topic '{this.topicName}' subscription '{subname}'");
+                    var receiver = this.Client.CreateReceiver(this.topicName, subname, new ServiceBusReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete });
+                    while (true)
                     {
-                        if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                        try
                         {
-                            await receiver.DeadLetterMessageAsync(message);
-                            log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                            var token = GetCancellationToken();
+                            IReadOnlyList<ServiceBusReceivedMessage> messages = await receiver.ReceiveMessagesAsync(100, new TimeSpan(0, 0, 5), token);
+                            log.LogInformation($"Removing {messages.Count} messages from {subname}");
+                            if (!messages.Any())
+                            {
+                                break;
+                            }
                         }
-                        else
+                        catch (TaskCanceledException)
                         {
-                            string msg = $"{Environment.NewLine}JobName: {message.Subject}{Environment.NewLine}{Encoding.UTF8.GetString(message.Body.ToArray())}";
-                            log.LogInformation(msg);
-                            await receiver.CompleteMessageAsync(message);
+                            log.LogInformation($"No more messages available in {subname} - by wait time expiration");
+                            break;
                         }
                     }
                 }
-                else
+
+
+                //Clear session messages
+                log.LogInformation($"Clearing all messages from topic '{this.topicName}' subscription '{this.topicSessionSubscriptionName}'");
+                while (true)
                 {
-                    break;
+                    
+                    
+                    try
+                    {
+                        log.LogInformation($"Attempting to aquire topic session...");
+                        var token = GetCancellationToken();
+                        _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete }, token);
+                        log.LogInformation($"Obtained new subscription for subscription Id '{_sessionReceiver.SessionId}' ");
+                    }
+                    catch (TaskCanceledException tce)
+                    {
+                        log.LogInformation("No more messages available - by wait time expiration");
+                        break;
+                    }
+                    catch (ServiceBusException sbe)
+                    {
+                        if (sbe.Reason == ServiceBusFailureReason.ServiceTimeout)
+                        {
+                            log.LogInformation("No more session messages available");
+                            break;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+
+                    while (true)
+                    {
+                        try
+                        {
+                            var token = GetCancellationToken();
+                            IReadOnlyList<ServiceBusReceivedMessage> messages = await _sessionReceiver.ReceiveMessagesAsync(100, new TimeSpan(0, 0, 5), token);
+                            log.LogInformation($"Removing {messages.Count} messages from {this.topicSessionSubscriptionName} session {_sessionReceiver.SessionId}");
+                            if (!messages.Any())
+                            {
+                                break;
+                            }
+                        }
+                        catch (TaskCanceledException tce)
+                        {
+                            log.LogInformation($"No more messages available in {this.topicSessionSubscriptionName} session {_sessionReceiver.SessionId} - by wait time expiration");
+                            break;
+                        }
+                    }
                 }
+                log.LogInformation("Completed Dequeueing all messages");
             }
-            log.LogInformation("Compelted message receive");
+            catch(Exception exe)
+            {
+                log.LogError($"Problem clearing all messages: {exe.Message}");
+            }
+
             return true;
 
-        }
-        public ServiceBusReceiver GetQueueReceiver()
-        {
-            ServiceBusClient client = new ServiceBusClient(this.topicConnectionString);
-           var receiver =  client.CreateReceiver(this.topicName, this.topicSubscriptionName);
-           
-            
-            return receiver;
         }
 
 

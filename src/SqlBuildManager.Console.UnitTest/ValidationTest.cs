@@ -1,13 +1,12 @@
-﻿using SqlBuildManager.Console;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
+using SqlSync.SqlBuild.MultiDb;
 using System.IO;
 namespace SqlBuildManager.Console.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ValidationTest and is intended
     ///to contain all ValidationTest Unit Tests
@@ -75,7 +74,6 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_MissingRootLoggingPath()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.Action = CommandLineArgs.ActionType.Build;
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
             string[] errorMessages = null;
             int expected = -99; 

@@ -1,14 +1,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading;
+using SqlBuildManager.Console.CommandLine;
 using System;
-using System.Text;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using SqlSync.SqlBuild;
 using System.CommandLine;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using SqlBuildManager.Console;
 namespace SqlBuildManager.Console.ExternalTest
 {
     /// <summary>
@@ -37,7 +35,7 @@ namespace SqlBuildManager.Console.ExternalTest
             this.overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
             this.cmdLine = new CommandLineArgs();
-            this.cmdLine.SettingsFile = this.settingsFilePath;
+            this.cmdLine.FileInfoSettingsFile = new FileInfo(this.settingsFilePath);
             this.cmdLine.SettingsFileKey = this.settingsFileKeyPath;
             bool ds;
             (ds, this.cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
@@ -68,7 +66,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--database", database,
                 "--server", server };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -147,7 +145,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--rootloggingpath", this.cmdLine.RootLoggingPath                
                 };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -181,7 +179,7 @@ namespace SqlBuildManager.Console.ExternalTest
             "--server", this.overrideFileContents[0].Split(":")[0] };
 
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -217,7 +215,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", this.overrideFilePath,
                 "--packagename", sbmFileName};
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -261,7 +259,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrency", "2",
                 "--concurrencytype","Server" };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -305,7 +303,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrency", "2",
                 "--concurrencytype","MaxPerServer" };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -341,7 +339,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override", this.overrideFilePath };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -381,7 +379,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--platinumdbsource", database,
                 "--platinumserversource", server };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -429,7 +427,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--platinumdbsource", database,
                 "--platinumserversource", server };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -479,7 +477,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--platinumdbsource", database,
                 "--platinumserversource", server };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -530,7 +528,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", minusFirst,
                 "--platinumdacpac", dacpacName };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -582,7 +580,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", minusFirst,
                 "--platinumdacpac", dacpacName };
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -631,11 +629,10 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--queryfile", selectquery,
                 "--silent"};
 
-                RootCommand rootCommand = CommandLineConfig.SetUp();
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
                 var val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 var result = val.Result;
-                ;
 
                 var logFileContents = ReleventLogFileContents(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
@@ -694,7 +691,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--queryfile", insertquery,
                 "--silent"};
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -733,7 +730,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--queryfile", deletequery,
                 "--silent"};
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -771,7 +768,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--queryfile", updatequery,
                 "--silent"};
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -795,7 +792,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
             string jobName = GetUniqueBatchJobName();
-
+            var concurType = ConcurrencyType.Server.ToString();
             int startingLine = LogFileCurrentLineCount();
 
             var args = new string[]{ 
@@ -803,10 +800,10 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override" , this.overrideFilePath,
-                "--concurrencytype",  ConcurrencyType.Server.ToString(),
+                "--concurrencytype",  concurType,
                 "--jobname", jobName};
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             Task<int> val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -820,7 +817,7 @@ namespace SqlBuildManager.Console.ExternalTest
             "--settingsfilekey", this.settingsFileKeyPath,
             "--override", this.overrideFilePath,
             "--packagename", sbmFileName,
-            "--concurrencytype", ConcurrencyType.Server.ToString(),
+            "--concurrencytype", concurType,
             "--concurrency", "2",
             "--jobname", jobName };
 
@@ -846,15 +843,16 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             string jobName = GetUniqueBatchJobName();
             int startingLine = LogFileCurrentLineCount();
+            var concurType = ConcurrencyType.MaxPerServer.ToString();
             var args = new string[]{
                 "batch", "enqueue",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override" , this.overrideFilePath,
-                "--concurrencytype",  ConcurrencyType.MaxPerServer.ToString(),
+                "--concurrencytype",  concurType,
                 "--jobname", jobName};
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             Task<int> val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -868,7 +866,7 @@ namespace SqlBuildManager.Console.ExternalTest
             "--settingsfilekey", this.settingsFileKeyPath,
             "--override", this.overrideFilePath,
             "--packagename", sbmFileName,
-            "--concurrencytype", ConcurrencyType.Server.ToString(),
+            "--concurrencytype", concurType,
             "--concurrency", "5",
             "--jobname", jobName };
 
@@ -895,15 +893,16 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             string jobName = GetUniqueBatchJobName();
             int startingLine = LogFileCurrentLineCount();
+            var concurType = ConcurrencyType.Count.ToString();
             var args = new string[]{
                 "batch", "enqueue",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override" , this.overrideFilePath,
-                "--concurrencytype",  ConcurrencyType.Count.ToString(),
+                "--concurrencytype",  concurType,
                 "--jobname", jobName};
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             Task<int> val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -917,7 +916,7 @@ namespace SqlBuildManager.Console.ExternalTest
             "--settingsfilekey", this.settingsFileKeyPath,
             "--override", this.overrideFilePath,
             "--packagename", sbmFileName,
-            "--concurrencytype", ConcurrencyType.Server.ToString(),
+            "--concurrencytype", concurType,
             "--concurrency", "5",
             "--jobname", jobName };
 
@@ -949,15 +948,16 @@ namespace SqlBuildManager.Console.ExternalTest
 
             string jobName = GetUniqueBatchJobName();
             int startingLine = LogFileCurrentLineCount();
+            var concurType = ConcurrencyType.Count.ToString();
             var args = new string[]{
                 "batch", "enqueue",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override" , minusFirst,
-                "--concurrencytype",  ConcurrencyType.Count.ToString(),
+                "--concurrencytype",  concurType,
                 "--jobname", jobName};
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             Task<int> val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -972,7 +972,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", minusFirst,
                 "--platinumdbsource", database,
                 "--platinumserversource", server,
-                "--concurrencytype", ConcurrencyType.Server.ToString(),
+                "--concurrencytype", concurType,
                 "--concurrency", "5",
                 "--jobname", jobName };
 
@@ -1006,16 +1006,16 @@ namespace SqlBuildManager.Console.ExternalTest
 
            string jobName = GetUniqueBatchJobName();
            int startingLine = LogFileCurrentLineCount();
-
+            var concurType = ConcurrencyType.Count.ToString();
             var args = new string[]{
                 "batch", "enqueue",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override" , minusFirst,
-                "--concurrencytype",  ConcurrencyType.Count.ToString(),
+                "--concurrencytype",  concurType,
                 "--jobname", jobName};
 
-            RootCommand rootCommand = CommandLineConfig.SetUp();
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
             Task<int> val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
@@ -1029,7 +1029,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override", minusFirst,
                 "--platinumdacpac", dacpacName,
-                "--concurrencytype", ConcurrencyType.Server.ToString(),
+                "--concurrencytype", concurType,
                 "--concurrency", "5",
                 "--jobname", jobName };
 
