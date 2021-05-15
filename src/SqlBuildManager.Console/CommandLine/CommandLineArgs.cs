@@ -1,18 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Transactions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using SqlSync.Constants;
-namespace SqlSync.SqlBuild
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace SqlBuildManager.Console.CommandLine
 {
 
     [Serializable]
@@ -23,9 +16,6 @@ namespace SqlSync.SqlBuild
         {
 
         }
-
-        [JsonIgnore]
-        public ActionType Action { get; set; }
 
         #region Nested Object properties
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
@@ -47,7 +37,7 @@ namespace SqlSync.SqlBuild
             {
                 return this.settingsFile;
             }
-            set
+            private set
             {
                 if (File.Exists(value))
                 {
@@ -63,7 +53,7 @@ namespace SqlSync.SqlBuild
             }
         }
         [JsonIgnore]
-        public FileInfo SettingsFileInfo
+        public FileInfo FileInfoSettingsFile
         {
             set
             {
@@ -184,13 +174,11 @@ namespace SqlSync.SqlBuild
         [Serializable]
         public class Authentication
         {
-            [Encrypt]
             public virtual string UserName { get; set; } = string.Empty;
-            [Encrypt]
             public virtual string Password { get; set; } = string.Empty;
 
             [JsonIgnore]
-            public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = Connection.AuthenticationType.Password;
+            public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = SqlSync.Connection.AuthenticationType.Password;
         }
         #endregion
 
@@ -286,11 +274,9 @@ namespace SqlSync.SqlBuild
  
             public int BatchNodeCount { get; set; } = 10;
             public string BatchAccountName { get; set; } = null;
-            [Encrypt]
             public string BatchAccountKey { get; set; } = null;
             public string BatchAccountUrl { get; set; } = null;
             public string StorageAccountName { get; set; } = null;
-            [Encrypt]
             public string StorageAccountKey { get; set; } = null;
             public string BatchVmSize { get; set; } = null;
             [JsonIgnore]
@@ -303,10 +289,8 @@ namespace SqlSync.SqlBuild
             public string BatchPoolName { get; set; } = null;
             [JsonConverter(typeof(StringEnumConverter))]
             public OsType BatchPoolOs { get; set; }
-            [Encrypt]
             public string EventHubConnectionString { get; set; } = string.Empty;
             public string ApplicationPackage { get; set; } = string.Empty;
-            [Encrypt]
             public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
         }
         #endregion
@@ -380,197 +364,19 @@ namespace SqlSync.SqlBuild
             public virtual bool SprocTestDesignated { get; set; } = false;
         }
 
-        [Serializable]
-        public enum ActionType
-        {
-            Error,
-            Build,
-            Threaded,
-            Remote,
-            Batch,
-            Package,
-            PolicyCheck,
-            GetHash,
-            CreateBackout,
-            GetDifference,
-            Synchronize,
-            ScriptExtract,
-            SaveSettings,
-            BatchPreStage, 
-            BatchCleanUp
-        }
-        
+       
         public override string ToString()
         {
             return this.ToStringExtension(StringType.Basic);
         }
-        public string ToBatchThreadedExeString()
+        public string ToBatchString()
         {
-            return this.ToStringExtension(StringType.BatchThreaded);
-        }
-        public string ToBatchQueryThreadedExeString()
-        {
-            return this.ToStringExtension(StringType.BatchQuery);
+            return this.ToStringExtension(StringType.Batch);
         }
 
         public object Clone()
         {
             return (CommandLineArgs) this.MemberwiseClone();
-        }
-    }
-
-    public enum StringType
-    {
-        BatchThreaded,
-        BatchQuery,
-        Basic
-    }
-
-    [Serializable]
-    public enum OsType
-    {
-        Windows,
-        Linux
-    }
-
-    [Serializable]
-    public enum ConcurrencyType
-    {
-        Count,
-        Server,
-        MaxPerServer
-    }
-
-    public static class CommandLineExtensions
-    {
-        public static string ToStringExtension(this object obj, StringType toStringType)
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
-            {
-                if(!property.CanRead || (property.GetValue(obj) == null || string.IsNullOrWhiteSpace(property.GetValue(obj).ToString())))
-                {
-                    continue;
-                }
-
-                if (property.PropertyType == typeof(CommandLineArgs.AutoScripting) ||
-                    property.PropertyType == typeof(CommandLineArgs.StoredProcTesting) ||
-                    property.PropertyType == typeof(CommandLineArgs.Synchronize))
-                {
-                    if (property.GetValue(obj) != null && toStringType == StringType.Basic)
-                    {
-                        sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
-                    }
-                }
-                else if (property.PropertyType == typeof(CommandLineArgs.Authentication) ||
-                         property.PropertyType == typeof(CommandLineArgs.DacPac) ||
-                         property.PropertyType == typeof(CommandLineArgs.Batch))
-                {
-                    if (property.GetValue(obj) != null)
-                    {
-                        sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
-                    }
-                }
-                else
-                {
-                    switch (property.Name)
-                    {
-                        case "AuthenticationType":
-                            sb.Append("--authtype \"" + property.GetValue(obj).ToString() + "\" ");
-                            break;
-
-                        case "SettingsFile":
-                            if (toStringType == StringType.Basic)
-                            {
-                                sb.Append("--settingsfile \"" + property.GetValue(obj).ToString() + "\" ");
-                            }
-                            break;
-
-                        case "MultiDbRunConfigFileName":
-                        case "ManualOverRideSets":
-                            if ((toStringType == StringType.BatchThreaded || toStringType == StringType.BatchQuery) &&
-                                    (!string.IsNullOrWhiteSpace(((CommandLineArgs)obj).BatchArgs.ServiceBusTopicConnectionString)))
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                sb.Append("--override \"" + property.GetValue(obj).ToString() + "\" ");
-                            }
-                            break;
-
-                        case "BuildFileName":
-                                sb.Append("--packagename \"" + property.GetValue(obj).ToString() + "\" ");
-                            break;
-
-                        case "EventHubConnectionString":
-                                sb.Append("--eventhubconnection \"" + property.GetValue(obj).ToString() + "\" ");
-                            break;
-
-                        case "ServiceBusTopicConnectionString":
-                            sb.Append("--servicebustopicconnection \"" + property.GetValue(obj).ToString() + "\" ");
-                            break;
-
-                        case "Action":
-                            switch (toStringType)
-                            {
-                                case StringType.BatchThreaded:
-                                    sb.Append("runthreaded ");
-                                    break;
-                                case StringType.BatchQuery:
-                                    sb.Append("querythreaded ");
-                                    break;
-                                case StringType.Basic:
-                                default:
-                                    sb.Append(property.GetValue(obj).ToString().ToLower() + " ");
-                                    break;
-                            }
-
-                            break;
-
-                        case "OverrideDesignated":
-                        case "CliVersion":
-                        case "WhatIf":
-                        case "LogLevel":
-                        case "SettingsFileKey":
-                            //ignore these
-                            break;
-
-                        default:
-                            if (property.PropertyType == typeof(bool))
-                            {
-                                if(property.Name == "PollBatchPoolStatus" && (toStringType == StringType.BatchQuery || toStringType == StringType.BatchThreaded))
-                                {
-                                    continue;
-                                }
-                                if (bool.Parse(property.GetValue(obj).ToString()) == true) //ignore anything not set
-                                {
-                                    sb.Append("--" + property.Name.ToLower() + " true ");
-                                }
-                            }
-                            else if (property.PropertyType == typeof(string))
-                            {
-                                sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
-                            }
-                            else
-                            {
-                                double num;
-                                if (double.TryParse(property.GetValue(obj).ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out num))
-                                {
-                                    sb.Append("--" + property.Name.ToLower() + " " + property.GetValue(obj).ToString() + " ");
-                                }
-                                else
-                                {
-                                    sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
-                                }
-                            }
-                            break;
-                    }
-                     
-                }
-
-            }
-            return sb.ToString();
         }
     }
       

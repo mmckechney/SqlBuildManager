@@ -2,6 +2,14 @@
 # SQL Build Manager Change Notes
 
 
+### Version 13.0.2
+
+- *FIXED:* Update to ensure all Queue messages are retrieved efficiently
+- *ADDED:* New utility method `sbm batch dequeue` to remove all messages from the Service Bus Queue topic (without processing them)
+- *UPDATED:* Code clean up and refactoring to accommodate latest version of System.CommandLine
+- *FIXED:* Issue with SQL text syntax higlighting formatting in .NET 5.0
+- **NOTE:** Removed "Construct Command Line" menu options from Windows UI. Users should leverage the generated help docs for sbm.exe
+
 ### Version 13.0.1
 
 - *FIXED:* Updated distribution algorithm for `--concurrencytype` of `Server` and `MaxPerServer` when number of Batch nodes is very close to the number of SQL Server targets. Was yielding less than the number of nodes.  

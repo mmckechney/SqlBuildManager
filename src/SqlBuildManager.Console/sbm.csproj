@@ -9,19 +9,8 @@
   <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
-  <!--<ItemGroup>
-    <Content Include="..\microsoft-sqlpackage-windows\**\*.*">
-      <Link>microsoft-sqlpackage-windows\%(RecursiveDir)%(FileName)%(Extension)</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>-->
-  <!--<ItemGroup>
-    <Content Include="..\microsoft-sqlpackage-linux\**\*.*">
-      <Link>microsoft-sqlpackage-linux\%(RecursiveDir)%(FileName)%(Extension)</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>-->
   <ItemGroup>
+    <!--<ProjectReference Include="..\..\..\command-line-api\src\System.CommandLine\System.CommandLine.csproj" />-->
     <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
@@ -48,7 +37,7 @@
     <PackageReference Include="Serilog.Sinks.AzureEventHub" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-	  <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20303.1" />
+	  <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21216.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
     <PackageReference Include="System.DirectoryServices" Version="5.0.0" />
     <PackageReference Include="Microsoft.Azure.Batch" Version="14.0.0" />

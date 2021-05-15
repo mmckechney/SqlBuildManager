@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using MoreLinq;
+using SqlBuildManager.Console.CommandLine;
+using SqlSync.Connection;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
-using MoreLinq;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using SqlSync.Connection;
-
 namespace SqlBuildManager.Console.Threaded
 {
     public class Concurrency

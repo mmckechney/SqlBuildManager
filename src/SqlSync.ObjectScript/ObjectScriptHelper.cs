@@ -58,7 +58,7 @@ namespace SqlSync.ObjectScript
         public string ScriptHeader(DateTime processedDate, string objectSchemaAndName, string objectTypeDesc, bool includePermissions, bool scriptAsAlter, bool scriptPkWithTable)
         {
             string[] split = objectSchemaAndName.Split(new char[]{'.'});
-            return ScriptHeader(this.ConnData.SQLServerName, this.ConnData.DatabaseName, processedDate, split[0], split[1], objectTypeDesc, System.Environment.UserName, includePermissions, scriptAsAlter, scriptPkWithTable);
+            return ScriptHeader(this.ConnData.SQLServerName, this.ConnData.DatabaseName, processedDate, split[0], (split.Length == 1)? "" : split[1], objectTypeDesc, System.Environment.UserName, includePermissions, scriptAsAlter, scriptPkWithTable);
         }
         public string ScriptHeader(string objectName, string schemaOwner, string objectTypeDesc, bool includePermissions, bool scriptAsAlter, bool scriptPkWithTable)
         {
@@ -848,7 +848,7 @@ namespace SqlSync.ObjectScript
 			System.Reflection.FieldInfo[] pathInfo = typeof(DbObjectFilePath).GetFields();
 			for(int x=0;x<pathInfo.Length;x++)
 			{
-				path = rootPath + pathInfo[x].GetValue(null);
+				path = Path.Combine(rootPath, pathInfo[x].GetValue(null).ToString());
                 bgWorker.ReportProgress(0, new StatusEventArgs("Removing pre-existing files in " + path));
 				for(int j=0;j<extensionInfo.Length;j++)
 				{

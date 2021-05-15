@@ -8,7 +8,7 @@ namespace SqlBuildManager.Logging.Threaded
 {
     public class Configure
     {
-        public static void CloseAndFlushAllLoggers()
+        public static void CloseAndFlushAllLoggers(bool wait = true)
         {
             CommitLogging.CloseAndFlush();
             ErrorLogging.CloseAndFlush();
@@ -18,7 +18,10 @@ namespace SqlBuildManager.Logging.Threaded
             SuccessDatabaseLogging.CloseAndFlush();
 
             //Needed to make sure all files are saved and flushed
-            Thread.Sleep(3000);
+            if (wait)
+            {
+                Thread.Sleep(3000);
+            }
         }
         
     }

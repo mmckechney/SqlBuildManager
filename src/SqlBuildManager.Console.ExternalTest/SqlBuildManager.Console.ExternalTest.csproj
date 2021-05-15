@@ -12,9 +12,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20303.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21216.1" />
   </ItemGroup>
   <ItemGroup>
+    <!--<ProjectReference Include="..\..\..\command-line-api\src\System.CommandLine\System.CommandLine.csproj" />-->
     <ProjectReference Include="..\SqlBuildManager.Console\sbm.csproj" />
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>

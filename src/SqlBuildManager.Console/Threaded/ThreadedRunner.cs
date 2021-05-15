@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
-using System.IO;
-using SqlSync.Connection;
-using SqlSync.DbInformation;
-using System.ComponentModel;
+﻿using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
+using SqlSync.Connection;
+using SqlSync.SqlBuild;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Console.Threaded
 {
     class ThreadedRunner

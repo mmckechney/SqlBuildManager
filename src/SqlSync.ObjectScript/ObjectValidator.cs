@@ -24,10 +24,10 @@ namespace SqlSync.ObjectScript
             this.bgWorker = bgWorker;
 			this.connData = connData;
            //string getObjSql = "select name, OBJECTPROPERTY(id, 'ExecIsQuotedIdentOn') as quoted_ident_on, OBJECTPROPERTY(id, 'ExecIsAnsiNullsOn') as ansi_nulls_on, user_name(o.uid) owner, type from sys.objects o where type in ('P', 'V', 'FN') and category = 0 order by type";
-            string getObjSql = @"select o.name, OBJECTPROPERTY(id, 'ExecIsQuotedIdentOn') as quoted_ident_on, 
-OBJECTPROPERTY(id, 'ExecIsAnsiNullsOn') as ansi_nulls_on, user_name(o.uid) owner, s.name as [schema], type 
-from sys.objects o 
-INNER JOIN sys.schemas s ON s.schema_id = o.uid where type in ('P', 'V', 'FN') and category = 0 order by type";
+            string getObjSql = @"select o.name, OBJECTPROPERTY(object_id, 'ExecIsQuotedIdentOn') as quoted_ident_on, 
+                OBJECTPROPERTY(object_id, 'ExecIsAnsiNullsOn') as ansi_nulls_on, user_name(o.schema_id) owner, s.name as [schema], type 
+                from sys.objects o 
+                INNER JOIN sys.schemas s ON s.schema_id = o.schema_id where type in ('P', 'V', 'FN') order by type";
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
             SqlCommand cmd = new SqlCommand(getObjSql, conn);
             SqlDataAdapter adapt = new SqlDataAdapter(cmd);

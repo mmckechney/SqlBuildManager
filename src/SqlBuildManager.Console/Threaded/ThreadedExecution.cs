@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
@@ -6,13 +9,8 @@ using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using MoreLinq;
 using System.Linq;
 using System.Threading.Tasks;
-using SqlBuildManager.Console.Queue;
-using Azure.Messaging.ServiceBus;
-
 namespace SqlBuildManager.Console.Threaded
 {
     public class ThreadedExecution 
@@ -114,13 +112,6 @@ namespace SqlBuildManager.Console.Threaded
         {
             this.cmdLine = cmd;
         }
-        public ThreadedExecution(string[] args)
-        {
-            this.args = args;
-
-        }
-
-      
 
         /// <summary>
         /// Execute method that is used from a straight command-line execution
@@ -131,12 +122,6 @@ namespace SqlBuildManager.Console.Threaded
 
             log.LogDebug("Entering Execute method of ThreadedExecution");
             string[] errorMessages;
-
-            //Parse out the command line options if needed (should only be coming from unit tests)
-            if (cmdLine == null)
-            {
-                cmdLine = CommandLine.ParseCommandLineArg(args);
-            }
 
             //Create Threaded Run specific loggers -- these are init'd when the first logs are written
             var batchWorking = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_WORKING_DIR");

@@ -18,7 +18,7 @@ namespace SqlBuildManager.Logging
 
         public static void CloseAndFlushAllLoggers()
         {
-            Threaded.Configure.CloseAndFlushAllLoggers();
+            Threaded.Configure.CloseAndFlushAllLoggers(false);
             ApplicationLogging.CloseAndFlush();
 
             //Needed to make sure all files are saved and flushed

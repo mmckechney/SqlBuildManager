@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Interfaces.Console;
+using SqlSync.Connection;
+using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.MultiDb;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.Connection;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Console
 {
     class Validation
@@ -307,7 +307,7 @@ namespace SqlBuildManager.Console
                 if (cmdLine.DacPacArgs.ForceCustomDacPac == false)
                 {
                     string sbmName;
-                    var stat = DacPacHelper.GetSbmFromDacPac(cmdLine, multiDb, out sbmName);
+                    var stat = Program.GetSbmFromDacPac(cmdLine, multiDb, out sbmName);
                     if (stat == DacpacDeltasStatus.Success)
                     {
                         cmdLine.BuildFileName = sbmName;

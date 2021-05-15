@@ -1,16 +1,14 @@
-﻿using SqlBuildManager.Console;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
-using System.IO;
+using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
-using System.Collections;
+using System.IO;
 using System.Linq;
-using SqlBuildManager.Console.Threaded;
 using System.Text;
-
 namespace SqlBuildManager.Console.UnitTest
 {
     [TestClass()]

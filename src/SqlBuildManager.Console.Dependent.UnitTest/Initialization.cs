@@ -37,11 +37,6 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
         }
 
-        public ThreadedExecution GetThreadedExecutionAccessor(string[] args)
-        {
-            return new ThreadedExecution(args);
-        }
-
         public void CopySbmFileToTestPath()
         {
             File.WriteAllBytes(Initialization.SqlBuildZipFileName, Properties.Resources.NoTrans_MultiDb1);

@@ -125,7 +125,7 @@
             this.toolStripSeparator5,
             this.runBuildUsingCurrentConfigurationWithoutTransactionsToolStripMenuItem,
             this.toolStripSeparator3,
-            this.constructCommandLineToolStripMenuItem,
+            //this.constructCommandLineToolStripMenuItem,
             this.toolStripSeparator4,
             this.mnuFileMRU});
             this.mnuActionMain.Image = global::SqlSync.Properties.Resources.Execute;

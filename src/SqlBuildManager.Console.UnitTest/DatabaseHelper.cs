@@ -1,8 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
-using SqlSync.SqlBuild;
+using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
-
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     class DatabaseHelper

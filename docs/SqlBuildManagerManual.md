@@ -3,7 +3,7 @@
 Michael McKechney
 ([michael@mckechney.com](mailto:michael@mckechney.com)) \
  [www.SqlBuildManager.com](https://mmckechney.github.io/SqlBuildManager/) \
- Copyright 2004-2020
+ Copyright 2004-2021
 
 ------
 
@@ -637,28 +637,27 @@ Basic Command Line Execution
 ## Command Line Arguments 
 
 Sql Build Manager can be run directly via command line or through the
-SqlBuildManager.Console.exe helper application. The advantage of using
+`sbm` application. The advantage of using
 the "console" application is that you will be able to record exit code
 values as well as stream the standard output and error text into any
 automation or scheduling software that you may be using.
 
+The command line also has the ability to run on Linux and/or run massively parallel updates leveraging Azure Batch
+
 ### For command line details go [here](commandline.md)
 
+## Command Line Examples
 
-## Command Line Examples 
+**Run standard unattended Sql build**
 
-**Run standard unattended Sql build****\
-**Runs the specified .sbm build file on the designated server using the
+Runs the specified .sbm build file on the designated server using the
 parameters and target databases defined in the project. The command line
 execution uses Windows authentication of the executing process to
 connect to the server and database(s). As with in interactive execution,
 the results are saved in the .sbm file for review.
 
--   SqlBuildManager.Console.exe /Action=Build /PackageName=".sbm file name"
-    /server=myserver 
-
-```
-SqlBuildManager.Console.exe /Action=Build /PackageName="ProjectUpdate.sbm" /server=ProdServer 
+``` bash 
+sbm build --packagename "ProjectUpdate.sbm" --server ProdServer 
 ```
 
 **Run an unattended Sql build with manual database override
@@ -670,11 +669,8 @@ The command line execution uses Windows authentication of the executing
 process to connect to the server and database(s). As with in interactive
 execution, the results are saved in the .sbm file for review.
 
--   SqlBuildManager.Console.exe /Action=Build /PackageName=".sbm file name" /server=server
-    /override=default,override
-
-```
-SqlBuildManager.Console.exe /Action=Build /PackageName="ProjectUpdate.sbm" /server=ProdServer /override=Main,Copy1
+``` bash 
+sbm build --packagename "ProjectUpdate.sbm" --server ProdServer  --override "Main,Copy1"
 ```
 
 Note that multiple overrides may be set if the build file contains more
@@ -688,12 +684,9 @@ authentication of the executing process to connect to the server and
 database(s). As with in interactive execution, the results are saved in
 the .sbm file for review.
 
-```
- SqlBuildManager.Console.exe /Action=Build /PackageName="ProjectUpdate.sbm" /override="prod release.multiDb"
+``` bash 
+ sbm build --packagename "ProjectUpdate.sbm" --override "prod release.multiDb"
  ```
-
-See [Advanced Command Line Execution](#Advanced-Command-Line-Execution) for
-return codes.
 
 Targeting Multiple Servers and Databases
 ========================================
@@ -815,9 +808,6 @@ configuration file. You will then be prompted to save the query as a
 generated configuration setting will be loaded in the Multiple Database
 Run Configuration window.
 
- 
--
-
 Threaded Multi-Server Database Execution
 ----------------------------------------
 
@@ -858,24 +848,6 @@ database;\<default2\>,\<override2\>
 For each database you want to execute against, add an additional line in
 the configuration file (i.e. each line equates to an additional thread).
 Finally, save the file with a .cfg extension
-
-See [Advanced Command Line Execution](#AdvancedCommandLineExecution) for
-the command line syntax to execute your threaded builds.
-
-Remote Service Execution and Deployment
-=======================================
-
-While the tool has the feature for [Targeting Multiple Servers and
-Databases](#TargetingMultipleServersandDatabases), you can take that
-multi-target, multi-threaded execution one step further and distribute
-that load across multiple -->Execution Servers--> as well. It builds on the
-multiple server functionality and extends it to send build requests via
-a remote service call to remote computers that will handle the actual
-processing of the SQL scripts. You can spit the load amongst all of your
-execution servers for maximum efficiency and minimum deployment time.
-
-Overview
---------
 
 Advanced Script Handling
 ========================

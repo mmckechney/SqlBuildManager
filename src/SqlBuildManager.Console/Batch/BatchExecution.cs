@@ -1,26 +1,25 @@
-﻿using Microsoft.Azure.Batch;
+﻿using Azure.Storage;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Sas;
+using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
+using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Threaded;
+using SqlBuildManager.Interfaces.Console;
+using SqlSync.Connection;
+using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
 using System.Text;
-using SqlBuildManager.Interfaces.Console;
 using System.Text.RegularExpressions;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Specialized;
-using Azure.Storage.Blobs.Models;
-using Azure.Storage.Sas;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Azure;
-using Azure.Storage;
-using SqlBuildManager.Console.Threaded;
-using SqlSync.Connection;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Console.Batch
 {
     public class Execution
@@ -722,8 +721,6 @@ namespace SqlBuildManager.Console.Batch
             {
                 var threadCmdLine = (CommandLineArgs)cmdLine.Clone(); 
 
-                threadCmdLine.Action = CommandLineArgs.ActionType.Threaded; // set action to threaded (used only in classic command line)
-
                 //Set package name to the path on the node (if set)
                 if (!string.IsNullOrWhiteSpace(threadCmdLine.BuildFileName))
                 {
@@ -779,37 +776,38 @@ namespace SqlBuildManager.Console.Batch
                 threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
 
                 StringBuilder sb = new StringBuilder();
-                switch(os)
+                switch (os)
                 {
                     case OsType.Windows:
                         sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe ");
-                        sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
-                        switch (bType)
-                        {
-                            case BatchType.Run:
-                                sb.Append(threadCmdLine.ToBatchThreadedExeString());
-                                break;
-                            case BatchType.Query:
-                                sb.Append(threadCmdLine.ToBatchQueryThreadedExeString());
-                                break;
-                        }
                         break;
-
                     case OsType.Linux:
                         sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm ");
-                        sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
-                        switch (bType)
-                        {
-                            case BatchType.Run:
-                                sb.Append(threadCmdLine.ToBatchThreadedExeString() + "'");
-                                break;
-                            case BatchType.Query:
-                                sb.Append(threadCmdLine.ToBatchQueryThreadedExeString() + "'");
-                                break;
-                        }
                         break;
                 }
- 
+                sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
+
+                switch (bType)
+                {
+                    case BatchType.Run:
+                        sb.Append("runthreaded ");
+                        break;
+                    case BatchType.Query:
+                        sb.Append("querythreaded ");
+                        break;
+                }
+                switch(os)
+                {
+                    case OsType.Windows:
+                        sb.Append(threadCmdLine.ToBatchString());
+                        break;
+                    case OsType.Linux:
+                        sb.Append(threadCmdLine.ToBatchString() + "'");
+                        break;
+                }
+                
+                
+
                 commandLines.Add(sb.ToString());
             }
 
