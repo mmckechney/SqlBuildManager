@@ -286,6 +286,16 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] Platinumschema1 {
+            get {
+                object obj = ResourceManager.GetObject("Platinumschema1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] PlatunumSchema {
             get {
                 object obj = ResourceManager.GetObject("PlatunumSchema", resourceCulture);
@@ -370,6 +380,16 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest.Properties {
         public static byte[] TarnishedSchema_simple {
             get {
                 object obj = ResourceManager.GetObject("TarnishedSchema_simple", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] TarnishedSchema1 {
+            get {
+                object obj = ResourceManager.GetObject("TarnishedSchema1", resourceCulture);
                 return ((byte[])(obj));
             }
         }

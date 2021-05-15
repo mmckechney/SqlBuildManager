@@ -70,22 +70,22 @@ namespace SqlSync.SqlBuild
 
 
 
-        public static T DeepClone<T>(this object obj) where T : class
-        {
-            object cloned = new object();
-            BinaryFormatter formatter = new BinaryFormatter();
-            using (MemoryStream stream = new MemoryStream())
-            {
-                formatter.Serialize(stream, obj);
-                stream.Flush();
-                stream.Position = 0;
-                cloned = formatter.Deserialize(stream);
-            }
+        //public static T DeepClone<T>(this object obj) where T : class
+        //{
+        //    object cloned = new object();
+        //    BinaryFormatter formatter = new BinaryFormatter();
+        //    using (MemoryStream stream = new MemoryStream())
+        //    {
+        //        formatter.Serialize(stream, obj);
+        //        stream.Flush();
+        //        stream.Position = 0;
+        //        cloned = formatter.Deserialize(stream);
+        //    }
 
 
-            return cloned as T;
+        //    return cloned as T;
 
-        }
+        //}
 
         //This works, but splits one at a time vs. chunking.. I want chunking.
         //Keeping the code just in case I want it later for something else. 

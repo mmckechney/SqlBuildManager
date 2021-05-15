@@ -195,7 +195,7 @@ namespace SqlBuildManager.Console.Queue
                         _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock }, token);
                         log.LogInformation($"Obtained new subscription for batch job '{batchJobName}' and subscription Id '{_sessionReceiver.SessionId}' ");
                     }
-                    catch(TaskCanceledException tce)
+                    catch(TaskCanceledException)
                     {
                         log.LogInformation("No session available by wait time expiration");
                         return lstMsg ;
@@ -381,7 +381,7 @@ namespace SqlBuildManager.Console.Queue
                         _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete }, token);
                         log.LogInformation($"Obtained new subscription for subscription Id '{_sessionReceiver.SessionId}' ");
                     }
-                    catch (TaskCanceledException tce)
+                    catch (TaskCanceledException)
                     {
                         log.LogInformation("No more messages available - by wait time expiration");
                         break;
@@ -411,7 +411,7 @@ namespace SqlBuildManager.Console.Queue
                                 break;
                             }
                         }
-                        catch (TaskCanceledException tce)
+                        catch (TaskCanceledException)
                         {
                             log.LogInformation($"No more messages available in {this.topicSessionSubscriptionName} session {_sessionReceiver.SessionId} - by wait time expiration");
                             break;

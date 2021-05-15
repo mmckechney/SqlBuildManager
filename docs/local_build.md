@@ -1,6 +1,6 @@
 # Local Builds
 
-If you have a single databases to update, you can use a local build. 
+If you have a single databases to update, you can use a local build.
 
 Sample command:
 

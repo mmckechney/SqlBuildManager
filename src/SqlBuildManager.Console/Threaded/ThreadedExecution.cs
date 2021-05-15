@@ -27,7 +27,6 @@ namespace SqlBuildManager.Console.Threaded
         DateTime startTime;
         bool hasError = false;
         bool theadedLoggingInitiated = false;
-        private string[] args;
         private CommandLineArgs cmdLine = null;
         private QueueManager qManager = null;
         private int queueReturnValue = 0;
@@ -340,7 +339,7 @@ namespace SqlBuildManager.Console.Threaded
                 log.LogInformation($"Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
                 string dacpacName = Path.Combine(ThreadedExecution.rootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
 
-                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
+                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
                 {
                     var m = new LogMsg()
                     {

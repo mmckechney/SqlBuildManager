@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Dac;
+using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace SqlSync.SqlBuild
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
        
-        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, string userName, string password, string dacPacFileName)
+        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType,  string userName, string password, string dacPacFileName)
         {
 
             try
@@ -27,8 +28,9 @@ namespace SqlSync.SqlBuild
 
 
                 SqlConnectionStringBuilder connBuilder = new SqlConnectionStringBuilder();
-                connBuilder.UserID = userName;
-                connBuilder.Password = password;
+                if (authType == AuthenticationType.Windows) connBuilder.IntegratedSecurity = true;
+                if (!string.IsNullOrWhiteSpace(userName)) connBuilder.UserID = userName;
+                if (!string.IsNullOrWhiteSpace(password)) connBuilder.Password = password;
                 connBuilder.DataSource = sourceServer;
                 connBuilder.InitialCatalog = sourceDatabase;
 
@@ -47,7 +49,7 @@ namespace SqlSync.SqlBuild
 
         }
 
-        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName, string path)
+        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName, string path, bool ignoreCompatError = false)
         {
             try
             {
@@ -57,6 +59,10 @@ namespace SqlSync.SqlBuild
                 opts.IgnoreExtendedProperties = true;
                 opts.BlockOnPossibleDataLoss = false;
                 opts.IgnoreUserSettingsObjects = true;
+                if(ignoreCompatError)
+                {
+                    opts.AllowIncompatiblePlatform = true;
+                }
 
 
                 DacPackage platPackage = DacPackage.Load(platinumDacPacFileName);
@@ -64,6 +70,19 @@ namespace SqlSync.SqlBuild
                 string script =  DacServices.GenerateDeployScript(platPackage, targPackage, Path.GetFileNameWithoutExtension(targetDacPacFileName), opts);
                 return script;
 
+            }
+            catch(Microsoft.SqlServer.Dac.DacServicesException dexe)
+            {
+                if (dexe.ToString().Contains("DeploymentCompatibilityException"))
+                {
+                    log.LogWarning("Encountered a Deployment Compatibility Exception! Generating scripts with \"AllowIncompatiblePlatform=true\" setting. This may result in script runtime errors.");
+                    return ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path, true);
+                }
+                else
+                {
+                    log.LogError($"Problem creating scripts between {platinumDacPacFileName} and {targetDacPacFileName}: {dexe.ToString()}");
+                    return string.Empty;
+                }
             }
             catch (Exception exe)
             {
@@ -160,7 +179,7 @@ namespace SqlSync.SqlBuild
             }
             return files;
         }
-       
+
         /// <summary>
         /// Tries to eliminate the header information that the DACPAC tooling adds 
         /// </summary>
@@ -169,51 +188,38 @@ namespace SqlSync.SqlBuild
         /// <returns></returns>
         internal static DacpacDeltasStatus CleanDacPacScript(string dacPacGeneratedScript, out string cleanedScript)
         {
+            int index = -1;
+            bool matchFound = false;
             cleanedScript = dacPacGeneratedScript;
 
-            //string matchString = Regex.Escape(@"USE [$(DatabaseName)];");
-            //MatchCollection useMatches = Regex.Matches(dacPacGeneratedScript, matchString);
-            //var lastMatch = useMatches.Cast<Match>().Select(m => m.Index).LastOrDefault();
-
-
-            //if(lastMatch == -1) //Odd, there should be something, but oh well...
-            //{
-            //    return DacpacDeltasStatus.InSync;
-            //}
-
-            ////Get rid of the SQLCMD header scripts
-            //if (useMatches.Count < 3)
-            //{
-            //    int crAfter = dacPacGeneratedScript.IndexOf("GO", lastMatch);
-            //    cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
-            //}else
-            //{
-            //    int crAfter = dacPacGeneratedScript.IndexOf("GO", useMatches[1].Index);
-            //    cleanedScript = dacPacGeneratedScript.Substring(crAfter + 2);
-            //    cleanedScript = cleanedScript.Replace("USE [$(DatabaseName)];", "--USE [$(DatabaseName)];");
-            //}
-
-            //string loginString = @"(CREATE USER)|(CREATE LOGIN)|(REVOKE CONNECT)|(EXECUTE sp_addrolemember)";
-            //while(Regex.Match(cleanedScript,loginString).Success)
-            //{
-            //    var mLogin = Regex.Matches(cleanedScript, loginString).Cast<Match>().Select(m => m.Index).FirstOrDefault();
-            //    int crAfter = cleanedScript.IndexOf("GO", mLogin);
-            //    cleanedScript = cleanedScript.Substring(0, mLogin) + cleanedScript.Substring(crAfter + 2);
-            //}
-
-           string endofHeader = Regex.Escape(@"Please run the below section of statements against the database");
+            //look for basic header 
+            string endofHeader = Regex.Escape(@"Please run the below section of statements against the database");
             MatchCollection endMatchs = Regex.Matches(dacPacGeneratedScript, endofHeader);
             var endMatch = endMatchs.Cast<Match>().LastOrDefault();
-            if(endMatch == null || endMatch.Index == -1 || string.IsNullOrWhiteSpace(endMatch.Value)) //Odd, there should be something, but oh well...
+            index = (endMatch == null) ? -1 : endMatch.Index;
+            if (endMatch != null && endMatch.Index != -1)
             {
-                return DacpacDeltasStatus.InSync;
-            }
-            else
-            {
-                var endOfLineIndex = dacPacGeneratedScript.IndexOf(Environment.NewLine, endMatch.Index);
+                matchFound = true;
+                var endOfLineIndex = dacPacGeneratedScript.IndexOf(Environment.NewLine, index);
                 cleanedScript = dacPacGeneratedScript.Substring(endOfLineIndex + 1);
-               // var lineNumber = dacPacGeneratedScript.Take(endMatch).Count(c => c == '\n') + 1;
+            }
 
+            //look for the database settings header 
+            endMatchs = Regex.Matches(cleanedScript, Regex.Escape("$(DatabaseName)"));
+            endMatch = endMatchs.Cast<Match>().LastOrDefault();
+            if (endMatch != null && endMatch.Index != -1)
+            {
+                matchFound = true;
+                //get the "GO" delimiter after this match
+                index = 2 + Regex.Matches(cleanedScript, "GO").Where(m => m.Index > endMatch.Index).FirstOrDefault().Index;
+                cleanedScript = cleanedScript.Substring(index);
+            }
+
+            if (!matchFound)
+            {
+                log.LogInformation("Unable to find script headers, nothing to update?");
+                log.LogDebug($"Script contents:{Environment.NewLine}{dacPacGeneratedScript}");
+                return DacpacDeltasStatus.InSync;
             }
 
             //Look for the "Post-Deployment Script Template"
@@ -224,6 +230,7 @@ namespace SqlSync.SqlBuild
                 var lineNumber = cleanedScript.Take(postDeploy.Index).Count(c => c == '\n') + 1;
                 if(lineNumber < 25)
                 {
+                    log.LogDebug($"Cleand script contents:{Environment.NewLine}{cleanedScript}");
                     return DacpacDeltasStatus.OnlyPostDeployment;
                 }
             }
@@ -234,18 +241,20 @@ namespace SqlSync.SqlBuild
                 .Where(x => !x.StartsWith("GO", StringComparison.InvariantCultureIgnoreCase));
             if(!realLines.Any())
             {
+                log.LogDebug($"Cleand script contents:{Environment.NewLine}{cleanedScript}");
                 return DacpacDeltasStatus.InSync;
             }
 
+            log.LogDebug($"Cleand script contents:{Environment.NewLine}{cleanedScript}");
             return DacpacDeltasStatus.Success;
 
         }
 
 
-        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout)
+        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, AuthenticationType authType,  string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout)
         {
             string tmpDacPacName = Path.Combine(workingDirectory,targetDatabase + ".dacpac");
-            if(!ExtractDacPac(targetDatabase, targetServerName, userName, password, tmpDacPacName))
+            if(!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName))
             {
                 return DacpacDeltasStatus.ExtractionFailure;
             }
@@ -283,7 +292,7 @@ namespace SqlSync.SqlBuild
             return DacpacDeltasStatus.Success;
         }
 
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, string username, string password, string buildRevision, int defaultScriptTimeout,  MultiDbData multiDb, out string sbmName)
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout,  MultiDbData multiDb, out string sbmName)
         {
             string workingFolder = (!string.IsNullOrEmpty(rootLoggingPath) ? rootLoggingPath : Path.GetTempPath());
    
@@ -304,7 +313,7 @@ namespace SqlSync.SqlBuild
             else if (!string.IsNullOrEmpty(database) && !string.IsNullOrEmpty(server))
             {
                 string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
-                if (!DacPacHelper.ExtractDacPac(database, server, username, password, targetDacPac))
+                if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac))
                 {
                     log.LogError($"Error extracting dacpac from {database} : {server}");
                     return DacpacDeltasStatus.ExtractionFailure;
@@ -322,7 +331,7 @@ namespace SqlSync.SqlBuild
                         database = serv.OverrideSequence.ElementAt(i).Value[0].OverrideDbTarget;
 
                         string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
-                        if (!DacPacHelper.ExtractDacPac(database, server, username, password, targetDacPac))
+                        if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac))
                         {
                             log.LogError($"Error extracting dacpac from {server} : {database}");
                             return DacpacDeltasStatus.ExtractionFailure;
@@ -370,9 +379,9 @@ namespace SqlSync.SqlBuild
             }
             return stat;
         }
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, string server, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName)
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, AuthenticationType authType,  string server, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName)
         {
-            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName);
+            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, authType,  username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName);
         }
       
 

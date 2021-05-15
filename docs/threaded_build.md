@@ -12,5 +12,4 @@ sbm threaded run
     --username "dbusername" ^
     --password "dbpassword" ^
     --override "targetdatabases.cfg" ^
-
 ```

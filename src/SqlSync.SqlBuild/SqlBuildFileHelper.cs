@@ -357,6 +357,10 @@ namespace SqlSync.SqlBuild
                 return false;
             }
             string directory = Path.GetDirectoryName(buildFileName);
+            if(string.IsNullOrWhiteSpace(directory))
+            {
+                directory = System.IO.Directory.GetCurrentDirectory();
+            }
             try
             {
                 SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();

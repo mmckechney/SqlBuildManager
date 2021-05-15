@@ -39,6 +39,18 @@
   </head>
   <body>
     <h1>SQL Build Manager Change Notes</h1>
+    <div class="version">Version 13.0.3</div>
+    <div>
+      <span class="fixed">FIXED: </span>Update to Dacpac change scripts to identify new header delimiter</div>
+    <div>
+      <span class="fixed">FIXED: </span>Issue creating scripts between incompatable SQL Server versions. Will now output a warning and continue to create the scripts with the flag `AllowIncompatiblePlatform=true` </div>
+    <div>
+      <span class="added">ADDED: </span>New command `sbm create` to create a new SBM file from a list of scripts</div>
+    <div>
+      <span class="updated">UPDATED: </span>Can now use Windows auth for DACPAC creation</div>
+    <div>
+      <span class="updated">UPDATED: </span>updated Nuget packages</div>
+    <br />
     <div class="version">Version 13.0.2</div>
     <div>
       <span class="fixed">FIXED: </span>Update to ensure all Queue messages are retrieved efficiently</div>
@@ -47,7 +59,7 @@
     <div>
       <span class="updated">UPDATED: </span>Code clean up and refactoring to accommodate latest version of System.CommandLine</div>
     <div>
-      <span class="fixed">FIXED: </span>Issue with SQL text syntax higlighting formatting in .NET 5.0</div>
+      <span class="fixed">FIXED: </span>Issue with SQL text syntax highlighting formatting in .NET 5.0</div>
     <div>
       <span class="note">NOTE: </span>Removed "Construct Command Line" menu options from Windows UI. Users should leverage the generated help docs for sbm.exe</div>
     <br />
@@ -67,7 +79,7 @@
     <br />
     <div class="version">Version 12.1.0</div>
     <div>
-      <span class="updated">UPDATED: </span>Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Loggging. Implements Serilog</div>
+      <span class="updated">UPDATED: </span>Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Logging. Implements Serilog</div>
     <br />
     <div class="version">Version 12.0.0</div>
     <div>

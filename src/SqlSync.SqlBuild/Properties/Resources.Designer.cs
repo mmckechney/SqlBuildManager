@@ -84,7 +84,15 @@ namespace SqlSync.SqlBuild.Properties {
                 return ResourceManager.GetString("LoggingTable", resourceCulture);
             }
         }
-        
+
+        internal static string DacpacExclusion
+        {
+            get
+            {
+                return ResourceManager.GetString("DacpacExclusion", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to --Add extra index to improve hash check performance
         ///IF NOT  EXISTS (SELECT 1 FROM sysindexes WHERE name = &apos;IX_SqlBuild_Logging_CommitCheck&apos;  AND OBJECT_NAME(id) = N&apos;SqlBuild_Logging&apos;)

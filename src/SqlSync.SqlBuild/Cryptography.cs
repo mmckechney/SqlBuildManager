@@ -50,7 +50,7 @@ namespace SqlSync.SqlBuild
 
                 return (true, result);
             }
-            catch (Exception exe)
+            catch (Exception)
             {
                 if (!suppressLog)
                 {

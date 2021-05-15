@@ -28,7 +28,7 @@ namespace SqlSync.Analysis
         {
             InitializeComponent();
 
-            if (Properties.Settings.Default.DiffBackgroundColor != null)
+            if (Properties.Settings.Default.DiffBackgroundColor != this.diffColor)
             {
                 this.diffColor = Properties.Settings.Default.DiffBackgroundColor;
             }
@@ -40,9 +40,9 @@ namespace SqlSync.Analysis
 
             }
 
-            if (Properties.Settings.Default.DiffForegroundColor != null)
+            if (Properties.Settings.Default.DiffForegroundColor != this.diffForeColor)
             {
-                this.diffColor = Properties.Settings.Default.DiffForegroundColor;
+                this.diffForeColor = Properties.Settings.Default.DiffForegroundColor;
             }
             else
             {

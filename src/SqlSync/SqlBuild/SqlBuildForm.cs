@@ -6834,7 +6834,7 @@ namespace SqlSync.SqlBuild
                     if (File.Exists(this.autoScriptListRegistration.Items[i].File))
                     {
                         System.Diagnostics.Process prc = new System.Diagnostics.Process();
-                        prc.StartInfo.FileName = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+                        prc.StartInfo.FileName = System.Reflection.Assembly.GetExecutingAssembly().Location;
                         prc.StartInfo.Arguments = " \"" + this.autoScriptListRegistration.Items[i].File + "\"";
                         prc.Start();
                     }

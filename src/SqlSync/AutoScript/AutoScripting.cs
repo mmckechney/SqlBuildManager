@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using SqlSync.AutoScript;
 using SqlSync.Connection;
 using SqlSync.ObjectScript;
+using Microsoft.Extensions.Logging;
 namespace SqlSync
 {
 	/// <summary>
@@ -41,7 +42,8 @@ namespace SqlSync
         private SplitContainer splitContainer1;
         private Panel panel1;
 		private bool zipScripts = true;
-		public AutoScripting(string configFile)
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        public AutoScripting(string configFile)
 		{
 			InitializeComponent();
 			this.configFileName = configFile;

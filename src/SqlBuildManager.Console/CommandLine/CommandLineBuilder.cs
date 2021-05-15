@@ -39,7 +39,7 @@ namespace SqlBuildManager.Console.CommandLine
             var platinumdbsourceOption = new Option<string>(new string[] { "--platinumdbsource" }, "Instead of a formally built Platinum Dacpac, target this database as having the desired state schema");
             var platinumserversourceOption = new Option<string>(new string[] { "--platinumserversource" }, "Instead of a formally built Platinum Dacpac, target a database on this server as having the desired state schema");
             var buildrevisionOption = new Option<string>(new string[] { "--buildrevision" }, "If provided, the build will include an update to a \"Versions\" table and this will be the value used to add to a \"VersionNumber\" column (varchar(max))");
-            var outputsbmOption = new Option<string>(new string[] { "--outputsbm" }, "Name (and path) of the SBM package to create");
+            var outputsbmOption = new Option<string>(new string[] { "-o", "--outputsbm" }, "Name (and path) of the SBM package to create");
             var deletebatchpoolOption = new Option<bool>(new string[] { "--deletebatchpool" }, () => false, "Whether or not to delete the batch pool servers after an execution");
             var deletebatchjobOption = new Option<bool>(new string[] { "--deletebatchjob" }, () => false, "Whether or not to delete the batch job after an execution");
             var batchnodecountOption = new Option<int>(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job");
@@ -67,6 +67,7 @@ namespace SqlBuildManager.Console.CommandLine
             var threadedConcurrencyOption = new Option<int>(new string[] { "--concurrency" }, "Maximum concurrency for threaded executions");
             var threadedConcurrencyTypeOption = new Option<ConcurrencyType>(new string[] { "--concurrencytype" }, "Type of concurrency, used in conjunction with --concurrency ");
             var logLevelOption = new Option<LogLevel>(new string[] { "--loglevel" }, "Logging level for console and log file");
+            var scriptListOption = new Option<FileInfo[]>(new string[] {"-s", "--scripts"}, "List of script files to create SBM package from - separate names with spaces (will be added in order provided)") { IsRequired = true }.ExistingOnly();
 
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
@@ -490,6 +491,15 @@ namespace SqlBuildManager.Console.CommandLine
             };
             packageCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.PackageSbxFilesIntoSbmFiles);
 
+            //Create
+            var createCommand = new Command("create", "Creates an SBM package from a list of scripts")
+            {
+                outputsbmOption.Copy(true),
+                scriptListOption
+
+            };
+            createCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreatePackageFromScripts);
+
             //Run a policy check
             var policyCheckCommand = new Command("policycheck", "Performs a script policy check on the specified SBM package")
             {
@@ -523,6 +533,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(buildCommand);
             rootCommand.Add(threadedCommand);
             rootCommand.Add(batchCommand);
+            rootCommand.Add(createCommand);
             rootCommand.Add(packageCommand);
             rootCommand.Add(policyCheckCommand);
             rootCommand.Add(getHashCommand);
