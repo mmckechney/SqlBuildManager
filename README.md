@@ -89,13 +89,13 @@ The command line utility is geared more toward executing a build vs. creating th
 
 3. From an SBX file. What is this? An SBX file is an XML file in the format of the `SqlSyncBuildProject.xml` file (see above) that has an `.sbx` extension. When you use the `sbm package` command, it will read the `.sbx` file and create the `.sbm` file with the referenced scripts.
 
-4. An SBM package file can be created indirectly as well, using the `sbm threaded run` and `sbm batch run` commands along with the `--platinumdbsource="<database name>"` and `--platinumserversource="<server name>"` the app will generate a DACPAC from the source database then will then be used to generate an SBM at run time to build directly on your target(s).
+4. An SBM package file can be created indirectly as well, using the `sbm threaded run` and `sbm batch run` commands along with the `--platinumdbsource="<database name>"` and `--platinumserversource="<server name>"` the app will generate a DACPAC from the source database which will then be used to generate an SBM at run time to build directly on your target(s).
 
 ----
 
 ## Targeting multiple databases
 
-You define your database update targets leveraging an `--override` file or leverage Azure Service Bus Topics when using Azure Batch. The details of database targeting can be found [here](docs/override_options.md#database-targeting-option)
+You define your database update targets leveraging an `--override` file or using Azure Service Bus Topics (only with Azure Batch). The details of database targeting can be found [here](docs/override_options.md#database-targeting-option)
 
 ----
 

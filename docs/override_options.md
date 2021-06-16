@@ -43,7 +43,7 @@ Here it is important to also understand the impact of [concurrency options](conc
 
 A key advantage for using a Service Bus Topic is your ability to easily monitor the progress of the batch run by watching the message count in the Topic. You can use the [Service Bus Explorer app](https://github.com/paolosalvatori/ServiceBusExplorer) or the Service Bus Explorer found in the Azure portal for your Service Bus.
 
-In addition, it will allow for more even distribution of targets by allowing nodes to not go idle if the are first to exhaust their target list.
+In addition, it will allow for more even distribution of targets by allowing nodes to not go idle as they would if using an override file and they exhaust their target list.
 
 ### Queue Runtime
 

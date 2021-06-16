@@ -16,6 +16,7 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 ### Utility actions
 
 - `dacpac` - Create a DACPAC file from the source `--database` and `--server`
+- `create` - Creates an SBM package file from a list of supplied script files
 - `package` - Creates an SBM package from an SBX configuration file and scripts
 - `policycheck` - Performs a script policy check on the specified SBM package
 - `gethash` - Calculates the SHA-1 hash fingerprint value for the SBM package(scripts + run order)

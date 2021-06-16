@@ -18,7 +18,6 @@ The two options are `--concurrency` and `--concurrencytype`. While their meaning
 
     For example: If there are 5 unuque SQL Server targest in the database targets config file and the `concurrency` flag is set to 3, then it will run 3 tasks per server at a time, up to 15 concurrent tasks (5 servers * 3 tasks per server).
 
-
 ### --concurrency
 
 This argument takes an integer number (default is 8) defining the maximum number of concurrent threads per the set `concurrencytype`
