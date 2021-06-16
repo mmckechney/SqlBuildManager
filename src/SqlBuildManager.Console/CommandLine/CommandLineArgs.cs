@@ -110,6 +110,8 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public string OutputSbm { get; set; }
         [JsonIgnore]
+        public FileInfo[] Scripts { get; set; }
+        [JsonIgnore]
         public string DacpacName
         {
             get

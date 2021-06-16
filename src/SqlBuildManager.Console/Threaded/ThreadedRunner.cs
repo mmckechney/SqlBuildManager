@@ -164,7 +164,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     runData.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
-                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.username, this.password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout);
+                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.authType, this.username, this.password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout);
                     switch(status)
                     {
                         case DacpacDeltasStatus.Success:

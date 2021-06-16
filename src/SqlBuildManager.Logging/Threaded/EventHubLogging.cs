@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.EventHubs;
+﻿using Azure.Messaging.EventHubs.Producer;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -17,7 +17,7 @@ namespace SqlBuildManager.Logging.Threaded
 		public static void ConfigureEventHubLogger(ILoggerFactory factory)
 		{
 
-			EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(_EventHubConnectionString);
+			EventHubProducerClient eventHubClient = new EventHubProducerClient(_EventHubConnectionString);
 
 
 			serilogLogger = new LoggerConfiguration()

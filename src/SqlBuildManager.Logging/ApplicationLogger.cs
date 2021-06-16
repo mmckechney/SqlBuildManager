@@ -28,7 +28,7 @@ namespace SqlBuildManager.Logging
                     .Enrich.WithThreadId()
                     .Enrich.WithThreadName()
                     .WriteTo.Console(outputTemplate: consoleOutput)
-                    .WriteTo.Async(a => a.File(_logFileName, outputTemplate: logOutputTemplate, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: false, shared: true))
+                    .WriteTo.Async(a => a.File(LogFileName, outputTemplate: logOutputTemplate, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: false, shared: true))
                     .CreateLogger();
            
 			factory.AddSerilog(serilogLogger);

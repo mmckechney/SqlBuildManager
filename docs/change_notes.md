@@ -2,12 +2,20 @@
 # SQL Build Manager Change Notes
 
 
+### Version 13.0.3
+
+- *FIXED:* Update to Dacpac change scripts to identify new header delimiter
+- *FIXED:* Issue creating scripts between incompatable SQL Server versions. Will now output a warning and continue to create the scripts with the flag `AllowIncompatiblePlatform=true` 
+- *ADDED:* New command `sbm create` to create a new SBM file from a list of scripts
+- *UPDATED:* Can now use Windows auth for DACPAC creation
+- *UPDATED:* updated Nuget packages
+
 ### Version 13.0.2
 
 - *FIXED:* Update to ensure all Queue messages are retrieved efficiently
 - *ADDED:* New utility method `sbm batch dequeue` to remove all messages from the Service Bus Queue topic (without processing them)
 - *UPDATED:* Code clean up and refactoring to accommodate latest version of System.CommandLine
-- *FIXED:* Issue with SQL text syntax higlighting formatting in .NET 5.0
+- *FIXED:* Issue with SQL text syntax highlighting formatting in .NET 5.0
 - **NOTE:** Removed "Construct Command Line" menu options from Windows UI. Users should leverage the generated help docs for sbm.exe
 
 ### Version 13.0.1
@@ -23,7 +31,7 @@
 
 ### Version 12.1.0
 
-- *UPDATED:* Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Loggging. Implements Serilog
+- *UPDATED:* Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Logging. Implements Serilog
 
 ### Version 12.0.0
 

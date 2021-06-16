@@ -37,6 +37,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NoWarn>1701;1702;CS0108</NoWarn>
+    <NoWarn>1701;1702;CS0108;CA1416</NoWarn>
   </PropertyGroup>
 </Project>

@@ -71,8 +71,8 @@ namespace SqlSync
 
             this.prc.WaitForExit();
 
-            if (!THRoutput.Join(new TimeSpan(0, 3, 0))) THRoutput.Abort();
-            if (!THRerror.Join(new TimeSpan(0, 3, 0))) THRerror.Abort();
+            THRoutput.Join(new TimeSpan(0, 3, 0));
+            THRerror.Join(new TimeSpan(0, 3, 0));
 
             this.endTime = DateTime.Now;
 

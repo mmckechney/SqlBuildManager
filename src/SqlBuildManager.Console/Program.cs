@@ -24,10 +24,13 @@ namespace SqlBuildManager.Console
 
     public class Program
     {
+        static Program()
+        {
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
+        }
         public const string applicationLogFileName = "SqlBuildManager.Console.log";
-        private static Microsoft.Extensions.Logging.ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
         
-
+       private static Microsoft.Extensions.Logging.ILogger log;
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
 
         static int Main(string[] args)
@@ -621,7 +624,7 @@ namespace SqlBuildManager.Console
                 Directory.CreateDirectory(path);
             }
 
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName))
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName))
             {
                 log.LogError($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -691,6 +694,19 @@ namespace SqlBuildManager.Console
             else
             {
                 System.Environment.Exit(856);
+            }
+        }
+
+        internal static void CreatePackageFromScripts(CommandLineArgs cmdLine)
+        {
+            bool success = sb.SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(cmdLine.OutputSbm, cmdLine.Scripts.Select(f => f.FullName).ToList(),"client", 500);
+            if(success)
+            {
+                log.LogInformation($"Successfully created build file {cmdLine.OutputSbm} with {cmdLine.Scripts.Count()} scripts");
+            }
+            else
+            {
+                log.LogError("Unable to create the build file!");
             }
         }
 
@@ -906,6 +922,7 @@ namespace SqlBuildManager.Console
                    cmd.DacPacArgs.TargetDacpac,
                    string.Empty,
                    string.Empty,
+                   cmd.AuthenticationArgs.AuthenticationType,
                    cmd.AuthenticationArgs.UserName,
                    cmd.AuthenticationArgs.Password,
                    cmd.BuildRevision,
@@ -919,6 +936,7 @@ namespace SqlBuildManager.Console
                     cmd.DacPacArgs.TargetDacpac,
                     cmd.Database,
                     cmd.Server,
+                    cmd.AuthenticationArgs.AuthenticationType,
                     cmd.AuthenticationArgs.UserName,
                     cmd.AuthenticationArgs.Password,
                     cmd.BuildRevision,

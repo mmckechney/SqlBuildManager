@@ -25,7 +25,6 @@ namespace SqlBuildManager.Console.ExternalTest
         private string linuxSettingsFilePath;
         private string settingsFileKeyPath;
 
-        private string logFile;
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
