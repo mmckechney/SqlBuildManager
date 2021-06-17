@@ -6,14 +6,15 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 ## Contents
 
-- [Command Line Quickstart](docs/commandline.md)
 - [Key Features](#key-features)
 - [The Basics](#the-basics)
   - [Build package meta-data](#build-package-meta-data)
   - [Creating a build package](#creating-a-build-package)
   - [Targeting multiple databases](#targeting-multiple-databases)
+  - [Running builds](#running-builds-command-line)
+  - [Querying across databases](#querying-across-databases-command-line)
+- [Command Line Reference/ Quickstart](/docs/commandline.md)
 - [Running Locally](/docs/local_build.md)
-- [Command Line reference](/docs/commandline.md)
 - [Leverage Azure Batch for massively parallel updates](/docs/azure_batch.md)
 - [Change notes](docs/change_notes.md)
 - For contributors: [Notes on Building and Unit Testing](/docs/setup_azure_environment.md)
@@ -81,7 +82,7 @@ While the focus of the app has changed to command line automation, the forms GUI
 
 ### Command line
 
-The command line utility is geared more toward executing a build vs. creating the package itself. You can however create a build package file in a few ways:
+There are several ways to create a build package from the command line.  Which you choose depends on your starting point:
 
 1. From a DACPAC file using the `sbm scriptextract` command. This method leverages a DACPAC that was created against your "Platinum Database" (why platinum? because it's even more precious than gold!). The Platinum database should have the schema that you want all of your other databases to look like. (don't have a DACPAC created, don't worry, you can create one with the `sbm dacpac` command) Learn more about DACPACs and [data-tier applications](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications?view=sql-server-2017)  method.
 
@@ -105,11 +106,11 @@ There are 3 ways to run your database update builds each with their target use c
 
 ### **Local**
 
-Leveraging the `sbm build` command, this runs the build on the current local machine. If you are targeting more than one database, the execution will be serial, only updating one database at a time and any transaction rollback will occur to all databases in the build.
+Leveraging the `sbm build` command, this runs the build on the [current local machine](docs/local_build.md). If you are targeting more than one database, the execution will be serial, only updating one database at a time and any transaction rollback will occur to all databases in the build.
 
 ### **Threaded**
 
-Using the `sbm threaded run` command will allow for updating multiple databases in parallel, but still executed from the local machine. Any transaction rollbacks will occur per-database - meaning if 5 of 6 databases succeed, the build will be committed on the 5 and rolled back only on the 6th
+Using the `sbm threaded run` command will allow for updating multiple databases in [parallel](docs/threaded_build.md), but still executed from the local machine. Any transaction rollbacks will occur per-database - meaning if 5 of 6 databases succeed, the build will be committed on the 5 and rolled back only on the 6th
 
 ### **Batch**
 
@@ -120,7 +121,7 @@ An excellent tool for viewing and monitoring your Azure batch accounts and jobs 
 
 ## Querying across databases (command line)
 
-In addition to using Sql Build Manager to perform database updates, you can also run SELECT queries across all of your databases to collect data. In the case of both `threaded` and `batch` a consolidated results file is saved to the location of your choice
+In addition to using SQL Build Manager to perform database updates, you can also run SELECT queries across all of your databases to collect data. In the case of both `threaded` and `batch` a consolidated results file is saved to the location of your choice
 
 ### Threaded
 
