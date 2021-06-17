@@ -8,7 +8,7 @@ This utility action will save a reusable JSON file to make running the command l
 
 The next time you run a build action, use the `--settingsfile="<file path>"` in place of the arguments below.
 
-Can also optionally provide a `--settingsfilekey` value to provide a custom encryption key for encryption of the sensitive values (listed below)
+Can also optionally provide a `--settingsfilekey` value to provide a custom encryption key for encryption of the sensitive values (listed below). The value for the `--settingsfilekey`  can be either the encryption key itself of a path to a text file containing the key.
 
 - Authentication: `--username`, `--password`
 - Azure Batch: `--batchnodecount`, `--batchaccountname`, `--batchaccountkey`, `--batchaccounturl`, `--storageaccountname`, `--storageaccountkey`, `--batchvmsize`, `--deletebatchpool`, `--deletebatchjob`, `--pollbatchpoolstatus`, `--eventhubconnectionstring`
@@ -17,7 +17,7 @@ Can also optionally provide a `--settingsfilekey` value to provide a custom encr
 _Note:_
 
 1. the values for `--username`, `--password`, `--batchaccountkey`, `--storageaccountkey` and  `--eventhubconnectionstring` will be encrypted. Use a `--settingsfilekey` value to manage encryption
-2. If there are duplicate values in the `--settingsfile` and the command line, the command line argument will take precedence. 
+2. If there are duplicate values in the `--settingsfile` and the command line, the command line argument will take precedence.
 3. You can hand-craft the JSON yourself in the [format below](#settings-file-format) but the password and keys will not be encrypted (which may be OK depending on where you save the files)
 
 ## Pre-Stage Batch nodes

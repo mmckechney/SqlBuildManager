@@ -61,14 +61,14 @@ Azure Batch builds are started locally via `sbm.exe`. This process communicates 
 
 While all of the values can be provided as arguments in the command line, it is strongly suggested you leverage `--settingsfile` and `--settingsfilekey`. The settings JSON file is created for you via [`Create_SettingsFile.ps1`](templates/Create_SettingsFile.ps1) which will collect all of the necessary keys and connection strings for your Azure resources.
 
-You can also build it by executing `sbm batch savesettings` command and providing the appropriate arguments. See the argument details [here](azure_batch_commands#azure-batch-save-settings)
+You can also build it by executing `sbm batch savesettings` command and providing the appropriate arguments. See the argument details [here](azure_batch_commands.md#azure-batch-save-settings)
 
 ### 1. Pre-stage the Azure Batch pool VMs
 
 (Optional)
 
 - Execute `sbm batch prestage [options]`. This will create the desired number of Azure Batch VM's as defined in the `--batchnodecount` argument.\
-(_NOTE:_ it can take 10-20 minutes for the VMs to be provisioned and ready which is why `prestage` is recommended). See the argument details [here](azure_batch_commands#pre-stage-batch-nodes)
+(_NOTE:_ it can take 10-20 minutes for the VMs to be provisioned and ready which is why `prestage` is recommended). See the argument details [here](azure_batch_commands.md#pre-stage-batch-nodes)
 
 ### 2. Queue the database targets
 
@@ -81,7 +81,7 @@ Instead of using a Service Bus Topic, you can target your databases with the `--
 
 ### 3. Execute batch build
 
- - Execute `sbm batch run [options]`. See the argument details [here](azure_batch_commands#batch-execution)
+ - Execute `sbm batch run [options]`. See the argument details [here](azure_batch_commands.md#batch-execution)
 
 This will start the following process:
 
@@ -101,12 +101,12 @@ This will start the following process:
 
 ### 5. Cleanup post build
 
-1. Execute `sbm batch cleanup [options]`. This will delete the Azure Batch VM's so you are no longer charged for the compute. See the argument details [here](azure_batch_commands#batch-clean-up-batch-nodes)\
+1. Execute `sbm batch cleanup [options]`. This will delete the Azure Batch VM's so you are no longer charged for the compute. See the argument details [here](azure_batch_commands.md#batch-clean-up-batch-nodes)\
 _NOTE:_ this will not delete the log files, these are generally needed more long term and they will stay in the storage account
 
 ## Alternative run options
 
-If you prefer a one step execution, you can run the command line to create and delete the pool VMs in-line with your execution. To do this, you would use `sbm batch run` along with the [additional arguments](#Additional-arguments) to create and delete the pool
+If you prefer a one step execution, you can run the command line to create and delete the pool VMs in-line with your execution. To do this, you would use `sbm batch run` along with the [additional arguments](azure_batch_commands.md#additional-arguments) to create and delete the pool
 
 ## Examples
 
@@ -119,7 +119,7 @@ sbm.exe batch run --override="C:\temp\override.cfg" --packagename="c:\temp\mybui
 The following command line uses a generated DACPAC and assumes that the Batch,  Storage and password settings are in the [`--settingsfile`](#azure-batch-save-settings):
 
 ``` bash
-sbm.exe batch run --settingsfile="C:\temp\my_settings.json" --override="C:\temp\override.cfg" --platinumdbsource="platinumDb" --platinumserversource="platinumdbserver" --database=targetDb --server="targetdbserver" 
+sbm.exe batch run --settingsfile="C:\temp\my_settings.json" --settingsfilekey="C:\temp\my_keyfile.txt"--override="C:\temp\override.cfg" --platinumdbsource="platinumDb" --platinumserversource="platinumdbserver" --database=targetDb --server="targetdbserver" 
 ```
 
 ----
