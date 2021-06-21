@@ -41,6 +41,7 @@ using SqlSync.TableScript;
 using SqlSync.Validator;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Logging;
+using sb = SqlSync.SqlBuild;
 //using SqlBuildManager.Enterprise.CodeReview;
 namespace SqlSync.SqlBuild
 
@@ -3941,32 +3942,7 @@ namespace SqlSync.SqlBuild
             return false;
 
         }
-        private void GetLastBuildNumberAndDb(out double lastbuildNumber, out string lastDatabase)
-        {
-            //Use the dataset to get the last build number and Db
-            if (this.buildData != null && this.buildData.Script.Rows.Count > 0)
-            {
-                DataView view = this.buildData.Script.DefaultView;
-                view.RowFilter = this.buildData.Script.BuildOrderColumn.ColumnName + " < " + ((int)ResequenceIgnore.StartNumber).ToString();
-                view.Sort = this.buildData.Script.BuildOrderColumn + " DESC";
-                if (view.Count > 0)
-                {
-                    lastbuildNumber = ((SqlSyncBuildData.ScriptRow)view[0].Row).BuildOrder;
-                    lastDatabase = ((SqlSyncBuildData.ScriptRow)view[0].Row).Database;
-                }
-                else
-                {
-                    lastbuildNumber = 0;
-                    lastDatabase = "";
-                }
-
-                return;
-            }
-
-            lastbuildNumber = 0;
-            lastDatabase = string.Empty;
-            return;
-        }
+      
 
         #endregion
 
@@ -4807,7 +4783,7 @@ namespace SqlSync.SqlBuild
             string lastDatabase = string.Empty;
             string shortFileName = Path.GetFileName(fullFileName);
 
-            GetLastBuildNumberAndDb(out lastBuildNumber, out lastDatabase);
+            BuildDataHelper.GetLastBuildNumberAndDb(this.buildData, out lastBuildNumber, out lastDatabase);
 
             NewBuildScriptForm frmNew = new NewBuildScriptForm(this.projectFilePath, fullFileName, this.databaseList, lastBuildNumber, lastDatabase, System.Environment.UserName, this.tagList);
             DialogResult result2 = frmNew.ShowDialog();
@@ -5265,7 +5241,7 @@ namespace SqlSync.SqlBuild
             string lastDatabase = string.Empty;
 
             SqlSyncBuildData.ScriptRow newRow = this.buildData.Script.NewScriptRow();
-            GetLastBuildNumberAndDb(out lastBuildNumber, out lastDatabase);
+            sb.BuildDataHelper.GetLastBuildNumberAndDb(this.buildData, out lastBuildNumber, out lastDatabase);
             newRow.Database = lastDatabase;
             newRow.BuildOrder = Math.Floor(lastBuildNumber + 1);
             newRow.CausesBuildFailure = true;
@@ -5576,7 +5552,7 @@ namespace SqlSync.SqlBuild
             string lastDatabase;
             for (int i = 0; i < fileNames.Length; i++)
             {
-                GetLastBuildNumberAndDb(out lastBuildNumber, out lastDatabase);
+                sb.BuildDataHelper.GetLastBuildNumberAndDb(this.buildData, out lastBuildNumber, out lastDatabase);
 
                 double importStartNumber = ImportSqlScriptFile(fileNames[i], lastBuildNumber, out addedFileNames);
                 if (importStartNumber > 0)
@@ -5793,7 +5769,7 @@ namespace SqlSync.SqlBuild
         {
             double lastBuildNumber;
             string lastDatabase;
-            GetLastBuildNumberAndDb(out lastBuildNumber, out lastDatabase);
+            sb.BuildDataHelper.GetLastBuildNumberAndDb(this.buildData, out lastBuildNumber, out lastDatabase);
 
             //Get the last whole number since we initially add 1
             lastBuildNumber = Math.Floor(lastBuildNumber);
@@ -7634,7 +7610,7 @@ namespace SqlSync.SqlBuild
 
                 double lastBuildNumber;
                 string lastDb;
-                GetLastBuildNumberAndDb(out lastBuildNumber, out lastDb);
+                sb.BuildDataHelper.GetLastBuildNumberAndDb(this.buildData, out lastBuildNumber, out lastDb);
 
                 SqlSync.Analysis.ComparisonForm frmCompare = new SqlSync.Analysis.ComparisonForm(ref this.buildData, lastBuildNumber, this.buildZipFileName, this.projectFilePath, rightFile, true);
                 frmCompare.ShowDialog();

@@ -1,11 +1,17 @@
 <?xml-stylesheet type="text/xsl" href="change_notes.xslt"?>
 <SqlBuildManagerChangeNotes>
+  <Version Major="13" Minor="0" Revision="4">
+    <added>New command `sbm add` to add scripts to an existing SBM package or SBX project file from a list of scripts</added>.
+    <added>New command `sbm list` to output script information of SBM packages (run order, script name, date added/modified, user info, script ids, script hashes)</added>
+    <updated>The `sbm create` command can now also create an SBX project file, not just an SBM package</updated>
+    <updated>Tabular output for `sbm policycheck` command to make it easier to read. Defaulting enterprise config to GitHub file.</updated>
+  </Version>
   <Version Major="13" Minor="0" Revision="3">
     <fixed>Update to Dacpac change scripts to identify new header delimiter</fixed>
-    <fixed>Issue creating scripts between incompatable SQL Server versions. Will now output a warning and continue to create the scripts with the flag `AllowIncompatiblePlatform=true` </fixed>
+    <fixed>Issue creating scripts between incompatible SQL Server versions. Will now output a warning and continue to create the scripts with the flag `AllowIncompatiblePlatform=true` </fixed>
     <added>New command `sbm create` to create a new SBM file from a list of scripts</added>
-    <updated>Can now use Windows auth for DACPAC creation</updated>
-    <updated>updated Nuget packages</updated>
+    <updated>Can now use Windows authentication for DACPAC creation</updated>
+    <updated>updated NuGet packages</updated>
   </Version>
   <Version Major="13" Minor="0" Revision="2">
     <fixed>Update to ensure all Queue messages are retrieved efficiently</fixed>
@@ -30,7 +36,7 @@
         <note>**Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**</note>
         <note>Now built against .NET 5 and .NET Core 3.1</note>
         <added>New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](concurrency_options.md)</added>
-        <updated>Now leveraging `Microsoft.SqlServer.DACFx` Nuget package instead of `sqlpackage.exe` command line to manage DACPACs</updated>
+        <updated>Now leveraging `Microsoft.SqlServer.DACFx` NuGet package instead of `sqlpackage.exe` command line to manage DACPACs</updated>
         <!-- <updated>New version of sqlpackage.exe (18.7). Changed Windows version to .NET Core build</updated> -->
         <fixed>Updated `BlueSkyDev.Logging.AzureEventHubAppender` to v1.3.2 due to app hanging if EventHub connection string was incorrect</fixed>
     </Version>
@@ -64,7 +70,7 @@
     </Version>
     <Version Major="10" Minor="4" Revision="4">
         <added>Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds</added>
-        <updated>Refactored the `/TimeoutRetryCount` (integer) setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X` times if the build fails because of any timeout error that reults in a build rollback</updated>
+        <updated>Refactored the `/TimeoutRetryCount` (integer) setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X` times if the build fails because of any timeout error that results in a build rollback</updated>
     </Version>
     <Version Major="10" Minor="4" Revision="3">
         <added>New utility `/Action=SaveSettings` and `/SettingsFile` argument for simple reuse of settings.</added>
@@ -133,7 +139,7 @@
     </Version>
     <Version Major="10" Minor="1" Revision="1">
         <added>Added console argument /AzureRemoteStatus=true to list Azure remote execution machines and their readiness status</added>
-        <added>Added console argument /ForceCustomDacPac=true to force teh creation of a custom dacpac and build script for each target database. USE WITH CAUTION this will exponentially increase the deployment time  and processing needs. Use only as a last scenario to ensure full database synchronicity</added>
+        <added>Added console argument /ForceCustomDacPac=true to force the creation of a custom dacpac and build script for each target database. USE WITH CAUTION this will exponentially increase the deployment time  and processing needs. Use only as a last scenario to ensure full database synchronicity</added>
         <fixed>Various remote/ threaded bug fixes</fixed>
     </Version>
     <Version Major="10" Minor="1" Revision="0">
@@ -156,7 +162,7 @@
     <Version Major="9" Minor="2" Revision="1">
         <!-- April 30, 2014 -->
         <added>New policy check status that warns you that code should be reviewed before release</added>
-        <added>command line abilty to check script policies. Usage: SqlBuildManager.Console.exe /PolicyCheck "&lt;Source Package Path and Name&gt;" </added>
+        <added>command line ability to check script policies. Usage: SqlBuildManager.Console.exe /PolicyCheck "&lt;Source Package Path and Name&gt;" </added>
         <added>command line ability to create a default backout package. Usage: `SqlBuildManager.Console.exe /CreateBackout "&lt;Source Package Path and Name&gt;" /server="&lt;Backout source server&gt;" /database="&lt;Backout source database&gt;`"</added>
         <fixed>Script policy icons were getting set to &quot;Policy checks not run&quot; after a committed build</fixed>
         <fixed>Database login error for accounts that do not have code review database permissions</fixed>
@@ -199,7 +205,7 @@
     <Version Major="8" Minor="8" Revision="0.1">
         <!-- July 10, 2012-->
         <added>Integration with Source Control! New notification area indicator if project and files are under source control.</added>
-        <note> *Will Checkout and Add files only*   You will still need to checkin/commit your changes manually</note>
+        <note> *Will Checkout and Add files only*   You will still need to check-in/commit your changes manually</note>
         <updated>Compiled against Version 11 of Server Management Objects (SMO) for compatibility with SQL 2012</updated>
         <updated>Improved threading when adding scripted files to ensure no dialog windows are "lost"</updated>
         <added>Will now accept WITH (READPAST) as valid query optimization. This should only be used in distinct use cases!</added>

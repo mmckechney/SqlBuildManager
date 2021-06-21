@@ -66,7 +66,7 @@ namespace SqlBuildManager.Enterprise
             }
             else
             {
-                return LoadEnterpriseConfiguration(@"C:\force_a_local_file_check");
+                return LoadEnterpriseConfiguration(@"https://raw.githubusercontent.com/mmckechney/SqlBuildManager/master/src/SqlBuildManager.Enterprise/EnterpriseConfiguration.xml");
             }
 
         }
@@ -76,7 +76,10 @@ namespace SqlBuildManager.Enterprise
             string configuration = string.Empty;
             try
             {
-                configPath = Path.GetFullPath(configPath);
+                if (!configPath.ToLower().StartsWith("http"))
+                {
+                    configPath = Path.GetFullPath(configPath);
+                }
                 System.Net.WebRequest req = System.Net.WebRequest.Create(configPath);
                 req.Proxy = System.Net.WebRequest.DefaultWebProxy;
                 req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;

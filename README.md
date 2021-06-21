@@ -84,13 +84,17 @@ While the focus of the app has changed to command line automation, the forms GUI
 
 There are several ways to create a build package from the command line.  Which you choose depends on your starting point:
 
+[Command line reference](docs/commandline.md)
+
 1. From a DACPAC file using the `sbm scriptextract` command. This method leverages a DACPAC that was created against your "Platinum Database" (why platinum? because it's even more precious than gold!). The Platinum database should have the schema that you want all of your other databases to look like. (don't have a DACPAC created, don't worry, you can create one with the `sbm dacpac` command) Learn more about DACPACs and [data-tier applications](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications?view=sql-server-2017)  method.
 
-2. From a set of script files using `sbm create`. This command allows you to specify an `--outputsbm` file to be created and a list of `--scripts` files to populate the SBM file with.
+2. From a set of script files using `sbm create`. This command allows you to specify an `--outputsbm` file to be created and a list of `--scripts` files to populate the SBM file with. 
 
 3. From an SBX file. What is this? An SBX file is an XML file in the format of the `SqlSyncBuildProject.xml` file (see above) that has an `.sbx` extension. When you use the `sbm package` command, it will read the `.sbx` file and create the `.sbm` file with the referenced scripts.
 
 4. An SBM package file can be created indirectly as well, using the `sbm threaded run` and `sbm batch run` commands along with the `--platinumdbsource="<database name>"` and `--platinumserversource="<server name>"` the app will generate a DACPAC from the source database which will then be used to generate an SBM at run time to build directly on your target(s).
+
+You can also add new scripts to an existing SBM package or SBX project file using `sbm add`
 
 ----
 

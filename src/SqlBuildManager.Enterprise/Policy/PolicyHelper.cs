@@ -292,7 +292,7 @@ namespace SqlBuildManager.Enterprise.Policy
             {
                 try
                 {
-                    string scriptContents = File.ReadAllText(extractedProjectPath + row.FileName);
+                    string scriptContents = File.ReadAllText(Path.Combine(extractedProjectPath,row.FileName));
                     scriptItem = this.ValidateScriptAgainstPolicies(row.FileName, row.ScriptId, scriptContents, row.Database, 80);
                     if (scriptItem == null)
                     {
@@ -392,11 +392,11 @@ namespace SqlBuildManager.Enterprise.Policy
             return line;
         }
 
-        public List<string> CommandLinePolicyCheck(string buildPackageName, out bool passed)
+        public List<string[]> CommandLinePolicyCheck(string buildPackageName, out bool passed)
         {
             string highSeverity = ViolationSeverity.High.ToString();
             passed = true;
-            List<string> policyReturns = new List<string>();
+            List<string[]> policyReturns = new List<string[]>();
             SqlSyncBuildData buildData = null;
 
             if (String.IsNullOrEmpty(buildPackageName))
@@ -435,16 +435,16 @@ namespace SqlBuildManager.Enterprise.Policy
 
                 foreach (var violation in violationMessages)
                 {
-                    string message = string.Format("Severity [{0}]; Script: {1}; Message: {2}",violation.Severity, violation.ScriptName, violation.Message);
-                    policyReturns.Add(message);
+                    policyReturns.Add(new string[] { violation.Severity, violation.ScriptName, violation.Message });
 
-                    //Add messages to log
-                    if(violation.Severity == ViolationSeverity.High.ToString())
-                        log.LogError(message);   
-                    else if(violation.Severity == ViolationSeverity.Medium.ToString())
-                        log.LogWarning(message);
-                    else 
-                        log.LogInformation(message);
+                    //string message = string.Format($"Severity [{violation.Severity}]; Script: {violation.ScriptName}; Message: {violation.Message}");
+                    ////Add messages to log
+                    //if (violation.Severity == ViolationSeverity.High.ToString())
+                    //    log.LogError(message);   
+                    //else if(violation.Severity == ViolationSeverity.Medium.ToString())
+                    //    log.LogWarning(message);
+                    //else 
+                    //    log.LogInformation(message);
                 }
                 return policyReturns;   
             }

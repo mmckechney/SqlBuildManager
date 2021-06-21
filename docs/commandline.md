@@ -15,9 +15,11 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 ### Utility actions
 
-- `dacpac` - Create a DACPAC file from the source `--database` and `--server`
-- `create` - Creates an SBM package file from a list of supplied script files
+- `create` - Creates an SBM package or SBX project file from a list of supplied script files
+- `add` - Adds scripts to an existing SBM package or SBX project file
 - `package` - Creates an SBM package from an SBX configuration file and scripts
+- `list` - Output scripts information on SBM packages (run order, script name, date added/modified, user info, script ids, script hashes)
+- `dacpac` - Create a DACPAC file from the source `--database` and `--server`
 - `policycheck` - Performs a script policy check on the specified SBM package
 - `gethash` - Calculates the SHA-1 hash fingerprint value for the SBM package(scripts + run order)
 - `createbackout` - Generates a back out package (reversing stored procedure and scripted object changes)
@@ -44,7 +46,7 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 ----
 
- ## Logging
+## Logging
 
 For general logging, the
 SqlBuildManager.Console.exe has its own local messages. This log file is
@@ -92,4 +94,3 @@ run order and results.
 - `SqlSyncBuildProject.xml`: the XML file showing the design time
 meta-data on each script file that defined the run settings, script
 creation user ID's and the committed script record and hash for each.
-	

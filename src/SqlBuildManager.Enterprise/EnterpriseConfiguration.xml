@@ -1,23 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <EnterpriseConfiguration xmlns="http://www.mckechney.com/EnterpriseConfiguration.xsd">
-	<TableWatch Description="Sample Table Watch" EmailBody="One of your watched tables has changed" EmailSubject="Alert Notice">
-		<Table Name="SqlBuild_logging" />
-		<Table Name="TransactionTest" />
-		<Notify EMail="michael@mckechney.com" Name="Michael McKechney"/>
-		<Notify EMail="help@sqlbuildmanager.com" Name="Sql Build Admin"/>
-	</TableWatch>
-	<ScriptPolicy PolicyId="CommentHeaderPolicy" Severity="Low"/>
-	<ScriptPolicy PolicyId="ConstraintNamePolicy" Severity="Low"/>
+  <TableWatch Description="Sample Table Watch" EmailBody="One of your watched tables has changed" EmailSubject="Alert Notice">
+    <Table Name="SqlBuild_logging" />
+    <Table Name="TransactionTest" />
+    <Notify EMail="michael@mckechney.com" Name="Michael McKechney"/>
+    <Notify EMail="help@sqlbuildmanager.com" Name="Sql Build Admin"/>
+  </TableWatch>
+        <ScriptPolicy PolicyId="CommentHeaderPolicy" Severity="Low"/>
+        <ScriptPolicy PolicyId="ConstraintNamePolicy"Severity="Low"/> 
 	<ScriptPolicy PolicyId="GrantExecutePolicy" Severity="High"/>
 	<ScriptPolicy PolicyId="GrantExecuteToPublicPolicy" Severity="High"/>
 	<ScriptPolicy PolicyId="QualifiedNamesPolicy" Severity="Medium"/>
 	<ScriptPolicy PolicyId="ReRunablePolicy" Severity="Medium"/>
 	<ScriptPolicy PolicyId="SelectStarPolicy" Severity="Medium"/>
+    <Argument Name="SystemExceptionRegex" Value="SELECT\s*\*\s*FROM\s*sys"/>
+    <Argument Name="ViewExceptionRegex" Value="SELECT((\s*)|(\s*.*\.))\*\s*FROM((\s*)|(\s*.*\.))vw_\w"/>
+  </ScriptPolicy>
 	<ScriptPolicy PolicyId="StoredProcParameterPolicy" Severity="Medium">
-		<Argument Name="Schema" Value="xyz"/>
-		<Argument Name="Parameter" Value="@CustomerId"/>
-	</ScriptPolicy>
+    <Argument Name="Schema" Value="xyz"/>
+    <Argument Name="Parameter" Value="@CustomerId"/>
+  </ScriptPolicy>
 	<ScriptPolicy PolicyId="WithNoLockPolicy" Severity="High"/>
-	
-	<FeatureAccess FeatureId="RemoteExecution" Enabled="true"/>
+  <ScriptPolicy PolicyId="ViewAlterPolicy"/>
+  <ScriptPolicy PolicyId="ScriptSyntaxCheckPolicy">
+    <ScriptPolicyDescription LongDescription="Checks for 'EXECUTE AS' directives which are not allowed"
+								 ShortDescription="EXECUTE AS"
+								 ErrorMessage="An 'EXECUTE AS' directive was found on line {lineNumber}. This is not allowed - please remove it."/>
+    <Argument Name="ExecuteAs" Value="EXECUTE AS" />
+  </ScriptPolicy>
+  <ScriptPolicy PolicyId="ScriptSyntaxCheckPolicy">
+    <ScriptPolicyDescription LongDescription="Checks for 'WITH RECOMPILE' directives which are not allowed"
+								 ShortDescription="WITH RECOMPILE"
+								 ErrorMessage="A 'WITH RECOMPILE' directive was found on line {lineNumber}. This is not allowed - please remove it."/>
+    <Argument Name="WithRecompile" Value="WITH RECOMPILE" />
+  </ScriptPolicy>
+
 </EnterpriseConfiguration>
