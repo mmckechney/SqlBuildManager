@@ -2,13 +2,20 @@
 # SQL Build Manager Change Notes
 
 
+### Version 13.0.4
+
+- *ADDED:* New command `sbm add` to add scripts to an existing SBM package or SBX project file from a list of scripts
+- *ADDED:* New command `sbm list` to output script information of SBM packages (run order, script name, date added/modified, user info, script ids, script hashes)
+- *UPDATED:* The `sbm create` command can now also create an SBX project file, not just an SBM package
+- *UPDATED:* Tabular output for `sbm policycheck` command to make it easier to read. Defaulting enterprise config to GitHub file.
+
 ### Version 13.0.3
 
 - *FIXED:* Update to Dacpac change scripts to identify new header delimiter
-- *FIXED:* Issue creating scripts between incompatable SQL Server versions. Will now output a warning and continue to create the scripts with the flag `AllowIncompatiblePlatform=true` 
+- *FIXED:* Issue creating scripts between incompatible SQL Server versions. Will now output a warning and continue to create the scripts with the flag `AllowIncompatiblePlatform=true` 
 - *ADDED:* New command `sbm create` to create a new SBM file from a list of scripts
-- *UPDATED:* Can now use Windows auth for DACPAC creation
-- *UPDATED:* updated Nuget packages
+- *UPDATED:* Can now use Windows authentication for DACPAC creation
+- *UPDATED:* updated NuGet packages
 
 ### Version 13.0.2
 
@@ -38,7 +45,7 @@
 - **NOTE:** **Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**
 - **NOTE:** Now built against .NET 5 and .NET Core 3.1
 - *ADDED:* New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](concurrency_options.md)
-- *UPDATED:* Now leveraging `Microsoft.SqlServer.DACFx` Nuget package instead of `sqlpackage.exe` command line to manage DACPACs
+- *UPDATED:* Now leveraging `Microsoft.SqlServer.DACFx` NuGet package instead of `sqlpackage.exe` command line to manage DACPACs
 - *FIXED:* Updated `BlueSkyDev.Logging.AzureEventHubAppender` to v1.3.2 due to app hanging if EventHub connection string was incorrect
 
 ### Version 11.3.1
@@ -77,7 +84,7 @@
 ### Version 10.4.4
 
 - *ADDED:* Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds
-- *UPDATED:* Refactored the `/TimeoutRetryCount` (integer) setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X` times if the build fails because of any timeout error that reults in a build rollback
+- *UPDATED:* Refactored the `/TimeoutRetryCount` (integer) setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X` times if the build fails because of any timeout error that results in a build rollback
 
 ### Version 10.4.3
 
@@ -163,7 +170,7 @@
 ### Version 10.1.1
 
 - *ADDED:* Added console argument /AzureRemoteStatus=true to list Azure remote execution machines and their readiness status
-- *ADDED:* Added console argument /ForceCustomDacPac=true to force teh creation of a custom dacpac and build script for each target database. USE WITH CAUTION this will exponentially increase the deployment time  and processing needs. Use only as a last scenario to ensure full database synchronicity
+- *ADDED:* Added console argument /ForceCustomDacPac=true to force the creation of a custom dacpac and build script for each target database. USE WITH CAUTION this will exponentially increase the deployment time  and processing needs. Use only as a last scenario to ensure full database synchronicity
 - *FIXED:* Various remote/ threaded bug fixes
 
 ### Version 10.1.0
@@ -188,7 +195,7 @@
 ### Version 9.2.1
 
 - *ADDED:* New policy check status that warns you that code should be reviewed before release
-- *ADDED:* command line abilty to check script policies. Usage: SqlBuildManager.Console.exe /PolicyCheck "<Source Package Path and Name>" 
+- *ADDED:* command line ability to check script policies. Usage: SqlBuildManager.Console.exe /PolicyCheck "<Source Package Path and Name>" 
 - *ADDED:* command line ability to create a default backout package. Usage: `SqlBuildManager.Console.exe /CreateBackout "<Source Package Path and Name>" /server="<Backout source server>" /database="<Backout source database>`"
 - *FIXED:* Script policy icons were getting set to "Policy checks not run" after a committed build
 - *FIXED:* Database login error for accounts that do not have code review database permissions
@@ -231,7 +238,7 @@
 ### Version 8.8.0.1
 
 - *ADDED:* Integration with Source Control! New notification area indicator if project and files are under source control.
-- **NOTE:**  *Will Checkout and Add files only*   You will still need to checkin/commit your changes manually
+- **NOTE:**  *Will Checkout and Add files only*   You will still need to check-in/commit your changes manually
 - *UPDATED:* Compiled against Version 11 of Server Management Objects (SMO) for compatibility with SQL 2012
 - *UPDATED:* Improved threading when adding scripted files to ensure no dialog windows are "lost"
 - *ADDED:* Will now accept WITH (READPAST) as valid query optimization. This should only be used in distinct use cases!

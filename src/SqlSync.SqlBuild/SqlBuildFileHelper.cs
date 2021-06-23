@@ -339,18 +339,18 @@ namespace SqlSync.SqlBuild
         }
 
 
-		public static void SaveSqlBuildProjectFile(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName)
+		public static void SaveSqlBuildProjectFile(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
 		{
 			buildData.WriteXml(projFileName);
-			PackageProjectFileIntoZip(buildData,Path.GetDirectoryName(projFileName), buildZipFileName);
+			PackageProjectFileIntoZip(buildData,Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs);
 		}
 
-        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout)
+        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout, bool includeHistoryAndLogs = true)
         {
-            return SaveSqlFilesToNewBuildFile(buildFileName, fileNames, targetDatabaseName, false, defaultScriptTimeout);
+            return SaveSqlFilesToNewBuildFile(buildFileName, fileNames, targetDatabaseName, false, defaultScriptTimeout, false);
         }
 
-        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, bool overwritePreExistingFile, int defaultScriptTimeout)
+        public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, bool overwritePreExistingFile, int defaultScriptTimeout, bool includeHistoryAndLogs = true)
         {
             if (File.Exists(buildFileName) && !overwritePreExistingFile)
             {
@@ -391,7 +391,7 @@ namespace SqlSync.SqlBuild
                         defaultScriptTimeout, "");
 
                 }
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildFileName);
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildFileName, includeHistoryAndLogs);
                 return true;
             }
             catch(Exception exe)
@@ -1550,5 +1550,7 @@ namespace SqlSync.SqlBuild
             }
         }
         #endregion
+
+       
     }
 }

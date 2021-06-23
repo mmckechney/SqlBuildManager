@@ -21,7 +21,7 @@
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.1.2" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
@@ -29,7 +29,7 @@
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="150.5164.1" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Include="Serilog.Expressions" Version="3.1.0" />
+    <PackageReference Include="Serilog.Expressions" Version="3.2.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.2.0-dev-00272" />
@@ -50,7 +50,7 @@
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="3.0.3" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="4.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.9.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.9.1" />
   </ItemGroup>
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
