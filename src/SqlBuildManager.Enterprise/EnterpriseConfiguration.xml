@@ -7,7 +7,7 @@
     <Notify EMail="help@sqlbuildmanager.com" Name="Sql Build Admin"/>
   </TableWatch>
         <ScriptPolicy PolicyId="CommentHeaderPolicy" Severity="Low"/>
-        <ScriptPolicy PolicyId="ConstraintNamePolicy"Severity="Low"/> 
+        <ScriptPolicy PolicyId="ConstraintNamePolicy" Severity="Low"/> 
 	<ScriptPolicy PolicyId="GrantExecutePolicy" Severity="High"/>
 	<ScriptPolicy PolicyId="GrantExecuteToPublicPolicy" Severity="High"/>
 	<ScriptPolicy PolicyId="QualifiedNamesPolicy" Severity="Medium"/>
