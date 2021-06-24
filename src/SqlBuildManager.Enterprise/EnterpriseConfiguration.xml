@@ -12,7 +12,7 @@
 	<ScriptPolicy PolicyId="GrantExecuteToPublicPolicy" Severity="High"/>
 	<ScriptPolicy PolicyId="QualifiedNamesPolicy" Severity="Medium"/>
 	<ScriptPolicy PolicyId="ReRunablePolicy" Severity="Medium"/>
-	<ScriptPolicy PolicyId="SelectStarPolicy" Severity="Medium"/>
+	<ScriptPolicy PolicyId="SelectStarPolicy" Severity="Medium">
     <Argument Name="SystemExceptionRegex" Value="SELECT\s*\*\s*FROM\s*sys"/>
     <Argument Name="ViewExceptionRegex" Value="SELECT((\s*)|(\s*.*\.))\*\s*FROM((\s*)|(\s*.*\.))vw_\w"/>
   </ScriptPolicy>
