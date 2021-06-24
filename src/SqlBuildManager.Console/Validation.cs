@@ -307,7 +307,7 @@ namespace SqlBuildManager.Console
                 if (cmdLine.DacPacArgs.ForceCustomDacPac == false)
                 {
                     string sbmName;
-                    var stat = Program.GetSbmFromDacPac(cmdLine, multiDb, out sbmName);
+                    var stat = Program.GetSbmFromDacPac(cmdLine, multiDb, out sbmName, true);
                     if (stat == DacpacDeltasStatus.Success)
                     {
                         cmdLine.BuildFileName = sbmName;
