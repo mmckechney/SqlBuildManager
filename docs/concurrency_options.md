@@ -1,7 +1,15 @@
 # Concurrency Options for Threaded and Batch executions
 
-Starting with version 12.0.0, there are two new command line options for `sbm batch` and `sbm threaded` options. More specifically under their `run` and `query` sub-commands.
+Starting with version 12.0.0, there are two new command line options for `sbm batch` and `sbm threaded` options, more specifically under their `run` and `query` sub-commands.
 The two options are `--concurrency` and `--concurrencytype`. While their meaning for both batch and threaded are similar, there are some distinctions and subtleties when used together
+
+
+- [Option Definitions](#option-definitions)
+- [Threaded execution](#threaded-execution)
+- [Batch Execution (with concurrency scenarios)](#batch-execution)
+
+----
+
 
 ## Option definitions
 
@@ -12,25 +20,31 @@ The two options are `--concurrency` and `--concurrencytype`. While their meaning
 - `Count` - (default) will use the value for `concurrency` as the maximum number of concurrent tasks allowed
 - `Server` - When using this value, the `concurrency` value is ignored. Instead, the app will interrogate the database targets and allow one task per SQL Server at a time
 
-    For example: if there are 5 unuque SQL Server targets in the database targest config, there will 1 task per server, up to 5 concurrent tasks total
+    For example: if there are 5 unuque SQL Server targets in the database targets config, there will 1 task per server, up to 5 concurrent tasks total
 
 - `MaxPerServer` - Will interrogate the database targets and allow multiple tasks per server, up to the `concurrency` value.
 
-    For example: If there are 5 unuque SQL Server targest in the database targets config file and the `concurrency` flag is set to 3, then it will run 3 tasks per server at a time, up to 15 concurrent tasks (5 servers * 3 tasks per server).
+    For example: If there are 5 unique SQL Server targets in the database targets config file and the `concurrency` flag is set to 3, then it will run 3 tasks per server at a time, up to 15 concurrent tasks (5 servers * 3 tasks per server).
 
 ### --concurrency
 
 This argument takes an integer number (default is 8) defining the maximum number of concurrent threads per the set `concurrencytype`
 
+----
+
 ## Threaded execution
 
 When running  `sbm threaded run` or `sbm threaded query` the arguments are as described above, Since this is run on a single machine, the maximum number of concurrent tasks are what you would expect with the formulas above.
 
+----
+
 ## Batch execution
 
-When Running the `sbm batch run` or `sbm batch query`, you need to consider that you are also running on more than one machine. The concurrency flags are interpreted **_per batch node_** and this needs to be accounted for when calculating your desired concurrency
+When Running the `sbm batch run` or `sbm batch query`, you need to consider that you are also running on more than one machine. The concurrency flags are interpreted **_per batch node_** and this needs to be accounted for when calculating your desired concurrency.
 
-Consider the following:
+Whether you are distributing your Batch load with an `--override` file or `--servicebustopicconnection` (see [details on database targeting options](override_options.md)), the concurrency options are available and perform as described below. However, if using a Service Bus Topic, the overall build may be more efficient as there is a smaller likelihood of Batch nodes going idle.
+
+### Consider the following:
 
 - Your database targets configuration has 50 unique SQL Server targets.
 - You have 10 Azure Batch nodes

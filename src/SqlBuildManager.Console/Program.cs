@@ -450,7 +450,14 @@ namespace SqlBuildManager.Console
                     BuildFileName = cmdLine.BuildFileName,
 
                 };
-                ConnectionData connData = new ConnectionData(cmdLine.Server, cmdLine.Database);
+                ConnectionData connData = new ConnectionData()
+                {
+                    SQLServerName = cmdLine.Server,
+                    DatabaseName = cmdLine.Database,
+                    AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType,
+                    UserId = cmdLine.AuthenticationArgs.UserName,
+                    Password = cmdLine.AuthenticationArgs.Password
+                };
                 sb.SqlBuildHelper helper = new sb.SqlBuildHelper(connData,true, "", cmdLine.Transactional);
                 BackgroundWorker bg = new BackgroundWorker()
                 {

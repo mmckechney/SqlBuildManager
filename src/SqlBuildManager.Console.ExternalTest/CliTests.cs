@@ -186,8 +186,8 @@ namespace SqlBuildManager.Console.ExternalTest
 
             var logFileContents = ReleventLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(logFileContents.Contains("Total number of targets: 1"), "Should have run against a single database");
+            Assert.IsTrue(logFileContents.Contains("Build Committed"), "This test was should have worked");
+
         }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
