@@ -125,35 +125,7 @@ sbm.exe batch run --settingsfile="C:\temp\my_settings.json" --settingsfilekey="C
 ----
 ## Log Details
 
-The logs will be stored in the Azure Storage account associated with the Batch account. You can view the logs in several ways, including the the [Azure portal](http://portal.azure.com), [Azure Batch Explorer](https://azure.github.io/BatchExplorer/) and [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/). However you view the logs, you will find a set of files and folders:
+For details on the log files that are created during a Batch run, see the [Log Details page](threaded_and_batch_logs.md). There is also a section on [troubleshooting tips](threaded_and_batch_logs.md#troubleshooting-tips)
 
-### Files
 
-_Note:_ All of these files are consolidated logs from across all of your Batch nodes.
-
-- `successdatabases.cfg` - this file contains a list of all databases that were successfully updated. The file is in the format used as an `--override` argument. If there were no successful updates, this file will not be created.
-- `failuredatabases.cfg` - this file contains a list of all databases that were successfully updated. The file is in the format used as an `--override` argument. If there were no failures, this file will not be created.
-- `commits.log` - a log file showing successful updates with time stamps
-- `errors.log` -  a log file showing failed updates with time stamps, statuses and return codes
-
-### Folders
-
-- `Task##` - There will be one folder for each worker node VM. The contents of this folder will be the standard output and standard error logs for the executable from that VM.
-- `Working` - this is the folder that contains the runtime files such as the DACPAC, SBM and distributed database configuration files
-- `<server name>` folders - There is one folder per target SQL Server. Within each of these is a folder for each target database. 
-  - `<database name>` folder - within these folders are three files
-    - `LogFile-\<date,time\>.log` -  a detailed script by script run result
-    - `SqlSyncBuildHistory.xml` - detailed log along with script meta-data (such as start/end times, file hash, status, user id)
-    - `SqlSyncBuildProject.xml` - meta-data file for the script package run against the database
-
-## Troubleshooting tips
-
-If you have SQL errors in your execution, you will probably want to figure out what happened. Here is a suggested troubleshooting path:
-
-1. Open up the `failuredatabases.cfg` file to see what databases had problems
-2. Taking note of the server and database name, open the server folder then the database folder
-3. Open the `logfile` in the database folder. This file should contain an error message that will guide your troubleshooting should you need to correct some scripts
-4. Once you have determined the problem, use the `failuredatabases.cfg` file as your `/Override` argument to run your updates again - hopefully successfully this time!
-
-----
 

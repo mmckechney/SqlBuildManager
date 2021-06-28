@@ -129,7 +129,7 @@ namespace SqlSync.BuildHistory
             // 
             this.mnuOpenInNotePad.Name = "mnuOpenInNotePad";
             this.mnuOpenInNotePad.Size = new System.Drawing.Size(209, 22);
-            this.mnuOpenInNotePad.Text = "Open Log File in NotePad";
+            this.mnuOpenInNotePad.Text = "Open Log File";
             this.mnuOpenInNotePad.Click += new System.EventHandler(this.mnuOpenInNotePad_Click);
             // 
             // btnArchive
@@ -229,7 +229,7 @@ namespace SqlSync.BuildHistory
 			{
 				string fileName = this.lstLogFiles.SelectedItems[0].Text;
 				Process prc = new Process();
-				prc.StartInfo.FileName = "notepad.exe";
+				prc.StartInfo.FileName = "explorer";
 				prc.StartInfo.Arguments = Path.Combine(this.basePath, fileName);
 				prc.Start();
 			}

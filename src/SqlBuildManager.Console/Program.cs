@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -64,21 +65,29 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static int QueryDatabases(CommandLineArgs cmdLine)
+        private static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine)
         {
-
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
-            if (!string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
-            {
-                log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
-            }
 
             bool decryptSuccess;
             (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             if (!decryptSuccess)
             {
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return -8675;
+            }
+            return (decryptSuccess, cmdLine);
+        }
+
+        internal static int QueryDatabases(CommandLineArgs cmdLine)
+        {
+            bool initSuccess = false;
+            (initSuccess, cmdLine) = Init(cmdLine);
+            if (!initSuccess) return -8675;
+
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
+            {
+                log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
             }
 
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
@@ -139,15 +148,9 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchCleanUp(CommandLineArgs cmdLine)
         {
-            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
-
-            bool decryptSuccess;
-            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            if (!decryptSuccess)
-            {
-                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return -8675;
-            }
+            bool initSuccess = false;
+            (initSuccess, cmdLine) = Init(cmdLine);
+            if (!initSuccess) return -8675;
 
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
@@ -162,15 +165,9 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchJobDelete(CommandLineArgs cmdLine)
         {
-            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
-
-            bool decryptSuccess;
-            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            if (!decryptSuccess)
-            {
-                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return -8675;
-            }
+            bool initSuccess = false;
+            (initSuccess, cmdLine) = Init(cmdLine);
+            if (!initSuccess) return -8675;
 
             DateTime start = DateTime.Now;
             var retVal = Batch.BatchCleaner.DeleteAllCompletedJobs(cmdLine);
@@ -184,15 +181,10 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchPreStage(CommandLineArgs cmdLine)
         {
-            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            bool initSuccess = false;
+            (initSuccess, cmdLine) = Init(cmdLine);
+            if (!initSuccess) return -8675;
 
-            bool decryptSuccess;
-            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            if (!decryptSuccess)
-            {
-                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return -8675;
-            }
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
             var retVal = batchExe.PreStageBatchNodes();
@@ -206,17 +198,11 @@ namespace SqlBuildManager.Console
 
         internal static int RunBatchExecution(CommandLineArgs cmdLine)
         {
+            bool initSuccess = false;
+            (initSuccess, cmdLine) = Init(cmdLine);
+            if (!initSuccess) return -8675;
 
-            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
-
-            bool decryptSuccess;
-            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            if (!decryptSuccess)
-            {
-                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return -8675;
-            }
 
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
@@ -366,51 +352,18 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static void ScriptExtraction(CommandLineArgs cmdLine)
+        internal static int CreateFromDacpacDiff(CommandLineArgs cmdLine)
         {
-            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
-
-            bool decryptSuccess;
-            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            if (!decryptSuccess)
-            {
-                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return;
-            }
+            bool initSuccess = false;
+            (initSuccess, cmdLine) = Init(cmdLine);
+            if (!initSuccess) return -8675;
 
             #region Validate flags
-            if (string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
-            {
-                log.LogError("--platinumdacpac flag is required");
-                System.Environment.Exit(-1);
-            }
-            if (string.IsNullOrWhiteSpace(cmdLine.Database))
-            {
-                log.LogError("--database flag is required");
-                System.Environment.Exit(-1);
-            }
-            if (string.IsNullOrWhiteSpace(cmdLine.Server))
-            {
-                log.LogError("--server flag is required");
-                System.Environment.Exit(-1);
-            }
             string[] errorMessages;
             int pwVal = Validation.ValidateUserNameAndPassword(cmdLine, out errorMessages);
             if (pwVal != 0)
             {
                 log.LogError(errorMessages.Aggregate((a, b) => a + "; " + b));
-            }
-
-            if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
-            {
-                log.LogError("--username and --password flags are required");
-                System.Environment.Exit(-1);
-            }
-
-            if (string.IsNullOrWhiteSpace(cmdLine.OutputSbm))
-            {
-                log.LogError("--outputsbm flag is required");
-                System.Environment.Exit(-1);
             }
 
             if (File.Exists(cmdLine.OutputSbm))
@@ -423,16 +376,19 @@ namespace SqlBuildManager.Console
             string name;
             cmdLine.RootLoggingPath = Path.GetDirectoryName(cmdLine.OutputSbm);
 
-            var status = Program.GetSbmFromDacPac(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), out name);
+            var status = Program.GetSbmFromDacPac(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), out name, true);
             if (status == sb.DacpacDeltasStatus.Success)
             {
                 File.Move(name, cmdLine.OutputSbm);
+                ListPackageScripts(new FileInfo[] { new FileInfo(cmdLine.OutputSbm) }, true);
                 log.LogInformation($"SBM package successfully created at {cmdLine.OutputSbm}");
             }
             else
             {
                 log.LogError($"Error creating SBM package: {status.ToString()}");
             }
+
+            return 0;
         }
 
         internal static int RunLocalBuildAsync(CommandLineArgs cmdLine)
@@ -442,6 +398,8 @@ namespace SqlBuildManager.Console
 
 
             bool decryptSuccess;
+            string workingDir = "";
+            DateTime start = DateTime.Now;
             (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             if (!decryptSuccess)
             {
@@ -449,45 +407,133 @@ namespace SqlBuildManager.Console
                 return -8675;
             }
 
-            DateTime start = DateTime.Now;
-            log.LogDebug("Entering Local Build Execution");
-            log.LogInformation("Running  Local Build...");
+            try
+            {
+                cmdLine.BuildFileName = Path.GetFullPath(cmdLine.BuildFileName);
+                log.LogDebug("Entering Local Build Execution");
+                log.LogInformation($"Running Local Build with: {cmdLine.BuildFileName}");
 
-            //We need an override setting. if not provided, we need to glean it from the SqlSyncBuildProject.xml file 
-            if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
-            {
-                cmdLine.ManualOverRideSets = sb.SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName);
-            }
 
-            var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
-            if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
-            {
-                cmdLine.RootLoggingPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+                //We need an override setting. if not provided, we need to glean it from the SqlSyncBuildProject.xml file 
+                if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
+                {
+                    cmdLine.ManualOverRideSets = sb.SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName, cmdLine.Database);
+                }
+
+                var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
+                var def = ovrRide.Split(':')[1].Split(',')[0];
+                var target = ovrRide.Split(':')[1].Split(',')[1];
+                if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
+                {
+                    cmdLine.RootLoggingPath = Directory.GetCurrentDirectory();
+                }
+
+                string projFilePath = "", projectFileName = "";
+                sb.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.BuildFileName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
+                bool success = sb.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sb.SqlSyncBuildData buildData, projectFileName, true);
+                if (!success)
+                {
+                    log.LogError($"Unable to load and extract build file: {cmdLine.BuildFileName}");
+                    return -1;
+                }
+
+                sb.SqlBuildRunData sqlBuildRunData = new sb.SqlBuildRunData()
+                {
+                    ForceCustomDacpac = false,
+                    BuildData = buildData,
+                    IsTransactional = cmdLine.Transactional,
+                    BuildDescription = cmdLine.Description,
+                    BuildRevision = cmdLine.BuildRevision,
+                    LogToDatabaseName = cmdLine.LogToDatabaseName,
+                    TargetDatabaseOverrides = new List<DatabaseOverride>() { new DatabaseOverride() { DefaultDbTarget = def, OverrideDbTarget = target } },
+                    ProjectFileName = projectFileName,
+                    BuildFileName = cmdLine.BuildFileName,
+
+                };
+                ConnectionData connData = new ConnectionData(cmdLine.Server, cmdLine.Database);
+                sb.SqlBuildHelper helper = new sb.SqlBuildHelper(connData,true, "", cmdLine.Transactional);
+                BackgroundWorker bg = new BackgroundWorker()
+                {
+                    WorkerReportsProgress = true,
+                };
+                bg.ProgressChanged += Bg_ProgressChanged;
+                DoWorkEventArgs workArgs = new DoWorkEventArgs(sqlBuildRunData);
+                LocalRunInfo.Sq1SyncBuildData = buildData;
+                LocalRunInfo.BuildZipFileName = cmdLine.BuildFileName;
+                LocalRunInfo.WorkingDirectory = workingDir;
+                helper.ProcessBuild(sqlBuildRunData, cmdLine.TimeoutRetryCount, bg, workArgs);
             }
-            var tmpName = Path.Combine(cmdLine.RootLoggingPath, $"Override-{Guid.NewGuid().ToString()}.cfg");
-            File.WriteAllText(tmpName, ovrRide);
-            cmdLine.Override = tmpName;
-            ThreadedExecution runner = new ThreadedExecution(cmdLine);
-            int retVal = runner.Execute();
-            if (retVal == (int)ExecutionReturn.Successful)
+            finally
             {
-                log.LogInformation("Completed Successfully");
-            }
-            else
-            {
-                log.LogWarning("Completed with Errors - check log");
+                sb.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
             }
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
             log.LogInformation(msg);
             log.LogDebug("Exiting Single Build Execution");
 
-            return retVal;
+            if (LocalRunInfo.Success)
+                return 0;
+            else
+                return -2;
+        }
+        private static class LocalRunInfo
+        {
+           public static sb.SqlSyncBuildData Sq1SyncBuildData { get; set; }
+           public static string WorkingDirectory { get; set; }
+           public static string BuildZipFileName { get; set; }
+            public static bool Success { get; set; } = true;
+        }
+
+        private static void Bg_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
+            if (e.UserState is sb.GeneralStatusEventArgs) //Update the general run status
+            {
+                var stat = (sb.GeneralStatusEventArgs)e.UserState;
+               log.LogInformation(stat.StatusMessage);
+                if(stat.StatusMessage.ToLower().Contains("build failure") || stat.StatusMessage.ToLower().Contains("build failed"))
+                {
+                    LocalRunInfo.Success = false;
+                }
+            }
+            
+            else if (e.UserState is sb.CommitFailureEventArgs)
+            {
+                log.LogError("Failed to Commit Build " + ((sb.CommitFailureEventArgs)e.UserState).ErrorMessage);
+                LocalRunInfo.Success = false;
+            }
+            else if(e.UserState is sb.ScriptRunStatusEventArgs)
+            {
+                log.LogInformation(((sb.ScriptRunStatusEventArgs)e.UserState).Status);
+            }
+            else if (e.UserState is sb.ScriptRunProjectFileSavedEventArgs)
+            {
+                log.LogInformation("Saving updated build file to disk");
+                try
+                {
+                    sb.SqlBuildFileHelper.PackageProjectFileIntoZip(LocalRunInfo.Sq1SyncBuildData, LocalRunInfo.WorkingDirectory, LocalRunInfo.BuildZipFileName);
+                    log.LogInformation("Build file saved to disk");
+                }
+                catch (Exception exe)
+                {
+                    log.LogError(exe.ToString());
+                }
+            }
+            else if (e.UserState is Exception)
+            {
+                    log.LogError("ERROR!" + ((Exception)e.UserState).Message);
+            }
         }
 
         internal static int RunThreadedExecution(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            if(string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
+            {
+                cmdLine.RootLoggingPath = Directory.GetCurrentDirectory();
+            }
+
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
             bool decryptSuccess;
@@ -768,6 +814,98 @@ namespace SqlBuildManager.Console
 
         }
 
+        internal static int CreatePackageFromDacpacs(string outputSbm, FileInfo platinumDacpac, FileInfo targetDacpac)
+        {
+            var outputSbmFile = Path.GetFullPath(outputSbm);
+            var res = sb.DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacpac.FullName, targetDacpac.FullName, true, string.Empty, 500, out string tmpSbm);
+
+            if (res == sb.DacpacDeltasStatus.Success)
+            {
+                File.Move(tmpSbm, outputSbmFile);
+                log.LogInformation($"Created SBM package:  {outputSbmFile}");
+                ListPackageScripts(new FileInfo[] { new FileInfo(outputSbmFile) }, true);
+                return 0;
+            }
+            else
+            {
+                switch (res)
+                {
+                    case sb.DacpacDeltasStatus.InSync:
+                    case sb.DacpacDeltasStatus.OnlyPostDeployment:
+                        log.LogWarning("No package created -- the databases are already in sync");
+                        break;
+                    default:
+                        log.LogError("There was an error creating the requested package");
+                        break;
+                }
+                return -232323;
+            }
+        }
+
+        internal static int CreatePackageFromDiff(CommandLineArgs cmdLine)
+        {
+            string sbmFileName = Path.GetFullPath(cmdLine.OutputSbm);
+            if(File.Exists(sbmFileName))
+            {
+                log.LogError($"The output file '{sbmFileName}' already exists. Please delete the file or use 'sbm add' if you want to add new scripts to the file");
+                return -343;
+            }
+            string path = Path.GetDirectoryName(sbmFileName);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            string id = Guid.NewGuid().ToString();
+            string goldTmp = Path.Combine(path, $"gold-{id}.dacpac");
+            string targetTmp = Path.Combine(path, $"target-{id}.dacpac");
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.SynchronizeArgs.GoldServer, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, goldTmp))
+            {
+                log.LogError($"Error creating the tempprary dacpac from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase}");
+                return (int)ExecutionReturn.BuildFileExtractionError;
+            }
+            else
+            {
+                log.LogInformation($"Temporary DACPAC created from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase} saved to -- {goldTmp}");
+            }
+
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, targetTmp))
+            {
+                log.LogError($"Error creating the tempprary dacpac from {cmdLine.Server} : {cmdLine.Database}");
+                return (int)ExecutionReturn.BuildFileExtractionError;
+            }
+            else
+            {
+                log.LogInformation($"Temporary DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {targetTmp}");
+            }
+
+            var res = sb.DacPacHelper.CreateSbmFromDacPacDifferences(goldTmp, targetTmp, true, string.Empty, 500, out string tmpSbm);
+            log.LogInformation("Cleaning up temporary files");
+            File.Delete(goldTmp);
+            File.Delete(targetTmp);
+
+            if (res == sb.DacpacDeltasStatus.Success)
+            {
+                File.Move(tmpSbm, sbmFileName);
+                log.LogInformation($"Created SBM package:  {sbmFileName}");
+                ListPackageScripts(new FileInfo[] { new FileInfo(sbmFileName) }, true);
+                return 0;
+            }
+            else
+            {
+                switch(res)
+                {
+                    case sb.DacpacDeltasStatus.InSync:
+                    case sb.DacpacDeltasStatus.OnlyPostDeployment:
+                        log.LogWarning("No package created -- the databases are already in sync");
+                        break;
+                    default:
+                        log.LogError("There was an error creating the requested package");
+                        break;
+                }
+                return -232323;
+            }
+        }
+
         internal static void ListPackageScripts(FileInfo[] packages, bool withHash)
         {
             string workingDir = "", projFilePath = "", projectFileName = "";
@@ -882,6 +1020,7 @@ namespace SqlBuildManager.Console
                     log.LogError("Unable to create the build file!");
                     return -425;
                 }
+                ListPackageScripts(new FileInfo[] { new FileInfo(cmdLine.OutputSbm) }, true);
             }
             log.LogInformation($"Successfully created build file '{cmdLine.OutputSbm}' with {cmdLine.Scripts.Count()} scripts");
             return 0;
@@ -1098,7 +1237,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static sb.DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName)
+        internal static sb.DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName, bool batchScripts = false)
         {
             if (cmd.MultiDbRunConfigFileName.Trim().ToLower().EndsWith("sql"))
             {
@@ -1113,7 +1252,7 @@ namespace SqlBuildManager.Console
                    cmd.AuthenticationArgs.Password,
                    cmd.BuildRevision,
                    cmd.DefaultScriptTimeout,
-                   multiDb, out sbmName);
+                   multiDb, out sbmName, batchScripts);
             }
             else
             {
@@ -1127,7 +1266,7 @@ namespace SqlBuildManager.Console
                     cmd.AuthenticationArgs.Password,
                     cmd.BuildRevision,
                     cmd.DefaultScriptTimeout,
-                    multiDb, out sbmName);
+                    multiDb, out sbmName, batchScripts);
             }
         }
 

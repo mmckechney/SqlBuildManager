@@ -1,8 +1,18 @@
 # Database targeting options
 
-In order for SQL Build Manager to do its job, you need to tell it what databases you want to update. This is done by sending it list in the form of an `--override` file. 
+- ### [Override File](#override-file)
+  - [File Format](#file-format)
+  - [Runtime](#runtime)
+- ### [Service Bus Topic](#service-bus-topic)
+  - [Background](#background)
+  - [Advantages](#advantages)
+  - [Queue Runtime](#queue-runtime)
+
+----
 
 ## Override file
+
+In order for SQL Build Manager to do its job, you need to tell it what databases you want to update. This is done by sending it list in the form of an `--override` file.
 
 ### File Format
 
@@ -28,6 +38,8 @@ Why `client`?  Inside the `.sbm` file, there is a default database target set to
 ### Runtime
 
 If the `--override` setting is provided but there isn't a `--servicebustopicconnection` value, the runtime will use this file directly to update the database and/or distribute traffic for `threaded` and `batch`. It is important to also understand the impact of [concurrency options](concurrency_options.md).
+
+----
 
 ## Service Bus Topic
 

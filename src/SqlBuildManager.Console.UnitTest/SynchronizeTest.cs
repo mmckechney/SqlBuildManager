@@ -109,7 +109,9 @@ namespace SqlBuildManager.Console.UnitTest
             (CommandLineArgs actual, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
 
             Assert.AreEqual(expected, actual);
-            Assert.IsTrue(message.Contains("--golddatabase"));
+            Assert.IsTrue(message.Contains("-gd"));
+            Assert.IsTrue(message.Contains("-gs"));
+            Assert.IsTrue(message.Contains("-s"));
         }
     }
 }

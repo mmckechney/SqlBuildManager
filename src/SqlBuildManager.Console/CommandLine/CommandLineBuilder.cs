@@ -30,11 +30,11 @@ namespace SqlBuildManager.Console.CommandLine
             var directoryOption = new Option<string>(new string[] { "--directory" }, "Directory containing 1 or more SBX files to package into SBM zip files") { IsRequired = true };
             var transactionalOption = new Option<bool>(new string[] { "--transactional" }, () => true, "Whether or not to run with a wrapping transaction (default is true)");
             var timeoutretrycountOption = new Option<int>(new string[] { "--timeoutretrycount" }, "How many retries to attempt if a timeout exception occurs");
-            var golddatabaseOption = new Option<string>(new string[] { "--golddatabase" }, "The \"gold copy\" database that will serve as the model for what the target database should look like") { IsRequired = true };
-            var goldserverOption = new Option<string>(new string[] { "--goldserver" }, "The server that the \"gold copy\" database can be found") { IsRequired = true };
+            var golddatabaseOption = new Option<string>(new string[] {"-gd", "--golddatabase" }, "The \"gold copy\" database that will serve as the model for what the target database should look like") { IsRequired = true };
+            var goldserverOption = new Option<string>(new string[] { "-gs", "--goldserver" }, "The server that the \"gold copy\" database can be found") { IsRequired = true };
             var continueonfailureOption = new Option<bool>(new string[] { "--continueonfailure" }, "Whether or not to continue on the failure of a package (default is false)");
-            var platinumdacpacOption = new Option<string>(new string[] { "--platinumdacpac" }, "Name of the dacpac containing the platinum schema");
-            var targetdacpacOption = new Option<string>(new string[] { "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated");
+            var platinumdacpacOption = new Option<string>(new string[] { "-pd","--platinumdacpac" }, "Name of the dacpac containing the platinum schema");
+            var targetdacpacOption = new Option<string>(new string[] { "-td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated");
             var forcecustomdacpacOption = new Option<bool>(new string[] { "--forcecustomdacpac" }, "USE WITH CAUTION! This will force the dacpac extraction and creation of custom scripts for EVERY target database! Your execution will take much longer.");
             var platinumdbsourceOption = new Option<string>(new string[] { "--platinumdbsource" }, "Instead of a formally built Platinum Dacpac, target this database as having the desired state schema");
             var platinumserversourceOption = new Option<string>(new string[] { "--platinumserversource" }, "Instead of a formally built Platinum Dacpac, target a database on this server as having the desired state schema");
@@ -70,6 +70,9 @@ namespace SqlBuildManager.Console.CommandLine
             var scriptListOption = new Option<FileInfo[]>(new string[] {"-s", "--scripts"}, "List of script files to create SBM package from - separate names with spaces (will be added in order provided)") { IsRequired = true }.ExistingOnly();
             var withHashOption = new Option<bool>(new string[] { "-w", "--withhash" }, () => true, "Also include the SHA1 hash of the script files in the package");
             var packagesOption = new Option<FileInfo[]>(new string[] {"-p","--packages"}, "One or more SBM packages to get contents for") { IsRequired = true }.ExistingOnly();
+
+            var platinumdacpacSourceOption = new Option<FileInfo>(new string[] { "-pd", "--platinumdacpac" }, "Name of the dacpac containing the platinum schema") { IsRequired = true }.ExistingOnly();
+            var targetdacpacSourceOption = new Option<FileInfo>(new string[] { "-td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated") { IsRequired = true }.ExistingOnly();
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
             {
@@ -99,7 +102,8 @@ namespace SqlBuildManager.Console.CommandLine
                 descriptionOption,
                 buildrevisionOption,
                 logtodatabasenamedOption,
-                scriptsrcdirOption
+                scriptsrcdirOption,
+                timeoutretrycountOption
             };
             buildCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunLocalBuildAsync);
 
@@ -450,18 +454,6 @@ namespace SqlBuildManager.Console.CommandLine
              * Utility commands 
              ***************************************/
 
-            //Create an SBM from a platium DACPAC file
-            var scriptExtractCommand = new Command("scriptextract", "Extract a SBM package from a source --platinumdacpac")
-            {
-                platinumdacpacOption.Copy(true),
-                outputsbmOption.Copy(true),
-                databaseOption.Copy(true),
-                serverOption.Copy(true),
-                usernameOption.Copy(true),
-                passwordOption.Copy(true)
-            };
-            scriptExtractCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.ScriptExtraction);
-
             //Sync two databases
             var synchronizeCommand = new Command("synchronize", "Performs a database synchronization between between --database and --golddatabase. Can only be used for Windows Auth database targets")
             {
@@ -492,16 +484,67 @@ namespace SqlBuildManager.Console.CommandLine
             };
             packageCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.PackageSbxFilesIntoSbmFiles);
 
-            //Create
-            var createCommand = new Command("create", "Creates an SBM package or SBX project file from a list of scripts (type is determined by file extension (.sbm or .sbx)")
+           
+
+            //Create from diff
+            var createFromDiffCommand = new Command("fromdiff", "Creates an SBM package from a calculated diff between two databases")
+            {
+                outputsbmOption.Copy(true),
+                golddatabaseOption.Copy(true),
+                goldserverOption.Copy(true),
+                databaseOption.Copy(true),
+                serverOption.Copy(true),
+                authtypeOption
+
+            };
+            createFromDiffCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreatePackageFromDiff);
+
+            //Create from diff
+            var createFromScriptsCommand = new Command("fromscripts", "Creates an SBM package or SBX project file from a list of scripts (type is determined by file extension- .sbm or .sbx)")
             {
                 outputsbmOption.Copy(true),
                 scriptListOption
 
             };
-            createCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreatePackageFromScripts);
+            createFromScriptsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreatePackageFromScripts);
+
+            //Create from diff
+            var createFromDacpacsCommand = new Command("fromdacpacs", "Creates an SBM package from differences between two DACPAC files")
+            {
+                outputsbmOption.Copy(true),
+                platinumdacpacSourceOption, 
+                targetdacpacSourceOption
+
+            };
+            createFromDacpacsCommand.Handler = CommandHandler.Create<string, FileInfo, FileInfo>(Program.CreatePackageFromDacpacs);
+
+            //Create an SBM from a platium DACPAC file
+            var createFromDacpacDiffCommand = new Command("fromdacpacdiff", "Extract a SBM package from a source --platinumdacpac and a target database connection")
+            {
+                platinumdacpacOption.Copy(true),
+                outputsbmOption.Copy(true),
+                databaseOption.Copy(true),
+                serverOption.Copy(true),
+                usernameOption,
+                passwordOption,
+                authtypeOption
+            };
+            createFromDacpacDiffCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateFromDacpacDiff);
+
+            //Create an SBM from a platium DACPAC file (deprecated, but keeping in sync with fromdacpacdiff for now
+            var scriptExtractCommand = new Command("scriptextract", "[*Deprecated - please use `sbm create fromdacpacdiff`] Extract a SBM package from a source --platinumdacpac");
+            createFromDacpacDiffCommand.Options.ToList().ForEach(o => scriptExtractCommand.AddOption(o));
+            scriptExtractCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateFromDacpacDiff);
 
             //Create
+            var createCommand = new Command("create", "Creates an SBM package from script files (fromscripts),  calculated database differences (fromdiff) or diffs between two DACPAC files (fromdacpacs)");
+            createCommand.Add(createFromScriptsCommand);
+            createCommand.Add(createFromDiffCommand);
+            createCommand.Add(createFromDacpacsCommand);
+            createCommand.Add(createFromDacpacDiffCommand);
+
+
+            //Add
             var addCommand = new Command("add", "Adds one or more scripts to an SBM package or SBX project file from a list of scripts")
             {
                 outputsbmOption.Copy(true),
@@ -509,7 +552,7 @@ namespace SqlBuildManager.Console.CommandLine
             };
             addCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.AddScriptsToPackage);
 
-            //Create
+            //List
             var listCommand = new Command("list", "List the script contents (order, script name, date added/modified, user info, script ids, script hashes) for SBM packages. (For SBX, just open the XML file!)")
             {
                 packagesOption,

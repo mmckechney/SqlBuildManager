@@ -2,6 +2,13 @@
 # SQL Build Manager Change Notes
 
 
+### Version 13.1.0
+
+- *UPDATED:* The `sbm create` command now has four sub-commands `fromscripts`,  `fromdiff`, `fromdacpacs` and `fromdacpacdiff`. See the [Command Line Reference](commandline.md) for details and usage
+- **NOTE:** The `sbm scriptextract` command is being deprecated in favor of `sbm create fromdacpacdiff` and will be removed in a future release
+- *UPDATED:* Corrected how the `sbm build` local build command handles logging. It is now all encapsulated in the `.sbm` file as it should be
+- *UPDATED:* Documentation updates and improvements
+
 ### Version 13.0.4
 
 - *ADDED:* New command `sbm add` to add scripts to an existing SBM package or SBX project file from a list of scripts

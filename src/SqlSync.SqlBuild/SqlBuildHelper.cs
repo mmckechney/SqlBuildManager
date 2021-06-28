@@ -642,23 +642,27 @@ namespace SqlSync.SqlBuild
                                 failureDueToScriptTimeout = true;
                             }
 
-							StringBuilder sb = new StringBuilder("Script File: "+myRow.FileName+"\r\n");
+							StringBuilder sb = new StringBuilder($"Script File: {myRow.FileName}{Environment.NewLine}");
 							foreach(SqlError error in e.Errors)
 							{
-								sb.Append("Line Number: "+error.LineNumber+"\r\n");
-								sb.Append("Error Message: "+error.Message+"\r\n");
-								sb.Append("Offending Script:\r\n"+batchScripts[currentBatchScriptIndex]);
-								sb.Append("----------------");
+								sb.Append($"Line Number: {error.LineNumber}{Environment.NewLine}");
+                                sb.Append($"Error Message: {error.Message}{Environment.NewLine}");
+                                sb.Append($"Offending Script:{Environment.NewLine}{batchScripts[currentBatchScriptIndex]}");
+                                sb.Append("----------------");
+
+                                log.LogError($"Error running script in: {myRow.FileName}");
+                                log.LogError(error.Message);
 							}
 							this.myRunRow.Success = false;
 							this.myRunRow.Results += sb.ToString();
-						    log.LogDebug(sb.ToString(),e);
+						    log.LogDebug(e,sb.ToString());
 
 							//Write the error to the log...
                             if(ScriptLogWriteEvent != null)
                                 this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, sb.ToString() + this.sqlInfoMessage));
-						
-							//Roll back save point?
+
+                            //Roll back save point?
+                            bool zombiedTransaction = false;
 							if(myRow.RollBackOnError)
 							{
                                 try
@@ -697,10 +701,10 @@ namespace SqlSync.SqlBuild
                                 catch (InvalidOperationException invalExe)
                                 {
                                     sb.Length = 0;
-                                    sb.Append(invalExe.Message + "\r\n");
+                                    sb.Append(invalExe.Message + Environment.NewLine);
 
                                     this.myRunRow.Results += sb.ToString();
-                                    if (this.isTransactional)
+                                    if (this.isTransactional && !invalExe.Message.Contains("This SqlTransaction has completed; it is no longer usable."))
                                     {
                                         this.RollbackBuild();
                                         bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
@@ -708,6 +712,7 @@ namespace SqlSync.SqlBuild
                                     else
                                     {
                                         bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Error. No Rollback Available.", TimeSpan.Zero));
+                                        zombiedTransaction = true;
                                     }
                                     buildFailure = true;
 
@@ -731,7 +736,7 @@ namespace SqlSync.SqlBuild
 							{
                                 DateTime end = DateTime.Now;
                                 TimeSpan span = new TimeSpan(end.Ticks - start.Ticks);
-                                if (this.isTransactional)
+                                if (this.isTransactional && !zombiedTransaction)
                                 {
                                     //Roll back the whole build
                                     this.RollbackBuild();
@@ -1946,7 +1951,7 @@ namespace SqlSync.SqlBuild
 				}
 				catch(Exception e)
 				{
-                    log.LogError(e, $"Error in RollbackBuild Transaction.Rollback() for database '{key}'");
+                    log.LogError($"Error in RollbackBuild Transaction.Rollback() for database '{key}'. {e.Message}");
 				}
 				try
 				{
@@ -1955,7 +1960,7 @@ namespace SqlSync.SqlBuild
 				}
 				catch(Exception e)
 				{
-                    log.LogError(e, $"Error in RollbackBuild Connection.Close() for database '{key}'");
+                    log.LogError($"Error in RollbackBuild Connection.Close() for database '{key}'. {e.Message}");
 				}
 			}
            

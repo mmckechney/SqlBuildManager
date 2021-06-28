@@ -83,7 +83,7 @@ namespace SqlBuildManager.Enterprise
                 System.Net.WebRequest req = System.Net.WebRequest.Create(configPath);
                 req.Proxy = System.Net.WebRequest.DefaultWebProxy;
                 req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                req.Timeout = 2000;
+                req.Timeout = 6000;
                 System.Net.WebResponse resp = req.GetResponse();
                 System.IO.StreamReader sr = new System.IO.StreamReader(resp.GetResponseStream());
 

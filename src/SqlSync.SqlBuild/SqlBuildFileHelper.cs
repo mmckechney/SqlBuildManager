@@ -166,7 +166,7 @@ namespace SqlSync.SqlBuild
         }
         #endregion
 
-        public static string InferOverridesFromPackage(string sbmFileName)
+        public static string InferOverridesFromPackage(string sbmFileName, string suppliedDbName)
         {
             string tempWorkingDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             string projectFilePath = string.Empty;
@@ -185,7 +185,14 @@ namespace SqlSync.SqlBuild
                     {
                         foreach(var t in targets)
                         {
-                            ovr.Append($"{t},{t};");
+                            if (!string.IsNullOrWhiteSpace(suppliedDbName))
+                            {
+                                ovr.Append($"{t},{suppliedDbName};");
+                            }
+                            else
+                            {
+                                ovr.Append($"{t},{t};");
+                            }
                         }
                         ovr.Length = ovr.Length - 1;
                     }
@@ -378,7 +385,7 @@ namespace SqlSync.SqlBuild
                         ref buildData,
                         projFileName,
                         shortFileName,
-                        i + 1,
+                        i,
                         "",
                         true,
                         true,
@@ -392,6 +399,14 @@ namespace SqlSync.SqlBuild
 
                 }
                 SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildFileName, includeHistoryAndLogs);
+
+                //Clean up project file (not needed, it is now in the package)
+                try
+                {
+                    File.Delete(projFileName);
+                }
+                catch { log.LogWarning($"Unable to clean up temporary project file '{projFileName}'. Please remove manually."); }
+
                 return true;
             }
             catch(Exception exe)
