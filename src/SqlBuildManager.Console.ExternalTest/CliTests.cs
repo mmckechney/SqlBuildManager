@@ -1040,7 +1040,91 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
+        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/basic_deploy.yaml")]
+        [DataTestMethod]
+        public void Container_SBMSource_Success(string runtimeFile, string secretsFile, string deployFile)
+        {
+            var prc = new ProcessHelper();
+            secretsFile = Path.GetFullPath(secretsFile);
+            runtimeFile = Path.GetFullPath(runtimeFile);
+            deployFile = Path.GetFullPath(deployFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
 
+            
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+
+            //Clear any exiting pods
+            var result = prc.ExecuteProcess("kubectl", "scale deployment sqlbuildmanager --replicas=0");
+           
+            //Prep the build
+            var args = new string[]{
+                "container",  "prep",
+                "--secretsfile", secretsFile,
+                "--runtimefile", runtimeFile,
+                "--jobname", DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff"),
+                "--packagename", sbmFileName};
+
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //enqueue the topic messages
+            args = new string[]{
+                "container",  "enqueue",
+                "--secretsfile", secretsFile,
+                "--runtimefile", runtimeFile,
+                "--override", overrideFile};
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {secretsFile}");
+            Assert.AreEqual(0, result);
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {runtimeFile}");
+            Assert.AreEqual(0, result);
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {deployFile}");
+            Assert.AreEqual(0, result);
+
+            result = prc.ExecuteProcess("kubectl", $"get pods");
+            Assert.AreEqual(0, result);
+
+            //monitor for completion
+            args = new string[]{
+                "container",  "monitor",
+                "--secretsfile", secretsFile,
+                "--runtimefile", runtimeFile,
+                "--override", overrideFile,
+                "--unittest", "true"};
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+           
+        }
+        /*
+            kubectl scale deployment sqlbuildmanager --replicas=0
+            sbm container prep --secretsfile secrets.yaml --runtimefile runtime.yaml --jobname "Build15" --packagename "SimpleSelect.sbm"
+            sbm container enqueue  --secretsfile secrets.yaml --runtimefile runtime.yaml --override "databasetargets.cfg"
+            kubectl apply -f secrets.yaml
+            kubectl apply -f runtime.yaml
+            kubectl apply -f basic_deploy.yaml
+            kubectl get pods
+            sbm container monitor  --secretsfile secrets.yaml --runtimefile runtime.yaml --override "databasetargets.cfg"
+
+        */
 
     }
 }

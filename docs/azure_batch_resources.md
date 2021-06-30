@@ -10,14 +10,14 @@ This deployment process will get everything ready for you to start leveraging Az
 
 - Register the Azure Resource Providers for Storage, Batch, EventHub and Service Bus
 - Create a Resource Group to contain all of the resources
-- Use the [azuredeploy.json](templates/azuredeploy.json) ARM template to create 
+- Use the [azuredeploy.json](../scripts/templates/azuredeploy.json) ARM template to create 
   - Storage Account - to save the consolidated log files generated from the builds
   - Batch Account - the resource that will run the builds
   - Event Hub - used as streaming log service to monitor the builds (this is an optional service and can be removed if not needed)
   - Service Bus Namespace and Topic - used as a source for the database target list (this is an optional service and can be removed if you do not want to leverage Service Bus and instead leverage an `--override` database target file
 - Compile the `SqlBuildManager.Console.csproj` targeting .NET 5.0 to produce the `sbm` executable (it will build two sets of binaries, one targeting Windows and one for Linux)
 - Create a Zip file of each package (Windows and Linux), upload them to the Azure Batch account and register each as a Batch Application
-- Call the [Create_SettingsFile.ps1](templates/Create_SettingsFile.ps1) PowerShell to collect the accounts names, keys and connection strings and save them to four JSON files `settingsfile-windows.json`,  `settingsfile-linux.json`, `settingsfile-windows-queue.json` and `settingsfile-linux-queue.json`. The files with the `-queue` suffix have the Service Bus Topic connection value set, the others do not.\
+- Call the [Create_SettingsFile.ps1](../scripts/templates/Create_SettingsFile.ps1) PowerShell to collect the accounts names, keys and connection strings and save them to four JSON files `settingsfile-windows.json`,  `settingsfile-linux.json`, `settingsfile-windows-queue.json` and `settingsfile-linux-queue.json`. The files with the `-queue` suffix have the Service Bus Topic connection value set, the others do not.\
 **NOTE**:  these files will have the account secrets in _plain text_. It is highly recommended that you don't skip the `savesettings` command as below
 
 ## Deployment
@@ -38,8 +38,9 @@ cd SqlBuildManager/docs/templates
     - `-outputpath` - a directory path where the project build output zip files will be saved. (These Zip files are then uploaded to the Batch account)
 
 ``` PowerShell
+cd ../scripts/templates
 Connect-AzAccount
-.\deploy_batch.ps1 -subscriptionId <your sub GUID> -resourceGroupName <resource group name> -resourceGroupLocation <location> -batchprefix <prefix> -outputpath <local path>
+.\deploy_azure_resources.ps.ps1 -subscriptionId <your sub GUID> -resourceGroupName <resource group name> -resourceGroupLocation <location> -batchprefix <prefix> -outputpath <local path>
 ```
 
 3. Encrypt the settings files

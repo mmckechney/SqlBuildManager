@@ -1,6 +1,5 @@
 # Development and Testing
 
-
 - [Setting up a test Azure Environment](#setting-up-a-test-azure-environment)
 - [Notes on Unit Testing](#notes-on-unit-testing)
 - [SQL Express for local testing](#sql-express)

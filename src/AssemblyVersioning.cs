@@ -25,7 +25,7 @@
 //   These can be found in SqlBuildManager.Setup -> Organize Your Setup -> General Information
 // ** Also, don't forget to update the change_notes.xml and .html files!
 
-[assembly: AssemblyVersion("13.1.0")]
-[assembly: AssemblyFileVersion("13.1.0")]
+[assembly: AssemblyVersion("13.2.0")]
+[assembly: AssemblyFileVersion("13.2.0")]
 
 

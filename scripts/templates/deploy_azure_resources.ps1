@@ -39,7 +39,7 @@ param(
 
  [Parameter(Mandatory=$True)]
  [string]
- $batchprefix,
+ $resourcePrefix,
 
  [Parameter(Mandatory=$True)]
  [string]
@@ -49,8 +49,15 @@ param(
  $templateFile = "azuredeploy.json",
 
  [Boolean]
- $deployService = $true
+ $deployService = $true,
 
+ [Parameter(Mandatory=$False)]
+ [string]
+ $sqlServerUserName,
+
+ [Parameter(Mandatory=$False)]
+ [string]
+ $sqlServerPassword
 
 )
 
@@ -113,7 +120,7 @@ if($deployService -eq $true)
 
 
     $params = @{}
-    $params.Add("namePrefix", $batchprefix);
+    $params.Add("namePrefix", $resourcePrefix);
     $params.Add("eventhubSku", "Standard");
     $params.Add("skuCapacity", 1);
     $params.Add("location", $resourceGroupLocation)
@@ -170,7 +177,7 @@ foreach ($env in $vars) {
 # Upload zip application packages to batch account
 ##################################################
 
-$batchAcctName = $batchprefix + "batchacct"
+$batchAcctName = $resourcePrefix + "batchacct"
 foreach ($env in $vars)
 {
 
@@ -192,12 +199,11 @@ foreach ($env in $vars)
 foreach ($env in $vars)
 {
     $file = Join-Path $outputpath "settingsfile-$($env.OSName.ToLower()).json"
-    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file -withQueue $false
+    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -resourcePrefix $resourcePrefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file -withQueue $false
 }
 
 foreach ($env in $vars)
 {
     $file = Join-Path $outputpath "settingsfile-$($env.OSName.ToLower())-queue.json"
-    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -batchprefix $batchprefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file -withQueue $true
+    .\Create_SettingsFile.ps1 -subscriptionId $subscriptionId -resourceGroupName $resourceGroupName -resourcePrefix $resourcePrefix -batchPoolName $env.PoolName -batchApplicationPackage $env.ApplicationName -batchPoolOs $env.OSName -settingsFileName $file -withQueue $true
 }
-

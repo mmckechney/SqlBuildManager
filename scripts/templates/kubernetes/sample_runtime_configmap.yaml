@@ -1,0 +1,10 @@
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: runtime-properties
+data:
+  #DacpacName: mydatabase.dacpac
+  PackageName: mytrustysqlpackage.sbm
+  JobName: justtesting
+  Concurrency: "2"
+  ConcurrencyType: Count

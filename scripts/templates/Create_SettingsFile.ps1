@@ -40,7 +40,7 @@ param(
  $resourceGroupName,
 
 [string]
- $batchprefix,
+ $resourcePrefix,
 
  [string]
  $batchPoolName,
@@ -66,11 +66,11 @@ if("" -ne $subscriptionId)
 }
 
 
-$batchAcctName = $batchprefix + "batchacct"
-$storageAcctName = $batchprefix + "storage"
-$namespaceName = $batchprefix + "eventhubnamespace"
-$eventHubName = $batchprefix + "eventhub"
-$serviceBusName = $batchprefix + "servicebus"
+$batchAcctName = $resourcePrefix + "batchacct"
+$storageAcctName = $resourcePrefix + "storage"
+$namespaceName = $resourcePrefix + "eventhubnamespace"
+$eventHubName = $resourcePrefix + "eventhub"
+$serviceBusName = $resourcePrefix + "servicebus"
 
 
 if("" -eq $batchPoolName)

@@ -39,6 +39,10 @@
   </head>
   <body>
     <h1>SQL Build Manager Change Notes</h1>
+    <div class="version">Version 14.0.0</div>
+    <div>
+      <span class="added">ADDED: </span>You now use Kubernetes as a compute platform for leveraging database builds with the new `sbm container` commands. See the [Kubernetes documentation](kubernetes.md) for background, information and how-to examples</div>
+    <br />
     <div class="version">Version 13.1.0</div>
     <div>
       <span class="updated">UPDATED: </span>The `sbm create` command now has four sub-commands `fromscripts`,  `fromdiff`, `fromdacpacs` and `fromdacpacdiff`. See the [Command Line Reference](commandline.md) for details and usage</div>
@@ -143,8 +147,10 @@
     <div>
       <span class="updated">UPDATED: </span>Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not</div>
     <div>
-      <span class="added">ADDED: </span>Shortened command line executable name `sbm.exe` leveraging the [System.CommmandLine](https://github.com/dotnet/command-line-api) command pattern and validation (`sbm [command] [options]`).
-      The old executable (`SqlBuildManager.Console.exe`) with the prior pattern of `/Action=verb` is still supported is still available</div>
+      <span class="added">ADDED: </span>
+			Shortened command line executable name `sbm.exe` leveraging the [System.CommmandLine](https://github.com/dotnet/command-line-api) command pattern and validation (`sbm [command] [options]`).
+			The old executable (`SqlBuildManager.Console.exe`) with the prior pattern of `/Action=verb` is still supported is still available
+		</div>
     <div>
       <span class="note">NOTE: </span>The CLI and core UI components of the app have been thoroughly tested. Some ancillary UI pieces have not. If you find an issue, please log it in GitHub</div>
     <br />
@@ -950,8 +956,9 @@
     <br />
     <div class="version">Version 8.1.0</div>
     <div>
-      <span class="note">NOTE: </span>Major Update!   Now allows for managing scripts in either a single file package (the original .sbm file) or via a "loose" file structure. This new mechanism consists of a build control XML file (.sbx) that contains the script run metadata for the scripts that co-resident in the same file system directory. When you're ready to put them all together, a "package" feature is there to put all the files into a new build .sbm package.
-    </div>
+      <span class="note">NOTE: </span>
+			Major Update!   Now allows for managing scripts in either a single file package (the original .sbm file) or via a "loose" file structure. This new mechanism consists of a build control XML file (.sbx) that contains the script run metadata for the scripts that co-resident in the same file system directory. When you're ready to put them all together, a "package" feature is there to put all the files into a new build .sbm package.
+		</div>
     <div>
       <span class="added">ADDED: </span>Ability to create update/insert scripts from Data Extract file</div>
     <div>

@@ -32,13 +32,13 @@ function TransformXML{
 
 }
 
-$xml = Resolve-Path "./SqlSync/change_notes.xml"
+$xml = Resolve-Path "../../src/SqlSync/change_notes.xml"
 
-$xslHTML = Resolve-Path "./SqlSync/change_notes.xslt"
-$outputHTML = Resolve-Path "./SqlSync/change_notes.html"
+$xslHTML = Resolve-Path "../../src/SqlSync/change_notes.xslt"
+$outputHTML = Resolve-Path "../../src/SqlSync/change_notes.html"
 
-$xslMD = Resolve-Path "./SqlSync/change_notes_md.xslt"
-$outputMD = Resolve-Path "../docs/change_notes.md"
+$xslMD = Resolve-Path "../../src/SqlSync/change_notes_md.xslt"
+$outputMD = Resolve-Path "../../docs/change_notes.md"
 
 TransformXML -xml $xml -xsl $xslHTML -output $outputHTML
 TransformXML -xml $xml -xsl $xslMD -output $outputMD

@@ -50,6 +50,21 @@ namespace SqlBuildManager.Console.CommandLine
                 cmdLine.BatchArgs.ServiceBusTopicConnectionString = sb.Cryptography.EncryptText(cmdLine.BatchArgs.ServiceBusTopicConnectionString, key);
             }
 
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            {
+                cmdLine.ConnectionArgs.StorageAccountKey = sb.Cryptography.EncryptText(cmdLine.ConnectionArgs.StorageAccountKey, key);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
+            {
+                cmdLine.ConnectionArgs.EventHubConnectionString = sb.Cryptography.EncryptText(cmdLine.ConnectionArgs.EventHubConnectionString, key);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = sb.Cryptography.EncryptText(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, key);
+            }
+
             return cmdLine;
         }
 
@@ -94,6 +109,22 @@ namespace SqlBuildManager.Console.CommandLine
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
             {
                 (success, cmdLine.BatchArgs.ServiceBusTopicConnectionString) = sb.Cryptography.DecryptText(cmdLine.BatchArgs.ServiceBusTopicConnectionString, key, "--servicebustopicconnection", suppressLog);
+                consolidated = consolidated & success;
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            {
+                (success, cmdLine.ConnectionArgs.StorageAccountKey) = sb.Cryptography.DecryptText(cmdLine.ConnectionArgs.StorageAccountKey, key, "--storageaccountkey", suppressLog);
+                consolidated = consolidated & success;
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
+            {
+                (success, cmdLine.ConnectionArgs.EventHubConnectionString) = sb.Cryptography.DecryptText(cmdLine.ConnectionArgs.EventHubConnectionString, key, "--eventhubconnection", suppressLog);
+                consolidated = consolidated & success;
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                (success, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) = sb.Cryptography.DecryptText(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, key, "--servicebustopicconnection", suppressLog);
                 consolidated = consolidated & success;
             }
 

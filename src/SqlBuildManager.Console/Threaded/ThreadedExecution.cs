@@ -130,7 +130,7 @@ namespace SqlBuildManager.Console.Threaded
             }
             else if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
             {
-                cmdLine.RootLoggingPath = @"C:/tmp-sqlbuildlogging";
+                cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "tmp-sqlbuildlogging");
             }
 
             //Set paths
@@ -182,7 +182,7 @@ namespace SqlBuildManager.Console.Threaded
                 if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
                 {
                     log.LogInformation($"Sourcing targets from Service Bus topic with Concurrency Type: {cmdLine.ConcurrencyType} and Concurency setting: {cmdLine.Concurrency}");
-                    Task<int> queueTask = ExecuteFromQueue(cmdLine, System.Environment.UserName);
+                    Task<int> queueTask = ExecuteFromQueue(cmdLine, System.Environment.UserName, cmdLine.JobName);
                     queueTask.Wait();
                     return queueTask.Result;
                 }
@@ -274,21 +274,35 @@ namespace SqlBuildManager.Console.Threaded
             }
            
         }
-        private async Task<int> ExecuteFromQueue(CommandLineArgs cmdLine, string buildRequestedBy)
+        private async Task<int> ExecuteFromQueue(CommandLineArgs cmdLine, string buildRequestedBy, string storageContainerName)
         {
-            this.qManager = new Queue.QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
-
+            this.qManager = new Queue.QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
+            bool messagesSinceLastLoop = true;
             while(true)
             {
                 var messages = await qManager.GetDatabaseTargetFromQueue(cmdLine.Concurrency, cmdLine.ConcurrencyType);
                
                 if(messages.Count == 0)
                 {
-                    log.LogInformation("No more messages found in Service Bus Topic. Exiting.");
-                    break;
+                    if (cmdLine.RunningAsContainer)
+                    {
+                        log.LogInformation("No messages found in Service Bus Topic. Waiting 10 seconds to check again...");
+                        if (messagesSinceLastLoop)
+                        {
+                            await CloudStorage.StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, cmdLine.RootLoggingPath);
+                        }
+                        messagesSinceLastLoop = false;
+                        System.Threading.Thread.Sleep(10000);
+                    }
+                    else
+                    {
+                        log.LogInformation("No more messages found in Service Bus Topic. Exiting.");
+                        break;
+                    }
                 }
                 else
                 {
+                    messagesSinceLastLoop = true;
                     var tasks = new List<Task<int>>();
                     foreach(var message in messages)
                     {
@@ -586,6 +600,7 @@ namespace SqlBuildManager.Console.Threaded
         }
         private void WriteToLog(LogMsg msg)
         {
+            msg.JobName = cmdLine.JobName;
             if(!theadedLoggingInitiated)
             {
                 InitThreadedLogging();

@@ -17,7 +17,7 @@ param(
 
  [Parameter(Mandatory=$True)]
  [string]
- $Batchprefix = "sbmmwm",
+ $ResourcePrefix = "sbmmwm",
 
  [Parameter(Mandatory=$True)]
  [string]
@@ -119,9 +119,6 @@ foreach($suffix in $nameSuffixes)
 ########################################################
 # Output the target database configuration file
 ########################################################
-#$server = Get-AzSqlServer -ResourceGroupName $ResourceGroupName  -ServerName $SqlServerName
-#$dbs = Get-AzSqlDatabase -ResourceGroupName $server.ResourceGroupName -ServerName $server.ServerName | Sort-Object -Property DatabaseName
-
 
 # check to see if the folder is there, if not, create it
 $path = Split-Path $outputDbConfigFile
@@ -150,21 +147,17 @@ foreach($item  in  $ClientDbConfig)
 {
     $item | Out-File -Append $clientDbConfigFile
 }
-# foreach($db in $dbs)
-# {
-#     if($db.DatabaseName -ne "master")
-#     {
-#         $server.FullyQualifiedDomainName + ":SqlBuildTest,"+$db.DatabaseName | Out-File -Append $outputDbConfigFile
-#         $server.FullyQualifiedDomainName + ":client,"+$db.DatabaseName | Out-File -Append $clientDbConfigFile
-#     }
-# }
 
-
-#########################################################################################
-# Call to deploy_batch.ps to create the batch, storage, eventhub and queue infrastructure
-#########################################################################################
+####################################################################################################
+# Call to deploy_azure_resources.ps1 to create the batch, storage, eventhub and queue infrastructure
+####################################################################################################
 $SubscriptionId = (Get-AzContext).Subscription.Id
-./deploy_azure_resources.ps1 -subscriptionId $SubscriptionId -resourceGroupName $ResourceGroupName -resourceGroupLocation $Location -batchprefix $batchprefix -outputpath $outputPath
+./deploy_azure_resources.ps1 -subscriptionId $SubscriptionId -resourceGroupName $ResourceGroupName -resourceGroupLocation $Location -resourcePrefix $ResourcePrefix -outputpath $outputPath
+
+###################################################################
+# Call to deploy_kubernetes_resources.ps1 to create the AKS cluster
+###################################################################
+./deploy_kubernetes_resources.ps1 -subscriptionId $SubscriptionId -resourceGroupName $ResourceGroupName -resourceGroupLocation $Location -resourcePrefix $ResourcePrefix -outputpath $outputPath -sqlServerUserName $SqlServerUserName -sqlServerPassword $SqlServerPassword
 
 
 #############################################################
@@ -176,19 +169,19 @@ $settingsFileKey = [System.Convert]::ToBase64String($AESKey);
 
 $tmpPath = Resolve-Path $settingsJsonWindows
 Write-Output "Saving settings file to $tmpPath"
-./..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --settingsfilekey $settingsFileKey
+..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --settingsfilekey $settingsFileKey
 
 $tmpPath = Resolve-Path $settingsJsonLinux
 Write-Output "Saving settings file to $tmpPath"
-./..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux --settingsfilekey $settingsFileKey
+..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux --settingsfilekey $settingsFileKey
 
 $tmpPath = Resolve-Path $settingsJsonWindowsQueue
 Write-Output "Saving settings file to $tmpPath"
-./..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --settingsfilekey $settingsFileKey
+..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --settingsfilekey $settingsFileKey
 
 $tmpPath = Resolve-Path $settingsJsonLinuxQueue
 Write-Output "Saving settings file to $tmpPath"
-./..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux --settingsfilekey $settingsFileKey
+..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe batch savesettings --settingsfile $tmpPath  --username $SqlServerUserName --password $SqlServerPassword --silent --batchpoolos Linux --settingsfilekey $settingsFileKey
 
 
 $keyFile = Join-Path $outputpath "settingsfilekey.txt"

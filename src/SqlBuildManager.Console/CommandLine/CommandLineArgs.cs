@@ -20,6 +20,7 @@ namespace SqlBuildManager.Console.CommandLine
         #region Nested Object properties
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
         public Batch BatchArgs { get; set; } = new Batch();
+        public Connections ConnectionArgs { get; set; } = new Connections();
         [JsonIgnore]
         public DacPac DacPacArgs { get; set; } = new DacPac();
         [JsonIgnore]
@@ -28,6 +29,7 @@ namespace SqlBuildManager.Console.CommandLine
         public AutoScripting AutoScriptingArgs { get; set; } = new AutoScripting();
         [JsonIgnore]
         public StoredProcTesting StoredProcTestingArgs { get; set; } = new StoredProcTesting();
+
         #endregion
         private string settingsFile = string.Empty;
         [JsonIgnore]
@@ -91,6 +93,8 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public virtual bool Trial { get; set; } = false;
         [JsonIgnore]
+        public virtual bool RunningAsContainer { get; set; } = false;
+        [JsonIgnore]
         public virtual string ScriptSrcDir { get; set; } = string.Empty;
         [JsonIgnore]
         public virtual string LogToDatabaseName { get; set; } = string.Empty;
@@ -133,6 +137,20 @@ namespace SqlBuildManager.Console.CommandLine
         private string dacpacName = string.Empty;
         public virtual int DefaultScriptTimeout { get; set; } = 500;
 
+        private string jobName = string.Empty;
+        [JsonIgnore]
+        public string JobName
+        {
+            get
+            {
+                return jobName;
+            }
+            set
+            {
+                jobName = value.ToLower();
+                BatchArgs.BatchJobName = value.ToLower();
+            }
+        }
         [JsonIgnore]
         public virtual int Concurrency { get; set; } = 10;
         [JsonIgnore]
@@ -208,7 +226,11 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public virtual string BatchJobName
         {
-            set { BatchArgs.BatchJobName = value; }
+            set
+            {
+                BatchArgs.BatchJobName = value.ToLower();
+                jobName = value.ToLower();
+            }
         }
         [JsonIgnore]
         public virtual string BatchAccountName
@@ -228,12 +250,20 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public virtual string StorageAccountName
         {
-            set { BatchArgs.StorageAccountName = value; }
+            set
+            {
+                BatchArgs.StorageAccountName = value;
+                ConnectionArgs.StorageAccountName = value;
+            }
         }
         [JsonIgnore]
         public virtual string StorageAccountKey
         {
-            set { BatchArgs.StorageAccountKey = value; }
+            set
+            {
+                BatchArgs.StorageAccountKey = value;
+                ConnectionArgs.StorageAccountKey = value;
+            }
         }
         [JsonIgnore]
         public virtual string BatchVmSize
@@ -248,12 +278,20 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public virtual string EventHubConnection
         {
-            set { BatchArgs.EventHubConnectionString = value; }
+            set
+            {
+                BatchArgs.EventHubConnectionString = value;
+                ConnectionArgs.EventHubConnectionString = value;
+            }
         }
         [JsonIgnore]
         public virtual string ServiceBusTopicConnection
         {
-            set { BatchArgs.ServiceBusTopicConnectionString = value; }
+            set
+            {
+                BatchArgs.ServiceBusTopicConnectionString = value;
+                ConnectionArgs.ServiceBusTopicConnectionString = value;
+            }
         }
         [JsonIgnore]
         public virtual bool PollBatchPoolStatus
@@ -352,6 +390,14 @@ namespace SqlBuildManager.Console.CommandLine
             public bool ForceCustomDacPac { get; set; }
         }
         #endregion
+
+        public class Connections
+        {
+            public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
+            public string EventHubConnectionString { get; set; } = string.Empty;
+            public string StorageAccountName { get; set; } = string.Empty;
+            public string StorageAccountKey { get; set; } = string.Empty;
+        }
         [Serializable]
         public class AutoScripting
         {

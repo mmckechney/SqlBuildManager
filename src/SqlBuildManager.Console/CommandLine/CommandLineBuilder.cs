@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Extensions.Logging;
 using System.CommandLine;
 using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
@@ -26,8 +27,8 @@ namespace SqlBuildManager.Console.CommandLine
             var passwordOption = new Option<string>(new string[] { "-p", "--password" }, "The password to authenticate against the database if not using integrate auth");
             var logtodatabasenamedOption = new Option<string>(new string[] { "--logtodatabasename" }, "[Not recommended] Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target).");
             var descriptionOption = new Option<string>(new string[] { "--description" }, "Description of build (logged with build)");
-            var packagenameOption = new Option<string>(new string[] { "--packagename", "--buildfilename" }, "Name of the .sbm or .sbx file to execute") { Name = "BuildFileName", IsRequired = true };
-            var directoryOption = new Option<string>(new string[] { "--directory" }, "Directory containing 1 or more SBX files to package into SBM zip files") { IsRequired = true };
+            var packagenameOption = new Option<string>(new string[] {"-P",  "--packagename", "--buildfilename" }, "Name of the .sbm or .sbx file to execute") { Name = "BuildFileName", IsRequired = true };
+            var directoryOption = new Option<string>(new string[] { "--dir", "--directory" }, "Directory containing 1 or more SBX files to package into SBM zip files") { IsRequired = true };
             var transactionalOption = new Option<bool>(new string[] { "--transactional" }, () => true, "Whether or not to run with a wrapping transaction (default is true)");
             var timeoutretrycountOption = new Option<int>(new string[] { "--timeoutretrycount" }, "How many retries to attempt if a timeout exception occurs");
             var golddatabaseOption = new Option<string>(new string[] {"-gd", "--golddatabase" }, "The \"gold copy\" database that will serve as the model for what the target database should look like") { IsRequired = true };
@@ -44,22 +45,23 @@ namespace SqlBuildManager.Console.CommandLine
             var deletebatchjobOption = new Option<bool>(new string[] { "--deletebatchjob" }, () => false, "Whether or not to delete the batch job after an execution");
             var batchnodecountOption = new Option<int>(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job");
             var batchjobnameOption = new Option<string>(new string[] { "--jobname", "--batchjobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed");
-            var batchaccountnameOption = new Option<string>(new string[] { "--batchaccountname" }, "String name of the Azure Batch account");
-            var batchaccountkeyOption = new Option<string>(new string[] { "--batchaccountkey" }, "Account Key for the Azure Batch account");
-            var batchaccounturlOption = new Option<string>(new string[] { "--batchaccounturl" }, "URL for the Azure Batch account");
-            var storageaccountnameOption = new Option<string>(new string[] { "--storageaccountname" }, "Name of storage account associated with the Azure Batch account");
+            var jobnameOption = new Option<string>(new string[] { "--jobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed");
+            var batchaccountnameOption = new Option<string>(new string[] { "--acct", "--batchaccountname" }, "String name of the Azure Batch account");
+            var batchaccountkeyOption = new Option<string>(new string[] { "-k", "--batchaccountkey" }, "Account Key for the Azure Batch account");
+            var batchaccounturlOption = new Option<string>(new string[] { "-U", "--batchaccounturl" }, "URL for the Azure Batch account");
+            var storageaccountnameOption = new Option<string>(new string[] { "--storageaccountname" }, "Name of Azure storage account associated build");
             var storageaccountkeyOption = new Option<string>(new string[] { "--storageaccountkey" }, "Account Key for the storage account");
             var batchvmsizeOption = new Option<string>(new string[] { "--vmsize", "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) ");
             var batchpoolnameOption = new Option<string>(new string[] { "--poolname", "--batchpoolname" }, "Override for the default pool name of \"SqlBuildManagerPool\"");
-            var batchpoolOsOption = new Option<OsType>(new string[] { "--os", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default");
+            var batchpoolOsOption = new Option<OsType>(new string[] { "-os", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default");
             var batchApplicationOption = new Option<string>(new string[] { "--apppackage", "--applicationpackage" }, "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux");
-            var eventhubconnectionOption = new Option<string>(new string[] { "--eventhubconnection" }, "Event Hub connection string for Event Hub logging of batch execution");
-            var serviceBusconnectionOption = new Option<string>(new string[] { "--servicebustopicconnection" }, "Service Bus connection string for Service Bus topic distribution of batch execution");
-            var pollbatchpoolstatusOption = new Option<bool>(new string[] { "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true) or fire and forget (false)");
+            var eventhubconnectionOption = new Option<string>(new string[] { "-eh", "--eventhubconnection" }, "Event Hub connection string for Event Hub logging");
+            var serviceBusconnectionOption = new Option<string>(new string[] { "-sb", "--servicebustopicconnection" }, "Service Bus connection string for Service Bus topic distribution");
+            var pollbatchpoolstatusOption = new Option<bool>(new string[] { "--poll", "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true) or fire and forget (false)");
             var defaultscripttimeoutOption = new Option<int>(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC");
             var authtypeOption = new Option<SqlSync.Connection.AuthenticationType>(new string[] { "--authtype" }, "SQL Authentication type to use.") { Name = "AuthenticationType" };
             var silentOption = new Option<bool>(new string[] { "--silent" }, () => false, "Suppresses overwrite prompt if file already exists");
-            var outputcontainersasurlOption = new Option<string>(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command");
+            var outputcontainersasurlOption = new Option<string>(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command") { IsHidden = true };
             var dacpacOutputOption = new Option<string>(new string[] { "--dacpacname" }, "Name of the dacpac that you want to create") { IsRequired = true };
             var cleartextOption = new Option<bool>(new string[] { "--cleartext" }, () => false, "Flag to save settings file in clear text (vs. encrypted)");
             var queryFileOption = new Option<FileInfo>(new string[] { "--queryfile" }, "File containing the SELECT query to run across the databases").ExistingOnly();
@@ -67,9 +69,16 @@ namespace SqlBuildManager.Console.CommandLine
             var threadedConcurrencyOption = new Option<int>(new string[] { "--concurrency" }, "Maximum concurrency for threaded executions");
             var threadedConcurrencyTypeOption = new Option<ConcurrencyType>(new string[] { "--concurrencytype" }, "Type of concurrency, used in conjunction with --concurrency ");
             var logLevelOption = new Option<LogLevel>(new string[] { "--loglevel" }, "Logging level for console and log file");
+            var logLevelWithInfoDefaultOption = new Option<LogLevel>(new string[] { "--loglevel" }, () => LogLevel.Information, "Logging level for console and log file");
             var scriptListOption = new Option<FileInfo[]>(new string[] {"-s", "--scripts"}, "List of script files to create SBM package from - separate names with spaces (will be added in order provided)") { IsRequired = true }.ExistingOnly();
             var withHashOption = new Option<bool>(new string[] { "-w", "--withhash" }, () => true, "Also include the SHA1 hash of the script files in the package");
             var packagesOption = new Option<FileInfo[]>(new string[] {"-p","--packages"}, "One or more SBM packages to get contents for") { IsRequired = true }.ExistingOnly();
+            var secretsFileOption = new Option<FileInfo>(new string[] { "--secretsfile" }, "Name of the secrets YAML file to use for retrieving connection values").ExistingOnly();
+            var runtimeFileOption = new Option<FileInfo>(new string[] { "--runtimefile" }, "Name of the runtime YAML file to use for retrieving the job name and/or packagename").ExistingOnly();
+            var overrideAsFileOption = new Option<FileInfo>(new string[] { "--override" }, "File containing the target database settings (usually a formatted .cfg file)") { IsRequired = true }.ExistingOnly();
+            var overrideAsFileNotRequiredOption = new Option<FileInfo>(new string[] { "--override" }, "File containing the target database settings (optional, used as a counter for monitoring") { IsRequired = false }.ExistingOnly();
+            var packagenameAsFileToUploadOption = new Option<FileInfo>(new string[] { "-P", "--packagename" }, "Name of the .sbm file to upload") { IsRequired = true }.ExistingOnly();
+            var forceOption = new Option<bool>(new string[] { "--force" }, () => false, "Suppresses warning that the storage container/job already exist. Will delete any existing files without warning");
 
             var platinumdacpacSourceOption = new Option<FileInfo>(new string[] { "-pd", "--platinumdacpac" }, "Name of the dacpac containing the platinum schema") { IsRequired = true }.ExistingOnly();
             var targetdacpacSourceOption = new Option<FileInfo>(new string[] { "-td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated") { IsRequired = true }.ExistingOnly();
@@ -344,13 +353,16 @@ namespace SqlBuildManager.Console.CommandLine
                 serviceBusconnectionOption,
                 overrideOption.Copy(true)
             };
-            batchEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.QueueOverrideTargets);
+            batchEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.EnqueueOverrideTargets);
 
-            var batchDequeueTargetsCommand = new Command("dequeue", "Careful! Removes all messages from the Service Bue Topics and Deadletters without processing them")
+            var batchDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
                 settingsfileOption,
                 settingsfileKeyOption,
-                serviceBusconnectionOption
+                serviceBusconnectionOption, 
+                batchjobnameOption,
+                threadedConcurrencyTypeOption
+
             };
             batchDequeueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.DeQueueOverrideTargets);
 
@@ -447,7 +459,89 @@ namespace SqlBuildManager.Console.CommandLine
             batchCommand.Add(batchRunThreadedCommand);
             batchCommand.Add(batchQueryThreadedCommand);
             batchCommand.Add(batchDeleteJobsCommand);
+
+            /****************************************
+             * Container queue commands 
+             ***************************************/
+
+            var containerWorkerCommand = new Command("worker", "[Used by Kubernetes] Starts the container as a worker - polling and retrieving items from target service bus queue topic");
+            containerWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunContainerQueueWorker);
+
+            var containerEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
+            {
+                secretsFileOption,
+                runtimeFileOption,
+                jobnameOption,
+                threadedConcurrencyTypeOption,
+                serviceBusconnectionOption,
+                overrideAsFileOption
+            };
+            containerEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string,ConcurrencyType,string, FileInfo>(Program.EnqueueContainerOverrideTargets);
+
+            var containerSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes container deployments")
+            {
+                passwordOption,
+                usernameOption,
+                storageaccountnameOption,
+                storageaccountkeyOption,
+                eventhubconnectionOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
+                threadedConcurrencyOption,
+                threadedConcurrencyTypeOption,
+                new Option<string>("--prefix", "Settings file's prefix")
+            };
+            containerSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string>(Program.SaveContainerSettings);
+
+            var unitTestOption = new Option<bool>("--unittest", () => false, "Designation that execution is running as a unit test");
+            unitTestOption.IsHidden = true;
             
+            var containerMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
+            {
+                secretsFileOption,
+                runtimeFileOption,
+                jobnameOption,
+                overrideOption,
+                threadedConcurrencyTypeOption,
+                serviceBusconnectionOption,
+                eventhubconnectionOption, 
+                unitTestOption
+            };
+            containerMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,CommandLineArgs, bool>(Program.MonitorContainerRuntimeProgress);
+
+            var containerPrepCommand = new Command("prep", "Creates a storage container and uploads the SBM package file that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values")
+            {
+                secretsFileOption,
+                runtimeFileOption,
+                jobnameOption,
+                storageaccountnameOption,
+                storageaccountkeyOption,
+                packagenameAsFileToUploadOption,
+                forceOption
+
+            };
+            containerPrepCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, string, string, string, bool>(Program.UploadContainerBuildPackage);
+
+            var containerDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
+            {
+                secretsFileOption,
+                runtimeFileOption,
+                jobnameOption,
+                threadedConcurrencyTypeOption,
+                serviceBusconnectionOption
+            };
+            containerDequeueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, ConcurrencyType, string>(Program.DequeueContainerOverrideTargets);
+
+
+
+            var containerCommand = new Command("container", "Designator that the program is running in a container");
+            containerCommand.Add(containerSaveSettingsCommand);
+            containerCommand.Add(containerPrepCommand);
+            containerCommand.Add(containerEnqueueTargetsCommand);
+            containerCommand.Add(containerMonitorCommand);
+            containerCommand.Add(containerDequeueTargetsCommand);
+            containerCommand.Add(containerWorkerCommand);
+
 
 
             /****************************************
@@ -604,6 +698,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(getDifferenceCommand);
             rootCommand.Add(synchronizeCommand);
             rootCommand.Add(scriptExtractCommand);
+            rootCommand.Add(containerCommand);
     
 
             return rootCommand;

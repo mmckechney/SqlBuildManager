@@ -2,7 +2,7 @@
 try {
 
     #Create a dated sub folder for the test results
-    $datedTestResultFolder = "./TestResults/" +( (Get-Date -Format "s") -replace ":", "-")
+    $datedTestResultFolder = "../../src/TestResults/" +( (Get-Date -Format "s") -replace ":", "-")
     if(-not (Test-Path $datedTestResultFolder))
     {
         New-Item -Path $datedTestResultFolder -ItemType Directory
