@@ -21,7 +21,7 @@
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.2.0" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.2.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
