@@ -164,39 +164,3 @@ resource serviceBusName_sqlbuildmanager_sbmtopicpolicy 'Microsoft.ServiceBus/nam
     serviceBusName
   ]
 }
-
-resource serviceBusName_sqlbuildmanager_sbmsubscription 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2018-01-01-preview' = {
-  name: '${serviceBusName_sqlbuildmanager.name}/sbmsubscription'
-  properties: {
-    lockDuration: 'PT30S'
-    requiresSession: false
-    defaultMessageTimeToLive: 'P14D'
-    deadLetteringOnMessageExpiration: true
-    deadLetteringOnFilterEvaluationExceptions: true
-    maxDeliveryCount: 10
-    status: 'Active'
-    enableBatchedOperations: true
-    autoDeleteOnIdle: 'P14D'
-  }
-  dependsOn: [
-    serviceBusName
-  ]
-}
-
-resource serviceBusName_sqlbuildmanager_sbmsubscriptionsession 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2018-01-01-preview' = {
-  name: '${serviceBusName_sqlbuildmanager.name}/sbmsubscriptionsession'
-  properties: {
-    lockDuration: 'PT30S'
-    requiresSession: true
-    defaultMessageTimeToLive: 'P14D'
-    deadLetteringOnMessageExpiration: true
-    deadLetteringOnFilterEvaluationExceptions: true
-    maxDeliveryCount: 10
-    status: 'Active'
-    enableBatchedOperations: true
-    autoDeleteOnIdle: 'P14D'
-  }
-  dependsOn: [
-    serviceBusName
-  ]
-}

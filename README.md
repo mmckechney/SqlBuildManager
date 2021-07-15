@@ -1,6 +1,6 @@
 # SQL Build Manager
 
-SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases. It provides a comprehensive set command line options for the management of one to many thousands of databases.
+SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases. It provides a comprehensive set of command line options for the management of one to many thousands of databases.
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
@@ -14,10 +14,11 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
   - [Running builds](#running-builds-command-line)
   - [Querying across databases](#querying-across-databases-command-line)
 - [Command Line Reference/ Quickstart](/docs/commandline.md)
-- [Running Locally](/docs/local_build.md)
-- [Leverage Azure Batch for massively parallel updates](/docs/azure_batch.md)
+- [Running Locally](docs/local_build.md)
+- [Leverage Azure Batch for massively parallel updates](docs/azure_batch.md)
+- [Leverage Kubernetes for massively parallel updates](docs/kubernetes.md)
 - [Change notes](docs/change_notes.md)
-- For contributors: [Notes on Building and Unit Testing](/docs/setup_azure_environment.md)
+- For contributors: [Notes on Building and Unit Testing](docs/setup_azure_environment.md)
 - For users of the Windows Form app: [SQL Build Manager Manual](docs/SqlBuildManagerManual.md)\
   (Note: this isn't 100% up to date, so the screen shots may vary from the current app)
 
@@ -113,7 +114,7 @@ You define your database update targets leveraging an `--override` file or using
 
 ## Running Builds (command line)
 
-There are 3 ways to run your database update builds each with their target use case
+There are 4 ways to run your database update builds each with their target use case
 
 ### **Local**
 
@@ -127,6 +128,11 @@ Using the `sbm threaded run` command will allow for updating multiple databases 
 
 Using the `sbm batch run` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](docs/azure_batch.md).
 An excellent tool for viewing and monitoring your Azure batch accounts and jobs can be found here [https://azure.github.io/BatchExplorer/](https://azure.github.io/BatchExplorer/)
+
+### **Kubernetes**
+
+Using the `sbm container` commands leverages Kubernetes to permit massively parallel updates across thousands of databases. To leverage Kubernetes, you will first need to set up a Kubernetes Cluster. The instructions for this can be found [here](docs/kubernetes.md#).
+
 
 ----
 

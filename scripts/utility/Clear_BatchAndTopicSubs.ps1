@@ -1,6 +1,6 @@
 #Connect-AzAccount
 
-$jsondata = Get-Content -Raw -Path ./TestConfig/settingsfile-windows.json | ConvertFrom-Json
+$jsondata = Get-Content -Raw -Path ../../src/TestConfig/settingsfile-windows.json | ConvertFrom-Json
 $batchContext = Get-AzBatchAccountKey -AccountName $jsondata.BatchArgs.BatchAccountName
 $rgName = $jsondata.BatchArgs.BatchAccountName -replace "BatchAcct", ""
 $storageKey = Get-AzStorageAccountKey -ResourceGroupName $rgName -Name $jsondata.BatchArgs.StorageAccountName
@@ -21,6 +21,17 @@ foreach ($job in $jobs) {
         {
             Remove-AzStorageContainer -Name $container[0].Name -Context $storageContext -Force
         }
+    }
+}
 
+$sbNamespaceName = $rgName + "servicebus"
+$subs = Get-AzServiceBusSubscription -ResourceGroupName $rgName -Namespace $sbNamespaceName -Topic sqlbuildmanager
+
+if($null -ne $subs)
+{
+    foreach($sub in $subs)
+    {
+        Write-Output "Removing service bus topic subscription : $($sub.Name)"
+        Remove-AzServiceBusSubscription -ResourceGroupName  $rgName -Namespace $sbNamespaceName -Topic sqlbuildmanager -Name $sub.Name -ErrorAction SilentlyContinue
     }
 }

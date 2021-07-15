@@ -1,6 +1,15 @@
 
 # Command Line Overview
 
+- [Getting started](#getting-started)
+- [Build execution actions to update or query databases](#build-execution-actions-to-update-or-query-databases)
+- [Utility Actions](#utility-actions)
+- [Batch sub-commands](#batch-sub-commands)
+- [Container (Kubernetes) sub-commands](#container-kubernetes-sub-commands)
+- [Logging](#logging)
+
+----
+
 ## Getting started
 
 The `sbm` executable uses a command pattern for execution `sbm [command]`
@@ -12,6 +21,7 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 - `build` - Performs a standard, local SBM execution via command line ([docs](local_build.md))
 - `threaded` - For updating multiple databases simultaneously from the current machine ([docs](threaded_build.md))
 - `batch` - Commands for setting and executing a batch run using Azure Batch ([docs](azure_batch.md))
+- `container` - Commands for setting and executing a distributed run using Kubernetes ([docs](kubernetes.md))
 
 ### Utility actions
 
@@ -31,8 +41,9 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 - `synchronize` - Performs a database synchronization between between `--database` and -`-golddatabase`. Can only be used for Windows Auth database targets
 - `scriptextract` - Extract a SBM package from a source `--platinumdacpac` (this command is being deprecated in favor of `sbm create fromdacpacdiff` and will be removed in a future release)
 
+### Batch sub-commands
 
-### Batch sub-commands (`sbm batch [command]`)
+`sbm batch [command]`
 
 - `savesettings` - Save a settings JSON file for Batch arguments (see Batch documentation)
 - `prestage` - Pre-stage the Azure Batch VM nodes
@@ -47,6 +58,19 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 - [`sbm batch run`](azure_batch.md#3-execute-batch-build)
 - [`sbm batch prestage`](azure_batch.md#1-pre-stage-the-azure-batch-pool-vms)
 - [`sbm batch cleanup`](azure_batch.md#5-cleanup-post-build)
+
+### Container (Kubernetes) sub-commands
+
+`sbm container [command]`
+
+For examples of each, see the [Kubernetes documentation](kubernetes.md)
+
+- `savesettings` - Saves settings to `secrets.yaml` and `runtime.yaml` files for Kubernetes container deployments
+- `prep` - Creates a storage container and uploads the SBM package file that will be used for the build. If the `--runtimefile` option is provided, it will also update that file with the updated values
+- `enqueue` - Sends database override targets to Service Bus Topic
+- `monitor` - Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)
+- `dequeue`- Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them
+- `worker` - [Used by Kubernetes] Starts the container as a worker - polling and retrieving items from target service bus topic
 
 ----
 

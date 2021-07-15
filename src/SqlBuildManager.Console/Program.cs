@@ -3,6 +3,7 @@ using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Container;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Enterprise.Policy;
@@ -22,6 +23,9 @@ using System.Text;
 using System.Threading.Tasks;
 using static SqlSync.SqlBuild.SqlSyncBuildData;
 using sb = SqlSync.SqlBuild;
+using SqlBuildManager.Console.CloudStorage;
+using System.CommandLine.IO;
+
 namespace SqlBuildManager.Console
 {
 
@@ -658,6 +662,295 @@ namespace SqlBuildManager.Console
             }
         }
 
+        internal static async Task<int> RunContainerQueueWorker(CommandLineArgs cmdLine)
+        {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            if(!Directory.Exists(cmdLine.RootLoggingPath))
+            {
+                Directory.CreateDirectory(cmdLine.RootLoggingPath);
+            }
+            cmdLine.RunningAsContainer = true;
+            bool success = true;
+            try
+            {
+                //Get secrets
+                (success, cmdLine) = ContainerManager.ReadSecrets(cmdLine);
+                if(!success)
+                {
+                   // return 1; 
+                }
+                //runtime params
+                (success, cmdLine) = ContainerManager.ReadRuntimeParameters(cmdLine);
+                if (!success)
+                {
+                    //return 1;
+                }
+                (string jobName, string throwaway) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
+                cmdLine.BatchJobName = jobName;
+
+                bool keepGoing = true;
+                cmdLine.BuildFileName = await CloudStorage.StorageManager.WriteFileToLocalStorage(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, cmdLine.BuildFileName);
+                if(string.IsNullOrEmpty(cmdLine.BuildFileName))
+                {
+                    log.LogError("Unable to copy build package to local storage. Can not start execution");
+                    keepGoing = false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
+                {
+                    cmdLine.PlatinumDacpac = await CloudStorage.StorageManager.WriteFileToLocalStorage(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, cmdLine.DacPacArgs.PlatinumDacpac);
+                    if (string.IsNullOrEmpty(cmdLine.DacPacArgs.PlatinumDacpac))
+                    {
+                        log.LogError("Unable to copy platinum dacpac package to local storage. Can not start execution");
+                        keepGoing = false;
+                    }
+                }
+                cmdLine.BatchArgs.OutputContainerSasUrl = CloudStorage.StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, false);
+
+                if (keepGoing)
+                {
+                    var threaded = RunThreadedExecution(cmdLine);
+                }
+            }
+            catch(Exception exe)
+            {
+                log.LogError(exe.ToString());
+                log.LogWarning("Error starting and running container processing");
+            }
+
+            //keep alive for now...
+            while (true)
+            {
+                System.Threading.Thread.Sleep(10);
+            }
+        }
+
+        internal static async Task<int> MonitorContainerRuntimeProgress(FileInfo secretsFile, FileInfo runtimeFile, CommandLineArgs args, bool unittest = false)
+        {
+            CommandLineArgs cmdLine = new CommandLineArgs();
+            if (runtimeFile != null)
+            {
+                cmdLine = ContainerManager.GetArgumentsFromRuntimeFile(runtimeFile.FullName, cmdLine);
+            }
+
+            if (secretsFile != null)
+            {
+                cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
+            }
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString)) cmdLine.ServiceBusTopicConnection = args.ConnectionArgs.ServiceBusTopicConnectionString;
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString)) cmdLine.EventHubConnection = args.ConnectionArgs.EventHubConnectionString;
+            if (!string.IsNullOrWhiteSpace(args.JobName)) cmdLine.JobName = args.JobName;
+
+            int targets = 0;
+            if (!string.IsNullOrWhiteSpace(args.MultiDbRunConfigFileName) && File.Exists(args.MultiDbRunConfigFileName))
+            {
+                var lines = File.ReadAllLines(args.MultiDbRunConfigFileName);
+                targets = lines.Where(l => !string.IsNullOrWhiteSpace(l)).Count();
+                System.Console.WriteLine($"Monitoring for the status of {targets} databases");
+            }
+
+            var qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
+
+            //set up event handler
+            var storageString = CloudStorage.StorageManager.GetStorageConnectionString(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
+            (string jobName, string containerName) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
+            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, storageString, jobName, jobName);
+
+            var eventTask = ehandler.MonitorEventHub();
+
+            long messageCount;
+
+            int zeroMessageCounter = 0;
+            int counter = 0;
+            string spinner = "";
+            int lastCommitCount = 0;
+            int lastErrorCount = 0;
+            int error, commit;
+            bool firstLoop = true;
+            int cursorStepBack = (targets == 0) ? 3 : 4;
+
+            while (true)
+            {
+
+                counter++;
+                switch (counter % 4)
+                {
+                    case 0: spinner = "/"; counter = 0; break;
+                    case 1: spinner = "-"; break;
+                    case 2: spinner = "\\"; break;
+                    case 3: spinner = "|"; break;
+                }
+
+
+                messageCount = await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
+                (commit, error) = ehandler.GetCommitAndErrorCounts();
+                
+                if (firstLoop == false && lastCommitCount == commit && lastErrorCount == error && !unittest)
+                {
+                    System.Console.SetCursorPosition(0, System.Console.CursorTop - cursorStepBack);
+                }
+
+
+                if (targets == 0)
+                {
+                    System.Console.WriteLine($"{spinner} Remaining Messages: {messageCount}{Environment.NewLine}  Database Commits: {commit}{Environment.NewLine}  Database Errors: {error}");
+                }
+                else
+                {
+                    System.Console.WriteLine($"{spinner} Remaining Messages: {messageCount}{Environment.NewLine}  Remaining Databases: {targets - commit - error}{Environment.NewLine}  Database Commits: {commit}{Environment.NewLine}  Database Errors: {error}");
+                }
+
+               // log.LogInformation($"Remaining Messages: {messageCount}");
+                System.Threading.Thread.Sleep(500);
+                if (messageCount == 0) { zeroMessageCounter++; } else { zeroMessageCounter = 0; }
+                if (targets == 0 && zeroMessageCounter == 20 && lastCommitCount == commit && lastErrorCount == error && !unittest)
+                {
+                    System.Console.Write("Message count has remained 0, do you want to continue monitoring (Y/n)");
+                    var key = System.Console.ReadKey().Key;
+                    System.Console.WriteLine();
+                    if (key == ConsoleKey.Y)
+                    {
+                        zeroMessageCounter = 0;
+                        firstLoop = true;
+                    }
+                    else
+                    {
+                        eventTask.Wait(5000);
+                        break;
+                    }
+                }
+                else if(targets != 0 && (commit + error == targets))
+                {
+                    System.Console.WriteLine($"Received status on {targets} databases. Complete!");
+                    break;
+                }
+
+                lastErrorCount = error;
+                lastCommitCount = commit;
+                firstLoop = false;
+            }
+
+           await qManager.DeleteSubscription();
+
+            string sas = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, true);
+
+            log.LogInformation($"Log files can be found here: {sas}");
+            log.LogInformation("The read-only SAS token URL is valid for 7 days.");
+            log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
+
+            if(error > 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+
+        }
+
+        internal static async Task<int> DequeueContainerOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection)
+        {
+            bool valid;
+            CommandLineArgs cmdLine = new CommandLineArgs();
+            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, jobname, concurrencytype, servicebustopicconnection, cmdLine);
+            if (!valid)
+            {
+                return 1;
+            }
+
+            var val = await DeQueueOverrideTargets(cmdLine);
+            return val;
+
+
+        }
+
+        internal static async Task<int> UploadContainerBuildPackage(FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, string jobName, string storageAccountName, string storageAccountKey, bool force)
+        {
+            CommandLineArgs cmdLine = new CommandLineArgs();
+
+            if (runtimeFile != null)
+            {
+                cmdLine = ContainerManager.GetArgumentsFromRuntimeFile(runtimeFile.FullName, cmdLine);
+            }
+            if (secretsFile != null)
+            {
+                cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
+            }
+            cmdLine.BuildFileName = packageName.Name;
+            if (!string.IsNullOrWhiteSpace(jobName)) cmdLine.JobName = jobName;
+            if (!string.IsNullOrWhiteSpace(storageAccountKey)) cmdLine.StorageAccountKey = storageAccountKey;
+            if (!string.IsNullOrWhiteSpace(storageAccountName)) cmdLine.StorageAccountName = storageAccountName;
+
+            if(string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            {
+                log.LogError("Values for --jobname, --storageaccountname and --storageaccountkey are required as prameters or included in the --secretsfile and --runtimefile");
+                return 1;
+
+            }
+            if(await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+            { 
+                if(!force)
+                {
+                    System.Console.Write($"The container {cmdLine.JobName} already exists in storage account {cmdLine.ConnectionArgs.StorageAccountName}. Do you want to delete any existing files and continue upload? (Y/n)");
+                    var key = System.Console.ReadKey().Key;
+                    System.Console.WriteLine();
+                    if (key == ConsoleKey.Y)
+                    {
+                        force = true;
+                    }
+                    else
+                    {
+                        System.Console.WriteLine("Exiting. The package file was not uploaded and no files were deleted from storage");
+                        return 0;
+                    }
+                }
+                if(force)
+                {
+                    if(! await StorageManager.DeleteStorageContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+                    {
+                        log.LogError("Unable to delete container. The package file was not uploaded");
+                        return -1;
+                    }
+                }
+            }
+
+            if(!await StorageManager.UploadFileToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, packageName.FullName))
+            {
+                return 1;
+            }
+            else
+            {
+                if (runtimeFile != null)
+                {
+                    string runtimeContents = ContainerManager.GenerateRuntimeYaml(cmdLine);
+                    File.WriteAllText(runtimeFile.FullName,runtimeContents);
+                    log.LogInformation($"Updated runtime file '{runtimeFile.FullName}' with job and package name");
+                }
+                return 0;
+            }
+
+        }
+
+        internal static void SaveContainerSettings(CommandLineArgs cmdLine, string prefix)
+        {
+            string secrets = ContainerManager.GenerateSecretsYaml(cmdLine);
+            string runtime = ContainerManager.GenerateRuntimeYaml(cmdLine);
+
+            var dir = Directory.GetCurrentDirectory();
+            var secretsName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secrets.yaml" : $"{prefix}-secrets.yaml");
+            var runtimeName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "runtime.yaml" : $"{prefix}-runtime.yaml");
+            
+            File.WriteAllText(secretsName, secrets);
+            log.LogInformation($"Secrets file written to: {secretsName}");
+            File.WriteAllText(runtimeName, runtime);
+            log.LogInformation($"Runtime file written to: {runtimeName}");
+
+
+
+        }
+
         #region .: Helper Processes :.
         internal static int CreateDacpac(CommandLineArgs cmdLine)
         {
@@ -687,6 +980,78 @@ namespace SqlBuildManager.Console
             else
             {
                 log.LogInformation($"DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {fullName}");
+            }
+            return 0;
+        }
+
+        private static (bool, CommandLineArgs) ValidateContainerQueueArgs(FileInfo secretsFile, FileInfo runtimeFile, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, CommandLineArgs cmdLine)
+        {
+            if (runtimeFile != null)
+            {
+                cmdLine = ContainerManager.GetArgumentsFromRuntimeFile(runtimeFile.FullName, cmdLine);
+            }
+
+            if (secretsFile != null)
+            {
+                cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
+            }
+
+            if (!string.IsNullOrWhiteSpace(servicebustopicconnection))
+            {
+                cmdLine.ServiceBusTopicConnection = servicebustopicconnection;
+            }
+            if (!string.IsNullOrWhiteSpace(jobname))
+            {
+                cmdLine.JobName = jobname;
+            }
+            if(concurrencytype != ConcurrencyType.Count)
+            {
+                cmdLine.ConcurrencyType = concurrencytype; 
+            }
+
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                log.LogError("The ServiceBusTopicConnection is required as either a --servicebustopicconnection parameter or as part of the --secretsfile");
+                return (false, cmdLine);
+            }
+
+            if (string.IsNullOrWhiteSpace(cmdLine.JobName))
+            {
+                log.LogError("The JobName is required as either a --jobname parameter or as part of the --runtimefile");
+                return (false, cmdLine);
+            }
+
+            return( true, cmdLine);
+        }
+        internal static async Task<int> EnqueueContainerOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, FileInfo Override)
+        {
+            bool valid;
+            CommandLineArgs cmdLine = new CommandLineArgs();
+            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, jobname, concurrencytype, servicebustopicconnection, cmdLine);
+            if(!valid)
+            {
+                return 1;
+            }
+            //TODO: validate jobname format
+
+            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(Override.FullName, null, out MultiDbData multiData, out string[] errorMessages);
+            if (tmpValReturn != 0)
+            {
+                log.LogError(String.Join(";", errorMessages));
+                return tmpValReturn;
+            }
+            log.LogInformation("Sending database targets to Service Bus");
+            var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
+            int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
+            if (messages > 0)
+            {
+                log.LogInformation($"Successfully sent {messages} targets to Service Bus queue");
+                return 0;
+            }
+            else
+            {
+                log.LogError("Error sending messages to Service Bus queue");
+                return 2355;
             }
             return 0;
         }
@@ -1154,7 +1519,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal async static Task<int> QueueOverrideTargets(CommandLineArgs cmdLine)
+        internal async static Task<int> EnqueueOverrideTargets(CommandLineArgs cmdLine)
         {
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), applicationLogFileName, cmdLine.RootLoggingPath);
@@ -1187,7 +1552,7 @@ namespace SqlBuildManager.Console
                 return tmpValReturn;
             }
             log.LogInformation("Sending database targets to Service Bus");
-            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
+            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
 
 
@@ -1225,21 +1590,26 @@ namespace SqlBuildManager.Console
                 log.LogError("A --servicebustopicconnection value is required. Please include this in either the settings file content or as a specific command option");
                 return 9839;
             }
+            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
+            {
+                log.LogError("A --jobname value is required. Please include this in either the settings file content or as a specific command option");
+                return 9839;
+            }
 
-            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName);
-            bool success = await qManager.ClearQueueMessages();
+            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
+            bool success = await qManager.DeleteSubscription();
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
             log.LogInformation(msg);
             if (success)
             {
-                log.LogInformation("Successfully removed messages from Service Bus queue topics");
+                log.LogInformation($"Successfully deleted Service Bus queue subscription for '{cmdLine.JobName}'");
                 return 0;
             }
             else
             {
-                log.LogError("Error receiving messages to Service Bus queue");
+                log.LogError($"Error deleting Service Bus queue subscription for '{cmdLine.JobName}'");
                 return 2355;
             }
         }

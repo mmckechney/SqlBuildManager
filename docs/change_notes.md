@@ -2,6 +2,10 @@
 # SQL Build Manager Change Notes
 
 
+### Version 14.0.0
+
+- *ADDED:* You now use Kubernetes as a compute platform for leveraging database builds with the new `sbm container` commands. See the [Kubernetes documentation](kubernetes.md) for background, information and how-to examples
+
 ### Version 13.1.0
 
 - *UPDATED:* The `sbm create` command now has four sub-commands `fromscripts`,  `fromdiff`, `fromdacpacs` and `fromdacpacdiff`. See the [Command Line Reference](commandline.md) for details and usage
@@ -77,8 +81,10 @@
 - **NOTE:** Now built against .NET Standard 2.1 and .NET Core 3.1
 - *ADDED:* New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution
 - *UPDATED:* Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not
-- *ADDED:* Shortened command line executable name `sbm.exe` leveraging the [System.CommmandLine](https://github.com/dotnet/command-line-api) command pattern and validation (`sbm [command] [options]`).
-      The old executable (`SqlBuildManager.Console.exe`) with the prior pattern of `/Action=verb` is still supported is still available
+- *ADDED:* 
+			Shortened command line executable name `sbm.exe` leveraging the [System.CommmandLine](https://github.com/dotnet/command-line-api) command pattern and validation (`sbm [command] [options]`).
+			The old executable (`SqlBuildManager.Console.exe`) with the prior pattern of `/Action=verb` is still supported is still available
+		
 - **NOTE:** The CLI and core UI components of the app have been thoroughly tested. Some ancillary UI pieces have not. If you find an issue, please log it in GitHub
 
 ### Version 11.0.0
@@ -637,8 +643,9 @@
 
 ### Version 8.1.0
 
-- **NOTE:** Major Update!   Now allows for managing scripts in either a single file package (the original .sbm file) or via a "loose" file structure. This new mechanism consists of a build control XML file (.sbx) that contains the script run metadata for the scripts that co-resident in the same file system directory. When you're ready to put them all together, a "package" feature is there to put all the files into a new build .sbm package.
-    
+- **NOTE:** 
+			Major Update!   Now allows for managing scripts in either a single file package (the original .sbm file) or via a "loose" file structure. This new mechanism consists of a build control XML file (.sbx) that contains the script run metadata for the scripts that co-resident in the same file system directory. When you're ready to put them all together, a "package" feature is there to put all the files into a new build .sbm package.
+		
 - *ADDED:* Ability to create update/insert scripts from Data Extract file
 - *FIXED:* Added schema name to the table in database analysis page
 - *FIXED:* Sorting of multi-db run. Was sorting alphabetically even for numeric sequence numbers!

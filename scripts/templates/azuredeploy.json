@@ -202,48 +202,6 @@
                     "Send"
                 ]
             }
-        },
-        {
-            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
-            "apiVersion": "2018-01-01-preview",
-            "name": "[concat(variables('serviceBusName'), '/sqlbuildmanager/sbmsubscription')]",
-            "location": "East US",
-            "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces/topics', variables('serviceBusName'), 'sqlbuildmanager')]",
-                "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
-            ],
-            "properties": {
-                "lockDuration": "PT30S",
-                "requiresSession": false,
-                "defaultMessageTimeToLive": "P14D",
-                "deadLetteringOnMessageExpiration": true,
-                "deadLetteringOnFilterEvaluationExceptions": true,
-                "maxDeliveryCount": 10,
-                "status": "Active",
-                "enableBatchedOperations": true,
-                "autoDeleteOnIdle": "P14D"
-                }
-        },
-        {
-            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
-            "apiVersion": "2018-01-01-preview",
-            "name": "[concat(variables('serviceBusName'), '/sqlbuildmanager/sbmsubscriptionsession')]",
-            "location": "East US",
-            "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces/topics', variables('serviceBusName'), 'sqlbuildmanager')]",
-                "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
-            ],
-            "properties": {
-                "lockDuration": "PT30S",
-                "requiresSession": true,
-                "defaultMessageTimeToLive": "P14D",
-                "deadLetteringOnMessageExpiration": true,
-                "deadLetteringOnFilterEvaluationExceptions": true,
-                "maxDeliveryCount": 10,
-                "status": "Active",
-                "enableBatchedOperations": true,
-                "autoDeleteOnIdle": "P14D"
-                }
         }
     ]
 }

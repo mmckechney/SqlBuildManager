@@ -1,8 +1,18 @@
-﻿# Leveraging Azure Batch
+﻿# Leveraging Azure Batch for database builds
+
+- [Why use Azure Batch?](#why-use-azure-batch)
+- [Getting Started](#getting-started)
+- [Upload or Update SQL Build Manager binaries](#upload-or-update-sql-build-manager-binaries)
+- [Running a Batch Build](#running-a-batch-build)
+- [Alternative run options](#alternative-run-options)
+- [Examples](#examples)
+- [Log Details](#log-details)
+
+----
 
 ## Why use Azure Batch?
 
-If you have a fleet of databases to update, it could take a very long time to run your build on a single machine, even if you leverage the [threaded](threaded_build.md) model. To ensure you can complete your updates in a timely fashion, SQL Build Manager can target Azure Batch to distribute you build across multiple compute nodes, each leveraging their own set of concurrent tasks. You can control the level of concurrency to maximize throughput while not overloading your SQL Servers (see [details on concurrency management](concurrency_options.md))
+If you have a fleet of databases to update, it could take a very long time to run your build on a single machine, even if you leverage the [threaded](threaded_build.md) model. Similar to leveraging [Kubernetes](kubernetes.md), to ensure you can complete your updates in a timely fashion, SQL Build Manager can target Azure Batch to distribute you build across multiple compute nodes, each leveraging their own set of concurrent tasks. You can control the level of concurrency to maximize throughput while not overloading your SQL Servers (see [details on concurrency management](concurrency_options.md))
 
 To leverage Azure Batch, you will need an [Azure subscription](https://azure.microsoft.com/) with several Azure resources deployed.
 

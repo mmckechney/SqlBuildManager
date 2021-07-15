@@ -25,7 +25,8 @@ namespace SqlBuildManager.Console.Queue
         private readonly string topicName = "sqlbuildmanager";
 
         private string topicConnectionString;
-        private string batchJobName;
+        private string jobName;
+        private ConcurrencyType concurrencyType;
 
         private ServiceBusClient _client = null;
         private ServiceBusAdministrationClient _adminClient = null;
@@ -33,11 +34,15 @@ namespace SqlBuildManager.Console.Queue
         private ServiceBusReceiver _messageReceiver = null;
         private CancellationTokenSource tokenSource = null;
 
-       
-        public QueueManager(string topicConnectionString, string batchJobName)
+        public QueueManager(string topicConnectionString, string jobName, ConcurrencyType concurrencyType)
         {
             this.topicConnectionString = topicConnectionString;
-            this.batchJobName = batchJobName;
+            this.jobName = jobName;
+
+            this.topicSubscriptionName = jobName;
+            this.topicSessionSubscriptionName = $"{jobName}session";
+            this.concurrencyType = concurrencyType;
+            CreateSubscriptions().Wait();
         }
 
         public ServiceBusClient Client
@@ -79,16 +84,16 @@ namespace SqlBuildManager.Console.Queue
         {
             try
             {
-                log.LogInformation($"Setting up Topic Subscription with Batch Job filter name '{this.batchJobName}'");
+                log.LogInformation($"Setting up Topic Subscription with Job filter name '{this.jobName}'");
                 await RemoveDefaultFilters();
                 await CleanUpCustomFilters();
                 await CreateBatchJobFilter(cType == ConcurrencyType.Count ? false : true );
 
-                  var sender = this.Client.CreateSender(topicName);
+                var sender = this.Client.CreateSender(topicName);
 
                 //Use bucketing to 1 bucket to get flattened list of targest
                 var concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, 1, ConcurrencyType.Count);
-                var messages = CreateMessages(concurrencyBuckets, batchJobName);
+                var messages = CreateMessages(concurrencyBuckets, jobName);
                 int count = messages.Count();
                 
                 //because of partitiioning, can't batch across session Id, so group by SessionId first, then batch
@@ -113,7 +118,7 @@ namespace SqlBuildManager.Console.Queue
             }
 
         }
-        private List<ServiceBusMessage> CreateMessages(List<IEnumerable<(string, List<DatabaseOverride>)>> buckets, string batchJobName)
+        private List<ServiceBusMessage> CreateMessages(List<IEnumerable<(string, List<DatabaseOverride>)>> buckets, string jobName)
         {
             try
             {
@@ -127,7 +132,7 @@ namespace SqlBuildManager.Console.Queue
                     {
                         var data = new TargetMessage(){ ServerName = target.Item1, DbOverrideSequence = target.Item2 };
                         var msg = data.AsMessage();
-                        msg.Subject = batchJobName;
+                        msg.Subject = jobName;
                         msg.SessionId = target.Item1;
                         msg.MessageId = Guid.NewGuid().ToString();
                         msgs.Add(msg);
@@ -164,17 +169,25 @@ namespace SqlBuildManager.Console.Queue
             var lstMsg = new List<ServiceBusReceivedMessage>();
             var messages = await this.MessageReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
 
+            if(messages.Count == 0)
+            {
+                return lstMsg;
+            }
             foreach (var message in messages)
             {
-                if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                if (message.Subject.ToLower().Trim() != jobName.ToLower().Trim())
                 {
                     await this.MessageReceiver.DeadLetterMessageAsync(message);
-                    log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                    log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{jobName}'");
                 }
                 else
                 {
                     lstMsg.Add(message);
                 }
+            }
+            if(lstMsg.Count == 0)
+            {
+                return await GetCountBasedTargetsFromQueue(maxMessages);
             }
             return lstMsg;
         }
@@ -193,7 +206,7 @@ namespace SqlBuildManager.Console.Queue
                     try
                     {
                         _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock }, token);
-                        log.LogInformation($"Obtained new subscription for batch job '{batchJobName}' and subscription Id '{_sessionReceiver.SessionId}' ");
+                        log.LogInformation($"Obtained new subscription for batch job '{jobName}' and subscription Id '{_sessionReceiver.SessionId}' ");
                     }
                     catch(TaskCanceledException)
                     {
@@ -221,13 +234,13 @@ namespace SqlBuildManager.Console.Queue
                     {
                         foreach (var message in messages)
                         {
-                            if (message.Subject.ToLower().Trim() != batchJobName.ToLower().Trim())
+                            if (message.Subject.ToLower().Trim() != jobName.ToLower().Trim())
                             {
-                                log.LogWarning($"Message {message.MessageId} has incorrect Batch Job name '{batchJobName}'");
+                                log.LogWarning($"Message {message.MessageId} has incorrect Batch Job name '{jobName}'");
                                 try
                                 {
                                     await _sessionReceiver.DeadLetterMessageAsync(message);
-                                    log.LogWarning($"Send message '{message.MessageId}' to deadletter. Subject of '{message.Subject}' did not match batch job name of '{batchJobName}'");
+                                    log.LogWarning($"Send message '{message.MessageId}' to deadletter. Subject of '{message.Subject}' did not match batch job name of '{jobName}'");
                                 }
                                 catch (Exception exe)
                                 {
@@ -336,131 +349,77 @@ namespace SqlBuildManager.Console.Queue
             }
         }
 
-
-        internal async Task<bool> ClearQueueMessages()
+        internal async Task<bool> DeleteSubscription()
         {
+            string topicSub;
+            switch (this.concurrencyType)
+            {
+                case ConcurrencyType.Count:
+                    topicSub = this.topicSubscriptionName;
+                    break;
+                default:
+                    topicSub = this.topicSessionSubscriptionName;
+                    break;
+            }
+
             try
             {
-                //Clear regular messages
-                var subNames = new List<string>() { this.topicSubscriptionName, $"{this.topicSubscriptionName}/$deadletterqueue", $"{this.topicSessionSubscriptionName}/$deadletterqueue" };
-                foreach (var subname in subNames)
+                var results = await this.AdminClient.DeleteSubscriptionAsync(this.topicName, topicSub);
+                if (results.Status < 300)
                 {
-                    log.LogInformation($"Clearing all messages from topic '{this.topicName}' subscription '{subname}'");
-                    var receiver = this.Client.CreateReceiver(this.topicName, subname, new ServiceBusReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete });
-                    while (true)
-                    {
-                        try
-                        {
-                            var token = GetCancellationToken();
-                            IReadOnlyList<ServiceBusReceivedMessage> messages = await receiver.ReceiveMessagesAsync(100, new TimeSpan(0, 0, 5), token);
-                            log.LogInformation($"Removing {messages.Count} messages from {subname}");
-                            if (!messages.Any())
-                            {
-                                break;
-                            }
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            log.LogInformation($"No more messages available in {subname} - by wait time expiration");
-                            break;
-                        }
-                    }
+                    log.LogInformation($"Deleted Service Bus Topicsubscription: {topicSub}");
+                    return true;
                 }
-
-
-                //Clear session messages
-                log.LogInformation($"Clearing all messages from topic '{this.topicName}' subscription '{this.topicSessionSubscriptionName}'");
-                while (true)
+                else
                 {
-                    
-                    
-                    try
-                    {
-                        log.LogInformation($"Attempting to aquire topic session...");
-                        var token = GetCancellationToken();
-                        _sessionReceiver = await this.Client.AcceptNextSessionAsync(this.topicName, this.topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete }, token);
-                        log.LogInformation($"Obtained new subscription for subscription Id '{_sessionReceiver.SessionId}' ");
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        log.LogInformation("No more messages available - by wait time expiration");
-                        break;
-                    }
-                    catch (ServiceBusException sbe)
-                    {
-                        if (sbe.Reason == ServiceBusFailureReason.ServiceTimeout)
-                        {
-                            log.LogInformation("No more session messages available");
-                            break;
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-
-                    while (true)
-                    {
-                        try
-                        {
-                            var token = GetCancellationToken();
-                            IReadOnlyList<ServiceBusReceivedMessage> messages = await _sessionReceiver.ReceiveMessagesAsync(100, new TimeSpan(0, 0, 5), token);
-                            log.LogInformation($"Removing {messages.Count} messages from {this.topicSessionSubscriptionName} session {_sessionReceiver.SessionId}");
-                            if (!messages.Any())
-                            {
-                                break;
-                            }
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            log.LogInformation($"No more messages available in {this.topicSessionSubscriptionName} session {_sessionReceiver.SessionId} - by wait time expiration");
-                            break;
-                        }
-                    }
+                    log.LogError($"Problem deleting subscriptipn '{topicSub}': {results.Content}");
+                    return false;
                 }
-                log.LogInformation("Completed Dequeueing all messages");
-            }
-            catch(Exception exe)
+            }catch(Exception ex)
             {
-                log.LogError($"Problem clearing all messages: {exe.Message}");
+                log.LogError($"Problem deleting subscriptipn '{topicSub}': {ex.Message}");
+                return false;
             }
-
-            return true;
-
         }
-
 
         private async Task RemoveDefaultFilters()
         {
             log.LogDebug($"Starting to remove default filters.");
-            string[] subs = new[] { this.topicSubscriptionName, this.topicSessionSubscriptionName };
+            string topicSub;
+            switch(this.concurrencyType)
+            {
+                case ConcurrencyType.Count:
+                    topicSub = this.topicSubscriptionName;
+                    break;
+                default:
+                    topicSub = this.topicSessionSubscriptionName;
+                    break;
+            }
             try
             {
-                foreach (var sub in subs)
+                try
                 {
-                    try
-                    {
-                        var defRule = await this.AdminClient.GetRuleAsync(this.topicName, sub, CreateRuleOptions.DefaultRuleName);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (ex.Message.ToLower().Contains("not found"))
-                        {
-                            log.LogDebug($"No default filter found.");
-                            return;
-                        }
-                        else
-                        {
-                            var pollyRetryPolicyForDefaultRemove = Policy.Handle<Exception>(ex => !ex.Message.Contains("could not be found")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
-                            await pollyRetryPolicyForDefaultRemove.ExecuteAsync(async () =>
-                            {
-                                await AdminClient.DeleteRuleAsync(this.topicName, sub, CreateRuleOptions.DefaultRuleName);
-                            });
-                        }
-                    }
-                    log.LogDebug($"Default filter for subscription '{this.topicSubscriptionName}' has been removed.");
+                    var defRule = await this.AdminClient.GetRuleAsync(this.topicName, topicSub, CreateRuleOptions.DefaultRuleName);
                 }
-               
+                catch (Exception ex)
+                {
+                    if (ex.Message.ToLower().Contains("not found"))
+                    {
+                        log.LogDebug($"No default filter found.");
+                        return;
+                    }
+                    else
+                    {
+                        var pollyRetryPolicyForDefaultRemove = Policy.Handle<Exception>(ex => !ex.Message.Contains("could not be found")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
+                        await pollyRetryPolicyForDefaultRemove.ExecuteAsync(async () =>
+                        {
+                            await AdminClient.DeleteRuleAsync(this.topicName, topicSub, CreateRuleOptions.DefaultRuleName);
+                        });
+                    }
+                }
+                log.LogDebug($"Default filter for subscription '{topicSub}' has been removed.");
+
+
 
             }
             catch (Exception ex)
@@ -469,6 +428,44 @@ namespace SqlBuildManager.Console.Queue
             }
 
             return;
+        }
+
+        private async Task CreateSubscriptions()
+        {
+            try
+            {
+                switch (this.concurrencyType)
+                {
+                    case ConcurrencyType.Count:
+                        if (!await this.AdminClient.SubscriptionExistsAsync(this.topicName, this.topicSubscriptionName))
+                        {
+                            log.LogInformation($"Creating topic subscripton for `{this.jobName}'");
+                            var stdOptions = new CreateSubscriptionOptions(this.topicName, this.topicSubscriptionName);
+                            var result = await this.AdminClient.CreateSubscriptionAsync(stdOptions);
+                        }
+                        break;
+
+                    case ConcurrencyType.MaxPerServer:
+                    case ConcurrencyType.Server:
+                        if (!await this.AdminClient.SubscriptionExistsAsync(this.topicName, this.topicSessionSubscriptionName))
+                        {
+                            log.LogInformation($"Creating session enabled topic subscripton for `{this.jobName}'");
+                            var sessionOptions = new CreateSubscriptionOptions(this.topicName, this.topicSessionSubscriptionName);
+                            sessionOptions.RequiresSession = true;
+                            var result = await this.AdminClient.CreateSubscriptionAsync(sessionOptions);
+                        }
+                        break;
+                    default:
+                        throw new ArgumentException("Unknown concurrency type");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!ex.ToString().Contains("Status: 409"))
+                {
+                    throw;
+                }
+            }
         }
         private async Task CreateBatchJobFilter(bool withSession)
         {
@@ -483,8 +480,8 @@ namespace SqlBuildManager.Console.Queue
             }
             try
             {
-                log.LogDebug($"Creating Topic filter for Batch job name: {this.batchJobName}");
-                string filter = batchJobName;
+                log.LogDebug($"Creating Topic filter for Batch job name: {this.jobName}");
+                string filter = jobName;
                 var pollyRetryPolicyForCreate= Policy.Handle<Exception>(ex => !ex.Message.Contains("already exists")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
                 await pollyRetryPolicyForCreate.ExecuteAsync(async ()  =>
                 {
@@ -492,49 +489,57 @@ namespace SqlBuildManager.Console.Queue
                     {
                         Filter = new CorrelationRuleFilter()
                         {
-                            Subject = batchJobName,
+                            Subject = jobName,
                             
                         },
-                        Name = batchJobName
+                        Name = jobName
                     });
                 });
                
-                       log.LogDebug($"Filter named {batchJobName} has been added for subscription `{subName}`.");
+                       log.LogDebug($"Filter named {jobName} has been added for subscription `{subName}`.");
             }
             catch (Exception ex)
             {
                 if (ex.Message.Contains("already exists"))
                 {
-                    log.LogInformation($"The subscription filter '{batchJobName}' already exists");
+                    log.LogInformation($"The subscription filter '{jobName}' already exists");
                 }
                 else
                 {
-                    log.LogError(ex, $"Failed to create custom subscription filter for batch job '{batchJobName}'");
+                    log.LogError(ex, $"Failed to create custom subscription filter for batch job '{jobName}'");
                 }
             }
             return;
         }
         private async Task CleanUpCustomFilters()
         {
-            string[] subs = new[] { this.topicSubscriptionName, this.topicSessionSubscriptionName };
+            string topicSub;
+            switch (this.concurrencyType)
+            {
+                case ConcurrencyType.Count:
+                    topicSub = this.topicSubscriptionName;
+                    break;
+                default:
+                    topicSub = this.topicSessionSubscriptionName;
+                    break;
+            }
             try
             {
-                foreach (var sub in subs)
+
+                IAsyncEnumerator<RuleProperties> rules = this.AdminClient.GetRulesAsync(this.topicName, topicSub).GetAsyncEnumerator();
+                while (await rules.MoveNextAsync())
                 {
-                    IAsyncEnumerator<RuleProperties> rules = this.AdminClient.GetRulesAsync(this.topicName, sub).GetAsyncEnumerator();
-                    while (await rules.MoveNextAsync())
+                    var pollyRetryPolicyForClean = Policy.Handle<Exception>(ex => !ex.Message.Contains("already exists")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
+                    await pollyRetryPolicyForClean.ExecuteAsync(async () =>
                     {
-                        var pollyRetryPolicyForClean = Policy.Handle<Exception>(ex => !ex.Message.Contains("already exists")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
-                        await pollyRetryPolicyForClean.ExecuteAsync(async () =>
+                        if (rules.Current.Name != this.jobName)
                         {
-                            if (rules.Current.Name != this.batchJobName)
-                            {
-                                await this.AdminClient.DeleteRuleAsync(this.topicName, sub, rules.Current.Name);
-                                log.LogDebug($"Rule {rules.Current.Name} has been removed.");
-                            }
-                        });
-                    }
+                            await this.AdminClient.DeleteRuleAsync(this.topicName, topicSub, rules.Current.Name);
+                            log.LogDebug($"Rule {rules.Current.Name} has been removed.");
+                        }
+                    });
                 }
+
             }
             catch (Exception ex)
             {
@@ -542,6 +547,20 @@ namespace SqlBuildManager.Console.Queue
             }
             log.LogInformation("All existing filters have been removed.");
             return;
+        }
+
+        public async Task<long> MonitorServiceBustopic(ConcurrencyType concurrencyType)
+        {
+            SubscriptionRuntimeProperties props;
+            if(concurrencyType == ConcurrencyType.Count)
+            {
+                props = await this.AdminClient.GetSubscriptionRuntimePropertiesAsync(this.topicName, this.topicSubscriptionName,new CancellationToken());
+            }else
+            {
+                props = await this.AdminClient.GetSubscriptionRuntimePropertiesAsync(this.topicName, this.topicSessionSubscriptionName, new CancellationToken());
+            }
+            return props.ActiveMessageCount;
+      
         }
 
         public void Dispose()

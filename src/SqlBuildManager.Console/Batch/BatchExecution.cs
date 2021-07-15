@@ -7,6 +7,7 @@ using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
 using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
@@ -147,9 +148,9 @@ namespace SqlBuildManager.Console.Batch
                 timer.Start();
 
                 //Get storage ready
-                BlobServiceClient storageSvcClient = CreateStorageClient(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey);
+                BlobServiceClient storageSvcClient = StorageManager.CreateStorageClient(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey);
                 StorageSharedKeyCredential storageCreds = new StorageSharedKeyCredential(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey);
-                string containerSasToken = GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, false);
+                string containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, false);
                 log.LogDebug($"Output write SAS token: {containerSasToken}");
 
 
@@ -234,7 +235,7 @@ namespace SqlBuildManager.Console.Batch
 
                 foreach (string filePath in inputFilePaths)
                 {
-                    inputFiles.Add(UploadFileToContainer(cmdLine.BatchArgs.StorageAccountName, storageContainerName,storageCreds, filePath));
+                    inputFiles.Add(StorageManager.UploadFileToBatchContainer(cmdLine.BatchArgs.StorageAccountName, storageContainerName,storageCreds, filePath));
                 }
 
                 //Create the individual command lines for each node
@@ -370,11 +371,11 @@ namespace SqlBuildManager.Console.Batch
 
                 SqlBuildManager.Logging.Threaded.Configure.CloseAndFlushAllLoggers();
                 log.LogInformation("Consolidating log files");
-                ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
+                StorageManager.ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
 
                 if(batchType == BatchType.Query)
                 {
-                    CombineBatchQueryOutputfiles(storageSvcClient, storageContainerName, this.outputFile);
+                    StorageManager.CombineBatchQueryOutputfiles(storageSvcClient, storageContainerName, this.outputFile);
                 }
 
                 //Finish the job out
@@ -392,7 +393,7 @@ namespace SqlBuildManager.Console.Batch
                 }                    
 
 
-                readOnlySasToken = GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, true);
+                readOnlySasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, true);
                 log.LogInformation($"Log files can be found here: {readOnlySasToken}");
                 log.LogInformation("The read-only SAS token URL is valid for 7 days.");
                 log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
@@ -435,59 +436,7 @@ namespace SqlBuildManager.Console.Batch
 
         }
 
-        private void CombineBatchQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
-        {
-            log.LogInformation("Consolidating Query output files...");
-            outputFile = Path.GetFileName(outputFile);
-            var container = storageSvcClient.GetBlobContainerClient(storageContainerName); 
-            var blobs = container.GetBlobs();
-
-            int counter = 0;
-            foreach (var blob in blobs)
-            {
-                var destinationBlob = container.GetAppendBlobClient(outputFile);
-                try
-                {
-                    destinationBlob.CreateIfNotExists();
-                }
-                catch { }
-                if (blob.Properties.BlobType == BlobType.Block)
-                {
-
-                    if (blob.Name.ToLower().EndsWith(".csv"))
-                    {
-                        if (counter == 0)
-                        {
-                            var sourceBlob = container.GetBlobClient(blob.Name);
-                            using (var stream = sourceBlob.OpenRead())
-                            {
-                                destinationBlob.AppendBlock(stream);
-                            }
-                        }
-                        else // we need to trim the first line off 
-                        {
-                            var sourceBlob = container.GetBlobClient(blob.Name);
-                            var tmp = Path.GetTempFileName();
-                            sourceBlob.DownloadTo(tmp);
-                            using (StreamReader reader = new StreamReader(tmp))
-                            {
-                                var s = reader.ReadLine(); //dump the first line
-                                reader.BaseStream.Position = Encoding.UTF8.GetBytes(s).Length;
-                                destinationBlob.AppendBlock(reader.BaseStream);
-                           
-                            }
-
-                            if(File.Exists(tmp))
-                            {
-                                File.Delete(tmp);
-                            }
-                        }
-                        counter++;
-                        //sourceBlob.Delete();
-                    }
-                }
-            }
-        }
+        
 
         private int ValidateBatchArgs(CommandLineArgs cmdLine, BatchType batchType)
         {
@@ -547,74 +496,7 @@ namespace SqlBuildManager.Console.Batch
             return (jobId, poolId, storageContainerName);
         }
 
-        private void ConsolidateLogFiles(BlobServiceClient storageSvcClient, string outputContainerName, List<string> workerFiles)
-        {
-            workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql","execution.log", "csv"});
-            var container = storageSvcClient.GetBlobContainerClient(outputContainerName);
-            container.CreateIfNotExists();
-            var blobs = container.GetBlobs();
-
-            //Move worker files to "Working" directory
-            foreach (var blob in blobs)
-            {
-                try
-                {
-                    if (blob.Properties.BlobType == BlobType.Block)
-                    {
-                        var sourceBlob = container.GetBlobClient(blob.Name);
-                        if(sourceBlob.GetProperties().Value.ContentLength == 0)
-                        {
-                            continue;
-                        }
-                        foreach (string append in Program.AppendLogFiles)
-                        {
-                            try
-                            {
-                                if (blob.Name.ToLower().Contains(append.ToLower()))
-                                {
-                                    var destinationBlob = container.GetAppendBlobClient(append);
-                                    try
-                                    {
-                                        destinationBlob.CreateIfNotExists();
-                                    }
-                                    catch { }
-
-
-                                    using (var stream = sourceBlob.OpenRead())
-                                    {
-                                        destinationBlob.AppendBlock(stream);
-                                    }
-                                    log.LogInformation($"Consolidated {blob.Name} to {append}");
-                                }
-                            }
-                            catch (Azure.RequestFailedException exe)
-                            {
-                                if (exe.ErrorCode == "BlobAlreadyExists")
-                                {
-                                    log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists");
-                                }
-                                else if (exe.ErrorCode == "InvalidHeaderValue")
-                                {
-                                    log.LogWarning($"Unable to consolidate log file, '{blob.Name}': Problem with appendind the consolidated file. {Environment.NewLine}{exe.Message}");
-                                }
-                                else
-                                {
-                                    throw;
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Azure.RequestFailedException exe)
-                {
-                    if (exe.ErrorCode == "BlobAlreadyExists")
-                    {
-                        log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists. This can happen when you run two Batch jobs with the same job name");
-                    }
-                }
-            }
-
-        }
+       
         
 
         private bool CreateBatchPool(BatchClient batchClient, string poolId, int nodeCount, string vmSize, OsType os)
@@ -696,13 +578,7 @@ namespace SqlBuildManager.Console.Batch
             return true;
         }
 
-        private BlobServiceClient CreateStorageClient(string storageAccountName, string storageAccountKey)
-        {
-            StorageSharedKeyCredential creds = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-            var serviceClient = new BlobServiceClient(new Uri($"https://{storageAccountName}.blob.core.windows.net"), creds);
 
-            return serviceClient;
-        }
 
         /// <summary>
         /// Builds commandlines for reach batch server based in the pool node count
@@ -820,56 +696,8 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="containerName">The name of the blob storage container to which the file should be uploaded.</param>
         /// <param name="filePath">The full path to the file to upload to Storage.</param>
         /// <returns>A ResourceFile instance representing the file within blob storage.</returns>
-        private static ResourceFile UploadFileToContainer(string storageAcctName, string containerName, StorageSharedKeyCredential storageCreds,  string filePath)
-        {
-            log.LogInformation($"Uploading file {filePath} to container [{containerName}]...");
-
-            string blobName = Path.GetFileName(filePath);
-
-           // BlobContainerClient container = new BlobContainerClient(new Uri($"https://{storageAcctName}.blob.core.windows.net storage/{containerName}"), storageCreds);  //SvcClient.GetBlobContainerClient(containerName);
-            BlockBlobClient blobData = new BlockBlobClient(new Uri($"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}"), storageCreds);   //container.GetBlockBlobClient(blobName);
-            using (var fs = new FileStream(filePath,FileMode.Open))
-            {
-                blobData.Upload(fs);
-            }
-            // Set the expiry time and permissions for the blob shared access signature. In this case, no start time is specified,
-            // so the shared access signature becomes valid immediately
-            var sasPermissions = new BlobSasBuilder(BlobSasPermissions.Read, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0)));
-            sasPermissions.BlobName = blobName;
-            sasPermissions.BlobContainerName = containerName;
-            sasPermissions.StartsOn = DateTime.UtcNow.AddHours(-1);
-            sasPermissions.ExpiresOn = DateTime.UtcNow.AddHours(3);
-            // Construct the SAS URL for blob
-            blobData.GenerateSasUri(sasPermissions);
-            string blobSasUri = blobData.GenerateSasUri(sasPermissions).ToString();
-
-            return ResourceFile.FromUrl(blobSasUri, blobName, null);
-        }
-        private static string GetOutputContainerSasUrl(string storageAccountName, string outputContainerName, StorageSharedKeyCredential storageCreds, bool forRead)
-        {
-            log.LogDebug($"Ensuring presence of output blob container '{outputContainerName}'");
-            var container = new BlobContainerClient(new Uri($"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}"), storageCreds);
-            container.CreateIfNotExists();
-
-           BlobSasBuilder sasConstraints;
-            if (!forRead)
-            {
-                var permissions = BlobSasPermissions.Add | BlobSasPermissions.Create | BlobSasPermissions.Write | BlobSasPermissions.Read | BlobSasPermissions.List;
-                sasConstraints = new BlobSasBuilder(permissions, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0)));
-                sasConstraints.StartsOn = DateTime.UtcNow.AddHours(-1);
-                sasConstraints.ExpiresOn = DateTime.UtcNow.AddHours(4);
-            }
-            else
-            {
-                var permissions = BlobSasPermissions.Read | BlobSasPermissions.List;
-                sasConstraints = new BlobSasBuilder(permissions, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0, 0, 0)));
-                sasConstraints.StartsOn = DateTime.UtcNow.AddHours(-1);
-                sasConstraints.ExpiresOn = DateTime.UtcNow.AddHours(7);
-            }
-            sasConstraints.BlobContainerName = outputContainerName;
-
-            return container.GenerateSasUri(sasConstraints).ToString();
-        }
+      
+      
    
         /// <summary>
         /// Gets a string array for all of the target DB override settings
@@ -991,7 +819,7 @@ namespace SqlBuildManager.Console.Batch
             }
             else
             {
-                log.LogInformation($"PollBatchPoolStatus set to 'false'. Pool is being created, but you will not get updates on the status. If you want to attach to pool to get status, you rerun the same command with /PollBatchPoolStatus=true at any time.");
+                log.LogInformation($"--pollbatchpoolstatus flag set to 'false'. Pool is being created, but you will not get updates on the status. If you want to attach to pool to get status, you rerun the same command with '--pollbatchpoolstatus true' at any time.");
             }
         
             if(success)
@@ -1022,54 +850,59 @@ namespace SqlBuildManager.Console.Batch
             }
 
             log.LogInformation("Cleaning up (deleting) Batch pool nodes ");
-
+            bool isPolling = false;
             try
             {
                 // Get a Batch client using account creds, and create the pool
                 BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchArgs.BatchAccountUrl, cmdLine.BatchArgs.BatchAccountName, cmdLine.BatchArgs.BatchAccountKey);
                 var batchClient = BatchClient.Open(cred);
 
-
+                
                 log.LogInformation($"Deleting batch pool {this.PoolName} from Batch account {cmdLine.BatchArgs.BatchAccountName}");
+
+                //Delete the pool
+                batchClient.PoolOperations.DeletePool(this.PoolName);
 
                 if (cmdLine.BatchArgs.PollBatchPoolStatus)
                 {
-                    //Delete the pool
-                    batchClient.PoolOperations.DeletePool(this.PoolName);
-
-                    if (cmdLine.BatchArgs.PollBatchPoolStatus)
+                    
+                    var status = batchClient.PoolOperations.GetPool(PoolName, null, null);
+                    var count = batchClient.PoolOperations.ListComputeNodes(PoolName, null, null).Count();
+                    while (status != null && status.State == PoolState.Deleting && count > 0)
                     {
-                        var status = batchClient.PoolOperations.GetPool(PoolName, null, null);
-                        var count = batchClient.PoolOperations.ListComputeNodes(PoolName, null, null).Count();
-                        while (status != null && status.State == PoolState.Deleting && count > 0)
-                        {
-                            count = batchClient.PoolOperations.ListComputeNodes(PoolName, null, null).Count();
-                            log.LogInformation($"Pool delete in progress. Current node count: {count}");
-                            System.Threading.Thread.Sleep(15000);
+                        isPolling = true;
+                        count = batchClient.PoolOperations.ListComputeNodes(PoolName, null, null).Count();
+                        log.LogInformation($"Pool delete in progress. Current node count: {count}");
+                        System.Threading.Thread.Sleep(15000);
 
-                        }
+                    }
+                    log.LogInformation($"Pool {this.PoolName} successfully deleted");
+                    return 0;
+                }
+                else
+                {
+                    log.LogInformation($"--pollbatchpoolstatus flag set to 'false'. Pool is being deleted, but you will not get updates on the status. If you want to attach to pool to get status, you rerun the same command with '--pollbatchpoolstatus true' at any time.");
+                    return 0;
+                }
 
+            }
+            catch (Exception exe)
+            {
+                if (exe.Message.ToLower().IndexOf("notfound") > -1)
+                {
+                    if (isPolling)
+                    {
                         log.LogInformation($"Pool {this.PoolName} successfully deleted");
+                    }
+                    else
+                    {
+                        log.LogInformation($"The {this.PoolName} pool was not found. Was it already deleted?");
                     }
                     return 0;
                 }
                 else
                 {
-                    log.LogInformation($"PollBatchPoolStatus set to 'false'. Pool is being delted, but you will not get updates on the status. If you want to attach to pool to get status, you rerun the same command with /PollBatchPoolStatus=true at any time.");
-                    return 0;
-                }
-
-        }
-            catch (Exception exe)
-            {
-                if (exe.Message.ToLower().IndexOf("notfound") > -1)
-                {
-                    log.LogInformation($"The {this.PoolName} pool was not found. Was it already deleted?");
-                    return 0;
-                }
-                else
-                {
-                    log.LogError($"Error encountered trying to delete pool {this.PoolName} from Batch account {cmdLine.BatchArgs.BatchAccountName}.\r\n{exe.ToString()}");
+                    log.LogError($"Error encountered trying to delete pool {this.PoolName} from Batch account {cmdLine.BatchArgs.BatchAccountName}.{Environment.NewLine}{exe.ToString()}");
                     return 42345346;
                 }
             }

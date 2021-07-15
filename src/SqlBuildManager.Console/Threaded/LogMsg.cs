@@ -13,7 +13,7 @@ namespace SqlBuildManager.Console.Threaded
         public LogMsg()
         {
         }
-                
+        public string JobName { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public string DatabaseName { get; set; } = string.Empty;
         public string ServerName { get; set; } = string.Empty;

@@ -119,16 +119,16 @@
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="LoggingTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\sqllogging\loggingtable.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>..\SqlLogging\LoggingTable.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="LoggingTableCommitCheckIndex" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\sqllogging\loggingtablecommitcheckindex.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>..\SqlLogging\LoggingTableCommitCheckIndex.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="LogScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\sqllogging\logscript.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>..\SqlLogging\LogScript.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="QueryResult_html" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\adhocquery\xml\queryresult_html.xslt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\AdHocQuery\Xml\QueryResult_html.xslt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="RegexBatchParsingDelimiter" xml:space="preserve">
     <value>^ *GO *</value>
@@ -156,15 +156,15 @@
     <comment>Finds a "use &lt;database&gt;" statement in a script</comment>
   </data>
   <data name="ServerReport_csv" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\status\xml\serverreport_csv.xslt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\Status\Xml\ServerReport_csv.xslt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="ServerReport_html" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\status\xml\serverreport_html.xslt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\Status\Xml\ServerReport_html.xslt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="ServerReport_summary" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\status\xml\serverreport_summary.xslt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\Status\Xml\ServerReport_summary.xslt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="VersionsInsert" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\sqllogging\versionsinsert.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\SqlLogging\VersionsInsert.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>

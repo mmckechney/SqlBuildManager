@@ -4,6 +4,7 @@ using System.Text;
 using System.CommandLine;
 using System.Linq;
 using System.Globalization;
+using System.IO;
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -21,7 +22,8 @@ namespace SqlBuildManager.Console.CommandLine
 
                 if (property.PropertyType == typeof(CommandLineArgs.AutoScripting) ||
                     property.PropertyType == typeof(CommandLineArgs.StoredProcTesting) ||
-                    property.PropertyType == typeof(CommandLineArgs.Synchronize))
+                    property.PropertyType == typeof(CommandLineArgs.Synchronize) ||
+                    property.PropertyType == typeof(CommandLineArgs.Connections))
                 {
                     if (property.GetValue(obj) != null && toStringType == StringType.Basic)
                     {
@@ -76,7 +78,7 @@ namespace SqlBuildManager.Console.CommandLine
                         case "ServiceBusTopicConnectionString":
                             sb.Append("--servicebustopicconnection \"" + property.GetValue(obj).ToString() + "\" ");
                             break;
-
+                        case "JobName": //Ignore this because it will be counted as a duplicate for BatchJobName
                         case "OverrideDesignated":
                         case "CliVersion":
                         case "WhatIf":
@@ -130,6 +132,38 @@ namespace SqlBuildManager.Console.CommandLine
             newOpt.IsRequired = required;
 
             return newOpt;
+        }
+
+        public static string DecodeBase64(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "";
+
+            try
+            {
+                var valueBytes = System.Convert.FromBase64String(value);
+                return Encoding.UTF8.GetString(valueBytes);
+            }
+            catch(Exception)
+            {
+                return value;
+            }
+        }
+
+        public static string EncodeBase64(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "";
+
+            try
+            {
+                var valueBytes = Encoding.UTF8.GetBytes(value);
+                return Convert.ToBase64String(valueBytes);
+            }
+            catch (Exception)
+            {
+                return value;
+            }
         }
     }
 }

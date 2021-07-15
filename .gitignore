@@ -219,5 +219,5 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 /src/TestConfig
-/docs/templates/runme.ps1
-/docs/templates/update_apppackage.ps1
+Command_scratch.txt
+/scripts/templates/runme.ps1
