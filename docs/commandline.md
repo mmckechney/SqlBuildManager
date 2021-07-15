@@ -5,7 +5,7 @@
 - [Build execution actions to update or query databases](#build-execution-actions-to-update-or-query-databases)
 - [Utility Actions](#utility-actions)
 - [Batch sub-commands](#batch-sub-commands)
-- [Container (Kubernetes) sub-commands](#container--kubernetes--sub-commands)
+- [Container (Kubernetes) sub-commands](#container-kubernetes-sub-commands)
 - [Logging](#logging)
 
 ----

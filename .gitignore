@@ -219,8 +219,5 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 /src/TestConfig
-/docs/templates/runme.ps1
-/docs/templates/update_apppackage.ps1
-/src/SqlBuildManager.Console/K8s/secrets.yaml
-/src/SqlBuildManager.Console/K8s/Command_scratch.txt
+Command_scratch.txt
 /scripts/templates/runme.ps1
