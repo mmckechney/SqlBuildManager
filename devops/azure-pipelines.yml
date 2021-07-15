@@ -170,7 +170,7 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: Copying batch ARM template
   inputs:
-    PathtoPublish: './docs/templates/azuredeploy.json'
+    PathtoPublish: './scripts/templates/azuredeploy.json'
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
