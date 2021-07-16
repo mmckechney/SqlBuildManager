@@ -25,6 +25,7 @@ using static SqlSync.SqlBuild.SqlSyncBuildData;
 using sb = SqlSync.SqlBuild;
 using SqlBuildManager.Console.CloudStorage;
 using System.CommandLine.IO;
+using SqlBuildManager.Console.KeyVault;
 
 namespace SqlBuildManager.Console
 {
@@ -51,7 +52,7 @@ namespace SqlBuildManager.Console
 
             try
             {
-                Task<int> val = rootCommand.InvokeAsync(args);
+               Task<int> val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 rootCommand = null;
                 int result = val.Result;
@@ -79,6 +80,7 @@ namespace SqlBuildManager.Console
             {
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
             }
+            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
             return (decryptSuccess, cmdLine);
         }
 
@@ -208,6 +210,7 @@ namespace SqlBuildManager.Console
 
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
+            
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
             log.LogDebug("Entering Batch Execution");
@@ -250,7 +253,7 @@ namespace SqlBuildManager.Console
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
                 return -8675;
             }
-
+            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
             if (outpt != 0)
             {
@@ -318,6 +321,20 @@ namespace SqlBuildManager.Console
             {
                 log.LogError("The value for the --settingsfilekey must be at least 16 characters long");
                 return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                var lst = KeyVaultHelper.SaveSecrets(cmdLine);
+                log.LogInformation($"Saved secrets to Azure Key Vault {cmdLine.ConnectionArgs.KeyVaultName}: {string.Join(", ", lst)}");
+
+                //remove secrets from the command line so they are not saved to the config.
+                var kvTmp = cmdLine.ConnectionArgs.KeyVaultName;
+                cmdLine.AuthenticationArgs = new CommandLineArgs.Authentication();
+                cmdLine.ConnectionArgs.EventHubConnectionString = null;
+                cmdLine.ConnectionArgs.BatchAccountKey = null;
+                cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null;
+                cmdLine.ConnectionArgs.StorageAccountKey = null;
             }
 
             if (!clearText)
@@ -462,7 +479,7 @@ namespace SqlBuildManager.Console
                     UserId = cmdLine.AuthenticationArgs.UserName,
                     Password = cmdLine.AuthenticationArgs.Password
                 };
-                sb.SqlBuildHelper helper = new sb.SqlBuildHelper(connData,true, "", cmdLine.Transactional);
+                sb.SqlBuildHelper helper = new sb.SqlBuildHelper(connData, true, "", cmdLine.Transactional);
                 BackgroundWorker bg = new BackgroundWorker()
                 {
                     WorkerReportsProgress = true,
@@ -490,9 +507,9 @@ namespace SqlBuildManager.Console
         }
         private static class LocalRunInfo
         {
-           public static sb.SqlSyncBuildData Sq1SyncBuildData { get; set; }
-           public static string WorkingDirectory { get; set; }
-           public static string BuildZipFileName { get; set; }
+            public static sb.SqlSyncBuildData Sq1SyncBuildData { get; set; }
+            public static string WorkingDirectory { get; set; }
+            public static string BuildZipFileName { get; set; }
             public static bool Success { get; set; } = true;
         }
 
@@ -502,19 +519,19 @@ namespace SqlBuildManager.Console
             if (e.UserState is sb.GeneralStatusEventArgs) //Update the general run status
             {
                 var stat = (sb.GeneralStatusEventArgs)e.UserState;
-               log.LogInformation(stat.StatusMessage);
-                if(stat.StatusMessage.ToLower().Contains("build failure") || stat.StatusMessage.ToLower().Contains("build failed"))
+                log.LogInformation(stat.StatusMessage);
+                if (stat.StatusMessage.ToLower().Contains("build failure") || stat.StatusMessage.ToLower().Contains("build failed"))
                 {
                     LocalRunInfo.Success = false;
                 }
             }
-            
+
             else if (e.UserState is sb.CommitFailureEventArgs)
             {
                 log.LogError("Failed to Commit Build " + ((sb.CommitFailureEventArgs)e.UserState).ErrorMessage);
                 LocalRunInfo.Success = false;
             }
-            else if(e.UserState is sb.ScriptRunStatusEventArgs)
+            else if (e.UserState is sb.ScriptRunStatusEventArgs)
             {
                 log.LogInformation(((sb.ScriptRunStatusEventArgs)e.UserState).Status);
             }
@@ -533,18 +550,17 @@ namespace SqlBuildManager.Console
             }
             else if (e.UserState is Exception)
             {
-                    log.LogError("ERROR!" + ((Exception)e.UserState).Message);
+                log.LogError("ERROR!" + ((Exception)e.UserState).Message);
             }
         }
 
         internal static int RunThreadedExecution(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
-            if(string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
+            if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
             {
                 cmdLine.RootLoggingPath = Directory.GetCurrentDirectory();
             }
-
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
             bool decryptSuccess;
@@ -554,6 +570,8 @@ namespace SqlBuildManager.Console
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
                 return -8675;
             }
+            cmdLine = KeyVault.KeyVaultHelper.GetSecrets(cmdLine);
+
 
             DateTime start = DateTime.Now;
             log.LogDebug("Entering Threaded Execution");
@@ -666,7 +684,7 @@ namespace SqlBuildManager.Console
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
-            if(!Directory.Exists(cmdLine.RootLoggingPath))
+            if (!Directory.Exists(cmdLine.RootLoggingPath))
             {
                 Directory.CreateDirectory(cmdLine.RootLoggingPath);
             }
@@ -676,9 +694,9 @@ namespace SqlBuildManager.Console
             {
                 //Get secrets
                 (success, cmdLine) = ContainerManager.ReadSecrets(cmdLine);
-                if(!success)
+                if (!success)
                 {
-                   // return 1; 
+                    // return 1; 
                 }
                 //runtime params
                 (success, cmdLine) = ContainerManager.ReadRuntimeParameters(cmdLine);
@@ -691,7 +709,7 @@ namespace SqlBuildManager.Console
 
                 bool keepGoing = true;
                 cmdLine.BuildFileName = await CloudStorage.StorageManager.WriteFileToLocalStorage(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, cmdLine.BuildFileName);
-                if(string.IsNullOrEmpty(cmdLine.BuildFileName))
+                if (string.IsNullOrEmpty(cmdLine.BuildFileName))
                 {
                     log.LogError("Unable to copy build package to local storage. Can not start execution");
                     keepGoing = false;
@@ -713,7 +731,7 @@ namespace SqlBuildManager.Console
                     var threaded = RunThreadedExecution(cmdLine);
                 }
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError(exe.ToString());
                 log.LogWarning("Error starting and running container processing");
@@ -738,6 +756,9 @@ namespace SqlBuildManager.Console
             {
                 cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
             }
+            cmdLine.ConnectionArgs.KeyVaultName = args.ConnectionArgs.KeyVaultName;
+            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString)) cmdLine.ServiceBusTopicConnection = args.ConnectionArgs.ServiceBusTopicConnectionString;
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString)) cmdLine.EventHubConnection = args.ConnectionArgs.EventHubConnectionString;
             if (!string.IsNullOrWhiteSpace(args.JobName)) cmdLine.JobName = args.JobName;
@@ -785,7 +806,7 @@ namespace SqlBuildManager.Console
 
                 messageCount = await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
                 (commit, error) = ehandler.GetCommitAndErrorCounts();
-                
+
                 if (firstLoop == false && lastCommitCount == commit && lastErrorCount == error && !unittest)
                 {
                     System.Console.SetCursorPosition(0, System.Console.CursorTop - cursorStepBack);
@@ -801,7 +822,7 @@ namespace SqlBuildManager.Console
                     System.Console.WriteLine($"{spinner} Remaining Messages: {messageCount}{Environment.NewLine}  Remaining Databases: {targets - commit - error}{Environment.NewLine}  Database Commits: {commit}{Environment.NewLine}  Database Errors: {error}");
                 }
 
-               // log.LogInformation($"Remaining Messages: {messageCount}");
+                // log.LogInformation($"Remaining Messages: {messageCount}");
                 System.Threading.Thread.Sleep(500);
                 if (messageCount == 0) { zeroMessageCounter++; } else { zeroMessageCounter = 0; }
                 if (targets == 0 && zeroMessageCounter == 20 && lastCommitCount == commit && lastErrorCount == error && !unittest)
@@ -820,7 +841,7 @@ namespace SqlBuildManager.Console
                         break;
                     }
                 }
-                else if(targets != 0 && (commit + error == targets))
+                else if (targets != 0 && (commit + error == targets))
                 {
                     System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                     break;
@@ -831,7 +852,7 @@ namespace SqlBuildManager.Console
                 firstLoop = false;
             }
 
-           await qManager.DeleteSubscription();
+            await qManager.DeleteSubscription();
 
             string sas = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, true);
 
@@ -839,7 +860,7 @@ namespace SqlBuildManager.Console
             log.LogInformation("The read-only SAS token URL is valid for 7 days.");
             log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
 
-            if(error > 0)
+            if (error > 0)
             {
                 return 1;
             }
@@ -850,11 +871,11 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static async Task<int> DequeueContainerOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection)
+        internal static async Task<int> DequeueContainerOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection)
         {
             bool valid;
             CommandLineArgs cmdLine = new CommandLineArgs();
-            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, jobname, concurrencytype, servicebustopicconnection, cmdLine);
+            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, keyvaultname,jobname, concurrencytype, servicebustopicconnection, cmdLine);
             if (!valid)
             {
                 return 1;
@@ -866,7 +887,7 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static async Task<int> UploadContainerBuildPackage(FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, string jobName, string storageAccountName, string storageAccountKey, bool force)
+        internal static async Task<int> UploadContainerBuildPackage(FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, string keyvaultname, string jobName, string storageAccountName, string storageAccountKey, bool force)
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
 
@@ -878,20 +899,24 @@ namespace SqlBuildManager.Console
             {
                 cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
             }
+            
+            cmdLine.KeyVaultName = keyvaultname;
+            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+
             cmdLine.BuildFileName = packageName.Name;
             if (!string.IsNullOrWhiteSpace(jobName)) cmdLine.JobName = jobName;
             if (!string.IsNullOrWhiteSpace(storageAccountKey)) cmdLine.StorageAccountKey = storageAccountKey;
             if (!string.IsNullOrWhiteSpace(storageAccountName)) cmdLine.StorageAccountName = storageAccountName;
 
-            if(string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            if (string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
             {
                 log.LogError("Values for --jobname, --storageaccountname and --storageaccountkey are required as prameters or included in the --secretsfile and --runtimefile");
                 return 1;
 
             }
-            if(await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
-            { 
-                if(!force)
+            if (await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+            {
+                if (!force)
                 {
                     System.Console.Write($"The container {cmdLine.JobName} already exists in storage account {cmdLine.ConnectionArgs.StorageAccountName}. Do you want to delete any existing files and continue upload? (Y/n)");
                     var key = System.Console.ReadKey().Key;
@@ -906,9 +931,9 @@ namespace SqlBuildManager.Console
                         return 0;
                     }
                 }
-                if(force)
+                if (force)
                 {
-                    if(! await StorageManager.DeleteStorageContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+                    if (!await StorageManager.DeleteStorageContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
                     {
                         log.LogError("Unable to delete container. The package file was not uploaded");
                         return -1;
@@ -916,7 +941,7 @@ namespace SqlBuildManager.Console
                 }
             }
 
-            if(!await StorageManager.UploadFileToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, packageName.FullName))
+            if (!await StorageManager.UploadFileToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, packageName.FullName))
             {
                 return 1;
             }
@@ -925,7 +950,7 @@ namespace SqlBuildManager.Console
                 if (runtimeFile != null)
                 {
                     string runtimeContents = ContainerManager.GenerateRuntimeYaml(cmdLine);
-                    File.WriteAllText(runtimeFile.FullName,runtimeContents);
+                    File.WriteAllText(runtimeFile.FullName, runtimeContents);
                     log.LogInformation($"Updated runtime file '{runtimeFile.FullName}' with job and package name");
                 }
                 return 0;
@@ -933,17 +958,34 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static void SaveContainerSettings(CommandLineArgs cmdLine, string prefix)
+        internal static void TestAuth()
         {
-            string secrets = ContainerManager.GenerateSecretsYaml(cmdLine);
-            string runtime = ContainerManager.GenerateRuntimeYaml(cmdLine);
+           System.Console.WriteLine(KeyVault.KeyVaultHelper.GetSecret("sbm3keyvault","StorageAccountName"));
+        }
 
+        internal static void SaveContainerSettings(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
+        {
             var dir = Directory.GetCurrentDirectory();
-            var secretsName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secrets.yaml" : $"{prefix}-secrets.yaml");
+            if (path != null)
+            {
+                dir = path.FullName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                var lst = KeyVaultHelper.SaveSecrets(cmdLine);
+                log.LogInformation($"Saved secrets to Azure Key Vault {cmdLine.ConnectionArgs.KeyVaultName}: {string.Join(", ", lst)}");
+            }
+            else
+            {
+                string secrets = ContainerManager.GenerateSecretsYaml(cmdLine);
+                var secretsName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secrets.yaml" : $"{prefix}-secrets.yaml");
+                File.WriteAllText(secretsName, secrets);
+                log.LogInformation($"Secrets file written to: {secretsName}");
+            }
+
+            string runtime = ContainerManager.GenerateRuntimeYaml(cmdLine);
             var runtimeName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "runtime.yaml" : $"{prefix}-runtime.yaml");
-            
-            File.WriteAllText(secretsName, secrets);
-            log.LogInformation($"Secrets file written to: {secretsName}");
             File.WriteAllText(runtimeName, runtime);
             log.LogInformation($"Runtime file written to: {runtimeName}");
 
@@ -984,7 +1026,7 @@ namespace SqlBuildManager.Console
             return 0;
         }
 
-        private static (bool, CommandLineArgs) ValidateContainerQueueArgs(FileInfo secretsFile, FileInfo runtimeFile, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, CommandLineArgs cmdLine)
+        private static (bool, CommandLineArgs) ValidateContainerQueueArgs(FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, CommandLineArgs cmdLine)
         {
             if (runtimeFile != null)
             {
@@ -996,6 +1038,9 @@ namespace SqlBuildManager.Console
                 cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
             }
 
+            cmdLine.KeyVaultName = keyvaultname;
+            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+
             if (!string.IsNullOrWhiteSpace(servicebustopicconnection))
             {
                 cmdLine.ServiceBusTopicConnection = servicebustopicconnection;
@@ -1004,9 +1049,9 @@ namespace SqlBuildManager.Console
             {
                 cmdLine.JobName = jobname;
             }
-            if(concurrencytype != ConcurrencyType.Count)
+            if (concurrencytype != ConcurrencyType.Count)
             {
-                cmdLine.ConcurrencyType = concurrencytype; 
+                cmdLine.ConcurrencyType = concurrencytype;
             }
 
             if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
@@ -1021,14 +1066,14 @@ namespace SqlBuildManager.Console
                 return (false, cmdLine);
             }
 
-            return( true, cmdLine);
+            return (true, cmdLine);
         }
-        internal static async Task<int> EnqueueContainerOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, FileInfo Override)
+        internal static async Task<int> EnqueueContainerOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, FileInfo Override)
         {
             bool valid;
             CommandLineArgs cmdLine = new CommandLineArgs();
-            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, jobname, concurrencytype, servicebustopicconnection, cmdLine);
-            if(!valid)
+            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, keyvaultname, jobname, concurrencytype, servicebustopicconnection, cmdLine);
+            if (!valid)
             {
                 return 1;
             }
@@ -1053,7 +1098,6 @@ namespace SqlBuildManager.Console
                 log.LogError("Error sending messages to Service Bus queue");
                 return 2355;
             }
-            return 0;
         }
 
         internal static void SyncronizeDatabase(CommandLineArgs cmdLine)
@@ -1217,7 +1261,7 @@ namespace SqlBuildManager.Console
         internal static int CreatePackageFromDiff(CommandLineArgs cmdLine)
         {
             string sbmFileName = Path.GetFullPath(cmdLine.OutputSbm);
-            if(File.Exists(sbmFileName))
+            if (File.Exists(sbmFileName))
             {
                 log.LogError($"The output file '{sbmFileName}' already exists. Please delete the file or use 'sbm add' if you want to add new scripts to the file");
                 return -343;
@@ -1264,7 +1308,7 @@ namespace SqlBuildManager.Console
             }
             else
             {
-                switch(res)
+                switch (res)
                 {
                     case sb.DacpacDeltasStatus.InSync:
                     case sb.DacpacDeltasStatus.OnlyPostDeployment:
@@ -1304,7 +1348,7 @@ namespace SqlBuildManager.Console
                 {
                     var rows = buildData.Script.OrderBy(r => r.BuildOrder).ToList();
                     //for (int i = 0; i < buildData.Script.Rows.Count; i++)
-                    foreach(var s in rows)
+                    foreach (var s in rows)
                     {
                         if (withHash)
                         {
@@ -1321,7 +1365,7 @@ namespace SqlBuildManager.Console
                 var sizing = TablePrintSizing(contents);
                 var output = ConsoleTableBuilder(contents, sizing);
                 string hash = "";
-                if(withHash)
+                if (withHash)
                 {
                     hash = $" (Package Hash: {sb.SqlBuildFileHelper.CalculateSha1HashFromPackage(file.FullName)})";
                 }
@@ -1527,19 +1571,20 @@ namespace SqlBuildManager.Console
             var start = DateTime.Now;
             bool decryptSuccess;
             (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
             if (!decryptSuccess)
             {
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
                 return 3424;
             }
 
-            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 log.LogError("A --servicebusconnection value is required. Please include this in either the settings file content or as a specific command option");
                 return 9839;
             }
             (int ret, string msg) = Validation.ValidateBatchjobName(cmdLine.BatchArgs.BatchJobName);
-            if(ret != 0)
+            if (ret != 0)
             {
                 log.LogError(msg);
                 return ret;
@@ -1552,7 +1597,7 @@ namespace SqlBuildManager.Console
                 return tmpValReturn;
             }
             log.LogInformation("Sending database targets to Service Bus");
-            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
+            var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
 
 
@@ -1571,13 +1616,14 @@ namespace SqlBuildManager.Console
                 return 2355;
             }
         }
-        
+
         internal static async Task<int> DeQueueOverrideTargets(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             var start = DateTime.Now;
             bool decryptSuccess;
             (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
             if (!decryptSuccess)
             {
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
@@ -1585,7 +1631,7 @@ namespace SqlBuildManager.Console
             }
 
 
-            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 log.LogError("A --servicebustopicconnection value is required. Please include this in either the settings file content or as a specific command option");
                 return 9839;
@@ -1596,7 +1642,7 @@ namespace SqlBuildManager.Console
                 return 9839;
             }
 
-            var qManager = new QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
+            var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             bool success = await qManager.DeleteSubscription();
 
             TimeSpan span = DateTime.Now - start;
@@ -1685,9 +1731,9 @@ namespace SqlBuildManager.Console
                 {
                     endLength += sectionLengths[i] + 3;
 
-                    if(splitLine[i].Length == 0 && string.Join("", splitLine).Trim().Length == 0)  //and empty line used to denote a dash separator
+                    if (splitLine[i].Length == 0 && string.Join("", splitLine).Trim().Length == 0)  //and empty line used to denote a dash separator
                     {
-                        current =  current.Substring(0,current.Length-1) + new string('-', sectionLengths[i]+2) + "| " ;
+                        current = current.Substring(0, current.Length - 1) + new string('-', sectionLengths[i] + 2) + "| ";
                     }
                     else if (i < splitLine.Length)
                     {
@@ -1723,6 +1769,6 @@ namespace SqlBuildManager.Console
         }
     }
 }
-   
+
 
 

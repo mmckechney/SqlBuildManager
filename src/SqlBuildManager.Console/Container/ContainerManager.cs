@@ -26,10 +26,10 @@ namespace SqlBuildManager.Console.Container
             try
             {
                 args.EventHubConnection = File.ReadAllText("/etc/sbm/EventHubConnectionString");
-                log.LogDebug($"eventhub= {args.BatchArgs.EventHubConnectionString}");
+                log.LogDebug($"eventhub= {args.ConnectionArgs.EventHubConnectionString}");
 
                 args.ServiceBusTopicConnection=  File.ReadAllText("/etc/sbm/ServiceBusTopicConnectionString");
-                log.LogDebug($"serviceBus= {args.BatchArgs.ServiceBusTopicConnectionString}");
+                log.LogDebug($"serviceBus= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
 
                 args.Password = File.ReadAllText("/etc/sbm/Password");
                 log.LogDebug($"password= {args.AuthenticationArgs.Password}");
@@ -38,10 +38,10 @@ namespace SqlBuildManager.Console.Container
                 log.LogDebug($"username= {args.AuthenticationArgs.UserName}");
 
                 args.StorageAccountName = File.ReadAllText("/etc/sbm/StorageAccountName");
-                log.LogDebug($"storageaccountname= {args.BatchArgs.StorageAccountName}");
+                log.LogDebug($"storageaccountname= {args.ConnectionArgs.StorageAccountName}");
 
                 args.StorageAccountKey = File.ReadAllText("/etc/sbm/StorageAccountKey");
-                log.LogDebug($"storageaccountkey= {args.BatchArgs.StorageAccountKey}");
+                log.LogDebug($"storageaccountkey= {args.ConnectionArgs.StorageAccountKey}");
 
                 return (true,args);
             }
@@ -173,7 +173,7 @@ data:
                 var name = sec["data"][key];
                 return name as string;
             }
-            catch(Exception ex)
+            catch
             {
                 return string.Empty;
             }

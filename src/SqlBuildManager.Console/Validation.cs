@@ -77,7 +77,7 @@ namespace SqlBuildManager.Console
             }
 
             //Validate the presence of an --override setting
-            if (string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            if (string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 error = "Invalid command line set. Missing --override option.";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingOverrideFlag };
@@ -336,27 +336,27 @@ namespace SqlBuildManager.Console
         {
             int returnVal = 0;
             List<string> messages = new List<string>();
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountName))
             {
                 messages.Add("--batchaccountname is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountUrl))
             {
                 messages.Add("--batchaccounturl is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountName))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.StorageAccountName))
             {
                 messages.Add("--storageaccountname is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.StorageAccountKey))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.StorageAccountKey))
             {
                 messages.Add("--storageaccountkey is required in command line or --settingsfile Json");
                 returnVal = -888;
@@ -368,7 +368,7 @@ namespace SqlBuildManager.Console
                 returnVal = -888;
             }
 
-            if (!String.IsNullOrEmpty(cmdLine.BatchArgs.ServiceBusTopicConnectionString) && string.IsNullOrEmpty(cmdLine.BatchArgs.BatchJobName))
+            if (!String.IsNullOrEmpty(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) && string.IsNullOrEmpty(cmdLine.BatchArgs.BatchJobName))
             {
                 messages.Add("When --servicebusconnection is provided in command line or --settingsfile Json, then --batchjobname is required");
                 returnVal = -888;
@@ -401,17 +401,17 @@ namespace SqlBuildManager.Console
         {
             int returnVal = 0;
             List<string> messages = new List<string>();
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountName))
             {
                 messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountUrl))
             {
                 messages.Add("--batchaccounturl is required in command line or --settingsfile  Json");
                 returnVal = -888;
@@ -430,17 +430,17 @@ namespace SqlBuildManager.Console
         {
             int returnVal = 0;
             List<string> messages = new List<string>();
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountName))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountName))
             {
                 messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountKey))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchAccountUrl))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountUrl))
             {
                 messages.Add("--batchaccounturl is required in command line or --settingsfile  Json");
                 returnVal = -888;

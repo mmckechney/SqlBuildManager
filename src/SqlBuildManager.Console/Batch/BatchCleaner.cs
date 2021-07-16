@@ -33,7 +33,7 @@ namespace SqlBuildManager.Console.Batch
             try
             {
                 List<Task> lstTasks = new List<Task>();
-                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchArgs.BatchAccountUrl, cmdLine.BatchArgs.BatchAccountName, cmdLine.BatchArgs.BatchAccountKey);
+                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, cmdLine.ConnectionArgs.BatchAccountName, cmdLine.ConnectionArgs.BatchAccountKey);
                 var batchClient = BatchClient.Open(cred);
                 var jobs = batchClient.JobOperations.ListJobs();
                 var active = jobs.Where(j => j.State == JobState.Completed).ToList();

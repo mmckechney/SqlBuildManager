@@ -45,7 +45,7 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 `sbm batch [command]`
 
-- `savesettings` - Save a settings JSON file for Batch arguments (see Batch documentation)
+- `savesettings` - Save a settings JSON file for Batch arguments (see Batch documentation) 
 - `prestage` - Pre-stage the Azure Batch VM nodes
 - `cleanup` - Azure Batch Clean Up - remove VM nodes
 - `run` - For updating multiple databases simultaneously using Azure batch services
@@ -88,4 +88,4 @@ the `--rootloggingpath` flag. For a simple threaded execution, this is a
 single root folder. For a remote server execution, this folder is
 created for each execution server.
 
-### For for details and script run troubleshooting suggestions, see [Log Files Details for Threaded and Batch execution](threaded_and_batch_logs.md)
+### For for details and script run troubleshooting suggestions, see [Log Files Details for Threaded, Batch and Container execution](threaded_and_batch_logs.md)

@@ -1,6 +1,7 @@
 # Leveraging Kubernetes for database builds
 
 - [Why use Kubernetes?](#why-use-kubernetes)
+  - [Process Flow](massively_parallel.md#kubernetes-process-flow)
 - [Getting Started](#getting-started)
   - [Container Image](#container-image)
   - [Basic Overview](#basic-overview)
@@ -30,17 +31,20 @@ docker build -f Dockerfile .. -t sqlbuildmanager:latest
 
 As mentioned above, in addition to a Kubernetes cluster, the Kubernetes deployment leverages [Azure Service Bus](https://azure.microsoft.com/en-us/services/service-bus/) and [Azure Event Hub](https://azure.microsoft.com/en-us/services/event-hubs). You can create your own resources either through the Azure portal, az cli or PowerShell. The only special configuration is with Azure Service Bus which requires a Topic named `sqlbuildmanager`.
 
-Alternatively, you can create the resources via the included PowerShell [Create_AzureTestEnvironment.ps1](../scripts/templates/Create_AzureTestEnvironment.ps1). This script will create all of the resources you need for both Azure Batch and Kubernetes builds: Azure Batch Account, Kubernetes Cluster, Storage Account, Event Hub, Service Bus, 2 SQL servers and 20 databases in elastic pools. It will also create a new folder and pre-configured settings files in a folder `./src/TestConfig`. This is needed for running unit tests as well. 
+Alternatively, you can create the resources via the included PowerShell [create_azure_resources.ps1](../scripts/templates/create_azure_resources.ps1). This script will create all of the resources you need for both Azure Batch and Kubernetes builds: Azure Batch Account, Kubernetes Cluster, Storage Account, Event Hub, Service Bus, 2 SQL servers and 20 databases in elastic pools. It will also create a new folder and pre-configured settings files in a folder `./src/TestConfig`. This is needed for running unit tests as well. 
 
 ### Basic Overview
 
-The standard deployment definition for SQL Build Manger (see [sample_deployment.yaml](../scripts/templates/kubernetes/sample_deployment.yaml)) mounts two volumes - one for [secrets](../scripts/templates/kubernetes/sample_secrets.yaml) named `sbm` and one for [runtime configuration](../scripts/templates/kubernetes/sample_runtime_configmap.yaml) named `runtime`. The secrets files contains the Base64 encoded values for your connection strings and passwords while the runtime configuration contains the parameters that will be used to execute the build. Both of these should be deployed to Kubernetes prior to creating your pods. You can easily create the full `secrets.yaml` file and a template of your `runtime.yaml` file by using the following command:
+The standard deployment definition for SQL Build Manger (see [sample_deployment.yaml](../scripts/templates/kubernetes/sample_deployment.yaml)) mounts two volumes - one for [secrets](../scripts/templates/kubernetes/sample_secrets.yaml) named `sbm` and one for [runtime configuration](../scripts/templates/kubernetes/sample_runtime_configmap.yaml) named `runtime`. The secrets files contains the Base64 encoded values for your connection strings and passwords while the runtime configuration contains the parameters that will be used to execute the build. Both of these should be deployed to Kubernetes prior to creating your pods. You can easily create the full `secrets.yaml` file and a template of your `runtime.yaml` file by using the following command. You can instead use [create_aks_secrets_and_runtime_files.ps1](../scripts/templates/create_aks_secrets_and_runtime_files.ps1) to automate the collection of secrets and creation of these files. Before you `kubetcl apply` the `runtime.yaml` file, you will need to add the `PackageName` and `JobName` values - this can be done for you with the [`sbm prep` command below](#2-upload-your-sbm-package-file-to-your-storage-account)
 
 ``` bash
 sbm container savesettings  -u "<sql username>" -p <sql password> --storageaccountname "<storage acct name>" --storageaccountkey "<storage acct key>"  -eh "<event hub connection string>" -sb "<service bus topic connection string>"--concurrency "<int value>" --concurrencytype "<Count|Server|MaxServer>"
 ```
 
-**NOTE:** Before you apply the `runtime.yaml` file, you will need to add the `PackageName` and `JobName` values - this can be done for you with the [`sbm upload` command below](#2-upload-your-sbm-package-file-to-your-storage-account)
+**NOTE:** If you plan on using Key Vault, you should run these scripts instead and can skip the `sbm container savesettings` step. 
+- [create_aks_keyvault_config.ps1](../scripts/templates/create_aks_keyvault_config.ps1) - to create `podIdentityAndBinding.yaml` and `secretProviderClass.yaml` 
+- [add_secrets_to_keyvault.ps1](../scripts/templates/add_secrets_to_keyvault.ps1) - save secrets to Azure Key Vault
+
 
 Once the pods are deployed, they will start up as `container worker` by:
 
@@ -60,6 +64,7 @@ If there are messages on the Service Bus Topic that match the `JobName` from the
 Each pod deployment is specific to particular settings (secrets, jobname and package file). To ensure the running pods are configured properly and ready to pull Service Bus Topic messages, you will need to remove any existing pods. This is true even if you are running the same build twice since the pods are deactivated after a run.
 
 ``` bash
+az login  #establish a connection to your Azure account
 kubectl scale deployment sqlbuildmanager --replicas=0
 ```
 
@@ -77,6 +82,10 @@ The Kubernetes pods retrieve the build package from Azure storage, this command 
 
 ``` bash
 sbm container prep --secretsfile "secrets.yaml" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
+
+# or if you are using Key Vault
+
+sbm container prep --keyvaultname "<key vault name>" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
 ```
 
 ### 3. Queue up the override targets in Service Bus
@@ -87,6 +96,10 @@ You can use the saved settings files created by `sbm container savesettings` or 
 
 ``` bash
 sbm container enqueue --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
+
+# or if you are using Key Vault
+
+sbm container enqueue --keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 
 ### 4. Deploy the pods to Kubernetes
@@ -94,10 +107,17 @@ sbm container enqueue --secretsfile "<secrets.yaml file>" --runtimefile "<runtim
 Leveraging the `kubetcl` command line interface, run the `apply` commands for the `secrets.yaml` (this will upload the values for the connection to Azure Service Bus, Event Grid, Storage and databases) and `runtime.yaml` (this will upload the values for the build package name, job name and runtime concurrency options).  Next apply the `deployment.yaml` to create the pods
 
 ``` bash
-#Deploy the configuration and the pods
+# Deploy using local secrets
 kubectl apply -f secrets.yaml
 kubectl apply -f runtime.yaml
 kubectl apply -f sample_deployment.yaml
+
+# or Deploy with Key Vault
+kubectl apply -f runtime.yaml
+kubectl apply -f secretProviderClass.yaml
+kubectl apply -f podIdentityAndBinding.yaml
+kubectl apply -f sample_deployment_keyvault.yaml
+
 #Verify that the pods are running
 kubectl get pods
 ```
@@ -124,6 +144,10 @@ This command will monitor the number of messages left in the Service Bus Topic a
 
 ``` bash
 sbm container monitor --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
+
+# or if you are using Key Vault
+
+sbm container monitor --keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 
 The `--override` argument is not necessary, it will allow the monitor to track the target database count and stop monitoring when all targets have been processed. 
@@ -132,19 +156,3 @@ The `--override` argument is not necessary, it will allow the monitor to track t
 
  **IMPORTANT:** After the `sbm container monitor` completes, as part of the clean-up, it will remove the Service Bus Topic associated with the build. This will deactivate the running containers so all subsequent run will need to be reset as [specified above](#0-remove-pre-existing-pods).
 
-## End-to-End Example
-
- ``` bash
- kubectl scale deployment sqlbuildmanager --replicas=0
-
-sbm container prep --secretsfile "secrets.yaml" --runtimefile "runtime.yaml" --jobname "Build15" --packagename "Testbuild.sbm"
-
-sbm container enqueue --secretsfile "secrets.yaml" --runtimefile "runtime.yaml" --override "databasetargets.cfg"
-
-kubectl apply -f "secrets.yaml"
-kubectl apply -f "runtime.yaml"
-kubectl apply -f "basic_deploy.yaml"
-kubectl get pods
-
-sbm container monitor  --secretsfile "secrets.yaml" --runtimefile "runtime.yaml" --override "databasetargets.cfg"
- ```

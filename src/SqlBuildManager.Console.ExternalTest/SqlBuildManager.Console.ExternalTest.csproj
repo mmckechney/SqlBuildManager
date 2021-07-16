@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
@@ -47,6 +47,8 @@
     <Content Remove="..\TestConfig\sbm-windows-13.0.3.zip" />
     <Content Remove="..\TestConfig\sbm-windows-13.1.0.zip" />
     <Content Remove="..\TestConfig\sbm-windows-13.2.0.zip" />
+    <Content Remove="..\TestConfig\secrests.yaml" />
+    <Content Remove="..\TestConfig\settings.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
