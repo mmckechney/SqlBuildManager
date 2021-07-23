@@ -21,6 +21,7 @@ namespace SqlBuildManager.Console.CommandLine
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
         public Batch BatchArgs { get; set; } = new Batch();
         public Connections ConnectionArgs { get; set; } = new Connections();
+        public Identity IdentityArgs { get; set; } = new Identity();
         [JsonIgnore]
         public DacPac DacPacArgs { get; set; } = new DacPac();
         [JsonIgnore]
@@ -46,6 +47,8 @@ namespace SqlBuildManager.Console.CommandLine
                     CommandLineArgs cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(value));
                     this.BatchArgs = cmdLine.BatchArgs;
                     this.AuthenticationArgs = cmdLine.AuthenticationArgs;
+                    this.ConnectionArgs = cmdLine.ConnectionArgs;
+                    this.IdentityArgs = cmdLine.IdentityArgs;
 
                     this.RootLoggingPath = cmdLine.RootLoggingPath;
                     this.DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
@@ -235,24 +238,23 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public virtual string BatchAccountName
         {
-            set { BatchArgs.BatchAccountName = value; }
+            set { ConnectionArgs.BatchAccountName = value; }
         }
         [JsonIgnore]
         public virtual string BatchAccountKey
         {
-            set { BatchArgs.BatchAccountKey = value; }
+            set { ConnectionArgs.BatchAccountKey = value; }
         }
         [JsonIgnore]
         public virtual string BatchAccountUrl
         {
-            set { BatchArgs.BatchAccountUrl = value; }
+            set { ConnectionArgs.BatchAccountUrl = value; }
         }
         [JsonIgnore]
         public virtual string StorageAccountName
         {
             set
             {
-                BatchArgs.StorageAccountName = value;
                 ConnectionArgs.StorageAccountName = value;
             }
         }
@@ -261,7 +263,6 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                BatchArgs.StorageAccountKey = value;
                 ConnectionArgs.StorageAccountKey = value;
             }
         }
@@ -280,7 +281,6 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                BatchArgs.EventHubConnectionString = value;
                 ConnectionArgs.EventHubConnectionString = value;
             }
         }
@@ -289,7 +289,6 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                BatchArgs.ServiceBusTopicConnectionString = value;
                 ConnectionArgs.ServiceBusTopicConnectionString = value;
             }
         }
@@ -313,11 +312,6 @@ namespace SqlBuildManager.Console.CommandLine
         {
  
             public int BatchNodeCount { get; set; } = 10;
-            public string BatchAccountName { get; set; } = null;
-            public string BatchAccountKey { get; set; } = null;
-            public string BatchAccountUrl { get; set; } = null;
-            public string StorageAccountName { get; set; } = null;
-            public string StorageAccountKey { get; set; } = null;
             public string BatchVmSize { get; set; } = null;
             [JsonIgnore]
             public string OutputContainerSasUrl { get; set; }
@@ -329,9 +323,7 @@ namespace SqlBuildManager.Console.CommandLine
             public string BatchPoolName { get; set; } = null;
             [JsonConverter(typeof(StringEnumConverter))]
             public OsType BatchPoolOs { get; set; }
-            public string EventHubConnectionString { get; set; } = string.Empty;
             public string ApplicationPackage { get; set; } = string.Empty;
-            public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
         }
         #endregion
 
@@ -391,13 +383,37 @@ namespace SqlBuildManager.Console.CommandLine
         }
         #endregion
 
+
+        public string KeyVaultName { set { this.ConnectionArgs.KeyVaultName = value; } }
         public class Connections
         {
+            public string KeyVaultName { get; set; } = string.Empty;
+
             public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
             public string EventHubConnectionString { get; set; } = string.Empty;
             public string StorageAccountName { get; set; } = string.Empty;
             public string StorageAccountKey { get; set; } = string.Empty;
+            public string BatchAccountName { get; set; } = string.Empty;
+            public string BatchAccountKey { get; set; } = string.Empty;
+            public string BatchAccountUrl { get; set; } = string.Empty;
+
         }
+
+        public string ClientId { set { this.IdentityArgs.ClientId = value; } }
+        public string PrincipalId { set { this.IdentityArgs.PrincipalId = value; } }
+        public string ResourceId { set { this.IdentityArgs.ResourceId = value; } }
+        public string ResourceGroup { set { this.IdentityArgs.ResourceGroup = value; } }
+        public string SubscriptionId { set { this.IdentityArgs.SubscriptionId = value;} }
+
+        public class Identity
+        {
+            public string ClientId { get; set; } = string.Empty;
+            public string PrincipalId { get; set; } = string.Empty;
+            public string ResourceId { get; set; } = string.Empty;
+            public string ResourceGroup { get; set; } = string.Empty;
+            public string SubscriptionId { get; set; } = string.Empty;
+        }
+
         [Serializable]
         public class AutoScripting
         {

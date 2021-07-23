@@ -1,5 +1,6 @@
 @description('Prefix to prepend to account names')
-param namePrefix string
+param namePrefix string = 'eztmwm'
+
 @allowed([
   'Basic'
   'Standard'
@@ -23,6 +24,8 @@ var storageAccountName_var = '${namePrefix}storage'
 var namespaceName_var = '${namePrefix}eventhubnamespace'
 var eventHubName = '${namePrefix}eventhub'
 var serviceBusName_var = '${namePrefix}servicebus'
+var keyvaultName_var = '${namePrefix}keyvault'
+var identityName_var = '${namePrefix}identity'
 
 
 resource storageAccountName 'Microsoft.Storage/storageAccounts@2018-07-01' = {
@@ -55,9 +58,17 @@ resource storageAccountName 'Microsoft.Storage/storageAccounts@2018-07-01' = {
   }
 }
 
-resource batchAccountName 'Microsoft.Batch/batchAccounts@2017-09-01' = {
+resource batchAccountName 'Microsoft.Batch/batchAccounts@2021-01-01' = {
   name: batchAccountName_var
   location: location
+  identity: {
+    type: 'UserAssigned'
+
+    userAssignedIdentities: {
+      '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identityName_var}': {
+      }
+    }
+  }
   properties: {
     autoStorage: {
       storageAccountId: storageAccountName.id
@@ -67,6 +78,7 @@ resource batchAccountName 'Microsoft.Batch/batchAccounts@2017-09-01' = {
   dependsOn:[
     storageAccountName
   ]
+
 }
 
 resource eventHubNamespace 'Microsoft.EventHub/namespaces@2017-04-01' = {
@@ -164,3 +176,38 @@ resource serviceBusName_sqlbuildmanager_sbmtopicpolicy 'Microsoft.ServiceBus/nam
     serviceBusName
   ]
 }
+
+resource keyVault_resource 'Microsoft.KeyVault/vaults@2019-09-01' = {
+  name: keyvaultName_var
+  location: location
+  properties: {
+    enabledForTemplateDeployment: true
+    enableRbacAuthorization: false
+    tenantId: subscription().tenantId
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }  
+    accessPolicies:[
+      {
+        tenantId: subscription().tenantId
+        objectId:identity_resource.properties.clientId
+        permissions:  {
+          secrets:[
+            'set'
+            'list'
+            'get'
+          ]
+        }
+        
+      }
+    ]
+  }
+}
+
+resource identity_resource 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name : identityName_var
+  location : location
+ 
+}
+

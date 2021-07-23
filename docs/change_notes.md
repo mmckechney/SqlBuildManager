@@ -5,6 +5,9 @@
 ### Version 14.0.0
 
 - *ADDED:* You now use Kubernetes as a compute platform for leveraging database builds with the new `sbm container` commands. See the [Kubernetes documentation](kubernetes.md) for background, information and how-to examples
+- *ADDED:* New Azure Key Vault integration -- secrets can now be stored in Key Vault and no longer need to be stored in the settings file or passed via commandline. See the [documentation here](massively_parallel.md) 
+- *UPDATED:* Automation scripts `/scripts/templates` have been updated to simplify the creation of Azure resources, runtime, secrets file and pushing secrets to Key Vault
+- *UPDATED:* Batch and Kubernetes now have Managed Identity assigned to allow seamless access to Key Vault
 
 ### Version 13.1.0
 

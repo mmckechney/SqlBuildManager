@@ -1,37 +1,38 @@
-#Connect-AzAccount
+param
+(
+    [string] $prefix,
+    [string] $resourceGroupName
+)
 
-$jsondata = Get-Content -Raw -Path ../../src/TestConfig/settingsfile-windows.json | ConvertFrom-Json
-$batchContext = Get-AzBatchAccountKey -AccountName $jsondata.BatchArgs.BatchAccountName
-$rgName = $jsondata.BatchArgs.BatchAccountName -replace "BatchAcct", ""
-$storageKey = Get-AzStorageAccountKey -ResourceGroupName $rgName -Name $jsondata.BatchArgs.StorageAccountName
-$storageContext = New-AzStorageContext -StorageAccountName $jsondata.BatchArgs.StorageAccountName -StorageAccountKey $storageKey[0].Value
+$batchAccountName = $prefix + "batchacct"
+$storageAccountName = $prefix + "storage"
 
-$jobs = Get-AzBatchJob -BatchContext $batchContext
+$batchAcctKey  = az batch account keys list --name $batchAccountName --resource-group $resourceGroupName -o tsv --query 'primary'
+$batchAcctEndpoint = az batch account show --name $batchAccountName --resource-group $resourceGroupName -o tsv --query "accountEndpoint"
+$storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
+
+$sbNamespaceName = $prefix + "servicebus"
+
+
+$jobs = az batch job list --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey -o tsv --query "[?contains(@.state 'completed')].id"
 foreach ($job in $jobs) {
-    if($job.State -eq "Completed")
-    {
-        Write-Output "Removing job: $($job.Id)"
-        Remove-AzBatchJob -Id $job.Id -BatchContext $batchContext -Force
+   
+    Write-Output "Removing job: $($job)"
+    az batch job delete --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey  --job-id $job --yes
 
-        $storageContainerName = ($job.Id -replace "SqlBuildManagerJobLinux_", "") -replace "SqlBuildManagerJobWindows_", ""
-
-        Write-Output "Removing storage container : $($storageContainerName)"
-        $container = Get-AzStorageContainer -Name "$($storageContainerName)*" -Context $storageContext
-        if($null -ne $container)
-        {
-            Remove-AzStorageContainer -Name $container[0].Name -Context $storageContext -Force
-        }
-    }
+    $storageContainerNamePart = ($job -replace "SqlBuildManagerJobLinux_", "") -replace "SqlBuildManagerJobWindows_", ""
+    $storageContainerName = a az storage container list --auth-mode key --account-key "$storageAcctKey" --account-name $storageAccountName  -o tsv --query "[?contains(@.name '$storageContainerNamePart')].name"
+    Write-Output "Removing storage container : $($storageContainerName)"
+    az storage container delete --name $storageContainerName --auth-mode key --account-key "$storageAcctKey" --account-name $storageAccountName
+    
 }
 
-$sbNamespaceName = $rgName + "servicebus"
-$subs = Get-AzServiceBusSubscription -ResourceGroupName $rgName -Namespace $sbNamespaceName -Topic sqlbuildmanager
-
+$subs = (az servicebus topic subscription list -g $resourceGroupName --namespace-name $sbNamespaceName --topic-name "sqlbuildmanager" ) | ConvertFrom-Json -AsHashtable
 if($null -ne $subs)
 {
     foreach($sub in $subs)
     {
-        Write-Output "Removing service bus topic subscription : $($sub.Name)"
-        Remove-AzServiceBusSubscription -ResourceGroupName  $rgName -Namespace $sbNamespaceName -Topic sqlbuildmanager -Name $sub.Name -ErrorAction SilentlyContinue
+        Write-Output "Removing service bus topic subscription : $($sub.name)"
+        az servicebus topic subscription delete --ids $sub.id 
     }
 }

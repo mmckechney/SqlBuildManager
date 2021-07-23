@@ -1,6 +1,0 @@
-.\deploy_azure_resources.ps1  -subscriptionId "1e1dcefc-d832-4de0-889a-2a48494c441b" -ResourceGroupName "sqllab1" -resourceGroupLocation "EastUS"  -Batchprefix "sqll1" -outputpath "..\..\src\TestConfig" -deployService $false
-
-sbm batch savesettings --settingsfile "..\..\src\TestConfig\settingsfile-linux-queue.json"  --username mmckechney --password Test1234!1234 --silent --batchpoolos Linux --settingsfilekey "..\..\src\TestConfig\settingsfilekey.txt"
-sbm batch savesettings --settingsfile "..\..\src\TestConfig\settingsfile-linux.json"  --username mmckechney --password Test1234!1234 --silent --batchpoolos Linux --settingsfilekey "..\..\src\TestConfig\settingsfilekey.txt"
-sbm batch savesettings --settingsfile "..\..\src\TestConfig\settingsfile-windows-queue.json"  --username mmckechney --password Test1234!1234 --silent --batchpoolos Windows --settingsfilekey "..\..\src\TestConfig\settingsfilekey.txt"
-sbm batch savesettings --settingsfile "..\..\src\TestConfig\settingsfile-windows.json"  --username mmckechney --password Test1234!1234 --silent --batchpoolos Windows --settingsfilekey "..\..\src\TestConfig\settingsfilekey.txt"

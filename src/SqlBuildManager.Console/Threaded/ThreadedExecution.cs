@@ -151,7 +151,7 @@ namespace SqlBuildManager.Console.Threaded
 
 
             //Load multi-db data. Won't be used for a queue run
-            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
                 if (tmpValReturn != 0)
@@ -179,7 +179,7 @@ namespace SqlBuildManager.Console.Threaded
             try
             {
                 //Run from override settings or from a Service Bus topic?
-                if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
                 {
                     log.LogInformation($"Sourcing targets from Service Bus topic with Concurrency Type: {cmdLine.ConcurrencyType} and Concurency setting: {cmdLine.Concurrency}");
                     Task<int> queueTask = ExecuteFromQueue(cmdLine, System.Environment.UserName, cmdLine.JobName);
@@ -276,7 +276,7 @@ namespace SqlBuildManager.Console.Threaded
         }
         private async Task<int> ExecuteFromQueue(CommandLineArgs cmdLine, string buildRequestedBy, string storageContainerName)
         {
-            this.qManager = new Queue.QueueManager(cmdLine.BatchArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
+            this.qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             bool messagesSinceLastLoop = true;
             while(true)
             {
@@ -584,9 +584,9 @@ namespace SqlBuildManager.Console.Threaded
         }
         private void InitThreadedLogging()
         {
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
-                logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.BatchArgs.EventHubConnectionString);
+                logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.ConnectionArgs.EventHubConnectionString);
             }
             logRuntime = SqlBuildManager.Logging.Threaded.RuntimeLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
 

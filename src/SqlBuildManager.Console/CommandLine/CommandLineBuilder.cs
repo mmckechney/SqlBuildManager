@@ -82,6 +82,15 @@ namespace SqlBuildManager.Console.CommandLine
 
             var platinumdacpacSourceOption = new Option<FileInfo>(new string[] { "-pd", "--platinumdacpac" }, "Name of the dacpac containing the platinum schema") { IsRequired = true }.ExistingOnly();
             var targetdacpacSourceOption = new Option<FileInfo>(new string[] { "-td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated") { IsRequired = true }.ExistingOnly();
+            var keyVaultNameOption = new Option<string>(new string[] { "-kv", "--keyvaultname" }, "Name of Azure Key Vault to save secrets to/ retrieve from. If provided, secrets will NOT be saved to the settings file or secrets.yaml");
+
+            var clientIdOption = new Option<string>("--clientid", "Client ID (AppId) for the Azure User Assigned Managed Identity");
+            var principalIdOption = new Option<string>("--principalid", "Principal ID for the Azure User Assigned Managed Identity");
+            var resourceIdOption = new Option<string>("--resourceid", "Resource ID (full resource path) for the Azure User Assigned Managed Identity");
+            var resourceGroupOption = new Option<string>("--resourcegroup", "Resource Group name for the Azure User Assigned Managed Identity");
+            var subscriptionIdOption = new Option<string>("--subscriptionid", "Azure subscription Id for the Azure User Assigned Managed Identity");
+
+
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
             {
@@ -180,6 +189,7 @@ namespace SqlBuildManager.Console.CommandLine
                 overrideOption.Copy(true),
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
@@ -190,6 +200,12 @@ namespace SqlBuildManager.Console.CommandLine
                 batchpoolOsOption,
                 batchpoolnameOption,
                 batchApplicationOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                resourceGroupOption,
+                subscriptionIdOption,
                 //Batch execution options
                 deletebatchpoolOption,
                 deletebatchjobOption,
@@ -223,6 +239,7 @@ namespace SqlBuildManager.Console.CommandLine
                 overrideOption,
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
@@ -267,10 +284,17 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                resourceGroupOption,
+                subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
                 batchvmsizeOption,
@@ -287,6 +311,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
@@ -299,6 +324,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption
@@ -314,10 +340,18 @@ namespace SqlBuildManager.Console.CommandLine
                 usernameOption,
                 settingsfileKeyOption,
                 settingsfileNewOption,
+                //Key value option
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                resourceGroupOption,
+                subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
                 batchvmsizeOption,
@@ -350,6 +384,7 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyTypeOption.Copy(true),
                 settingsfileOption,
                 settingsfileKeyOption,
+                keyVaultNameOption,
                 serviceBusconnectionOption,
                 overrideOption.Copy(true)
             };
@@ -359,6 +394,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 settingsfileOption,
                 settingsfileKeyOption,
+                keyVaultNameOption,
                 serviceBusconnectionOption, 
                 batchjobnameOption,
                 threadedConcurrencyTypeOption
@@ -379,10 +415,17 @@ namespace SqlBuildManager.Console.CommandLine
                 silentOption,
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                resourceGroupOption,
+                subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
                 batchvmsizeOption,
@@ -417,10 +460,17 @@ namespace SqlBuildManager.Console.CommandLine
                 outputFileOption.Copy(true),
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                resourceGroupOption,
+                subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
                 batchvmsizeOption,
@@ -471,17 +521,20 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 secretsFileOption,
                 runtimeFileOption,
+                keyVaultNameOption,
                 jobnameOption,
                 threadedConcurrencyTypeOption,
                 serviceBusconnectionOption,
                 overrideAsFileOption
             };
-            containerEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string,ConcurrencyType,string, FileInfo>(Program.EnqueueContainerOverrideTargets);
+            containerEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,string, string,ConcurrencyType,string, FileInfo>(Program.EnqueueContainerOverrideTargets);
 
+            var pathOption = new Option<DirectoryInfo>("--path", "Path to save secrets.yaml and runtime.yaml files").ExistingOnly();
             var containerSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes container deployments")
             {
                 passwordOption,
                 usernameOption,
+                keyVaultNameOption,
                 storageaccountnameOption,
                 storageaccountkeyOption,
                 eventhubconnectionOption,
@@ -489,9 +542,11 @@ namespace SqlBuildManager.Console.CommandLine
                 serviceBusconnectionOption,
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption,
-                new Option<string>("--prefix", "Settings file's prefix")
+                new Option<string>("--prefix", "Settings file's prefix"),
+                pathOption
+                
             };
-            containerSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string>(Program.SaveContainerSettings);
+            containerSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string, DirectoryInfo>(Program.SaveContainerSettings);
 
             var unitTestOption = new Option<bool>("--unittest", () => false, "Designation that execution is running as a unit test");
             unitTestOption.IsHidden = true;
@@ -500,6 +555,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 secretsFileOption,
                 runtimeFileOption,
+                keyVaultNameOption,
                 jobnameOption,
                 overrideOption,
                 threadedConcurrencyTypeOption,
@@ -507,12 +563,13 @@ namespace SqlBuildManager.Console.CommandLine
                 eventhubconnectionOption, 
                 unitTestOption
             };
-            containerMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,CommandLineArgs, bool>(Program.MonitorContainerRuntimeProgress);
+            containerMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool>(Program.MonitorContainerRuntimeProgress);
 
             var containerPrepCommand = new Command("prep", "Creates a storage container and uploads the SBM package file that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values")
             {
                 secretsFileOption,
                 runtimeFileOption,
+                keyVaultNameOption,
                 jobnameOption,
                 storageaccountnameOption,
                 storageaccountkeyOption,
@@ -520,17 +577,18 @@ namespace SqlBuildManager.Console.CommandLine
                 forceOption
 
             };
-            containerPrepCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, string, string, string, bool>(Program.UploadContainerBuildPackage);
+            containerPrepCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, string, string, string, string, bool>(Program.UploadContainerBuildPackage);
 
             var containerDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
                 secretsFileOption,
                 runtimeFileOption,
+                keyVaultNameOption,
                 jobnameOption,
                 threadedConcurrencyTypeOption,
                 serviceBusconnectionOption
             };
-            containerDequeueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, ConcurrencyType, string>(Program.DequeueContainerOverrideTargets);
+            containerDequeueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, string, ConcurrencyType, string>(Program.DequeueContainerOverrideTargets);
 
 
 
@@ -680,7 +738,8 @@ namespace SqlBuildManager.Console.CommandLine
             };
             createBackoutCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateBackout);
 
-
+            var authCommand = new Command("auth", "test auth");
+            authCommand.Handler = CommandHandler.Create(Program.TestAuth);
 
             RootCommand rootCommand = new RootCommand(description: "Tool to manage your SQL server database updates and releases");
             rootCommand.Add(logLevelOption);
@@ -699,6 +758,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(synchronizeCommand);
             rootCommand.Add(scriptExtractCommand);
             rootCommand.Add(containerCommand);
+            rootCommand.Add(authCommand);
     
 
             return rootCommand;

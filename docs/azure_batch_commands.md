@@ -6,19 +6,20 @@
 `sbm batch savesettings [options]`\
 This utility action will save a reusable JSON file to make running the command line easier for Batch processing.
 
-The next time you run a build action, use the `--settingsfile="<file path>"` in place of the arguments below.
+The next time you run a build action, use the `--settingsfile="<file path>"` in place of the arguments below. If you provide a `--keyvaultname` parameter value, the secrets will be saved to the specified Azure Key Vault and _not_ saved to the settings file. If you use this, you first must connect to Azure via the `az login` CLI command.
 
 Can also optionally provide a `--settingsfilekey` value to provide a custom encryption key for encryption of the sensitive values (listed below). The value for the `--settingsfilekey`  can be either the encryption key itself or the path to a text file containing the key.
 
+- 
 - Authentication: `--username`, `--password`
-- Azure Batch: `--batchnodecount`, `--batchaccountname`, `--batchaccountkey`, `--batchaccounturl`, `--storageaccountname`, `--storageaccountkey`, `--batchvmsize`, `--deletebatchpool`, `--deletebatchjob`, `--pollbatchpoolstatus`, `--eventhubconnectionstring`
+- Azure Batch: `--batchnodecount`, `--batchaccountname`, `--batchaccountkey`, `--batchaccounturl`, `--storageaccountname`, `--storageaccountkey`, `--batchvmsize`, `--deletebatchpool`, `--deletebatchjob`, `--pollbatchpoolstatus`, `--eventhubconnectionstring`, `--servicebustopicconnection`
 - Run time settings: `--rootloggingpath`, `--logastext`, `--concurrency`, `--concurrencytype`
 
 _Note:_
 
-1. the values for `--username`, `--password`, `--batchaccountkey`, `--storageaccountkey` and  `--eventhubconnectionstring` will be encrypted. Use a `--settingsfilekey` value to manage encryption
+1. the values for `--username`, `--password`, `--batchaccountkey`, `--storageaccountkey`, `--servicebustopicconnection` and  `--eventhubconnectionstring` will be encrypted. Use a `--settingsfilekey` value to manage encryption or use `--keyvaultname` to save them to Azure Key Vault
 2. If there are duplicate values in the `--settingsfile` and the command line, the command line argument will take precedence.
-3. You can hand-craft the JSON yourself in the [format below](#settings-file-format) but the password and keys will not be encrypted (which may be OK depending on where you save the files)
+
 
 ## Pre-Stage Batch nodes
 
@@ -70,37 +71,3 @@ _Note:_ You can also leverage the [--settingsfile](#azure-batch-save-settings) a
 - `--batchaccounturl="<batch acct url>"` - URL for the Azure Batch account [can also be set via BatchAccountUrl app settings key]
 - `--pollbatchpoolstatus=(true|false)` - Whether or not you want to get updated status (true, default) or fire and forget (false)
 
-## Settings File Format
-
-The format for the saved settings JSON file is below. You can include or exclude any values that would like. Also as a reminder, for any duplicate keys found in the settings file and command line arguments, the command line argument's value will be used.
-
-```json
-{
-  "AuthenticationArgs": {
-    "UserName": "<database use name>",
-    "Password": "<database password>"
-  },
-  "BatchArgs": {
-    "BatchNodeCount": "<int value>",
-    "BatchAccountName": "<batch account name>",
-    "BatchAccountKey": "<key for batch account ",
-    "BatchAccountUrl": "<https URL for batch account>",
-    "StorageAccountName": "<storage account name>",
-    "StorageAccountKey": "<storage account key>",
-    "BatchVmSize": "<VM size designator>",
-    "DeleteBatchPool": "<true|false>",
-    "DeleteBatchJob": "<true|false>",
-    "PollBatchPoolStatus": "<true|false>",
-    "EventHubConnectionString": "<connection string to EventHub (optional)>",
-    "BatchPoolName": "[SqlBuildManagerPoolWindows or SqlBuildManagerPoolLinux]",
-    "BatchPoolOs": "[Windows or Linux]",
-    "ApplicationPackage": "<name of the application package to use>",
-    "ServiceBusTopicConnectionString" : "<connection string to Service Bus Topic (optional)>"
-  },
-  "RootLoggingPath": "<valid folder path>",
-  "DefaultScriptTimeout" : "<int>",
-  "TimeoutRetryCount" : "<int>",
-  "Concurrency": "<int value>",
-  "ConcurrencyType": "[Count | Server | MaxPerServer]"
-}
-```

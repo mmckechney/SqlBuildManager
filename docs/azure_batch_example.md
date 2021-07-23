@@ -1,15 +1,21 @@
 # Azure Batch execution example
 Below is an end-to-end example of running an Azure Batch build. This assumes that you have already created your batch account and uploaded your code package. If you have not, please refer follow the instructions found [here](./azure_batch.md)
 
+## 0. Connect to your Azure Account
+
+``` bash 
+az login
+```
+
 ## 1. Save your batch settings to a `--settingsfile`
-This only needs to be run once and this file can be reused for future builds as long as you don't change any keys or passwords. By creating this file now, you greatly simplify the subsequent commands.
+This only needs to be run once and this file can be reused for future builds as long as you don't change any keys or passwords. By creating this file now, you greatly simplify the subsequent commands. If you include the `--keyvault` option, the secrets will be saved in Azure Key vault and not the settings file. You can also simplify the collection of the various keys and connection strings and saving by using the PowerShell script [create_batch_settingsfiles.ps1](../scripts/templates/create_batch_settingsfiles.ps1)
 
 Replace the sample values with your own account values and keys
 
 ```bash
  sbm batch savesettings ^
     --settingsfile "C:\temp\my_settings.json" ^
-    --settingsfilekey [ "C:\opt\path_to_key_file.txt" or "key string"] ^
+    --settingsfilekey [ "C:\opt\path_to_key_file.txt" or "key string"] ^ # or --keyvault "<key vault name>"
     --username myusernameId ^
     --password SuperSecurePassword ^
     --batchnodecount 2 ^
@@ -32,6 +38,10 @@ This will create the VMs and get them ready to accept a build. Doing this in adv
 
 ``` bash
 sbm batch prestage --settingsfile "C:\temp\my_settings.json" --settingsfilekey [ "C:\opt\path_to_key_file.txt" or "key string"]
+
+# or
+
+sbm batch prestage --settingsfile "C:\temp\my_settings.json" --keyvaultname "<key vault name>"
 ```
 
 ## 3. Queue your database targets
@@ -43,7 +53,7 @@ This will send the database targets to the Service Bus Topic named `sqlbuildmana
 ``` bash
 sbm batch enqueue ^
     --settingsfile "C:\temp\my_settings.json" ^
-    --settingsfilekey "C:\keys\my-settings-key.txt" ^
+    --settingsfilekey "C:\keys\my-settings-key.txt" ^ # or --keyvault "<key vault name>"
     --override "C:\temp\overrides.cfg" ^
     --concurrencytype MaxPerServer ^
     --batchjobname "Release 27 schema"
@@ -59,7 +69,7 @@ If a database throws an error and rolls back the build, the process will create 
 ```bash
 sbm.exe batch run ^
     --settingsfile "C:\temp\my_settings.json" ^
-    --settingsfilekey "C:\keys\my-settings-key.txt" ^
+    --settingsfilekey "C:\keys\my-settings-key.txt" ^ # or --keyvault "<key vault name>"
     --platinumdacpac "C:\temp\myplatdb.dacpac" ^
     --override "C:\temp\overrides.cfg"
     --batchjobname "Release 27 schema" ^
@@ -73,8 +83,8 @@ If you have data updates to run. Re-populate the Service Bus Topic with your ove
 
 ``` bash
 sbm batch enqueue ^
-    --settingsfile "C:\temp\my_settings.json" ^
-    --settingsfilekey "C:\keys\my-settings-key.txt" ^
+    --settingsfile "C:\temp\my_settings.json" ^ 
+    --settingsfilekey "C:\keys\my-settings-key.txt" ^ # or --keyvault "<key vault name>"
     --override "C:\temp\overrides.cfg" ^
     --concurrencytype MaxPerServer ^
     --batchjobname "Release 27 data" 
@@ -87,7 +97,7 @@ This command will run data updates - for example fact/lookup table values or dat
 ```bash
 sbm.exe batch run ^
     --settingsfile "C:\temp\my_settings.json" ^
-    --settingsfilekey "C:\keys\my-settings-key.txt" ^
+    --settingsfilekey "C:\keys\my-settings-key.txt" ^ # or --keyvault "<key vault name>"
     --packagename "myBuildPackage.sbm" ^
     --batchjobname "Release 27 data" ^
     --concurrencytype MaxPerServer ^
@@ -102,5 +112,5 @@ Once you have completed your build via Azure Batch, you should delete your compu
 ```bash
 sbm.exe batch cleanup ^
     --settingsfile "C:\temp\my_settings.json"  ^
-    --settingsfilekey "C:\keys\my-settings-key.txt"
+    --settingsfilekey "C:\keys\my-settings-key.txt" # or --keyvault "<key vault name>"
 ```

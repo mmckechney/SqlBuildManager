@@ -1,6 +1,7 @@
 ﻿# Leveraging Azure Batch for database builds
 
 - [Why use Azure Batch?](#why-use-azure-batch)
+  - [Process Flow](massively_parallel.md#batch-process-flow)
 - [Getting Started](#getting-started)
 - [Upload or Update SQL Build Manager binaries](#upload-or-update-sql-build-manager-binaries)
 - [Running a Batch Build](#running-a-batch-build)
@@ -18,7 +19,7 @@ To leverage Azure Batch, you will need an [Azure subscription](https://azure.mic
 
 ## Get Started
 
-1. [Set Up you Azure resources](azure_batch_resources.md) - use a pre-built script to deploy your resources, upload a local build, and save your `--settingsfile`
+1. Set Up you Azure resources. For this, leverage the automation script as explained [here](massively_parallel.md)
 2. [Upload SQL Build Manager binaries](#upload-or-update-sql-build-manager-binaries) to Batch - if you ran the scripts from step 1, you have already uploaded a local build!
 3. [Run a Batch build](#running-a-batch-build) 
 
@@ -39,7 +40,7 @@ To leverage Azure Batch, you will need an [Azure subscription](https://azure.mic
 
 ## Upload or Update SQL Build Manager binaries
 
-**_Note_**: If you ran the scripts from [here](azure_batch_resources.md) to upload a local build, you can re-run  `deploy_azure_resources.ps1` at any time (using the same parameter values) to easily update the code package
+**_Note_**: If you ran the scripts from [here](azure_batch_resources.md) to upload a local build, you can re-run  `create_azure_resources.ps1` at any time (using the same parameter values) to easily update the code package
 
 But, if you want to do it manually:
 
@@ -69,9 +70,9 @@ Azure Batch builds are started locally via `sbm.exe`. This process communicates 
 
 ### Settings File
 
-While all of the values can be provided as arguments in the command line, it is strongly suggested you leverage `--settingsfile` and `--settingsfilekey`. The settings JSON file is created for you via [`Create_SettingsFile.ps1`](templates/Create_SettingsFile.ps1) which will collect all of the necessary keys and connection strings for your Azure resources.
+While all of the values can be provided as arguments in the command line, it is strongly suggested you leverage `--settingsfile` and `--settingsfilekey` (the `--settingsfilekey` parameter is not required if you are leveraging `--keyvaultname`). A settings JSON file was created for you via [`create_azure_resources.ps1`](../scripts/templates/create_azure_resources.ps1) but can also be re-created for any set of Azure resources via [`create_batch_settingsfile.ps1`](../scripts/templates/create_batch_settingsfiles.ps1)
 
-You can also build it by executing `sbm batch savesettings` command and providing the appropriate arguments. See the argument details [here](azure_batch_commands.md#azure-batch-save-settings)
+You can also build it manually by executing `sbm batch savesettings` command and providing the appropriate arguments. See the argument details [here](azure_batch_commands.md#azure-batch-save-settings)
 
 ### 1. Pre-stage the Azure Batch pool VMs
 

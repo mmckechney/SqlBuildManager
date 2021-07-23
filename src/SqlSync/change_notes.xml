@@ -2,6 +2,9 @@
 <SqlBuildManagerChangeNotes>
 	<Version Major="14" Minor="0" Revision="0">
 		<added>You now use Kubernetes as a compute platform for leveraging database builds with the new `sbm container` commands. See the [Kubernetes documentation](kubernetes.md) for background, information and how-to examples</added>
+		<added>New Azure Key Vault integration -- secrets can now be stored in Key Vault and no longer need to be stored in the settings file or passed via commandline. See the [documentation here](massively_parallel.md) </added>
+		<updated>Automation scripts `/scripts/templates` have been updated to simplify the creation of Azure resources, runtime, secrets file and pushing secrets to Key Vault</updated>
+		<updated>Batch and Kubernetes now have Managed Identity assigned to allow seamless access to Key Vault</updated>
 	</Version>
 	<Version Major="13" Minor="1" Revision="0">
 		<updated>The `sbm create` command now has four sub-commands `fromscripts`,  `fromdiff`, `fromdacpacs` and `fromdacpacdiff`. See the [Command Line Reference](commandline.md) for details and usage</updated>
