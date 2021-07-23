@@ -17,10 +17,21 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
 }
  
 $keyVaultName = az keyvault list --resource-group sbm4-rg -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
+
 $batchAccountName = az batch account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using batch account name:'$batchAccountName'" -ForegroundColor DarkGreen
+
 $storageAccountName =  az storage account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using storage account name:'$storageAccountName'" -ForegroundColor DarkGreen
+
 $eventHubNamespaceName = az eventhubs namespace list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using Event Hub Namespace name:'$eventHubNamespaceName'" -ForegroundColor DarkGreen
+
 $serviceBusNamespaceName = az servicebus namespace list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -ForegroundColor DarkGreen
+
 $identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
 
 ./create_batch_settingsfiles.ps1 -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -batchAccountName $batchAccountName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword 

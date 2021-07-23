@@ -4,6 +4,14 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
+### **Important change in Version 14+:**
+
+ [Batch node pools](docs/massively_parallel.md) are now created with assigned Managed Identities. Because of this, the workstation running `sbm` needs to have a valid Azure authentication token. This can be done via Azure CLI `az login`, Azure PowerShell `Connect-AzAccount`, or if running from an automation box, ensure that the machine itself has a Managed Identity that has permissions to create Azure. Alternatively, you can pre-create the batch pools manually via the Azure portal, being sure to assign the correct Managed Identity to the pool.
+
+You will also need to be logged into Azure if you are leveraging Azure Key Vault to store your secrets, regardless if you are using [Azure Batch](docs/massively_parallel.md#batch-process-flow) or [Kubernetes](docs/massively_parallel.md#kubernetes-process-flow)
+
+---
+
 ## Contents
 
 - [Key Features](#key-features)

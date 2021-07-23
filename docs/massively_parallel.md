@@ -6,7 +6,7 @@ In both methods, each compute resource is able to manage concurrency to help you
 
 ----
 
-- [Getting started - Building Azure Resources](#getting-started-building-azure-resources)
+- [Getting started - Building Azure Resources](#getting-started---building-azure-resources)
 - [Batch Process Flow](#batch-process-flow)
 - [Kubernetes Process Flow](#kubernetes-process-flow)
 
@@ -66,6 +66,8 @@ The keys, connection strings and passwords can now be stored in Azure Key Vault 
 
 ## Batch Process Flow
 
+For a step by step how-to, see the general [Batch documentation](azure_batch.md)
+
 ![Batch process flow](images/azure_batch_with_keyvault.png)
 
 Running a build using Azure Batch follows the process below. If you do not leverage Azure Key Vault, then the secrets are instead passed to Azure batch from the command line or settings file in step #3. 
@@ -83,6 +85,8 @@ Running a build using Azure Batch follows the process below. If you do not lever
 ----
 
 ## Kubernetes Process Flow
+
+For a step by step how-to, see the general [Kubernetes documentation](kubernetes.md)
 
 ![AKS process flow](images/aks_with_keyvault.png)
 

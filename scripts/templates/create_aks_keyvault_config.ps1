@@ -14,6 +14,8 @@ $tenantId = $context.tenantId
 $userAssignedIdentityName = $identityName
 $userAssignedClientId = az identity list --resource-group $resourceGroupName  -o tsv --query "[?contains(@.name '$identityName')].clientId"
 
+$fileName = Join-Path $path "podIdentityAndBinding.yaml"
+Write-Host("Writing $fileName");
 $azureIdentityBinding= Get-Content "./podIdentityAndBinding_template.yaml"
 $azureIdentityBinding = $azureIdentityBinding.Replace("{{subscriptionId}}", $subscriptionId)
 $azureIdentityBinding = $azureIdentityBinding.Replace("{{userAssignedIdentityName}}", $userAssignedIdentityName)
@@ -21,7 +23,8 @@ $azureIdentityBinding = $azureIdentityBinding.Replace("{{resourceGroupName}}", $
 $azureIdentityBinding = $azureIdentityBinding.Replace("{{userAssignedClientId}}", $userAssignedClientId)
 $azureIdentityBinding | Out-File -FilePath (Join-Path $path "podIdentityAndBinding.yaml")
 
-
+$fileName = Join-Path $path "secretProviderClass.yaml"
+Write-Host("Writing $fileName");
 $providerClass=  Get-Content "./secretProviderClass_template.yaml" 
 $providerClass=  $providerClass.Replace("{{userAssignedClientId}}", $userAssignedClientId)
 $providerClass=  $providerClass.Replace("{{keyVaultName}}", $keyVaultName)

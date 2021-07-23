@@ -13,7 +13,7 @@ $storageAcctKey = (az storage account keys list --account-name $storageAccountNa
 
 $sbNamespaceName = $prefix + "servicebus"
 
-
+Write-Host "Retrieveing list of completed Batch jobs for $batchAccountName "
 $jobs = az batch job list --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey -o tsv --query "[?contains(@.state 'completed')].id"
 foreach ($job in $jobs) {
    
@@ -21,7 +21,7 @@ foreach ($job in $jobs) {
     az batch job delete --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey  --job-id $job --yes
 
     $storageContainerNamePart = ($job -replace "SqlBuildManagerJobLinux_", "") -replace "SqlBuildManagerJobWindows_", ""
-    $storageContainerName = a az storage container list --auth-mode key --account-key "$storageAcctKey" --account-name $storageAccountName  -o tsv --query "[?contains(@.name '$storageContainerNamePart')].name"
+    $storageContainerName = az storage container list --auth-mode key --account-key "$storageAcctKey" --account-name $storageAccountName  -o tsv --query "[?contains(@.name '$storageContainerNamePart')].name"
     Write-Output "Removing storage container : $($storageContainerName)"
     az storage container delete --name $storageContainerName --auth-mode key --account-key "$storageAcctKey" --account-name $storageAccountName
     

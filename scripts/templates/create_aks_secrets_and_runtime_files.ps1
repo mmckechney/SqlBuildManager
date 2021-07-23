@@ -21,9 +21,7 @@ $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list -
 $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" -o tsv --query "[].name"
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
 
-$path = Resolve-Path $path
-
-if($haveSqlInfo)
+if([string]::IsNullOrWhiteSpace($sqlUserName) -eq $false)
 {
     Write-Host "Saving settings file to $path" -ForegroundColor DarkGreen
     ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe container savesettings --path "$path" --username "$sqlUserName" --password "$sqlPassword" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" -sb "$serviceBusConnectionString "  --concurrency 5 --concurrencytype "Count"

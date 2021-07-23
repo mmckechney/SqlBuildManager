@@ -39,7 +39,7 @@ Why `client`?  Inside the `.sbm` file, there is a default database target set to
 
 If the `--override` setting is provided but there isn't a `--servicebustopicconnection` value, the runtime will use this file directly to update the database and/or distribute traffic for `threaded` and `batch`. It is important to also understand the impact of [concurrency options](concurrency_options.md).
 
-**NOTE:** The Kubetnetes `sbm container` command only uses the Service Bus Topic option at runtime. 
+***NOTE:** The Kubernetes `sbm container` command only uses the Service Bus Topic option at runtime.* 
 
 ----
 
