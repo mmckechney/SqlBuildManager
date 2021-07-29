@@ -32,7 +32,7 @@ To get started leveraging Batch or Kubernetes, you first need to create and conf
     There are additional optional parameters you can set:
 
     - `-build` - whether or not to build the `sbm` command line code in the `sbm.csproj` file and upload it to the Azure Batch account
-    - `-deployAks` - whether or not to build the AKS cluster and create the `secrets.yaml` and `runtime.yaml` files. If you don't plan on using Kubernetes, you can set this to `$false`
+    - `-deployAks` - whether or not to build the AKS cluster and create a `runtime.yaml`file and a `secrets.yaml` file (for use when using locally saved secrets) and `podIdentityAndBinding.yaml` and `secretProviderClass.yaml` files (when secrets are stored in Key Vault). If you don't plan on using Kubernetes, you can set this to `$false`
 
 ### What does the script do?
 
@@ -40,27 +40,24 @@ The `create_azure_resources.ps1` script will create the following resources whic
 
 - Storage Account (`{prefix}storage`) - this account is used for all of the runtime logs files and a staging location for the Kubernetes build package
 - Service Bus Namespace and Topic (`{prefix}servicebus` and `sqlbuildmanager` respectively) - this is the Topic where the database target messages are sent and used by both Batch and Kubernetes
-- EventHub Namespace and EventHug (`{prefix}eventhubnamespace` and `{prefix}eventhub` respectively) - used for progress event tracking in Kubernetes and can also be used for Batch
+- EventHub Namespace and EventHub (`{prefix}eventhubnamespace` and `{prefix}eventhub` respectively) - used for progress event tracking in Kubernetes and can also be used for Batch
 - Key Vault (`{prefix}keyvault`) - used to store the secrets to access the storage account, service bus, event hub and databases at runtime
 - Managed Identity (`{prefix}identity`) - the identity used by both Kubernetes and Batch to access the secrets in the Key Vault
-- AKS Cluster (`{prefix}aks`) - a managed Kubernetes cluster with 2 worker nodes for running container database builds. 
+- AKS Cluster (`{prefix}aks`) - a managed Kubernetes cluster with 2 worker nodes for running container database builds. You can increase the worker node count as needed.
 - Batch Account (`{prefix}batchacct`) - a Batch account used to process database builds. Pre-configured with two applications `SqlBuildManagerLinux` and `SqlBuildManagerWindows` that have the local build of the console app uploaded to each respective OS target. Also pre-configured to use the Managed Identity
 - 2 Azure SQL Servers (`{prefix}sql-a` and `{prefix}sql-b`) each with `-testDatabaseCount` number of databases.These can be used for integration testing from `SqlBuildManager.Console.ExternalTest.csproj`
 
 In addition to creating the resources above it will create the following files in the `outputPath` location folder:
 
-1. `settingsfile-*.json` - batch settings files that contains all of the SQL, Batch, Storage and Service Bus endpoints and connection keys for use in testing. there will also be two files ending with `-keyvault.json` that will not contain any secrets, but will instead contain the Key Vault name. The secrets will also have been saved to the Key Vault.
+1. `settingsfile-*.json` - batch settings files that contains all of the SQL, Batch, Storage and Service Bus endpoints and connection keys for use in testing. There will also be two files ending with `-keyvault.json` that will not contain any secrets, but will instead contain the Key Vault name. The secrets will also have been saved to the Key Vault.
 2. `settingsfilekey.txt` - a text file containing the encryption key for the settings files
-3. `secrets.yaml` - secrets file containing the the keys, connection strings and password used by Kubernetes. This file is not needed if using Key Vault 
+3. `secrets.yaml` - secrets file containing the the Base64 encoded keys, connection strings and password used by Kubernetes. This file is not needed if using Key Vault.
 4. `runtime.yaml` - runtime files template for Kubernetes builds
 5. `secretsProviderClass.yaml` - the Azure Key vault `SecretProviderClass` configuration set up with the Key Vault name and Managed Identity information. Used by Kubernetes when leveraging Key Vault
 6. `podIdentityAndBinding.yaml` - the Azure Key vault `AzureIdentity` and `AzureIdentityBinding` configuration set up  with the Key Vault name and Managed Identity information. Used by Kubernetes when leveraging Key Vault
-7. `databasetargets.cfg` - a pre-configured database listing file for use in a Batch, Kubernetes or threaded execution targeting the SQL Azure databases just created
+7. `databasetargets.cfg` - a pre-configured database listing file for use in a Batch, Kubernetes or threaded execution targeting the SQL Azure databases just created. This is used by the integration tests
 
 **IMPORTANT:** These files can be used _as is_ for the integration testing but are also great reference examples of how to create your own files for production use
-
-
-The keys, connection strings and passwords can now be stored in Azure Key Vault rather than saving the encrypted values in a settings file or being passed in via the command line. Regardless if you use Batch or Kubernetes, this integration is enabled by leveraging [User Assigned Managed Identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-manage-user-assigned-managed-identities). To easily accomplish this setup, there are a set of PowerShell scripts in the [`scripts/templates` folder](../../scripts/templates).
 
 ----
 
@@ -68,11 +65,12 @@ The keys, connection strings and passwords can now be stored in Azure Key Vault 
 
 For a step by step how-to, see the general [Batch documentation](azure_batch.md)
 
+Running a build using Azure Batch follows the process below. If you do not leverage Azure Key Vault, then the secrets are instead passed to Azure batch from the command line or settings file in step #3. 
 ![Batch process flow](images/azure_batch_with_keyvault.png)
 
-Running a build using Azure Batch follows the process below. If you do not leverage Azure Key Vault, then the secrets are instead passed to Azure batch from the command line or settings file in step #3. 
 
-0. Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault. 
+
+0. Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault as well as be used to configure the Batch Pool nodes. 
 1. Keys, Connection strings and passwords saved in Azure Key Vault with `sbm batch savesettings -kv`. You can also save the secrets to Key Vault in any other fashion you'd like. The secret names are: `StorageAccountKey`, `StorageAccountName`, `EventHubConnectionString`,`ServiceBusTopicConnectionString`, `UserName` (for SQL Server username), `Password` (for SQL Server password), `BatchAccountKey`. This will only need to be done once as long as your secrets do not change.
 2. Database targets are sent to Service Bus Topic with `sbm batch enqueue`
 3. Batch execution is started with `sbm batch run`. You can pre-stage the worker nodes with `sbm batch prestage`
@@ -88,18 +86,20 @@ Running a build using Azure Batch follows the process below. If you do not lever
 
 For a step by step how-to, see the general [Kubernetes documentation](kubernetes.md)
 
+Running a build using Kubernetes follows the process below. If you do not leverage Azure Key Vault, then the secrets are instead passed to Kubernetes using the `secrets.yaml` file
+
 ![AKS process flow](images/aks_with_keyvault.png)
 
-Running a build using Kubernetes follows the process below. If you do not leverage Azure Key Vault, then the secrets are instead passed to Kubernetes using the `secrets.yaml` file
+
 
 0. Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault. 
 1. Keys, Connection strings and passwords saved in Azure Key Vault with `sbm container savesettings -kv`. You can also save the secrets to Key Vault in any other fashion you'd like. The secret names are: `StorageAccountKey`, `StorageAccountName`, `EventHubConnectionString`,`ServiceBusTopicConnectionString`, `UserName` (for SQL Server username), `Password` (for SQL Server password). This will only need to be done once as long as your secrets do not change.
-2. The .sbm package file is uploaded to Blob Storage via `sbm container prep`
+2. The `.sbm` package file is uploaded to Blob Storage via `sbm container prep`
 3. Database targets are sent to Service Bus Topic with `sbm batch enqueue`
 4. The containers are started via `kubectl`
    - `kubectl apply -f runtime.yaml` - this sets the runtime settings for the containers (.sbm package name, job name and concurrency settings)
-   - `kubectl apply -f secretProviderClass.yaml` - configuration setting up the managed identity
-   - `kubectl apply -f podIdentityAndBinding.yaml` - configuration to bind the managed identity to the pods
+   - `kubectl apply -f secretProviderClass.yaml` - configuration setting up the managed identity. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/create_aks_keyvault_config.ps1) to create the config for you
+   - `kubectl apply -f podIdentityAndBinding.yaml` - configuration to bind the managed identity to the pods. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/create_aks_keyvault_config.ps1) to create the config for you
    - `kubectl apply -f basic_deploy_keyvault.yaml` - deployment to create the pods. You can find an example deployment configuration in [sample_deployment_keyvault.yaml](../scripts/templates/kubernetes/sample_deployment_keyvault.yaml) 
 5. The pods, leveraging the Managed Identity assigned to them when they were created, accessed the Key Vault and retrieves the secrets
 6. The pods start processing messages from the Service Bus Topic...

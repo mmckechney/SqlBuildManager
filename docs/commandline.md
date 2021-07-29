@@ -65,8 +65,8 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 For examples of each, see the [Kubernetes documentation](kubernetes.md)
 
-- `savesettings` - Saves settings to `secrets.yaml` and `runtime.yaml` files for Kubernetes container deployments
-- `prep` - Creates a storage container and uploads the SBM package file that will be used for the build. If the `--runtimefile` option is provided, it will also update that file with the updated values
+- `savesettings` - Saves settings to `secrets.yaml` and `runtime.yaml` files for Kubernetes container deployments. You can also leverage [Azure Key Vault](kubernetes.md#environment-setup) to manage secrets, eliminating the local file containing passwords, connection strings, etc.
+- `prep` - Creates a storage container and uploads the SBM package file that will be used for the build. If the `--runtimefile` option is provided, it will also update that file with the appropriate values
 - `enqueue` - Sends database override targets to Service Bus Topic
 - `monitor` - Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)
 - `dequeue`- Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them

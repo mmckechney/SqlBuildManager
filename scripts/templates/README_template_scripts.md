@@ -28,7 +28,7 @@ You can change this behavior by providing a `-testDatabaseCount` value of 0 (zer
 And finally it will:
 
 - Build the code (both Windows and Linux targets) and publish the packages to the Azure Batch account (skip this step with `-build $false`)
-- Create Batch settings files, Kubernetes secrets and runtime files, and database target configuration files (used in integration testing)
+- Create Batch settings files, Kubernetes secrets and runtime files, and database target configuration files (used in integration testing and can be used a great reference when creating your own files
 
 ----
 
@@ -77,12 +77,12 @@ Creates the `secrets.yaml` and `runtime.yaml` file used by a container/Kubernete
 
 ### create_batch_settingsfiles_fromprefix.ps1
 
-Creates 4 Azure batch `settings-*.json` files that include the secrets and values for the Azure resources created in the target resource group with the target name prefix. To specify your own resource names, use `create_batch_settingsfiles.ps1`
+Creates 6 Azure batch `settings-*.json` files that include the secrets and values for the Azure resources created in the target resource group with the target name prefix. To specify your own resource names, use `create_batch_settingsfiles.ps1`
 
 ----
 ### create_database_firewall_rule.ps1
 
-By default, creates firewall rules for the Azure SQL databases created in the target resource group that match the current machine public IP address. Can also be used to create a rule for a specific IP address by adding the `-ipAddress` parameter
+By default, creates firewall rules for the Azure SQL databases created in the target resource group that match the current machine public IP address. Can also be used to create a rule for a specific IP address by adding the `-ipAddress` parameter. This is useful when running integration tests from your local machine.
 
 ----
 

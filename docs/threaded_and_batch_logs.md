@@ -1,9 +1,10 @@
 # Log Files Details for Threaded,  Batch and Containers execution
 
-Whether running a `threaded` or `batch` run, the tooling will create several log files for you reference, auditing and troubleshooting. 
+Whether running a `threaded`, `batch` or `container` run, the tooling will create several log files for you reference, auditing and troubleshooting. 
 
 - For a `threaded run` these logs will be located in the current directory or in the path designated by the `--rootloggingpath` argument
-- For a `batch run` the logs will be stored in the Azure Storage account associated with the Batch account. You can view the logs in several ways, including the the [Azure portal](http://portal.azure.com), [Azure Batch Explorer](https://azure.github.io/BatchExplorer/) and [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/). 
+- For a `batch run` the logs will be stored in the Azure Storage account associated with the Batch account. You can view the logs in several ways, including the the [Azure portal](http://portal.azure.com), [Azure Batch Explorer](https://azure.github.io/BatchExplorer/) and [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
+- For `container` runs on Kubernetes, the logs will be stored in Azure storage that you can access with the  [Azure portal](http://portal.azure.com) or [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
 
 ----
 
@@ -39,7 +40,7 @@ sqllab2-a.database.windows.net:SqlBuildTest,SqlBuildTest002
 
 For a quick reference, three high-level log files are created: `commits.log`,   `errors.log`, and `SqlBuildManager.ThreadedExecution.log`. The `commits.log` and `errors.log` files contain the top level success (commits) and failures (error) logs, including: time stamp, run id (a unique value for a single database build), server name, database name, and final return code for the database run (Committed, Rolled Back, etc.).
 
-_NOTE_The second column in each of the samples below is the unique "run id" for the build and can be correlated across all log files for a specific build run.
+_NOTE:_ The second column in each of the samples below is the unique "run id" for the build and can be correlated across all log files for a specific build run.
 
 Sample contents for `commits.log`
 

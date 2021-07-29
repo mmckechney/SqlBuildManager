@@ -8,6 +8,8 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
  [Batch node pools](docs/massively_parallel.md) are now created with assigned Managed Identities. Because of this, the workstation running `sbm` needs to have a valid Azure authentication token. This can be done via Azure CLI `az login`, Azure PowerShell `Connect-AzAccount`, or if running from an automation box, ensure that the machine itself has a Managed Identity that has permissions to create Azure. Alternatively, you can pre-create the batch pools manually via the Azure portal, being sure to assign the correct Managed Identity to the pool.
 
+The keys, connection strings and passwords can now be stored in Azure Key Vault rather than saving the encrypted values in a settings file or being passed in via the command line. Regardless if you use Batch or Kubernetes, this integration is enabled by leveraging [User Assigned Managed Identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-manage-user-assigned-managed-identities). To easily accomplish this setup, there are a set of PowerShell scripts in the [`scripts/templates` folder](../scripts/templates). A complete environment can be created with [`create_azure_resources.ps1`](../scripts/templates/create_azure_resources.ps1)
+
 You will also need to be logged into Azure if you are leveraging Azure Key Vault to store your secrets, regardless if you are using [Azure Batch](docs/massively_parallel.md#batch-process-flow) or [Kubernetes](docs/massively_parallel.md#kubernetes-process-flow)
 
 ---
@@ -43,7 +45,7 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
 - Automatic logging and version tracking of scripts on a per-server/per-database level
 - Full SHA-1 hashing of individual scripts and complete `.sbm` package files to ensure integrity of the scripts
 - Execution of a build package (see below) is recorded in the database for full tracking of update history, script validation and potential rebuilding of packages
-- Massively parallel execution across thousands of databases utilizing local threading or an Azure Batch execution
+- Massively parallel execution across thousands of databases utilizing local threading or an [Azure Batch or Kubernetes remote execution](docs/massively_parallel.md)
 
 # The Basics
 
@@ -96,9 +98,7 @@ There are several ways to create a build package from the command line.  Which y
 
 [Command line reference](docs/commandline.md)
 
-1. From a DACPAC file using the `sbm scriptextract` command. This method leverages a DACPAC that was created against your "Platinum Database" (why platinum? because it's even more precious than gold!). The Platinum database should have the schema that you want all of your other databases to look like. (don't have a DACPAC created, don't worry, you can create one with the `sbm dacpac` command) 
-
-2. From various sources using `sbm create`. There are four sub-commands to help create an SBM package:
+1. From various sources using `sbm create`. There are four sub-commands to help create an SBM package:
 
    - `fromscripts` - Creates an SBM package or SBX project file from a list of scripts (type is determined by file extension: .sbm or .sbx)
    - `fromdiff` - Creates an SBM package from a calculated diff between two databases (you provide the server and database names, and it connects them them and generates the diff scripts)
@@ -107,11 +107,12 @@ There are several ways to create a build package from the command line.  Which y
 
    Learn more about DACPACs and [data-tier applications](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications?view=sql-server-2017)  method.
 
-3. From an SBX file. What is this? An SBX file is an XML file in the format of the `SqlSyncBuildProject.xml` file (see above) that has an `.sbx` extension. When you use the `sbm package` command, it will read the `.sbx` file and create the `.sbm` file with the referenced scripts.
-4. An SBM package file can be created indirectly as well, using the `sbm threaded run` and `sbm batch run` commands along with the `--platinumdbsource="<database name>"` and `--platinumserversource="<server name>"` the app will generate a DACPAC from the source database which will then be used to generate an SBM at run time to build directly on your target(s).
-5. You can also add new scripts to an existing SBM package or SBX project file using `sbm add`
+2. From an SBX file. What is this? An SBX file is an XML file in the format of the `SqlSyncBuildProject.xml` file (see above) that has an `.sbx` extension. When you use the `sbm package` command, it will read the `.sbx` file and create the `.sbm` file with the referenced scripts.
+3. An SBM package file can be created indirectly as well, using the `sbm threaded run` and `sbm batch run` commands along with the `--platinumdbsource="<database name>"` and `--platinumserversource="<server name>"` the app will generate a DACPAC from the source database which will then be used to generate an SBM at run time to build directly on your target(s).
+4. You can also add new scripts to an existing SBM package or SBX project file using `sbm add`
+5. From a DACPAC file using the `sbm scriptextract` command. This method leverages a DACPAC that was created against your "Platinum Database" (why platinum? because it's even more precious than gold!). The Platinum database should have the schema that you want all of your other databases to look like. (don't have a DACPAC created, don't worry, you can create one with the `sbm dacpac` command) 
 
-_NOTE:_ The `sbm scriptextract` method is being deprecated in favor of `sbm create fromdacpacdiff` and will be removed in a future release
+**_NOTE:_** The `sbm scriptextract` method is being deprecated in favor of `sbm create fromdacpacdiff` and will be removed in a future release
 
 ----
 

@@ -4,6 +4,7 @@
   - [Process Flow](massively_parallel.md#kubernetes-process-flow)
 - [Getting Started](#getting-started)
   - [Container Image](#container-image)
+  - [Environment Setup](#environment-setup)
   - [Basic Overview](#basic-overview)
 - [Example and How To](#example-and-how-to)
 
@@ -29,9 +30,9 @@ docker build -f Dockerfile .. -t sqlbuildmanager:latest
 
 ### Environment Setup
 
-As mentioned above, in addition to a Kubernetes cluster, the Kubernetes deployment leverages [Azure Service Bus](https://azure.microsoft.com/en-us/services/service-bus/) and [Azure Event Hub](https://azure.microsoft.com/en-us/services/event-hubs). You can create your own resources either through the Azure portal, az cli or PowerShell. The only special configuration is with Azure Service Bus which requires a Topic named `sqlbuildmanager`.
+As mentioned above, in addition to a Kubernetes cluster, the Kubernetes deployment leverages [Azure Service Bus](https://azure.microsoft.com/en-us/services/service-bus/) and [Azure Event Hub](https://azure.microsoft.com/en-us/services/event-hubs). You can create your own resources either through the [Azure portal](https://portal.azure.com), [az cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) or [Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/). The only special configuration is with Azure Service Bus which requires a Topic named `sqlbuildmanager`.
 
-Alternatively, you can create the resources via the included PowerShell [create_azure_resources.ps1](../scripts/templates/create_azure_resources.ps1). This script will create all of the resources you need for both Azure Batch and Kubernetes builds: Azure Batch Account, Kubernetes Cluster, Storage Account, Event Hub, Service Bus, 2 SQL servers and 20 databases in elastic pools. It will also create a new folder and pre-configured settings files in a folder `./src/TestConfig`. This is needed for running unit tests as well. 
+It is recommended that you can create the resources via the included PowerShell [create_azure_resources.ps1](../scripts/templates/create_azure_resources.ps1). This script will create all of the resources you need for both Azure Batch and Kubernetes builds: Azure Batch Account, Kubernetes Cluster, Storage Account, Event Hub, Service Bus, Managed Identity and an option for 2 SQL servers and 20 databases in elastic pools. It will also create a new folder and pre-configured settings files in a folder `./src/TestConfig`. The settings files are needed for running integration tests but also serve as excellent references for you to create your own settings files.
 
 ### Basic Overview
 
@@ -41,9 +42,19 @@ The standard deployment definition for SQL Build Manger (see [sample_deployment.
 sbm container savesettings  -u "<sql username>" -p <sql password> --storageaccountname "<storage acct name>" --storageaccountkey "<storage acct key>"  -eh "<event hub connection string>" -sb "<service bus topic connection string>"--concurrency "<int value>" --concurrencytype "<Count|Server|MaxServer>"
 ```
 
-**NOTE:** If you plan on using Key Vault, you should run these scripts instead and can skip the `sbm container savesettings` step. 
+If you plan on leveraging Azure Key Vault to manage your secrets, you can skip the `sbm container savesettings` step. Instead, you should run these two PowerShell scripts to create the two Kubernetes config files and to save the secrets to Key Vault. 
 - [create_aks_keyvault_config.ps1](../scripts/templates/create_aks_keyvault_config.ps1) - to create `podIdentityAndBinding.yaml` and `secretProviderClass.yaml` 
 - [add_secrets_to_keyvault.ps1](../scripts/templates/add_secrets_to_keyvault.ps1) - save secrets to Azure Key Vault
+
+``` PowerShell
+#create the config files, with the appropriate settings added
+create_aks_keyvault_config.ps1 -path "<path to save the files>" -resourceGroupName "<resource group with the KV and identity>" -keyVaultName "<name of Key Vault>" -identityName "<managed identity name"
+
+#will extact the needed secrets from the resources and save them in Key Vault
+add_secrets_to_keyvault.ps1  -path "<path to sql pw file>" -resourceGroupName "<resource group with your resources>"  -keyVaultName "<name of Key Vault>" -batchAccountName "<name of Batch Account>" -storageAccountName "<name of Storage Account>" -eventHubNamespaceName "<name of Event Hub Namespace>" -serviceBusNamespaceName "<name of Service Bus Namespace>"-sqlUserName "<sql username>" -sqlPassword "<sql password>"
+
+
+```
 
 
 Once the pods are deployed, they will start up as `container worker` by:
@@ -61,7 +72,7 @@ If there are messages on the Service Bus Topic that match the `JobName` from the
 
 ### 0. Remove pre-existing pods
 
-Each pod deployment is specific to particular settings (secrets, jobname and package file). To ensure the running pods are configured properly and ready to pull Service Bus Topic messages, you will need to remove any existing pods. This is true even if you are running the same build twice since the pods are deactivated after a run.
+Each pod deployment is specific to particular settings (secrets, jobname and package file). To ensure the running pods are configured properly and ready to pull Service Bus Topic messages, you will need to remove any existing pods. **_This is true even if you are running the same build twice since the pods are deactivated after a run._**
 
 ``` bash
 az login  #establish a connection to your Azure account
@@ -75,16 +86,18 @@ As explained above in the [Basic Overview](#basic-overview) the pods leverage bo
 ``` bash
 sbm container savesettings  -u "<sql username>" -p "<sql password>" --storageaccountname "<storage acct name>" --storageaccountkey "<storage acct key>"  -eh "<event hub connection string>" -sb "<service bus topic connection string>"--concurrency "<int value>" --concurrencytype "<Count|Server|MaxServer>"
 ```
-
+**Alternatively use the Key Vault PowerShell commands as highlighted above**
 ### 2. Upload your SBM Package file to your storage account
 
 The Kubernetes pods retrieve the build package from Azure storage, this command will create a storage container with the name of the `--jobname` (it will be lower cased and any invalid characters removed) and upload the SBM file to the new container. If you provide the `--runtimefile` value for the runtime YAML file, it will also update the `PackageName` and `JobName` values of the YAML file for you.
 
 ``` bash
+# For deploy using local secrets
 sbm container prep --secretsfile "secrets.yaml" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
+```
 
-# or if you are using Key Vault
-
+``` bash
+# For deploy using Key Vault secrets
 sbm container prep --keyvaultname "<key vault name>" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
 ```
 
@@ -95,10 +108,12 @@ You can use the saved settings files created by `sbm container savesettings` or 
 **IMPORTANT:** If using arguments, the `jobname` and `concurrencytype` values _MUST_ match the values found in the `runtime.yaml` that was deployed to Kubernetes otherwise the messages will not get processed.
 
 ``` bash
+# For deploy using local secrets
 sbm container enqueue --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
+````
 
-# or if you are using Key Vault
-
+``` bash
+# For deploy using Key Vault secrets
 sbm container enqueue --keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 
@@ -107,18 +122,19 @@ sbm container enqueue --keyvaultname "<key vault name>" --runtimefile "<runtime.
 Leveraging the `kubetcl` command line interface, run the `apply` commands for the `secrets.yaml` (this will upload the values for the connection to Azure Service Bus, Event Grid, Storage and databases) and `runtime.yaml` (this will upload the values for the build package name, job name and runtime concurrency options).  Next apply the `deployment.yaml` to create the pods
 
 ``` bash
-# Deploy using local secrets
+# For deploy using local secrets
 kubectl apply -f secrets.yaml
 kubectl apply -f runtime.yaml
 kubectl apply -f sample_deployment.yaml
+kubectl get pods
+```
 
-# or Deploy with Key Vault
+``` bash
+# For deploy using Key Vault secrets
 kubectl apply -f runtime.yaml
 kubectl apply -f secretProviderClass.yaml
 kubectl apply -f podIdentityAndBinding.yaml
 kubectl apply -f sample_deployment_keyvault.yaml
-
-#Verify that the pods are running
 kubectl get pods
 ```
 
@@ -143,10 +159,12 @@ sqlbuildmanager-79fd65cf45-wg2c9   1/1     Running   0          10m
 This command will monitor the number of messages left in the Service Bus Topic and also monitor the Event Hub for error and commit messages.
 
 ``` bash
+# For deploy using local secrets
 sbm container monitor --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
+```
 
-# or if you are using Key Vault
-
+``` bash
+# For deploy using Key Vault secrets
 sbm container monitor --keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 
