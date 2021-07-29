@@ -7,7 +7,6 @@ using SqlBuildManager.Console.CloudStorage;
 using Azure.Storage;
 using System.Threading.Tasks;
 using SqlBuildManager.Console.CommandLine;
-using Microsoft.SqlServer.Management.SqlParser.Metadata;
 using System.Net.Sockets;
 using YamlDotNet.Serialization;
 namespace SqlBuildManager.Console.Container
