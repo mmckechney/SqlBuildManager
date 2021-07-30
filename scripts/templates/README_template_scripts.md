@@ -71,7 +71,7 @@ Creates the `podIdentityAndBinding.yaml` and `secretProviderClass.yaml` configur
 
 ### create_aks_secrets_and_rutime_files_fromprefix.ps1
 
-Creates the `secrets.yaml` and `runtime.yaml` file used by a container/Kubernetes build  that include the secrets and values for the Azure resources created in the target resource group with the target name prefix. To specify your own resource names, use `ccreate_aks_secrets_and_rutime_files.ps1`
+Creates the `secrets.yaml` and `runtime.yaml` file used by a Kubernetes build  that include the secrets and values for the Azure resources created in the target resource group with the target name prefix. To specify your own resource names, use `ccreate_aks_secrets_and_rutime_files.ps1`
 
 ----
 

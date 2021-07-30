@@ -2,6 +2,7 @@ param
 (
     [string] $path,
     [string] $resourceGroupName,
+    [string] $prefix,
     [string] $sqlUserName,
     [string] $sqlPassword
 )

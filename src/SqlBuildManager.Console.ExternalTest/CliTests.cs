@@ -1052,7 +1052,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/basic_deploy.yaml")]
         [DataTestMethod]
-        public void Container_SBMSource_Success(string runtimeFile, string secretsFile, string deployFile)
+        public void Kubernetes_SBMSource_Success(string runtimeFile, string secretsFile, string deployFile)
         {
             var prc = new ProcessHelper();
             secretsFile = Path.GetFullPath(secretsFile);
@@ -1076,7 +1076,7 @@ namespace SqlBuildManager.Console.ExternalTest
            
             //Prep the build
             var args = new string[]{
-                "container",  "prep",
+                "k8s",  "prep",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
                 "--jobname", DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff"),
@@ -1089,7 +1089,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //enqueue the topic messages
             args = new string[]{
-                "container",  "enqueue",
+                "k8s",  "enqueue",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
                 "--override", overrideFile};
@@ -1114,7 +1114,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //monitor for completion
             args = new string[]{
-                "container",  "monitor",
+                "k8s",  "monitor",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
                 "--override", overrideFile,
@@ -1129,7 +1129,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_deploy_keyvault.yaml")]
         [DataTestMethod]
-        public void Container_SBMSource_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
+        public void Kubernetes_SBMSource_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
         {
             var prc = new ProcessHelper();
             secretsProviderFile = Path.GetFullPath(secretsProviderFile);
@@ -1154,7 +1154,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //Prep the build
             var args = new string[]{
-                "container",  "prep",
+                "k8s",  "prep",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
                 "--jobname", DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff"),
@@ -1167,7 +1167,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //enqueue the topic messages
             args = new string[]{
-                "container",  "enqueue",
+                "k8s",  "enqueue",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
                 "--override", overrideFile};
@@ -1195,7 +1195,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //monitor for completion
             args = new string[]{
-                "container",  "monitor",
+                "k8s",  "monitor",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
                 "--override", overrideFile,
@@ -1207,17 +1207,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
 
         }
-        /*
-            kubectl scale deployment sqlbuildmanager --replicas=0
-            sbm container prep --secretsfile secrets.yaml --runtimefile runtime.yaml --jobname "Build15" --packagename "SimpleSelect.sbm"
-            sbm container enqueue  --secretsfile secrets.yaml --runtimefile runtime.yaml --override "databasetargets.cfg"
-            kubectl apply -f secrets.yaml
-            kubectl apply -f runtime.yaml
-            kubectl apply -f basic_deploy.yaml
-            kubectl get pods
-            sbm container monitor  --secretsfile secrets.yaml --runtimefile runtime.yaml --override "databasetargets.cfg"
-
-        */
+  
 
     }
 }

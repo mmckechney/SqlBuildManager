@@ -5,7 +5,7 @@
 - [Build execution actions to update or query databases](#build-execution-actions-to-update-or-query-databases)
 - [Utility Actions](#utility-actions)
 - [Batch sub-commands](#batch-sub-commands)
-- [Container (Kubernetes) sub-commands](#container-kubernetes-sub-commands)
+- [Kubernetes sub-commands](#kubernetes-sub---commands)
 - [Logging](#logging)
 
 ----
@@ -21,7 +21,7 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 - `build` - Performs a standard, local SBM execution via command line ([docs](local_build.md))
 - `threaded` - For updating multiple databases simultaneously from the current machine ([docs](threaded_build.md))
 - `batch` - Commands for setting and executing a batch run using Azure Batch ([docs](azure_batch.md))
-- `container` - Commands for setting and executing a distributed run using Kubernetes ([docs](kubernetes.md))
+- `k8s` - Commands for setting and executing a distributed run using Kubernetes ([docs](kubernetes.md))
 
 ### Utility actions
 
@@ -59,18 +59,18 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 - [`sbm batch prestage`](azure_batch.md#1-pre-stage-the-azure-batch-pool-vms)
 - [`sbm batch cleanup`](azure_batch.md#5-cleanup-post-build)
 
-### Container (Kubernetes) sub-commands
+### Kubernetes sub-commands
 
-`sbm container [command]`
+`sbm k8s [command]`
 
 For examples of each, see the [Kubernetes documentation](kubernetes.md)
 
-- `savesettings` - Saves settings to `secrets.yaml` and `runtime.yaml` files for Kubernetes container deployments. You can also leverage [Azure Key Vault](kubernetes.md#environment-setup) to manage secrets, eliminating the local file containing passwords, connection strings, etc.
+- `savesettings` - Saves settings to `secrets.yaml` and `runtime.yaml` files for Kubernetes pod deployments. You can also leverage [Azure Key Vault](kubernetes.md#environment-setup) to manage secrets, eliminating the local file containing passwords, connection strings, etc.
 - `prep` - Creates a storage container and uploads the SBM package file that will be used for the build. If the `--runtimefile` option is provided, it will also update that file with the appropriate values
 - `enqueue` - Sends database override targets to Service Bus Topic
 - `monitor` - Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)
 - `dequeue`- Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them
-- `worker` - [Used by Kubernetes] Starts the container as a worker - polling and retrieving items from target service bus topic
+- `worker` - [Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus topic
 
 ----
 
@@ -88,4 +88,4 @@ the `--rootloggingpath` flag. For a simple threaded execution, this is a
 single root folder. For a remote server execution, this folder is
 created for each execution server.
 
-### For for details and script run troubleshooting suggestions, see [Log Files Details for Threaded, Batch and Container execution](threaded_and_batch_logs.md)
+### For for details and script run troubleshooting suggestions, see [Log Files Details for Threaded, Batch and Kubernetes execution](threaded_and_batch_logs.md)

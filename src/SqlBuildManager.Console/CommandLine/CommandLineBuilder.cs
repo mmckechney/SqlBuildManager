@@ -511,13 +511,13 @@ namespace SqlBuildManager.Console.CommandLine
             batchCommand.Add(batchDeleteJobsCommand);
 
             /****************************************
-             * Container queue commands 
+             * Kubernetes commands 
              ***************************************/
 
-            var containerWorkerCommand = new Command("worker", "[Used by Kubernetes] Starts the container as a worker - polling and retrieving items from target service bus queue topic");
-            containerWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunContainerQueueWorker);
+            var kubernetesWorkerCommand = new Command("worker", "[Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
+            kubernetesWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunKubernetesQueueWorker);
 
-            var containerEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
+            var kubernetesEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
             {
                 secretsFileOption,
                 runtimeFileOption,
@@ -527,10 +527,10 @@ namespace SqlBuildManager.Console.CommandLine
                 serviceBusconnectionOption,
                 overrideAsFileOption
             };
-            containerEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,string, string,ConcurrencyType,string, FileInfo>(Program.EnqueueContainerOverrideTargets);
+            kubernetesEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,string, string,ConcurrencyType,string, FileInfo>(Program.EnqueueContainerOverrideTargets);
 
             var pathOption = new Option<DirectoryInfo>("--path", "Path to save secrets.yaml and runtime.yaml files").ExistingOnly();
-            var containerSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes container deployments")
+            var kubernetesSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes container deployments")
             {
                 passwordOption,
                 usernameOption,
@@ -546,12 +546,12 @@ namespace SqlBuildManager.Console.CommandLine
                 pathOption
                 
             };
-            containerSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string, DirectoryInfo>(Program.SaveContainerSettings);
+            kubernetesSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string, DirectoryInfo>(Program.SaveKubernetesSettings);
 
             var unitTestOption = new Option<bool>("--unittest", () => false, "Designation that execution is running as a unit test");
             unitTestOption.IsHidden = true;
             
-            var containerMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
+            var kubernetesMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {
                 secretsFileOption,
                 runtimeFileOption,
@@ -563,9 +563,9 @@ namespace SqlBuildManager.Console.CommandLine
                 eventhubconnectionOption, 
                 unitTestOption
             };
-            containerMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool>(Program.MonitorContainerRuntimeProgress);
+            kubernetesMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool>(Program.MonitorKubernetesRuntimeProgress);
 
-            var containerPrepCommand = new Command("prep", "Creates a storage container and uploads the SBM package file that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values")
+            var kubernetesrPrepCommand = new Command("prep", "Creates a storage container and uploads the SBM package file that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values")
             {
                 secretsFileOption,
                 runtimeFileOption,
@@ -577,9 +577,9 @@ namespace SqlBuildManager.Console.CommandLine
                 forceOption
 
             };
-            containerPrepCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, string, string, string, string, bool>(Program.UploadContainerBuildPackage);
+            kubernetesrPrepCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, string, string, string, string, bool>(Program.UploadKubernetesBuildPackage);
 
-            var containerDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
+            var kubernetesDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
                 secretsFileOption,
                 runtimeFileOption,
@@ -588,17 +588,17 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyTypeOption,
                 serviceBusconnectionOption
             };
-            containerDequeueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, string, ConcurrencyType, string>(Program.DequeueContainerOverrideTargets);
+            kubernetesDequeueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, string, ConcurrencyType, string>(Program.DequeueKubernetesOverrideTargets);
 
 
 
-            var containerCommand = new Command("container", "Designator that the program is running in a container");
-            containerCommand.Add(containerSaveSettingsCommand);
-            containerCommand.Add(containerPrepCommand);
-            containerCommand.Add(containerEnqueueTargetsCommand);
-            containerCommand.Add(containerMonitorCommand);
-            containerCommand.Add(containerDequeueTargetsCommand);
-            containerCommand.Add(containerWorkerCommand);
+            var kubernetesCommand = new Command("k8s", "Commands for setting and executing a build running in pods on Kubernetes");
+            kubernetesCommand.Add(kubernetesSaveSettingsCommand);
+            kubernetesCommand.Add(kubernetesrPrepCommand);
+            kubernetesCommand.Add(kubernetesEnqueueTargetsCommand);
+            kubernetesCommand.Add(kubernetesMonitorCommand);
+            kubernetesCommand.Add(kubernetesDequeueTargetsCommand);
+            kubernetesCommand.Add(kubernetesWorkerCommand);
 
 
 
@@ -746,6 +746,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(buildCommand);
             rootCommand.Add(threadedCommand);
             rootCommand.Add(batchCommand);
+            rootCommand.Add(kubernetesCommand);
             rootCommand.Add(createCommand);
             rootCommand.Add(addCommand);
             rootCommand.Add(packageCommand);
@@ -757,7 +758,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(getDifferenceCommand);
             rootCommand.Add(synchronizeCommand);
             rootCommand.Add(scriptExtractCommand);
-            rootCommand.Add(containerCommand);
+
             rootCommand.Add(authCommand);
     
 

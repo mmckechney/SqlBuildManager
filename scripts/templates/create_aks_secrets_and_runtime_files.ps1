@@ -24,12 +24,12 @@ $serviceBusConnectionString = az servicebus topic authorization-rule keys list -
 if([string]::IsNullOrWhiteSpace($sqlUserName) -eq $false)
 {
     Write-Host "Saving settings file to $path" -ForegroundColor DarkGreen
-    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe container savesettings --path "$path" --username "$sqlUserName" --password "$sqlPassword" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" -sb "$serviceBusConnectionString "  --concurrency 5 --concurrencytype "Count"
+    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe k8s savesettings --path "$path" --username "$sqlUserName" --password "$sqlPassword" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" -sb "$serviceBusConnectionString "  --concurrency 5 --concurrencytype "Count"
 }
 else 
 {
 
     Write-Host "Saving settings file to $path" -ForegroundColor DarkGreen
-    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe container savesettings --path "$path" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" -sb "$serviceBusConnectionString "  --concurrency 5 --concurrencytype "Count"
+    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe k8s savesettings --path "$path" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" -sb "$serviceBusConnectionString "  --concurrency 5 --concurrencytype "Count"
 }
 

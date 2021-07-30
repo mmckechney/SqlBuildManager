@@ -141,7 +141,7 @@ An excellent tool for viewing and monitoring your Azure batch accounts and jobs 
 
 ### **Kubernetes**
 
-Using the `sbm container` commands leverages Kubernetes to permit massively parallel updates across thousands of databases. To leverage Kubernetes, you will first need to set up a Kubernetes Cluster. The instructions for this can be found [here](docs/kubernetes.md#).
+Using the `sbm k8s` commands leverages Kubernetes to permit massively parallel updates across thousands of databases. To leverage Kubernetes, you will first need to set up a Kubernetes Cluster. The instructions for this can be found [here](docs/kubernetes.md#).
 
 
 ----

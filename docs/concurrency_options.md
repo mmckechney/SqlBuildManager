@@ -1,6 +1,6 @@
-# Concurrency Options for Threaded, Batch and Kubernetes (`container`) executions
+# Concurrency Options for Threaded, Batch and Kubernetes executions
 
-You can control the level of parallel execution with the combination of two arguments: `--concurrency` and `--concurrencytype`. While their meaning for threaded and batch/container are similar, there are some distinctions and subtleties when used together
+You can control the level of parallel execution with the combination of two arguments: `--concurrency` and `--concurrencytype`. While their meaning for threaded and batch/kubernetes are similar, there are some distinctions and subtleties when used together
 
 
 - [Option Definitions](#option-definitions)
@@ -39,11 +39,11 @@ When running  `sbm threaded run` or `sbm threaded query` the arguments are as de
 
 ## Batch or Kubernetes execution
 
-When running `sbm batch run`,  `sbm batch query` or `sbm container`, you need to consider that you are also running on more than one machine. The concurrency flags are interpreted **_per batch node/ per container_** and this needs to be accounted for when calculating your desired concurrency.
+When running `sbm batch run`,  `sbm batch query` or `sbm k8s`, you need to consider that you are also running on more than one machine. The concurrency flags are interpreted **_per batch node/ per pod_** and this needs to be accounted for when calculating your desired concurrency.
 
-Whether you are distributing your batch or kubernetes load with an `--override` file or `--servicebustopicconnection` (see [details on database targeting options](override_options.md)), the concurrency options are available and perform as described below. However, if using a Service Bus Topic, the overall build may be more efficient as there is a smaller likelihood of nodes/containers going idle.
+Whether you are distributing your batch or kubernetes load with an `--override` file or `--servicebustopicconnection` (see [details on database targeting options](override_options.md)), the concurrency options are available and perform as described below. However, if using a Service Bus Topic, the overall build may be more efficient as there is a smaller likelihood of nodes/pods going idle.
 
-The scenarios below show examples for `batch` execution, but the calculations are the same when running `container`, with the calculation per running Kubernetes pod.
+The scenarios below show examples for `batch` execution, but the calculations are the same when running `k8s`, with the calculation per running Kubernetes pod.
 
 ### Consider the following:
 

@@ -680,7 +680,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static async Task<int> RunContainerQueueWorker(CommandLineArgs cmdLine)
+        internal static async Task<int> RunKubernetesQueueWorker(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
@@ -744,7 +744,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static async Task<int> MonitorContainerRuntimeProgress(FileInfo secretsFile, FileInfo runtimeFile, CommandLineArgs args, bool unittest = false)
+        internal static async Task<int> MonitorKubernetesRuntimeProgress(FileInfo secretsFile, FileInfo runtimeFile, CommandLineArgs args, bool unittest = false)
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             if (runtimeFile != null)
@@ -871,7 +871,7 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static async Task<int> DequeueContainerOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection)
+        internal static async Task<int> DequeueKubernetesOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection)
         {
             bool valid;
             CommandLineArgs cmdLine = new CommandLineArgs();
@@ -887,7 +887,7 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static async Task<int> UploadContainerBuildPackage(FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, string keyvaultname, string jobName, string storageAccountName, string storageAccountKey, bool force)
+        internal static async Task<int> UploadKubernetesBuildPackage(FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, string keyvaultname, string jobName, string storageAccountName, string storageAccountKey, bool force)
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
 
@@ -963,7 +963,7 @@ namespace SqlBuildManager.Console
            System.Console.WriteLine(KeyVault.KeyVaultHelper.GetSecret("sbm3keyvault","StorageAccountName"));
         }
 
-        internal static void SaveContainerSettings(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
+        internal static void SaveKubernetesSettings(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
         {
             var dir = Directory.GetCurrentDirectory();
             if (path != null)

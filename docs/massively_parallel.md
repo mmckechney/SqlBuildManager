@@ -43,7 +43,7 @@ The `create_azure_resources.ps1` script will create the following resources whic
 - EventHub Namespace and EventHub (`{prefix}eventhubnamespace` and `{prefix}eventhub` respectively) - used for progress event tracking in Kubernetes and can also be used for Batch
 - Key Vault (`{prefix}keyvault`) - used to store the secrets to access the storage account, service bus, event hub and databases at runtime
 - Managed Identity (`{prefix}identity`) - the identity used by both Kubernetes and Batch to access the secrets in the Key Vault
-- AKS Cluster (`{prefix}aks`) - a managed Kubernetes cluster with 2 worker nodes for running container database builds. You can increase the worker node count as needed.
+- AKS Cluster (`{prefix}aks`) - a managed Kubernetes cluster with 2 worker nodes for running Kubernetes pods database builds. You can increase the worker node count as needed.
 - Batch Account (`{prefix}batchacct`) - a Batch account used to process database builds. Pre-configured with two applications `SqlBuildManagerLinux` and `SqlBuildManagerWindows` that have the local build of the console app uploaded to each respective OS target. Also pre-configured to use the Managed Identity
 - 2 Azure SQL Servers (`{prefix}sql-a` and `{prefix}sql-b`) each with `-testDatabaseCount` number of databases.These can be used for integration testing from `SqlBuildManager.Console.ExternalTest.csproj`
 
@@ -93,11 +93,11 @@ Running a build using Kubernetes follows the process below. If you do not levera
 
 
 0. Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault. 
-1. Keys, Connection strings and passwords saved in Azure Key Vault with `sbm container savesettings -kv`. You can also save the secrets to Key Vault in any other fashion you'd like. The secret names are: `StorageAccountKey`, `StorageAccountName`, `EventHubConnectionString`,`ServiceBusTopicConnectionString`, `UserName` (for SQL Server username), `Password` (for SQL Server password). This will only need to be done once as long as your secrets do not change.
-2. The `.sbm` package file is uploaded to Blob Storage via `sbm container prep`
+1. Keys, Connection strings and passwords saved in Azure Key Vault with `sbm k8s savesettings -kv`. You can also save the secrets to Key Vault in any other fashion you'd like. The secret names are: `StorageAccountKey`, `StorageAccountName`, `EventHubConnectionString`,`ServiceBusTopicConnectionString`, `UserName` (for SQL Server username), `Password` (for SQL Server password). This will only need to be done once as long as your secrets do not change.
+2. The `.sbm` package file is uploaded to Blob Storage via `sbm k8s prep`
 3. Database targets are sent to Service Bus Topic with `sbm batch enqueue`
-4. The containers are started via `kubectl`
-   - `kubectl apply -f runtime.yaml` - this sets the runtime settings for the containers (.sbm package name, job name and concurrency settings)
+4. The pods are started via `kubectl`
+   - `kubectl apply -f runtime.yaml` - this sets the runtime settings for the pods (.sbm package name, job name and concurrency settings)
    - `kubectl apply -f secretProviderClass.yaml` - configuration setting up the managed identity. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/create_aks_keyvault_config.ps1) to create the config for you
    - `kubectl apply -f podIdentityAndBinding.yaml` - configuration to bind the managed identity to the pods. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/create_aks_keyvault_config.ps1) to create the config for you
    - `kubectl apply -f basic_deploy_keyvault.yaml` - deployment to create the pods. You can find an example deployment configuration in [sample_deployment_keyvault.yaml](../scripts/templates/kubernetes/sample_deployment_keyvault.yaml) 

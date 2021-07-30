@@ -47,7 +47,7 @@ namespace SqlBuildManager.Console.Container
             catch(Exception ex)
             {
                 log.LogError($"Unable to read secrets: {ex.Message}");
-                log.LogWarning("The secrets needed for running a container worker have not been set.They should be set as secrets mounted to /etc/sbm");
+                log.LogWarning("The secrets needed for running a container/pod worker have not been set.They should be set as secrets mounted to /etc/sbm");
                 return (false,args);
             }
         }
@@ -67,7 +67,7 @@ namespace SqlBuildManager.Console.Container
             catch (Exception ex)
             {
                 log.LogError($"Unable to read runtime parameters: {ex.Message}");
-                log.LogWarning("The runtime variables for running a container worker have not been set. They should be set as a Configmap mounted to /etc/runtime");
+                log.LogWarning("The runtime variables for running a container/pod worker have not been set. They should be set as a Configmap mounted to /etc/runtime");
                 return (false,args);
             }
 
