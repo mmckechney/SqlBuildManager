@@ -23,7 +23,7 @@ spec:
             cpu: "500m"
         args:
           - sbm
-          - container
+          - k8s
           - worker
         volumeMounts :
           - name: sbm
