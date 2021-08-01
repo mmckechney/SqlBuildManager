@@ -163,7 +163,8 @@ namespace SqlBuildManager.Console.CommandLine
         {
             var aliases = opt.Aliases.ToArray();
             Option<T> newOpt = new Option<T>(aliases, opt.Description);
-            newOpt.Name = opt.Name;
+            //newOpt.Name = opt.Name;
+            //newOpt.ArgumentHelpName = "";
             newOpt.IsRequired = required;
 
             return newOpt;

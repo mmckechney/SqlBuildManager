@@ -22,6 +22,7 @@ namespace SqlBuildManager.Console.CommandLine
         public Batch BatchArgs { get; set; } = new Batch();
         public Connections ConnectionArgs { get; set; } = new Connections();
         public Identity IdentityArgs { get; set; } = new Identity();
+        public Aci AciArgs { get; set; } = new Aci();
         [JsonIgnore]
         public DacPac DacPacArgs { get; set; } = new DacPac();
         [JsonIgnore]
@@ -40,7 +41,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 return this.settingsFile;
             }
-            private set
+            internal set
             {
                 if (File.Exists(value))
                 {
@@ -49,6 +50,7 @@ namespace SqlBuildManager.Console.CommandLine
                     this.AuthenticationArgs = cmdLine.AuthenticationArgs;
                     this.ConnectionArgs = cmdLine.ConnectionArgs;
                     this.IdentityArgs = cmdLine.IdentityArgs;
+                    this.AciArgs = cmdLine.AciArgs;
 
                     this.RootLoggingPath = cmdLine.RootLoggingPath;
                     this.DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
@@ -412,6 +414,19 @@ namespace SqlBuildManager.Console.CommandLine
             public string ResourceId { get; set; } = string.Empty;
             public string ResourceGroup { get; set; } = string.Empty;
             public string SubscriptionId { get; set; } = string.Empty;
+        }
+
+        
+        public string AciName { set { this.AciArgs.AciName = value; } }
+        public string IdentityResourceGroup { set { this.AciArgs.IdentityResourceGroup = value; } }
+        public int ContainerCount { set { this.AciArgs.ContainerCount = value; } }
+        public string IdentityName { set { this.AciArgs.IdentityName = value; } }
+        public class Aci
+        {
+            public string AciName { get; set; } = string.Empty;
+            public string IdentityResourceGroup { get; set; } = string.Empty;
+            public int ContainerCount{ get; set; } = 10;
+            public string IdentityName { get; set; } = string.Empty;
         }
 
         [Serializable]

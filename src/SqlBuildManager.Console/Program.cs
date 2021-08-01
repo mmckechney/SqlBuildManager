@@ -314,7 +314,7 @@ namespace SqlBuildManager.Console
 
             if (string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
-                log.LogError("When 'sbm batch savesettings' is specified the --settingsfile argument is also required");
+                log.LogError("When 'sbm batch savesettings' or `sbm aci savesettings' is specified the --settingsfile argument is also required");
                 return;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.SettingsFileKey) && cmdLine.SettingsFileKey.Length < 16)
@@ -887,6 +887,16 @@ namespace SqlBuildManager.Console
 
         }
 
+        internal static void SaveAndEncryptAciSettings(CommandLineArgs cmdLine, bool clearText)
+        {
+            cmdLine.BatchArgs = null;
+            cmdLine.IdentityArgs = null;
+            cmdLine.ConnectionArgs.BatchAccountKey = null;
+            cmdLine.ConnectionArgs.BatchAccountName = null;
+            cmdLine.ConnectionArgs.BatchAccountUrl = null;
+            SaveAndEncryptSettings(cmdLine, clearText);
+        }
+
         internal static async Task<int> UploadKubernetesBuildPackage(FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, string keyvaultname, string jobName, string storageAccountName, string storageAccountKey, bool force)
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
@@ -956,6 +966,71 @@ namespace SqlBuildManager.Console
                 return 0;
             }
 
+        }
+
+        internal static async Task<int> UploadAciBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, bool force)
+        {
+
+            if (string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            {
+                log.LogError("Values for --jobname, --storageaccountname and --storageaccountkey are required as prameters or included in the --settingsfile");
+                return 1;
+
+            }
+            if(string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) || string.IsNullOrWhiteSpace(cmdLine.AciArgs.IdentityResourceGroup) || string.IsNullOrWhiteSpace(cmdLine.AciArgs.IdentityName) || cmdLine.AciArgs.ContainerCount == 0)
+            {
+                log.LogError("Values for --aciname, --identityresourcegroup and --identityname and --containercount are required as prameters or included in the --settingsfile");
+                return 1;
+            }
+//            if (await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+//            {
+//                if (!force)
+//                {
+//                    System.Console.Write($"The container {cmdLine.JobName} already exists in storage account {cmdLine.ConnectionArgs.StorageAccountName}. Do you want to delete any existing files and continue upload? (Y/n)");
+//                    var key = System.Console.ReadKey().Key;
+//                    System.Console.WriteLine();
+//                    if (key == ConsoleKey.Y)
+//                    {
+//                        force = true;
+//                    }
+//                    else
+//                    {
+//                        System.Console.WriteLine("Exiting. The package file was not uploaded and no files were deleted from storage");
+////                        return 0;
+//                    }
+//                }
+//                if (force)
+//                {
+//                    if (!await StorageManager.DeleteStorageContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+//                    {
+//                        log.LogError("Unable to delete container. The package file was not uploaded");
+// //                       return -1;
+//                    }
+//                }
+//            }
+
+//            if (!await StorageManager.UploadFileToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, packageName.FullName))
+//            {
+//                log.LogError("Unable to upload SBM package file to storage");
+// //               return 1;
+//            }
+
+            string template = Aci.AciHelper.CreateAciArmTemplate(cmdLine);
+            string fileName = Path.Combine(Directory.GetCurrentDirectory(), $"{cmdLine.JobName}_aci_template.json");
+            File.WriteAllText(fileName, template);
+            log.LogInformation($"Wrote ACI deployment ARM template to: {fileName}");
+        
+            //else
+            //{
+            //    //if (runtimeFile != null)
+            //    //{
+            //    //    string runtimeContents = ContainerManager.GenerateRuntimeYaml(cmdLine);
+            //    //    File.WriteAllText(runtimeFile.FullName, runtimeContents);
+            //    //    log.LogInformation($"Updated runtime file '{runtimeFile.FullName}' with job and package name");
+            //    //}
+            //    return 0;
+            //}
+            return 0;
         }
 
         internal static void TestAuth()

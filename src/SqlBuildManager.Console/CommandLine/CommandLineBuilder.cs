@@ -16,6 +16,7 @@ namespace SqlBuildManager.Console.CommandLine
         {
             var settingsfileOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile" }.ExistingOnly();
             var settingsfileNewOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile" };
+            var settingsFileNewReqOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Name of file to save settings values to") { Name = "FileInfoSettingsFile", IsRequired = true,  };
             var settingsfileKeyOption = new Option<string>(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive informtation in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable. If not provided a machine value will be used.");
             var overrideOption = new Option<string>(new string[] { "--override" }, "File containing the target database settings (usually a formatted .cfg file)");
             var serverOption = new Option<string>(new string[] { "-s", "--server" }, "1) Name of a server for single database run or 2) source server for scripting or runtime configuration");
@@ -60,7 +61,7 @@ namespace SqlBuildManager.Console.CommandLine
             var pollbatchpoolstatusOption = new Option<bool>(new string[] { "--poll", "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true) or fire and forget (false)");
             var defaultscripttimeoutOption = new Option<int>(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC");
             var authtypeOption = new Option<SqlSync.Connection.AuthenticationType>(new string[] { "--authtype" }, "SQL Authentication type to use.") { Name = "AuthenticationType" };
-            var silentOption = new Option<bool>(new string[] { "--silent" }, () => false, "Suppresses overwrite prompt if file already exists");
+            var silentOption = new Option<bool>(new string[] { "--silent", "--force" }, () => false, "Suppresses overwrite prompt if file already exists");
             var outputcontainersasurlOption = new Option<string>(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command") { IsHidden = true };
             var dacpacOutputOption = new Option<string>(new string[] { "--dacpacname" }, "Name of the dacpac that you want to create") { IsRequired = true };
             var cleartextOption = new Option<bool>(new string[] { "--cleartext" }, () => false, "Flag to save settings file in clear text (vs. encrypted)");
@@ -89,8 +90,10 @@ namespace SqlBuildManager.Console.CommandLine
             var resourceIdOption = new Option<string>("--resourceid", "Resource ID (full resource path) for the Azure User Assigned Managed Identity");
             var resourceGroupOption = new Option<string>("--resourcegroup", "Resource Group name for the Azure User Assigned Managed Identity");
             var subscriptionIdOption = new Option<string>("--subscriptionid", "Azure subscription Id for the Azure User Assigned Managed Identity");
-
-
+            var aciContainerCountOption = new Option<int>("--containercount", "Number of containers to create for processing") { IsRequired = true };
+            var aciInstanceNameOption = new Option<string>("--aciname", "Name of the Azure Container Instance you will create and deploy to") { IsRequired= true };
+            var aciIdentityResourceGroupNameOption = new Option<string>(new string[] { "--idrg", "--identityresourcegroup" }, "Name of the Resource Group that contains the Managed Identity") { IsRequired = true };
+            var aciIdentityNameOption = new   Option<string>("--identityname", "Name of User Assigned Managed identity that will be assigned to the Container Instance") { IsRequired = true};
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
             {
@@ -103,6 +106,7 @@ namespace SqlBuildManager.Console.CommandLine
             };
             dacpacCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateDacpac);
 
+            #region Local and Threaded
 
             //General Local building options
             var buildCommand = new Command("build", "Performs a standard, local SBM execution via command line")
@@ -176,7 +180,9 @@ namespace SqlBuildManager.Console.CommandLine
             threadedCommand.Add(threadedQueryCommand);
             threadedCommand.Add(threadedRunCommand);
 
+            #endregion
 
+            #region BatchExecution
             /****************************************
              * Batch 
              ***************************************/
@@ -509,12 +515,14 @@ namespace SqlBuildManager.Console.CommandLine
             batchCommand.Add(batchRunThreadedCommand);
             batchCommand.Add(batchQueryThreadedCommand);
             batchCommand.Add(batchDeleteJobsCommand);
+            #endregion
 
+            #region KubernetesExecution
             /****************************************
              * Kubernetes commands 
              ***************************************/
 
-            var kubernetesWorkerCommand = new Command("worker", "[Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
+            var kubernetesWorkerCommand = new Command("worker", "[Used by Kubernetes/ACI] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
             kubernetesWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunKubernetesQueueWorker);
 
             var kubernetesEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
@@ -530,7 +538,7 @@ namespace SqlBuildManager.Console.CommandLine
             kubernetesEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,string, string,ConcurrencyType,string, FileInfo>(Program.EnqueueContainerOverrideTargets);
 
             var pathOption = new Option<DirectoryInfo>("--path", "Path to save secrets.yaml and runtime.yaml files").ExistingOnly();
-            var kubernetesSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes container deployments")
+            var kubernetesSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes pod deployments")
             {
                 passwordOption,
                 usernameOption,
@@ -599,9 +607,61 @@ namespace SqlBuildManager.Console.CommandLine
             kubernetesCommand.Add(kubernetesMonitorCommand);
             kubernetesCommand.Add(kubernetesDequeueTargetsCommand);
             kubernetesCommand.Add(kubernetesWorkerCommand);
+            #endregion
 
+            /****************************************
+             * ACI commands 
+             ***************************************/
+            var aciCommand = new Command("aci", "Commands for setting and executing a build running in containers on Azure Container Instances");
+            var aciSaveSettingsCommand = new Command("savesettings", "Saves settings file for Azure Container Instances container deployments")
+            {
+                passwordOption,
+                usernameOption,
+                settingsFileNewReqOption,
+                settingsfileKeyOption,
+                aciInstanceNameOption,
+                aciIdentityNameOption,
+                aciIdentityResourceGroupNameOption,
+                //Key value option
+                keyVaultNameOption,
+                storageaccountnameOption,
+                storageaccountkeyOption,
+                eventhubconnectionOption,
+                defaultscripttimeoutOption,
+                threadedConcurrencyOption,
+                threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
+                //Additional settings
+                timeoutretrycountOption,
+                silentOption,
+                cleartextOption
 
+            };
+            aciSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.SaveAndEncryptAciSettings);
 
+            var aciPrepCommand = new Command("prep", "Creates ACI arm template, a storage container, and uploads the SBM package file that will be used for the build. ")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                keyVaultNameOption,
+                aciInstanceNameOption.Copy(false),
+                aciIdentityNameOption.Copy(false),
+                aciIdentityResourceGroupNameOption.Copy(false),
+                aciContainerCountOption.Copy(true),
+                jobnameOption,
+                storageaccountnameOption,
+                storageaccountkeyOption,
+                packagenameAsFileToUploadOption,
+                forceOption
+
+            };
+            aciPrepCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool>(Program.UploadAciBuildPackage);
+
+            aciCommand.Add(aciSaveSettingsCommand);
+            aciCommand.Add(aciPrepCommand);
+
+            #region Utility Commands
             /****************************************
              * Utility commands 
              ***************************************/
@@ -737,9 +797,11 @@ namespace SqlBuildManager.Console.CommandLine
                 databaseOption.Copy(true)
             };
             createBackoutCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateBackout);
+            #endregion
 
-            var authCommand = new Command("auth", "test auth");
+            var authCommand = new Command("authtest", "Test Azure authentication");
             authCommand.Handler = CommandHandler.Create(Program.TestAuth);
+            authCommand.IsHidden = true;
 
             RootCommand rootCommand = new RootCommand(description: "Tool to manage your SQL server database updates and releases");
             rootCommand.Add(logLevelOption);
@@ -747,6 +809,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(threadedCommand);
             rootCommand.Add(batchCommand);
             rootCommand.Add(kubernetesCommand);
+            rootCommand.Add(aciCommand);
             rootCommand.Add(createCommand);
             rootCommand.Add(addCommand);
             rootCommand.Add(packageCommand);

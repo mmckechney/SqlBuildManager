@@ -1,0 +1,22 @@
+{
+  "AuthenticationArgs": {
+    "UserName": "riX/+Q4oltrcnrLKVQImSQ==",
+    "Password": "K/VZBxcFT0+wO4yMRoTj/A=="
+  },
+  "ConnectionArgs": {
+    "KeyVaultName": "",
+    "ServiceBusTopicConnectionString": "yXGHQ2PjNP2BWCLNtRbhT3sV4zuioajv4+CGh5breGopzepgXOlqc3YjpmwlDLuQ",
+    "EventHubConnectionString": "7g1JQiabHcFd7cGrpm7uw7NCc4izPtwsbGBKbZyLXK/SVKRthDUVGmi5mnjRCec5",
+    "StorageAccountName": "werwefwefwe",
+    "StorageAccountKey": "YBLCO+r+PAAshJrX3QFMNlwCUseUYNj0YU4vQFXTGNk4BgAhYDgv5TDOzPCfatGl8I7/rjjU2TzWxqh1oFpBKYlnaezCSXrpNSFZD1Q8uIk="
+  },
+  "RootLoggingPath": "",
+  "TimeoutRetryCount": 0,
+  "DefaultScriptTimeout": 500,
+  "AciArgs": {
+    "AciName": "sbm4aci",
+    "AciResourceGroup": "sbm4-rg",
+    "ContainerCount": 5,
+    "IdentityName": "sbm4identity"
+  }
+}

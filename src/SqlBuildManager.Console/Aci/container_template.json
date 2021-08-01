@@ -1,0 +1,17 @@
+{
+  "name": "sqlbuildmanager{{counter}}",
+  "properties": {
+    "image": "blueskydevus/sqlbuildmanager:14.0.0",
+    "command": [
+      "sbm",
+      "aci",
+      "worker"
+    ],
+    "resources": {
+      "requests": {
+        "cpu": 1,
+        "memoryInGB": 2
+      }
+    }
+  }
+}
