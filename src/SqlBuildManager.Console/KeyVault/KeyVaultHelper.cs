@@ -114,7 +114,7 @@ namespace SqlBuildManager.Console.KeyVault
                 return cmdLine;
             }    
             var retrieved = new List<string>();
-            log.LogInformation($"Retrieving secrets from KevVault: {cmdLine.ConnectionArgs.KeyVaultName}");
+            log.LogInformation($"Retrieving secrets from KeyVault: {cmdLine.ConnectionArgs.KeyVaultName}");
             var keys = new List<string>();
             var kvName = cmdLine.ConnectionArgs.KeyVaultName;
             string tmp;

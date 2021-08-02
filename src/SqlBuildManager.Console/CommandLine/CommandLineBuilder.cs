@@ -88,12 +88,15 @@ namespace SqlBuildManager.Console.CommandLine
             var clientIdOption = new Option<string>("--clientid", "Client ID (AppId) for the Azure User Assigned Managed Identity");
             var principalIdOption = new Option<string>("--principalid", "Principal ID for the Azure User Assigned Managed Identity");
             var resourceIdOption = new Option<string>("--resourceid", "Resource ID (full resource path) for the Azure User Assigned Managed Identity");
-            var resourceGroupOption = new Option<string>("--resourcegroup", "Resource Group name for the Azure User Assigned Managed Identity");
-            var subscriptionIdOption = new Option<string>("--subscriptionid", "Azure subscription Id for the Azure User Assigned Managed Identity");
+            var identityResourceGroupOption = new Option<string>(new string[] {"--idrg", "--identityresourcegroup" }, "Resource Group name for the Azure User Assigned Managed Identity");
+            var subscriptionIdOption = new Option<string>("--subscriptionid", "Azure subscription Id for the Azure resources");
             var aciContainerCountOption = new Option<int>("--containercount", "Number of containers to create for processing") { IsRequired = true };
             var aciInstanceNameOption = new Option<string>("--aciname", "Name of the Azure Container Instance you will create and deploy to") { IsRequired= true };
-            var aciIdentityResourceGroupNameOption = new Option<string>(new string[] { "--idrg", "--identityresourcegroup" }, "Name of the Resource Group that contains the Managed Identity") { IsRequired = true };
+            var aciIResourceGroupNameOption = new Option<string>(new string[] { "--acirg", "--aciresourcegroup" }, "Name of the Resource Group for the ACI deployment") { IsRequired = true };
             var aciIdentityNameOption = new   Option<string>("--identityname", "Name of User Assigned Managed identity that will be assigned to the Container Instance") { IsRequired = true};
+            var aciOutputFileOption = new Option<FileInfo>("--outputfile", "File name to save ACI ARM template");
+            var aciArmTemplateOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')") { IsRequired = true }.ExistingOnly();
+            var aciSubscriptionIdOption = new Option<string>("--subscriptionid", "Subscription to deploy ACI to");
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
             {
@@ -210,7 +213,7 @@ namespace SqlBuildManager.Console.CommandLine
                 clientIdOption,
                 principalIdOption,
                 resourceIdOption,
-                resourceGroupOption,
+                identityResourceGroupOption,
                 subscriptionIdOption,
                 //Batch execution options
                 deletebatchpoolOption,
@@ -299,7 +302,7 @@ namespace SqlBuildManager.Console.CommandLine
                 clientIdOption,
                 principalIdOption,
                 resourceIdOption,
-                resourceGroupOption,
+                identityResourceGroupOption,
                 subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
@@ -356,7 +359,7 @@ namespace SqlBuildManager.Console.CommandLine
                 clientIdOption,
                 principalIdOption,
                 resourceIdOption,
-                resourceGroupOption,
+                identityResourceGroupOption,
                 subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
@@ -372,8 +375,8 @@ namespace SqlBuildManager.Console.CommandLine
                 storageaccountkeyOption,
                 eventhubconnectionOption,
                 defaultscripttimeoutOption,
-                threadedConcurrencyOption,
-                threadedConcurrencyTypeOption,
+                //threadedConcurrencyOption,
+                //threadedConcurrencyTypeOption,
                 //Service Bus queue options
                 serviceBusconnectionOption,
                 //Additional settings
@@ -430,7 +433,7 @@ namespace SqlBuildManager.Console.CommandLine
                 clientIdOption,
                 principalIdOption,
                 resourceIdOption,
-                resourceGroupOption,
+                identityResourceGroupOption,
                 subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
@@ -475,7 +478,7 @@ namespace SqlBuildManager.Console.CommandLine
                 clientIdOption,
                 principalIdOption,
                 resourceIdOption,
-                resourceGroupOption,
+                identityResourceGroupOption,
                 subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
@@ -522,7 +525,7 @@ namespace SqlBuildManager.Console.CommandLine
              * Kubernetes commands 
              ***************************************/
 
-            var kubernetesWorkerCommand = new Command("worker", "[Used by Kubernetes/ACI] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
+            var kubernetesWorkerCommand = new Command("worker", "[Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
             kubernetesWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunKubernetesQueueWorker);
 
             var kubernetesEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
@@ -612,7 +615,7 @@ namespace SqlBuildManager.Console.CommandLine
             /****************************************
              * ACI commands 
              ***************************************/
-            var aciCommand = new Command("aci", "Commands for setting and executing a build running in containers on Azure Container Instances");
+            var aciCommand = new Command("aci", "Commands for setting and executing a build running in containers on Azure Container Instances. ACI Containers will always leverage Azure Key Vault.");
             var aciSaveSettingsCommand = new Command("savesettings", "Saves settings file for Azure Container Instances container deployments")
             {
                 passwordOption,
@@ -621,15 +624,17 @@ namespace SqlBuildManager.Console.CommandLine
                 settingsfileKeyOption,
                 aciInstanceNameOption,
                 aciIdentityNameOption,
-                aciIdentityResourceGroupNameOption,
+                identityResourceGroupOption,
+                aciIResourceGroupNameOption,
+                aciSubscriptionIdOption,
                 //Key value option
-                keyVaultNameOption,
+                keyVaultNameOption.Copy(true),
                 storageaccountnameOption,
                 storageaccountkeyOption,
                 eventhubconnectionOption,
                 defaultscripttimeoutOption,
-                threadedConcurrencyOption,
-                threadedConcurrencyTypeOption,
+                //threadedConcurrencyOption,
+                //threadedConcurrencyTypeOption,
                 //Service Bus queue options
                 serviceBusconnectionOption,
                 //Additional settings
@@ -647,19 +652,80 @@ namespace SqlBuildManager.Console.CommandLine
                 keyVaultNameOption,
                 aciInstanceNameOption.Copy(false),
                 aciIdentityNameOption.Copy(false),
-                aciIdentityResourceGroupNameOption.Copy(false),
+                identityResourceGroupOption.Copy(false),
+                aciIResourceGroupNameOption.Copy(false),
                 aciContainerCountOption.Copy(true),
-                jobnameOption,
+                jobnameOption.Copy(true),
+                threadedConcurrencyOption.Copy(true),
+                threadedConcurrencyTypeOption.Copy(true),
                 storageaccountnameOption,
                 storageaccountkeyOption,
                 packagenameAsFileToUploadOption,
+                aciOutputFileOption,
                 forceOption
 
             };
-            aciPrepCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool>(Program.UploadAciBuildPackage);
+            aciPrepCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Program.PrepAndUploadAciBuildPackage);
+
+            var aciEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                keyVaultNameOption,
+                jobnameOption.Copy(true),
+                threadedConcurrencyTypeOption.Copy(true),
+                serviceBusconnectionOption,
+                overrideOption.Copy(true)
+            };
+            aciEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.EnqueueOverrideTargets);
+
+            var aciDeployCommand = new Command("deploy", "Deploy the ACI instance using the template file created from 'sbm prep' and start containers")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                aciArmTemplateOption,
+                jobnameOption.Copy(true),
+                aciIResourceGroupNameOption.Copy(false),
+                aciSubscriptionIdOption.Copy(false)
+            };
+            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo>(Program.DeployAciTemplate);
+
+            var aciMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                keyVaultNameOption,
+                jobnameOption,
+                overrideOption,
+                threadedConcurrencyTypeOption,
+                serviceBusconnectionOption,
+                eventhubconnectionOption,
+                unitTestOption
+            };
+            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.MonitorServiceBusRuntimeProgress);
+
+            var aciDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                keyVaultNameOption,
+                serviceBusconnectionOption,
+                jobnameOption.Copy(true),
+                threadedConcurrencyTypeOption
+            };
+            aciDequeueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.DeQueueOverrideTargets);
+
+            var aciWorkerCommand = new Command("worker", "[Used by ACI] Starts the container(s) as a worker - polling and retrieving items from target service bus queue topic");
+            aciWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunAciQueueWorker);
 
             aciCommand.Add(aciSaveSettingsCommand);
             aciCommand.Add(aciPrepCommand);
+            aciCommand.Add(aciEnqueueTargetsCommand);
+            aciCommand.Add(aciDeployCommand);
+            aciCommand.Add(aciMonitorCommand);
+            aciCommand.Add(aciDequeueTargetsCommand);
+            aciCommand.Add(aciWorkerCommand);   
+
 
             #region Utility Commands
             /****************************************

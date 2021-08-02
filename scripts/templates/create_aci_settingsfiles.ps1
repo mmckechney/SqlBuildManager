@@ -31,39 +31,30 @@ $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list -
 $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" -o tsv --query "[].name"
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
 
-
-$settingsJsonLinuxQueue = Join-Path $path "settingsfile-linux-aci-queue.json"
 $settingsJsonLinuxQueueKv = Join-Path $path "settingsfile-linux-aci-queue-keyvault.json"
+
+$subscriptionId = az account show --query id --output tsv
 
 
 $AESKey = New-Object Byte[] 32
 [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)
 $settingsFileKey = [System.Convert]::ToBase64String($AESKey);
 
-$keyFile = Join-Path $path "settingsfilekey.txt"
+$keyFile = Join-Path $path "settingsfilekey_aci.txt"
 $settingsFileKey |  Set-Content -Path $keyFile
 
 
 if($haveSqlInfo)
 {
-    $tmpPath = $settingsJsonLinuxQueue
-    Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
-    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" -sb "$serviceBusConnectionString" --settingsfile "$tmpPath"  --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --concurrency 5 --concurrencytype "Count" --username "$sqlUserName" --password "$sqlPassword" --force 
     $tmpPath = $settingsJsonLinuxQueueKv
     Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
-    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" -sb "$serviceBusConnectionString"  -kv "$keyVaultName" --settingsfile "$tmpPath"  --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --concurrency 5 --concurrencytype "Count" --username "$sqlUserName" --password "$sqlPassword" --force 
-
-
+    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" --acirg "$resourceGroupName"-sb "$serviceBusConnectionString"  -kv "$keyVaultName" --settingsfile "$tmpPath"  --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --username "$sqlUserName" --password "$sqlPassword" --subscriptionid "$subscriptionId" --force 
 }
 else 
 {
-    $tmpPath = $settingsJsonLinuxQueue
-    Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
-    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" -sb "$serviceBusConnectionString"  --settingsfile "$tmpPath"  --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --concurrency 5 --concurrencytype "Count" --force 
-
     $tmpPath = $settingsJsonLinuxQueueKv
     Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
-    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" -sb "$serviceBusConnectionString"  -kv "$keyVaultName" --settingsfile "$tmpPath"  --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --concurrency 5 --concurrencytype "Count" --force 
+    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" --acirg "$resourceGroupName"-sb "$serviceBusConnectionString"  -kv "$keyVaultName" --settingsfile "$tmpPath"  --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --subscriptionid "$subscriptionId" --force 
 
 }
 

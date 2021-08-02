@@ -153,7 +153,7 @@ namespace SqlBuildManager.Console.CommandLine
             set
             {
                 jobName = value.ToLower();
-                BatchArgs.BatchJobName = value.ToLower();
+                BatchJobName = value.ToLower();
             }
         }
         [JsonIgnore]
@@ -404,7 +404,7 @@ namespace SqlBuildManager.Console.CommandLine
         public string ClientId { set { this.IdentityArgs.ClientId = value; } }
         public string PrincipalId { set { this.IdentityArgs.PrincipalId = value; } }
         public string ResourceId { set { this.IdentityArgs.ResourceId = value; } }
-        public string ResourceGroup { set { this.IdentityArgs.ResourceGroup = value; } }
+        public string IdentityResourceGroup { set { this.IdentityArgs.ResourceGroup = value; } }
         public string SubscriptionId { set { this.IdentityArgs.SubscriptionId = value;} }
 
         public class Identity
@@ -418,13 +418,13 @@ namespace SqlBuildManager.Console.CommandLine
 
         
         public string AciName { set { this.AciArgs.AciName = value; } }
-        public string IdentityResourceGroup { set { this.AciArgs.IdentityResourceGroup = value; } }
+        public string AciResourceGroup { set { this.AciArgs.ResourceGroup = value; } }
         public int ContainerCount { set { this.AciArgs.ContainerCount = value; } }
         public string IdentityName { set { this.AciArgs.IdentityName = value; } }
         public class Aci
         {
             public string AciName { get; set; } = string.Empty;
-            public string IdentityResourceGroup { get; set; } = string.Empty;
+            public string ResourceGroup { get; set; } = string.Empty;
             public int ContainerCount{ get; set; } = 10;
             public string IdentityName { get; set; } = string.Empty;
         }

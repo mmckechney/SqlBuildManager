@@ -52,7 +52,7 @@ namespace SqlBuildManager.Console
 
             try
             {
-               Task<int> val = rootCommand.InvokeAsync(args);
+                Task<int> val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 rootCommand = null;
                 int result = val.Result;
@@ -210,7 +210,7 @@ namespace SqlBuildManager.Console
 
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(typeof(Program), Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
-            
+
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
             log.LogDebug("Entering Batch Execution");
@@ -680,30 +680,13 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static async Task<int> RunKubernetesQueueWorker(CommandLineArgs cmdLine)
+        private static async Task<int> RunGenericContainerQueueWorker(CommandLineArgs cmdLine)
         {
-            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
-            cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
-            if (!Directory.Exists(cmdLine.RootLoggingPath))
-            {
-                Directory.CreateDirectory(cmdLine.RootLoggingPath);
-            }
-            cmdLine.RunningAsContainer = true;
-            bool success = true;
+            int result = 1;
             try
             {
-                //Get secrets
-                (success, cmdLine) = ContainerManager.ReadSecrets(cmdLine);
-                if (!success)
-                {
-                    // return 1; 
-                }
-                //runtime params
-                (success, cmdLine) = ContainerManager.ReadRuntimeParameters(cmdLine);
-                if (!success)
-                {
-                    //return 1;
-                }
+
+
                 (string jobName, string throwaway) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
                 cmdLine.BatchJobName = jobName;
 
@@ -728,45 +711,48 @@ namespace SqlBuildManager.Console
 
                 if (keepGoing)
                 {
-                    var threaded = RunThreadedExecution(cmdLine);
+                    result = RunThreadedExecution(cmdLine);
                 }
             }
             catch (Exception exe)
             {
                 log.LogError(exe.ToString());
                 log.LogWarning("Error starting and running container processing");
+                result = 2;
             }
-
-            //keep alive for now...
-            while (true)
-            {
-                System.Threading.Thread.Sleep(10);
-            }
+            return result;
         }
-
-        internal static async Task<int> MonitorKubernetesRuntimeProgress(FileInfo secretsFile, FileInfo runtimeFile, CommandLineArgs args, bool unittest = false)
+        internal static async Task<int> RunKubernetesQueueWorker(CommandLineArgs cmdLine)
         {
-            CommandLineArgs cmdLine = new CommandLineArgs();
-            if (runtimeFile != null)
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            if (!Directory.Exists(cmdLine.RootLoggingPath))
             {
-                cmdLine = ContainerManager.GetArgumentsFromRuntimeFile(runtimeFile.FullName, cmdLine);
+                Directory.CreateDirectory(cmdLine.RootLoggingPath);
             }
-
-            if (secretsFile != null)
+            cmdLine.RunningAsContainer = true;
+            bool success = true;
+            //Get secrets
+            (success, cmdLine) = ContainerManager.ReadSecrets(cmdLine);
+            if (!success)
             {
-                cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
+                // return 1; 
             }
-            cmdLine.ConnectionArgs.KeyVaultName = args.ConnectionArgs.KeyVaultName;
-            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
-
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString)) cmdLine.ServiceBusTopicConnection = args.ConnectionArgs.ServiceBusTopicConnectionString;
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString)) cmdLine.EventHubConnection = args.ConnectionArgs.EventHubConnectionString;
-            if (!string.IsNullOrWhiteSpace(args.JobName)) cmdLine.JobName = args.JobName;
+            //runtime params
+            (success, cmdLine) = ContainerManager.ReadRuntimeParameters(cmdLine);
+            if (!success)
+            {
+                //return 1;
+            }
+            return await RunGenericContainerQueueWorker(cmdLine);
+        }
+        internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool unittest = false)
+        {
 
             int targets = 0;
-            if (!string.IsNullOrWhiteSpace(args.MultiDbRunConfigFileName) && File.Exists(args.MultiDbRunConfigFileName))
+            if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && File.Exists(cmdLine.MultiDbRunConfigFileName))
             {
-                var lines = File.ReadAllLines(args.MultiDbRunConfigFileName);
+                var lines = File.ReadAllLines(cmdLine.MultiDbRunConfigFileName);
                 targets = lines.Where(l => !string.IsNullOrWhiteSpace(l)).Count();
                 System.Console.WriteLine($"Monitoring for the status of {targets} databases");
             }
@@ -868,6 +854,27 @@ namespace SqlBuildManager.Console
             {
                 return 0;
             }
+        }
+        internal static async Task<int> MonitorKubernetesRuntimeProgress(FileInfo secretsFile, FileInfo runtimeFile, CommandLineArgs args, bool unittest = false)
+        {
+            CommandLineArgs cmdLine = new CommandLineArgs();
+            if (runtimeFile != null)
+            {
+                cmdLine = ContainerManager.GetArgumentsFromRuntimeFile(runtimeFile.FullName, cmdLine);
+            }
+
+            if (secretsFile != null)
+            {
+                cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
+            }
+            cmdLine.ConnectionArgs.KeyVaultName = args.ConnectionArgs.KeyVaultName;
+            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString)) cmdLine.ServiceBusTopicConnection = args.ConnectionArgs.ServiceBusTopicConnectionString;
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString)) cmdLine.EventHubConnection = args.ConnectionArgs.EventHubConnectionString;
+            if (!string.IsNullOrWhiteSpace(args.JobName)) cmdLine.JobName = args.JobName;
+
+            return await MonitorServiceBusRuntimeProgress(cmdLine, unittest);
 
         }
 
@@ -875,7 +882,7 @@ namespace SqlBuildManager.Console
         {
             bool valid;
             CommandLineArgs cmdLine = new CommandLineArgs();
-            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, keyvaultname,jobname, concurrencytype, servicebustopicconnection, cmdLine);
+            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, keyvaultname, jobname, concurrencytype, servicebustopicconnection, cmdLine);
             if (!valid)
             {
                 return 1;
@@ -890,7 +897,6 @@ namespace SqlBuildManager.Console
         internal static void SaveAndEncryptAciSettings(CommandLineArgs cmdLine, bool clearText)
         {
             cmdLine.BatchArgs = null;
-            cmdLine.IdentityArgs = null;
             cmdLine.ConnectionArgs.BatchAccountKey = null;
             cmdLine.ConnectionArgs.BatchAccountName = null;
             cmdLine.ConnectionArgs.BatchAccountUrl = null;
@@ -909,7 +915,7 @@ namespace SqlBuildManager.Console
             {
                 cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
             }
-            
+
             cmdLine.KeyVaultName = keyvaultname;
             cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
 
@@ -968,55 +974,95 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static async Task<int> UploadAciBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, bool force)
+        internal static async Task<int> DeployAciTemplate(CommandLineArgs cmdLine, FileInfo templateFile)
         {
-
-            if (string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            if(string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.SubscriptionId))
             {
-                log.LogError("Values for --jobname, --storageaccountname and --storageaccountkey are required as prameters or included in the --settingsfile");
-                return 1;
-
+                log.LogError("The value for --subscriptionid is required as a parameter or inclusion in the --settingsfile");
             }
-            if(string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) || string.IsNullOrWhiteSpace(cmdLine.AciArgs.IdentityResourceGroup) || string.IsNullOrWhiteSpace(cmdLine.AciArgs.IdentityName) || cmdLine.AciArgs.ContainerCount == 0)
+
+            var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.JobName);
+            if (success) return 0; else return 1;
+        }
+
+        internal static async Task<int> RunAciQueueWorker(CommandLineArgs cmdLine)
+        {
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            if (!Directory.Exists(cmdLine.RootLoggingPath))
+            {
+                Directory.CreateDirectory(cmdLine.RootLoggingPath);
+            }
+            cmdLine.RunningAsContainer = true;
+            cmdLine = Aci.AciHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+
+            return await RunGenericContainerQueueWorker(cmdLine);
+        }
+
+        internal static async Task<int> PrepAndUploadAciBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo outputFile, bool force)
+        {
+            cmdLine.BuildFileName = packageName.FullName;
+            if (string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) || string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup) || string.IsNullOrWhiteSpace(cmdLine.AciArgs.IdentityName) || cmdLine.AciArgs.ContainerCount == 0)
             {
                 log.LogError("Values for --aciname, --identityresourcegroup and --identityname and --containercount are required as prameters or included in the --settingsfile");
                 return 1;
             }
-//            if (await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
-//            {
-//                if (!force)
-//                {
-//                    System.Console.Write($"The container {cmdLine.JobName} already exists in storage account {cmdLine.ConnectionArgs.StorageAccountName}. Do you want to delete any existing files and continue upload? (Y/n)");
-//                    var key = System.Console.ReadKey().Key;
-//                    System.Console.WriteLine();
-//                    if (key == ConsoleKey.Y)
-//                    {
-//                        force = true;
-//                    }
-//                    else
-//                    {
-//                        System.Console.WriteLine("Exiting. The package file was not uploaded and no files were deleted from storage");
-////                        return 0;
-//                    }
-//                }
-//                if (force)
-//                {
-//                    if (!await StorageManager.DeleteStorageContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
-//                    {
-//                        log.LogError("Unable to delete container. The package file was not uploaded");
-// //                       return -1;
-//                    }
-//                }
-//            }
 
-//            if (!await StorageManager.UploadFileToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, packageName.FullName))
-//            {
-//                log.LogError("Unable to upload SBM package file to storage");
-// //               return 1;
-//            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            }
+
+            if ((string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+                && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                log.LogError("If --keyvaultname is not provided as an argument or in the --settingsfile, then --storageaccountname and --storageaccountkey are required");
+                return -1;
+            }
+            if (await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+            {
+                if (!force)
+                {
+                    System.Console.Write($"The container {cmdLine.JobName} already exists in storage account {cmdLine.ConnectionArgs.StorageAccountName}. Do you want to delete any existing files and continue upload? (Y/n)");
+                    var key = System.Console.ReadKey().Key;
+                    System.Console.WriteLine();
+                    if (key == ConsoleKey.Y)
+                    {
+                        force = true;
+                    }
+                    else
+                    {
+                        System.Console.WriteLine("Exiting. The package file was not uploaded and no files were deleted from storage");
+                        return 0;
+                    }
+                }
+                if (force)
+                {
+                    if (!await StorageManager.DeleteStorageContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+                    {
+                        log.LogError("Unable to delete container. The package file was not uploaded");
+                        return -1;
+                    }
+                }
+            }
+
+            if (!await StorageManager.UploadFileToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, packageName.FullName))
+            {
+                log.LogError("Unable to upload SBM package file to storage");
+                return 1;
+            }
 
             string template = Aci.AciHelper.CreateAciArmTemplate(cmdLine);
-            string fileName = Path.Combine(Directory.GetCurrentDirectory(), $"{cmdLine.JobName}_aci_template.json");
+            string fileName;
+            if (outputFile == null)
+            {
+                fileName = Path.Combine(Directory.GetCurrentDirectory(), $"{cmdLine.JobName}_aci_template.json");
+            }else
+            
+            {
+                fileName = outputFile.FullName;
+            }
             File.WriteAllText(fileName, template);
             log.LogInformation($"Wrote ACI deployment ARM template to: {fileName}");
         
