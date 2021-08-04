@@ -20,6 +20,9 @@ steps:
     packageType: 'sdk'
     version: '5.0.100'
 
+- task: DockerInstaller@0
+  inputs:
+    dockerVersion: '17.09.0-ce'
 - task: NuGetToolInstaller@1
   inputs:
     checkLatest: true
@@ -68,6 +71,14 @@ steps:
   displayName: Publish SQL Build Manager Desktop
   inputs:
     script: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration $(BuildConfiguration) -f netcoreapp3.1
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'dockerhub'
+    repository: 'sqlbuildmanager'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    tags: 'latest-dev'
 
 # .NET 5.0 artifacts
 - task: ArchiveFiles@2
