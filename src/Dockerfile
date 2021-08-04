@@ -1,11 +1,3 @@
-# # final stage/image
-# FROM mcr.microsoft.com/dotnet/runtime-deps:5.0-focal-amd64
-# COPY bin/Release/net5.0/linux-x64/* .
-# ENTRYPOINT ["./sbm"]
-
-
-
-
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 FROM mcr.microsoft.com/dotnet/runtime:5.0 AS base
@@ -28,12 +20,11 @@ RUN dotnet restore "SqlBuildManager.Console/sbm.csproj"
 
 COPY . .
 WORKDIR "/src/SqlBuildManager.Console"
-RUN dotnet build "sbm.csproj" --configuration Release -f net5.0 -o /app/build
+RUN dotnet build "sbm.csproj" --configuration Release -f net5.0 -o /app/build -r linux-x64 
 
 FROM build AS publish
-RUN dotnet publish "sbm.csproj" --configuration Release -f net5.0 -o /app/publish 
+RUN dotnet publish "sbm.csproj" --configuration Release -f net5.0 -o /app/publish -r linux-x64  
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "sbm.dll"]

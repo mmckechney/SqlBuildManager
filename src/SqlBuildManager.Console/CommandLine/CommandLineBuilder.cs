@@ -97,6 +97,7 @@ namespace SqlBuildManager.Console.CommandLine
             var aciOutputFileOption = new Option<FileInfo>("--outputfile", "File name to save ACI ARM template");
             var aciArmTemplateOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')") { IsRequired = true }.ExistingOnly();
             var aciSubscriptionIdOption = new Option<string>("--subscriptionid", "Subscription to deploy ACI to");
+            var aciContainerTagOption = new Option<string>(new string[] { "--tag", "--containertag" }, "Tag for container image to pull from registry");
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
             {
@@ -624,6 +625,7 @@ namespace SqlBuildManager.Console.CommandLine
                 settingsfileKeyOption,
                 aciInstanceNameOption,
                 aciIdentityNameOption,
+                aciContainerTagOption,
                 identityResourceGroupOption,
                 aciIResourceGroupNameOption,
                 aciSubscriptionIdOption,
@@ -652,6 +654,7 @@ namespace SqlBuildManager.Console.CommandLine
                 keyVaultNameOption,
                 aciInstanceNameOption.Copy(false),
                 aciIdentityNameOption.Copy(false),
+                aciContainerTagOption,
                 identityResourceGroupOption.Copy(false),
                 aciIResourceGroupNameOption.Copy(false),
                 aciContainerCountOption.Copy(true),
@@ -686,9 +689,11 @@ namespace SqlBuildManager.Console.CommandLine
                 aciArmTemplateOption,
                 jobnameOption.Copy(true),
                 aciIResourceGroupNameOption.Copy(false),
-                aciSubscriptionIdOption.Copy(false)
+                aciSubscriptionIdOption.Copy(false),
+                aciContainerTagOption,
+                new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment")
             };
-            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo>(Program.DeployAciTemplate);
+            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool>(Program.DeployAciTemplate);
 
             var aciMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {

@@ -69,6 +69,7 @@ namespace SqlBuildManager.Console.Aci
             for(int i=0;i<cmdLine.AciArgs.ContainerCount;i++)
             {
                 var tmpContainer = containerTemplate.Replace("{{counter}}", i.ToString().PadLeft(padding, '0'));
+                tmpContainer = tmpContainer.Replace("{{tag}}", cmdLine.AciArgs.ContainerTag);
                 tmpContainer = tmpContainer.Replace("{{keyVaultName}}", cmdLine.ConnectionArgs.KeyVaultName);
                 tmpContainer = tmpContainer.Replace("{{dacpacName}}", Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac));
                 tmpContainer = tmpContainer.Replace("{{jobname}}", cmdLine.JobName);

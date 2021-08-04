@@ -2,7 +2,7 @@
 **/bin
 **/TestConfig
 **/TestResults
-!obj\Docker\publish\*
-!obj\Docker\empty\
+!obj/Docker/publish/*
+!obj/Docker/empty/
 **/.git
 *.user

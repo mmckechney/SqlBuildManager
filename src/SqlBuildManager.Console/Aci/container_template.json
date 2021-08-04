@@ -1,44 +1,44 @@
       {
-        "name": "sqlbuildmanager{{counter}}",
-        "properties": {
-          "image": "blueskydevus/sqlbuildmanager:14.0.0",
-          "command": [
-            "sbm",
-            "aci",
-            "worker"
-          ],
-          "environmentVariables": [
-            {
-              "name": "Sbm_KeyVaultName",
-              "value": "{{keyVaultName}}"
-            },
-            {
-              "name": "Sbm_JobName",
-              "value": "{{jobname}}"
-            },
-            {
-              "name": "Sbm_PackageName",
-              "value": "{{packageName}}"
-            },
-            {
-              "name": "Sbm_DacpacName",
-              "value": "{{dacpacName}}"
-            }
-            {
-              "name": "Sbm_Concurrency",
-              "value": "{{concurrency}}"
-            },
-            {
-              "name": "Sbm_ConcurrencyType",
-              "value": "{{concurrencyType}}"
-            }
+          "name": "sqlbuildmanager{{counter}}",
+          "properties": {
+              "image": "blueskydevus/sqlbuildmanager:{{tag}}",
+              "command": [
+                  "dotnet",
+                  "sbm.dll",
+                  "aci",
+                  "worker"
+              ],
+              "environmentVariables": [{
+                      "name": "Sbm_KeyVaultName",
+                      "value": "{{keyVaultName}}"
+                  },
+                  {
+                      "name": "Sbm_JobName",
+                      "value": "{{jobname}}"
+                  },
+                  {
+                      "name": "Sbm_PackageName",
+                      "value": "{{packageName}}"
+                  },
+                  {
+                      "name": "Sbm_DacpacName",
+                      "value": "{{dacpacName}}"
+                  },
+                  {
+                      "name": "Sbm_Concurrency",
+                      "value": "{{concurrency}}"
+                  },
+                  {
+                      "name": "Sbm_ConcurrencyType",
+                      "value": "{{concurrencyType}}"
+                  }
 
-          ],
-          "resources": {
-            "requests": {
-              "cpu": 1,
-              "memoryInGB": 2
-            }
+              ],
+              "resources": {
+                  "requests": {
+                      "cpu": 1,
+                      "memoryInGB": 2
+                  }
+              }
           }
-        }
       }

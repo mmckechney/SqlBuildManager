@@ -20,13 +20,6 @@ steps:
     packageType: 'sdk'
     version: '5.0.100'
 
-- task: DockerInstaller@0
-  inputs:
-    dockerVersion: '17.09.0-ce'
-- task: NuGetToolInstaller@1
-  inputs:
-    checkLatest: true
-
 - task: DotNetCoreCLI@2
   displayName: Restore NuGet packages
   inputs:
@@ -39,21 +32,6 @@ steps:
     command: build 
     arguments:  --configuration $(BuildConfiguration)
     projects: './src/sqlsync.sln'
-- task: Docker@2
-  inputs:
-    containerRegistry: 'dockerhub'
-    command: 'login'
-- task: Docker@2
-  inputs:
-    containerRegistry: 'dockerhub'
-    repository: 'blueskydevus/sqlbuildmanager'
-    command: 'buildAndPush'
-    Dockerfile: './src/Dockerfile'
-    tags: 'latest-$(Build.SourceBranchName)'
-- task: Docker@2
-  inputs:
-    containerRegistry: 'dockerhub'
-    command: 'logout'
 
   # .NET 5.0 publish 
 - task: CmdLine@2

@@ -421,11 +421,14 @@ namespace SqlBuildManager.Console.CommandLine
         public string AciName { set { this.AciArgs.AciName = value; } }
         public string AciResourceGroup { set { this.AciArgs.ResourceGroup = value; } }
         public int ContainerCount { set { this.AciArgs.ContainerCount = value; } }
+        public string ContainerTag { set { this.AciArgs.ContainerTag = value; } }
         public string IdentityName { set { this.IdentityArgs.IdentityName = value; } }
         public class Aci
         {
             public string AciName { get; set; } = string.Empty;
             public string ResourceGroup { get; set; } = string.Empty;
+            public string ContainerTag { get; set; } = string.Empty;
+            [JsonIgnore]
             public int ContainerCount{ get; set; } = 10;
             
         }

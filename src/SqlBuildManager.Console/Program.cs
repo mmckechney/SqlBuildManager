@@ -748,7 +748,10 @@ namespace SqlBuildManager.Console
         }
         internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool unittest = false)
         {
-
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            }
             int targets = 0;
             if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && File.Exists(cmdLine.MultiDbRunConfigFileName))
             {
@@ -978,15 +981,24 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static async Task<int> DeployAciTemplate(CommandLineArgs cmdLine, FileInfo templateFile)
+        internal static async Task<int> DeployAciTemplate(CommandLineArgs cmdLine, FileInfo templateFile, bool monitor)
         {
+            if(monitor)
+            {
+                cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            }
+
             if(string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.SubscriptionId))
             {
                 log.LogError("The value for --subscriptionid is required as a parameter or inclusion in the --settingsfile");
             }
 
             var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.JobName);
-            if (success) return 0; else return 1;
+            if(success && monitor)
+            {
+                return await MonitorServiceBusRuntimeProgress(cmdLine);
+            }
+            else if (success) return 0; else return 1;
         }
 
         internal static async Task<int> RunAciQueueWorker(CommandLineArgs cmdLine)
@@ -1009,7 +1021,12 @@ namespace SqlBuildManager.Console
             cmdLine.BuildFileName = packageName.FullName;
             if (string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) || string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup) || string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName) || cmdLine.AciArgs.ContainerCount == 0)
             {
-                log.LogError("Values for --aciname, --identityresourcegroup and --identityname and --containercount are required as prameters or included in the --settingsfile");
+                log.LogError("Values for --aciname, --identityresourcegroup and --identityname and --containercount are required as parameters or included in the --settingsfile");
+                return 1;
+            }
+            if (string.IsNullOrWhiteSpace(cmdLine.AciArgs.ContainerTag))
+            {
+                log.LogError("Values for --containertag is required as a parameter or included in the --settingsfile");
                 return 1;
             }
 
