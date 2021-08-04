@@ -77,7 +77,7 @@ steps:
     containerRegistry: 'dockerhub'
     repository: 'sqlbuildmanager'
     command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
+    Dockerfile: './src/SqlBuildManager.Console/Dockerfile'
     tags: 'latest-dev'
 
 # .NET 5.0 artifacts
