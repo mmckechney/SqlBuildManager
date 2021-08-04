@@ -21,11 +21,11 @@ namespace SqlBuildManager.Console.CommandLine
             (tmp,cmdLine) = DecryptSensitiveFields(cmdLine, true); 
             string key = GetSettingsFileEncryptionKey(cmdLine);
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
                 cmdLine.AuthenticationArgs.UserName = sb.Cryptography.EncryptText(cmdLine.AuthenticationArgs.UserName, key);
             }
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
                 cmdLine.AuthenticationArgs.Password = sb.Cryptography.EncryptText(cmdLine.AuthenticationArgs.Password, key);
             }
@@ -79,12 +79,12 @@ namespace SqlBuildManager.Console.CommandLine
             bool success;
             string key = GetSettingsFileEncryptionKey(cmdLine);
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
                 (success,  cmdLine.AuthenticationArgs.UserName) = sb.Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, key, "--username", suppressLog);
                 consolidated = consolidated & success;
             }
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
                 (success, cmdLine.AuthenticationArgs.Password) = sb.Cryptography.DecryptText(cmdLine.AuthenticationArgs.Password, key, "--password", suppressLog);
                 consolidated = consolidated & success;

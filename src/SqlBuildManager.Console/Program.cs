@@ -330,7 +330,7 @@ namespace SqlBuildManager.Console
 
                 //remove secrets from the command line so they are not saved to the config.
                 var kvTmp = cmdLine.ConnectionArgs.KeyVaultName;
-                cmdLine.AuthenticationArgs = new CommandLineArgs.Authentication();
+                cmdLine.AuthenticationArgs = null; // new CommandLineArgs.Authentication();
                 cmdLine.ConnectionArgs.EventHubConnectionString = null;
                 cmdLine.ConnectionArgs.BatchAccountKey = null;
                 cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null;
@@ -900,6 +900,10 @@ namespace SqlBuildManager.Console
             cmdLine.ConnectionArgs.BatchAccountKey = null;
             cmdLine.ConnectionArgs.BatchAccountName = null;
             cmdLine.ConnectionArgs.BatchAccountUrl = null;
+            cmdLine.IdentityArgs.ClientId = null;
+            cmdLine.IdentityArgs.PrincipalId = null;
+            cmdLine.IdentityArgs.ResourceId = null;
+
             SaveAndEncryptSettings(cmdLine, clearText);
         }
 
@@ -1003,7 +1007,7 @@ namespace SqlBuildManager.Console
         internal static async Task<int> PrepAndUploadAciBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo outputFile, bool force)
         {
             cmdLine.BuildFileName = packageName.FullName;
-            if (string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) || string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup) || string.IsNullOrWhiteSpace(cmdLine.AciArgs.IdentityName) || cmdLine.AciArgs.ContainerCount == 0)
+            if (string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) || string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup) || string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName) || cmdLine.AciArgs.ContainerCount == 0)
             {
                 log.LogError("Values for --aciname, --identityresourcegroup and --identityname and --containercount are required as prameters or included in the --settingsfile");
                 return 1;

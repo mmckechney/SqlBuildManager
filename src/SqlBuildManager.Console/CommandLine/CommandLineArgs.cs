@@ -409,6 +409,7 @@ namespace SqlBuildManager.Console.CommandLine
 
         public class Identity
         {
+            public string IdentityName { get; set; } = string.Empty;
             public string ClientId { get; set; } = string.Empty;
             public string PrincipalId { get; set; } = string.Empty;
             public string ResourceId { get; set; } = string.Empty;
@@ -420,13 +421,13 @@ namespace SqlBuildManager.Console.CommandLine
         public string AciName { set { this.AciArgs.AciName = value; } }
         public string AciResourceGroup { set { this.AciArgs.ResourceGroup = value; } }
         public int ContainerCount { set { this.AciArgs.ContainerCount = value; } }
-        public string IdentityName { set { this.AciArgs.IdentityName = value; } }
+        public string IdentityName { set { this.IdentityArgs.IdentityName = value; } }
         public class Aci
         {
             public string AciName { get; set; } = string.Empty;
             public string ResourceGroup { get; set; } = string.Empty;
             public int ContainerCount{ get; set; } = 10;
-            public string IdentityName { get; set; } = string.Empty;
+            
         }
 
         [Serializable]

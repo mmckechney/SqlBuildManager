@@ -59,7 +59,7 @@ namespace SqlBuildManager.Console.Aci
             string exePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
             string pathToTemplates = Path.Combine(exePath, "Aci");
             string template = File.ReadAllText(Path.Combine(pathToTemplates, "aci_arm_template.json"));
-            template = template.Replace("{{identityName}}", cmdLine.AciArgs.IdentityName);
+            template = template.Replace("{{identityName}}", cmdLine.IdentityArgs.IdentityName);
             template = template.Replace("{{identityResourceGroup}}", cmdLine.IdentityArgs.ResourceGroup);
             template = template.Replace("{{aciName}}", cmdLine.AciArgs.AciName);
 
