@@ -53,7 +53,7 @@ namespace SqlBuildManager.Console.Aci
             }
             return _resourceClient;
         }
-        
+            
         internal static string CreateAciArmTemplate(CommandLineArgs cmdLine)
         {
             string exePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
@@ -107,6 +107,14 @@ namespace SqlBuildManager.Console.Aci
         {
             try
             {
+                string aciResourceId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerInstance/containerGroups/{aciName}";
+                //var resp = await ResourceClient(subscriptionId).Resources.CheckExistenceByIdAsync(aciResourceId, "2021-03-01");
+                try
+                {
+                    log.LogInformation("Removing any pre-existing ACI instance");
+                    var resp = await ResourceClient(subscriptionId).Resources.StartDeleteByIdAsync(aciResourceId, "2021-03-01");
+                }
+                catch { }
                 // https://github.com/Azure-Samples/azure-samples-net-management/blob/master/samples/resources/deploy-using-arm-template/Program.cs
                 var rgName = resourceGroupName;
                 var deploymentName = jobName;
