@@ -103,7 +103,7 @@ namespace SqlBuildManager.Console.Aci
             return cmdLine;
         }
 
-        internal static async Task<bool> DeployAciInstance(string templateFileName, string subscriptionId, string resourceGroupName, string jobName)
+        internal static async Task<bool> DeployAciInstance(string templateFileName, string subscriptionId, string resourceGroupName, string aciName, string jobName)
         {
             try
             {
@@ -113,7 +113,7 @@ namespace SqlBuildManager.Console.Aci
                 var templateFileContents = File.ReadAllText(templateFileName);
                 var deployments = ResourceClient(subscriptionId).Deployments;
 
-                log.LogInformation("Starting a deployment for an ACI: " + deploymentName);
+                log.LogInformation($"Starting a deployment for ACI '{aciName}' for job: {deploymentName}");
 
                 var parameters = new Deployment
                 (

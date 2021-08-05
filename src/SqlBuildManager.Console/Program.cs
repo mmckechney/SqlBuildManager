@@ -1,7 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Container;
 using SqlBuildManager.Console.Queue;
@@ -26,6 +25,9 @@ using sb = SqlSync.SqlBuild;
 using SqlBuildManager.Console.CloudStorage;
 using System.CommandLine.IO;
 using SqlBuildManager.Console.KeyVault;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Dynamic;
 
 namespace SqlBuildManager.Console
 {
@@ -342,10 +344,7 @@ namespace SqlBuildManager.Console
                 cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);
             }
 
-            var mystuff = JsonConvert.SerializeObject(cmdLine, Formatting.Indented, new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            });
+            var mystuff = JsonSerializer.Serialize<CommandLineArgs>(cmdLine, new JsonSerializerOptions() { WriteIndented = true });
 
             try
             {
@@ -814,7 +813,7 @@ namespace SqlBuildManager.Console
                 // log.LogInformation($"Remaining Messages: {messageCount}");
                 System.Threading.Thread.Sleep(500);
                 if (messageCount == 0) { zeroMessageCounter++; } else { zeroMessageCounter = 0; }
-                if (targets == 0 && zeroMessageCounter == 20 && lastCommitCount == commit && lastErrorCount == error && !unittest)
+                if (targets == 0 && zeroMessageCounter >= 20 && lastCommitCount == commit && lastErrorCount == error && !unittest)
                 {
                     System.Console.Write("Message count has remained 0, do you want to continue monitoring (Y/n)");
                     var key = System.Console.ReadKey().Key;
@@ -992,8 +991,16 @@ namespace SqlBuildManager.Console
             {
                 log.LogError("The value for --subscriptionid is required as a parameter or inclusion in the --settingsfile");
             }
+            var j =  JsonSerializer.Deserialize<Aci.TemplateClass>(File.ReadAllText(templateFile.FullName));
+            cmdLine.JobName = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_JobName").FirstOrDefault().Value;
+            var tmp =  j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_ConcurrencyType").FirstOrDefault().Value;
+            if(Enum.TryParse<ConcurrencyType>(tmp, out ConcurrencyType concurrencyType))
+            {
+                cmdLine.ConcurrencyType = concurrencyType;
+            }
+            cmdLine.AciName = j.variables.aciName;
 
-            var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.JobName);
+            var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName, cmdLine.JobName);
             if(success && monitor)
             {
                 return await MonitorServiceBusRuntimeProgress(cmdLine);

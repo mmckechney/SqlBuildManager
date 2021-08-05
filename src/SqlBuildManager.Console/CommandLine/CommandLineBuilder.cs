@@ -687,10 +687,10 @@ namespace SqlBuildManager.Console.CommandLine
                 settingsfileOption,
                 settingsfileKeyOption,
                 aciArmTemplateOption,
-                jobnameOption.Copy(true),
                 aciIResourceGroupNameOption.Copy(false),
                 aciSubscriptionIdOption.Copy(false),
                 aciContainerTagOption,
+                overrideOption.Copy(false),
                 new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment")
             };
             aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool>(Program.DeployAciTemplate);
