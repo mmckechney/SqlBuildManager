@@ -10,6 +10,7 @@ using Azure.Core;
 using Azure.Identity;
 using Azure.ResourceManager.Resources.Models;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace SqlBuildManager.Console.Aci
 {
@@ -113,6 +114,7 @@ namespace SqlBuildManager.Console.Aci
                 {
                     log.LogInformation("Removing any pre-existing ACI instance");
                     var resp = await ResourceClient(subscriptionId).Resources.StartDeleteByIdAsync(aciResourceId, "2021-03-01");
+                    await resp.WaitForCompletionAsync();
                 }
                 catch { }
                 // https://github.com/Azure-Samples/azure-samples-net-management/blob/master/samples/resources/deploy-using-arm-template/Program.cs
@@ -133,6 +135,9 @@ namespace SqlBuildManager.Console.Aci
                  );
                 var rawResult = await deployments.StartCreateOrUpdateAsync(rgName, deploymentName, parameters);
                 await rawResult.WaitForCompletionAsync();
+
+                //Introduce a delay to see if that will help with what seems to be an issue with a timely managed identity assignment
+                Thread.Sleep(10000);
 
                 log.LogInformation("Completed ACI deployment: " + deploymentName);
                 return true;

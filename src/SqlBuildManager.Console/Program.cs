@@ -840,7 +840,7 @@ namespace SqlBuildManager.Console
                     System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                     break;
                 }
-                else if(unittest && totalLoops == 600)
+                else if(unittest && totalLoops == 40)
                 {
                     log.LogError("Unit test taking too long! There is likely something wrong with the containers.");
                     return -1;
