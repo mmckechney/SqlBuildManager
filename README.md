@@ -1,6 +1,6 @@
 # SQL Build Manager
 
-SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases. It provides a comprehensive set of command line options for the management of one to many thousands of databases.
+SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases. It provides a comprehensive set of command line options for the management from one to many thousands of databases.
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
@@ -10,7 +10,9 @@ There are two new options to massively parallel processing: [Kubernetes](docs/ku
 
  [Batch node pools](docs/massively_parallel.md) are now created with assigned Managed Identities. Because of this, the workstation running `sbm` _needs to have a valid Azure authentication token_. This can be done via Azure CLI `az login`, Azure PowerShell `Connect-AzAccount`, or if running from an automation box, ensure that the machine itself has a Managed Identity that has permissions to create Azure resources. Alternatively, you can pre-create the batch pools manually via the Azure portal, being sure to assign the correct Managed Identity to the pool.
 
-The keys, connection strings and passwords can now be stored in Azure Key Vault rather than saving the encrypted values in a settings file or being passed in via the command line. Regardless if you use Batch or Kubernetes, this integration is enabled by leveraging [User Assigned Managed Identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-manage-user-assigned-managed-identities). To easily accomplish this setup, there are a set of PowerShell scripts in the [`scripts/templates` folder](scripts/templates). A complete environment can be created with [`create_azure_resources.ps1`](scripts/templates/create_azure_resources.ps1)
+[Kubernetes](docs/massively_parallel.md#kubernetes-process-flow) and [Azure Container Instance](docs/massively_parallel.md#azure-container-instance-process-flow) also require local machine authentication in order to access Azure Key Vault. Authentication is not needed for [local](local_build.md) or [threaded builds](docs/threaded_build.md)
+
+The keys, connection strings and passwords can now be stored in Azure Key Vault rather than saving the encrypted values in a settings file or being passed in via the command line. Regardless if you use Batch, Kubernetes or ACI , this integration is enabled by leveraging [User Assigned Managed Identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-manage-user-assigned-managed-identities). To easily accomplish this setup, there are a set of PowerShell scripts in the [`scripts/templates` folder](scripts/templates). A complete environment can be created with [`create_azure_resources.ps1`](scripts/templates/create_azure_resources.ps1). Please note that Azure Key Vault is required for [Azure Container Instance](docs/aci.md) builds.
 
 You will also need to be logged into Azure if you are leveraging Azure Key Vault to store your secrets, regardless if you are using [Azure Batch](docs/massively_parallel.md#batch-process-flow), [Kubernetes](docs/massively_parallel.md#kubernetes-process-flow) or [Azure Container Instance](docs/massively_parallel.md#azure-container-instance-process-flow))
 
@@ -146,6 +148,9 @@ An excellent tool for viewing and monitoring your Azure batch accounts and jobs 
 
 Using the `sbm k8s` commands leverages Kubernetes to permit massively parallel updates across thousands of databases. To leverage Kubernetes, you will first need to set up a Kubernetes Cluster. The instructions for this can be found [here](docs/kubernetes.md#).
 
+### **Azure Container Instance (ACI)**
+
+Using the `sbm aci` commands leverages Azure Container Instance to permit massively parallel updates across thousands of databases. 
 
 ----
 

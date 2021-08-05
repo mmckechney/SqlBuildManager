@@ -96,7 +96,7 @@ Running a build using Kubernetes follows the process below. If you do not levera
 0. Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault. 
 1. Keys, Connection strings and passwords saved in Azure Key Vault with `sbm k8s savesettings -kv`. You can also save the secrets to Key Vault in any other fashion you'd like. The secret names are: `StorageAccountKey`, `StorageAccountName`, `EventHubConnectionString`,`ServiceBusTopicConnectionString`, `UserName` (for SQL Server username), `Password` (for SQL Server password). This will only need to be done once as long as your secrets do not change.
 2. The `.sbm` package file is uploaded to Blob Storage via `sbm k8s prep`
-3. Database targets are sent to Service Bus Topic with `sbm batch enqueue`
+3. Database targets are sent to Service Bus Topic with `sbm k8s enqueue`
 4. The pods are started via `kubectl`
    - `kubectl apply -f runtime.yaml` - this sets the runtime settings for the pods (.sbm package name, job name and concurrency settings)
    - `kubectl apply -f secretProviderClass.yaml` - configuration setting up the managed identity. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/create_aks_keyvault_config.ps1) to create the config for you
@@ -106,8 +106,29 @@ Running a build using Kubernetes follows the process below. If you do not levera
 6. The pods start processing messages from the Service Bus Topic...
 7. And update the databases in parallel
 8. Once complete, the logs are saved to Blob Storage
-9. Status update is sent back to the originating `sbm` command line and processing is complete
+9. Monitoring shows complete and the Service Bus Topic Subscription is deleted
 
 If you are not going to use Azure Key Vault, you would replace `kubectl apply -f secretProviderClass.yaml` and `kubectl apply -f podIdentityAndBinding.yaml` with `kubectl apply -f secrets.yaml` and leverage a deployment such as the example from [sample_deployment.yaml](../scripts/templates/kubernetes/sample_deployment.yaml)
+ 
+----
 
 ## Azure Container Instance Process Flow
+
+For a step by step how-to, see the general [ACI documentation](aci.md)
+
+Running a build using ACI follows the process below, please note that unlike Batch and Kubernetes, ACI always uses Key Vault for secrets management.
+
+![AKS process flow](images/aci_with_keyvault.png)
+
+0. Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault.
+1. Keys, Connection strings and passwords saved in Azure Key Vault with `sbm aci savesettings`. You can also save the secrets to Key Vault in any other fashion you'd like. The secret names are: `StorageAccountKey`, `StorageAccountName`, `EventHubConnectionString`,`ServiceBusTopicConnectionString`, `UserName` (for SQL Server username), `Password` (for SQL Server password). This will only need to be done once as long as your secrets do not change.
+2. The customized Azure Resource Management (ARM) template is created and the `.sbm` package file is uploaded to Blob Storage via `sbm aci prep`.
+3. Database targets are sent to Service Bus Topic with `sbm aci enqueue`
+4. The containers are deployed and started using `sbm aci deploy`. And monitor is started (by default), checking the Event Hub and Service Bus
+5. The containers, leveraging the Managed Identity assigned to them when they were created, accessed the Key Vault and retrieves the secrets
+6. The containers start processing messages from the Service Bus Topic...
+7. And update the databases in parallel
+8. Once complete, the logs are saved to Blob Storage
+9. Monitoring shows complete and the Service Bus Topic Subscription is deleted
+
+
