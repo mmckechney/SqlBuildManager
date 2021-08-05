@@ -117,7 +117,7 @@ if($deployAks)
 #######################
 # Settings File for ACI
 #######################
-./create_aci_settingsfiles_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $resourcePrefix
+./create_aci_settingsfile_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $resourcePrefix
 
 #########################
 # Database override files

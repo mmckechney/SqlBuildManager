@@ -1207,7 +1207,78 @@ namespace SqlBuildManager.Console.ExternalTest
 
 
         }
-  
+
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 2, 1, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 3, 2, ConcurrencyType.Server)]
+        [DataTestMethod]
+        public void ACI_SBMSource_KeyVault_Secrets_Success(string settingsFile, string containerTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            string jobName = DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff");
+            string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+            //Prep the build
+            var args = new string[]{
+                "aci",  "prep",
+                "--settingsfile", settingsFile,
+                "--tag", containerTag,
+                "--jobname", jobName,
+                "--packagename", sbmFileName,
+                "--outputfile", outputFile,
+                "--containercount", containerCount.ToString(),
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString()
+            };
+
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            int result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //enqueue the topic messages
+            args = new string[]{
+                "aci",  "enqueue",
+                "--settingsfile", settingsFile,
+                "--jobname", jobName,
+                 "--concurrencytype", concurrencyType.ToString(),
+                 "--override", overrideFile
+            };
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //monitor for completion
+            args = new string[]{
+                "aci",  "deploy",
+                 "--settingsfile", settingsFile,
+                 "--templatefile", outputFile,
+                "--override", overrideFile,
+                "--unittest", "true",
+                "--monitor", "true"
+            };
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+
+        }
+
+
 
     }
 }

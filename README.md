@@ -6,11 +6,13 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 ### **Important change in Version 14+:**
 
- [Batch node pools](docs/massively_parallel.md) are now created with assigned Managed Identities. Because of this, the workstation running `sbm` needs to have a valid Azure authentication token. This can be done via Azure CLI `az login`, Azure PowerShell `Connect-AzAccount`, or if running from an automation box, ensure that the machine itself has a Managed Identity that has permissions to create Azure resources. Alternatively, you can pre-create the batch pools manually via the Azure portal, being sure to assign the correct Managed Identity to the pool.
+There are two new options to massively parallel processing: [Kubernetes](docs/kubernetes.md) and [Azure Container Instance](docs/aci.md)!
+
+ [Batch node pools](docs/massively_parallel.md) are now created with assigned Managed Identities. Because of this, the workstation running `sbm` _needs to have a valid Azure authentication token_. This can be done via Azure CLI `az login`, Azure PowerShell `Connect-AzAccount`, or if running from an automation box, ensure that the machine itself has a Managed Identity that has permissions to create Azure resources. Alternatively, you can pre-create the batch pools manually via the Azure portal, being sure to assign the correct Managed Identity to the pool.
 
 The keys, connection strings and passwords can now be stored in Azure Key Vault rather than saving the encrypted values in a settings file or being passed in via the command line. Regardless if you use Batch or Kubernetes, this integration is enabled by leveraging [User Assigned Managed Identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-manage-user-assigned-managed-identities). To easily accomplish this setup, there are a set of PowerShell scripts in the [`scripts/templates` folder](scripts/templates). A complete environment can be created with [`create_azure_resources.ps1`](scripts/templates/create_azure_resources.ps1)
 
-You will also need to be logged into Azure if you are leveraging Azure Key Vault to store your secrets, regardless if you are using [Azure Batch](docs/massively_parallel.md#batch-process-flow) or [Kubernetes](docs/massively_parallel.md#kubernetes-process-flow)
+You will also need to be logged into Azure if you are leveraging Azure Key Vault to store your secrets, regardless if you are using [Azure Batch](docs/massively_parallel.md#batch-process-flow), [Kubernetes](docs/massively_parallel.md#kubernetes-process-flow) or [Azure Container Instance](docs/massively_parallel.md#azure-container-instance-process-flow))
 
 ---
 
@@ -28,6 +30,7 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
 - [Massively Parallel Database Builds](docs/massively_parallel.md)
   - [Azure Batch](docs/azure_batch.md)
   - [Kubernetes](docs/kubernetes.md)
+  - [Azure Container Instances (ACI)](docs/aci.md)
 - [Change notes](docs/change_notes.md)
 - For contributors: [Notes on Building and Unit Testing](docs/setup_azure_environment.md)
 - For users of the Windows Form app: [SQL Build Manager Manual](docs/SqlBuildManagerManual.md)\

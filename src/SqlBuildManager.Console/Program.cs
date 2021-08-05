@@ -985,7 +985,7 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static async Task<int> DeployAciTemplate(CommandLineArgs cmdLine, FileInfo templateFile, bool monitor)
+        internal static async Task<int> DeployAciTemplate(CommandLineArgs cmdLine, FileInfo templateFile, bool monitor, bool unittest = false)
         {
             if(monitor)
             {
@@ -1008,7 +1008,7 @@ namespace SqlBuildManager.Console
             var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName, cmdLine.JobName);
             if(success && monitor)
             {
-                return await MonitorServiceBusRuntimeProgress(cmdLine);
+                return await MonitorServiceBusRuntimeProgress(cmdLine, unittest);
             }
             else if (success) return 0; else return 1;
         }

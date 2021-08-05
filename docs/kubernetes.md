@@ -22,7 +22,7 @@ This document assumes that you have a working knowledge of Kubernetes. If you do
 
 ### Container Image
 
-The default container image can be found on Docker Hub at https://hub.docker.com/repository/docker/blueskydevus/sqlbuildmanager/general, or you could build your own from source using the following command from the `/src/SqlBuildManager.Console` folder
+The default container image can be found on Docker Hub at https://hub.docker.com/repository/docker/blueskydevus/sqlbuildmanager/general, or you could build your own from source using the following command from the `/src/` folder
 
 ``` bash
 docker build -f Dockerfile .. -t sqlbuildmanager:latest

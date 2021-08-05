@@ -622,7 +622,6 @@ namespace SqlBuildManager.Console.CommandLine
                 passwordOption,
                 usernameOption,
                 settingsFileNewReqOption,
-                settingsfileKeyOption,
                 aciInstanceNameOption,
                 aciIdentityNameOption,
                 aciContainerTagOption,
@@ -650,7 +649,6 @@ namespace SqlBuildManager.Console.CommandLine
             var aciPrepCommand = new Command("prep", "Creates ACI arm template, a storage container, and uploads the SBM package file that will be used for the build. ")
             {
                 settingsfileOption,
-                settingsfileKeyOption,
                 keyVaultNameOption,
                 aciInstanceNameOption.Copy(false),
                 aciIdentityNameOption.Copy(false),
@@ -673,7 +671,6 @@ namespace SqlBuildManager.Console.CommandLine
             var aciEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
             {
                 settingsfileOption,
-                settingsfileKeyOption,
                 keyVaultNameOption,
                 jobnameOption.Copy(true),
                 threadedConcurrencyTypeOption.Copy(true),
@@ -685,20 +682,19 @@ namespace SqlBuildManager.Console.CommandLine
             var aciDeployCommand = new Command("deploy", "Deploy the ACI instance using the template file created from 'sbm prep' and start containers")
             {
                 settingsfileOption,
-                settingsfileKeyOption,
                 aciArmTemplateOption,
                 aciIResourceGroupNameOption.Copy(false),
                 aciSubscriptionIdOption.Copy(false),
                 aciContainerTagOption,
                 overrideOption.Copy(false),
+                unitTestOption,
                 new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment")
             };
-            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool>(Program.DeployAciTemplate);
+            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool, bool>(Program.DeployAciTemplate);
 
             var aciMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {
                 settingsfileOption,
-                settingsfileKeyOption,
                 keyVaultNameOption,
                 jobnameOption,
                 overrideOption,
@@ -712,7 +708,6 @@ namespace SqlBuildManager.Console.CommandLine
             var aciDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
                 settingsfileOption,
-                settingsfileKeyOption,
                 keyVaultNameOption,
                 serviceBusconnectionOption,
                 jobnameOption.Copy(true),

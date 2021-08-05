@@ -1,6 +1,6 @@
 # Massively Parallel Database Builds
 
-If you have a fleet of databases to update, it could take a very long time to run your build on a single machine - even if you leverage the threaded model. To solve this problem, SQL Build Manager offers two ways to parallelize database builds across many compute nodes: [Azure Batch](azure_batch.md) and [Kubernetes](kubernetes.md).
+If you have a fleet of databases to update, it could take a very long time to run your build on a single machine - even if you leverage the threaded model. To solve this problem, SQL Build Manager offers two ways to parallelize database builds across many compute nodes: [Azure Batch](azure_batch.md),  [Kubernetes](kubernetes.md) and [Azure Container Instances (ACI)](aci.md).
 
 In both methods, each compute resource is able to manage concurrency to help you maximize throughput while not overloading your SQL Servers. See [Concurrency Options](concurrency_options.md).
 
@@ -9,6 +9,7 @@ In both methods, each compute resource is able to manage concurrency to help you
 - [Getting started - Building Azure Resources](#getting-started---building-azure-resources)
 - [Batch Process Flow](#batch-process-flow)
 - [Kubernetes Process Flow](#kubernetes-process-flow)
+- [Azure Container Instance Flow](#azure-container-instance-process-flow)
 
 ----
 
@@ -108,3 +109,5 @@ Running a build using Kubernetes follows the process below. If you do not levera
 9. Status update is sent back to the originating `sbm` command line and processing is complete
 
 If you are not going to use Azure Key Vault, you would replace `kubectl apply -f secretProviderClass.yaml` and `kubectl apply -f podIdentityAndBinding.yaml` with `kubectl apply -f secrets.yaml` and leverage a deployment such as the example from [sample_deployment.yaml](../scripts/templates/kubernetes/sample_deployment.yaml)
+
+## Azure Container Instance Process Flow

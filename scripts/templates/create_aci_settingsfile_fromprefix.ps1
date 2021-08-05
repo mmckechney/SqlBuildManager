@@ -17,7 +17,7 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
     $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
 }
  
-$keyVaultName = az keyvault list --resource-group sbm4-rg -o tsv --query "[?contains(@.name '$prefix')].name"
+$keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
 
 $storageAccountName =  az storage account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
@@ -32,4 +32,4 @@ Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -Foregr
 $identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
 
-./create_aci_settingsfiles.ps1 -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -aciname $aciName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword 
+./create_aci_settingsfile.ps1 -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -aciname $aciName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword 

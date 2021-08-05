@@ -5,7 +5,7 @@ You can control the level of parallel execution with the combination of two argu
 
 - [Option Definitions](#option-definitions)
 - [Threaded execution](#threaded-execution)
-- [Batch or Kubernetes Execution (with concurrency scenarios)](#batch-or-kubernetes-execution)
+- [Batch, Kubernetes or ACI Execution (with concurrency scenarios)](#batch-kubernetes-or-aci-execution)
 
 ----
 
@@ -37,11 +37,11 @@ When running  `sbm threaded run` or `sbm threaded query` the arguments are as de
 
 ----
 
-## Batch or Kubernetes execution
+## Batch, Kubernetes or ACI execution
 
 When running `sbm batch run`,  `sbm batch query` or `sbm k8s`, you need to consider that you are also running on more than one machine. The concurrency flags are interpreted **_per batch node/ per pod_** and this needs to be accounted for when calculating your desired concurrency.
 
-Whether you are distributing your batch or kubernetes load with an `--override` file or `--servicebustopicconnection` (see [details on database targeting options](override_options.md)), the concurrency options are available and perform as described below. However, if using a Service Bus Topic, the overall build may be more efficient as there is a smaller likelihood of nodes/pods going idle.
+Whether you are distributing your batch, kubernetes or ACI load with an `--override` file or `--servicebustopicconnection` (see [details on database targeting options](override_options.md)), the concurrency options are available and perform as described below. However, if using a Service Bus Topic, the overall build may be more efficient as there is a smaller likelihood of nodes/pods going idle.
 
 The scenarios below show examples for `batch` execution, but the calculations are the same when running `k8s`, with the calculation per running Kubernetes pod.
 

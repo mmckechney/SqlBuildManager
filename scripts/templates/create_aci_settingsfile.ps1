@@ -36,25 +36,17 @@ $settingsJsonLinuxQueueKv = Join-Path $path "settingsfile-linux-aci-queue-keyvau
 $subscriptionId = az account show --query id --output tsv
 
 
-$AESKey = New-Object Byte[] 32
-[Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)
-$settingsFileKey = [System.Convert]::ToBase64String($AESKey);
-
-$keyFile = Join-Path $path "settingsfilekey_aci.txt"
-$settingsFileKey |  Set-Content -Path $keyFile
-
-
 if($haveSqlInfo)
 {
     $tmpPath = $settingsJsonLinuxQueueKv
     Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
-    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" --acirg "$resourceGroupName"-sb "$serviceBusConnectionString"  -kv "$keyVaultName" --settingsfile "$tmpPath"  --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --username "$sqlUserName" --password "$sqlPassword" --subscriptionid "$subscriptionId" --force 
+    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" --acirg "$resourceGroupName"-sb "$serviceBusConnectionString"  -kv "$keyVaultName" --settingsfile "$tmpPath"  --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --username "$sqlUserName" --password "$sqlPassword" --subscriptionid "$subscriptionId" --force 
 }
 else 
 {
     $tmpPath = $settingsJsonLinuxQueueKv
     Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
-    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" --acirg "$resourceGroupName"-sb "$serviceBusConnectionString"  -kv "$keyVaultName" --settingsfile "$tmpPath"  --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --subscriptionid "$subscriptionId" --force 
+    ..\..\src\SqlBuildManager.Console\bin\Debug\net5.0\sbm.exe aci savesettings --aciname "$aciName" --identityname "$identityName" --idrg "$resourceGroupName" --acirg "$resourceGroupName"-sb "$serviceBusConnectionString"  -kv "$keyVaultName" --settingsfile "$tmpPath" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --subscriptionid "$subscriptionId" --force 
 
 }
 
