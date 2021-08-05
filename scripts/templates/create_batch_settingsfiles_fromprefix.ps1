@@ -16,7 +16,7 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
     $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
 }
  
-$keyVaultName = az keyvault list --resource-group sbm4-rg -o tsv --query "[?contains(@.name '$prefix')].name"
+$keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
 
 $batchAccountName = az batch account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"

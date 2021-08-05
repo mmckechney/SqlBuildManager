@@ -1,6 +1,6 @@
 param
 (
-    [string] $path,
+    [string] $path = "..\..\src\TestConfig",
     [string] $resourceGroupName,
     [string] $prefix,
     [string] $sqlUserName,
@@ -25,7 +25,7 @@ if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($
     $haveSqlInfo = $false
 }
 
-$keyVaultName = az keyvault list --resource-group sbm4-rg -o tsv --query "[?contains(@.name '$prefix')].name"
+$keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
 
 $batchAccountName = az batch account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
