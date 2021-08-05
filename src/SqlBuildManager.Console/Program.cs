@@ -26,8 +26,8 @@ using SqlBuildManager.Console.CloudStorage;
 using System.CommandLine.IO;
 using SqlBuildManager.Console.KeyVault;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Dynamic;
+using Newtonsoft.Json;
+
 
 namespace SqlBuildManager.Console
 {
@@ -329,7 +329,15 @@ namespace SqlBuildManager.Console
             {
                 var lst = KeyVaultHelper.SaveSecrets(cmdLine);
                 log.LogInformation($"Saved secrets to Azure Key Vault {cmdLine.ConnectionArgs.KeyVaultName}: {string.Join(", ", lst)}");
+            }
 
+            if (!clearText)
+            {
+                cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
                 //remove secrets from the command line so they are not saved to the config.
                 var kvTmp = cmdLine.ConnectionArgs.KeyVaultName;
                 cmdLine.AuthenticationArgs = null; // new CommandLineArgs.Authentication();
@@ -338,13 +346,10 @@ namespace SqlBuildManager.Console
                 cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null;
                 cmdLine.ConnectionArgs.StorageAccountKey = null;
             }
-
-            if (!clearText)
+            var mystuff = JsonConvert.SerializeObject(cmdLine, Formatting.Indented, new JsonSerializerSettings
             {
-                cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);
-            }
-
-            var mystuff = JsonSerializer.Serialize<CommandLineArgs>(cmdLine, new JsonSerializerOptions() { WriteIndented = true });
+                NullValueHandling = NullValueHandling.Ignore
+            });
 
             try
             {
@@ -991,7 +996,7 @@ namespace SqlBuildManager.Console
             {
                 log.LogError("The value for --subscriptionid is required as a parameter or inclusion in the --settingsfile");
             }
-            var j =  JsonSerializer.Deserialize<Aci.TemplateClass>(File.ReadAllText(templateFile.FullName));
+            var j =  System.Text.Json.JsonSerializer.Deserialize<Aci.TemplateClass>(File.ReadAllText(templateFile.FullName));
             cmdLine.JobName = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_JobName").FirstOrDefault().Value;
             var tmp =  j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_ConcurrencyType").FirstOrDefault().Value;
             if(Enum.TryParse<ConcurrencyType>(tmp, out ConcurrencyType concurrencyType))

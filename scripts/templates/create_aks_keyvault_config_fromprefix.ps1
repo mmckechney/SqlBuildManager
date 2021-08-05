@@ -1,6 +1,6 @@
 param
 (
-    [string] $path,
+    [string] $path = "..\..\src\TestConfig",
     [string] $resourceGroupName,
     [string] $prefix
 )

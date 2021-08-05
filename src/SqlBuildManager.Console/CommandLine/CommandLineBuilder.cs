@@ -376,8 +376,8 @@ namespace SqlBuildManager.Console.CommandLine
                 storageaccountkeyOption,
                 eventhubconnectionOption,
                 defaultscripttimeoutOption,
-                //threadedConcurrencyOption,
-                //threadedConcurrencyTypeOption,
+                threadedConcurrencyOption,
+                threadedConcurrencyTypeOption,
                 //Service Bus queue options
                 serviceBusconnectionOption,
                 //Additional settings

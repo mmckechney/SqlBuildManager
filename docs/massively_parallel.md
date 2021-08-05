@@ -15,7 +15,7 @@ In both methods, each compute resource is able to manage concurrency to help you
 
 ## Getting started - Building Azure Resources
 
-To get started leveraging Batch or Kubernetes, you first need to create and configure resources in the Azure cloud. To automate as much of this as possible, there are PowerShell scripts in the `/scripts/templates` folder to leverage. See the associated [ReadMe](../scripts/templates/README_template_scripts.md) for full descriptions
+To get started leveraging Batch or Kubernetes, you first need to create and configure resources in the Azure cloud. To automate as much of this as possible, there are PowerShell scripts in the `/scripts/templates` folder to leverage. See the associated [ReadMe](../scripts/templates/README.md) for full descriptions
 
 **NOTE:** Before using these scripts, you will need to install both the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) and Kubernetes [Helm](https://helm.sh/docs/intro/install/) installed on your machine.
 

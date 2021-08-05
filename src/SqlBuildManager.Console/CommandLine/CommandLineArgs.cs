@@ -156,9 +156,9 @@ namespace SqlBuildManager.Console.CommandLine
                 BatchJobName = value.ToLower();
             }
         }
-        [JsonIgnore]
         public virtual int Concurrency { get; set; } = 10;
-        [JsonIgnore]
+
+        [JsonConverter(typeof(StringEnumConverter))]
         public virtual ConcurrencyType ConcurrencyType { get; set; } = ConcurrencyType.Count;
 
         [JsonIgnore]
@@ -180,16 +180,28 @@ namespace SqlBuildManager.Console.CommandLine
         public virtual string ManualOverRideSets { get; set; } = string.Empty;
         #endregion
 
+
+
+
+
         #region Authentication Nested Class and property setters
         [JsonIgnore]
         public virtual string UserName
         {
-            set { AuthenticationArgs.UserName = value; }
+            set
+            {
+                if (AuthenticationArgs == null) AuthenticationArgs = new Authentication();
+                AuthenticationArgs.UserName = value;
+            }
         }
         [JsonIgnore]
         public virtual string Password
         {
-            set { AuthenticationArgs.Password = value; }
+            set
+            {
+                if (AuthenticationArgs == null) AuthenticationArgs = new Authentication(); 
+                AuthenticationArgs.Password = value;
+            }
         }
         [JsonIgnore]
         public virtual SqlSync.Connection.AuthenticationType AuthenticationType
@@ -202,7 +214,7 @@ namespace SqlBuildManager.Console.CommandLine
             public virtual string UserName { get; set; } = string.Empty;
             public virtual string Password { get; set; } = string.Empty;
 
-            [JsonIgnore]
+            [JsonConverter(typeof(StringEnumConverter))]
             public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = SqlSync.Connection.AuthenticationType.Password;
         }
         #endregion
