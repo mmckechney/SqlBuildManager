@@ -47,9 +47,9 @@ If the `--override` setting is provided but there isn't a `--servicebustopicconn
 
 ### Background
 
-If the value for `--servicebustopicconnection` is set or there is a value for `ServiceBusTopicConnectionString` in the settings JSON file (for batch) or secrets YAML file (for k8s pods), the runtime will look at the Service Bus Topic for messages that contain the override targets.
+If the value for `--servicebustopicconnection` is set or there is a value for `ServiceBusTopicConnectionString` in the settings JSON file (for batch) or secrets YAML file (for k8s pods) or Azure Key Vault (for Batch, Kubernetes and Azure Container Instance), the runtime will look at the Service Bus Topic for messages that contain the override targets.
 
-In order to get the messages into Service Bus, you must first `enqueue` the targets with the `sbm batch enqueue`  or `sbm k8s enqueue` command, passing in the `--override` target file.
+In order to get the messages into Service Bus, you must first `enqueue` the targets with the `sbm batch enqueue`,  `sbm k8s enqueue`, or `sbm aci enqueue` command, passing in the `--override` target file.
 
 Here it is important to also understand the impact of [concurrency options](concurrency_options.md) when enqueueing. If you specify the `--concurrencytype` value of `Server` or `MaxPerServer` the messages are added to a Session enabled Topic subscription so that targeting SQL servers can be controlled. Using the `Count` setting adds the messages to a subscription that is not session enabled to ensure unrestricted message distribution.
 

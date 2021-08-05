@@ -150,7 +150,7 @@ Using the `sbm k8s` commands leverages Kubernetes to permit massively parallel u
 
 ### **Azure Container Instance (ACI)**
 
-Using the `sbm aci` commands leverages Azure Container Instance to permit massively parallel updates across thousands of databases. 
+Using the `sbm aci` commands leverages Azure Container Instance to permit massively parallel updates across thousands of databases. Learn how to use ACI [here](docs/aci.md).
 
 ----
 

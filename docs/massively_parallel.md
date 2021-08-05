@@ -16,7 +16,7 @@ In both methods, each compute resource is able to manage concurrency to help you
 
 ## Getting started - Building Azure Resources
 
-To get started leveraging Batch or Kubernetes, you first need to create and configure resources in the Azure cloud. To automate as much of this as possible, there are PowerShell scripts in the `/scripts/templates` folder to leverage. See the associated [ReadMe](../scripts/templates/README.md) for full descriptions
+To get started leveraging Batch,  Kubernetes or Azure Container Instance, you first need to create and configure resources in the Azure cloud. To automate as much of this as possible, there are PowerShell scripts in the `/scripts/templates` folder to leverage. See the associated [Readme](../scripts/templates/README.md) for full descriptions
 
 **NOTE:** Before using these scripts, you will need to install both the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) and Kubernetes [Helm](https://helm.sh/docs/intro/install/) installed on your machine.
 
@@ -106,7 +106,7 @@ Running a build using Kubernetes follows the process below. If you do not levera
 6. The pods start processing messages from the Service Bus Topic...
 7. And update the databases in parallel
 8. Once complete, the logs are saved to Blob Storage
-9. Monitoring shows complete and the Service Bus Topic Subscription is deleted
+9. When monitoring shows complete,  the Service Bus Topic Subscription is deleted
 
 If you are not going to use Azure Key Vault, you would replace `kubectl apply -f secretProviderClass.yaml` and `kubectl apply -f podIdentityAndBinding.yaml` with `kubectl apply -f secrets.yaml` and leverage a deployment such as the example from [sample_deployment.yaml](../scripts/templates/kubernetes/sample_deployment.yaml)
  
@@ -129,6 +129,4 @@ Running a build using ACI follows the process below, please note that unlike Bat
 6. The containers start processing messages from the Service Bus Topic...
 7. And update the databases in parallel
 8. Once complete, the logs are saved to Blob Storage
-9. Monitoring shows complete and the Service Bus Topic Subscription is deleted
-
-
+9. When monitoring shows complete,  the Service Bus Topic Subscription is deleted

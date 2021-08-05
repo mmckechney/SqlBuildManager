@@ -783,6 +783,7 @@ namespace SqlBuildManager.Console
             int error, commit;
             bool firstLoop = true;
             int cursorStepBack = (targets == 0) ? 3 : 4;
+            int totalLoops = 0;
 
             while (true)
             {
@@ -839,10 +840,17 @@ namespace SqlBuildManager.Console
                     System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                     break;
                 }
+                else if(unittest && totalLoops == 600)
+                {
+                    log.LogError("Unit test taking too long! There is likely something wrong with the containers.");
+                    return -1;
+
+                }
 
                 lastErrorCount = error;
                 lastCommitCount = commit;
                 firstLoop = false;
+                totalLoops++;
             }
 
             await qManager.DeleteSubscription();

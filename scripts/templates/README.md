@@ -54,6 +54,11 @@ Collects secrets from resources in the specified resource group with the matchin
 
 Builds the `sbm.csproj` for both Windows and Linux and uploads the zip files into the proper Azure Batch application for the Azure Batch account in the resource group with the associated name $prefix. To specify your own resource names, use `build_and_upload_batch.ps1`. You can upload only if you have created zip packages on your own with the `-uploadonly $true` argument
 
+----
+
+### create_aci_settingsfile_fromprefix.ps1
+
+Creates a settings file `settingsfile-linux-aci-queue-keyvault.json` file that include ACI information, Key Vault name and additional settings for ACI builds for resources matching the $prefix values. To specify your own resource names, use `create_aci_settingsfile.ps1`
 
 ----
 
@@ -80,6 +85,7 @@ Creates the `secrets.yaml` and `runtime.yaml` file used by a Kubernetes build  t
 Creates 6 Azure batch `settings-*.json` files that include the secrets and values for the Azure resources created in the target resource group with the target name prefix. To specify your own resource names, use `create_batch_settingsfiles.ps1`
 
 ----
+
 ### create_database_firewall_rule.ps1
 
 By default, creates firewall rules for the Azure SQL databases created in the target resource group that match the current machine public IP address. Can also be used to create a rule for a specific IP address by adding the `-ipAddress` parameter. This is useful when running integration tests from your local machine.
