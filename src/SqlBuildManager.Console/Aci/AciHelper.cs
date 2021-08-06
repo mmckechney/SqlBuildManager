@@ -108,15 +108,6 @@ namespace SqlBuildManager.Console.Aci
         {
             try
             {
-                string aciResourceId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerInstance/containerGroups/{aciName}";
-                //var resp = await ResourceClient(subscriptionId).Resources.CheckExistenceByIdAsync(aciResourceId, "2021-03-01");
-                try
-                {
-                    log.LogInformation("Removing any pre-existing ACI instance");
-                    var resp = await ResourceClient(subscriptionId).Resources.StartDeleteByIdAsync(aciResourceId, "2021-03-01");
-                    await resp.WaitForCompletionAsync();
-                }
-                catch { }
                 // https://github.com/Azure-Samples/azure-samples-net-management/blob/master/samples/resources/deploy-using-arm-template/Program.cs
                 var rgName = resourceGroupName;
                 var deploymentName = jobName;
@@ -150,6 +141,24 @@ namespace SqlBuildManager.Console.Aci
 
         }
 
-           
+        internal static async Task<bool> DeleteAciInstance(string subscriptionId, string resourceGroupName, string aciName)
+        {
+            string aciResourceId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerInstance/containerGroups/{aciName}";
+            //var resp = await ResourceClient(subscriptionId).Resources.CheckExistenceByIdAsync(aciResourceId, "2021-03-01");
+            try
+            {
+                log.LogInformation("Removing any pre-existing ACI instance");
+                var resp = await ResourceClient(subscriptionId).Resources.StartDeleteByIdAsync(aciResourceId, "2021-03-01");
+                await resp.WaitForCompletionAsync();
+            }
+            catch(Exception exe)
+            {
+                log.LogError($"Unable to remove existing ACI instance: {exe.Message}");
+                return false;
+            }
+            return true;
+        }
+
+
     }
 }

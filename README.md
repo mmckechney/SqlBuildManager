@@ -129,7 +129,7 @@ You define your database update targets leveraging an `--override` file or using
 
 ## Running Builds (command line)
 
-There are 4 ways to run your database update builds each with their target use case
+There are 5 ways to run your database update builds each with their target use case
 
 ### **Local**
 

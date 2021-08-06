@@ -38,8 +38,7 @@ namespace SqlBuildManager.Console.KeyVault
                         new AzureCliCredential(), 
                         new AzurePowerShellCredential(), 
                         new VisualStudioCredential(),
-                        new VisualStudioCodeCredential(),
-                        new InteractiveBrowserCredential());
+                        new VisualStudioCodeCredential();
                 }
                 return _tokenCred;
             }

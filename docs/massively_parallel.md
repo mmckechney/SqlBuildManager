@@ -1,8 +1,8 @@
 # Massively Parallel Database Builds
 
-If you have a fleet of databases to update, it could take a very long time to run your build on a single machine - even if you leverage the threaded model. To solve this problem, SQL Build Manager offers two ways to parallelize database builds across many compute nodes: [Azure Batch](azure_batch.md),  [Kubernetes](kubernetes.md) and [Azure Container Instances (ACI)](aci.md).
+If you have a fleet of databases to update, it could take a very long time to run your build on a single machine - even if you leverage the threaded model. To solve this problem, SQL Build Manager offers three ways to parallelize database builds across many compute nodes: [Azure Batch](azure_batch.md),  [Kubernetes](kubernetes.md) and [Azure Container Instances (ACI)](aci.md).
 
-In both methods, each compute resource is able to manage concurrency to help you maximize throughput while not overloading your SQL Servers. See [Concurrency Options](concurrency_options.md).
+In each method, compute resources area able to manage concurrency to help you maximize throughput while not overloading your SQL Servers. See [Concurrency Options](concurrency_options.md).
 
 ----
 
@@ -51,12 +51,13 @@ The `create_azure_resources.ps1` script will create the following resources whic
 In addition to creating the resources above it will create the following files in the `outputPath` location folder:
 
 1. `settingsfile-*.json` - batch settings files that contains all of the SQL, Batch, Storage and Service Bus endpoints and connection keys for use in testing. There will also be two files ending with `-keyvault.json` that will not contain any secrets, but will instead contain the Key Vault name. The secrets will also have been saved to the Key Vault.
-2. `settingsfilekey.txt` - a text file containing the encryption key for the settings files
-3. `secrets.yaml` - secrets file containing the the Base64 encoded keys, connection strings and password used by Kubernetes. This file is not needed if using Key Vault.
-4. `runtime.yaml` - runtime files template for Kubernetes builds
-5. `secretsProviderClass.yaml` - the Azure Key vault `SecretProviderClass` configuration set up with the Key Vault name and Managed Identity information. Used by Kubernetes when leveraging Key Vault
-6. `podIdentityAndBinding.yaml` - the Azure Key vault `AzureIdentity` and `AzureIdentityBinding` configuration set up  with the Key Vault name and Managed Identity information. Used by Kubernetes when leveraging Key Vault
-7. `databasetargets.cfg` - a pre-configured database listing file for use in a Batch, Kubernetes or threaded execution targeting the SQL Azure databases just created. This is used by the integration tests
+2. `settingsfile-linux-aci-queue-keyvault.json` - settings file for ACI builds. This will not contain secrets as ACI will always leverage Key Vault.
+3. `settingsfilekey.txt` - a text file containing the encryption key for the settings files
+5. `secrets.yaml` - secrets file containing the the Base64 encoded keys, connection strings and password used by Kubernetes. This file is not needed if using Key Vault.
+6. `runtime.yaml` - runtime files template for Kubernetes builds
+7. `secretsProviderClass.yaml` - the Azure Key vault `SecretProviderClass` configuration set up with the Key Vault name and Managed Identity information. Used by Kubernetes when leveraging Key Vault
+8. `podIdentityAndBinding.yaml` - the Azure Key vault `AzureIdentity` and `AzureIdentityBinding` configuration set up  with the Key Vault name and Managed Identity information. Used by Kubernetes when leveraging Key Vault
+9. `databasetargets.cfg` - a pre-configured database listing file for use in a Batch, Kubernetes or threaded execution targeting the SQL Azure databases just created. This is used by the integration tests
 
 **IMPORTANT:** These files can be used _as is_ for the integration testing but are also great reference examples of how to create your own files for production use
 

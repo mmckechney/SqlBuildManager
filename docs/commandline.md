@@ -104,4 +104,4 @@ the `--rootloggingpath` flag. For a simple threaded execution, this is a
 single root folder. For a remote server execution, this folder is
 created for each execution server.
 
-### For for details and script run troubleshooting suggestions, see [Log Files Details for Threaded, Batch and Kubernetes execution](threaded_and_batch_logs.md)
+### For for details and script run troubleshooting suggestions, see [Log Files Details for Threaded, Batch,  Kubernetes and ACI execution](threaded_and_batch_logs.md)

@@ -853,6 +853,10 @@ namespace SqlBuildManager.Console
                 totalLoops++;
             }
 
+            if (cmdLine.AciArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName))
+            {
+                await Aci.AciHelper.DeleteAciInstance(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName);
+            }
             await qManager.DeleteSubscription();
 
             string sas = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, true);

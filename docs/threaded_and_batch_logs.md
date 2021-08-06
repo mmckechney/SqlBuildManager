@@ -1,10 +1,10 @@
-# Log Files Details for Threaded,  Batch and Kubernetes execution
+# Log Files Details for Threaded,  Batch, Kubernetes and ACI execution
 
-Whether running a `threaded`, `batch` or `k8s` run, the tooling will create several log files for you reference, auditing and troubleshooting. 
+Whether running a `threaded`, `batch`, `k8s` or `aci` run, the tooling will create several log files for you reference, auditing and troubleshooting. 
 
 - For a `threaded run` these logs will be located in the current directory or in the path designated by the `--rootloggingpath` argument
 - For a `batch run` the logs will be stored in the Azure Storage account associated with the Batch account. You can view the logs in several ways, including the the [Azure portal](http://portal.azure.com), [Azure Batch Explorer](https://azure.github.io/BatchExplorer/) and [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
-- For `k8s` runs on Kubernetes, the logs will be stored in Azure storage that you can access with the  [Azure portal](http://portal.azure.com) or [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
+- For `k8s` runs on Kubernetes and `aci` runs on Azure Container Instances, the logs will be stored in Azure storage that you can access with the  [Azure portal](http://portal.azure.com) or [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
 
 ----
 
