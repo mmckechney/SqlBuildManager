@@ -1,0 +1,28 @@
+apiVersion: 2019-12-01
+location: eastus
+name: sbm4aci
+properties:
+  containers:
+  - name: sqlbuildmanager1
+    properties:
+      image: blueskydevus/sqlbuildmanager:14.0.0
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 1.5
+  - name: sqlbuildmanager2
+    properties:
+      image: blueskydevus/sqlbuildmanager:14.0.0
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 1.5
+  - name: sqlbuildmanager3
+    properties:
+      image: blueskydevus/sqlbuildmanager:14.0.0
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 1.5
+  osType: Linux
+type: Microsoft.ContainerInstance/containerGroups

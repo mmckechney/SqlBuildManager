@@ -7,7 +7,6 @@ using SqlBuildManager.Console.CloudStorage;
 using Azure.Storage;
 using System.Threading.Tasks;
 using SqlBuildManager.Console.CommandLine;
-using Microsoft.SqlServer.Management.SqlParser.Metadata;
 using System.Net.Sockets;
 using YamlDotNet.Serialization;
 namespace SqlBuildManager.Console.Container
@@ -26,10 +25,10 @@ namespace SqlBuildManager.Console.Container
             try
             {
                 args.EventHubConnection = File.ReadAllText("/etc/sbm/EventHubConnectionString");
-                log.LogDebug($"eventhub= {args.BatchArgs.EventHubConnectionString}");
+                log.LogDebug($"eventhub= {args.ConnectionArgs.EventHubConnectionString}");
 
                 args.ServiceBusTopicConnection=  File.ReadAllText("/etc/sbm/ServiceBusTopicConnectionString");
-                log.LogDebug($"serviceBus= {args.BatchArgs.ServiceBusTopicConnectionString}");
+                log.LogDebug($"serviceBus= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
 
                 args.Password = File.ReadAllText("/etc/sbm/Password");
                 log.LogDebug($"password= {args.AuthenticationArgs.Password}");
@@ -38,17 +37,17 @@ namespace SqlBuildManager.Console.Container
                 log.LogDebug($"username= {args.AuthenticationArgs.UserName}");
 
                 args.StorageAccountName = File.ReadAllText("/etc/sbm/StorageAccountName");
-                log.LogDebug($"storageaccountname= {args.BatchArgs.StorageAccountName}");
+                log.LogDebug($"storageaccountname= {args.ConnectionArgs.StorageAccountName}");
 
                 args.StorageAccountKey = File.ReadAllText("/etc/sbm/StorageAccountKey");
-                log.LogDebug($"storageaccountkey= {args.BatchArgs.StorageAccountKey}");
+                log.LogDebug($"storageaccountkey= {args.ConnectionArgs.StorageAccountKey}");
 
                 return (true,args);
             }
             catch(Exception ex)
             {
                 log.LogError($"Unable to read secrets: {ex.Message}");
-                log.LogWarning("The secrets needed for running a container worker have not been set.They should be set as secrets mounted to /etc/sbm");
+                log.LogWarning("The secrets needed for running a container/pod worker have not been set.They should be set as secrets mounted to /etc/sbm");
                 return (false,args);
             }
         }
@@ -68,7 +67,7 @@ namespace SqlBuildManager.Console.Container
             catch (Exception ex)
             {
                 log.LogError($"Unable to read runtime parameters: {ex.Message}");
-                log.LogWarning("The runtime variables for running a container worker have not been set. They should be set as a Configmap mounted to /etc/runtime");
+                log.LogWarning("The runtime variables for running a container/pod worker have not been set. They should be set as a Configmap mounted to /etc/runtime");
                 return (false,args);
             }
 
@@ -173,7 +172,7 @@ data:
                 var name = sec["data"][key];
                 return name as string;
             }
-            catch(Exception ex)
+            catch
             {
                 return string.Empty;
             }

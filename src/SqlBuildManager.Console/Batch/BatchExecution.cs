@@ -1,11 +1,10 @@
 ﻿using Azure.Storage;
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
-using Azure.Storage.Sas;
 using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
+using Microsoft.Azure.Batch.Protocol;
+using Microsoft.Azure.Management.Batch;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
@@ -21,6 +20,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using bm = Microsoft.Azure.Management.Batch.Models;
+
 namespace SqlBuildManager.Console.Batch
 {
     public class Execution
@@ -136,7 +139,7 @@ namespace SqlBuildManager.Console.Batch
             //Get the batch and storage values
             string jobId, poolId, storageContainerName;
             (jobId, poolId, storageContainerName) = SetBatchJobAndStorageNames(cmdLine);
-            log.LogInformation($"Using Azure Batch account: {cmdLine.BatchArgs.BatchAccountName} ({cmdLine.BatchArgs.BatchAccountUrl})");
+            log.LogInformation($"Using Azure Batch account: {cmdLine.ConnectionArgs.BatchAccountName} ({cmdLine.ConnectionArgs.BatchAccountUrl})");
             log.LogInformation($"Setting job id to: {jobId}");
 
             string readOnlySasToken = string.Empty;
@@ -148,18 +151,19 @@ namespace SqlBuildManager.Console.Batch
                 timer.Start();
 
                 //Get storage ready
-                BlobServiceClient storageSvcClient = StorageManager.CreateStorageClient(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey);
-                StorageSharedKeyCredential storageCreds = new StorageSharedKeyCredential(cmdLine.BatchArgs.StorageAccountName, cmdLine.BatchArgs.StorageAccountKey);
-                string containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, false);
+                BlobServiceClient storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
+                StorageSharedKeyCredential storageCreds = new StorageSharedKeyCredential(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
+                string containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName, storageCreds, false);
                 log.LogDebug($"Output write SAS token: {containerSasToken}");
 
 
                 // Get a Batch client using account creds, and create the pool
-                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchArgs.BatchAccountUrl, cmdLine.BatchArgs.BatchAccountName, cmdLine.BatchArgs.BatchAccountKey);
+                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, cmdLine.ConnectionArgs.BatchAccountName, cmdLine.ConnectionArgs.BatchAccountKey);
                 batchClient = BatchClient.Open(cred);
 
                 // Create a Batch pool, VM configuration, Windows Server image
-                bool success = CreateBatchPool(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize, cmdLine.BatchArgs.BatchPoolOs);
+                //bool success = CreateBatchPoolLegacy(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount,cmdLine.BatchArgs.BatchVmSize,cmdLine.BatchArgs.BatchPoolOs);
+                bool success = CreateBatchPool(cmdLine, poolId).GetAwaiter().GetResult();
 
 
                 // The collection of data files that are to be processed by the tasks
@@ -184,7 +188,7 @@ namespace SqlBuildManager.Console.Batch
 
                 //Get the list of DB targets and distribute across batch count
                 var splitTargets = new List<string[]>();
-                if (string.IsNullOrEmpty(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+                if (string.IsNullOrEmpty(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
                 {
                     int valRet = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, null, out MultiDbData multiDb, out errorMessages);
                     List<IEnumerable<(string, List<DatabaseOverride>)>> concurrencyBuckets = null;
@@ -235,7 +239,7 @@ namespace SqlBuildManager.Console.Batch
 
                 foreach (string filePath in inputFilePaths)
                 {
-                    inputFiles.Add(StorageManager.UploadFileToBatchContainer(cmdLine.BatchArgs.StorageAccountName, storageContainerName,storageCreds, filePath));
+                    inputFiles.Add(StorageManager.UploadFileToBatchContainer(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName,storageCreds, filePath));
                 }
 
                 //Create the individual command lines for each node
@@ -270,7 +274,7 @@ namespace SqlBuildManager.Console.Batch
                 {
                     log.LogInformation($"Adding {splitTargets.Count} tasks to job [{jobId}]...");
                 }
-                else if(!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+                else if(!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
                 {
                     log.LogInformation($"Adding tasks to job [{jobId}]...");
                 }
@@ -393,7 +397,7 @@ namespace SqlBuildManager.Console.Batch
                 }                    
 
 
-                readOnlySasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.BatchArgs.StorageAccountName, storageContainerName, storageCreds, true);
+                readOnlySasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName, storageCreds, true);
                 log.LogInformation($"Log files can be found here: {readOnlySasToken}");
                 log.LogInformation("The read-only SAS token URL is valid for 7 days.");
                 log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
@@ -496,18 +500,14 @@ namespace SqlBuildManager.Console.Batch
             return (jobId, poolId, storageContainerName);
         }
 
-       
-        
-
-        private bool CreateBatchPool(BatchClient batchClient, string poolId, int nodeCount, string vmSize, OsType os)
+        private bool CreateBatchPoolLegacy(BatchClient batchClient, string poolId, int nodeCount, string vmSize, OsType os)
         {
             log.LogInformation($"Creating pool [{poolId}]...");
-
             ImageReference imageReference;
             VirtualMachineConfiguration virtualMachineConfiguration;
             switch (os)
             {
-                
+
                 case OsType.Linux:
                     imageReference = new ImageReference(publisher: "Canonical", offer: "UbuntuServer", sku: "18.04-lts", version: "latest");
                     virtualMachineConfiguration = new VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 18.04");
@@ -524,7 +524,7 @@ namespace SqlBuildManager.Console.Batch
             try
             {
                 CloudPool pool = batchClient.PoolOperations.CreatePool(
-                    poolId: poolId, 
+                    poolId: poolId,
                     targetDedicatedComputeNodes: nodeCount,
                     virtualMachineSize: vmSize,
                     virtualMachineConfiguration: virtualMachineConfiguration);
@@ -568,14 +568,89 @@ namespace SqlBuildManager.Console.Batch
                     throw; // Any other exception is unexpected
                 }
             }
-            //if (os == OsType.Linux)
-            //{
-           // string shellScript = $"$AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/ install_sqlpackage.sh";
-            //    CloudPool pool = batchClient.PoolOperations.GetPool(poolId);
-            //    pool.StartTask.CommandLine =
-            //}                    
-
             return true;
+        }
+
+        private async Task<bool> CreateBatchPool(CommandLineArgs cmdLine, string poolId)
+        {
+
+            var batchAccountName = cmdLine.ConnectionArgs.BatchAccountName;
+            var batchAccountKey = cmdLine.ConnectionArgs.BatchAccountKey.EncodeBase64();
+            var batchUrl = cmdLine.ConnectionArgs.BatchAccountUrl;
+
+            var nodeCount = cmdLine.BatchArgs.BatchNodeCount;
+            var vmSize = cmdLine.BatchArgs.BatchVmSize;
+            var os = cmdLine.BatchArgs.BatchPoolOs;
+
+            var userAssignedResourceId = cmdLine.IdentityArgs.ResourceId;
+            var userAssignedPrinId = cmdLine.IdentityArgs.PrincipalId;
+            var userAssignedClientId = cmdLine.IdentityArgs.ClientId;
+            var resourceGroupName = cmdLine.IdentityArgs.ResourceGroup;
+            var subscriptionId = cmdLine.IdentityArgs.SubscriptionId;
+
+
+            log.LogInformation($"Creating pool [{poolId}]...");
+
+            //var creds = new BatchSharedKeyCredential(batchAccountName, batchAccountKey);
+            var creds = new CustomClientCredentials(KeyVault.KeyVaultHelper.TokenCredential);
+            var managementClient = new BatchManagementClient(creds);
+            managementClient.SubscriptionId = subscriptionId;
+
+            //// From: https://docs.microsoft.com/en-us/azure/batch/managed-identity-pools
+            bm.ImageReference imageReference;
+            bm.VirtualMachineConfiguration virtualMachineConfiguration;
+            switch (os)
+            {
+                case OsType.Linux:
+                    imageReference = new bm.ImageReference(publisher: "Canonical", offer: "UbuntuServer", sku: "18.04-lts", version: "latest");
+                    virtualMachineConfiguration = new bm.VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 18.04");
+                    break;
+
+                case OsType.Windows:
+                default:
+                    imageReference = new bm.ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer", sku: "2016-Datacenter-with-containers", version: "latest");
+                    virtualMachineConfiguration = new bm.VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
+
+                    break;
+            }
+
+            var deploymentConfig = new bm.DeploymentConfiguration() { VirtualMachineConfiguration = virtualMachineConfiguration };
+            var ids = new Dictionary<string, bm.BatchPoolIdentityUserAssignedIdentitiesValue>();
+            ids.Add(userAssignedResourceId, new bm.BatchPoolIdentityUserAssignedIdentitiesValue(principalId: userAssignedPrinId, clientId: userAssignedClientId));
+
+            var poolIdentity = new bm.BatchPoolIdentity() { Type = bm.PoolIdentityType.UserAssigned, UserAssignedIdentities = ids };
+            var scaleSettings = new bm.ScaleSettings() { FixedScale = new bm.FixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
+
+            var poolParameters = new bm.Pool(name: poolId)
+            {
+                VmSize = vmSize,
+                ScaleSettings = scaleSettings,
+                DeploymentConfiguration = deploymentConfig,
+                Identity = poolIdentity
+                
+            };
+            try
+            {
+                var pool = await managementClient.Pool.CreateWithHttpMessagesAsync(
+                    poolName: poolId,
+                    resourceGroupName: resourceGroupName,
+                    accountName: batchAccountName,
+                    parameters: poolParameters,
+                    cancellationToken: default(CancellationToken));
+
+                if(!pool.Response.IsSuccessStatusCode)
+                {
+                    log.LogWarning($"Issue creating pool: {pool.Body.ProvisioningState.ToString()}");
+                    return false;
+                }
+            }
+            catch (Exception exe)
+            {
+                log.LogError($"Error creating Batch Pool: {exe.ToString()}");
+                return false;
+            }
+            return true;
+
         }
 
 
@@ -756,11 +831,12 @@ namespace SqlBuildManager.Console.Batch
             log.LogInformation("Creating Batch pool nodes ");
 
             // Get a Batch client using account creds, and create the pool
-            BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchArgs.BatchAccountUrl, cmdLine.BatchArgs.BatchAccountName, cmdLine.BatchArgs.BatchAccountKey);
+            BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, cmdLine.ConnectionArgs.BatchAccountName, cmdLine.ConnectionArgs.BatchAccountKey);
             var batchClient = BatchClient.Open(cred);
 
             // Create a Batch pool, VM configuration, Windows Server image
-            bool success = CreateBatchPool(batchClient, PoolName, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize, cmdLine.BatchArgs.BatchPoolOs);
+           // bool success = CreateBatchPoolLegacy(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize, cmdLine.BatchArgs.BatchPoolOs);
+            bool success = CreateBatchPool(cmdLine, PoolName).GetAwaiter().GetResult();
 
             if (cmdLine.BatchArgs.PollBatchPoolStatus)
             {
@@ -824,7 +900,7 @@ namespace SqlBuildManager.Console.Batch
         
             if(success)
             {
-                log.LogInformation($"Batch pool of {cmdLine.BatchArgs.BatchNodeCount} nodes created for account {cmdLine.BatchArgs.BatchAccountName} ");
+                log.LogInformation($"Batch pool of {cmdLine.BatchArgs.BatchNodeCount} nodes created for account {cmdLine.ConnectionArgs.BatchAccountName} ");
                 return 0;
             }
             else
@@ -854,11 +930,11 @@ namespace SqlBuildManager.Console.Batch
             try
             {
                 // Get a Batch client using account creds, and create the pool
-                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.BatchArgs.BatchAccountUrl, cmdLine.BatchArgs.BatchAccountName, cmdLine.BatchArgs.BatchAccountKey);
+                BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, cmdLine.ConnectionArgs.BatchAccountName, cmdLine.ConnectionArgs.BatchAccountKey);
                 var batchClient = BatchClient.Open(cred);
 
                 
-                log.LogInformation($"Deleting batch pool {this.PoolName} from Batch account {cmdLine.BatchArgs.BatchAccountName}");
+                log.LogInformation($"Deleting batch pool {this.PoolName} from Batch account {cmdLine.ConnectionArgs.BatchAccountName}");
 
                 //Delete the pool
                 batchClient.PoolOperations.DeletePool(this.PoolName);
@@ -902,7 +978,7 @@ namespace SqlBuildManager.Console.Batch
                 }
                 else
                 {
-                    log.LogError($"Error encountered trying to delete pool {this.PoolName} from Batch account {cmdLine.BatchArgs.BatchAccountName}.{Environment.NewLine}{exe.ToString()}");
+                    log.LogError($"Error encountered trying to delete pool {this.PoolName} from Batch account {cmdLine.ConnectionArgs.BatchAccountName}.{Environment.NewLine}{exe.ToString()}");
                     return 42345346;
                 }
             }

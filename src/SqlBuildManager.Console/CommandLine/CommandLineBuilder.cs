@@ -16,6 +16,7 @@ namespace SqlBuildManager.Console.CommandLine
         {
             var settingsfileOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile" }.ExistingOnly();
             var settingsfileNewOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile" };
+            var settingsFileNewReqOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Name of file to save settings values to") { Name = "FileInfoSettingsFile", IsRequired = true,  };
             var settingsfileKeyOption = new Option<string>(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive informtation in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable. If not provided a machine value will be used.");
             var overrideOption = new Option<string>(new string[] { "--override" }, "File containing the target database settings (usually a formatted .cfg file)");
             var serverOption = new Option<string>(new string[] { "-s", "--server" }, "1) Name of a server for single database run or 2) source server for scripting or runtime configuration");
@@ -60,7 +61,7 @@ namespace SqlBuildManager.Console.CommandLine
             var pollbatchpoolstatusOption = new Option<bool>(new string[] { "--poll", "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true) or fire and forget (false)");
             var defaultscripttimeoutOption = new Option<int>(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC");
             var authtypeOption = new Option<SqlSync.Connection.AuthenticationType>(new string[] { "--authtype" }, "SQL Authentication type to use.") { Name = "AuthenticationType" };
-            var silentOption = new Option<bool>(new string[] { "--silent" }, () => false, "Suppresses overwrite prompt if file already exists");
+            var silentOption = new Option<bool>(new string[] { "--silent", "--force" }, () => false, "Suppresses overwrite prompt if file already exists");
             var outputcontainersasurlOption = new Option<string>(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command") { IsHidden = true };
             var dacpacOutputOption = new Option<string>(new string[] { "--dacpacname" }, "Name of the dacpac that you want to create") { IsRequired = true };
             var cleartextOption = new Option<bool>(new string[] { "--cleartext" }, () => false, "Flag to save settings file in clear text (vs. encrypted)");
@@ -82,6 +83,21 @@ namespace SqlBuildManager.Console.CommandLine
 
             var platinumdacpacSourceOption = new Option<FileInfo>(new string[] { "-pd", "--platinumdacpac" }, "Name of the dacpac containing the platinum schema") { IsRequired = true }.ExistingOnly();
             var targetdacpacSourceOption = new Option<FileInfo>(new string[] { "-td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated") { IsRequired = true }.ExistingOnly();
+            var keyVaultNameOption = new Option<string>(new string[] { "-kv", "--keyvaultname" }, "Name of Azure Key Vault to save secrets to/ retrieve from. If provided, secrets will NOT be saved to the settings file or secrets.yaml");
+
+            var clientIdOption = new Option<string>("--clientid", "Client ID (AppId) for the Azure User Assigned Managed Identity");
+            var principalIdOption = new Option<string>("--principalid", "Principal ID for the Azure User Assigned Managed Identity");
+            var resourceIdOption = new Option<string>("--resourceid", "Resource ID (full resource path) for the Azure User Assigned Managed Identity");
+            var identityResourceGroupOption = new Option<string>(new string[] {"--idrg", "--identityresourcegroup" }, "Resource Group name for the Azure User Assigned Managed Identity");
+            var subscriptionIdOption = new Option<string>("--subscriptionid", "Azure subscription Id for the Azure resources");
+            var aciContainerCountOption = new Option<int>("--containercount", "Number of containers to create for processing") { IsRequired = true };
+            var aciInstanceNameOption = new Option<string>("--aciname", "Name of the Azure Container Instance you will create and deploy to") { IsRequired= true };
+            var aciIResourceGroupNameOption = new Option<string>(new string[] { "--acirg", "--aciresourcegroup" }, "Name of the Resource Group for the ACI deployment") { IsRequired = true };
+            var aciIdentityNameOption = new   Option<string>("--identityname", "Name of User Assigned Managed identity that will be assigned to the Container Instance") { IsRequired = true};
+            var aciOutputFileOption = new Option<FileInfo>("--outputfile", "File name to save ACI ARM template");
+            var aciArmTemplateOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')") { IsRequired = true }.ExistingOnly();
+            var aciSubscriptionIdOption = new Option<string>("--subscriptionid", "Subscription to deploy ACI to");
+            var aciContainerTagOption = new Option<string>(new string[] { "--tag", "--containertag" }, "Tag for container image to pull from registry");
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
             {
@@ -94,6 +110,7 @@ namespace SqlBuildManager.Console.CommandLine
             };
             dacpacCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateDacpac);
 
+            #region Local and Threaded
 
             //General Local building options
             var buildCommand = new Command("build", "Performs a standard, local SBM execution via command line")
@@ -167,7 +184,9 @@ namespace SqlBuildManager.Console.CommandLine
             threadedCommand.Add(threadedQueryCommand);
             threadedCommand.Add(threadedRunCommand);
 
+            #endregion
 
+            #region BatchExecution
             /****************************************
              * Batch 
              ***************************************/
@@ -180,6 +199,7 @@ namespace SqlBuildManager.Console.CommandLine
                 overrideOption.Copy(true),
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
@@ -190,6 +210,12 @@ namespace SqlBuildManager.Console.CommandLine
                 batchpoolOsOption,
                 batchpoolnameOption,
                 batchApplicationOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                identityResourceGroupOption,
+                subscriptionIdOption,
                 //Batch execution options
                 deletebatchpoolOption,
                 deletebatchjobOption,
@@ -223,6 +249,7 @@ namespace SqlBuildManager.Console.CommandLine
                 overrideOption,
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
@@ -267,10 +294,17 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                identityResourceGroupOption,
+                subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
                 batchvmsizeOption,
@@ -287,6 +321,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
@@ -299,6 +334,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption
@@ -314,10 +350,18 @@ namespace SqlBuildManager.Console.CommandLine
                 usernameOption,
                 settingsfileKeyOption,
                 settingsfileNewOption,
+                //Key value option
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                identityResourceGroupOption,
+                subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
                 batchvmsizeOption,
@@ -350,6 +394,7 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyTypeOption.Copy(true),
                 settingsfileOption,
                 settingsfileKeyOption,
+                keyVaultNameOption,
                 serviceBusconnectionOption,
                 overrideOption.Copy(true)
             };
@@ -359,6 +404,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 settingsfileOption,
                 settingsfileKeyOption,
+                keyVaultNameOption,
                 serviceBusconnectionOption, 
                 batchjobnameOption,
                 threadedConcurrencyTypeOption
@@ -379,10 +425,17 @@ namespace SqlBuildManager.Console.CommandLine
                 silentOption,
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                identityResourceGroupOption,
+                subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
                 batchvmsizeOption,
@@ -417,10 +470,17 @@ namespace SqlBuildManager.Console.CommandLine
                 outputFileOption.Copy(true),
                 settingsfileKeyOption,
                 settingsfileOption,
+                keyVaultNameOption,
                 //Batch account options
                 batchaccountnameOption,
                 batchaccountkeyOption,
                 batchaccounturlOption,
+                //Managed Identity options
+                clientIdOption,
+                principalIdOption,
+                resourceIdOption,
+                identityResourceGroupOption,
+                subscriptionIdOption,
                 //Batch node options
                 batchnodecountOption,
                 batchvmsizeOption,
@@ -459,29 +519,34 @@ namespace SqlBuildManager.Console.CommandLine
             batchCommand.Add(batchRunThreadedCommand);
             batchCommand.Add(batchQueryThreadedCommand);
             batchCommand.Add(batchDeleteJobsCommand);
+            #endregion
 
+            #region KubernetesExecution
             /****************************************
-             * Container queue commands 
+             * Kubernetes commands 
              ***************************************/
 
-            var containerWorkerCommand = new Command("worker", "[Used by Kubernetes] Starts the container as a worker - polling and retrieving items from target service bus queue topic");
-            containerWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunContainerQueueWorker);
+            var kubernetesWorkerCommand = new Command("worker", "[Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
+            kubernetesWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunKubernetesQueueWorker);
 
-            var containerEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
+            var kubernetesEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
             {
                 secretsFileOption,
                 runtimeFileOption,
+                keyVaultNameOption,
                 jobnameOption,
                 threadedConcurrencyTypeOption,
                 serviceBusconnectionOption,
                 overrideAsFileOption
             };
-            containerEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string,ConcurrencyType,string, FileInfo>(Program.EnqueueContainerOverrideTargets);
+            kubernetesEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,string, string,ConcurrencyType,string, FileInfo>(Program.EnqueueContainerOverrideTargets);
 
-            var containerSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes container deployments")
+            var pathOption = new Option<DirectoryInfo>("--path", "Path to save secrets.yaml and runtime.yaml files").ExistingOnly();
+            var kubernetesSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes pod deployments")
             {
                 passwordOption,
                 usernameOption,
+                keyVaultNameOption,
                 storageaccountnameOption,
                 storageaccountkeyOption,
                 eventhubconnectionOption,
@@ -489,17 +554,20 @@ namespace SqlBuildManager.Console.CommandLine
                 serviceBusconnectionOption,
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption,
-                new Option<string>("--prefix", "Settings file's prefix")
+                new Option<string>("--prefix", "Settings file's prefix"),
+                pathOption
+                
             };
-            containerSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string>(Program.SaveContainerSettings);
+            kubernetesSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string, DirectoryInfo>(Program.SaveKubernetesSettings);
 
             var unitTestOption = new Option<bool>("--unittest", () => false, "Designation that execution is running as a unit test");
             unitTestOption.IsHidden = true;
             
-            var containerMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
+            var kubernetesMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {
                 secretsFileOption,
                 runtimeFileOption,
+                keyVaultNameOption,
                 jobnameOption,
                 overrideOption,
                 threadedConcurrencyTypeOption,
@@ -507,12 +575,13 @@ namespace SqlBuildManager.Console.CommandLine
                 eventhubconnectionOption, 
                 unitTestOption
             };
-            containerMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,CommandLineArgs, bool>(Program.MonitorContainerRuntimeProgress);
+            kubernetesMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool>(Program.MonitorKubernetesRuntimeProgress);
 
-            var containerPrepCommand = new Command("prep", "Creates a storage container and uploads the SBM package file that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values")
+            var kubernetesrPrepCommand = new Command("prep", "Creates a storage container and uploads the SBM package file that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values")
             {
                 secretsFileOption,
                 runtimeFileOption,
+                keyVaultNameOption,
                 jobnameOption,
                 storageaccountnameOption,
                 storageaccountkeyOption,
@@ -520,30 +589,145 @@ namespace SqlBuildManager.Console.CommandLine
                 forceOption
 
             };
-            containerPrepCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, string, string, string, bool>(Program.UploadContainerBuildPackage);
+            kubernetesrPrepCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, string, string, string, string, bool>(Program.UploadKubernetesBuildPackage);
 
-            var containerDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
+            var kubernetesDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
                 secretsFileOption,
                 runtimeFileOption,
+                keyVaultNameOption,
                 jobnameOption,
                 threadedConcurrencyTypeOption,
                 serviceBusconnectionOption
             };
-            containerDequeueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, ConcurrencyType, string>(Program.DequeueContainerOverrideTargets);
+            kubernetesDequeueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, string, ConcurrencyType, string>(Program.DequeueKubernetesOverrideTargets);
 
 
 
-            var containerCommand = new Command("container", "Designator that the program is running in a container");
-            containerCommand.Add(containerSaveSettingsCommand);
-            containerCommand.Add(containerPrepCommand);
-            containerCommand.Add(containerEnqueueTargetsCommand);
-            containerCommand.Add(containerMonitorCommand);
-            containerCommand.Add(containerDequeueTargetsCommand);
-            containerCommand.Add(containerWorkerCommand);
+            var kubernetesCommand = new Command("k8s", "Commands for setting and executing a build running in pods on Kubernetes");
+            kubernetesCommand.Add(kubernetesSaveSettingsCommand);
+            kubernetesCommand.Add(kubernetesrPrepCommand);
+            kubernetesCommand.Add(kubernetesEnqueueTargetsCommand);
+            kubernetesCommand.Add(kubernetesMonitorCommand);
+            kubernetesCommand.Add(kubernetesDequeueTargetsCommand);
+            kubernetesCommand.Add(kubernetesWorkerCommand);
+            #endregion
+
+            /****************************************
+             * ACI commands 
+             ***************************************/
+            var aciCommand = new Command("aci", "Commands for setting and executing a build running in containers on Azure Container Instances. ACI Containers will always leverage Azure Key Vault.");
+            var aciSaveSettingsCommand = new Command("savesettings", "Saves settings file for Azure Container Instances container deployments")
+            {
+                passwordOption,
+                usernameOption,
+                settingsFileNewReqOption,
+                aciInstanceNameOption,
+                aciIdentityNameOption,
+                aciContainerTagOption,
+                identityResourceGroupOption,
+                aciIResourceGroupNameOption,
+                aciSubscriptionIdOption,
+                //Key value option
+                keyVaultNameOption.Copy(true),
+                storageaccountnameOption,
+                storageaccountkeyOption,
+                eventhubconnectionOption,
+                defaultscripttimeoutOption,
+                //threadedConcurrencyOption,
+                //threadedConcurrencyTypeOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
+                //Additional settings
+                timeoutretrycountOption,
+                silentOption,
+                cleartextOption
+
+            };
+            aciSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.SaveAndEncryptAciSettings);
+
+            var aciPrepCommand = new Command("prep", "Creates ACI arm template, a storage container, and uploads the SBM package file that will be used for the build. ")
+            {
+                settingsfileOption,
+                keyVaultNameOption,
+                aciInstanceNameOption.Copy(false),
+                aciIdentityNameOption.Copy(false),
+                aciContainerTagOption,
+                identityResourceGroupOption.Copy(false),
+                aciIResourceGroupNameOption.Copy(false),
+                aciContainerCountOption.Copy(true),
+                jobnameOption.Copy(true),
+                threadedConcurrencyOption.Copy(true),
+                threadedConcurrencyTypeOption.Copy(true),
+                storageaccountnameOption,
+                storageaccountkeyOption,
+                packagenameAsFileToUploadOption,
+                aciOutputFileOption,
+                forceOption
+
+            };
+            aciPrepCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Program.PrepAndUploadAciBuildPackage);
+
+            var aciEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
+            {
+                settingsfileOption,
+                keyVaultNameOption,
+                jobnameOption.Copy(true),
+                threadedConcurrencyTypeOption.Copy(true),
+                serviceBusconnectionOption,
+                overrideOption.Copy(true)
+            };
+            aciEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.EnqueueOverrideTargets);
+
+            var aciDeployCommand = new Command("deploy", "Deploy the ACI instance using the template file created from 'sbm prep' and start containers")
+            {
+                settingsfileOption,
+                aciArmTemplateOption,
+                aciIResourceGroupNameOption.Copy(false),
+                aciSubscriptionIdOption.Copy(false),
+                aciContainerTagOption,
+                overrideOption.Copy(false),
+                unitTestOption,
+                new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment")
+            };
+            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool, bool>(Program.DeployAciTemplate);
+
+            var aciMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
+            {
+                settingsfileOption,
+                keyVaultNameOption,
+                jobnameOption,
+                overrideOption,
+                threadedConcurrencyTypeOption,
+                serviceBusconnectionOption,
+                eventhubconnectionOption,
+                unitTestOption
+            };
+            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.MonitorServiceBusRuntimeProgress);
+
+            var aciDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
+            {
+                settingsfileOption,
+                keyVaultNameOption,
+                serviceBusconnectionOption,
+                jobnameOption.Copy(true),
+                threadedConcurrencyTypeOption
+            };
+            aciDequeueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.DeQueueOverrideTargets);
+
+            var aciWorkerCommand = new Command("worker", "[Used by ACI] Starts the container(s) as a worker - polling and retrieving items from target service bus queue topic");
+            aciWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunAciQueueWorker);
+
+            aciCommand.Add(aciSaveSettingsCommand);
+            aciCommand.Add(aciPrepCommand);
+            aciCommand.Add(aciEnqueueTargetsCommand);
+            aciCommand.Add(aciDeployCommand);
+            aciCommand.Add(aciMonitorCommand);
+            aciCommand.Add(aciDequeueTargetsCommand);
+            aciCommand.Add(aciWorkerCommand);   
 
 
-
+            #region Utility Commands
             /****************************************
              * Utility commands 
              ***************************************/
@@ -679,14 +863,19 @@ namespace SqlBuildManager.Console.CommandLine
                 databaseOption.Copy(true)
             };
             createBackoutCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateBackout);
+            #endregion
 
-
+            var authCommand = new Command("authtest", "Test Azure authentication");
+            authCommand.Handler = CommandHandler.Create(Program.TestAuth);
+            authCommand.IsHidden = true;
 
             RootCommand rootCommand = new RootCommand(description: "Tool to manage your SQL server database updates and releases");
             rootCommand.Add(logLevelOption);
             rootCommand.Add(buildCommand);
             rootCommand.Add(threadedCommand);
             rootCommand.Add(batchCommand);
+            rootCommand.Add(kubernetesCommand);
+            rootCommand.Add(aciCommand);
             rootCommand.Add(createCommand);
             rootCommand.Add(addCommand);
             rootCommand.Add(packageCommand);
@@ -698,7 +887,8 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(getDifferenceCommand);
             rootCommand.Add(synchronizeCommand);
             rootCommand.Add(scriptExtractCommand);
-            rootCommand.Add(containerCommand);
+
+            rootCommand.Add(authCommand);
     
 
             return rootCommand;

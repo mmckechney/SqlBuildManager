@@ -22,7 +22,7 @@ namespace SqlBuildManager.Logging
             ApplicationLogging.CloseAndFlush();
 
             //Needed to make sure all files are saved and flushed
-            Thread.Sleep(3000);
+            Thread.Sleep(1000);
         }
         
     }

@@ -21,6 +21,8 @@ namespace SqlBuildManager.Console.CommandLine
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
         public Batch BatchArgs { get; set; } = new Batch();
         public Connections ConnectionArgs { get; set; } = new Connections();
+        public Identity IdentityArgs { get; set; } = new Identity();
+        public Aci AciArgs { get; set; } = new Aci();
         [JsonIgnore]
         public DacPac DacPacArgs { get; set; } = new DacPac();
         [JsonIgnore]
@@ -39,13 +41,16 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 return this.settingsFile;
             }
-            private set
+            internal set
             {
                 if (File.Exists(value))
                 {
                     CommandLineArgs cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(value));
                     this.BatchArgs = cmdLine.BatchArgs;
                     this.AuthenticationArgs = cmdLine.AuthenticationArgs;
+                    this.ConnectionArgs = cmdLine.ConnectionArgs;
+                    this.IdentityArgs = cmdLine.IdentityArgs;
+                    this.AciArgs = cmdLine.AciArgs;
 
                     this.RootLoggingPath = cmdLine.RootLoggingPath;
                     this.DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
@@ -148,12 +153,12 @@ namespace SqlBuildManager.Console.CommandLine
             set
             {
                 jobName = value.ToLower();
-                BatchArgs.BatchJobName = value.ToLower();
+                BatchJobName = value.ToLower();
             }
         }
-        [JsonIgnore]
         public virtual int Concurrency { get; set; } = 10;
-        [JsonIgnore]
+
+        [JsonConverter(typeof(StringEnumConverter))]
         public virtual ConcurrencyType ConcurrencyType { get; set; } = ConcurrencyType.Count;
 
         [JsonIgnore]
@@ -175,16 +180,28 @@ namespace SqlBuildManager.Console.CommandLine
         public virtual string ManualOverRideSets { get; set; } = string.Empty;
         #endregion
 
+
+
+
+
         #region Authentication Nested Class and property setters
         [JsonIgnore]
         public virtual string UserName
         {
-            set { AuthenticationArgs.UserName = value; }
+            set
+            {
+                if (AuthenticationArgs == null) AuthenticationArgs = new Authentication();
+                AuthenticationArgs.UserName = value;
+            }
         }
         [JsonIgnore]
         public virtual string Password
         {
-            set { AuthenticationArgs.Password = value; }
+            set
+            {
+                if (AuthenticationArgs == null) AuthenticationArgs = new Authentication(); 
+                AuthenticationArgs.Password = value;
+            }
         }
         [JsonIgnore]
         public virtual SqlSync.Connection.AuthenticationType AuthenticationType
@@ -197,7 +214,7 @@ namespace SqlBuildManager.Console.CommandLine
             public virtual string UserName { get; set; } = string.Empty;
             public virtual string Password { get; set; } = string.Empty;
 
-            [JsonIgnore]
+            [JsonConverter(typeof(StringEnumConverter))]
             public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = SqlSync.Connection.AuthenticationType.Password;
         }
         #endregion
@@ -235,24 +252,23 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public virtual string BatchAccountName
         {
-            set { BatchArgs.BatchAccountName = value; }
+            set { ConnectionArgs.BatchAccountName = value; }
         }
         [JsonIgnore]
         public virtual string BatchAccountKey
         {
-            set { BatchArgs.BatchAccountKey = value; }
+            set { ConnectionArgs.BatchAccountKey = value; }
         }
         [JsonIgnore]
         public virtual string BatchAccountUrl
         {
-            set { BatchArgs.BatchAccountUrl = value; }
+            set { ConnectionArgs.BatchAccountUrl = value; }
         }
         [JsonIgnore]
         public virtual string StorageAccountName
         {
             set
             {
-                BatchArgs.StorageAccountName = value;
                 ConnectionArgs.StorageAccountName = value;
             }
         }
@@ -261,7 +277,6 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                BatchArgs.StorageAccountKey = value;
                 ConnectionArgs.StorageAccountKey = value;
             }
         }
@@ -280,7 +295,6 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                BatchArgs.EventHubConnectionString = value;
                 ConnectionArgs.EventHubConnectionString = value;
             }
         }
@@ -289,7 +303,6 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                BatchArgs.ServiceBusTopicConnectionString = value;
                 ConnectionArgs.ServiceBusTopicConnectionString = value;
             }
         }
@@ -313,11 +326,6 @@ namespace SqlBuildManager.Console.CommandLine
         {
  
             public int BatchNodeCount { get; set; } = 10;
-            public string BatchAccountName { get; set; } = null;
-            public string BatchAccountKey { get; set; } = null;
-            public string BatchAccountUrl { get; set; } = null;
-            public string StorageAccountName { get; set; } = null;
-            public string StorageAccountKey { get; set; } = null;
             public string BatchVmSize { get; set; } = null;
             [JsonIgnore]
             public string OutputContainerSasUrl { get; set; }
@@ -329,9 +337,7 @@ namespace SqlBuildManager.Console.CommandLine
             public string BatchPoolName { get; set; } = null;
             [JsonConverter(typeof(StringEnumConverter))]
             public OsType BatchPoolOs { get; set; }
-            public string EventHubConnectionString { get; set; } = string.Empty;
             public string ApplicationPackage { get; set; } = string.Empty;
-            public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
         }
         #endregion
 
@@ -391,13 +397,54 @@ namespace SqlBuildManager.Console.CommandLine
         }
         #endregion
 
+
+        public string KeyVaultName { set { this.ConnectionArgs.KeyVaultName = value; } }
         public class Connections
         {
+            public string KeyVaultName { get; set; } = string.Empty;
+
             public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
             public string EventHubConnectionString { get; set; } = string.Empty;
             public string StorageAccountName { get; set; } = string.Empty;
             public string StorageAccountKey { get; set; } = string.Empty;
+            public string BatchAccountName { get; set; } = string.Empty;
+            public string BatchAccountKey { get; set; } = string.Empty;
+            public string BatchAccountUrl { get; set; } = string.Empty;
+
         }
+
+        public string ClientId { set { this.IdentityArgs.ClientId = value; } }
+        public string PrincipalId { set { this.IdentityArgs.PrincipalId = value; } }
+        public string ResourceId { set { this.IdentityArgs.ResourceId = value; } }
+        public string IdentityResourceGroup { set { this.IdentityArgs.ResourceGroup = value; } }
+        public string SubscriptionId { set { this.IdentityArgs.SubscriptionId = value;} }
+
+        public class Identity
+        {
+            public string IdentityName { get; set; } = string.Empty;
+            public string ClientId { get; set; } = string.Empty;
+            public string PrincipalId { get; set; } = string.Empty;
+            public string ResourceId { get; set; } = string.Empty;
+            public string ResourceGroup { get; set; } = string.Empty;
+            public string SubscriptionId { get; set; } = string.Empty;
+        }
+
+        
+        public string AciName { set { this.AciArgs.AciName = value; } }
+        public string AciResourceGroup { set { this.AciArgs.ResourceGroup = value; } }
+        public int ContainerCount { set { this.AciArgs.ContainerCount = value; } }
+        public string ContainerTag { set { this.AciArgs.ContainerTag = value; } }
+        public string IdentityName { set { this.IdentityArgs.IdentityName = value; } }
+        public class Aci
+        {
+            public string AciName { get; set; } = string.Empty;
+            public string ResourceGroup { get; set; } = string.Empty;
+            public string ContainerTag { get; set; } = string.Empty;
+            [JsonIgnore]
+            public int ContainerCount{ get; set; } = 10;
+            
+        }
+
         [Serializable]
         public class AutoScripting
         {

@@ -21,33 +21,33 @@ namespace SqlBuildManager.Console.CommandLine
             (tmp,cmdLine) = DecryptSensitiveFields(cmdLine, true); 
             string key = GetSettingsFileEncryptionKey(cmdLine);
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
                 cmdLine.AuthenticationArgs.UserName = sb.Cryptography.EncryptText(cmdLine.AuthenticationArgs.UserName, key);
             }
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
                 cmdLine.AuthenticationArgs.Password = sb.Cryptography.EncryptText(cmdLine.AuthenticationArgs.Password, key);
             }
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchAccountKey))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
             {
-                cmdLine.BatchArgs.BatchAccountKey = sb.Cryptography.EncryptText(cmdLine.BatchArgs.BatchAccountKey, key);
+                cmdLine.ConnectionArgs.BatchAccountKey = sb.Cryptography.EncryptText(cmdLine.ConnectionArgs.BatchAccountKey, key);
             }
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.StorageAccountKey))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
             {
-                cmdLine.BatchArgs.StorageAccountKey = sb.Cryptography.EncryptText(cmdLine.BatchArgs.StorageAccountKey, key);
+                cmdLine.ConnectionArgs.StorageAccountKey = sb.Cryptography.EncryptText(cmdLine.ConnectionArgs.StorageAccountKey, key);
             }
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
-                cmdLine.BatchArgs.EventHubConnectionString = sb.Cryptography.EncryptText(cmdLine.BatchArgs.EventHubConnectionString, key);
+                cmdLine.ConnectionArgs.EventHubConnectionString = sb.Cryptography.EncryptText(cmdLine.ConnectionArgs.EventHubConnectionString, key);
             }
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
-                cmdLine.BatchArgs.ServiceBusTopicConnectionString = sb.Cryptography.EncryptText(cmdLine.BatchArgs.ServiceBusTopicConnectionString, key);
+                cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = sb.Cryptography.EncryptText(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, key);
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
@@ -79,36 +79,36 @@ namespace SqlBuildManager.Console.CommandLine
             bool success;
             string key = GetSettingsFileEncryptionKey(cmdLine);
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
                 (success,  cmdLine.AuthenticationArgs.UserName) = sb.Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, key, "--username", suppressLog);
                 consolidated = consolidated & success;
             }
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
                 (success, cmdLine.AuthenticationArgs.Password) = sb.Cryptography.DecryptText(cmdLine.AuthenticationArgs.Password, key, "--password", suppressLog);
                 consolidated = consolidated & success;
             }
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchAccountKey))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
             {
-                (success, cmdLine.BatchArgs.BatchAccountKey) = sb.Cryptography.DecryptText(cmdLine.BatchArgs.BatchAccountKey, key, "--batchaccountkey", suppressLog);
+                (success, cmdLine.ConnectionArgs.BatchAccountKey) = sb.Cryptography.DecryptText(cmdLine.ConnectionArgs.BatchAccountKey, key, "--batchaccountkey", suppressLog);
                 consolidated = consolidated & success;
             }
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.StorageAccountKey))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
             {
-                (success, cmdLine.BatchArgs.StorageAccountKey) = sb.Cryptography.DecryptText(cmdLine.BatchArgs.StorageAccountKey, key, "--storageaccountkey", suppressLog);
+                (success, cmdLine.ConnectionArgs.StorageAccountKey) = sb.Cryptography.DecryptText(cmdLine.ConnectionArgs.StorageAccountKey, key, "--storageaccountkey", suppressLog);
                 consolidated = consolidated & success;
             }
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.EventHubConnectionString))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
-                (success, cmdLine.BatchArgs.EventHubConnectionString) = sb.Cryptography.DecryptText(cmdLine.BatchArgs.EventHubConnectionString, key, "--eventhubconnection", suppressLog);
+                (success, cmdLine.ConnectionArgs.EventHubConnectionString) = sb.Cryptography.DecryptText(cmdLine.ConnectionArgs.EventHubConnectionString, key, "--eventhubconnection", suppressLog);
                 consolidated = consolidated & success;
             }
-            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ServiceBusTopicConnectionString))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
-                (success, cmdLine.BatchArgs.ServiceBusTopicConnectionString) = sb.Cryptography.DecryptText(cmdLine.BatchArgs.ServiceBusTopicConnectionString, key, "--servicebustopicconnection", suppressLog);
+                (success, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) = sb.Cryptography.DecryptText(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, key, "--servicebustopicconnection", suppressLog);
                 consolidated = consolidated & success;
             }
 

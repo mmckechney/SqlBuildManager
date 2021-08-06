@@ -20,10 +20,6 @@ steps:
     packageType: 'sdk'
     version: '5.0.100'
 
-- task: NuGetToolInstaller@1
-  inputs:
-    checkLatest: true
-
 - task: DotNetCoreCLI@2
   displayName: Restore NuGet packages
   inputs:
@@ -33,41 +29,42 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: Build solution
   inputs:
-    command: restore 
+    command: build 
     arguments:  --configuration $(BuildConfiguration)
     projects: './src/sqlsync.sln'
 
   # .NET 5.0 publish 
 - task: CmdLine@2
-  displayName: Publish Windows command line version
+  displayName: Publish .NET 5.0 Windows command line version 
   inputs:
     script: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration $(BuildConfiguration) -f net5.0
 
 - task: CmdLine@2
-  displayName: Publish Linux command line version
+  displayName: Publish .NET 5.0 Linux command line version
   inputs:
     script: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration $(BuildConfiguration) -f net5.0
 
 - task: CmdLine@2
-  displayName: Publish SQL Build Manager Desktop
+  displayName: Publish .NET 5.0 SQL Build Manager Desktop
   inputs:
     script: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration $(BuildConfiguration) -f net5.0-windows
 
   # .NET Core 3.1 publish 
 - task: CmdLine@2
-  displayName: Publish Windows command line version
+  displayName: Publish .NET 3.1  Windows command line version
   inputs:
     script: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration $(BuildConfiguration) -f netcoreapp3.1
 
 - task: CmdLine@2
-  displayName: Publish Linux command line version
+  displayName: Publish .NET 3.1 Linux command line version
   inputs:
     script: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration $(BuildConfiguration) -f netcoreapp3.1
 
 - task: CmdLine@2
-  displayName: Publish SQL Build Manager Desktop
+  displayName: Publish .NET 3.1 SQL Build Manager Desktop
   inputs:
     script: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration $(BuildConfiguration) -f netcoreapp3.1
+
 
 # .NET 5.0 artifacts
 - task: ArchiveFiles@2

@@ -22,22 +22,57 @@ namespace SqlBuildManager.Console.CommandLine
 
                 if (property.PropertyType == typeof(CommandLineArgs.AutoScripting) ||
                     property.PropertyType == typeof(CommandLineArgs.StoredProcTesting) ||
-                    property.PropertyType == typeof(CommandLineArgs.Synchronize) ||
-                    property.PropertyType == typeof(CommandLineArgs.Connections))
+                    property.PropertyType == typeof(CommandLineArgs.Synchronize))
                 {
                     if (property.GetValue(obj) != null && toStringType == StringType.Basic)
                     {
                         sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
                     }
                 }
-                else if (property.PropertyType == typeof(CommandLineArgs.Authentication) ||
-                         property.PropertyType == typeof(CommandLineArgs.DacPac) ||
+                else if (property.PropertyType == typeof(CommandLineArgs.DacPac) ||
                          property.PropertyType == typeof(CommandLineArgs.Batch))
                 {
                     if (property.GetValue(obj) != null)
                     {
                         sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
                     }
+                }
+                else if (property.PropertyType == typeof(CommandLineArgs.Authentication)) //Special case if Key Vaule is specified
+                {
+                    if(obj is CommandLineArgs)
+                    {
+                        var cmd = (CommandLineArgs)obj;
+                        if(string.IsNullOrWhiteSpace(cmd.ConnectionArgs.KeyVaultName))
+                        {
+                            if (property.GetValue(obj) != null)
+                            {
+                                sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
+                            }
+                        }
+
+                    }
+                }
+                else if (property.PropertyType == typeof(CommandLineArgs.Connections)) //Special case if Key Vaule is specified
+                {
+                    if (property.GetValue(obj) != null)
+                    {
+                        var conArgs = (CommandLineArgs.Connections)property.GetValue(obj);
+                        if(!string.IsNullOrWhiteSpace(conArgs.KeyVaultName))
+                        {
+                            if (sb.ToString().IndexOf("--keyvaultname") == -1)
+                            {
+                                sb.Append($"--keyvaultname \"{conArgs.KeyVaultName}\" ");
+                            }
+                        }
+                        else
+                        {
+                            sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
+                        }
+                    }
+                }
+                else if (property.PropertyType == typeof(CommandLineArgs.Identity)) //ignore this
+                {
+
                 }
                 else
                 {
@@ -57,7 +92,7 @@ namespace SqlBuildManager.Console.CommandLine
                         case "MultiDbRunConfigFileName":
                         case "ManualOverRideSets":
                             if ((toStringType == StringType.Batch) &&
-                                    (!string.IsNullOrWhiteSpace(((CommandLineArgs)obj).BatchArgs.ServiceBusTopicConnectionString)))
+                                    (!string.IsNullOrWhiteSpace(((CommandLineArgs)obj).ConnectionArgs.ServiceBusTopicConnectionString)))
                             {
                                 break;
                             }
@@ -78,7 +113,7 @@ namespace SqlBuildManager.Console.CommandLine
                         case "ServiceBusTopicConnectionString":
                             sb.Append("--servicebustopicconnection \"" + property.GetValue(obj).ToString() + "\" ");
                             break;
-                        case "JobName": //Ignore this because it will be counted as a duplicate for BatchJobName
+                        case "BatchJobName": //Ignore this because it will be counted as a duplicate for JobName
                         case "OverrideDesignated":
                         case "CliVersion":
                         case "WhatIf":
@@ -128,12 +163,12 @@ namespace SqlBuildManager.Console.CommandLine
         {
             var aliases = opt.Aliases.ToArray();
             Option<T> newOpt = new Option<T>(aliases, opt.Description);
-            newOpt.Name = opt.Name;
+            //newOpt.Name = opt.Name;
+            //newOpt.ArgumentHelpName = "";
             newOpt.IsRequired = required;
 
             return newOpt;
         }
-
         public static string DecodeBase64(this string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -144,7 +179,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var valueBytes = System.Convert.FromBase64String(value);
                 return Encoding.UTF8.GetString(valueBytes);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return value;
             }

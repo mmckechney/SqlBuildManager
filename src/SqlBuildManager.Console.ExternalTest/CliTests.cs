@@ -781,6 +781,8 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
         [DataTestMethod]
         public void Batch_Queue_SBMSource_ByServer_Success(string batchMethod, string settingsFile)
         {
@@ -831,6 +833,8 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
         [DataTestMethod]
         public void Batch_Queue_SBMSource_MaxPerserver_Success(string batchMethod, string settingsFile)
         {
@@ -881,6 +885,8 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
         [DataTestMethod]
         public void Batch_Queue_SBMSource_Count_Success(string batchMethod, string settingsFile)
         {
@@ -931,6 +937,8 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
         [DataTestMethod]
         public void Batch_Queue_PlatinumDbSource_Success(string batchMethod, string settingsFile)
         {
@@ -986,6 +994,8 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
         [DataTestMethod]
         public void Batch_Queue_DacpacSource_Success(string batchMethod, string settingsFile)
         {
@@ -1042,7 +1052,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/basic_deploy.yaml")]
         [DataTestMethod]
-        public void Container_SBMSource_Success(string runtimeFile, string secretsFile, string deployFile)
+        public void Kubernetes_SBMSource_Success(string runtimeFile, string secretsFile, string deployFile)
         {
             var prc = new ProcessHelper();
             secretsFile = Path.GetFullPath(secretsFile);
@@ -1066,7 +1076,7 @@ namespace SqlBuildManager.Console.ExternalTest
            
             //Prep the build
             var args = new string[]{
-                "container",  "prep",
+                "k8s",  "prep",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
                 "--jobname", DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff"),
@@ -1079,7 +1089,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //enqueue the topic messages
             args = new string[]{
-                "container",  "enqueue",
+                "k8s",  "enqueue",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
                 "--override", overrideFile};
@@ -1087,6 +1097,8 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
             Assert.AreEqual(0, result);
+
+            result = prc.ExecuteProcess("kubectl", $"scale deployment sqlbuildmanager --replicas=0");
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {secretsFile}");
             Assert.AreEqual(0, result);
@@ -1102,7 +1114,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //monitor for completion
             args = new string[]{
-                "container",  "monitor",
+                "k8s",  "monitor",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
                 "--override", overrideFile,
@@ -1114,17 +1126,159 @@ namespace SqlBuildManager.Console.ExternalTest
 
            
         }
-        /*
-            kubectl scale deployment sqlbuildmanager --replicas=0
-            sbm container prep --secretsfile secrets.yaml --runtimefile runtime.yaml --jobname "Build15" --packagename "SimpleSelect.sbm"
-            sbm container enqueue  --secretsfile secrets.yaml --runtimefile runtime.yaml --override "databasetargets.cfg"
-            kubectl apply -f secrets.yaml
-            kubectl apply -f runtime.yaml
-            kubectl apply -f basic_deploy.yaml
-            kubectl get pods
-            sbm container monitor  --secretsfile secrets.yaml --runtimefile runtime.yaml --override "databasetargets.cfg"
 
-        */
+        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_deploy_keyvault.yaml")]
+        [DataTestMethod]
+        public void Kubernetes_SBMSource_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
+        {
+            var prc = new ProcessHelper();
+            secretsProviderFile = Path.GetFullPath(secretsProviderFile);
+            podIdentityFile = Path.GetFullPath(podIdentityFile);
+            runtimeFile = Path.GetFullPath(runtimeFile);
+            deployFile = Path.GetFullPath(deployFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+
+            //Clear any exiting pods
+            var result = prc.ExecuteProcess("kubectl", "scale deployment sqlbuildmanager --replicas=0");
+
+            //Prep the build
+            var args = new string[]{
+                "k8s",  "prep",
+                "--secretsfile", secretsFile,
+                "--runtimefile", runtimeFile,
+                "--jobname", DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff"),
+                "--packagename", sbmFileName};
+
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //enqueue the topic messages
+            args = new string[]{
+                "k8s",  "enqueue",
+                "--secretsfile", secretsFile,
+                "--runtimefile", runtimeFile,
+                "--override", overrideFile};
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            result = prc.ExecuteProcess("kubectl", $"scale deployment sqlbuildmanager --replicas=0");
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {secretsProviderFile}");
+            Assert.AreEqual(0, result, "Failed to apply secrets provider file");
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {podIdentityFile}");
+            Assert.AreEqual(0, result, "Failed to apply pod identity file");
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {runtimeFile}");
+            Assert.AreEqual(0, result, "Failed to apply runtime  file");
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {deployFile}");
+            Assert.AreEqual(0, result, "Failed to apply deploy  file");
+
+            result = prc.ExecuteProcess("kubectl", $"get pods");
+            Assert.AreEqual(0, result);
+
+            //monitor for completion
+            args = new string[]{
+                "k8s",  "monitor",
+                "--secretsfile", secretsFile,
+                "--runtimefile", runtimeFile,
+                "--override", overrideFile,
+                "--unittest", "true"};
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+
+        }
+
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 2, 1, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 3, 2, ConcurrencyType.Server)]
+        [DataTestMethod]
+        public void ACI_SBMSource_KeyVault_Secrets_Success(string settingsFile, string containerTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            string jobName = DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff");
+            string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+            //Prep the build
+            var args = new string[]{
+                "aci",  "prep",
+                "--settingsfile", settingsFile,
+                "--tag", containerTag,
+                "--jobname", jobName,
+                "--packagename", sbmFileName,
+                "--outputfile", outputFile,
+                "--containercount", containerCount.ToString(),
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString()
+            };
+
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            int result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //enqueue the topic messages
+            args = new string[]{
+                "aci",  "enqueue",
+                "--settingsfile", settingsFile,
+                "--jobname", jobName,
+                 "--concurrencytype", concurrencyType.ToString(),
+                 "--override", overrideFile
+            };
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //monitor for completion
+            args = new string[]{
+                "aci",  "deploy",
+                 "--settingsfile", settingsFile,
+                 "--templatefile", outputFile,
+                "--override", overrideFile,
+                "--unittest", "true",
+                "--monitor", "true"
+            };
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+
+        }
+
+
 
     }
 }

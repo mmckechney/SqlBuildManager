@@ -1,0 +1,74 @@
+param
+(
+    [string] $path,
+    [string] $resourceGroupName,
+    [string] $batchAcctName,
+    [bool] $uploadonly = $false
+)
+$path = Resolve-Path $path
+Write-Host "Code Publish output path set to $path" -ForegroundColor DarkGreen
+
+$frameworkTarget = "net5.0"
+Write-Output "Using Batch Account: $batchAcctName" -ForegroundColor DarkGreen
+
+$winenv =@{
+    ApplicationName = "SqlBuildManagerWindows"
+    PoolName = "SqlBuildManagerPoolWindows"
+    OSName = "Windows"
+    BuildTarget = "win-x64"
+    BuildOutputZip = ""
+}
+
+$linuxenv = @{
+    ApplicationName = "SqlBuildManagerLinux"
+    PoolName = "SqlBuildManagerPoolLinux"
+    OSName = "Linux"
+    BuildTarget = "linux-x64"
+    BuildOutputZip = ""
+}
+$vars = $winenv, $linuxenv
+
+foreach ($env in $vars) {
+
+    Write-Host "Publishing for $($env.OSName)" -ForegroundColor DarkGreen
+    $source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish"
+    if($uploadonly -eq $false)
+    {
+        dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r $env.BuildTarget --configuration Debug -f $frameworkTarget
+    }
+    
+    if($env.OSName -eq "Windows")
+    {
+        $version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion  #Get version for Batch application
+    }
+    $buildOutput= Join-Path $path "sbm-$($env.OSName.ToLower())-$($version).zip"
+    if($uploadonly -eq $false)
+    {
+        Add-Type -AssemblyName "system.io.compression.filesystem"
+        If(Test-path $buildOutput) 
+        {
+            Remove-item $buildOutput
+        }
+        Write-Host "Creating Zip file for $($env.OSName) Release package" -ForegroundColor DarkGreen
+        [io.compression.zipfile]::CreateFromDirectory($source,$buildOutput)
+    }
+
+    $env.BuildOutputZip =  $buildOutput
+}
+
+
+##################################################
+# Upload zip application packages to batch account
+##################################################
+
+foreach ($env in $vars)
+{
+    Write-Host "Creating new Azure Batch Application named $($env.ApplicationName)"  -ForegroundColor DarkGreen
+    $result = az batch application create --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)"
+    
+    Write-Host "Uploading application package $($env.ApplicationName) [$($env.BuildOutputZip)] to Azure Batch account"  -ForegroundColor DarkGreen
+    $result = az batch application package create --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" --version "$version" --package-file "$($env.BuildOutputZip)" 
+    
+    Write-Host "Setting default application for  $($env.ApplicationName) version to $version"  -ForegroundColor DarkGreen
+    $result = az batch application set --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" --default-version "$version" 
+}

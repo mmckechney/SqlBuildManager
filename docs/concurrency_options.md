@@ -1,11 +1,11 @@
-# Concurrency Options for Threaded, Batch and Container executions
+# Concurrency Options for Threaded, Batch and Kubernetes executions
 
-You can control the level of parallel execution with the combination of two arguments: `--concurrency` and `--concurrencytype`. While their meaning for threaded and batch/container are similar, there are some distinctions and subtleties when used together
+You can control the level of parallel execution with the combination of two arguments: `--concurrency` and `--concurrencytype`. While their meaning for threaded and batch/kubernetes are similar, there are some distinctions and subtleties when used together
 
 
 - [Option Definitions](#option-definitions)
 - [Threaded execution](#threaded-execution)
-- [Batch or Container Execution (with concurrency scenarios)](#batch-or-container-execution)
+- [Batch, Kubernetes or ACI Execution (with concurrency scenarios)](#batch-kubernetes-or-aci-execution)
 
 ----
 
@@ -19,11 +19,11 @@ You can control the level of parallel execution with the combination of two argu
 - `Count` - (default) will use the value for `concurrency` as the maximum number of concurrent tasks allowed
 - `Server` - When using this value, the `concurrency` value is ignored. Instead, the app will interrogate the database targets and allow one task per SQL Server at a time
 
-    For example: if there are 5 unuque SQL Server targets in the database targets config, there will 1 task per server, up to 5 concurrent tasks total
+    _For example:_ if there are 5 unuque SQL Server targets in the database targets config, there will 1 task per server, up to 5 concurrent tasks total
 
 - `MaxPerServer` - Will interrogate the database targets and allow multiple tasks per server, up to the `concurrency` value.
 
-    For example: If there are 5 unique SQL Server targets in the database targets config file and the `concurrency` flag is set to 3, then it will run 3 tasks per server at a time, up to 15 concurrent tasks (5 servers * 3 tasks per server).
+    _For example:_ If there are 5 unique SQL Server targets in the database targets config file and the `concurrency` flag is set to 3, then it will run 3 tasks per server at a time, up to 15 concurrent tasks (5 servers * 3 tasks per server).
 
 ### --concurrency
 
@@ -37,13 +37,13 @@ When running  `sbm threaded run` or `sbm threaded query` the arguments are as de
 
 ----
 
-## Batch or Container execution
+## Batch, Kubernetes or ACI execution
 
-When running `sbm batch run`,  `sbm batch query` or `sbm container`, you need to consider that you are also running on more than one machine. The concurrency flags are interpreted **_per batch node/ per container_** and this needs to be accounted for when calculating your desired concurrency.
+When running `sbm batch run`,  `sbm batch query` or `sbm k8s`, you need to consider that you are also running on more than one machine. The concurrency flags are interpreted **_per batch node/ per pod_** and this needs to be accounted for when calculating your desired concurrency.
 
-Whether you are distributing your batch or container load with an `--override` file or `--servicebustopicconnection` (see [details on database targeting options](override_options.md)), the concurrency options are available and perform as described below. However, if using a Service Bus Topic, the overall build may be more efficient as there is a smaller likelihood of nodes/containers going idle.
+Whether you are distributing your batch, kubernetes or ACI load with an `--override` file or `--servicebustopicconnection` (see [details on database targeting options](override_options.md)), the concurrency options are available and perform as described below. However, if using a Service Bus Topic, the overall build may be more efficient as there is a smaller likelihood of nodes/pods going idle.
 
-The scenarios below show examples for `batch` execution, but the calculations are the same when running `container`, with the calculation per running Kubernetes pod.
+The scenarios below show examples for `batch` execution, but the calculations are the same when running `k8s`, with the calculation per running Kubernetes pod.
 
 ### Consider the following:
 

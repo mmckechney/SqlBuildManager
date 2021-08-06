@@ -1,8 +1,22 @@
 # SQL Build Manager
 
-SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases. It provides a comprehensive set of command line options for the management of one to many thousands of databases.
+SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases. It provides a comprehensive set of command line options for the management from one to many thousands of databases.
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
+
+### **Important change in Version 14+:**
+
+There are two new options to massively parallel processing: [Kubernetes](docs/kubernetes.md) and [Azure Container Instance](docs/aci.md)!
+
+ [Batch node pools](docs/massively_parallel.md) are now created with assigned Managed Identities. Because of this, the workstation running `sbm` _needs to have a valid Azure authentication token_. This can be done via Azure CLI `az login`, Azure PowerShell `Connect-AzAccount`, or if running from an automation box, ensure that the machine itself has a Managed Identity that has permissions to create Azure resources. Alternatively, you can pre-create the batch pools manually via the Azure portal, being sure to assign the correct Managed Identity to the pool.
+
+[Kubernetes](docs/massively_parallel.md#kubernetes-process-flow) and [Azure Container Instance](docs/massively_parallel.md#azure-container-instance-process-flow) also require local machine authentication in order to access Azure Key Vault. Authentication is not needed for [local](local_build.md) or [threaded builds](docs/threaded_build.md)
+
+The keys, connection strings and passwords can now be stored in Azure Key Vault rather than saving the encrypted values in a settings file or being passed in via the command line. Regardless if you use Batch, Kubernetes or ACI , this integration is enabled by leveraging [User Assigned Managed Identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-manage-user-assigned-managed-identities). To easily accomplish this setup, there are a set of PowerShell scripts in the [`scripts/templates` folder](scripts/templates). A complete environment can be created with [`create_azure_resources.ps1`](scripts/templates/create_azure_resources.ps1). Please note that Azure Key Vault is required for [Azure Container Instance](docs/aci.md) builds.
+
+You will also need to be logged into Azure if you are leveraging Azure Key Vault to store your secrets, regardless if you are using [Azure Batch](docs/massively_parallel.md#batch-process-flow), [Kubernetes](docs/massively_parallel.md#kubernetes-process-flow) or [Azure Container Instance](docs/massively_parallel.md#azure-container-instance-process-flow))
+
+---
 
 ## Contents
 
@@ -13,10 +27,12 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
   - [Targeting multiple databases](#targeting-multiple-databases)
   - [Running builds](#running-builds-command-line)
   - [Querying across databases](#querying-across-databases-command-line)
-- [Command Line Reference/ Quickstart](/docs/commandline.md)
+- [Command Line Reference/ Quickstart](docs/commandline.md)
 - [Running Locally](docs/local_build.md)
-- [Leverage Azure Batch for massively parallel updates](docs/azure_batch.md)
-- [Leverage Kubernetes for massively parallel updates](docs/kubernetes.md)
+- [Massively Parallel Database Builds](docs/massively_parallel.md)
+  - [Azure Batch](docs/azure_batch.md)
+  - [Kubernetes](docs/kubernetes.md)
+  - [Azure Container Instances (ACI)](docs/aci.md)
 - [Change notes](docs/change_notes.md)
 - For contributors: [Notes on Building and Unit Testing](docs/setup_azure_environment.md)
 - For users of the Windows Form app: [SQL Build Manager Manual](docs/SqlBuildManagerManual.md)\
@@ -34,7 +50,7 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 - Automatic logging and version tracking of scripts on a per-server/per-database level
 - Full SHA-1 hashing of individual scripts and complete `.sbm` package files to ensure integrity of the scripts
 - Execution of a build package (see below) is recorded in the database for full tracking of update history, script validation and potential rebuilding of packages
-- Massively parallel execution across thousands of databases utilizing local threading or an Azure Batch execution
+- Massively parallel execution across thousands of databases utilizing local threading or an [Azure Batch or Kubernetes remote execution](docs/massively_parallel.md)
 
 # The Basics
 
@@ -87,9 +103,7 @@ There are several ways to create a build package from the command line.  Which y
 
 [Command line reference](docs/commandline.md)
 
-1. From a DACPAC file using the `sbm scriptextract` command. This method leverages a DACPAC that was created against your "Platinum Database" (why platinum? because it's even more precious than gold!). The Platinum database should have the schema that you want all of your other databases to look like. (don't have a DACPAC created, don't worry, you can create one with the `sbm dacpac` command) 
-
-2. From various sources using `sbm create`. There are four sub-commands to help create an SBM package:
+1. From various sources using `sbm create`. There are four sub-commands to help create an SBM package:
 
    - `fromscripts` - Creates an SBM package or SBX project file from a list of scripts (type is determined by file extension: .sbm or .sbx)
    - `fromdiff` - Creates an SBM package from a calculated diff between two databases (you provide the server and database names, and it connects them them and generates the diff scripts)
@@ -98,11 +112,12 @@ There are several ways to create a build package from the command line.  Which y
 
    Learn more about DACPACs and [data-tier applications](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications?view=sql-server-2017)  method.
 
-3. From an SBX file. What is this? An SBX file is an XML file in the format of the `SqlSyncBuildProject.xml` file (see above) that has an `.sbx` extension. When you use the `sbm package` command, it will read the `.sbx` file and create the `.sbm` file with the referenced scripts.
-4. An SBM package file can be created indirectly as well, using the `sbm threaded run` and `sbm batch run` commands along with the `--platinumdbsource="<database name>"` and `--platinumserversource="<server name>"` the app will generate a DACPAC from the source database which will then be used to generate an SBM at run time to build directly on your target(s).
-5. You can also add new scripts to an existing SBM package or SBX project file using `sbm add`
+2. From an SBX file. What is this? An SBX file is an XML file in the format of the `SqlSyncBuildProject.xml` file (see above) that has an `.sbx` extension. When you use the `sbm package` command, it will read the `.sbx` file and create the `.sbm` file with the referenced scripts.
+3. An SBM package file can be created indirectly as well, using the `sbm threaded run` and `sbm batch run` commands along with the `--platinumdbsource="<database name>"` and `--platinumserversource="<server name>"` the app will generate a DACPAC from the source database which will then be used to generate an SBM at run time to build directly on your target(s).
+4. You can also add new scripts to an existing SBM package or SBX project file using `sbm add`
+5. From a DACPAC file using the `sbm scriptextract` command. This method leverages a DACPAC that was created against your "Platinum Database" (why platinum? because it's even more precious than gold!). The Platinum database should have the schema that you want all of your other databases to look like. (don't have a DACPAC created, don't worry, you can create one with the `sbm dacpac` command) 
 
-_NOTE:_ The `sbm scriptextract` method is being deprecated in favor of `sbm create fromdacpacdiff` and will be removed in a future release
+**_NOTE:_** The `sbm scriptextract` method is being deprecated in favor of `sbm create fromdacpacdiff` and will be removed in a future release
 
 ----
 
@@ -131,8 +146,11 @@ An excellent tool for viewing and monitoring your Azure batch accounts and jobs 
 
 ### **Kubernetes**
 
-Using the `sbm container` commands leverages Kubernetes to permit massively parallel updates across thousands of databases. To leverage Kubernetes, you will first need to set up a Kubernetes Cluster. The instructions for this can be found [here](docs/kubernetes.md#).
+Using the `sbm k8s` commands leverages Kubernetes to permit massively parallel updates across thousands of databases. To leverage Kubernetes, you will first need to set up a Kubernetes Cluster. The instructions for this can be found [here](docs/kubernetes.md#).
 
+### **Azure Container Instance (ACI)**
+
+Using the `sbm aci` commands leverages Azure Container Instance to permit massively parallel updates across thousands of databases. Learn how to use ACI [here](docs/aci.md).
 
 ----
 
