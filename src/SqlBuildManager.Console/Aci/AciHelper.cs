@@ -209,9 +209,9 @@ namespace SqlBuildManager.Console.Aci
         {
             var aciResult = await GetAciInstanceData(subscriptionId, resourceGroupName, aciName);
             var containerCount = aciResult.Value.Properties.Containers.Count;
-            var status = aciResult.Value.Properties.Containers.Where(c => c.Properties.InstanceView.CurrentState.DetailStatus.ToLower() == "error").Any();
+            var status = aciResult.Value.Properties.Containers.Where(c => c.Properties.InstanceView.CurrentState.DetailStatus.ToLower() == "error").Count();
 
-            return status;
+            return status == containerCount;
         }
 
         internal static async Task<(int,int, int)> GetAciCountMemoryAndCpu(string subscriptionId, string resourceGroupName, string aciName)
@@ -232,6 +232,20 @@ namespace SqlBuildManager.Console.Aci
             var aciResult = JsonSerializer.Deserialize<AciDeploymentResult.Result>(JsonSerializer.Serialize(resp));
 
             return aciResult;
+        }
+
+        internal static CommandLineArgs GetRuntimeValuesFromDeploymentTempate(CommandLineArgs cmdLine, string templateFileName)
+        {
+            var j = System.Text.Json.JsonSerializer.Deserialize<Aci.TemplateClass>(File.ReadAllText(templateFileName));
+            cmdLine.JobName = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_JobName").FirstOrDefault().Value;
+            var tmp = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_ConcurrencyType").FirstOrDefault().Value;
+            if (Enum.TryParse<ConcurrencyType>(tmp, out ConcurrencyType concurrencyType))
+            {
+                cmdLine.ConcurrencyType = concurrencyType;
+            }
+            cmdLine.AciName = j.variables.aciName;
+
+            return cmdLine;
         }
 
 

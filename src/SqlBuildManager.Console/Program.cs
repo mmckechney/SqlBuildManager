@@ -799,12 +799,13 @@ namespace SqlBuildManager.Console
                     case 3: spinner = "|"; break;
                 }
 
-                if (checkAciState && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) && counter % 10 == 0)
+                if (checkAciState && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) && counter % 6 == 0)
                 {
                     
                     if (await Aci.AciHelper.AciIsInErrorState(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName))
                     {
                         log.LogError("The ACI instance is in an error state, please check the container logs for more detail.");
+                        log.LogInformation("This is commonly caused by a delay in the assignment of the Managed Identity to the deployment. Running 'sbm aci deloy' again may solve the issue.");
                         return -1;
                     }
                 }
@@ -1004,8 +1005,18 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static async Task<int> MonitorAciRuntimeProgress(CommandLineArgs cmdLine, bool unitest)
+        internal static async Task<int> MonitorAciRuntimeProgress(CommandLineArgs cmdLine, FileInfo templateFile, bool unitest)
         {
+            if (templateFile != null)
+            {
+                cmdLine = Aci.AciHelper.GetRuntimeValuesFromDeploymentTempate(cmdLine, templateFile.FullName);
+            }
+
+            if (string.IsNullOrWhiteSpace(cmdLine.JobName))
+            {
+                log.LogError("A --jobname value is required.");
+                return 1;
+            }
 
             return await MonitorServiceBusRuntimeProgress(cmdLine, unitest, true);
         }
@@ -1021,14 +1032,8 @@ namespace SqlBuildManager.Console
             {
                 log.LogError("The value for --subscriptionid is required as a parameter or inclusion in the --settingsfile");
             }
-            var j =  System.Text.Json.JsonSerializer.Deserialize<Aci.TemplateClass>(File.ReadAllText(templateFile.FullName));
-            cmdLine.JobName = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_JobName").FirstOrDefault().Value;
-            var tmp =  j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_ConcurrencyType").FirstOrDefault().Value;
-            if(Enum.TryParse<ConcurrencyType>(tmp, out ConcurrencyType concurrencyType))
-            {
-                cmdLine.ConcurrencyType = concurrencyType;
-            }
-            cmdLine.AciName = j.variables.aciName;
+
+            cmdLine = Aci.AciHelper.GetRuntimeValuesFromDeploymentTempate(cmdLine, templateFile.FullName);
 
             var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName, cmdLine.JobName);
             if(success && monitor)

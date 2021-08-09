@@ -295,9 +295,9 @@ namespace SqlBuildManager.Console.Threaded
                         }
                         else
                         {
-                            if(noMessagesCounter == 6)
+                            if(noMessagesCounter == 4)
                             {
-                                log.LogInformation("No messages found in Service Bus Topic for 60 seconds. Terminating Container.");
+                                log.LogInformation("No messages found in Service Bus Topic after 4 retries. Terminating Container.");
                                 break;
                             }
                             noMessagesCounter++;

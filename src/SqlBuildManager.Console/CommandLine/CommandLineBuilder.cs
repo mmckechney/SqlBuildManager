@@ -96,6 +96,7 @@ namespace SqlBuildManager.Console.CommandLine
             var aciIdentityNameOption = new   Option<string>("--identityname", "Name of User Assigned Managed identity that will be assigned to the Container Instance") { IsRequired = true};
             var aciOutputFileOption = new Option<FileInfo>("--outputfile", "File name to save ACI ARM template");
             var aciArmTemplateOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')") { IsRequired = true }.ExistingOnly();
+            var aciArmTemplateNotReqOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')").ExistingOnly();
             var aciSubscriptionIdOption = new Option<string>("--subscriptionid", "Subscription to deploy ACI to");
             var aciContainerTagOption = new Option<string>(new string[] { "--tag", "--containertag" }, "Tag for container image to pull from registry");
             //Create DACPAC from target database
@@ -695,6 +696,7 @@ namespace SqlBuildManager.Console.CommandLine
             var aciMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {
                 settingsfileOption,
+                aciArmTemplateNotReqOption,
                 keyVaultNameOption,
                 jobnameOption,
                 overrideOption,
@@ -703,7 +705,7 @@ namespace SqlBuildManager.Console.CommandLine
                 eventhubconnectionOption,
                 unitTestOption
             };
-            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.MonitorAciRuntimeProgress);
+            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool>(Program.MonitorAciRuntimeProgress);
 
             var aciDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
