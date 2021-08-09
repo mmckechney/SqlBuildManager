@@ -278,6 +278,7 @@ namespace SqlBuildManager.Console.Threaded
         {
             this.qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             bool messagesSinceLastLoop = true;
+            int noMessagesCounter = 0;
             while(true)
             {
                 var messages = await qManager.GetDatabaseTargetFromQueue(cmdLine.Concurrency, cmdLine.ConcurrencyType);
@@ -290,6 +291,16 @@ namespace SqlBuildManager.Console.Threaded
                         if (messagesSinceLastLoop)
                         {
                             await CloudStorage.StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, cmdLine.RootLoggingPath);
+                            noMessagesCounter = 0;
+                        }
+                        else
+                        {
+                            if(noMessagesCounter == 6)
+                            {
+                                log.LogInformation("No messages found in Service Bus Topic for 60 seconds. Terminating Container.");
+                                break;
+                            }
+                            noMessagesCounter++;
                         }
                         messagesSinceLastLoop = false;
                         System.Threading.Thread.Sleep(10000);
