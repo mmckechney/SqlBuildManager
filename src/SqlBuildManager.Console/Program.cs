@@ -82,7 +82,8 @@ namespace SqlBuildManager.Console
             {
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
             }
-            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            bool tmp;
+            (tmp,cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             return (decryptSuccess, cmdLine);
         }
 
@@ -255,7 +256,13 @@ namespace SqlBuildManager.Console
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
                 return -8675;
             }
-            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            bool kvSuccess;
+            (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+            if (!kvSuccess)
+            {
+                log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
+                return -4353;
+            }
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
             if (outpt != 0)
             {
@@ -574,7 +581,13 @@ namespace SqlBuildManager.Console
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
                 return -8675;
             }
-            cmdLine = KeyVault.KeyVaultHelper.GetSecrets(cmdLine);
+            bool kvSuccess;
+            (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+            if (!kvSuccess)
+            {
+                log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
+                return -4353;
+            }
 
 
             DateTime start = DateTime.Now;
@@ -752,11 +765,32 @@ namespace SqlBuildManager.Console
             }
             return await RunGenericContainerQueueWorker(cmdLine);
         }
+
+        private static bool aciIsInErrorState = false;
+        private static async Task GetAciErrorState(CommandLineArgs cmdLine)
+        {
+            while (true)
+            {
+                try
+                {
+                    var stat = await Aci.AciHelper.AciIsInErrorState(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName);
+                    aciIsInErrorState = stat;
+                }
+                catch { }
+                System.Threading.Thread.Sleep(15000);
+            }
+        }
         internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool unittest = false, bool checkAciState = false)
         {
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
-                cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+                bool kvSuccess;
+                (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+                if (!kvSuccess)
+                {
+                    log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
+                    return -4;
+                }
             }
             int targets = 0;
             if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && File.Exists(cmdLine.MultiDbRunConfigFileName))
@@ -786,6 +820,10 @@ namespace SqlBuildManager.Console
             bool firstLoop = true;
             int cursorStepBack = (targets == 0) ? 3 : 4;
             int totalLoops = 0;
+            if (checkAciState && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName))
+            {
+                _ = GetAciErrorState(cmdLine);
+            }
 
             while (true)
             {
@@ -799,15 +837,11 @@ namespace SqlBuildManager.Console
                     case 3: spinner = "|"; break;
                 }
 
-                if (checkAciState && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) && counter % 6 == 0)
+                if (Program.aciIsInErrorState)
                 {
-                    
-                    if (await Aci.AciHelper.AciIsInErrorState(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName))
-                    {
-                        log.LogError("The ACI instance is in an error state, please check the container logs for more detail.");
-                        log.LogInformation("This is commonly caused by a delay in the assignment of the Managed Identity to the deployment. Running 'sbm aci deloy' again may solve the issue.");
-                        return -1;
-                    }
+                    log.LogError("The ACI instance is in an error state, please check the container logs for more detail.");
+                    log.LogInformation("This is commonly caused by a delay in the assignment of the Managed Identity to the deployment. Running 'sbm aci deloy' again may solve the issue.");
+                    return -1;
                 }
 
                 messageCount = await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
@@ -857,6 +891,9 @@ namespace SqlBuildManager.Console
                     log.LogError("Unit test taking too long! There is likely something wrong with the containers.");
                     return -1;
 
+                }else if(lastCommitCount != commit || lastErrorCount != error)
+                {
+                    zeroMessageCounter = 0;
                 }
 
                 lastErrorCount = error;
@@ -895,7 +932,13 @@ namespace SqlBuildManager.Console
                 cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
             }
             cmdLine.ConnectionArgs.KeyVaultName = args.ConnectionArgs.KeyVaultName;
-            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            bool kvSuccess;
+            (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+            if (!kvSuccess)
+            {
+                log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
+                return -4;
+            }
 
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString)) cmdLine.ServiceBusTopicConnection = args.ConnectionArgs.ServiceBusTopicConnectionString;
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString)) cmdLine.EventHubConnection = args.ConnectionArgs.EventHubConnectionString;
@@ -948,7 +991,13 @@ namespace SqlBuildManager.Console
             }
 
             cmdLine.KeyVaultName = keyvaultname;
-            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            bool kvSuccess;
+            (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+            if (!kvSuccess)
+            {
+                log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
+                return -4;
+            }
 
             cmdLine.BuildFileName = packageName.Name;
             if (!string.IsNullOrWhiteSpace(jobName)) cmdLine.JobName = jobName;
@@ -1025,7 +1074,13 @@ namespace SqlBuildManager.Console
         {
             if(monitor)
             {
-                cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+                bool kvSuccess;
+                (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+                if (!kvSuccess)
+                {
+                    log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
+                    return -4;
+                }
             }
 
             if(string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.SubscriptionId))
@@ -1038,7 +1093,7 @@ namespace SqlBuildManager.Console
             var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName, cmdLine.JobName);
             if(success && monitor)
             {
-                return await MonitorAciRuntimeProgress(cmdLine, unittest);
+                return await MonitorAciRuntimeProgress(cmdLine, templateFile, unittest);
             }
             else if (success) return 0; else return 1;
         }
@@ -1053,8 +1108,12 @@ namespace SqlBuildManager.Console
             }
             cmdLine.RunningAsContainer = true;
             cmdLine = Aci.AciHelper.ReadRuntimeEnvironmentVariables(cmdLine);
-            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
-            if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            int seconds = 5;
+            log.LogInformation($"Waiting {seconds} for Managed Identity assignment");
+            System.Threading.Thread.Sleep(seconds * 1000);
+            bool kvSuccess;
+            (kvSuccess,cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+            if(!kvSuccess)
             {
                 log.LogError("Unable to retrieve required connection secrets. Terminating container");
                 return -2; 
@@ -1078,7 +1137,13 @@ namespace SqlBuildManager.Console
 
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
-                cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+                bool kvSuccess;
+                (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+                if (!kvSuccess)
+                {
+                    log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
+                    return -4;
+                }
             }
 
             if ((string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
@@ -1227,7 +1292,8 @@ namespace SqlBuildManager.Console
             }
 
             cmdLine.KeyVaultName = keyvaultname;
-            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            bool kvSuccess;
+            (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
 
             if (!string.IsNullOrWhiteSpace(servicebustopicconnection))
             {
@@ -1759,7 +1825,8 @@ namespace SqlBuildManager.Console
             var start = DateTime.Now;
             bool decryptSuccess;
             (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            bool kvSuccess;
+            (kvSuccess,cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             if (!decryptSuccess)
             {
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
@@ -1811,7 +1878,8 @@ namespace SqlBuildManager.Console
             var start = DateTime.Now;
             bool decryptSuccess;
             (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
+            bool kvSuccess;
+            (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             if (!decryptSuccess)
             {
                 log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");

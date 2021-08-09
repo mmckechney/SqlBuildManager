@@ -88,7 +88,7 @@ namespace SqlBuildManager.Console.Aci
             }
             string allContainers = string.Join("," + Environment.NewLine, containers);
 
-            template = template.Replace("{{Container_Placeholder}}", allContainers);
+            template = template.Replace("\"{{Container_Placeholder}}\"", allContainers);
             return template;
         }
 

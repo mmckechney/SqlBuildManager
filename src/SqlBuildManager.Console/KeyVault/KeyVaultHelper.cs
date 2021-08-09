@@ -65,9 +65,8 @@ namespace SqlBuildManager.Console.KeyVault
         {
             try
             {
-                var pollyRetrySecrets = Policy.Handle<Azure.Identity.AuthenticationFailedException>().WaitAndRetry(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
+                var pollyRetrySecrets = Policy.Handle<Azure.Identity.AuthenticationFailedException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.1, retryAttempt)));
                 var secret =  pollyRetrySecrets.Execute(() => KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName));
-                //var secret = KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName);
                 return secret.Value.Value;
             }
             catch (Exception exe)
@@ -111,12 +110,12 @@ namespace SqlBuildManager.Console.KeyVault
             return keys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
 
         }
-        public static CommandLineArgs GetSecrets(CommandLineArgs cmdLine)
+        public static (bool,CommandLineArgs) GetSecrets(CommandLineArgs cmdLine)
         {
             if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
                 log.LogWarning("No Key Vault name supplied. Unable to retrieve secrets");
-                return cmdLine;
+                return (true,cmdLine);
             }    
             var retrieved = new List<string>();
             log.LogInformation($"Retrieving secrets from KeyVault: {cmdLine.ConnectionArgs.KeyVaultName}");
@@ -130,7 +129,7 @@ namespace SqlBuildManager.Console.KeyVault
                 cmdLine.StorageAccountKey = tmp;
                 retrieved.Add(KeyVaultHelper.StorageAccountKey);
             }
-            else { return cmdLine; } //short circuit. Storage key is always needed.
+            else { return (false,cmdLine); } //short circuit. Storage key is always needed.
 
             tmp = GetSecret(kvName, KeyVaultHelper.EventHubConnectionString);
             if(!string.IsNullOrWhiteSpace(tmp))
@@ -176,12 +175,15 @@ namespace SqlBuildManager.Console.KeyVault
             if (retrieved.Count > 0)
             {
                 log.LogInformation($"Retrieved secrets from Key Vault: {string.Join(", ", retrieved)}");
-            }else
+                return (true,cmdLine);
+            }
+            else
             {
                 log.LogError($"No secrets received from Key Vault");
+                return (false, cmdLine);
             }
 
-            return cmdLine;
+            
 
         }
     }
