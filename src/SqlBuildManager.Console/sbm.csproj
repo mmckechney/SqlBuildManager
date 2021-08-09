@@ -21,7 +21,7 @@
     <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.4.0" />
+    <PackageReference Include="Azure.Identity" Version="1.4.1" />
     <PackageReference Include="Azure.Messaging.EventHubs" Version="5.5.0" />
     <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.5.0" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.2.1" />
