@@ -41,6 +41,12 @@ $result = az group create --name $resourceGroupName --location $location
 Write-Host "Creating Azure resources: Storage Account, Batch Account, Event Hub, Service Bus Topic,  Key Vault and Identity" -ForegroundColor DarkGreen
 $result = az deployment group create --resource-group $resourceGroupName --template-file azuredeploy.json --parameters namePrefix="$resourcePrefix" eventhubSku="Standard" skuCapacity=1 location=$location
 
+####################
+# Set Identity privs
+####################
+./set_managedidentity_rbac_fromprefix.ps1 -prefix $resourcePrefix -resourceGroupName $resourceGroupName
+
+
 #################
 # AKS
 #################

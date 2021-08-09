@@ -1208,9 +1208,9 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 3, 1, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 1, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataTestMethod]
         public void ACI_SBMSource_KeyVault_Secrets_Success(string settingsFile, string containerTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {

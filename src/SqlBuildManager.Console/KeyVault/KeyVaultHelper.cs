@@ -12,6 +12,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SqlBuildManager.Console.CommandLine;
 using System.Linq;
+using Polly;
+using Azure.Messaging.ServiceBus.Administration;
+
 namespace SqlBuildManager.Console.KeyVault
 {
     internal class KeyVaultHelper
@@ -62,7 +65,9 @@ namespace SqlBuildManager.Console.KeyVault
         {
             try
             {
-                var secret = KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName);
+                var pollyRetrySecrets = Policy.Handle<Azure.Identity.AuthenticationFailedException>().WaitAndRetry(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
+                var secret =  pollyRetrySecrets.Execute(() => KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName));
+                //var secret = KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName);
                 return secret.Value.Value;
             }
             catch (Exception exe)

@@ -750,7 +750,7 @@ namespace SqlBuildManager.Console
             }
             return await RunGenericContainerQueueWorker(cmdLine);
         }
-        internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool unittest = false)
+        internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool unittest = false, bool checkAciState = false)
         {
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
@@ -797,6 +797,15 @@ namespace SqlBuildManager.Console
                     case 3: spinner = "|"; break;
                 }
 
+                if (checkAciState && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName) && counter % 10 == 0)
+                {
+                    
+                    if (await Aci.AciHelper.AciIsInErrorState(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName))
+                    {
+                        log.LogError("The ACI instance is in an error state, please check the container logs for more detail.");
+                        return -1;
+                    }
+                }
 
                 messageCount = await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
                 (commit, error) = ehandler.GetCommitAndErrorCounts();
@@ -853,10 +862,6 @@ namespace SqlBuildManager.Console
                 totalLoops++;
             }
 
-            if (cmdLine.AciArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName))
-            {
-                await Aci.AciHelper.DeleteAciInstance(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName);
-            }
             await qManager.DeleteSubscription();
 
             string sas = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, true);
@@ -997,6 +1002,12 @@ namespace SqlBuildManager.Console
 
         }
 
+        internal static async Task<int> MonitorAciRuntimeProgress(CommandLineArgs cmdLine, bool unitest)
+        {
+
+            return await MonitorServiceBusRuntimeProgress(cmdLine, unitest, true);
+        }
+
         internal static async Task<int> DeployAciTemplate(CommandLineArgs cmdLine, FileInfo templateFile, bool monitor, bool unittest = false)
         {
             if(monitor)
@@ -1020,7 +1031,7 @@ namespace SqlBuildManager.Console
             var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName, cmdLine.JobName);
             if(success && monitor)
             {
-                return await MonitorServiceBusRuntimeProgress(cmdLine, unittest);
+                return await MonitorAciRuntimeProgress(cmdLine, unittest);
             }
             else if (success) return 0; else return 1;
         }

@@ -703,7 +703,7 @@ namespace SqlBuildManager.Console.CommandLine
                 eventhubconnectionOption,
                 unitTestOption
             };
-            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.MonitorServiceBusRuntimeProgress);
+            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.MonitorAciRuntimeProgress);
 
             var aciDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
