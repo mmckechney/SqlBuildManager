@@ -72,7 +72,7 @@ namespace SqlBuildManager.Console.KeyVault
             }
             catch (Exception exe)
             {
-                log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: {exe.ToString()}");
+                log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: {exe.Message}");
                 return null;
             }
         }
@@ -115,6 +115,7 @@ namespace SqlBuildManager.Console.KeyVault
         {
             if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
+                log.LogWarning("No Key Vault name supplied. Unable to retrieve secrets");
                 return cmdLine;
             }    
             var retrieved = new List<string>();
@@ -122,6 +123,15 @@ namespace SqlBuildManager.Console.KeyVault
             var keys = new List<string>();
             var kvName = cmdLine.ConnectionArgs.KeyVaultName;
             string tmp;
+
+            tmp = GetSecret(kvName, KeyVaultHelper.StorageAccountKey);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.StorageAccountKey = tmp;
+                retrieved.Add(KeyVaultHelper.StorageAccountKey);
+            }
+            else { return cmdLine; } //short circuit. Storage key is always needed.
+
             tmp = GetSecret(kvName, KeyVaultHelper.EventHubConnectionString);
             if(!string.IsNullOrWhiteSpace(tmp))
             {
@@ -134,13 +144,6 @@ namespace SqlBuildManager.Console.KeyVault
             {
                 cmdLine.ServiceBusTopicConnection = tmp;
                 retrieved.Add(KeyVaultHelper.ServiceBusTopicConnectionString);
-            }
-
-            tmp  = GetSecret(kvName, KeyVaultHelper.StorageAccountKey);
-            if (!string.IsNullOrWhiteSpace(tmp))
-            {
-                cmdLine.StorageAccountKey = tmp;
-                retrieved.Add(KeyVaultHelper.StorageAccountKey);
             }
 
             tmp = GetSecret(kvName, KeyVaultHelper.StorageAccountName);
@@ -175,7 +178,7 @@ namespace SqlBuildManager.Console.KeyVault
                 log.LogInformation($"Retrieved secrets from Key Vault: {string.Join(", ", retrieved)}");
             }else
             {
-                log.LogWarning($"No secrets received from Key Vault");
+                log.LogError($"No secrets received from Key Vault");
             }
 
             return cmdLine;

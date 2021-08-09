@@ -740,13 +740,15 @@ namespace SqlBuildManager.Console
             (success, cmdLine) = ContainerManager.ReadSecrets(cmdLine);
             if (!success)
             {
-                // return 1; 
+                log.LogError("Unable to acquire secrets from secret store. Terminating container.");
+                return -2;
             }
             //runtime params
             (success, cmdLine) = ContainerManager.ReadRuntimeParameters(cmdLine);
             if (!success)
             {
-                //return 1;
+                log.LogError("Unable to acquire runtime values. Terminating container.");
+                return -2;
             }
             return await RunGenericContainerQueueWorker(cmdLine);
         }
@@ -1047,7 +1049,11 @@ namespace SqlBuildManager.Console
             cmdLine.RunningAsContainer = true;
             cmdLine = Aci.AciHelper.ReadRuntimeEnvironmentVariables(cmdLine);
             cmdLine = KeyVaultHelper.GetSecrets(cmdLine);
-
+            if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                log.LogError("Unable to retrieve required connection secrets. Terminating container");
+                return -2; 
+            }
             return await RunGenericContainerQueueWorker(cmdLine);
         }
 
