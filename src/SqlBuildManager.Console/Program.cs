@@ -819,7 +819,7 @@ namespace SqlBuildManager.Console
             int error, commit;
             bool firstLoop = true;
             int cursorStepBack = (targets == 0) ? 3 : 4;
-            int totalLoops = 0;
+            int unitTestLoops = 0;
             if (checkAciState && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName))
             {
                 _ = GetAciErrorState(cmdLine);
@@ -865,7 +865,7 @@ namespace SqlBuildManager.Console
                 // log.LogInformation($"Remaining Messages: {messageCount}");
                 System.Threading.Thread.Sleep(500);
                 if (messageCount == 0) { zeroMessageCounter++; } else { zeroMessageCounter = 0; }
-                if (targets == 0 && zeroMessageCounter >= 20 && lastCommitCount == commit && lastErrorCount == error && !unittest)
+                if (targets == 0 && zeroMessageCounter >= 20 && lastCommitCount == commit && lastErrorCount == error && !unittest) //not seeing progress
                 {
                     System.Console.Write("Message count has remained 0, do you want to continue monitoring (Y/n)");
                     var key = System.Console.ReadKey().Key;
@@ -874,6 +874,9 @@ namespace SqlBuildManager.Console
                     {
                         zeroMessageCounter = 0;
                         firstLoop = true;
+                        for (int i = 0; i < cursorStepBack; i++)
+                        { System.Console.WriteLine(); }
+
                     }
                     else
                     {
@@ -886,20 +889,21 @@ namespace SqlBuildManager.Console
                     System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                     break;
                 }
-                else if(unittest && totalLoops == 40)
+                else if(unittest && unitTestLoops == 40)
                 {
                     log.LogError("Unit test taking too long! There is likely something wrong with the containers.");
                     return -1;
 
-                }else if(lastCommitCount != commit || lastErrorCount != error)
+                }else if(lastCommitCount != commit || lastErrorCount != error) //reset the counters if we still see progress.
                 {
                     zeroMessageCounter = 0;
+                    unitTestLoops = 0;
                 }
 
                 lastErrorCount = error;
                 lastCommitCount = commit;
                 firstLoop = false;
-                totalLoops++;
+                unitTestLoops++;
             }
 
             await qManager.DeleteSubscription();

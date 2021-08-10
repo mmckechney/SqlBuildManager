@@ -22,7 +22,8 @@ namespace SqlBuildManager.Console.CommandLine
 
                 if (property.PropertyType == typeof(CommandLineArgs.AutoScripting) ||
                     property.PropertyType == typeof(CommandLineArgs.StoredProcTesting) ||
-                    property.PropertyType == typeof(CommandLineArgs.Synchronize))
+                    property.PropertyType == typeof(CommandLineArgs.Synchronize) ||
+                    property.PropertyType == typeof(CommandLineArgs.Aci))
                 {
                     if (property.GetValue(obj) != null && toStringType == StringType.Basic)
                     {
@@ -37,7 +38,7 @@ namespace SqlBuildManager.Console.CommandLine
                         sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
                     }
                 }
-                else if (property.PropertyType == typeof(CommandLineArgs.Authentication)) //Special case if Key Vaule is specified
+                else if (property.PropertyType == typeof(CommandLineArgs.Authentication)) //Special case if Key Vault is specified
                 {
                     if(obj is CommandLineArgs)
                     {
@@ -52,7 +53,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                     }
                 }
-                else if (property.PropertyType == typeof(CommandLineArgs.Connections)) //Special case if Key Vaule is specified
+                else if (property.PropertyType == typeof(CommandLineArgs.Connections)) //Special case if Key Vault is specified
                 {
                     if (property.GetValue(obj) != null)
                     {
