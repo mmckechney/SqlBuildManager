@@ -804,7 +804,7 @@ namespace SqlBuildManager.Console
 
             //set up event handler
             var storageString = CloudStorage.StorageManager.GetStorageConnectionString(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
-            (string jobName, string containerName) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
+            (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
             var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, storageString, jobName, jobName);
 
             var eventTask = ehandler.MonitorEventHub();
@@ -862,9 +862,8 @@ namespace SqlBuildManager.Console
                     System.Console.WriteLine($"{spinner} Remaining Messages: {messageCount}{Environment.NewLine}  Remaining Databases: {targets - commit - error}{Environment.NewLine}  Database Commits: {commit}{Environment.NewLine}  Database Errors: {error}");
                 }
 
-                // log.LogInformation($"Remaining Messages: {messageCount}");
                 System.Threading.Thread.Sleep(500);
-                if (messageCount == 0) { zeroMessageCounter++; } else { zeroMessageCounter = 0; }
+                if (messageCount == 0) { zeroMessageCounter++; } else { zeroMessageCounter = 0; unitTestLoops = 0; }
                 if (targets == 0 && zeroMessageCounter >= 20 && lastCommitCount == commit && lastErrorCount == error && !unittest) //not seeing progress
                 {
                     System.Console.Write("Message count has remained 0, do you want to continue monitoring (Y/n)");
@@ -884,17 +883,18 @@ namespace SqlBuildManager.Console
                         break;
                     }
                 }
-                else if (targets != 0 && (commit + error == targets))
+                else if (targets != 0 && (commit + error == targets)) //we know the target count and we have received updates from them all
                 {
                     System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                     break;
                 }
-                else if(unittest && unitTestLoops == 40)
+                else if(unittest && unitTestLoops == 100)
                 {
                     log.LogError("Unit test taking too long! There is likely something wrong with the containers.");
                     return -1;
 
-                }else if(lastCommitCount != commit || lastErrorCount != error) //reset the counters if we still see progress.
+                }
+                else if(lastCommitCount != commit || lastErrorCount != error) //reset the counters if we still see progress.
                 {
                     zeroMessageCounter = 0;
                     unitTestLoops = 0;
@@ -940,13 +940,14 @@ namespace SqlBuildManager.Console
             (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             if (!kvSuccess)
             {
-                log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
+                log.LogInformation("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
                 return -4;
             }
 
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString)) cmdLine.ServiceBusTopicConnection = args.ConnectionArgs.ServiceBusTopicConnectionString;
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString)) cmdLine.EventHubConnection = args.ConnectionArgs.EventHubConnectionString;
             if (!string.IsNullOrWhiteSpace(args.JobName)) cmdLine.JobName = args.JobName;
+            if(!string.IsNullOrWhiteSpace(args.MultiDbRunConfigFileName)) cmdLine.MultiDbRunConfigFileName = args.MultiDbRunConfigFileName;
 
             return await MonitorServiceBusRuntimeProgress(cmdLine, unittest);
 

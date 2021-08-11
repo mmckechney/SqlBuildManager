@@ -114,7 +114,7 @@ namespace SqlBuildManager.Console.KeyVault
         {
             if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
-                log.LogWarning("No Key Vault name supplied. Unable to retrieve secrets");
+                log.LogInformation("No Key Vault name supplied. Unable to retrieve secrets");
                 return (true,cmdLine);
             }    
             var retrieved = new List<string>();

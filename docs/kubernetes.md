@@ -72,11 +72,11 @@ If there are messages on the Service Bus Topic that match the `JobName` from the
 
 ### 0. Remove pre-existing pods
 
-Each pod deployment is specific to particular settings (secrets, jobname and package file). To ensure the running pods are configured properly and ready to pull Service Bus Topic messages, you will need to remove any existing pods. **_This is true even if you are running the same build twice since the pods are deactivated after a run._**
+Each Kubernetes job is specific to particular settings (secrets, jobname and package file). To ensure the running pods are configured properly and ready to pull Service Bus Topic messages, you will need to remove any existing pods. **_This is true even if you are running the same build twice since the pods are deactivated after a run._**
 
 ``` bash
 az login  #establish a connection to your Azure account
-kubectl scale deployment sqlbuildmanager --replicas=0
+kubectl delete job sqlbuildmanager
 ```
 
 ### 1. Save the common settings to the config files
@@ -92,12 +92,12 @@ sbm k8s savesettings  -u "<sql username>" -p "<sql password>" --storageaccountna
 The Kubernetes pods retrieve the build package from Azure storage, this command will create a storage container with the name of the `--jobname` (it will be lower cased and any invalid characters removed) and upload the SBM file to the new container. If you provide the `--runtimefile` value for the runtime YAML file, it will also update the `PackageName` and `JobName` values of the YAML file for you.
 
 ``` bash
-# For deploy using local secrets
+# For job using local secrets
 sbm k8s prep --secretsfile "secrets.yaml" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
 ```
 
 ``` bash
-# For deploy using Key Vault secrets
+# For job using Key Vault secrets
 sbm k8s prep --keyvaultname "<key vault name>" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
 ```
 
@@ -108,33 +108,33 @@ You can use the saved settings files created by `sbm k8s savesettings` or use th
 **IMPORTANT:** If using arguments, the `jobname` and `concurrencytype` values _MUST_ match the values found in the `runtime.yaml` that was deployed to Kubernetes otherwise the messages will not get processed.
 
 ``` bash
-# For deploy using local secrets
+# For job using local secrets
 sbm k8s enqueue --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ````
 
 ``` bash
-# For deploy using Key Vault secrets
+# For job using Key Vault secrets
 sbm k8s enqueue --keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 
-### 4. Deploy the pods to Kubernetes
+### 4. Deploy the pods to Kubernetes Job
 
 Leveraging the `kubetcl` command line interface, run the `apply` commands for the `secrets.yaml` (this will upload the values for the connection to Azure Service Bus, Event Grid, Storage and databases) and `runtime.yaml` (this will upload the values for the build package name, job name and runtime concurrency options).  Next apply the `deployment.yaml` to create the pods
 
 ``` bash
-# For deploy using local secrets
+# For job using local secrets
 kubectl apply -f secrets.yaml
 kubectl apply -f runtime.yaml
-kubectl apply -f sample_deployment.yaml
+kubectl apply -f sample_job.yaml
 kubectl get pods
 ```
 
 ``` bash
-# For deploy using Key Vault secrets
+# For job using Key Vault secrets
 kubectl apply -f runtime.yaml
 kubectl apply -f secretProviderClass.yaml
 kubectl apply -f podIdentityAndBinding.yaml
-kubectl apply -f sample_deployment_keyvault.yaml
+kubectl apply -f sample_job_keyvault.yaml
 kubectl get pods
 ```
 
@@ -159,12 +159,12 @@ sqlbuildmanager-79fd65cf45-wg2c9   1/1     Running   0          10m
 This command will monitor the number of messages left in the Service Bus Topic and also monitor the Event Hub for error and commit messages.
 
 ``` bash
-# For deploy using local secrets
+# For job using local secrets
 sbm k8s monitor --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 
 ``` bash
-# For deploy using Key Vault secrets
+# For job using Key Vault secrets
 sbm k8s monitor --keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 

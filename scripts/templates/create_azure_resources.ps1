@@ -133,4 +133,11 @@ if($testDatabaseCount -gt 0)
     ./create_database_override_files.ps1 -path $outputPath -resourceGroupName $resourceGroupName
 }
 
+#############################################
+# Copy sample K8s YAML files for test configs
+#############################################
+Copy-Item kubernetes/sample_job.yaml (Join-Path $outputPath basic_job.yaml)
+Copy-Item kubernetes/sample_job_keyvault.yaml (Join-Path $outputPath basic_job_keyvault.yaml)
+
+
 Write-Host "COMPLETED! - Azure resources have been created." -ForegroundColor DarkGreen

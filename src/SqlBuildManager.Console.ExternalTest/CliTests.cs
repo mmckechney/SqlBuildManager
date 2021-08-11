@@ -82,7 +82,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
         private static string GetUniqueBatchJobName()
         {
-            string name = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().ToLower().Replace("-", "").Substring(0, 6);
+            string name = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().ToLower().Replace("-", "").Substring(0, 3);
             return name;
         }
         public static IEnumerable<string> ReadLines(string path)
@@ -1050,7 +1050,7 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/basic_deploy.yaml")]
+        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/basic_job.yaml")]
         [DataTestMethod]
         public void Kubernetes_SBMSource_Success(string runtimeFile, string secretsFile, string deployFile)
         {
@@ -1072,14 +1072,14 @@ namespace SqlBuildManager.Console.ExternalTest
             RootCommand rootCommand = CommandLineBuilder.SetUp();
 
             //Clear any exiting pods
-            var result = prc.ExecuteProcess("kubectl", "scale deployment sqlbuildmanager --replicas=0");
-           
+            var result = prc.ExecuteProcess("kubectl", $"delete job sqlbuildmanager ");
+
             //Prep the build
             var args = new string[]{
                 "k8s",  "prep",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
-                "--jobname", DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff"),
+                "--jobname", GetUniqueBatchJobName(),
                 "--packagename", sbmFileName};
 
             var val = rootCommand.InvokeAsync(args);
@@ -1097,8 +1097,6 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
             Assert.AreEqual(0, result);
-
-            result = prc.ExecuteProcess("kubectl", $"scale deployment sqlbuildmanager --replicas=0");
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {secretsFile}");
             Assert.AreEqual(0, result);
@@ -1127,7 +1125,7 @@ namespace SqlBuildManager.Console.ExternalTest
            
         }
 
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_deploy_keyvault.yaml")]
+        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_job_keyvault.yaml")]
         [DataTestMethod]
         public void Kubernetes_SBMSource_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
         {
@@ -1150,14 +1148,14 @@ namespace SqlBuildManager.Console.ExternalTest
             RootCommand rootCommand = CommandLineBuilder.SetUp();
 
             //Clear any exiting pods
-            var result = prc.ExecuteProcess("kubectl", "scale deployment sqlbuildmanager --replicas=0");
+            var result = prc.ExecuteProcess("kubectl", $"delete job sqlbuildmanager ");
 
             //Prep the build
             var args = new string[]{
                 "k8s",  "prep",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
-                "--jobname", DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff"),
+                "--jobname", GetUniqueBatchJobName(),
                 "--packagename", sbmFileName};
 
             var val = rootCommand.InvokeAsync(args);
@@ -1175,8 +1173,6 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
             Assert.AreEqual(0, result);
-
-            result = prc.ExecuteProcess("kubectl", $"scale deployment sqlbuildmanager --replicas=0");
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {secretsProviderFile}");
             Assert.AreEqual(0, result, "Failed to apply secrets provider file");
@@ -1209,7 +1205,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
         [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 1, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataTestMethod]
         public void ACI_SBMSource_KeyVault_Secrets_Success(string settingsFile, string containerTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
@@ -1227,7 +1223,7 @@ namespace SqlBuildManager.Console.ExternalTest
             int startingLine = LogFileCurrentLineCount();
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            string jobName = DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff");
+            string jobName = GetUniqueBatchJobName();
             string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
             //Prep the build
