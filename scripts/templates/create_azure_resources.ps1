@@ -41,6 +41,12 @@ $result = az group create --name $resourceGroupName --location $location
 Write-Host "Creating Azure resources: Storage Account, Batch Account, Event Hub, Service Bus Topic,  Key Vault and Identity" -ForegroundColor DarkGreen
 $result = az deployment group create --resource-group $resourceGroupName --template-file azuredeploy.json --parameters namePrefix="$resourcePrefix" eventhubSku="Standard" skuCapacity=1 location=$location
 
+####################
+# Set Identity privs
+####################
+./set_managedidentity_rbac_fromprefix.ps1 -prefix $resourcePrefix -resourceGroupName $resourceGroupName
+
+
 #################
 # AKS
 #################
@@ -126,5 +132,12 @@ if($testDatabaseCount -gt 0)
 {
     ./create_database_override_files.ps1 -path $outputPath -resourceGroupName $resourceGroupName
 }
+
+#############################################
+# Copy sample K8s YAML files for test configs
+#############################################
+Copy-Item kubernetes/sample_job.yaml (Join-Path $outputPath basic_job.yaml)
+Copy-Item kubernetes/sample_job_keyvault.yaml (Join-Path $outputPath basic_job_keyvault.yaml)
+
 
 Write-Host "COMPLETED! - Azure resources have been created." -ForegroundColor DarkGreen

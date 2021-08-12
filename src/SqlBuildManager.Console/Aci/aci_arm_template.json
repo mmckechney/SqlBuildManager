@@ -22,10 +22,10 @@
       },
       "properties": {
         "containers": [
-          {{Container_Placeholder}}
+          "{{Container_Placeholder}}"
         ],
         "osType": "Linux",
-        "restartPolicy": "Never"
+        "restartPolicy": "OnFailure"
       }
     }
   ]

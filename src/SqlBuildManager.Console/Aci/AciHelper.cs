@@ -11,6 +11,8 @@ using Azure.Identity;
 using Azure.ResourceManager.Resources.Models;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Text.Json;
+using System.Linq;
 
 namespace SqlBuildManager.Console.Aci
 {
@@ -25,6 +27,10 @@ namespace SqlBuildManager.Console.Aci
         private static string ConcurrencyType = "Sbm_ConcurrencyType";
         private static string DacpacName = "Sbm_DacpacName";
 
+        private static string GetAciResourceId(string subscriptionId, string resourceGroupName, string aciName)
+        {
+            return $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerInstance/containerGroups/{aciName}";
+        }
         private static TokenCredential _tokenCred = null;
         internal static TokenCredential TokenCredential
         {
@@ -82,7 +88,7 @@ namespace SqlBuildManager.Console.Aci
             }
             string allContainers = string.Join("," + Environment.NewLine, containers);
 
-            template = template.Replace("{{Container_Placeholder}}", allContainers);
+            template = template.Replace("\"{{Container_Placeholder}}\"", allContainers);
             return template;
         }
 
@@ -108,15 +114,11 @@ namespace SqlBuildManager.Console.Aci
         {
             try
             {
-                string aciResourceId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerInstance/containerGroups/{aciName}";
-                //var resp = await ResourceClient(subscriptionId).Resources.CheckExistenceByIdAsync(aciResourceId, "2021-03-01");
-                try
+                if (await ShouldDeleteExistingInstance(templateFileName, subscriptionId, resourceGroupName, aciName))
                 {
-                    log.LogInformation("Removing any pre-existing ACI instance");
-                    var resp = await ResourceClient(subscriptionId).Resources.StartDeleteByIdAsync(aciResourceId, "2021-03-01");
-                    await resp.WaitForCompletionAsync();
+                    await DeleteAciInstance(subscriptionId,resourceGroupName,aciName);
                 }
-                catch { }
+
                 // https://github.com/Azure-Samples/azure-samples-net-management/blob/master/samples/resources/deploy-using-arm-template/Program.cs
                 var rgName = resourceGroupName;
                 var deploymentName = jobName;
@@ -150,6 +152,102 @@ namespace SqlBuildManager.Console.Aci
 
         }
 
-           
+        private static async Task<bool> ShouldDeleteExistingInstance(string templateFileName, string subscriptionId, string resourceGroupName, string aciName)
+        {
+            try
+            {
+                (int containerCount, int memory, int cpu) = await GetAciCountMemoryAndCpu(subscriptionId, resourceGroupName, aciName);
+
+                var j = JsonSerializer.Deserialize<TemplateClass>(File.ReadAllText(templateFileName));
+                var templateContainerCount = j.Resources.First().Properties.Containers.Count();
+                var templateMemory = j.Resources.First().Properties.Containers.First().Properties.Resources.Requests.MemoryInGB;
+                var templateCpu = j.Resources.First().Properties.Containers.First().Properties.Resources.Requests.Cpu;
+
+                return !(containerCount == templateContainerCount && memory == templateMemory && cpu == templateCpu);
+            }
+            catch(Azure.RequestFailedException rexe)
+            {
+                if(rexe.Status == 404)
+                {
+                    return false;
+                }
+                else
+                {
+                    log.LogError(rexe.Message);
+                    return true;
+                }
+            }
+            catch(Exception ex)
+            {
+                
+                log.LogError(ex.Message);
+                return true;
+            }
+        }
+
+        internal static async Task<bool> DeleteAciInstance(string subscriptionId, string resourceGroupName, string aciName)
+        {
+            string aciResourceId = GetAciResourceId(subscriptionId, resourceGroupName, aciName);
+            //var resp = await ResourceClient(subscriptionId).Resources.CheckExistenceByIdAsync(aciResourceId, "2021-03-01");
+            try
+            {
+                
+                log.LogInformation("Removing any pre-existing ACI deployment");
+                var resp = await ResourceClient(subscriptionId).Resources.StartDeleteByIdAsync(aciResourceId, "2021-03-01");
+                await resp.WaitForCompletionAsync();
+                log.LogInformation("Pre-existing ACI deployment removed");
+            }
+            catch(Exception exe)
+            {
+                log.LogError($"Unable to remove existing ACI instance: {exe.Message}");
+                return false;
+            }
+            return true;
+        }
+
+        internal static async Task<bool> AciIsInErrorState(string subscriptionId, string resourceGroupName, string aciName)
+        {
+            var aciResult = await GetAciInstanceData(subscriptionId, resourceGroupName, aciName);
+            var containerCount = aciResult.Value.Properties.Containers.Count;
+            var status = aciResult.Value.Properties.Containers.Where(c => c.Properties.InstanceView.CurrentState.DetailStatus.ToLower() == "error").Count();
+
+            return status == containerCount;
+        }
+
+        internal static async Task<(int,int, int)> GetAciCountMemoryAndCpu(string subscriptionId, string resourceGroupName, string aciName)
+        { 
+            var aciResult = await GetAciInstanceData( subscriptionId,  resourceGroupName, aciName);
+            var containerCount = aciResult.Value.Properties.Containers.Count;
+            var memoryPer = aciResult.Value.Properties.Containers.Select(c => c.Properties.Resources.Requests.MemoryInGB).FirstOrDefault();
+            var cpuPer = aciResult.Value.Properties.Containers.Select(c => c.Properties.Resources.Requests.Cpu).FirstOrDefault();
+
+            return(containerCount, memoryPer, cpuPer);
+        }
+
+        private static async Task<AciDeploymentResult.Result> GetAciInstanceData(string subscriptionId, string resourceGroupName, string aciName)
+        {
+            string aciResourceId = GetAciResourceId(subscriptionId, resourceGroupName, aciName);
+
+            var resp = await ResourceClient(subscriptionId).Resources.GetByIdAsync(aciResourceId, "2021-03-01");
+            var aciResult = JsonSerializer.Deserialize<AciDeploymentResult.Result>(JsonSerializer.Serialize(resp));
+
+            return aciResult;
+        }
+
+        internal static CommandLineArgs GetRuntimeValuesFromDeploymentTempate(CommandLineArgs cmdLine, string templateFileName)
+        {
+            var j = System.Text.Json.JsonSerializer.Deserialize<Aci.TemplateClass>(File.ReadAllText(templateFileName));
+            cmdLine.JobName = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_JobName").FirstOrDefault().Value;
+            var tmp = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_ConcurrencyType").FirstOrDefault().Value;
+            if (Enum.TryParse<ConcurrencyType>(tmp, out ConcurrencyType concurrencyType))
+            {
+                cmdLine.ConcurrencyType = concurrencyType;
+            }
+            cmdLine.AciName = j.variables.aciName;
+
+            return cmdLine;
+        }
+
+
     }
 }

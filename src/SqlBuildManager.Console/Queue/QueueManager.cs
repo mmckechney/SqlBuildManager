@@ -277,9 +277,10 @@ namespace SqlBuildManager.Console.Queue
             {
                 switch(sbe.Reason)
                 {
+                    case ServiceBusFailureReason.MessagingEntityNotFound: //This execption is thrown when the subscription has been deleted, return empty list to indicate no more messages
+                        return lstMsg;
                     case ServiceBusFailureReason.ServiceTimeout:  //This execption is thrown when no session is available, return empty list to indicate no more messages
                         return lstMsg;
-                    
                     case ServiceBusFailureReason.SessionLockLost: //Try to get a new session
                        return await GetSessionBasedTargetsFromQueue(maxMessages, true);
 

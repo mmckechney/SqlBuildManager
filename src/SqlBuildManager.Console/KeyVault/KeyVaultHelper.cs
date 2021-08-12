@@ -12,6 +12,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SqlBuildManager.Console.CommandLine;
 using System.Linq;
+using Polly;
+using Azure.Messaging.ServiceBus.Administration;
+
 namespace SqlBuildManager.Console.KeyVault
 {
     internal class KeyVaultHelper
@@ -38,8 +41,7 @@ namespace SqlBuildManager.Console.KeyVault
                         new AzureCliCredential(), 
                         new AzurePowerShellCredential(), 
                         new VisualStudioCredential(),
-                        new VisualStudioCodeCredential(),
-                        new InteractiveBrowserCredential());
+                        new VisualStudioCodeCredential());
                 }
                 return _tokenCred;
             }
@@ -63,12 +65,13 @@ namespace SqlBuildManager.Console.KeyVault
         {
             try
             {
-                var secret = KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName);
+                var pollyRetrySecrets = Policy.Handle<Azure.Identity.AuthenticationFailedException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.1, retryAttempt)));
+                var secret =  pollyRetrySecrets.Execute(() => KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName));
                 return secret.Value.Value;
             }
             catch (Exception exe)
             {
-                log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: {exe.ToString()}");
+                log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: {exe.Message}");
                 return null;
             }
         }
@@ -107,17 +110,27 @@ namespace SqlBuildManager.Console.KeyVault
             return keys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
 
         }
-        public static CommandLineArgs GetSecrets(CommandLineArgs cmdLine)
+        public static (bool,CommandLineArgs) GetSecrets(CommandLineArgs cmdLine)
         {
             if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
-                return cmdLine;
+                log.LogInformation("No Key Vault name supplied. Unable to retrieve secrets");
+                return (true,cmdLine);
             }    
             var retrieved = new List<string>();
             log.LogInformation($"Retrieving secrets from KeyVault: {cmdLine.ConnectionArgs.KeyVaultName}");
             var keys = new List<string>();
             var kvName = cmdLine.ConnectionArgs.KeyVaultName;
             string tmp;
+
+            tmp = GetSecret(kvName, KeyVaultHelper.StorageAccountKey);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.StorageAccountKey = tmp;
+                retrieved.Add(KeyVaultHelper.StorageAccountKey);
+            }
+            else { return (false,cmdLine); } //short circuit. Storage key is always needed.
+
             tmp = GetSecret(kvName, KeyVaultHelper.EventHubConnectionString);
             if(!string.IsNullOrWhiteSpace(tmp))
             {
@@ -130,13 +143,6 @@ namespace SqlBuildManager.Console.KeyVault
             {
                 cmdLine.ServiceBusTopicConnection = tmp;
                 retrieved.Add(KeyVaultHelper.ServiceBusTopicConnectionString);
-            }
-
-            tmp  = GetSecret(kvName, KeyVaultHelper.StorageAccountKey);
-            if (!string.IsNullOrWhiteSpace(tmp))
-            {
-                cmdLine.StorageAccountKey = tmp;
-                retrieved.Add(KeyVaultHelper.StorageAccountKey);
             }
 
             tmp = GetSecret(kvName, KeyVaultHelper.StorageAccountName);
@@ -169,12 +175,15 @@ namespace SqlBuildManager.Console.KeyVault
             if (retrieved.Count > 0)
             {
                 log.LogInformation($"Retrieved secrets from Key Vault: {string.Join(", ", retrieved)}");
-            }else
+                return (true,cmdLine);
+            }
+            else
             {
-                log.LogWarning($"No secrets received from Key Vault");
+                log.LogError($"No secrets received from Key Vault");
+                return (false, cmdLine);
             }
 
-            return cmdLine;
+            
 
         }
     }

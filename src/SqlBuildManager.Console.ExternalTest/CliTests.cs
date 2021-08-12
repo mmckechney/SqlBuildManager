@@ -28,9 +28,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
-            this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-windows.json");
             this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
-            this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-linux.json");
             this.overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
             this.cmdLine = new CommandLineArgs();
@@ -82,7 +80,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
         private static string GetUniqueBatchJobName()
         {
-            string name = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().ToLower().Replace("-", "").Substring(0, 6);
+            string name = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().ToLower().Replace("-", "").Substring(0, 3);
             return name;
         }
         public static IEnumerable<string> ReadLines(string path)
@@ -190,11 +188,19 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json", ConcurrencyType.Count,10)]
+        [DataRow("run", "TestConfig/settingsfile-windows.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-linux.json", ConcurrencyType.Count, 10)]
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-windows.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-linux.json", ConcurrencyType.Server, 2)]
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("run", "TestConfig/settingsfile-windows.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("run", "TestConfig/settingsfile-linux.json", ConcurrencyType.MaxPerServer, 2)]
         [DataTestMethod]
-        public void Batch_SBMSource_Success(string batchMethod, string settingsFile)
+        public void Batch_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
             if (!File.Exists(sbmFileName))
@@ -212,49 +218,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override", this.overrideFilePath,
-                "--packagename", sbmFileName};
-
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            var result = val.Result;
-
-
-            var logFileContents = ReleventLogFileContents(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
-            if (batchMethod == "run")
-            {
-                Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
-            }
-            if (batchMethod == "runthreaded")
-            {
-                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
-            }
-        }
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
-        [DataTestMethod]
-        public void Batch_SBMSource_ServerConcurrency_Success(string batchMethod, string settingsFile)
-        {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
-
-            settingsFile = Path.GetFullPath(settingsFile);
-
-            //get the size of the log file before we start
-            int startingLine = LogFileCurrentLineCount();
-
-            var args = new string[]{
-                "batch",  batchMethod,
-                "--settingsfile", settingsFile,
-                "--settingsfilekey", this.settingsFileKeyPath,
-                "--override", this.overrideFilePath,
-               "--packagename", sbmFileName,
+                "--packagename", sbmFileName,
                 "--concurrency", "2",
                 "--concurrencytype","Server" };
 
@@ -276,56 +240,13 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
             }
         }
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
-        [DataTestMethod]
-        public void Batch_SBMSource_MaxServerConcurrency_Success(string batchMethod, string settingsFile)
-        {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
-
-            settingsFile = Path.GetFullPath(settingsFile);
-
-            //get the size of the log file before we start
-            int startingLine = LogFileCurrentLineCount();
-
-            var args = new string[]{
-                "batch",  batchMethod,
-                "--settingsfile", settingsFile,
-                "--settingsfilekey", this.settingsFileKeyPath,
-                "--override", this.overrideFilePath,
-               "--packagename", sbmFileName,
-                "--concurrency", "2",
-                "--concurrencytype","MaxPerServer" };
-
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            var result = val.Result;
-
-
-            var logFileContents = ReleventLogFileContents(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
-            if (batchMethod == "run")
-            {
-                Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
-            }
-            if (batchMethod == "runthreaded")
-            {
-                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
-            }
-        }
+        
 
         [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void Batch_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
+        public void Batch_Override_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
 
@@ -354,7 +275,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedAndBatch_PlatinumDbSource_Succes(string batchMethod, string settingsFile)
+        public void Batch_Override_PlatinumDbSource_Succes(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -397,7 +318,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void Batch_PlatinumDbSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
+        public void Batch_Override_PlatinumDbSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -447,7 +368,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedAndBatch_PlatinumDbSource_ADbAlreadyInSync(string batchMethod, string settingsFile)
+        public void Batch_Override_PlatinumDbSource_ADbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -500,7 +421,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedAndBatch_DacpacSource_Success(string batchMethod, string settingsFile)
+        public void Batch_Override_DacpacSource_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -548,7 +469,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void LocalThreadedAndBatch_DacpacSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
+        public void Batch_Override_DacpacSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -602,7 +523,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("query", "TestConfig/settingsfile-windows.json")]
         [DataRow("query", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void BatchQuery_SelectSuccess(string batchMethod, string settingsFile)
+        public void Batch_Query_SelectSuccess(string batchMethod, string settingsFile)
         {
 
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -666,7 +587,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("query", "TestConfig/settingsfile-windows.json")]
         [DataRow("query", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void BatchQuery_InsertFail(string batchMethod, string settingsFile)
+        public void Batch_Query_InsertFail(string batchMethod, string settingsFile)
         {
 
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -705,7 +626,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("query", "TestConfig/settingsfile-windows.json")]
         [DataRow("query", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void BatchQuery_DeleteFail(string batchMethod, string settingsFile)
+        public void Batch_Query_DeleteFail(string batchMethod, string settingsFile)
         {
 
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -744,7 +665,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("query", "TestConfig/settingsfile-windows.json")]
         [DataRow("query", "TestConfig/settingsfile-linux.json")]
         [DataTestMethod]
-        public void BatchQuery_UpdateFail(string batchMethod, string settingsFile)
+        public void Batch_Query_UpdateFail(string batchMethod, string settingsFile)
         {
 
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -778,13 +699,23 @@ namespace SqlBuildManager.Console.ExternalTest
             //Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An UPDATE statement should have been found");
         }
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue.json",ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json,",ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json",ConcurrencyType.Server, 2)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json,", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue.json", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json,", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json", ConcurrencyType.Count, 5)]
         [DataTestMethod]
-        public void Batch_Queue_SBMSource_ByServer_Success(string batchMethod, string settingsFile)
+        public void Batch_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
@@ -793,7 +724,6 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
             string jobName = GetUniqueBatchJobName();
-            var concurType = ConcurrencyType.Server.ToString();
             int startingLine = LogFileCurrentLineCount();
 
             var args = new string[]{ 
@@ -801,7 +731,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override" , this.overrideFilePath,
-                "--concurrencytype",  concurType,
+                "--concurrencytype",  concurType.ToString(),
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -818,8 +748,8 @@ namespace SqlBuildManager.Console.ExternalTest
             "--settingsfilekey", this.settingsFileKeyPath,
             "--override", this.overrideFilePath,
             "--packagename", sbmFileName,
-            "--concurrencytype", concurType,
-            "--concurrency", "2",
+            "--concurrencytype", concurType.ToString(),
+            "--concurrency", concurrency.ToString(),
             "--jobname", jobName };
 
             val = rootCommand.InvokeAsync(args);
@@ -828,110 +758,6 @@ namespace SqlBuildManager.Console.ExternalTest
 
             logFileContents = ReleventLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-        }
-
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
-        [DataTestMethod]
-        public void Batch_Queue_SBMSource_MaxPerserver_Success(string batchMethod, string settingsFile)
-        {
-            settingsFile = Path.GetFullPath(settingsFile);
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
-            string jobName = GetUniqueBatchJobName();
-            int startingLine = LogFileCurrentLineCount();
-            var concurType = ConcurrencyType.MaxPerServer.ToString();
-            var args = new string[]{
-                "batch", "enqueue",
-                "--settingsfile", settingsFile,
-                "--settingsfilekey", this.settingsFileKeyPath,
-                "--override" , this.overrideFilePath,
-                "--concurrencytype",  concurType,
-                "--jobname", jobName};
-
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            var result = val.Result;
-
-            var logFileContents = ReleventLogFileContents(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-
-            args = new string[]{
-            "batch",  batchMethod,
-            "--settingsfile", settingsFile,
-            "--settingsfilekey", this.settingsFileKeyPath,
-            "--override", this.overrideFilePath,
-            "--packagename", sbmFileName,
-            "--concurrencytype", concurType,
-            "--concurrency", "5",
-            "--jobname", jobName };
-
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-
-            logFileContents = ReleventLogFileContents(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-
-        }
-
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
-        [DataTestMethod]
-        public void Batch_Queue_SBMSource_Count_Success(string batchMethod, string settingsFile)
-        {
-            settingsFile = Path.GetFullPath(settingsFile);
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
-            string jobName = GetUniqueBatchJobName();
-            int startingLine = LogFileCurrentLineCount();
-            var concurType = ConcurrencyType.Count.ToString();
-            var args = new string[]{
-                "batch", "enqueue",
-                "--settingsfile", settingsFile,
-                "--settingsfilekey", this.settingsFileKeyPath,
-                "--override" , this.overrideFilePath,
-                "--concurrencytype",  concurType,
-                "--jobname", jobName};
-
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            var result = val.Result;
-
-            var logFileContents = ReleventLogFileContents(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-
-            args = new string[]{
-            "batch",  batchMethod,
-            "--settingsfile", settingsFile,
-            "--settingsfilekey", this.settingsFileKeyPath,
-            "--override", this.overrideFilePath,
-            "--packagename", sbmFileName,
-            "--concurrencytype", concurType,
-            "--concurrency", "5",
-            "--jobname", jobName };
-
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-
-            logFileContents = ReleventLogFileContents(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-
         }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
@@ -1050,9 +876,9 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/basic_deploy.yaml")]
+        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/basic_job.yaml")]
         [DataTestMethod]
-        public void Kubernetes_SBMSource_Success(string runtimeFile, string secretsFile, string deployFile)
+        public void Kubernetes_Queue_SBMSource_Local_Secrets_Success(string runtimeFile, string secretsFile, string deployFile)
         {
             var prc = new ProcessHelper();
             secretsFile = Path.GetFullPath(secretsFile);
@@ -1072,14 +898,14 @@ namespace SqlBuildManager.Console.ExternalTest
             RootCommand rootCommand = CommandLineBuilder.SetUp();
 
             //Clear any exiting pods
-            var result = prc.ExecuteProcess("kubectl", "scale deployment sqlbuildmanager --replicas=0");
-           
+            var result = prc.ExecuteProcess("kubectl", $"delete job sqlbuildmanager ");
+
             //Prep the build
             var args = new string[]{
                 "k8s",  "prep",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
-                "--jobname", DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff"),
+                "--jobname", GetUniqueBatchJobName(),
                 "--packagename", sbmFileName};
 
             var val = rootCommand.InvokeAsync(args);
@@ -1097,8 +923,6 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
             Assert.AreEqual(0, result);
-
-            result = prc.ExecuteProcess("kubectl", $"scale deployment sqlbuildmanager --replicas=0");
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {secretsFile}");
             Assert.AreEqual(0, result);
@@ -1127,9 +951,9 @@ namespace SqlBuildManager.Console.ExternalTest
            
         }
 
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_deploy_keyvault.yaml")]
+        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_job_keyvault.yaml")]
         [DataTestMethod]
-        public void Kubernetes_SBMSource_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
+        public void Kubernetes_Queue_SBMSource_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
         {
             var prc = new ProcessHelper();
             secretsProviderFile = Path.GetFullPath(secretsProviderFile);
@@ -1150,14 +974,14 @@ namespace SqlBuildManager.Console.ExternalTest
             RootCommand rootCommand = CommandLineBuilder.SetUp();
 
             //Clear any exiting pods
-            var result = prc.ExecuteProcess("kubectl", "scale deployment sqlbuildmanager --replicas=0");
+            var result = prc.ExecuteProcess("kubectl", $"delete job sqlbuildmanager ");
 
             //Prep the build
             var args = new string[]{
                 "k8s",  "prep",
                 "--secretsfile", secretsFile,
                 "--runtimefile", runtimeFile,
-                "--jobname", DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff"),
+                "--jobname", GetUniqueBatchJobName(),
                 "--packagename", sbmFileName};
 
             var val = rootCommand.InvokeAsync(args);
@@ -1175,8 +999,6 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
             Assert.AreEqual(0, result);
-
-            result = prc.ExecuteProcess("kubectl", $"scale deployment sqlbuildmanager --replicas=0");
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {secretsProviderFile}");
             Assert.AreEqual(0, result, "Failed to apply secrets provider file");
@@ -1208,11 +1030,11 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 2, 1, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-dev", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataTestMethod]
-        public void ACI_SBMSource_KeyVault_Secrets_Success(string settingsFile, string containerTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public void ACI_Queue_SBMSource_KeyVault_Secrets_Success(string settingsFile, string containerTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -1227,7 +1049,7 @@ namespace SqlBuildManager.Console.ExternalTest
             int startingLine = LogFileCurrentLineCount();
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            string jobName = DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-fff");
+            string jobName = GetUniqueBatchJobName();
             string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
             //Prep the build
