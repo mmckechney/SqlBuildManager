@@ -615,9 +615,9 @@ namespace SqlBuildManager.Console.Batch
             }
 
             var deploymentConfig = new bm.DeploymentConfiguration() { VirtualMachineConfiguration = virtualMachineConfiguration };
-            var ids = new Dictionary<string, bm.BatchPoolIdentityUserAssignedIdentitiesValue>();
-            ids.Add(userAssignedResourceId, new bm.BatchPoolIdentityUserAssignedIdentitiesValue(principalId: userAssignedPrinId, clientId: userAssignedClientId));
-
+            var ids = new Dictionary<string, bm.UserAssignedIdentities>();
+            ids.Add(userAssignedResourceId, new bm.UserAssignedIdentities(principalId: userAssignedPrinId, clientId: userAssignedClientId));
+            
             var poolIdentity = new bm.BatchPoolIdentity() { Type = bm.PoolIdentityType.UserAssigned, UserAssignedIdentities = ids };
             var scaleSettings = new bm.ScaleSettings() { FixedScale = new bm.FixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
 
