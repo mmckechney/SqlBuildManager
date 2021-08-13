@@ -33,7 +33,7 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
   - [Azure Batch](docs/azure_batch.md)
   - [Kubernetes](docs/kubernetes.md)
   - [Azure Container Instances (ACI)](docs/aci.md)
-- [Change notes](docs/change_notes.md)
+- [Change log](CHANGELOG.md)
 - For contributors: [Notes on Building and Unit Testing](docs/setup_azure_environment.md)
 - For users of the Windows Form app: [SQL Build Manager Manual](docs/SqlBuildManagerManual.md)\
   (Note: this isn't 100% up to date, so the screen shots may vary from the current app)

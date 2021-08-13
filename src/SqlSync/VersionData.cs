@@ -6,7 +6,6 @@ namespace SqlSync
 {
     public class VersionData
     {
-        public const string XsltTransformFileName = "change_notes.xslt";
         Version yourVersion = null;
 
         public Version YourVersion

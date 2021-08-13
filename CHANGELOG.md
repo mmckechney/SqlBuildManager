@@ -1,6 +1,9 @@
 ﻿
-# SQL Build Manager Change Notes
+# SQL Build Manager Change Log
 
+### Version 14.0.1
+
+- *ADDED:* New argument `--stream` for `sbm k8s monitor` and `sbm aci monitor` as a flag whether or not to output the individual database commit/errors messages. Default is `false`
 
 ### Version 14.0.0
 

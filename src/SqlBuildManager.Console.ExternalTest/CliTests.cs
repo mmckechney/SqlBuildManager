@@ -28,7 +28,9 @@ namespace SqlBuildManager.Console.ExternalTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
+            this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-windows.json");
             this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+            this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-linux.json");
             this.overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
             this.cmdLine = new CommandLineArgs();
@@ -37,6 +39,7 @@ namespace SqlBuildManager.Console.ExternalTest
             bool ds;
             (ds, this.cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             this.overrideFileContents = File.ReadAllLines(this.overrideFilePath).ToList();
+
 
         }
         [TestCleanup]
@@ -750,7 +753,8 @@ namespace SqlBuildManager.Console.ExternalTest
             "--packagename", sbmFileName,
             "--concurrencytype", concurType.ToString(),
             "--concurrency", concurrency.ToString(),
-            "--jobname", jobName };
+            "--jobname", jobName,
+            "--unittest"};
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -788,7 +792,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", this.settingsFileKeyPath,
                 "--override" , minusFirst,
                 "--concurrencytype",  concurType,
-                "--jobname", jobName};
+                "--jobname", jobName };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             Task<int> val = rootCommand.InvokeAsync(args);
@@ -807,7 +811,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--platinumserversource", server,
                 "--concurrencytype", concurType,
                 "--concurrency", "5",
-                "--jobname", jobName };
+                "--jobname", jobName,
+                "--unittest"};
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -866,7 +871,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--platinumdacpac", dacpacName,
                 "--concurrencytype", concurType,
                 "--concurrency", "5",
-                "--jobname", jobName };
+                "--jobname", jobName,
+                "--unittest"};
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();

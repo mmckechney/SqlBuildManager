@@ -72,7 +72,14 @@ Please install the new version as soon as possible.";
 
         private void lnkUpdatePath_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(lnkUpdatePath.Text);
+            try{
+
+                System.Diagnostics.Process.Start(@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",lnkUpdatePath.Text);
+            }
+            catch(Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message);
+            }
         }
 
         private void lnkContactEMail_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

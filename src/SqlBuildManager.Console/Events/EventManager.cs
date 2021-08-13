@@ -24,6 +24,8 @@ namespace SqlBuildManager.Console.Events
         public int DatabaseCommits { get; set; } = 0;
         public int DatabaseErrors { get; set; } = 0;
 
+        public bool StreamEvents { get;set; } = false;
+
         public EventManager(string eventHubconnectionString, string storageConnectionString, string storageContainerName, string jobName)
         {
             this.eventHubconnectionString = eventHubconnectionString;
@@ -80,11 +82,11 @@ namespace SqlBuildManager.Console.Events
                 switch(msg.Properties.LogMsg.LogType)
                 {
                     case LogType.Commit:
-                        log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(13)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
+                        if(this.StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(13)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
                         this.DatabaseCommits++;
                         break;
                     case LogType.Error:
-                        log.LogError($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(13)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
+                        if(this.StreamEvents) log.LogError($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(13)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
                         this.DatabaseErrors++;
                         break;
                 }
@@ -93,8 +95,9 @@ namespace SqlBuildManager.Console.Events
             await eventArgs.UpdateCheckpointAsync(eventArgs.CancellationToken);
         }
 
-        public Task MonitorEventHub()
+        public Task MonitorEventHub(bool stream)
         {
+            this.StreamEvents = stream;
             // Start the processing
             return this.EventClient.StartProcessingAsync();
 

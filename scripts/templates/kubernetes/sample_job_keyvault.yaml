@@ -18,7 +18,7 @@ spec:
           limits:
             memory: "512M"
             cpu: "500m"
-        args:
+        command:
           - dotnet
           - sbm.dll
           - k8s

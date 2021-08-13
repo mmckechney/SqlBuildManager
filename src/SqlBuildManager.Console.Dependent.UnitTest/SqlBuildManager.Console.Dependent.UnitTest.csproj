@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
@@ -94,6 +94,6 @@
     </None>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy ..\SqlBuildManager.Console\bin\$(ConfigurationName)\netcoreapp3.1\sbm.runtimeconfig.json $(OutDir)sbm.runtimeconfig.json&#xD;&#xA;copy ..\SqlBuildManager.Console\bin\$(ConfigurationName)\netcoreapp3.1\sbm.deps.json $(OutDir)sbm.deps.json&#xD;&#xA;" />
+    <Exec Command="copy ..\SqlBuildManager.Console\bin\$(ConfigurationName)\$(TargetFramework)\sbm.runtimeconfig.json $(OutDir)sbm.runtimeconfig.json&#xD;&#xA;copy ..\SqlBuildManager.Console\bin\$(ConfigurationName)\\$(TargetFramework)\sbm.deps.json $(OutDir)sbm.deps.json&#xD;&#xA;" />
   </Target>
 </Project>

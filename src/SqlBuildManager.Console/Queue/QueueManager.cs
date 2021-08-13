@@ -368,7 +368,7 @@ namespace SqlBuildManager.Console.Queue
                 var results = await this.AdminClient.DeleteSubscriptionAsync(this.topicName, topicSub);
                 if (results.Status < 300)
                 {
-                    log.LogInformation($"Deleted Service Bus Topicsubscription: {topicSub}");
+                    log.LogInformation($"Deleted Service Bus Topic subscription: {topicSub}");
                     return true;
                 }
                 else
