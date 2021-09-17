@@ -7,16 +7,28 @@ param
 $aksClusterName = $prefix + "aks"
 $keyVaultName = $prefix + "keyvault"
 $userAssignedIdentity = $prefix + "identity"
+$aksVnet = $prefix + "vnet"
+$aksSubnet = "akssubnet"
+$virtualKubletSubnet = "virtualnodesubnet"
 
-
+Write-Host "Making sure container provider is regustered" -ForegroundColor DarkGreen
 az feature register --name EnablePodIdentityPreview --namespace Microsoft.ContainerService
 az provider register -n Microsoft.ContainerService
 
+Write-Host "Creating VNET $aksVnet and AKS subnet: $aksSubnet, for the AKS cluster $aksClusterName" -ForegroundColor DarkGreen
+az network vnet create --resource-group $resourceGroupName --name $aksVnet  --address-prefixes 10.180.0.0/20 --subnet-name $aksSubnet --subnet-prefix 10.180.0.0/22
+
+Write-Host "Creating $virtualKubletSubnet for the AKS cluster $aksClusterName" -ForegroundColor DarkGreen
+az network vnet subnet create --resource-group $resourceGroupName --vnet-name $aksVnet --name $virtualKubletSubnet --address-prefixes 10.180.4.0/22
+
+$aksVnetId = az network vnet show --resource-group $resourceGroupName --name $aksVnet --query id -o tsv
+$aksSubnetId = az network vnet subnet show --resource-group $resourceGroupName --vnet-name $aksVnet --name $aksSubnet --query id -o tsv
+
 Write-Host "Creating AKS Cluster: $aksClusterName" -ForegroundColor DarkGreen
-$result = az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 2 --enable-managed-identity --network-plugin azure
+az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-managed-identity --network-plugin kubenet # --enable-addons virtual-node --vnet-subnet-id $aksSubnetId --aci-subnet-name $virtualKubletSubnet --yes
 
 Write-Host "Retrieving credentials for: $aksClusterName" -ForegroundColor DarkGreen
-$result = az aks get-credentials --name $aksClusterName --resource-group $resourceGroupName --overwrite-existing
+az aks get-credentials --name $aksClusterName --resource-group $resourceGroupName --overwrite-existing
 
 
 # https://docs.microsoft.com/en-us/azure/key-vault/general/key-vault-integrate-kubernetes
@@ -43,6 +55,7 @@ Write-Host "Adding Role Assignments" -ForegroundColor DarkGreen
 az role assignment create --role "Managed Identity Operator" --assignee $clientId --scope /subscriptions/$subscriptionId/resourcegroups/$vaultResourceGroup
 az role assignment create --role "Managed Identity Operator" --assignee $clientId --scope /subscriptions/$subscriptionId/resourcegroups/$nodeResourceGroup
 az role assignment create --role "Virtual Machine Contributor" --assignee $clientId --scope /subscriptions/$subscriptionId/resourcegroups/$nodeResourceGroup
+az role assignment create --role "Contributor" --assignee $clientId --scope $aksVnetId
 
 # Install AAD pod identity
 Write-Host "Installing AAD pod identity for: $aksClusterName" -ForegroundColor DarkGreen

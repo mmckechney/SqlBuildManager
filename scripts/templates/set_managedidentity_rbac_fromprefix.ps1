@@ -4,7 +4,7 @@ param
     [string] $resourceGroupName
 )
 
-Write-Host "Retrieving resource names from resource group $resourceGroupName"
+Write-Host "Retrieving resource names from resource group $resourceGroupName" -ForegroundColor DarkGreen
 $identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 $keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen

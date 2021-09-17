@@ -99,6 +99,10 @@ namespace SqlBuildManager.Console.CommandLine
             var aciArmTemplateNotReqOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')").ExistingOnly();
             var aciSubscriptionIdOption = new Option<string>("--subscriptionid", "Subscription to deploy ACI to");
             var aciContainerTagOption = new Option<string>(new string[] { "--tag", "--containertag" }, "Tag for container image to pull from registry");
+
+            var unitTestOption = new Option<bool>("--unittest", () => false, "Designation that execution is running as a unit test");
+            var streamEventsOption = new Option<bool>("--stream", () => false, "Stream database event log events (Commits and Errors");
+            unitTestOption.IsHidden = true;
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
             {
@@ -236,7 +240,8 @@ namespace SqlBuildManager.Console.CommandLine
                 targetdacpacOption,
                 forcecustomdacpacOption,
                 platinumdbsourceOption,
-                platinumserversourceOption
+                platinumserversourceOption,
+                unitTestOption
             };
             batchRunCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunBatchExecution);
 
@@ -283,7 +288,8 @@ namespace SqlBuildManager.Console.CommandLine
                 platinumserversourceOption,
                 outputcontainersasurlOption,
                 transactionalOption,
-                timeoutretrycountOption
+                timeoutretrycountOption,
+                unitTestOption
 
             };
             batchRunThreadedCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunThreadedExecution);
@@ -561,9 +567,7 @@ namespace SqlBuildManager.Console.CommandLine
             };
             kubernetesSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string, DirectoryInfo>(Program.SaveKubernetesSettings);
 
-            var unitTestOption = new Option<bool>("--unittest", () => false, "Designation that execution is running as a unit test");
-            unitTestOption.IsHidden = true;
-            
+           
             var kubernetesMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {
                 secretsFileOption,
@@ -574,9 +578,10 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyTypeOption,
                 serviceBusconnectionOption,
                 eventhubconnectionOption, 
-                unitTestOption
+                unitTestOption,
+                streamEventsOption
             };
-            kubernetesMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool>(Program.MonitorKubernetesRuntimeProgress);
+            kubernetesMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool,bool>(Program.MonitorKubernetesRuntimeProgress);
 
             var kubernetesrPrepCommand = new Command("prep", "Creates a storage container and uploads the SBM package file that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values")
             {
@@ -689,9 +694,10 @@ namespace SqlBuildManager.Console.CommandLine
                 aciContainerTagOption,
                 overrideOption.Copy(false),
                 unitTestOption,
+                streamEventsOption,
                 new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment")
             };
-            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool, bool>(Program.DeployAciTemplate);
+            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool, bool,bool>(Program.DeployAciTemplate);
 
             var aciMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {
@@ -703,9 +709,10 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyTypeOption,
                 serviceBusconnectionOption,
                 eventhubconnectionOption,
-                unitTestOption
+                unitTestOption,
+                streamEventsOption
             };
-            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool>(Program.MonitorAciRuntimeProgress);
+            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool,bool>(Program.MonitorAciRuntimeProgress);
 
             var aciDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {

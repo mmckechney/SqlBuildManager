@@ -64,7 +64,7 @@ namespace SqlBuildManager.Console.Batch
             this.batchType = BatchType.Query;
         }
 
-        public (int retval, string readOnlySas) StartBatch()
+        public async Task<(int retval, string readOnlySas)> StartBatch()
         {
             string applicationPackage = string.Empty;
             if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ApplicationPackage))
@@ -163,7 +163,7 @@ namespace SqlBuildManager.Console.Batch
 
                 // Create a Batch pool, VM configuration, Windows Server image
                 //bool success = CreateBatchPoolLegacy(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount,cmdLine.BatchArgs.BatchVmSize,cmdLine.BatchArgs.BatchPoolOs);
-                bool success = CreateBatchPool(cmdLine, poolId).GetAwaiter().GetResult();
+                bool success = await CreateBatchPool(cmdLine, poolId);
 
 
                 // The collection of data files that are to be processed by the tasks
@@ -814,7 +814,7 @@ namespace SqlBuildManager.Console.Batch
         }
 
 
-        public int PreStageBatchNodes()
+        public async Task<int> PreStageBatchNodes()
         {
             string[] errorMessages;
             log.LogInformation("Validating batch pre-stage command parameters");
@@ -864,7 +864,7 @@ namespace SqlBuildManager.Console.Batch
                     {
                         if(isDebug)
                         {
-                            nodes.ForEachAsync(n =>
+                            await nodes.ForEachAsync(n =>
                             {
                                 log.LogDebug($"Node '{n.Id}' state = '{n.State}'");
                             });

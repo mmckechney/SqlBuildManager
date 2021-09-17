@@ -7962,7 +7962,7 @@ namespace SqlSync.SqlBuild
                                 verData.LatestVersion = new Version(ver);
                                 verData.LastCompatableVersion = new Version(ver);
 
-                                string changeNotesFilePath = "https://raw.githubusercontent.com/mmckechney/SqlBuildManager/master/docs/change_notes.md";
+                                string changeNotesFilePath = "https://raw.githubusercontent.com/mmckechney/SqlBuildManager/master/CHANGELOG.md";
                                 req = System.Net.WebRequest.Create(changeNotesFilePath);
                                 req.Proxy = System.Net.WebRequest.DefaultWebProxy;
                                 req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;

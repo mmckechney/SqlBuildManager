@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0-windows</TargetFrameworks>
+    <TargetFrameworks>net5.0-windows;net6.0-windows</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
@@ -96,9 +96,6 @@
     <None Include="SqlBuild\Utility\Add Constraint.sql" />
     <None Include="SqlBuild\Utility\Add NonClustered Index.sql" />
     <None Include="Images\Help-2.png" />
-    <Content Include="change_notes.xml">
-      <SubType>Designer</SubType>
-    </Content>
     <None Include="Images\Copy.png" />
     <None Include="Images\Cut-2.png" />
     <None Include="Images\checkout.PNG" />
