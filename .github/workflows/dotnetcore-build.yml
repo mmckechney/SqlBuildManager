@@ -68,7 +68,7 @@ jobs:
     - name: Publish the Linux CLI app
       run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f net5.0
 
-    # .NET Core 3.1 pubish
+    # .NET Core 6.0 pubish
     - name: Publish the Windows desktop app
       run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f net6.0-windows
 
@@ -97,24 +97,24 @@ jobs:
         name: SqlBuildManager Desktop
         path: "./src/SqlSync/bin/Release/net5.0-windows/win-x64/publish"     
 
-    # .NET 3.1 artifacts
+    # .NET 6 artifacts
     - name: Upload a Build Artifact sbm-windows
       uses: actions/upload-artifact@v2
       with:
-        name: sbm-windows_netcore3.1
-        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/win-x64/publish"
+        name: sbm-windows-net6.0
+        path: "./src/SqlBuildManager.Console/bin/Release/net6.0/win-x64/publish"
 
     - name: Upload a Build Artifact sbm-linux
       uses: actions/upload-artifact@v2
       with:
-        name: sbm-linux_netcore3.1
-        path: "./src/SqlBuildManager.Console/bin/Release/netcoreapp3.1/linux-x64/publish"
+        name: sbm-linux-net6.0
+        path: "./src/SqlBuildManager.Console/bin/Release/net6.0/linux-x64/publish"
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: SqlBuildManager Desktop netcore3.1
-        path: "./src/SqlSync/bin/Release/netcoreapp3.1/win-x64/publish"     
+        name: SqlBuildManager Desktop net6.0
+        path: "./src/SqlSync/bin/Release/net6.0-windows/win-x64/publish"     
         
 
     
