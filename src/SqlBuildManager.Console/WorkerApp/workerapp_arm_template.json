@@ -1,0 +1,188 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment_id": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "containerTag":
+    {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "jobname": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "packageName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "dacpacName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "concurrency": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "concurrencyType": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "topicName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "storageAccountKey": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "storageAccountName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "eventHubConnectionString": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "serviceBusTopicConnectionString": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "username": {
+      "defaultValue": "",
+      "type": "String"
+    },
+     "password": {
+      "defaultValue": "",
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "sbmworker",
+      "type": "Microsoft.Web/workerApps",
+      "apiVersion": "2021-02-01",
+      "kind": "workerapp",
+      "location": "centraluseuap",
+      "properties": {
+        "kubeEnvironmentId": "[parameters('environment_id')]",
+        "configuration": {
+          "activeRevisionsMode": "single",
+          "secrets": [
+            {
+              "name": "storageaccountkey",
+              "value": "[parameters('storageAccountKey')]"
+            },
+            {
+              "name": "storageaccountname",
+              "value": "[parameters('storageAccountName')]"
+            },
+            {
+              "name": "eventhubconnectionstring",
+              "value": "[parameters('eventHubConnectionString')]"
+            },
+            {
+              "name": "servicebustopicconnectionstring",
+              "value": "[parameters('serviceBusTopicConnectionString')]"
+            },
+            {
+              "name": "username",
+              "value": "[parameters('userName')]"
+            },
+            {
+              "name": "password",
+              "value": "[parameters('password')]"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "image": "blueskydevus/sqlbuildmanager:vNext",
+              "name": "sbmworker",
+              "env": [
+                {
+                  "name": "Sbm_JobName",
+                  "value": "[parameters('jobname')]"
+                },
+                {
+                  "name": "Sbm_PackageName",
+                  "value": "[parameters('packageName')]"
+                },
+                {
+                  "name": "Sbm_DacpacName",
+                  "value": "[parameters('dacpacName')]"
+                },
+                {
+                  "name": "Sbm_Concurrency",
+                  "value": "[parameters('concurrency')]"
+                },
+                {
+                  "name": "Sbm_ConcurrencyType",
+                  "value": "[parameters('concurrencyType')]"
+                },
+                {
+                  "name": "Sbm_StorageAccountKey",
+                  "secretRef": "storageaccountkey",
+                  "value": null
+                },
+                {
+                  "name": "Sbm_StorageAccountName",
+                  "secretRef": "storageaccountname",
+                  "value": null
+                },
+                {
+                  "name": "Sbm_EventHubConnectionString",
+                  "secretRef": "eventhubconnectionstring",
+                  "value": null
+                },
+                {
+                  "name": "Sbm_ServiceBusTopicConnectionString",
+                  "secretRef": "servicebustopicconnectionstring",
+                  "value": null
+                },
+                {
+                  "name": "Sbm_UserName",
+                  "secretRef": "username",
+                  "value": null
+                },
+                {
+                  "name": "Sbm_Password",
+                  "secretRef": "password",
+                  "value": null
+                }
+              ]
+            }
+          ],
+          "scale": {
+            "minReplicas": 0,
+            "maxReplicas": 10,
+            "rules": [
+              {
+                "name": "sbm-queue-scaling-rule",
+                "azureQueue": {
+                  "topicName": "[parameters('topicName')]",
+                  "subscriptionName": "[parameters('jobname')]",
+                  "queueLength": 5,
+                  "auth": [
+                    {
+                      "secretRef": "servicebustopicconnectionstring",
+                      "triggerParameter": "connection"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "dapr": {
+            "enabled": "false"
+          }
+        }
+      }
+    }
+  ]
+}
