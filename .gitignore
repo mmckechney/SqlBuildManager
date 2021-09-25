@@ -221,3 +221,4 @@ pip-log.txt
 /src/TestConfig
 Command_scratch.txt
 /scripts/templates/runme.ps1
+/src/SqlBuildManager.Console/WorkerApp/workerapp_arm_template.parameters.json
