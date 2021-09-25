@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\devops\azure-release.yml = ..\devops\azure-release.yml
 		..\devops\batch_release.json = ..\devops\batch_release.json
 		..\devops\batch_update_releasepackage.ps1 = ..\devops\batch_update_releasepackage.ps1
+		..\CHANGELOG.md = ..\CHANGELOG.md
 		Clean-ObjAndBin.ps1 = Clean-ObjAndBin.ps1
 		Clean-TestResults.ps1 = Clean-TestResults.ps1
 		..\.github\workflows\codeql-analysis.yml = ..\.github\workflows\codeql-analysis.yml

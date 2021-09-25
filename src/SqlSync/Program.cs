@@ -20,7 +20,7 @@ namespace SqlSync
         [STAThread]
         static int Main(string[] args)
         {
-            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, applicationLogFileName);
+            log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Program>(applicationLogFileName);
 
             log.LogDebug("Sql Build Manager Staring...");
             if(args.Length > 0)

@@ -10,7 +10,6 @@ namespace SqlBuildManager.Logging
     public class ApplicationLogging
 	{
 		private static ILoggerFactory Factory = null;
-		private static string _rootLoggingFile = string.Empty;
 		private static string _logFileName = string.Empty;
 		private static bool addPath = false;
 		private static Microsoft.Extensions.Logging.LogLevel logLevel = Microsoft.Extensions.Logging.LogLevel.Information;
@@ -19,18 +18,20 @@ namespace SqlBuildManager.Logging
 		private static Serilog.Core.Logger serilogLogger = null;
 		public static void ConfigureStandardLogger(ILoggerFactory factory)
 		{
-
-			var logOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}";
+    		var logOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}";
 			var consoleOutput = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,2}] {Message}{NewLine}{Exception}";
 
-			serilogLogger =  new LoggerConfiguration()
-                    .MinimumLevel.ControlledBy(levelSwitch)
-                    .Enrich.WithThreadId()
-                    .Enrich.WithThreadName()
-                    .WriteTo.Console(outputTemplate: consoleOutput)
-                    .WriteTo.Async(a => a.File(LogFileName, outputTemplate: logOutputTemplate, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: false, shared: true))
-                    .CreateLogger();
-           
+			var cfg = new LoggerConfiguration()
+					.MinimumLevel.ControlledBy(levelSwitch)
+					.Enrich.WithThreadId()
+					.Enrich.WithThreadName()
+					.WriteTo.Console(outputTemplate: consoleOutput);
+			foreach(var file in loggingPaths)
+            {
+				cfg.WriteTo.Async(a => a.File(file, outputTemplate: logOutputTemplate, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: false, shared: true));
+			}
+			serilogLogger = cfg.CreateLogger();
+
 			factory.AddSerilog(serilogLogger);
 	
 		}
@@ -51,8 +52,8 @@ namespace SqlBuildManager.Logging
 		}
 		public static Microsoft.Extensions.Logging.ILogger CreateLogger<T>() => LoggerFactory.CreateLogger(typeof(T));
 		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type) => LoggerFactory.CreateLogger(type);
-		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type, string logFileName) => CreateLogger(type, logFileName, string.Empty);
-		public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type, string logFileName, string rootLoggingPath)
+		public static Microsoft.Extensions.Logging.ILogger CreateLogger<T>(string logFileName) => CreateLogger<T>(logFileName, string.Empty);
+		public static Microsoft.Extensions.Logging.ILogger CreateLogger<T>(string logFileName, string rootLoggingPath)
 		{
 			if(string.IsNullOrWhiteSpace(rootLoggingPath))
             {
@@ -63,7 +64,7 @@ namespace SqlBuildManager.Logging
 				LogFileName = Path.Combine(rootLoggingPath, logFileName);
             }
 			addPath = true;
-			return LoggerFactory.CreateLogger(type);
+			return LoggerFactory.CreateLogger(typeof(T));
 		}
  
 
@@ -129,7 +130,12 @@ namespace SqlBuildManager.Logging
 					_logFileName = value;
 
 				}
-				loggingPaths.Add(_logFileName);
+
+				_logFileName = Path.GetFullPath(_logFileName); //Fix to make sure we have a proper format
+				if (!loggingPaths.Contains(_logFileName))
+				{
+					loggingPaths.Add(_logFileName);
+				}
 
 			}
 		}

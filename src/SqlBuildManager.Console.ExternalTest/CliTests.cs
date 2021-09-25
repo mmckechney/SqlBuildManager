@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Console.ExternalTest
 {
     /// <summary>
@@ -28,6 +29,8 @@ namespace SqlBuildManager.Console.ExternalTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
+
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<CliTests>("SqlBuildManager.Console.log", @"C:\temp");
             this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-windows.json");
             this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-linux.json");
@@ -39,6 +42,8 @@ namespace SqlBuildManager.Console.ExternalTest
             bool ds;
             (ds, this.cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             this.overrideFileContents = File.ReadAllLines(this.overrideFilePath).ToList();
+
+            
 
 
         }
@@ -56,6 +61,8 @@ namespace SqlBuildManager.Console.ExternalTest
         }
         private string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
         {
+            var log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<CliTests>("SqlBuildManager.Console.log", @"C:\temp");
+            log.LogInformation("Creating DACPAC for tests");
             string fullname = Path.GetFullPath($"TestConfig/{database}.dacpac");
 
             var args = new string[]{
@@ -513,7 +520,6 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
-            
             if (batchMethod == "runthreaded")
             {
                 Assert.IsTrue(logFileContents.Contains($"{database2}:Dacpac Databases In Sync"), "The second database should already be in sync with the first");
@@ -705,17 +711,17 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Server, 2)]
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Server, 2)]
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json",ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json,",ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json",ConcurrencyType.Server, 2)]
         [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json",ConcurrencyType.Server, 2)]
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json,", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json", ConcurrencyType.MaxPerServer, 5)]
         [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json", ConcurrencyType.MaxPerServer, 5)]
         [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Count, 5)]
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Count, 5)]
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json", ConcurrencyType.Count, 5)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json,", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json", ConcurrencyType.Count, 5)]
         [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json", ConcurrencyType.Count, 5)]
         [DataTestMethod]
         public void Batch_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
