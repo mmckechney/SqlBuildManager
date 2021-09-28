@@ -1,6 +1,10 @@
 ﻿
 # SQL Build Manager Change Log
 
+### Version 14.1.0
+
+- *UPDATED:* Updating `sbm` to use IHostedService so SIGTERM from containers is acknowledged
+
 ### Version 14.0.1
 
 - *ADDED:* New argument `--stream` for `sbm k8s monitor` and `sbm aci monitor` as a flag whether or not to output the individual database commit/errors messages. Default is `false`

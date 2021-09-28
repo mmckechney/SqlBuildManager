@@ -113,7 +113,7 @@ namespace SqlBuildManager.Console.CommandLine
                 serverOption.Copy(true),
                 dacpacOutputOption
             };
-            dacpacCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateDacpac);
+            dacpacCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateDacpac);
 
             #region Local and Threaded
 
@@ -136,7 +136,7 @@ namespace SqlBuildManager.Console.CommandLine
                 scriptsrcdirOption,
                 timeoutretrycountOption
             };
-            buildCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunLocalBuildAsync);
+            buildCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunLocalBuildAsync);
 
             /****************************************
              * Threaded 
@@ -166,7 +166,7 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption
             };
-            threadedRunCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunThreadedExecution);
+            threadedRunCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunThreadedExecution);
 
             //Threaded query options
             var threadedQueryCommand = new Command("query", "Run a SELECT query across multiple databases")
@@ -182,7 +182,7 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyOption,
                 threadedConcurrencyTypeOption
             };
-            threadedQueryCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.QueryDatabases);
+            threadedQueryCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabases);
 
             //Threaded base commands
             var threadedCommand = new Command("threaded", "For updating multiple or querying databases simultaneously from the current machine");
@@ -243,7 +243,7 @@ namespace SqlBuildManager.Console.CommandLine
                 platinumserversourceOption,
                 unitTestOption
             };
-            batchRunCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunBatchExecution);
+            batchRunCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchExecution);
 
 
             //Batch threading run -- used to run on Batch node
@@ -292,7 +292,7 @@ namespace SqlBuildManager.Console.CommandLine
                 unitTestOption
 
             };
-            batchRunThreadedCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunThreadedExecution);
+            batchRunThreadedCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunThreadedExecution);
             batchRunThreadedCommand.IsHidden = true;
 
 
@@ -320,7 +320,7 @@ namespace SqlBuildManager.Console.CommandLine
                 batchApplicationOption,
                 pollbatchpoolstatusOption
             };
-            batchPreStageCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunBatchPreStage);
+            batchPreStageCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchPreStage);
 
 
             //Batch node cleanup
@@ -334,7 +334,7 @@ namespace SqlBuildManager.Console.CommandLine
                 batchaccounturlOption,
                 pollbatchpoolstatusOption
             };
-            batchCleanUpCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunBatchCleanUp);
+            batchCleanUpCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchCleanUp);
 
             //Batch delete jobs
             var batchDeleteJobsCommand = new Command("deletejobs", "Delete Jobs from the Azure batch account")
@@ -347,7 +347,7 @@ namespace SqlBuildManager.Console.CommandLine
                 batchaccounturlOption
             };
             batchDeleteJobsCommand.IsHidden = true;
-            batchDeleteJobsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunBatchJobDelete);
+            batchDeleteJobsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchJobDelete);
 
 
             //Batch Save settings file
@@ -393,7 +393,7 @@ namespace SqlBuildManager.Console.CommandLine
                 silentOption,
                 cleartextOption
             };
-            saveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.SaveAndEncryptSettings);
+            saveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptSettings);
 
             var batchEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
             {
@@ -405,7 +405,7 @@ namespace SqlBuildManager.Console.CommandLine
                 serviceBusconnectionOption,
                 overrideOption.Copy(true)
             };
-            batchEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.EnqueueOverrideTargets);
+            batchEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.EnqueueOverrideTargets);
 
             var batchDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
@@ -417,7 +417,7 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyTypeOption
 
             };
-            batchDequeueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.DeQueueOverrideTargets);
+            batchDequeueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.DeQueueOverrideTargets);
 
             
             //Batch query 
@@ -463,7 +463,7 @@ namespace SqlBuildManager.Console.CommandLine
                 serviceBusconnectionOption,
 
             };
-            batchQueryCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunBatchQuery);
+            batchQueryCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchQuery);
 
 
             // Batch query -- threaded
@@ -511,7 +511,7 @@ namespace SqlBuildManager.Console.CommandLine
                 silentOption
 
             };
-            batchQueryThreadedCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.QueryDatabases);
+            batchQueryThreadedCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabases);
             batchQueryThreadedCommand.IsHidden = true;
 
             //Azure Batch base command
@@ -534,7 +534,7 @@ namespace SqlBuildManager.Console.CommandLine
              ***************************************/
 
             var kubernetesWorkerCommand = new Command("worker", "[Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
-            kubernetesWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunKubernetesQueueWorker);
+            kubernetesWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunKubernetesQueueWorker);
 
             var kubernetesEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
             {
@@ -546,7 +546,7 @@ namespace SqlBuildManager.Console.CommandLine
                 serviceBusconnectionOption,
                 overrideAsFileOption
             };
-            kubernetesEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,string, string,ConcurrencyType,string, FileInfo>(Program.EnqueueContainerOverrideTargets);
+            kubernetesEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,string, string,ConcurrencyType,string, FileInfo>(Worker.EnqueueContainerOverrideTargets);
 
             var pathOption = new Option<DirectoryInfo>("--path", "Path to save secrets.yaml and runtime.yaml files").ExistingOnly();
             var kubernetesSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes pod deployments")
@@ -565,7 +565,7 @@ namespace SqlBuildManager.Console.CommandLine
                 pathOption
                 
             };
-            kubernetesSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string, DirectoryInfo>(Program.SaveKubernetesSettings);
+            kubernetesSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string, DirectoryInfo>(Worker.SaveKubernetesSettings);
 
            
             var kubernetesMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
@@ -581,7 +581,7 @@ namespace SqlBuildManager.Console.CommandLine
                 unitTestOption,
                 streamEventsOption
             };
-            kubernetesMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool,bool>(Program.MonitorKubernetesRuntimeProgress);
+            kubernetesMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool,bool>(Worker.MonitorKubernetesRuntimeProgress);
 
             var kubernetesrPrepCommand = new Command("prep", "Creates a storage container and uploads the SBM package file that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values")
             {
@@ -595,7 +595,7 @@ namespace SqlBuildManager.Console.CommandLine
                 forceOption
 
             };
-            kubernetesrPrepCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, string, string, string, string, bool>(Program.UploadKubernetesBuildPackage);
+            kubernetesrPrepCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, string, string, string, string, bool>(Worker.UploadKubernetesBuildPackage);
 
             var kubernetesDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
@@ -606,7 +606,7 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyTypeOption,
                 serviceBusconnectionOption
             };
-            kubernetesDequeueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, string, ConcurrencyType, string>(Program.DequeueKubernetesOverrideTargets);
+            kubernetesDequeueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, string, ConcurrencyType, string>(Worker.DequeueKubernetesOverrideTargets);
 
 
 
@@ -650,7 +650,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cleartextOption
 
             };
-            aciSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Program.SaveAndEncryptAciSettings);
+            aciSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptAciSettings);
 
             var aciPrepCommand = new Command("prep", "Creates ACI arm template, a storage container, and uploads the SBM package file that will be used for the build. ")
             {
@@ -672,7 +672,7 @@ namespace SqlBuildManager.Console.CommandLine
                 forceOption
 
             };
-            aciPrepCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Program.PrepAndUploadAciBuildPackage);
+            aciPrepCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Worker.PrepAndUploadAciBuildPackage);
 
             var aciEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
             {
@@ -683,7 +683,7 @@ namespace SqlBuildManager.Console.CommandLine
                 serviceBusconnectionOption,
                 overrideOption.Copy(true)
             };
-            aciEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.EnqueueOverrideTargets);
+            aciEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.EnqueueOverrideTargets);
 
             var aciDeployCommand = new Command("deploy", "Deploy the ACI instance using the template file created from 'sbm prep' and start containers")
             {
@@ -697,7 +697,7 @@ namespace SqlBuildManager.Console.CommandLine
                 streamEventsOption,
                 new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment")
             };
-            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool, bool,bool>(Program.DeployAciTemplate);
+            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool, bool,bool>(Worker.DeployAciTemplate);
 
             var aciMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {
@@ -712,7 +712,7 @@ namespace SqlBuildManager.Console.CommandLine
                 unitTestOption,
                 streamEventsOption
             };
-            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool,bool>(Program.MonitorAciRuntimeProgress);
+            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool,bool>(Worker.MonitorAciRuntimeProgress);
 
             var aciDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
@@ -722,10 +722,10 @@ namespace SqlBuildManager.Console.CommandLine
                 jobnameOption.Copy(true),
                 threadedConcurrencyTypeOption
             };
-            aciDequeueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.DeQueueOverrideTargets);
+            aciDequeueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.DeQueueOverrideTargets);
 
             var aciWorkerCommand = new Command("worker", "[Used by ACI] Starts the container(s) as a worker - polling and retrieving items from target service bus queue topic");
-            aciWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.RunAciQueueWorker);
+            aciWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunAciQueueWorker);
 
             aciCommand.Add(aciSaveSettingsCommand);
             aciCommand.Add(aciPrepCommand);
@@ -752,7 +752,7 @@ namespace SqlBuildManager.Console.CommandLine
                 serverOption.Copy(true),
                 continueonfailureOption
             };
-            synchronizeCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.SyncronizeDatabase);
+            synchronizeCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.SyncronizeDatabase);
 
             //Get SBM run differences between two databases
             var getDifferenceCommand = new Command("getdifference", "Determines the difference between SQL Build run histories for two databases. Calculate and list out packages that need to be run between --database and --golddatabase. Only supports Windows Auth")
@@ -762,14 +762,14 @@ namespace SqlBuildManager.Console.CommandLine
                 databaseOption.Copy(true),
                 serverOption.Copy(true)
             };
-            getDifferenceCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.GetDifferences);
+            getDifferenceCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.GetDifferences);
 
             //Create and SBM from and SBX and script files
             var packageCommand = new Command("package", "Creates an SBM package from an SBX configuration file and scripts")
             {
                 directoryOption
             };
-            packageCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.PackageSbxFilesIntoSbmFiles);
+            packageCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.PackageSbxFilesIntoSbmFiles);
 
            
 
@@ -784,7 +784,7 @@ namespace SqlBuildManager.Console.CommandLine
                 authtypeOption
 
             };
-            createFromDiffCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreatePackageFromDiff);
+            createFromDiffCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreatePackageFromDiff);
 
             //Create from diff
             var createFromScriptsCommand = new Command("fromscripts", "Creates an SBM package or SBX project file from a list of scripts (type is determined by file extension- .sbm or .sbx)")
@@ -793,7 +793,7 @@ namespace SqlBuildManager.Console.CommandLine
                 scriptListOption
 
             };
-            createFromScriptsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreatePackageFromScripts);
+            createFromScriptsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreatePackageFromScripts);
 
             //Create from diff
             var createFromDacpacsCommand = new Command("fromdacpacs", "Creates an SBM package from differences between two DACPAC files")
@@ -803,7 +803,7 @@ namespace SqlBuildManager.Console.CommandLine
                 targetdacpacSourceOption
 
             };
-            createFromDacpacsCommand.Handler = CommandHandler.Create<string, FileInfo, FileInfo>(Program.CreatePackageFromDacpacs);
+            createFromDacpacsCommand.Handler = CommandHandler.Create<string, FileInfo, FileInfo>(Worker.CreatePackageFromDacpacs);
 
             //Create an SBM from a platium DACPAC file
             var createFromDacpacDiffCommand = new Command("fromdacpacdiff", "Extract a SBM package from a source --platinumdacpac and a target database connection")
@@ -816,12 +816,12 @@ namespace SqlBuildManager.Console.CommandLine
                 passwordOption,
                 authtypeOption
             };
-            createFromDacpacDiffCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateFromDacpacDiff);
+            createFromDacpacDiffCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateFromDacpacDiff);
 
             //Create an SBM from a platium DACPAC file (deprecated, but keeping in sync with fromdacpacdiff for now
             var scriptExtractCommand = new Command("scriptextract", "[*Deprecated - please use `sbm create fromdacpacdiff`] Extract a SBM package from a source --platinumdacpac");
             createFromDacpacDiffCommand.Options.ToList().ForEach(o => scriptExtractCommand.AddOption(o));
-            scriptExtractCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateFromDacpacDiff);
+            scriptExtractCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateFromDacpacDiff);
 
             //Create
             var createCommand = new Command("create", "Creates an SBM package from script files (fromscripts),  calculated database differences (fromdiff) or diffs between two DACPAC files (fromdacpacs)");
@@ -837,7 +837,7 @@ namespace SqlBuildManager.Console.CommandLine
                 outputsbmOption.Copy(true),
                 scriptListOption
             };
-            addCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.AddScriptsToPackage);
+            addCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.AddScriptsToPackage);
 
             //List
             var listCommand = new Command("list", "List the script contents (order, script name, date added/modified, user info, script ids, script hashes) for SBM packages. (For SBX, just open the XML file!)")
@@ -845,21 +845,21 @@ namespace SqlBuildManager.Console.CommandLine
                 packagesOption,
                 withHashOption
             };
-            listCommand.Handler = CommandHandler.Create<FileInfo[], bool>(Program.ListPackageScripts);
+            listCommand.Handler = CommandHandler.Create<FileInfo[], bool>(Worker.ListPackageScripts);
 
             //Run a policy check
             var policyCheckCommand = new Command("policycheck", "Performs a script policy check on the specified SBM package")
             {
                 packagenameOption.Copy(true)
             };
-            policyCheckCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.ExecutePolicyCheck);
+            policyCheckCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ExecutePolicyCheck);
 
             //Get the hash of an SBM package
             var getHashCommand = new Command("gethash", "Calculates the SHA-1 hash fingerprint value for the SBM package(scripts + run order)")
             {
                 packagenameOption
             };
-            getHashCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.GetPackageHash);
+            getHashCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.GetPackageHash);
 
             //Create a backout SBM
             var createBackoutCommand = new Command("createbackout", "Generates a backout package (reversing stored procedure and scripted object changes)")
@@ -871,11 +871,11 @@ namespace SqlBuildManager.Console.CommandLine
                 serverOption.Copy(true),
                 databaseOption.Copy(true)
             };
-            createBackoutCommand.Handler = CommandHandler.Create<CommandLineArgs>(Program.CreateBackout);
+            createBackoutCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateBackout);
             #endregion
 
             var authCommand = new Command("authtest", "Test Azure authentication");
-            authCommand.Handler = CommandHandler.Create(Program.TestAuth);
+            authCommand.Handler = CommandHandler.Create(Worker.TestAuth);
             authCommand.IsHidden = true;
 
             RootCommand rootCommand = new RootCommand(description: "Tool to manage your SQL server database updates and releases");
