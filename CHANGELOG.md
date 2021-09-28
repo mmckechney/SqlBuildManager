@@ -1,7 +1,7 @@
 ﻿
 # SQL Build Manager Change Log
 
-### Version 14.0.1
+### Version 14.1.0
 
 - *UPDATED:* Updating `sbm` to use IHostedService so SIGTERM from containers is acknowledged
 
