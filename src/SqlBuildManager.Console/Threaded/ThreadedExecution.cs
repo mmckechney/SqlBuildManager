@@ -279,6 +279,8 @@ namespace SqlBuildManager.Console.Threaded
             this.qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             bool messagesSinceLastLoop = true;
             int noMessagesCounter = 0;
+            //Container apps should poll continually... they will be managed by the Keda triggers
+            bool runContinually = (cmdLine.ContainerAppArgs != null && cmdLine.ContainerAppArgs.RunningAsContainerApp);
             while(true)
             {
                 var messages = await qManager.GetDatabaseTargetFromQueue(cmdLine.Concurrency, cmdLine.ConcurrencyType);
@@ -295,7 +297,7 @@ namespace SqlBuildManager.Console.Threaded
                         }
                         else
                         {
-                            if(noMessagesCounter == 4)
+                            if(noMessagesCounter == 4 && !runContinually)
                             {
                                 log.LogInformation("No messages found in Service Bus Topic after 4 retries. Terminating Container.");
                                 break;

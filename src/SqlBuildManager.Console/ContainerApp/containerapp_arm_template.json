@@ -1,0 +1,223 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "location": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "maxContainers": {
+      "defaultValue": 10,
+      "type": "int"
+    },
+    "imageName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "imageTag": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "jobname": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "packageName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "dacpacName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "concurrency": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "concurrencyType": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "storageAccountKey": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "storageAccountName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "eventHubConnectionString": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "serviceBusTopicConnectionString": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "username": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "password": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "registryUserName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "registryPassword": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "registryServer": {
+      "defaultValue": "",
+      "type": "String"
+    }
+
+  },
+  "variables": {
+    "environment_id": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/kubeEnvironments/', parameters('environmentName'))]",
+    "var_registryName": "[if(empty(parameters('registryServer')),'blueskydevus/',concat(parameters('registryServer'),'/'))]"
+  },
+  "resources": [
+    {
+      "name": "[concat('sbm',parameters('jobname'))]",
+      "type": "Microsoft.Web/containerApps",
+      "apiVersion": "2021-03-01",
+      "kind": "containerapp",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubeEnvironmentId": "[variables('environment_id')]",
+        "configuration": {
+          "activeRevisionsMode": "single",
+          "secrets": [
+            {
+              "name": "storageaccountkey",
+              "value": "[parameters('storageAccountKey')]"
+            },
+            {
+              "name": "storageaccountname",
+              "value": "[parameters('storageAccountName')]"
+            },
+            {
+              "name": "eventhubconnectionstring",
+              "value": "[parameters('eventHubConnectionString')]"
+            },
+            {
+              "name": "servicebustopicconnectionstring",
+              "value": "[parameters('serviceBusTopicConnectionString')]"
+            },
+            {
+              "name": "username",
+              "value": "[parameters('userName')]"
+            },
+            {
+              "name": "password",
+              "value": "[parameters('password')]"
+            },
+            {
+              "name": "registrypassword",
+              "value": "[parameters('registryPassword')]"
+            }
+          ]
+        },
+        "registries": [
+          {
+            "server": "[parameters('registryServer')]",
+            "username": "[parameters('registryUserName')]",
+            "passwordSecretRef": "registrypassword"
+          }
+        ],
+        "template": {
+          "containers": [
+            {
+              "command": [
+                "dotnet",
+                "sbm.dll",
+                "--loglevel",
+                "information",
+                "containerapp",
+                "worker"
+              ],
+              "image": "[concat(variables('var_registryName'), parameters('imageName'),':', parameters('imageTag'))]",
+              "name": "[parameters('jobname')]",
+              "env": [
+                {
+                  "name": "Sbm_JobName",
+                  "value": "[parameters('jobname')]"
+                },
+                {
+                  "name": "Sbm_PackageName",
+                  "value": "[parameters('packageName')]"
+                },
+                {
+                  "name": "Sbm_Concurrency",
+                  "value": "[parameters('concurrency')]"
+                },
+                {
+                  "name": "Sbm_ConcurrencyType",
+                  "value": "[parameters('concurrencyType')]"
+                },
+                {
+                  "name": "Sbm_StorageAccountKey",
+                  "secretRef": "storageaccountkey"
+                },
+                {
+                  "name": "Sbm_StorageAccountName",
+                  "secretRef": "storageaccountname"
+                },
+                {
+                  "name": "Sbm_EventHubConnectionString",
+                  "secretRef": "eventhubconnectionstring"
+                },
+                {
+                  "name": "Sbm_ServiceBusTopicConnectionString",
+                  "secretRef": "servicebustopicconnectionstring"
+                },
+                {
+                  "name": "Sbm_UserName",
+                  "secretRef": "username"
+                },
+                {
+                  "name": "Sbm_Password",
+                  "secretRef": "password"
+                }
+              ]
+            }
+          ],
+          "scale": {
+            "minReplicas": "0",
+            "maxReplicas": "[parameters('maxContainers')]",
+             "rules": [
+              {
+                "name": "servicebusscalingrule",
+                "custom": {
+                  "type": "azure-servicebus",
+                  "metadata": {
+                    "topicName": "sqlbuildmanager",
+                    "subscriptionName" : "[parameters('jobname')]",
+                    "messageCount": "2"
+                  },
+                  "auth": [
+                    {
+                      "secretRef": "servicebustopicconnectionstring",
+                      "triggerParameter": "connection"
+                    }
+                  ]
+                }
+              }
+             ]
+          },
+          "dapr": {
+            "enabled": false
+          }
+        }
+      }
+    }
+  ]
+}

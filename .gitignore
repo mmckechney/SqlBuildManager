@@ -222,3 +222,6 @@ pip-log.txt
 Command_scratch.txt
 /scripts/templates/runme.ps1
 /src/SqlBuildManager.Console/WorkerApp/workerapp_arm_template.parameters.json
+/src/SqlBuildManager.Console/ContainerApp/parms.json
+/src/SqlBuildManager.Console/ContainerApp/parms2.json
+src/env.txt

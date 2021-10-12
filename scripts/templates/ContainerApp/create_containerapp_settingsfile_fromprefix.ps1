@@ -1,0 +1,56 @@
+param
+(
+    [string] $sbmExe = "sbm.exe",
+    [string] $path = "..\..\..\src\TestConfig",
+    [string] $resourceGroupName,
+    [string] $prefix,
+    [string] $sqlUserName,
+    [string] $sqlPassword,
+    [string] $imageTag,
+    [bool] $withContainerRegistry = $true
+)
+
+if("" -eq $resourceGroupName)
+{
+    $resourceGroupName = "$prefix-rg"
+}
+Write-Host "Create Container App Settings file from prefix: $prefix"  -ForegroundColor Cyan
+$path = Resolve-Path $path
+$containerAppEnvironmentName = $prefix + "containerappenv"
+
+Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
+if([string]::IsNullOrWhiteSpace($sqlUserName))
+{
+    $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()
+    $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
+}
+ 
+# $keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+# Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
+
+$storageAccountName =  az storage account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using storage account name:'$storageAccountName'" -ForegroundColor DarkGreen
+
+$eventHubNamespaceName = az eventhubs namespace list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using Event Hub Namespace name:'$eventHubNamespaceName'" -ForegroundColor DarkGreen
+
+$serviceBusNamespaceName = az servicebus namespace list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -ForegroundColor DarkGreen
+
+if($withContainerRegistry)
+{
+    $containerRegistryName = az acr list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+    Write-Host "Using Container Registry name:'$containerRegistryName'" -ForegroundColor DarkGreen
+}
+
+if("" -eq $imageTag)
+{
+    $imageTag = Get-Date -Format "yyyy-MM-dd"
+    Write-Host "Using Image Tag: $imageTag" -ForegroundColor DarkGreen
+}
+
+# $identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+# Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
+
+$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+.$scriptDir/create_containerapp_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -containerAppEnvironmentName $containerAppEnvironmentName -containerRegistryName $containerRegistryName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -imageTag $imageTag -withContainerRegistry $withContainerRegistry 

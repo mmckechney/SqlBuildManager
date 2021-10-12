@@ -17,6 +17,8 @@ namespace SqlBuildManager.Console.CommandLine
 
         }
 
+        [JsonIgnore]
+        public bool Decrypted { get; set; } = false;
         #region Nested Object properties
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
         public Batch BatchArgs { get; set; } = new Batch();
@@ -31,6 +33,10 @@ namespace SqlBuildManager.Console.CommandLine
         public AutoScripting AutoScriptingArgs { get; set; } = new AutoScripting();
         [JsonIgnore]
         public StoredProcTesting StoredProcTestingArgs { get; set; } = new StoredProcTesting();
+
+        public ContainerApp ContainerAppArgs { get; set; } = new ContainerApp();
+
+        public ContainerRegistry ContainerRegistryArgs { get; set; } = new ContainerRegistry();
 
         #endregion
         private string settingsFile = string.Empty;
@@ -51,6 +57,8 @@ namespace SqlBuildManager.Console.CommandLine
                     this.ConnectionArgs = cmdLine.ConnectionArgs;
                     this.IdentityArgs = cmdLine.IdentityArgs;
                     this.AciArgs = cmdLine.AciArgs;
+                    this.ContainerAppArgs = cmdLine.ContainerAppArgs;
+                    this.ContainerRegistryArgs = cmdLine.ContainerRegistryArgs;
 
                     this.RootLoggingPath = cmdLine.RootLoggingPath;
                     this.DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
@@ -179,10 +187,6 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public virtual string ManualOverRideSets { get; set; } = string.Empty;
         #endregion
-
-
-
-
 
         #region Authentication Nested Class and property setters
         [JsonIgnore]
@@ -417,7 +421,7 @@ namespace SqlBuildManager.Console.CommandLine
         public string PrincipalId { set { this.IdentityArgs.PrincipalId = value; } }
         public string ResourceId { set { this.IdentityArgs.ResourceId = value; } }
         public string IdentityResourceGroup { set { this.IdentityArgs.ResourceGroup = value; } }
-        public string SubscriptionId { set { this.IdentityArgs.SubscriptionId = value;} }
+        public string SubscriptionId { set { this.IdentityArgs.SubscriptionId = value; this.ContainerAppArgs.SubscriptionId = value; } }
 
         public class Identity
         {
@@ -433,16 +437,57 @@ namespace SqlBuildManager.Console.CommandLine
         public string AciName { set { this.AciArgs.AciName = value; } }
         public string AciResourceGroup { set { this.AciArgs.ResourceGroup = value; } }
         public int ContainerCount { set { this.AciArgs.ContainerCount = value; } }
-        public string ContainerTag { set { this.AciArgs.ContainerTag = value; } }
         public string IdentityName { set { this.IdentityArgs.IdentityName = value; } }
         public class Aci
         {
             public string AciName { get; set; } = string.Empty;
             public string ResourceGroup { get; set; } = string.Empty;
-            public string ContainerTag { get; set; } = string.Empty;
             [JsonIgnore]
             public int ContainerCount{ get; set; } = 10;
             
+        }
+
+        public string  EnvironmentName { set { this.ContainerAppArgs.EnvironmentName = value; } }
+        public string Location { set { this.ContainerAppArgs.Location = value; } }
+        public string ResourceGroup { set { this.ContainerAppArgs.ResourceGroup = value; } }
+        public bool EnvironmentVariablesOnly { set { this.ContainerAppArgs.EnvironmentVariablesOnly = value; } }
+        public class ContainerApp
+        {
+            public string EnvironmentName { get; set; } = string.Empty;
+            public string SubscriptionId { get; set; } = string.Empty;
+            public string ResourceGroup { get; set; } = string.Empty;
+            public string Location { get; set; } = string.Empty;
+            public int  MaxContainerCount { get; set; } = 10;
+            [JsonIgnore]
+            public bool RunningAsContainerApp { get; set; } = false;
+            [JsonIgnore]
+            public bool EnvironmentVariablesOnly { get; set; } = false;
+        }
+
+        public string RegistryServer { set { this.ContainerRegistryArgs.RegistryServer = value; } }
+        public string ImageName { set { this.ContainerRegistryArgs.ImageName = value; } }
+        public string ImageTag { set { this.ContainerRegistryArgs.ImageTag = value; } }
+        public string RegistryUserName { set { this.ContainerRegistryArgs.RegistryUserName = value; } }
+        public string RegistryPassword { set { this.ContainerRegistryArgs.RegistryPassword = value; } }
+
+        public class ContainerRegistry
+        {
+            public string RegistryServer {  get; set; } = string.Empty;
+
+            private string imageName = string.Empty;
+            public string ImageName { 
+                set { imageName = value; }
+                get {
+                    if (string.IsNullOrEmpty(imageName))
+                        return "sqlbuildmanager";
+                    else
+                        return imageName; 
+                }
+            } 
+            public string ImageTag { get; set; } = string.Empty;
+            public string RegistryUserName  { get; set; } = string.Empty;
+            public string RegistryPassword{ get; set; } = string.Empty;
+
         }
 
         [Serializable]

@@ -14,6 +14,7 @@ namespace SqlBuildManager.Console.CommandLine
     {
         public static RootCommand SetUp()
         {
+            #region Options Setup
             var settingsfileOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile" }.ExistingOnly();
             var settingsfileNewOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile" };
             var settingsFileNewReqOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Name of file to save settings values to") { Name = "FileInfoSettingsFile", IsRequired = true,  };
@@ -89,20 +90,33 @@ namespace SqlBuildManager.Console.CommandLine
             var principalIdOption = new Option<string>("--principalid", "Principal ID for the Azure User Assigned Managed Identity");
             var resourceIdOption = new Option<string>("--resourceid", "Resource ID (full resource path) for the Azure User Assigned Managed Identity");
             var identityResourceGroupOption = new Option<string>(new string[] {"--idrg", "--identityresourcegroup" }, "Resource Group name for the Azure User Assigned Managed Identity");
-            var subscriptionIdOption = new Option<string>("--subscriptionid", "Azure subscription Id for the Azure resources");
+            var subscriptionIdOption = new Option<string>(new string[] {"--subscriptionid" }, "Azure subscription Id for the Azure resources");
             var aciContainerCountOption = new Option<int>("--containercount", "Number of containers to create for processing") { IsRequired = true };
             var aciInstanceNameOption = new Option<string>("--aciname", "Name of the Azure Container Instance you will create and deploy to") { IsRequired= true };
             var aciIResourceGroupNameOption = new Option<string>(new string[] { "--acirg", "--aciresourcegroup" }, "Name of the Resource Group for the ACI deployment") { IsRequired = true };
-            var aciIdentityNameOption = new   Option<string>("--identityname", "Name of User Assigned Managed identity that will be assigned to the Container Instance") { IsRequired = true};
+            var aciIdentityNameOption = new   Option<string>(new string[] { "-id", "--identityname" }, "Name of User Assigned Managed identity that will be assigned to the Container Instance") { IsRequired = true};
             var aciOutputFileOption = new Option<FileInfo>("--outputfile", "File name to save ACI ARM template");
             var aciArmTemplateOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')") { IsRequired = true }.ExistingOnly();
-            var aciArmTemplateNotReqOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')").ExistingOnly();
-            var aciSubscriptionIdOption = new Option<string>("--subscriptionid", "Subscription to deploy ACI to");
-            var aciContainerTagOption = new Option<string>(new string[] { "--tag", "--containertag" }, "Tag for container image to pull from registry");
+            var aciArmTemplateNotReqOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm aci prep')").ExistingOnly();
+
+            var imageTagOption = new Option<string>(new string[] { "--tag", "--imagetag" }, "Tag for container image to pull from registry");
+            var imageNameOption = new Option<string>(new string[] { "--image", "--imagename" }, "Container image to pull from registry");
+            var imageRepositoryOption = new Option<string>(new string[] { "--registry", "--registryserver" }, "Name of container registry server (if not Docker Hub)");
+            var imageRepositoryUserNameOption = new Option<string>(new string[] { "--registryusername" }, "Username for private image repository");
+            var imageRepositoryPasswordOption = new Option<string>(new string[] { "--registrypassword" }, "Password for private image repository");
 
             var unitTestOption = new Option<bool>("--unittest", () => false, "Designation that execution is running as a unit test");
-            var streamEventsOption = new Option<bool>("--stream", () => false, "Stream database event log events (Commits and Errors");
             unitTestOption.IsHidden = true;
+            var streamEventsOption = new Option<bool>("--stream", () => false, "Stream database event log events (Commits and Errors");
+
+            var containerAppOutputReqFileOption = new Option<FileInfo>("--outputfile", "File name to save Container App ARM template") { IsRequired = true};
+            var containerAppArmTemplateOption = new Option<FileInfo>("--templatefile", "Container App template to deploy Container App (generated from 'sbm containerapp prep')") { IsRequired = true }.ExistingOnly();
+            var containerAppEnvironmentOption = new Option<string>(new string[] { "-e", "--environmentname" }, "Name of the Container App Environment");
+            var containerAppLocationOption = new Option<string>(new string[] { "-l", "--location" }, "Azure location where Container App environment exists");
+            var containerAppResourceGroupOption = new Option<string>(new string[] { "-g", "--resourcegroup" }, "Resource group containing the Container App Environment");
+            var containerAppNameOption = new Option<string>("--appname", "Name for Container App being deployed");
+            var decryptedOption = new Option<bool>("--decrypted", "Indicating that the settings file is already in clear text");
+            #endregion
             //Create DACPAC from target database
             var dacpacCommand = new Command("dacpac", "Creates a DACPAC file from the target database")
             {
@@ -554,6 +568,9 @@ namespace SqlBuildManager.Console.CommandLine
                 passwordOption,
                 usernameOption,
                 keyVaultNameOption,
+                imageTagOption,
+                imageNameOption,
+                imageRepositoryOption,
                 storageaccountnameOption,
                 storageaccountkeyOption,
                 eventhubconnectionOption,
@@ -619,6 +636,163 @@ namespace SqlBuildManager.Console.CommandLine
             kubernetesCommand.Add(kubernetesWorkerCommand);
             #endregion
 
+            #region Container App Execution
+            /****************************************
+             * Container App commands 
+             ***************************************/
+
+            var containerAppSaveSettingsCommand = new Command("savesettings", "Saves settings file for Azure Container App deployments")
+            {
+                settingsFileNewReqOption,
+                settingsfileKeyOption,
+                containerAppEnvironmentOption,
+                containerAppLocationOption,
+                imageTagOption,
+                imageNameOption,
+                imageRepositoryOption,
+                imageRepositoryUserNameOption,
+                imageRepositoryPasswordOption,
+                subscriptionIdOption,
+                containerAppResourceGroupOption,
+               // containerAppNameOption,
+                passwordOption,
+                usernameOption,
+                //keyVaultNameOption,
+                storageaccountnameOption,
+                storageaccountkeyOption,
+                eventhubconnectionOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
+                threadedConcurrencyOption,
+                threadedConcurrencyTypeOption,
+                defaultscripttimeoutOption,
+                cleartextOption,
+                silentOption
+
+            };
+            containerAppSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs,bool>(Worker.SaveAndEncryptContainerAppSettings);
+
+            var containerAppPrepCommand = new Command("prep", "Creates an Azure storage container and uploads the SBM package file that will be used for the build.")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                jobnameOption.Copy(true),
+                storageaccountnameOption,
+                storageaccountkeyOption,
+                packagenameAsFileToUploadOption,
+                decryptedOption,
+                forceOption
+
+            };
+            containerAppPrepCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Worker.PrepAndUploadContainerAppBuildPackage);
+
+            var containerAppEnqueueTargetsCommand = new Command("enqueue", "Sends database override targets to Service Bus Topic")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                jobnameOption.Copy(true),
+                threadedConcurrencyTypeOption.Copy(true),
+                serviceBusconnectionOption,
+                overrideOption.Copy(true),
+                decryptedOption
+            };
+            containerAppEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.EnqueueOverrideTargets);
+
+            var envOnlyOption =  new Option <bool>(new string[]{"--env", "--environmentvariablesonly"}, "deploy using Enviroment Variable only ARM template (vs. using Secrets)");
+            envOnlyOption.IsHidden = true;
+
+            var containerAppDeployCommand = new Command("deploy", "Deploy the Container App instance using the template file created from 'sbm containerapp prep' and start containers")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                containerAppEnvironmentOption,
+                containerAppLocationOption,
+                subscriptionIdOption,
+                containerAppResourceGroupOption,
+                imageTagOption,
+                imageNameOption,
+                imageRepositoryOption,
+                imageRepositoryUserNameOption,
+                imageRepositoryPasswordOption,
+                packagenameOption,
+               // containerAppNameOption,
+                passwordOption,
+                usernameOption,
+                //keyVaultNameOption,
+                storageaccountnameOption,
+                storageaccountkeyOption,
+                eventhubconnectionOption,
+                //Service Bus queue options
+                serviceBusconnectionOption,
+                threadedConcurrencyOption,
+                threadedConcurrencyTypeOption,
+                defaultscripttimeoutOption,
+                overrideOption.Copy(false),
+                jobnameOption.Copy(true),
+                decryptedOption,
+                unitTestOption,
+                streamEventsOption,
+                new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful Container App container deployment"),
+               envOnlyOption
+            };
+            containerAppDeployCommand.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool>(Worker.DeployContainerApp);
+
+            var containerAppMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                //keyVaultNameOption,
+                jobnameOption,
+                overrideOption,
+                threadedConcurrencyTypeOption,
+                serviceBusconnectionOption,
+                eventhubconnectionOption,
+                unitTestOption,
+                streamEventsOption,
+                decryptedOption
+            };
+            containerAppMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, bool, bool>(Worker.MonitorContainerAppRuntimeProgress);
+
+
+            var containerAppDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
+            {
+                settingsfileOption,
+                settingsfileKeyOption,
+                serviceBusconnectionOption,
+                jobnameOption.Copy(true),
+                threadedConcurrencyTypeOption
+            };
+            containerAppDequeueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.DeQueueOverrideTargets);
+
+
+            var containerAppWorkerTestCommand = new Command("test", "Create environment variables for Container app and run local execution")
+            {
+                settingsfileOption.Copy(true),
+                settingsfileKeyOption.Copy(true),
+                threadedConcurrencyOption,
+                threadedConcurrencyTypeOption.Copy(true),
+                packagenameOption,
+                overrideOption.Copy(true),
+                jobnameOption.Copy(true),
+                decryptedOption
+            };
+            containerAppWorkerTestCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ContainerAppTestSettings);
+
+            var containerAppWorkerCommand = new Command("worker", "[Used by Container Apps] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
+            containerAppWorkerCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunContainerAppWorker);
+            containerAppWorkerCommand.Add(containerAppWorkerTestCommand);
+
+            var containerAppCommand = new Command("containerapp", "Commands for setting and executing a build running in pods on Azure Container App");
+            containerAppCommand.Add(containerAppSaveSettingsCommand);
+            containerAppCommand.Add(containerAppPrepCommand);
+            containerAppCommand.Add(containerAppEnqueueTargetsCommand);
+            containerAppCommand.Add(containerAppDeployCommand);
+            containerAppCommand.Add(containerAppMonitorCommand);
+            containerAppCommand.Add(containerAppDequeueTargetsCommand);
+            containerAppCommand.Add(containerAppWorkerCommand);
+            #endregion
+
+            #region ACI Commands
             /****************************************
              * ACI commands 
              ***************************************/
@@ -630,10 +804,14 @@ namespace SqlBuildManager.Console.CommandLine
                 settingsFileNewReqOption,
                 aciInstanceNameOption,
                 aciIdentityNameOption,
-                aciContainerTagOption,
+                imageTagOption,
+                imageNameOption,
+                imageRepositoryOption,
+                imageRepositoryUserNameOption,
+                imageRepositoryPasswordOption,
                 identityResourceGroupOption,
                 aciIResourceGroupNameOption,
-                aciSubscriptionIdOption,
+                subscriptionIdOption,
                 //Key value option
                 keyVaultNameOption.Copy(true),
                 storageaccountnameOption,
@@ -658,7 +836,11 @@ namespace SqlBuildManager.Console.CommandLine
                 keyVaultNameOption,
                 aciInstanceNameOption.Copy(false),
                 aciIdentityNameOption.Copy(false),
-                aciContainerTagOption,
+                imageTagOption,
+                imageNameOption,
+                imageRepositoryOption,
+                imageRepositoryUserNameOption,
+                imageRepositoryPasswordOption,
                 identityResourceGroupOption.Copy(false),
                 aciIResourceGroupNameOption.Copy(false),
                 aciContainerCountOption.Copy(true),
@@ -690,8 +872,12 @@ namespace SqlBuildManager.Console.CommandLine
                 settingsfileOption,
                 aciArmTemplateOption,
                 aciIResourceGroupNameOption.Copy(false),
-                aciSubscriptionIdOption.Copy(false),
-                aciContainerTagOption,
+                subscriptionIdOption.Copy(false),
+                imageTagOption,
+                imageNameOption,
+                imageRepositoryOption,
+                imageRepositoryUserNameOption,
+                imageRepositoryPasswordOption,
                 overrideOption.Copy(false),
                 unitTestOption,
                 streamEventsOption,
@@ -733,8 +919,8 @@ namespace SqlBuildManager.Console.CommandLine
             aciCommand.Add(aciDeployCommand);
             aciCommand.Add(aciMonitorCommand);
             aciCommand.Add(aciDequeueTargetsCommand);
-            aciCommand.Add(aciWorkerCommand);   
-
+            aciCommand.Add(aciWorkerCommand);
+            #endregion
 
             #region Utility Commands
             /****************************************
@@ -885,6 +1071,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(batchCommand);
             rootCommand.Add(kubernetesCommand);
             rootCommand.Add(aciCommand);
+            rootCommand.Add(containerAppCommand);
             rootCommand.Add(createCommand);
             rootCommand.Add(addCommand);
             rootCommand.Add(packageCommand);

@@ -1,4 +1,11 @@
 ﻿# SQL Build Manager Change Log
+
+### Version 14.2.0
+
+- *ADDED:* You can now use Azure Container Apps as a compute platform for leveraging database builds with the new `sbm containerapps` commands. See the [Azure Container Apps documentation](containerapps.md) for background, information and how-to examples
+- *UPDATED:* Updates to deployment scripts and unit tests
+- *UPDATED:* New options for container image tags and container registries
+
 ### Version 14.1.0
 
 - *UPDATED:* Updating `sbm` to use IHostedService so SIGTERM from containers is acknowledged

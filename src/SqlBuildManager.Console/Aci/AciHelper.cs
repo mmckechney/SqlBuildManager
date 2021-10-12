@@ -13,19 +13,13 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Text.Json;
 using System.Linq;
+using SqlBuildManager.Console.Shared;
 
 namespace SqlBuildManager.Console.Aci
 {
     class AciHelper
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        private static string KeyVaultName = "Sbm_KeyVaultName";
-        private static string JobName = "Sbm_JobName";
-        private static string PackageName = "Sbm_PackageName";
-        private static string Concurrency = "Sbm_Concurrency";
-        private static string ConcurrencyType = "Sbm_ConcurrencyType";
-        private static string DacpacName = "Sbm_DacpacName";
 
         private static string GetAciResourceId(string subscriptionId, string resourceGroupName, string aciName)
         {
@@ -76,7 +70,7 @@ namespace SqlBuildManager.Console.Aci
             for(int i=0;i<cmdLine.AciArgs.ContainerCount;i++)
             {
                 var tmpContainer = containerTemplate.Replace("{{counter}}", i.ToString().PadLeft(padding, '0'));
-                tmpContainer = tmpContainer.Replace("{{tag}}", cmdLine.AciArgs.ContainerTag);
+                tmpContainer = tmpContainer.Replace("{{tag}}", cmdLine.ContainerRegistryArgs.ImageTag);
                 tmpContainer = tmpContainer.Replace("{{keyVaultName}}", cmdLine.ConnectionArgs.KeyVaultName);
                 tmpContainer = tmpContainer.Replace("{{dacpacName}}", Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac));
                 tmpContainer = tmpContainer.Replace("{{jobname}}", cmdLine.JobName);
@@ -94,15 +88,15 @@ namespace SqlBuildManager.Console.Aci
 
         internal static CommandLineArgs ReadRuntimeEnvironmentVariables(CommandLineArgs cmdLine)
         {
-            cmdLine.KeyVaultName = Environment.GetEnvironmentVariable(AciHelper.KeyVaultName);
-            cmdLine.JobName = Environment.GetEnvironmentVariable(AciHelper.JobName);
-            cmdLine.BuildFileName = Environment.GetEnvironmentVariable(AciHelper.PackageName);
-            cmdLine.PlatinumDacpac = Environment.GetEnvironmentVariable(AciHelper.DacpacName);
-            if (int.TryParse(Environment.GetEnvironmentVariable(AciHelper.Concurrency), out int c))
+            cmdLine.KeyVaultName = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
+            cmdLine.JobName = Environment.GetEnvironmentVariable(ContainerEnvVariables.JobName);
+            cmdLine.BuildFileName = Environment.GetEnvironmentVariable(ContainerEnvVariables.PackageName);
+            cmdLine.PlatinumDacpac = Environment.GetEnvironmentVariable(ContainerEnvVariables.DacpacName);
+            if (int.TryParse(Environment.GetEnvironmentVariable(ContainerEnvVariables.Concurrency), out int c))
             {
                 cmdLine.Concurrency = c;
             }
-            if(Enum.TryParse<ConcurrencyType>(Environment.GetEnvironmentVariable(AciHelper.ConcurrencyType), out ConcurrencyType ct))
+            if(Enum.TryParse<ConcurrencyType>(Environment.GetEnvironmentVariable(ContainerEnvVariables.ConcurrencyType), out ConcurrencyType ct))
             {
                 cmdLine.ConcurrencyType = ct;
             }

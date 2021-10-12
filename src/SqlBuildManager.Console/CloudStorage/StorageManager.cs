@@ -172,14 +172,14 @@ namespace SqlBuildManager.Console.CloudStorage
                 cmdLine.BatchJobName = cmdLine.BatchArgs.BatchJobName.ToLower();
                 if (cmdLine.BatchArgs.BatchJobName.Length < 3 || cmdLine.BatchArgs.BatchJobName.Length > 41 || !Regex.IsMatch(cmdLine.BatchArgs.BatchJobName, @"^[a-z0-9]+(-[a-z0-9]+)*$"))
                 {
-                    throw new ArgumentException("The job name must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'");
+                    throw new ArgumentException($"The job name must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'. Value provided: '{cmdLine.JobName}'");
                 }
                 jobId = cmdLine.BatchArgs.BatchJobName;
                 storageContainerName = cmdLine.BatchArgs.BatchJobName + "-" + jobToken; ;
             }
             else
             {
-                throw new ArgumentException("The job name is required and must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'");
+                throw new ArgumentException("The job name is required and must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'. No Value provided!");
             }
 
             return (jobId, storageContainerName);

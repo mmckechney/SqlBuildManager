@@ -1,6 +1,6 @@
 # Massively Parallel Database Builds
 
-If you have a fleet of databases to update, it could take a very long time to run your build on a single machine - even if you leverage the threaded model. To solve this problem, SQL Build Manager offers three ways to parallelize database builds across many compute nodes: [Azure Batch](azure_batch.md),  [Kubernetes](kubernetes.md) and [Azure Container Instances (ACI)](aci.md).
+If you have a fleet of databases to update, it could take a very long time to run your build on a single machine - even if you leverage the threaded model. To solve this problem, SQL Build Manager offers three ways to parallelize database builds across many compute nodes: [Azure Container Apps](containerapp.md), [Azure Batch](azure_batch.md),  [Kubernetes](kubernetes.md) and [Azure Container Instances (ACI)](aci.md).
 
 In each method, compute resources area able to manage concurrency to help you maximize throughput while not overloading your SQL Servers. See [Concurrency Options](concurrency_options.md).
 

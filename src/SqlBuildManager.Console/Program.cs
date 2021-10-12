@@ -2,7 +2,7 @@
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Console.Container;
+using SqlBuildManager.Console.Kubernetes;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Enterprise.Policy;
