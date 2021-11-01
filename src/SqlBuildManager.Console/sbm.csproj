@@ -54,7 +54,7 @@
     <PackageReference Include="Microsoft.Azure.Batch" Version="15.1.0" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.12.2" />
-    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="6.12.2" />
+    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="6.14.0" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.12.2" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="3.0.3" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="4.0.3" />
