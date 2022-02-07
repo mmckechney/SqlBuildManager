@@ -31,6 +31,11 @@ namespace SqlBuildManager.Console.CloudStorage
             return $"DefaultEndpointsProtocol=https;AccountName={storageAccountName};AccountKey={storageAccountKey};EndpointSuffix=core.windows.net";
         }
 
+        internal static bool ConsolidateLogFiles(string storageAccountName, string storageAccountKey, string outputContainerName, List<string> workerFiles)
+        {
+            var client = CreateStorageClient(storageAccountName, storageAccountKey);
+            return ConsolidateLogFiles(client,outputContainerName, workerFiles);
+        }
         internal static bool ConsolidateLogFiles(BlobServiceClient storageSvcClient, string outputContainerName, List<string> workerFiles)
         {
             workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql", "execution.log", "csv" });
@@ -282,7 +287,7 @@ namespace SqlBuildManager.Console.CloudStorage
 
             return ResourceFile.FromUrl(blobSasUri, blobName, null);
         }
-        internal static bool CombineBatchQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
+        internal static bool CombineQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
         {
             bool hadErrors = false;
             log.LogInformation("Consolidating Query output files...");

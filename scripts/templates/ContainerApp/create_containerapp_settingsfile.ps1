@@ -33,18 +33,30 @@ $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list -
 $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" -o tsv --query "[].name"
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
 
-$settingsContainerApp = Join-Path $path "settingsfile-containerapp.json"
 if($withContainerRegistry)
 {
     $acrUserName = az acr credential show -g $resourceGroupName --name $containerRegistryName -o tsv --query username
     $acrPassword = az acr credential show -g $resourceGroupName --name  $containerRegistryName -o tsv --query passwords[0].value
     $acrServerName = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
+    $settingsContainerApp = Join-Path $path "settingsfile-containerapp.json"
+}
+else 
+{
+    $settingsContainerApp = Join-Path $path "settingsfile-containerapp-no-registry.json"
 }
 
 $location = az containerapp env show -g $resourceGroupName -n $containerAppEnvironmentName -o tsv --query location
 $subscriptionId = az account show --query id --output tsv
 
 $keyFile = Join-Path $path "settingsfilekey.txt"
+if($false -eq (Test-Path $keyFile))
+{
+    $AESKey = New-Object Byte[] 32
+    [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)
+    $settingsFileKey = [System.Convert]::ToBase64String($AESKey);
+    $settingsFileKey |  Set-Content -Path $keyFile
+}
+
 $tmpPath = $settingsContainerApp
 Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
 
@@ -75,28 +87,5 @@ if($withContainerRegistry)
     $params +=("--registrypassword",$acrPassword)
 }
 
-Write-Host $params
 Start-Process $sbmExe -ArgumentList $params -Wait
-
-
-# if($haveSqlInfo)
-# {
-#     if($withContainerRegistry)
-#     {
-#     ..\..\src\SqlBuildManager.Console\bin\Debug\net6.0\sbm.exe containerapp savesettings -e "$containerAppEnvironmentName" -l "$location" --imagetag "$imageTag" --registryserver "$acrServerName" --registryusername "$acrUserName" --registrypassword "$acrPassword" -g "$resourceGroupName" -sb "$serviceBusConnectionString"  --settingsfile "$tmpPath" --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --username "$sqlUserName" --password "$sqlPassword" --subscriptionid "$subscriptionId" --force 
-#     }
-#     else {
-        
-#         ..\..\src\SqlBuildManager.Console\bin\Debug\net6.0\sbm.exe containerapp savesettings -e "$containerAppEnvironmentName" -l "$location" -g "$resourceGroupName" --imagetag "$imageTag" -sb "$serviceBusConnectionString"  --settingsfile "$tmpPath" --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --username "$sqlUserName" --password "$sqlPassword" --subscriptionid "$subscriptionId" --force  
-#     }
-# }
-# else 
-# {
-#     if($withContainerRegistry)
-#     {
-#         ..\..\src\SqlBuildManager.Console\bin\Debug\net6.0\sbm.exe containerapp savesettings -e "$containerAppEnvironmentName"  -l "$location" --imagetag "$imageTag" --registryserver "$acrServerName" --registryusername "$acrUserName" --registrypassword "$acrPassword" -g "$resourceGroupName" -sb "$serviceBusConnectionString"  --settingsfile "$tmpPath" --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --subscriptionid "$subscriptionId" --force 
-#     }else {
-#         ..\..\src\SqlBuildManager.Console\bin\Debug\net6.0\sbm.exe containerapp savesettings -e "$containerAppEnvironmentName"  -l "$location" -g "$resourceGroupName" --imagetag "$imageTag" -sb "$serviceBusConnectionString"  --settingsfile "$tmpPath" --settingsfilekey "$keyFile" --storageaccountname "$storageAccountName"  --storageaccountkey "$storageAcctKey" -eh "$eventHubConnectionString" --defaultscripttimeout 500 --subscriptionid "$subscriptionId" --force
-#     }
-# }
 

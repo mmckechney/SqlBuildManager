@@ -45,7 +45,7 @@ if($withContainerRegistry)
 
 if("" -eq $imageTag)
 {
-    $imageTag = Get-Date -Format "yyyy-MM-dd"
+    $imageTag = "latest-vNext" #Get-Date -Format "yyyy-MM-dd"
     Write-Host "Using Image Tag: $imageTag" -ForegroundColor DarkGreen
 }
 
@@ -54,3 +54,4 @@ if("" -eq $imageTag)
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 .$scriptDir/create_containerapp_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -containerAppEnvironmentName $containerAppEnvironmentName -containerRegistryName $containerRegistryName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -imageTag $imageTag -withContainerRegistry $withContainerRegistry 
+

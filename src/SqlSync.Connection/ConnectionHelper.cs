@@ -78,6 +78,7 @@ namespace SqlSync.Connection
             {
                 case AuthenticationType.Windows:
                     builder.IntegratedSecurity = true;
+                    builder.TrustServerCertificate = true;
                     break;
                 case AuthenticationType.AzureADIntegrated:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryIntegrated;

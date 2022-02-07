@@ -36,7 +36,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="150.5282.3" />
+    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="160.5400.1" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
     <PackageReference Include="Serilog.Expressions" Version="3.2.1" />
@@ -47,15 +47,16 @@
     <PackageReference Include="Serilog.Sinks.AzureEventHub" Version="6.0.0-dev-00060" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-	  <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
+	  <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22106.2" />
+	  <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta3.22106.2" />
 	  <PackageReference Include="System.ComponentModel.EventBasedAsync" Version="4.3.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
     <PackageReference Include="System.DirectoryServices" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Azure.Batch" Version="15.1.0" />
+    <PackageReference Include="Microsoft.Azure.Batch" Version="15.3.0" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.15.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="6.15.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.15.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.15.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="6.15.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.15.1" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="3.0.3" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="4.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
@@ -73,6 +74,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="ContainerApp\containerapp_env_arm_template.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="ContainerApp\registries.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

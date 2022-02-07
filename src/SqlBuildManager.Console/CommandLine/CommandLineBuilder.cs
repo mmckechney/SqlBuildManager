@@ -1,9 +1,12 @@
 ﻿using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Extensions.Logging;
+using System;
 using System.CommandLine;
 using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
+using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
+using System.CommandLine.NamingConventionBinder;
 using System.IO;
 using System.Linq;
 
@@ -17,7 +20,7 @@ namespace SqlBuildManager.Console.CommandLine
             #region Options Setup
             var settingsfileOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile" }.ExistingOnly();
             var settingsfileNewOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile" };
-            var settingsFileNewReqOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Name of file to save settings values to") { Name = "FileInfoSettingsFile", IsRequired = true,  };
+            var settingsFileNewReqOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Name of file to save settings values to") { Name = "FileInfoSettingsFile", IsRequired = true, };
             var settingsfileKeyOption = new Option<string>(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive informtation in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable. If not provided a machine value will be used.");
             var overrideOption = new Option<string>(new string[] { "--override" }, "File containing the target database settings (usually a formatted .cfg file)");
             var serverOption = new Option<string>(new string[] { "-s", "--server" }, "1) Name of a server for single database run or 2) source server for scripting or runtime configuration");
@@ -29,14 +32,14 @@ namespace SqlBuildManager.Console.CommandLine
             var passwordOption = new Option<string>(new string[] { "-p", "--password" }, "The password to authenticate against the database if not using integrate auth");
             var logtodatabasenamedOption = new Option<string>(new string[] { "--logtodatabasename" }, "[Not recommended] Specifies that the SqlBuild_logging logs should go to an alternate database (vs. target).");
             var descriptionOption = new Option<string>(new string[] { "--description" }, "Description of build (logged with build)");
-            var packagenameOption = new Option<string>(new string[] {"-P",  "--packagename", "--buildfilename" }, "Name of the .sbm or .sbx file to execute") { Name = "BuildFileName", IsRequired = true };
+            var packagenameOption = new Option<string>(new string[] { "-P", "--packagename", "--buildfilename" }, "Name of the .sbm or .sbx file to execute") { Name = "BuildFileName", IsRequired = true };
             var directoryOption = new Option<string>(new string[] { "--dir", "--directory" }, "Directory containing 1 or more SBX files to package into SBM zip files") { IsRequired = true };
             var transactionalOption = new Option<bool>(new string[] { "--transactional" }, () => true, "Whether or not to run with a wrapping transaction (default is true)");
             var timeoutretrycountOption = new Option<int>(new string[] { "--timeoutretrycount" }, "How many retries to attempt if a timeout exception occurs");
-            var golddatabaseOption = new Option<string>(new string[] {"-gd", "--golddatabase" }, "The \"gold copy\" database that will serve as the model for what the target database should look like") { IsRequired = true };
+            var golddatabaseOption = new Option<string>(new string[] { "-gd", "--golddatabase" }, "The \"gold copy\" database that will serve as the model for what the target database should look like") { IsRequired = true };
             var goldserverOption = new Option<string>(new string[] { "-gs", "--goldserver" }, "The server that the \"gold copy\" database can be found") { IsRequired = true };
             var continueonfailureOption = new Option<bool>(new string[] { "--continueonfailure" }, "Whether or not to continue on the failure of a package (default is false)");
-            var platinumdacpacOption = new Option<string>(new string[] { "-pd","--platinumdacpac" }, "Name of the dacpac containing the platinum schema");
+            var platinumdacpacOption = new Option<string>(new string[] { "-pd", "--platinumdacpac" }, "Name of the dacpac containing the platinum schema");
             var targetdacpacOption = new Option<string>(new string[] { "-td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated");
             var forcecustomdacpacOption = new Option<bool>(new string[] { "--forcecustomdacpac" }, "USE WITH CAUTION! This will force the dacpac extraction and creation of custom scripts for EVERY target database! Your execution will take much longer.");
             var platinumdbsourceOption = new Option<string>(new string[] { "--platinumdbsource" }, "Instead of a formally built Platinum Dacpac, target this database as having the desired state schema");
@@ -72,9 +75,9 @@ namespace SqlBuildManager.Console.CommandLine
             var threadedConcurrencyTypeOption = new Option<ConcurrencyType>(new string[] { "--concurrencytype" }, "Type of concurrency, used in conjunction with --concurrency ");
             var logLevelOption = new Option<LogLevel>(new string[] { "--loglevel" }, "Logging level for console and log file");
             var logLevelWithInfoDefaultOption = new Option<LogLevel>(new string[] { "--loglevel" }, () => LogLevel.Information, "Logging level for console and log file");
-            var scriptListOption = new Option<FileInfo[]>(new string[] {"-s", "--scripts"}, "List of script files to create SBM package from - separate names with spaces (will be added in order provided)") { IsRequired = true }.ExistingOnly();
+            var scriptListOption = new Option<FileInfo[]>(new string[] { "-s", "--scripts" }, "List of script files to create SBM package from - separate names with spaces (will be added in order provided)") { IsRequired = true }.ExistingOnly();
             var withHashOption = new Option<bool>(new string[] { "-w", "--withhash" }, () => true, "Also include the SHA1 hash of the script files in the package");
-            var packagesOption = new Option<FileInfo[]>(new string[] {"-p","--packages"}, "One or more SBM packages to get contents for") { IsRequired = true }.ExistingOnly();
+            var packagesOption = new Option<FileInfo[]>(new string[] { "-p", "--packages" }, "One or more SBM packages to get contents for") { IsRequired = true }.ExistingOnly();
             var secretsFileOption = new Option<FileInfo>(new string[] { "--secretsfile" }, "Name of the secrets YAML file to use for retrieving connection values").ExistingOnly();
             var runtimeFileOption = new Option<FileInfo>(new string[] { "--runtimefile" }, "Name of the runtime YAML file to use for retrieving the job name and/or packagename").ExistingOnly();
             var overrideAsFileOption = new Option<FileInfo>(new string[] { "--override" }, "File containing the target database settings (usually a formatted .cfg file)") { IsRequired = true }.ExistingOnly();
@@ -89,12 +92,12 @@ namespace SqlBuildManager.Console.CommandLine
             var clientIdOption = new Option<string>("--clientid", "Client ID (AppId) for the Azure User Assigned Managed Identity");
             var principalIdOption = new Option<string>("--principalid", "Principal ID for the Azure User Assigned Managed Identity");
             var resourceIdOption = new Option<string>("--resourceid", "Resource ID (full resource path) for the Azure User Assigned Managed Identity");
-            var identityResourceGroupOption = new Option<string>(new string[] {"--idrg", "--identityresourcegroup" }, "Resource Group name for the Azure User Assigned Managed Identity");
-            var subscriptionIdOption = new Option<string>(new string[] {"--subscriptionid" }, "Azure subscription Id for the Azure resources");
+            var identityResourceGroupOption = new Option<string>(new string[] { "--idrg", "--identityresourcegroup" }, "Resource Group name for the Azure User Assigned Managed Identity");
+            var subscriptionIdOption = new Option<string>(new string[] { "--subscriptionid" }, "Azure subscription Id for the Azure resources");
             var aciContainerCountOption = new Option<int>("--containercount", "Number of containers to create for processing") { IsRequired = true };
-            var aciInstanceNameOption = new Option<string>("--aciname", "Name of the Azure Container Instance you will create and deploy to") { IsRequired= true };
+            var aciInstanceNameOption = new Option<string>("--aciname", "Name of the Azure Container Instance you will create and deploy to") { IsRequired = true };
             var aciIResourceGroupNameOption = new Option<string>(new string[] { "--acirg", "--aciresourcegroup" }, "Name of the Resource Group for the ACI deployment") { IsRequired = true };
-            var aciIdentityNameOption = new   Option<string>(new string[] { "-id", "--identityname" }, "Name of User Assigned Managed identity that will be assigned to the Container Instance") { IsRequired = true};
+            var aciIdentityNameOption = new Option<string>(new string[] { "-id", "--identityname" }, "Name of User Assigned Managed identity that will be assigned to the Container Instance") { IsRequired = true };
             var aciOutputFileOption = new Option<FileInfo>("--outputfile", "File name to save ACI ARM template");
             var aciArmTemplateOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')") { IsRequired = true }.ExistingOnly();
             var aciArmTemplateNotReqOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm aci prep')").ExistingOnly();
@@ -109,7 +112,7 @@ namespace SqlBuildManager.Console.CommandLine
             unitTestOption.IsHidden = true;
             var streamEventsOption = new Option<bool>("--stream", () => false, "Stream database event log events (Commits and Errors");
 
-            var containerAppOutputReqFileOption = new Option<FileInfo>("--outputfile", "File name to save Container App ARM template") { IsRequired = true};
+            var containerAppOutputReqFileOption = new Option<FileInfo>("--outputfile", "File name to save Container App ARM template") { IsRequired = true };
             var containerAppArmTemplateOption = new Option<FileInfo>("--templatefile", "Container App template to deploy Container App (generated from 'sbm containerapp prep')") { IsRequired = true }.ExistingOnly();
             var containerAppEnvironmentOption = new Option<string>(new string[] { "-e", "--environmentname" }, "Name of the Container App Environment");
             var containerAppLocationOption = new Option<string>(new string[] { "-l", "--location" }, "Azure location where Container App environment exists");
@@ -426,14 +429,14 @@ namespace SqlBuildManager.Console.CommandLine
                 settingsfileOption,
                 settingsfileKeyOption,
                 keyVaultNameOption,
-                serviceBusconnectionOption, 
+                serviceBusconnectionOption,
                 batchjobnameOption,
                 threadedConcurrencyTypeOption
 
             };
             batchDequeueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.DeQueueOverrideTargets);
 
-            
+
             //Batch query 
             var batchQueryCommand = new Command("query", "Run a SELECT query across multiple databases using Azure Batch")
             {
@@ -560,7 +563,7 @@ namespace SqlBuildManager.Console.CommandLine
                 serviceBusconnectionOption,
                 overrideAsFileOption
             };
-            kubernetesEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo,string, string,ConcurrencyType,string, FileInfo>(Worker.EnqueueContainerOverrideTargets);
+            kubernetesEnqueueTargetsCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, string, string, ConcurrencyType, string, FileInfo>(Worker.EnqueueContainerOverrideTargets);
 
             var pathOption = new Option<DirectoryInfo>("--path", "Path to save secrets.yaml and runtime.yaml files").ExistingOnly();
             var kubernetesSaveSettingsCommand = new Command("savesettings", "Saves settings to secrets.yaml and runtime.yaml files for Kubernetes pod deployments")
@@ -580,11 +583,11 @@ namespace SqlBuildManager.Console.CommandLine
                 threadedConcurrencyTypeOption,
                 new Option<string>("--prefix", "Settings file's prefix"),
                 pathOption
-                
+
             };
             kubernetesSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, string, DirectoryInfo>(Worker.SaveKubernetesSettings);
 
-           
+
             var kubernetesMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {
                 secretsFileOption,
@@ -594,11 +597,11 @@ namespace SqlBuildManager.Console.CommandLine
                 overrideOption,
                 threadedConcurrencyTypeOption,
                 serviceBusconnectionOption,
-                eventhubconnectionOption, 
+                eventhubconnectionOption,
                 unitTestOption,
                 streamEventsOption
             };
-            kubernetesMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool,bool>(Worker.MonitorKubernetesRuntimeProgress);
+            kubernetesMonitorCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, CommandLineArgs, bool, bool>(Worker.MonitorKubernetesRuntimeProgress);
 
             var kubernetesrPrepCommand = new Command("prep", "Creates a storage container and uploads the SBM package file that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values")
             {
@@ -670,7 +673,7 @@ namespace SqlBuildManager.Console.CommandLine
                 silentOption
 
             };
-            containerAppSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs,bool>(Worker.SaveAndEncryptContainerAppSettings);
+            containerAppSaveSettingsCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptContainerAppSettings);
 
             var containerAppPrepCommand = new Command("prep", "Creates an Azure storage container and uploads the SBM package file that will be used for the build.")
             {
@@ -698,7 +701,7 @@ namespace SqlBuildManager.Console.CommandLine
             };
             containerAppEnqueueTargetsCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.EnqueueOverrideTargets);
 
-            var envOnlyOption =  new Option <bool>(new string[]{"--env", "--environmentvariablesonly"}, "deploy using Enviroment Variable only ARM template (vs. using Secrets)");
+            var envOnlyOption = new Option<bool>(new string[] { "--env", "--environmentvariablesonly" }, "deploy using Enviroment Variable only ARM template (vs. using Secrets)");
             envOnlyOption.IsHidden = true;
 
             var containerAppDeployCommand = new Command("deploy", "Deploy the Container App instance using the template file created from 'sbm containerapp prep' and start containers")
@@ -751,7 +754,7 @@ namespace SqlBuildManager.Console.CommandLine
                 streamEventsOption,
                 decryptedOption
             };
-            containerAppMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, bool, bool>(Worker.MonitorContainerAppRuntimeProgress);
+            containerAppMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, bool, DateTime?, bool>(Worker.MonitorContainerAppRuntimeProgress);
 
 
             var containerAppDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
@@ -883,7 +886,7 @@ namespace SqlBuildManager.Console.CommandLine
                 streamEventsOption,
                 new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment")
             };
-            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs,FileInfo,bool, bool,bool>(Worker.DeployAciTemplate);
+            aciDeployCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool, bool, bool>(Worker.DeployAciTemplate);
 
             var aciMonitorCommand = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
             {
@@ -898,7 +901,7 @@ namespace SqlBuildManager.Console.CommandLine
                 unitTestOption,
                 streamEventsOption
             };
-            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool,bool>(Worker.MonitorAciRuntimeProgress);
+            aciMonitorCommand.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, DateTime?, bool, bool>(Worker.MonitorAciRuntimeProgress);
 
             var aciDequeueTargetsCommand = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
             {
@@ -957,7 +960,7 @@ namespace SqlBuildManager.Console.CommandLine
             };
             packageCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.PackageSbxFilesIntoSbmFiles);
 
-           
+
 
             //Create from diff
             var createFromDiffCommand = new Command("fromdiff", "Creates an SBM package from a calculated diff between two databases")
@@ -985,7 +988,7 @@ namespace SqlBuildManager.Console.CommandLine
             var createFromDacpacsCommand = new Command("fromdacpacs", "Creates an SBM package from differences between two DACPAC files")
             {
                 outputsbmOption.Copy(true),
-                platinumdacpacSourceOption, 
+                platinumdacpacSourceOption,
                 targetdacpacSourceOption
 
             };
@@ -1060,8 +1063,34 @@ namespace SqlBuildManager.Console.CommandLine
             createBackoutCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateBackout);
             #endregion
 
+            //Utility
+            var utilJobName = new Option<string>(new string[] { "-j", "--jobname" }, "Name of job run to query") { IsRequired = true };
+            var queueUtilityCommand = new Command("queue", "Retrieve the number of messages currently in a Service Bus Topic Subscription")
+            {
+                settingsfileOption.Copy(true),
+                settingsfileKeyOption.Copy(true),
+                utilJobName
+            };
+            queueUtilityCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.GetQueueMessageCount);
+
+            var eventHubUtilityCommand = new Command("eventhub", "Retrieve the number of messages in the EventHub for a specific job run.")
+            {
+                settingsfileOption.Copy(true),
+                settingsfileKeyOption.Copy(true),
+                utilJobName,
+                new Option<DateTime?>(new string[] { "--date" }, "Date to start counting messages from (will result in faster retrieval if there are a lot of messages)")
+            };
+            eventHubUtilityCommand.Handler = CommandHandler.Create<CommandLineArgs, DateTime?>(Worker.GetEventHubEvents);
+
+            var utilityCommand = new Command("utility", "Utility commands for interrogating Service Bus and EventHubs")
+            {
+                queueUtilityCommand,
+                eventHubUtilityCommand
+            };
+
+
             var authCommand = new Command("authtest", "Test Azure authentication");
-            authCommand.Handler = CommandHandler.Create(Worker.TestAuth);
+            authCommand.Handler = CommandHandler.Create<string>(Worker.TestAuth);
             authCommand.IsHidden = true;
 
             RootCommand rootCommand = new RootCommand(description: "Tool to manage your SQL server database updates and releases");
@@ -1072,6 +1101,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(kubernetesCommand);
             rootCommand.Add(aciCommand);
             rootCommand.Add(containerAppCommand);
+            rootCommand.Add(utilityCommand);
             rootCommand.Add(createCommand);
             rootCommand.Add(addCommand);
             rootCommand.Add(packageCommand);
@@ -1098,8 +1128,10 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 return (null, string.Join<string>(System.Environment.NewLine, res.Errors.Select(e => e.Message).ToArray()));
             }
+            
+            var bindingContext = new InvocationContext(rootCommand.Parse(args)).BindingContext;
+
             var binder = new ModelBinder(typeof(CommandLineArgs));
-            var bindingContext = new BindingContext(res);
             var instance = (CommandLineArgs)binder.CreateInstance(bindingContext);
 
             return (instance, string.Empty);

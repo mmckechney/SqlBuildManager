@@ -43,7 +43,7 @@ sbm containerapp savesettings -settingsfile "<settings file name>" --settingsfil
 
 You can automate they collection and saving of secrets with the included PowerShell script:
 
-- [create_containerapp_settingsfile.ps1](../scripts/templates/create_containerapp_settingsfile.ps1) - saves secrets to Key Vault and creates the settings JSON file for you.
+- [create_containerapp_settingsfile.ps1](../scripts/templates/ContainerApp/create_containerapp_settingsfile.ps1) - saves secrets to Key Vault and creates the settings JSON file for you.
 
 ``` PowerShell
 # Collects resource keys and creates settings encrypted file
@@ -72,7 +72,7 @@ sbm containerapp enqueue --settingsfile "<settings file name>" --jobname "<job n
 Next is to deploy the Container App to create the containers. By default, once the deployment is complete, it will start monitoring progress against the Service Bus and Event Hub. You can change this behavior by setting the `--monitor` argument to `false`. The `--override` argument is not required, but it will allow the monitor to track the target database count and stop monitoring when all targets have been processed.
 
 ``` bash
-sbm containerapp deploy --settingsfile "<settings file name>" --jobname "<job name>" -P "<sbm package name>" --override "<override file name>" --monitor 
+sbm containerapp deploy --settingsfile "<settings file name>" --jobname "<job name>" -P "<sbm package name>" --override "<override file name>"  --concurrencytype "<concurrency type>" --concurrency '<int value>' --monitor 
 ```
 
 if you would rather run an extra step (for whatever reason), you can run a separate `monitor` command:

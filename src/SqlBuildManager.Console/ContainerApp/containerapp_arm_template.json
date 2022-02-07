@@ -82,7 +82,8 @@
   },
   "variables": {
     "environment_id": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/kubeEnvironments/', parameters('environmentName'))]",
-    "var_registryName": "[if(empty(parameters('registryServer')),'blueskydevus/',concat(parameters('registryServer'),'/'))]"
+    "var_registryName": "[if(empty(parameters('registryServer')),'blueskydevus/',concat(parameters('registryServer'),'/'))]",
+    "var_registry_secret_name": "[if(empty(parameters('registryPassword')),'registrypassword',concat(replace(parameters('registryServer'),'.',''),'-',parameters('registryUserName')))]"
   },
   "resources": [
     {
@@ -121,18 +122,14 @@
               "value": "[parameters('password')]"
             },
             {
-              "name": "registrypassword",
+              "name": "[variables('var_registry_secret_name')]",
               "value": "[parameters('registryPassword')]"
             }
+          ],
+          "registries": [
+           "registriesplaceholder"
           ]
         },
-        "registries": [
-          {
-            "server": "[parameters('registryServer')]",
-            "username": "[parameters('registryUserName')]",
-            "passwordSecretRef": "registrypassword"
-          }
-        ],
         "template": {
           "containers": [
             {
@@ -145,7 +142,7 @@
                 "worker"
               ],
               "image": "[concat(variables('var_registryName'), parameters('imageName'),':', parameters('imageTag'))]",
-              "name": "[parameters('jobname')]",
+              "name": "[concat('sbm',parameters('jobname'))]",
               "env": [
                 {
                   "name": "Sbm_JobName",

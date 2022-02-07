@@ -3,8 +3,11 @@
 ### Version 14.2.0
 
 - *ADDED:* You can now use Azure Container Apps as a compute platform for leveraging database builds with the new `sbm containerapps` commands. See the [Azure Container Apps documentation](containerapps.md) for background, information and how-to examples
+- *ADDED:* New options for container image tags and container registries for all container options (Azure Container Apps, Kubernetes, Azure Container Instance)
 - *UPDATED:* Updates to deployment scripts and unit tests
-- *UPDATED:* New options for container image tags and container registries
+- *ADDED:* New command `sbm utility eventhub` to scan EventHub for job event counts
+- *UPDATED:* Reorganized template scripts by service
+- *UPDATED:* Optimized EventHub client to checkpoint by job time so events are not missed when running multiple concurrent jobs
 
 ### Version 14.1.0
 

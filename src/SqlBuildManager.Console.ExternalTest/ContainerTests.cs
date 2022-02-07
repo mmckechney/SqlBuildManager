@@ -102,74 +102,11 @@ namespace SqlBuildManager.Console.ExternalTest
  
         #endregion
 
-        [TestMethod]
-        public void LocalThreaded_SBMSource_Success()
-        {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
-            //get the size of the log file before we start
-            int startingLine = LogFileCurrentLineCount();
-
-            var args = new string[]{
-                "threaded",  "run",
-                "--override", this.overrideFilePath,
-                "--packagename", sbmFileName,
-               "--username", this.cmdLine.AuthenticationArgs.UserName,
-                "--password", this.cmdLine.AuthenticationArgs.Password,
-                 "--rootloggingpath", this.cmdLine.RootLoggingPath                
-                };
-
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            var result = val.Result;
-
-            var logFileContents = ReleventLogFileContents(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-            
-            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
-        }
-
-        [TestMethod]
-        public void LocalSingleRun_SBMSource_Success()
-        {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
-
-            //get the size of the log file before we start
-            int startingLine = LogFileCurrentLineCount();
-
-            var args = new string[]{
-                "build",
-            "--override", this.overrideFileContents[0].Split(":")[1],
-            "--packagename", sbmFileName,
-            "--username", this.cmdLine.AuthenticationArgs.UserName,
-            "--password", this.cmdLine.AuthenticationArgs.Password,
-            "--rootloggingpath", this.cmdLine.RootLoggingPath,
-            "--server", this.overrideFileContents[0].Split(":")[0] };
-
-
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            var result = val.Result;
-
-
-            var logFileContents = ReleventLogFileContents(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-            Assert.IsTrue(logFileContents.Contains("Build Committed"), "This test was should have worked");
-
-        }
+   
 
 
         [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/basic_job.yaml")]
+        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/acr_basic_job.yaml")]
         [DataTestMethod]
         public void Kubernetes_Queue_SBMSource_Local_Secrets_Success(string runtimeFile, string secretsFile, string deployFile)
         {
@@ -245,6 +182,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
         [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_job_keyvault.yaml")]
+        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/acr_basic_job_keyvault.yaml")]
         [DataTestMethod]
         public void Kubernetes_Queue_SBMSource_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
         {
@@ -323,9 +261,12 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-linux-aci-queue-keyvault.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataTestMethod]
         public void ACI_Queue_SBMSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
@@ -393,7 +334,10 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataTestMethod]
@@ -447,14 +391,91 @@ namespace SqlBuildManager.Console.ExternalTest
             //monitor for completion
             args = new string[]{
                 "containerapp",  "deploy",
-                 "--settingsfile", settingsFile,
-                 "--settingsfilekey", this.settingsFileKeyPath,
-                 "-P", sbmFileName,
-                 "--imagetag", imageTag,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "-P", sbmFileName,
                 "--override", overrideFile,
                 "--jobname", jobName,
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString(),
                 "--unittest", "true",
-                "--monitor", "true"
+                "--monitor", "true",
+                "--stream", "true"
+
+            };
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+
+        }
+
+        [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataTestMethod]
+        public void ContainerApp_EnvOnly_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            string jobName = GetUniqueJobName();
+            string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+            //Prep the build
+            var args = new string[]{
+                "containerapp",  "prep",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--jobname", jobName,
+                "--packagename", sbmFileName
+
+            };
+
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            int result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //enqueue the topic messages
+            args = new string[]{
+                "containerapp",  "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--jobname", jobName,
+                "--concurrencytype", concurrencyType.ToString(),
+                "--override", overrideFile
+            };
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //monitor for completion
+            args = new string[]{
+                "containerapp",  "deploy",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "-P", sbmFileName,
+                "--override", overrideFile,
+                "--jobname", jobName,
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString(),
+                "--unittest", "true",
+                "--monitor", "true",
+                "--env", "true",
+                "--stream", "true"
             };
             val = rootCommand.InvokeAsync(args);
             val.Wait();

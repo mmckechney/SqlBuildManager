@@ -82,11 +82,12 @@
   },
   "variables": {
     "environment_id": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/kubeEnvironments/', parameters('environmentName'))]",
-    "var_registryName": "[if(empty(parameters('registryServer')),'blueskydevus/',concat(parameters('registryServer'),'/'))]"
+    "var_registryName": "[if(empty(parameters('registryServer')),'blueskydevus/',concat(parameters('registryServer'),'/'))]",
+    "var_registry_secret_name": "[if(empty(parameters('registrypassword')),'registryPassword',concat(replace(parameters('registryServer'),'.',''),'-',parameters('registryUserName')))]"
   },
   "resources": [
     {
-      "name": "[parameters('jobname')]",
+      "name": "[concat('sbm',parameters('jobname'))]",
       "type": "Microsoft.Web/containerApps",
       "apiVersion": "2021-03-01",
       "kind": "workerapp",
@@ -97,18 +98,38 @@
           "activeRevisionsMode": "single",
           "secrets": [
             {
+              "name": "storageaccountkey",
+              "value": "[parameters('storageAccountKey')]"
+            },
+            {
+              "name": "storageaccountname",
+              "value": "[parameters('storageAccountName')]"
+            },
+            {
+              "name": "eventhubconnectionstring",
+              "value": "[parameters('eventHubConnectionString')]"
+            },
+            {
               "name": "servicebustopicconnectionstring",
               "value": "[parameters('serviceBusTopicConnectionString')]"
+            },
+            {
+              "name": "username",
+              "value": "[parameters('userName')]"
+            },
+            {
+              "name": "password",
+              "value": "[parameters('password')]"
+            },
+            {
+              "name": "[variables('var_registry_secret_name')]",
+              "value": "[parameters('registryPassword')]"
             }
+          ],
+          "registries": [
+            "registriesplaceholder"
           ]
         },
-        "registries": [
-          {
-            "server": "[parameters('registryServer')]",
-            "username": "[parameters('registryUserName')]",
-            "passwordSecretRef": "[parameters('registryPassword')]"
-          }
-        ],
         "template": {
           "containers": [
             {
@@ -121,7 +142,7 @@
                 "worker"
               ],
               "image": "[concat(variables('var_registryName'), parameters('imageName'),':', parameters('imageTag'))]",
-              "name": "[parameters('jobname')]",
+              "name": "[concat('sbm',parameters('jobname'))]",
               "env": [
                 {
                   "name": "Sbm_JobName",
@@ -169,14 +190,14 @@
           "scale": {
             "minReplicas": "0",
             "maxReplicas": "[parameters('maxContainers')]",
-             "rules": [
+            "rules": [
               {
                 "name": "servicebusscalingrule",
                 "custom": {
                   "type": "azure-servicebus",
                   "metadata": {
                     "topicName": "sqlbuildmanager",
-                    "subscriptionName" : "[parameters('jobname')]",
+                    "subscriptionName": "[parameters('jobname')]",
                     "messageCount": "2"
                   },
                   "auth": [
@@ -187,7 +208,7 @@
                   ]
                 }
               }
-             ]
+            ]
           },
           "dapr": {
             "enabled": false

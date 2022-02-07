@@ -47,13 +47,15 @@ $settingsJsonLinuxQueue = Join-Path $path "settingsfile-linux-queue.json"
 $settingsJsonWindowsQueueKv = Join-Path $path "settingsfile-windows-queue-keyvault.json"
 $settingsJsonLinuxQueueKv = Join-Path $path "settingsfile-linux-queue-keyvault.json"
 
-
-$AESKey = New-Object Byte[] 32
-[Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)
-$settingsFileKey = [System.Convert]::ToBase64String($AESKey);
-
 $keyFile = Join-Path $path "settingsfilekey.txt"
-$settingsFileKey |  Set-Content -Path $keyFile
+if($false -eq (Test-Path $keyFile))
+{
+    $AESKey = New-Object Byte[] 32
+    [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)
+    $settingsFileKey = [System.Convert]::ToBase64String($AESKey);
+    $settingsFileKey |  Set-Content -Path $keyFile
+}
+
 
 $winParams = @("--batchpoolname","SqlBuildManagerPoolWindows")
 $winParams += ("-os", "Windows")

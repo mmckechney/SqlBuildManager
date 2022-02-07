@@ -13,6 +13,7 @@ namespace SqlBuildManager.Console.Queue
         {
             return JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(message.Body.ToArray()));
         }
+
         public static ServiceBusMessage AsMessage(this object obj)
         {
             return new ServiceBusMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj, options)));

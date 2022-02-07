@@ -31,15 +31,18 @@ using System.Threading.Tasks;
 using static SqlBuildManager.Console.Aci.AciDeploymentResult;
 using sb = SqlSync.SqlBuild;
 using SqlBuildManager.Console.ContainerApp;
+using System.Diagnostics.Metrics;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.SqlServer.Management.XEvent;
 
 namespace SqlBuildManager.Console
 {
-    internal class Worker : IHostedService 
+    internal class Worker : IHostedService
     {
         public const string applicationLogFileName = "SqlBuildManager.Console.log";
 
         private IHostApplicationLifetime applicationLifetime;
-        private static int? exitCode;       
+        private static int? exitCode;
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
         private static StartArgs startArgs;
         private static CommandLineArgs cmdLine;
@@ -825,7 +828,7 @@ namespace SqlBuildManager.Console
                 System.Threading.Thread.Sleep(15000);
             }
         }
-        internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool stream, bool unittest = false, bool checkAciState = false)
+        internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool stream, DateTime? utcStartDate, bool unittest = false, bool checkAciState = false)
         {
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
@@ -852,21 +855,20 @@ namespace SqlBuildManager.Console
             (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
             var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, storageString, jobName, jobName);
 
-            var eventTask = ehandler.MonitorEventHub(stream);
+            CancellationTokenSource cancelSource = new CancellationTokenSource();
+            var eventTask = ehandler.MonitorEventHub(stream, utcStartDate, cancelSource.Token);
 
             long messageCount;
 
             int zeroMessageCounter = 0;
-            int counter = 0;
-            string spinner = "";
-            int lastCommitCount = 0;
-            int lastErrorCount = 0;
+            int lastCommitCount = -1;
+            int lastErrorCount = -1;
+            int lastEventCount = -1;
+            int events = 0;
             int error, commit;
             bool firstLoop = true;
             int cursorStepBack = (targets == 0) ? 3 : 4;
             int unitTestLoops = 0;
-            var lastPosition = 0;
-            var currentPosition = 0;
             if (checkAciState && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName))
             {
                 _ = GetAciErrorState(cmdLine);
@@ -874,15 +876,6 @@ namespace SqlBuildManager.Console
 
             while (true)
             {
-
-                counter++;
-                switch (counter % 4)
-                {
-                    case 0: spinner = "/"; counter = 0; break;
-                    case 1: spinner = "-"; break;
-                    case 2: spinner = "\\"; break;
-                    case 3: spinner = "|"; break;
-                }
 
                 if (Worker.aciIsInErrorState)
                 {
@@ -892,33 +885,28 @@ namespace SqlBuildManager.Console
                 }
 
                 messageCount = await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
-                (commit, error) = ehandler.GetCommitAndErrorCounts();
-                if (!unittest) //won't have a console handle for unit tests
+                (commit, error, events) = ehandler.GetCommitErrorAndScannedCounts();
+                var lines = new List<CursorStatusItem>()
                 {
-                    currentPosition = System.Console.GetCursorPosition().Top;
-                    if (!stream && !firstLoop)
-                    {
-                        System.Console.SetCursorPosition(0, System.Console.CursorTop - cursorStepBack);
-                    }
-                    else if (!firstLoop && lastCommitCount == commit && lastErrorCount == error)
-                    {
-                        System.Console.SetCursorPosition(0, System.Console.CursorTop - cursorStepBack);
-                    }
-                }
-                if (targets == 0)
+                    new CursorStatusItem(){Label= "Events Scanned:", Counter = events},
+                    new CursorStatusItem(){Label= "Remaining Messages:", Counter = messageCount},
+                    new CursorStatusItem(){Label= "Database Commits:", Counter = commit},
+                    new CursorStatusItem(){Label= "Database Errors:", Counter = error}
+                };
+                if(targets > 0)
                 {
-                    System.Console.WriteLine($"{spinner} Remaining Messages:\t{messageCount.ToString().PadLeft(5, '0')}{Environment.NewLine}  Database Commits:\t{commit.ToString().PadLeft(5, '0')}{Environment.NewLine}  Database Errors:\t{error.ToString().PadLeft(5, '0')}");
+                    lines.Insert(2, new CursorStatusItem() { Label = "Remaining Databases:", Counter = (targets - commit - error) });
                 }
-                else
-                {
-                    System.Console.WriteLine($"{spinner} Remaining Messages:\t{messageCount.ToString().PadLeft(5, '0')}{Environment.NewLine}  Remaining Databases:\t{(targets - commit - error).ToString().PadLeft(5, '0')}{Environment.NewLine}  Database Commits:\t{commit.ToString().PadLeft(5, '0')}{Environment.NewLine}  Database Errors:\t{error.ToString().PadLeft(5, '0')}");
-                }
-                if (!unittest) { lastPosition = System.Console.GetCursorPosition().Top; }
+                if (unittest) firstLoop = true; //Won't have a console to change position for unit tests
+                SetCursorStatus(lines, firstLoop);
+                
+
 
                 System.Threading.Thread.Sleep(500);
                 if (messageCount == 0) { zeroMessageCounter++; } else { zeroMessageCounter = 0; unitTestLoops = 0; }
-                if (targets == 0 && zeroMessageCounter >= 20 && lastCommitCount == commit && lastErrorCount == error && !unittest) //not seeing progress
+                if (targets == 0 && zeroMessageCounter >= 20 && lastCommitCount == commit && lastErrorCount == error && lastEventCount == events && !unittest) //not seeing progress
                 {
+                    System.Console.WriteLine();
                     System.Console.Write("Message count has remained 0, do you want to continue monitoring (Y/n)");
                     var key = System.Console.ReadKey().Key;
                     System.Console.WriteLine();
@@ -932,35 +920,42 @@ namespace SqlBuildManager.Console
                     }
                     else
                     {
-                        eventTask.Wait(5000);
+                        eventTask.Wait(500);
                         break;
                     }
                 }
                 else if (targets != 0 && (commit + error == targets)) //we know the target count and we have received updates from them all
                 {
+                    System.Console.WriteLine();
                     System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                     break;
-                }
-                else if (unittest && unitTestLoops == 200)
-                {
-                    log.LogError("Unit test taking too long! There is likely something wrong with the containers.");
-                    return -1;
-
                 }
                 else if (lastCommitCount != commit || lastErrorCount != error) //reset the counters if we still see progress.
                 {
                     zeroMessageCounter = 0;
                     unitTestLoops = 0;
                 }
+                else if (unittest && unitTestLoops == 300)
+                {
+                    System.Console.WriteLine();
+                    log.LogError("Unit test taking too long! There is likely something wrong with the containers.");
+                    return -1;
+                }
+
 
                 lastErrorCount = error;
                 lastCommitCount = commit;
+                lastEventCount = events;
                 firstLoop = false;
                 unitTestLoops++;
             }
 
-            await qManager.DeleteSubscription();
+            eventTask.Dispose();
+            ehandler.Dispose();
 
+            await qManager.DeleteSubscription();
+            log.LogInformation("Consolidating log files");
+            StorageManager.ConsolidateLogFiles(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, new List<string>());
             string sas = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, true);
 
             log.LogInformation($"Log files can be found here: {sas}");
@@ -975,6 +970,38 @@ namespace SqlBuildManager.Console
             {
                 return 0;
             }
+        }
+
+        private static int cursorCounter = 0;
+        public class CursorStatusItem
+        {
+            public string Label { get; set; } = "";
+            public long Counter { get; set; } = 0;
+        }
+        private static void SetCursorStatus(List<CursorStatusItem> items, bool first)
+        {
+            string spinner = "| ";
+            string spacer = "  ";
+            cursorCounter++;
+            switch (cursorCounter % 4)
+            {
+                case 0: spinner = "/ "; cursorCounter = 0; break;
+                case 1: spinner = "- "; break;
+                case 2: spinner = "\\ "; break;
+                case 3: spinner = "| "; break;
+            }
+            if (!first)
+            {
+                System.Console.SetCursorPosition(0, System.Console.CursorTop - (items.Count()-1));
+            }
+            int maxLabel = items.Select(l => l.Label.Length).Max() +2;
+            StringBuilder sb = new StringBuilder();
+            for(int i=0;i<items.Count;i++)
+            {
+                sb.AppendLine($"{spinner}{items[i].Label.PadRight(maxLabel, ' ')}{spacer}{items[i].Counter.ToString().PadLeft(5,'0')}");
+                spinner = "  ";
+            }
+            System.Console.Write(sb.ToString().Trim());
         }
 
         internal static async Task<int> RunContainerAppWorker(CommandLineArgs cmdLine)
@@ -1008,12 +1035,12 @@ namespace SqlBuildManager.Console
                 validationErrors.ForEach(m => log.LogError(m));
                 return -1;
             }
-
+            var utcMonitorStart = DateTime.UtcNow;
             var success =  await ContainerApp.ContainerAppHelper.DeployContainerApp(cmdLine);
 
             if(success && monitor)
             {
-                return await MonitorContainerAppRuntimeProgress(cmdLine,stream, unittest);
+                return await MonitorContainerAppRuntimeProgress(cmdLine,stream, utcMonitorStart,  unittest);
             }
             else if (success)
                 return 0;
@@ -1081,7 +1108,7 @@ namespace SqlBuildManager.Console
             return await RunContainerAppWorker(cmdLine);
         }
 
-        internal static async Task<int> MonitorContainerAppRuntimeProgress(CommandLineArgs cmdLine, bool stream, bool unitest)
+        internal static async Task<int> MonitorContainerAppRuntimeProgress(CommandLineArgs cmdLine, bool stream, DateTime? utcMonitorStart, bool unitest)
         {
 
             if (string.IsNullOrWhiteSpace(cmdLine.JobName))
@@ -1090,7 +1117,7 @@ namespace SqlBuildManager.Console
                 return 1;
             }
 
-            return await MonitorServiceBusRuntimeProgress(cmdLine, stream, unitest, false);
+            return await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest, false);
         }
 
         internal static async Task<int> MonitorKubernetesRuntimeProgress(FileInfo secretsFile, FileInfo runtimeFile, CommandLineArgs args, bool unittest = false, bool stream = false)
@@ -1119,7 +1146,7 @@ namespace SqlBuildManager.Console
             if (!string.IsNullOrWhiteSpace(args.JobName)) cmdLine.JobName = args.JobName;
             if (!string.IsNullOrWhiteSpace(args.MultiDbRunConfigFileName)) cmdLine.MultiDbRunConfigFileName = args.MultiDbRunConfigFileName;
 
-            return await MonitorServiceBusRuntimeProgress(cmdLine, stream, unittest);
+            return await MonitorServiceBusRuntimeProgress(cmdLine, stream, DateTime.UtcNow.AddMinutes(-15), unittest);
 
         }
 
@@ -1240,7 +1267,7 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static async Task<int> MonitorAciRuntimeProgress(CommandLineArgs cmdLine, FileInfo templateFile, bool unitest, bool stream = false)
+        internal static async Task<int> MonitorAciRuntimeProgress(CommandLineArgs cmdLine, FileInfo templateFile, DateTime? utcMonitorStart,  bool unitest, bool stream = false)
         {
             if (templateFile != null)
             {
@@ -1253,7 +1280,7 @@ namespace SqlBuildManager.Console
                 return 1;
             }
 
-            return await MonitorServiceBusRuntimeProgress(cmdLine, stream, unitest, true);
+            return await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest,  true);
         }
 
         internal static async Task<int> DeployAciTemplate(CommandLineArgs cmdLine, FileInfo templateFile, bool monitor, bool unittest = false, bool stream = false)
@@ -1275,11 +1302,11 @@ namespace SqlBuildManager.Console
             }
 
             cmdLine = Aci.AciHelper.GetRuntimeValuesFromDeploymentTempate(cmdLine, templateFile.FullName);
-
+            var utcMonitorStart = DateTime.UtcNow;
             var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName, cmdLine.JobName);
             if (success && monitor)
             {
-                return await MonitorAciRuntimeProgress(cmdLine, templateFile, unittest, stream);
+                return await MonitorAciRuntimeProgress(cmdLine, templateFile, utcMonitorStart, unittest, stream);
             }
             else if (success) return 0; else return 1;
         }
@@ -1394,7 +1421,78 @@ namespace SqlBuildManager.Console
             return 0;
         }
 
-        internal static void TestAuth()
+
+
+        internal static int GetEventHubEvents(CommandLineArgs cmdLine, DateTime? startDate)
+        {
+            bool junk;
+            bool firstLoop = true;
+            (junk, cmdLine) = Init(cmdLine);
+
+            var storageString = CloudStorage.StorageManager.GetStorageConnectionString(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
+            (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
+            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, storageString, jobName, jobName);
+            if(!startDate.HasValue)
+            {
+                startDate = DateTime.UtcNow.AddDays(-14);
+            }
+            var cts = new CancellationTokenSource();
+            var ehTask = ehandler.MonitorEventHub(false, startDate, cts.Token);
+            int lastCommit = -1, lastError = -1, counter = 0, lastEvents = -1;
+            int currentCommit, currentError, currentEvents;
+
+            System.Console.Write("Waiting for EventHub client.");
+            while (ehTask.Status == TaskStatus.WaitingForActivation || ehTask.Status == TaskStatus.WaitingToRun)
+            {
+                Thread.Sleep(2000);
+                System.Console.Write(".");
+            }
+            System.Console.WriteLine();
+            System.Console.WriteLine($"Counting Events for job: {jobName}");
+
+            while (true)
+            {
+                
+                (currentCommit, currentError, currentEvents) = ehandler.GetCommitErrorAndScannedCounts();
+                if(currentCommit == lastCommit && currentError == lastError && currentEvents == lastEvents)
+                {
+                    counter++;
+                }
+                else
+                {
+                    counter = 0;
+                    lastError = currentError;
+                    lastCommit = currentCommit;
+                    lastEvents = currentEvents;
+                }
+                if(counter == 10)
+                {
+                    break;
+                }
+
+                var lines = new List<CursorStatusItem>()
+                {
+                        new CursorStatusItem(){Label= "Events Scanned:", Counter = currentEvents},
+                        new CursorStatusItem(){Label= "Database Commits:", Counter = currentCommit},
+                        new CursorStatusItem(){Label= "Database Errors:", Counter = currentError}
+                };
+                SetCursorStatus(lines, firstLoop);
+                Thread.Sleep(1000);
+                firstLoop = false;
+            }
+            System.Console.WriteLine();
+            log.LogInformation($"Scanning complete!");
+
+            return 0;
+
+        }
+
+        internal static void GetQueueMessageCount(CommandLineArgs cmdLine)
+        { 
+          
+        }
+
+        internal static void TestAuth(string discard)
         {
             System.Console.WriteLine(KeyVault.KeyVaultHelper.GetSecret("sbm3keyvault", "StorageAccountName"));
         }

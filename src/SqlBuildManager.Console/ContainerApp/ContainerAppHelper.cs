@@ -16,6 +16,7 @@ using System.Linq;
 using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Console.ContainerApp.Internal;
 using System.Diagnostics;
+using SqlBuildManager.Console.Aad;
 
 namespace SqlBuildManager.Console.ContainerApp
 {
@@ -36,7 +37,7 @@ namespace SqlBuildManager.Console.ContainerApp
                 log.LogDebug(GetSecretsString(cmdLine));
                 log.LogDebug(GetEnvironmentVariablesString(cmdLine));
 
-                string templateString = GetTemplateFileContents(cmdLine.ContainerAppArgs.EnvironmentVariablesOnly);
+                string templateString = GetTemplateFileContents(cmdLine.ContainerAppArgs.EnvironmentVariablesOnly, !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer));
                 log.LogDebug($"ContainerApp template:{Environment.NewLine}{templateString}");
                 log.LogInformation($"Starting a deployment for Container App 'sbm{deploymentName}' in environment '{cmdLine.ContainerAppArgs.EnvironmentName}'");
 
@@ -236,46 +237,38 @@ namespace SqlBuildManager.Console.ContainerApp
         {
             if (_resourceClient == null)
             {
-                _resourceClient = new ResourcesManagementClient(subscriptionId, TokenCredential);
+                _resourceClient = new ResourcesManagementClient(subscriptionId, AadHelper.TokenCredential);
             }
             return _resourceClient;
         }
 
-        internal static string GetTemplateFileContents(bool envOnly)
+        internal static string GetTemplateFileContents(bool envOnly, bool includeRegistry)
         {
             
             string exePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
             string pathToTemplates = Path.Combine(exePath, "ContainerApp");
+            string template;
             if(!envOnly)
             {
-                return File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_arm_template.json"));
+                template =  File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_arm_template.json"));
             }
             else
             {
-                return File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_env_arm_template.json"));
+                template =  File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_env_arm_template.json"));
             }
-           
-        }
-
-        private static TokenCredential _tokenCred = null;
-        internal static TokenCredential TokenCredential
-        {
-            get
+            if(includeRegistry)
             {
-                if (_tokenCred == null)
-
-                {
-                    _tokenCred = new ChainedTokenCredential(
-                        new ManagedIdentityCredential(),
-                        new AzureCliCredential(),
-                        new AzurePowerShellCredential(),
-                        new VisualStudioCredential(),
-                        new VisualStudioCodeCredential(),
-                        new InteractiveBrowserCredential());
-                }
-                return _tokenCred;
+                var registrySnippit = File.ReadAllText(Path.Combine(pathToTemplates, "registries.json"));
+                template = template.Replace("\"registriesplaceholder\"", registrySnippit);
             }
-        }
+            else
+            {
+                template = template.Replace("\"registriesplaceholder\"", "");
+            }
+            return template;
+        }    
+           
+        
 
         internal static void SetEnvVariablesForTest(CommandLineArgs cmdLine)
         {

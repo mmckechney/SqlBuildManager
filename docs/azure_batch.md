@@ -70,7 +70,7 @@ Azure Batch builds are started locally via `sbm.exe`. This process communicates 
 
 ### Settings File
 
-While all of the values can be provided as arguments in the command line, it is strongly suggested you leverage `--settingsfile` and `--settingsfilekey` (the `--settingsfilekey` parameter is not required if you are leveraging `--keyvaultname`). A settings JSON file was created for you via [`create_azure_resources.ps1`](../scripts/templates/create_azure_resources.ps1) but can also be re-created for any set of Azure resources via [`create_batch_settingsfile.ps1`](../scripts/templates/create_batch_settingsfiles.ps1)
+While all of the values can be provided as arguments in the command line, it is strongly suggested you leverage `--settingsfile` and `--settingsfilekey` (the `--settingsfilekey` parameter is not required if you are leveraging `--keyvaultname`). A settings JSON file was created for you via [`create_azure_resources.ps1`](../scripts/templates/create_azure_resources.ps1) but can also be re-created for any set of Azure resources via [`create_batch_settingsfile.ps1`](../scripts/templates/Batch/create_batch_settingsfiles.ps1)
 
 You can also build it manually by executing `sbm batch savesettings` command and providing the appropriate arguments. See the argument details [here](azure_batch_commands.md#azure-batch-save-settings)
 

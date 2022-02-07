@@ -35,5 +35,5 @@ $serviceBusNamespaceName = az servicebus namespace list --resource-group $resour
 Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -ForegroundColor DarkGreen
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-.$scriptDir/create_aks_secrets_and_runtime_files.ps1 -sbmExe $sbmExe -path $path -resourceGroupName  $resourceGroupName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword
+.$scriptDir/create_aks_secrets_and_runtime_files.ps1 -sbmExe $sbmExe -path $path -resourceGroupName  $resourceGroupName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword 
 

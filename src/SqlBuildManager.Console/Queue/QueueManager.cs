@@ -95,20 +95,48 @@ namespace SqlBuildManager.Console.Queue
                 var concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, 1, ConcurrencyType.Count);
                 var messages = CreateMessages(concurrencyBuckets, jobName);
                 int count = messages.Count();
+                int sentCount = 0;
                 
                 //because of partitiioning, can't batch across session Id, so group by SessionId first, then batch
                 var bySessionId = messages.GroupBy(s => s.SessionId);
                 foreach (var sessionSet in bySessionId)
-                    {
+                {
                     var msgBatch = sessionSet.Batch(20); //send in batches of 20
-                        foreach (var b in msgBatch)
+                    foreach (var b in msgBatch)
+                    {
+                        var sbb = await sender.CreateMessageBatchAsync();
+                        foreach (var msg in b)
                         {
-                            var sbb = await sender.CreateMessageBatchAsync();
-                            b.ForEach(m => sbb.TryAddMessage(m));
-
-                            await sender.SendMessagesAsync(sbb);
+                            if (!sbb.TryAddMessage(msg))
+                            {
+                                log.LogError($"Failed to add message to Service Bus batch.{Environment.NewLine}{msg.Body}");
+                            } 
+                            else
+                            {
+                                sentCount++;
+                            }
                         }
+                        await sender.SendMessagesAsync(sbb);
+                    }
                 }
+                if(sentCount != count)
+                {
+                    log.LogError($"Only {sentCount} out of {count} database targets were sent to the Service Bus. Before running your workload, please run a 'dequeue' command and try again");
+                    return -1;
+                }
+
+                //Confirm message count in Queue 
+                var activeMessages = await MonitorServiceBustopic(cType);
+                if(activeMessages != count)
+                {
+                    log.LogError($"After attempting to queue messages, there are only {activeMessages} out of {count} messages in the Service Bus Subscription. Before running your workload, please run a 'dequeue' command and try again");
+                    return -1;
+                }
+                else
+                {
+                    log.LogInformation($"Validated {activeMessages} active messages in Service Bus Subscription {this.topicName}:{this.topicSessionSubscriptionName}");
+                }
+
                 return count;
             }
             catch (Exception exe)

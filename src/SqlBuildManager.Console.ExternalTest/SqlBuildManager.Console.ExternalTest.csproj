@@ -11,11 +11,11 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
-    <PackageReference Include="coverlet.collector" Version="3.1.0">
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22106.2" />
   </ItemGroup>
   <ItemGroup>
     <!--<ProjectReference Include="..\..\..\command-line-api\src\System.CommandLine\System.CommandLine.csproj" />-->
@@ -27,28 +27,6 @@
       <Link>TestConfig\%(RecursiveDir)%(FileName)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Remove="..\TestConfig\sbm-linux-11.4.0.zip" />
-    <Content Remove="..\TestConfig\sbm-linux-12.1.0.zip" />
-    <Content Remove="..\TestConfig\sbm-linux-12.2.0.zip" />
-    <Content Remove="..\TestConfig\sbm-linux-13.0.0.zip" />
-    <Content Remove="..\TestConfig\sbm-linux-13.0.1.zip" />
-    <Content Remove="..\TestConfig\sbm-linux-13.0.2.zip" />
-    <Content Remove="..\TestConfig\sbm-linux-13.0.3.zip" />
-    <Content Remove="..\TestConfig\sbm-linux-13.1.0.zip" />
-    <Content Remove="..\TestConfig\sbm-linux-13.2.0.zip" />
-    <Content Remove="..\TestConfig\sbm-windows-11.4.0.zip" />
-    <Content Remove="..\TestConfig\sbm-windows-12.1.0.zip" />
-    <Content Remove="..\TestConfig\sbm-windows-12.2.0.zip" />
-    <Content Remove="..\TestConfig\sbm-windows-13.0.0.zip" />
-    <Content Remove="..\TestConfig\sbm-windows-13.0.1.zip" />
-    <Content Remove="..\TestConfig\sbm-windows-13.0.2.zip" />
-    <Content Remove="..\TestConfig\sbm-windows-13.0.3.zip" />
-    <Content Remove="..\TestConfig\sbm-windows-13.1.0.zip" />
-    <Content Remove="..\TestConfig\sbm-windows-13.2.0.zip" />
-    <Content Remove="..\TestConfig\secrests.yaml" />
-    <Content Remove="..\TestConfig\settings.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

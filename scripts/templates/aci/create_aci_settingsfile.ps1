@@ -34,29 +34,45 @@ $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list -
 
 $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" -o tsv --query "[].name"
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
+if([string]::IsNullOrWhiteSpace($containerRegistryName))
+{
+    $settingsAci = Join-Path $path "settingsfile-aci-no-registry.json"
+}
+else {
+    $settingsAci = Join-Path $path "settingsfile-aci.json"
+}
 
-$settingsJsonLinuxQueueKv = Join-Path $path "settingsfile-linux-aci-queue-keyvault.json"
 
 $subscriptionId = az account show --query id --output tsv
 
-if([string]::IsNullOrWhiteSpace($containerRegistryName))
+if([string]::IsNullOrWhiteSpace($containerRegistryName) -eq $false)
 {
+    Write-Host "Getting info for Azure Conainer Registry: $containerRegistryName" -ForegroundColor DarkGreen
     $acrUserName = az acr credential show -g $resourceGroupName --name $containerRegistryName -o tsv --query username
     $acrPassword = az acr credential show -g $resourceGroupName --name  $containerRegistryName -o tsv --query passwords[0].value
     $acrServerName = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
 }
 
+$keyFile = Join-Path $path "settingsfilekey.txt"
+if($false -eq (Test-Path $keyFile))
+{
+    $AESKey = New-Object Byte[] 32
+    [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)
+    $settingsFileKey = [System.Convert]::ToBase64String($AESKey);
+    $settingsFileKey |  Set-Content -Path $keyFile
+}
+
 $params = @("aci", "savesettings")
-$params += ("--settingsfile", $settingsJsonLinuxQueueKv)
+$params += ("--settingsfile", $settingsAci)
 $params += ("--aciname", $aciName)
 $params += ("--identityname", $identityName)
 $params += ("--idrg", $resourceGroupName)
 $params += ("--acirg", $resourceGroupName)
-$params += ("-sb", $serviceBusConnectionString)
+$params += ("-sb", """$serviceBusConnectionString""")
 $params += ("-kv", $keyVaultName)
 $params += ("--storageaccountname", $storageAccountName)
 $params += ("--storageaccountkey",$storageAcctKey)
-$params += ("-eh",$eventHubConnectionString)
+$params += ("-eh","""$eventHubConnectionString""")
 $params += ("--defaultscripttimeout", "500")
 $params += ("--subscriptionid",$subscriptionId)
 $params += ("--force")
@@ -65,11 +81,17 @@ if($haveSqlInfo)
     $params += ("--username", $sqlUserName)
     $params += ("--password", $sqlPassword)
 }
-if([string]::IsNullOrWhiteSpace($containerRegistryName))
+if([string]::IsNullOrWhiteSpace($containerRegistryName) -eq $false)
+{
+    $params += ("--registryserver", $acrServerName)
+    $params += ("--registryusername", $acrUserName)
+    $params += ("--registrypassword", $acrPassword)
+}
+if([string]::IsNullOrWhiteSpace($imageTag) -eq $false)
 {
     $params += ("--imagetag", $imageTag)
 }
-Write-Host $params
+# Write-Host $params
 Start-Process $sbmExe -ArgumentList $params -Wait
 
 

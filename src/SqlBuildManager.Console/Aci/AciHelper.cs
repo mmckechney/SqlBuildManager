@@ -14,6 +14,7 @@ using System.Threading;
 using System.Text.Json;
 using System.Linq;
 using SqlBuildManager.Console.Shared;
+using SqlBuildManager.Console.Aad;
 
 namespace SqlBuildManager.Console.Aci
 {
@@ -25,38 +26,21 @@ namespace SqlBuildManager.Console.Aci
         {
             return $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerInstance/containerGroups/{aciName}";
         }
-        private static TokenCredential _tokenCred = null;
-        internal static TokenCredential TokenCredential
-        {
-            get
-            {
-                if (_tokenCred == null)
-
-                {
-                    _tokenCred = new ChainedTokenCredential(
-                        new ManagedIdentityCredential(),
-                        new AzureCliCredential(),
-                        new AzurePowerShellCredential(),
-                        new VisualStudioCredential(),
-                        new VisualStudioCodeCredential(),
-                        new InteractiveBrowserCredential());
-                }
-                return _tokenCred;
-            }
-        }
+        
 
         private static ResourcesManagementClient _resourceClient = null;
         internal static ResourcesManagementClient ResourceClient(string subscriptionId)
         {
             if (_resourceClient == null)
             {
-                _resourceClient = new ResourcesManagementClient(subscriptionId, AciHelper.TokenCredential);
+                _resourceClient = new ResourcesManagementClient(subscriptionId, AadHelper.TokenCredential); ;
             }
             return _resourceClient;
         }
             
         internal static string CreateAciArmTemplate(CommandLineArgs cmdLine)
         {
+            //TODO: Accomodate custom container repositories
             string exePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
             string pathToTemplates = Path.Combine(exePath, "Aci");
             string template = File.ReadAllText(Path.Combine(pathToTemplates, "aci_arm_template.json"));

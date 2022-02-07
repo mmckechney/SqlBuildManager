@@ -3,9 +3,9 @@ using Azure.Storage.Blobs;
 using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
-using Microsoft.Azure.Batch.Protocol;
 using Microsoft.Azure.Management.Batch;
 using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Threaded;
@@ -379,7 +379,7 @@ namespace SqlBuildManager.Console.Batch
 
                 if(batchType == BatchType.Query)
                 {
-                    StorageManager.CombineBatchQueryOutputfiles(storageSvcClient, storageContainerName, this.outputFile);
+                    StorageManager.CombineQueryOutputfiles(storageSvcClient, storageContainerName, this.outputFile);
                 }
 
                 //Finish the job out
@@ -592,7 +592,7 @@ namespace SqlBuildManager.Console.Batch
             log.LogInformation($"Creating pool [{poolId}]...");
 
             //var creds = new BatchSharedKeyCredential(batchAccountName, batchAccountKey);
-            var creds = new CustomClientCredentials(KeyVault.KeyVaultHelper.TokenCredential);
+            var creds = new CustomClientCredentials(AadHelper.TokenCredential);
             var managementClient = new BatchManagementClient(creds);
             managementClient.SubscriptionId = subscriptionId;
 

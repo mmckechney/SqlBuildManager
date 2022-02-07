@@ -145,6 +145,10 @@ Using the `sbm threaded run` command will allow for updating multiple databases 
 Using the `sbm batch run` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](docs/azure_batch.md).
 An excellent tool for viewing and monitoring your Azure batch accounts and jobs can be found here [https://azure.github.io/BatchExplorer/](https://azure.github.io/BatchExplorer/)
 
+### **Azure Container Apps**
+
+Using the `sbm containerapp` commands leverages Azure Container Apps to permit massively parallel updates across thousands of databases. Learn how to use Container Apps [here](docs/containerapp.md).
+
 ### **Kubernetes**
 
 Using the `sbm k8s` commands leverages Kubernetes to permit massively parallel updates across thousands of databases. To leverage Kubernetes, you will first need to set up a Kubernetes Cluster. The instructions for this can be found [here](docs/kubernetes.md#).

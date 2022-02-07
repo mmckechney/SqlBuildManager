@@ -26,7 +26,7 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
 
 if("" -eq $imageTag)
 {
-    $imageTag = Get-Date -Format "yyyy-MM-dd"
+    $imageTag = "latest-vNext" #Get-Date -Format "yyyy-MM-dd"
     Write-Host "Using Image Tag: $imageTag" -ForegroundColor DarkGreen
 }
  
@@ -49,3 +49,4 @@ $containerRegistryName = az acr list --resource-group $resourceGroupName -o tsv 
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 .$scriptDir/create_aci_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -aciname $aciName -imageTag $imageTag -containerRegistryName $containerRegistryName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword 
+.$scriptDir/create_aci_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -aciname $aciName -imageTag $imageTag -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword 

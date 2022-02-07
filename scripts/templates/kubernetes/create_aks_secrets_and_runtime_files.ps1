@@ -14,6 +14,8 @@ Write-Host "Create AKS secrets and runtime files"  -ForegroundColor Cyan
 $path = Resolve-Path $path
 Write-Host "Output path set to $path" -ForegroundColor DarkGreen
 
+
+Write-Host "Retrieving secrets from Azure resources" -ForegroundColor DarkGreen
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
 
 
@@ -24,20 +26,20 @@ $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list -
 $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" -o tsv --query "[].name"
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
 
+
 $params = @("k8s", "savesettings")
 $params += @("--path", $path)
-$params += @("--username",$sqlUserName)
-$params += @("--password",$sqlPassword) 
 $params += @("--storageaccountname",$storageAccountName)  
-$params += @("--storageaccountkey",$storageAcctKey) 
-$params += @("-eh",$eventHubConnectionString) 
-$params += @("-sb",$serviceBusConnectionString)  
-$params += @("--concurrency", "5"
+$params += @("--storageaccountkey","""$storageAcctKey""") 
+$params += @("-eh","""$eventHubConnectionString""") 
+$params += @("-sb","""$serviceBusConnectionString""")  
+$params += @("--concurrency", "5")
 $params += @("--concurrencytype", "Count")
 if([string]::IsNullOrWhiteSpace($sqlUserName) -eq $false)
 {
     $params += @("--username",$sqlUserName)  
     $params += @("--password",$sqlPassword)
 }
+
 
 Start-Process $sbmExe -ArgumentList $params

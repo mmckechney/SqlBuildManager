@@ -1,0 +1,5 @@
+﻿{
+    "server": "[parameters('registryServer')]",
+    "username": "[parameters('registryUserName')]",
+    "passwordSecretRef": "[variables('var_registry_secret_name')]"
+}

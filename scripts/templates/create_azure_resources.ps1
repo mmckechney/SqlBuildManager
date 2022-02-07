@@ -74,12 +74,13 @@ else
     Write-Host "Skipping Batch deployment" -ForegroundColor DarkBlue
 }
 
-####################
-# Container Registry
-####################
+########################################
+# Container Registry and Container Build
+########################################
 if($deployContainerRegistry)
 {
     ./ContainerRegistry/create_container_registry_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix
+    ./ContainerRegistry/build_container_registry_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix
 }
 #################
 # AKS
@@ -99,6 +100,7 @@ else
 if($deployContainerAppEnv)
 {
     ./ContainerApp/create_containerapp_env_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName 
+
 }
 else 
 {
@@ -110,7 +112,7 @@ else
 #################
 if($testDatabaseCount -gt 0)
 {
-   ./Database/create_databases_from_prefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $path -testDatabaseCount $testDatabaseCount
+   ./Database/create_databases_from_prefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path  $outputPath -testDatabaseCount $testDatabaseCount
 }
 else 
 {
@@ -129,6 +131,12 @@ else
 {
     Write-Host "Skipping code build" -ForegroundColor DarkBlue
 }
+
+
+#############################################################
+# Save the settings files and config files for the unit tests
+#############################################################
+$sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\net6.0\sbm.exe").Path
 
 ##########################
 # Add Secrets to Key Vault
@@ -150,20 +158,21 @@ if($deployAks)
     #############################################
     # Copy sample K8s YAML files for test configs
     #############################################
-    Copy-Item kubernetes/sample_job.yaml (Join-Path $outputPath basic_job.yaml)
-    Copy-Item kubernetes/sample_job_keyvault.yaml (Join-Path $outputPath basic_job_keyvault.yaml)
-
+    ./Kubernetes/create_aks_job_yaml_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
 }
 
-$sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\net6.0\sbm.exe").Path
 #################################
 # Settings File for Container App
 #################################
 if($deployContainerAppEnv)
 {
+    # Create test file referencing the 
     ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry 
+    if($deployContainerRegistry)
+    {
+        ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
+    }
 }
-
 
 #########################
 # Settings File for Batch
@@ -178,8 +187,11 @@ if($deployBatch)
 if($includeAci)
 {
     ./aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry 
+    if($deployContainerRegistry)
+    {
+        ./aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
+    }
 }
-
 
 #########################
 # Database override files

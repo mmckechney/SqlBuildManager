@@ -32,7 +32,7 @@ az aks create --name $aksClusterName --resource-group $resourceGroupName --node-
 
 if($includeContainerRegistry)
 {
-    az aks update --name $aksClusterName --resource-group $resourceGroupName --attach-acr $containerRegistryName
+    az aks update --name $aksClusterName --resource-group $resourceGroupName --attach-acr $containerRegistryName -o table
 }
 
 Write-Host "Retrieving credentials for: $aksClusterName" -ForegroundColor DarkGreen
