@@ -134,7 +134,7 @@ namespace SqlBuildManager.Console.Queue
                 }
                 else
                 {
-                    log.LogInformation($"Validated {activeMessages} active messages in Service Bus Subscription {this.topicName}:{this.topicSessionSubscriptionName}");
+                    log.LogInformation($"Validated {activeMessages} of {count} active messages in Service Bus Subscription {this.topicName}:{this.topicSessionSubscriptionName}");
                 }
 
                 return count;
