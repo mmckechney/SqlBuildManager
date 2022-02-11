@@ -34,10 +34,10 @@ jobs:
       run: dotnet clean ./src/SqlSync/SQLSync.csproj --configuration Release && dotnet nuget locals all --clear  
  
     - name: Restore and build console app
-      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net5.0
+      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net6.0
 
     - name: Restore and build desktop app
-      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f net5.0-windows
+      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f net6.0-windows
 
     # Run tests
     - name: Run SqlBuildManager.Console.UnitTest
