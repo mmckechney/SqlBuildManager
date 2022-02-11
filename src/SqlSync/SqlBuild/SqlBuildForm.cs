@@ -230,12 +230,10 @@ namespace SqlSync.SqlBuild
         private ToolStripComboBox mnuDDActiveDatabase;
         private ToolStripSeparator toolStripSeparator3;
         private ToolStripMenuItem rebuildPreviouslyCommitedBuildFileToolStripMenuItem;
-        private ToolStripMenuItem mnuCompare;
         private ToolStripMenuItem mnuDacpacDelta;
         private ToolStripMenuItem mnuMainAddSqlScript;
         private ToolStripMenuItem mnuMainAddNewFile;
         private ToolStripSeparator toolStripSeparator4;
-        private ToolStripMenuItem mnuCompareObject;
         private ToolStripMenuItem archiveBuildHistoryToolStripMenuItem;
         private ToolStripMenuItem renameScriptFIleToolStripMenuItem;
         private ToolStripMenuItem settingsToolStripMenuItem;
@@ -960,7 +958,6 @@ namespace SqlSync.SqlBuild
             this.mnuUpdateObjectScripts = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuObjectScripts_FileDefault = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuObjectScripts_CurrentSettings = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuCompareObject = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuCreateExportFile = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuRemoveScriptFile = new System.Windows.Forms.ToolStripMenuItem();
@@ -1062,7 +1059,6 @@ namespace SqlSync.SqlBuild
             this.mnuMainAddNewFile = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuImportScriptFromFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuCompare = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuDacpacDelta = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem12 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuExportScriptText = new System.Windows.Forms.ToolStripMenuItem();
@@ -1398,7 +1394,6 @@ namespace SqlSync.SqlBuild
             this.menuItem1,
             this.mnuUpdatePopulates,
             this.mnuUpdateObjectScripts,
-            this.mnuCompareObject,
             this.menuItem2,
             this.mnuCreateExportFile,
             this.mnuRemoveScriptFile,
@@ -1504,13 +1499,6 @@ namespace SqlSync.SqlBuild
             this.mnuObjectScripts_CurrentSettings.Size = new System.Drawing.Size(346, 22);
             this.mnuObjectScripts_CurrentSettings.Text = "Using Current Server and Database/Override Setting";
             this.mnuObjectScripts_CurrentSettings.Click += new System.EventHandler(this.mnuObjectScripts_CurrentSettings_Click);
-            // 
-            // mnuCompareObject
-            // 
-            this.mnuCompareObject.Name = "mnuCompareObject";
-            this.mnuCompareObject.Size = new System.Drawing.Size(388, 22);
-            this.mnuCompareObject.Text = "Compare packaged object script to Server/Database version";
-            this.mnuCompareObject.Click += new System.EventHandler(this.mnuCompareObject_Click);
             // 
             // menuItem2
             // 
@@ -2202,7 +2190,6 @@ namespace SqlSync.SqlBuild
             this.mnuMainAddNewFile,
             this.toolStripSeparator4,
             this.mnuImportScriptFromFile,
-            this.mnuCompare,
             this.mnuDacpacDelta,
             this.menuItem12,
             this.mnuExportScriptText,
@@ -2400,14 +2387,6 @@ namespace SqlSync.SqlBuild
             this.mnuImportScriptFromFile.Size = new System.Drawing.Size(345, 22);
             this.mnuImportScriptFromFile.Text = "&Import Scripts from Sql Build File";
             this.mnuImportScriptFromFile.Click += new System.EventHandler(this.mnuImportScriptFromFile_Click);
-            // 
-            // mnuCompare
-            // 
-            this.mnuCompare.Enabled = false;
-            this.mnuCompare.Name = "mnuCompare";
-            this.mnuCompare.Size = new System.Drawing.Size(345, 22);
-            this.mnuCompare.Text = "Compare Build File To...";
-            this.mnuCompare.Click += new System.EventHandler(this.mnuCompare_Click);
             // 
             // mnuDacpacDelta
             // 
@@ -7451,7 +7430,6 @@ namespace SqlSync.SqlBuild
             mnuUpdateObjectScripts.Enabled = enableObject;
 
             showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem.Enabled = enableObject && (lstScriptFiles.SelectedItems.Count == 1);
-            mnuCompareObject.Enabled = enableObject && (lstScriptFiles.SelectedItems.Count == 1);
 
             if (lstScriptFiles.SelectedItems.Count == 1 && lstScriptFiles.SelectedItems[0].ImageIndex != 0) //see if it's been run before
                 mnuViewRunHistory.Enabled = true;
@@ -7577,7 +7555,6 @@ namespace SqlSync.SqlBuild
         {
             if (this.buildData != null)
             {
-                this.mnuCompare.Enabled = true;
                 this.mnuExportBuildList.Enabled = true;
                 this.mnuExportScriptText.Enabled = true;
                 this.mnuImportScriptFromFile.Enabled = true;
@@ -7601,26 +7578,7 @@ namespace SqlSync.SqlBuild
 
         }
 
-        private void mnuCompare_Click(object sender, EventArgs e)
-        {
-            if (DialogResult.OK == openSbmFileDialog.ShowDialog())
-            {
-                string rightFile = openSbmFileDialog.FileName;
-                openSbmFileDialog.Dispose();
-
-                double lastBuildNumber;
-                string lastDb;
-                sb.BuildDataHelper.GetLastBuildNumberAndDb(this.buildData, out lastBuildNumber, out lastDb);
-
-                SqlSync.Analysis.ComparisonForm frmCompare = new SqlSync.Analysis.ComparisonForm(ref this.buildData, lastBuildNumber, this.buildZipFileName, this.projectFilePath, rightFile, true);
-                frmCompare.ShowDialog();
-
-                if (frmCompare.RefreshProjectList)
-                    this.RefreshScriptFileList();
-            }
-        }
-
-        // mnuDacpacDelta_Click
+       // mnuDacpacDelta_Click
 
         private void mnuDacpacDelta_Click(object sender, EventArgs e)
         {
@@ -7664,101 +7622,7 @@ namespace SqlSync.SqlBuild
                 this.Cursor = Cursors.Default;
             }
         }
-        private void mnuCompareObject_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                this.Cursor = Cursors.WaitCursor;
-                //We can only script for compare one object at a time
-                if (lstScriptFiles.SelectedItems.Count != 1)
-                    return;
-
-                //Make sure we can find the base file. 
-                SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)lstScriptFiles.SelectedItems[0].Tag;
-                string baseFileWithPath = Path.Combine(this.projectFilePath, row.FileName);
-                if (!File.Exists(baseFileWithPath))
-                {
-                    MessageBox.Show("Unable to find base file!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                string dbTypeConst = string.Empty;
-                string schemaOwner;
-                string objectName = Path.GetFileNameWithoutExtension(row.FileName);
-                InfoHelper.ExtractNameAndSchema(objectName, out objectName, out schemaOwner);
-
-                //find the correct type constant based on the file extension
-                string[] types = SqlSync.Constants.DbObjectType.GetComparableObjectTypes();
-                for (int i = 0; i < types.Length; i++)
-                    if (baseFileWithPath.EndsWith(types[i]))
-                        dbTypeConst = types[i];
-
-                //Make sure it's a scriptable type
-                if (dbTypeConst == string.Empty)
-                {
-                    MessageBox.Show("Selected object is not scriptable for comparison!", "Bad File Type", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                //Generate the script and save the temp file
-                string script = string.Empty;
-                string desc = string.Empty;
-                this.connData.DatabaseName = ConnectionHelper.GetTargetDatabase(row.Database, OverrideData.TargetDatabaseOverrides);
-                SqlBuild.Objects.ObjectUpdates objSetting = SqlBuild.SqlBuildFileHelper.GetFileDataForObjectUpdates(lstScriptFiles.SelectedItems[0].SubItems[(int)ScriptListIndex.FileName].Text, this.projectFileName);
-
-                SqlSync.ObjectScript.ObjectScriptHelper scriptHelper = new ObjectScriptHelper(this.connData, objSetting.ScriptAsAlter, objSetting.IncludePermissions, objSetting.ScriptPkWithTable);
-                bool success = scriptHelper.ScriptDatabaseObjectWithHeader(dbTypeConst, objectName,schemaOwner, ref script, ref desc);
-                if (!success)
-                {
-                    MessageBox.Show("Unable to Script object from database.\r\nDoes a Target Database Override need to be set?", "Error Scripting from Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                string newFile = Path.GetTempPath() + schemaOwner+ "." + objectName + dbTypeConst;
-                File.WriteAllText(newFile, script);
-
-
-                FileCompareResults comp = new FileCompareResults();
-                comp.LeftScriptRow = row;
-                comp.LeftScriptPath = baseFileWithPath;
-                comp.RightScriptPath = newFile;
-                comp.RightSciptText = script;
-
-                comp = SqlSync.Compare.SqlUnifiedDiff.ProcessUnifiedDiff(comp);
-
-                SqlSync.Analysis.SimpleDiffForm frmDiff = new SqlSync.Analysis.SimpleDiffForm(comp, objectName, this.connData.DatabaseName, this.connData.SQLServerName);
-                frmDiff.ShowDialog();
-
-                //If the user changed the file, update the zip.
-                if (frmDiff.FileChanged)
-                {
-                    SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, this.projectFileName, buildZipFileName);
-                    RefreshScriptFileList(true);
-                }
-
-                try
-                { File.Delete(newFile); }
-                catch { }
-            }
-            catch (NullReferenceException)
-            {
-                MessageBox.Show("Unable to Script object from database.\r\nDoes a Target Database Override need to be set?", "Error Scripting from Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            catch (Exception exe)
-            {
-                log.LogError(exe, "Unable to Script object from database");
-                MessageBox.Show("Unable to Script object from database.\r\nCheck Event Log for details", "Error Scripting from Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            finally
-            {
-                this.Cursor = Cursors.Default;
-                this.connData.DatabaseName = string.Empty;
-            }
-
-
-
-
-        }
+       
 
         private void archiveBuildHistoryToolStripMenuItem_Click(object sender, EventArgs e)
         {

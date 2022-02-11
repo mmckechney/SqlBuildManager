@@ -33,7 +33,6 @@ namespace SqlSync.BuildHistory
         private BindingSource scriptRunLogBindingSource;
         private ContextMenuStrip contextMenuStrip1;
         private ToolStripMenuItem viewScriptAsRunOnServerToolStripMenuItem;
-        private ToolStripMenuItem compareToCurrentScriptToolStripMenuItem;
         private Label label3;
         private TextBox txtScriptHash;
         private DataGridViewTextBoxColumn buildFileNameDataGridViewTextBoxColumn;
@@ -44,7 +43,6 @@ namespace SqlSync.BuildHistory
         private DataGridViewTextBoxColumn userIdDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn scriptTextDataGridViewTextBoxColumn;
         private ToolStripSeparator toolStripSeparator1;
-        private ToolStripMenuItem compareSelectedScriptsToolStripMenuItem;
         private IContainer components;
 
         private ScriptRunHistoryForm(Connection.ConnectionData connData, string databaseName, string currentFileText, string scriptHash)
@@ -116,9 +114,7 @@ namespace SqlSync.BuildHistory
             this.scriptTextDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.viewScriptAsRunOnServerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.compareToCurrentScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.compareSelectedScriptsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scriptRunLogBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.scriptRunLog1 = new SqlSync.SqlBuild.ScriptRunLog();
             this.panel1.SuspendLayout();
@@ -325,9 +321,7 @@ namespace SqlSync.BuildHistory
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.viewScriptAsRunOnServerToolStripMenuItem,
-            this.compareToCurrentScriptToolStripMenuItem,
-            this.toolStripSeparator1,
-            this.compareSelectedScriptsToolStripMenuItem});
+            this.toolStripSeparator1});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(223, 76);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
@@ -339,25 +333,10 @@ namespace SqlSync.BuildHistory
             this.viewScriptAsRunOnServerToolStripMenuItem.Text = "View Script as Run on Server";
             this.viewScriptAsRunOnServerToolStripMenuItem.Click += new System.EventHandler(this.viewScriptAsRunOnServerToolStripMenuItem_Click);
             // 
-            // compareToCurrentScriptToolStripMenuItem
-            // 
-            this.compareToCurrentScriptToolStripMenuItem.Name = "compareToCurrentScriptToolStripMenuItem";
-            this.compareToCurrentScriptToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
-            this.compareToCurrentScriptToolStripMenuItem.Text = "Compare to Current Script";
-            this.compareToCurrentScriptToolStripMenuItem.Click += new System.EventHandler(this.compareToCurrentScriptToolStripMenuItem_Click);
-            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(219, 6);
-            // 
-            // compareSelectedScriptsToolStripMenuItem
-            // 
-            this.compareSelectedScriptsToolStripMenuItem.Enabled = false;
-            this.compareSelectedScriptsToolStripMenuItem.Name = "compareSelectedScriptsToolStripMenuItem";
-            this.compareSelectedScriptsToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
-            this.compareSelectedScriptsToolStripMenuItem.Text = "Compare selected scripts";
-            this.compareSelectedScriptsToolStripMenuItem.Click += new System.EventHandler(this.compareSelectedScriptsToolStripMenuItem_Click);
             // 
             // scriptRunLogBindingSource
             // 
@@ -462,19 +441,6 @@ namespace SqlSync.BuildHistory
             frmDisp.Dispose();
 
         }
-
-        private void compareToCurrentScriptToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (this.dataGridView1.SelectedCells.Count == 0)
-                return;
-
-            SqlSync.SqlBuild.ScriptRunLogRow row = (SqlSync.SqlBuild.ScriptRunLogRow)((DataRowView)this.dataGridView1.SelectedCells[0].OwningRow.DataBoundItem).Row;
-
-            Analysis.SimpleDiffForm frmDiff = new SqlSync.Analysis.SimpleDiffForm(this.currentFileText, row.ScriptText, this.connData.DatabaseName, this.connData.SQLServerName);
-            frmDiff.ShowDialog();
-            frmDiff.Dispose();
-        }
-
         private void dataGridView1_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
             SqlSync.SqlBuild.ScriptRunLogRow row = (SqlSync.SqlBuild.ScriptRunLogRow)((DataRowView)this.dataGridView1[0,e.RowIndex].OwningRow.DataBoundItem).Row;
@@ -500,39 +466,17 @@ namespace SqlSync.BuildHistory
                 return;
 
             List<DataGridViewRow> selectedRows = GetSelectedRows(this.dataGridView1);
-            if (selectedRows.Count == 2)
-                compareSelectedScriptsToolStripMenuItem.Enabled = true;
-            else
-                compareSelectedScriptsToolStripMenuItem.Enabled = false;
-
-
+            
             if (selectedRows.Count == 1)
             {
-                compareToCurrentScriptToolStripMenuItem.Enabled = true;
                 viewScriptAsRunOnServerToolStripMenuItem.Enabled = true;
             }
             else
             {
-                compareToCurrentScriptToolStripMenuItem.Enabled = false;
                 viewScriptAsRunOnServerToolStripMenuItem.Enabled = false;
             }
 
         }
-
-        private void compareSelectedScriptsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            List<DataGridViewRow> selectedRows = GetSelectedRows(this.dataGridView1);
-            if (selectedRows.Count != 2)
-                return;
-
-            SqlSync.SqlBuild.ScriptRunLogRow row1 = (SqlSync.SqlBuild.ScriptRunLogRow)((DataRowView)selectedRows[0].DataBoundItem).Row;
-            SqlSync.SqlBuild.ScriptRunLogRow row2 = (SqlSync.SqlBuild.ScriptRunLogRow)((DataRowView)selectedRows[1].DataBoundItem).Row;
-
-            Analysis.SimpleDiffForm frmDiff = new SqlSync.Analysis.SimpleDiffForm(row1.ScriptText, row2.ScriptText, this.connData.DatabaseName, this.connData.SQLServerName, row1.CommitDate.ToString(), row2.CommitDate.ToString());
-            frmDiff.ShowDialog();
-            frmDiff.Dispose();
-        }
-
 
         private List<DataGridViewRow> GetSelectedRows(DataGridView grid)
         {
