@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
 using System;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SqlSync.Connection.UnitTest
 {
@@ -73,7 +74,7 @@ namespace SqlSync.Connection.UnitTest
         public void GetConnectionStringTest_FromConnectionDataObj()
         {
             ConnectionData connData = new ConnectionData("myserver", "mydatabase");
-            string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;Integrated Security=True;Pooling=False;Connect Timeout=20;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
+            string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;Integrated Security=True;Pooling=False;Connect Timeout=20;Trust Server Certificate=True;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
             Assert.AreEqual(expected, actual);
@@ -87,7 +88,7 @@ namespace SqlSync.Connection.UnitTest
         {
             ConnectionData connData = new ConnectionData("myserver", "mydatabase");
             connData.ScriptTimeout = 40;
-            string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;Integrated Security=True;Pooling=False;Connect Timeout=40;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
+            string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;Integrated Security=True;Pooling=False;Connect Timeout=40;Trust Server Certificate=True;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
             Assert.AreEqual(expected, actual);
@@ -168,7 +169,7 @@ namespace SqlSync.Connection.UnitTest
         public void GetConnectionTest_FromConnectionDataObj()
         {
             ConnectionData connData = new ConnectionData("myserver", "mydatabase");
-            string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;Integrated Security=True;Pooling=False;Connect Timeout=20;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
+            string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;Integrated Security=True;Pooling=False;Connect Timeout=20;Trust Server Certificate=True;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             SqlConnection actual;
             actual = ConnectionHelper.GetConnection(connData);
             Assert.IsNotNull(actual);
