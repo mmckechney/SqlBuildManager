@@ -1,7 +1,7 @@
 param(
 [Parameter(Mandatory=$True)]
 [string]
-$resourcePrefix,
+$prefix,
 
  [Parameter(Mandatory=$True)]
  [string]
@@ -17,42 +17,94 @@ $resourcePrefix,
  $build = $true,
 
  [bool]
- $deployAks = $true
+ $deployBatch = $true,
+
+ [bool]
+ $deployAks = $true,
+
+ [bool]
+ $includeAci = $true,
+
+ [bool]
+ $deployContainerAppEnv = $true,
+
+ [bool]
+ $deployContainerRegistry = $true
  
  )
 
+ if($false -eq (Test-Path  $outputPath))
+ {
+    New-Item -Path $outputPath -ItemType Directory
+ }
 $outputPath = Resolve-Path $outputPath
-Write-Host "Will be saving output files to $outputPath"
+Write-Host "Will be saving output files to $outputPath" -ForegroundColor Green
 
 #################
 # Variables Setup
 #################
-$resourceGroupName = $resourcePrefix + "-rg"
+$resourceGroupName = $prefix + "-rg"
 
 ################
 # Resource Group
 ################
-Write-Host "Creating Resourcegroup: $ResourceGroupName" -ForegroundColor DarkGreen
-$result = az group create --name $resourceGroupName --location $location
+Write-Host "Creating Resourcegroup: $ResourceGroupName" -ForegroundColor Cyan
+az group create --name $resourceGroupName --location $location -o table
 
 ##########################################################################################
-# Storage Account, Batch Account, Event Hub and Service Bus Topic,  Key Vault and Identity
+# Storage Account, Event Hub and Service Bus Topic, Key Vault and Identity
 ##########################################################################################
-Write-Host "Creating Azure resources: Storage Account, Batch Account, Event Hub, Service Bus Topic,  Key Vault and Identity" -ForegroundColor DarkGreen
-$result = az deployment group create --resource-group $resourceGroupName --template-file azuredeploy.json --parameters namePrefix="$resourcePrefix" eventhubSku="Standard" skuCapacity=1 location=$location
+Write-Host "Creating Azure resources: Storage Account, Event Hub, Service Bus Topic,  Key Vault and Identity" -ForegroundColor Cyan
+az deployment group create --resource-group $resourceGroupName --template-file azuredeploy_base.bicep --parameters namePrefix="$prefix" eventhubSku="Standard" skuCapacity=1 location=$location -o table
 
 ####################
 # Set Identity privs
 ####################
-./set_managedidentity_rbac_fromprefix.ps1 -prefix $resourcePrefix -resourceGroupName $resourceGroupName
+ ./ManagedIdentity/set_managedidentity_rbac_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName
 
+#################
+# Batch
+#################
+if($deployBatch)
+{
+    ./Batch/create_batch_account_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName
+}
+else 
+{
+    Write-Host "Skipping Batch deployment" -ForegroundColor DarkBlue
+}
 
+########################################
+# Container Registry and Container Build
+########################################
+if($deployContainerRegistry)
+{
+    ./ContainerRegistry/create_container_registry_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix
+    ./ContainerRegistry/build_container_registry_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix
+}
 #################
 # AKS
 #################
 if($deployAks)
 {
-    ./create_aks_cluster.ps1 -prefix $resourcePrefix -resourceGroupName $resourceGroupName
+    ./Kubernetes/create_aks_cluster.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -includeContainerRegistry $deployContainerRegistry
+}
+else 
+{
+    Write-Host "Skipping AKS deployment" -ForegroundColor DarkBlue
+}
+
+#################
+# Container App
+#################
+if($deployContainerAppEnv)
+{
+    ./ContainerApp/create_containerapp_env_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName 
+
+}
+else 
+{
+    Write-Host "Skipping Container App environment deployment" -ForegroundColor DarkBlue
 }
 
 #################
@@ -60,84 +112,93 @@ if($deployAks)
 #################
 if($testDatabaseCount -gt 0)
 {
-    $unFile = Join-Path $outputPath "un.txt"
-    $pwFile = Join-Path $outputPath "pw.txt"
-
-    if(Test-Path $unFile)
-    {
-        $sqlUserName = (Get-Content -Path $unFile).Trim()
-        $sqlPassword = (Get-Content -Path $pwFile).Trim()
-    }
-
-    if([string]::IsNullOrWhiteSpace($sqlUserName))
-    {
-        $sqlUserName = -Join ((65..90) + (97..122) | Get-Random -Count 15 | % {[char]$_})
-
-        $AESKey = New-Object Byte[] 32
-        [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)
-        $sqlPassword = [System.Convert]::ToBase64String($AESKey);
-
-        $sqlUserName | Set-Content -Path $unFile
-        $sqlPassword | Set-Content -Path $pwFile
-    }
-
-    Write-Host "Creating Test databases. $testDatabaseCount per server" -ForegroundColor DarkGreen
-    $result = az deployment group create --resource-group $resourceGroupName --template-file azuredbdeploy.json --parameters namePrefix="$resourcePrefix" sqladminname="$sqlUserName" sqladminpassword="$sqlPassword" testDbCountPerServer=$testDatabaseCount
-
-    #Create local firewall rule
-    ./create_database_firewall_rule.ps1 -resourceGroupName $resourceGroupName
-
+   ./Database/create_databases_from_prefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path  $outputPath -testDatabaseCount $testDatabaseCount
 }
+else 
+{
+    Write-Host "Skipping Test database deployment" -ForegroundColor DarkBlue
+}
+
 
 #########################
 # Build Code?
 #########################
-if($build)
+if($build -and $deployBatch)
 {
-    ./build_and_upload_batch_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $resourcePrefix -path $outputPath
+    ./Batch/build_and_upload_batch_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -path $outputPath
 }
+else 
+{
+    Write-Host "Skipping code build" -ForegroundColor DarkBlue
+}
+
+
+#############################################################
+# Save the settings files and config files for the unit tests
+#############################################################
+$sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\net6.0\sbm.exe").Path
 
 ##########################
 # Add Secrets to Key Vault
 ##########################
-./add_secrets_to_keyvault_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $resourcePrefix
+./KeyVault/add_secrets_to_keyvault_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
 
 if($deployAks)
 {
     ##############################
     # Create AKS Key Vault configs
     ##############################
-    ./create_aks_keyvault_config_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $resourcePrefix
+    ./Kubernetes/create_aks_keyvault_config_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
 
     ##################################
     # Secrets and Runtime File for AKS
     ##################################
-    ./create_aks_secrets_and_runtime_files_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $resourcePrefix
+    ./Kubernetes/create_aks_secrets_and_runtime_files_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+
+    #############################################
+    # Copy sample K8s YAML files for test configs
+    #############################################
+    ./Kubernetes/create_aks_job_yaml_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+}
+
+#################################
+# Settings File for Container App
+#################################
+if($deployContainerAppEnv)
+{
+    # Create test file referencing the 
+    ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry 
+    if($deployContainerRegistry)
+    {
+        ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
+    }
 }
 
 #########################
 # Settings File for Batch
 #########################
-./create_batch_settingsfiles_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $resourcePrefix
-
+if($deployBatch)
+{
+    ./Batch/create_batch_settingsfiles_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+}
 #######################
 # Settings File for ACI
 #######################
-./create_aci_settingsfile_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $resourcePrefix
+if($includeAci)
+{
+    ./aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry 
+    if($deployContainerRegistry)
+    {
+        ./aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
+    }
+}
 
 #########################
 # Database override files
 #########################
 if($testDatabaseCount -gt 0)
 {
-    ./create_database_override_files.ps1 -path $outputPath -resourceGroupName $resourceGroupName
+    ./Database/create_database_override_files.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName
 }
 
-#############################################
-# Copy sample K8s YAML files for test configs
-#############################################
-Copy-Item kubernetes/sample_job.yaml (Join-Path $outputPath basic_job.yaml)
-Copy-Item kubernetes/sample_job_keyvault.yaml (Join-Path $outputPath basic_job_keyvault.yaml)
-
-
-Write-Host "COMPLETED! - Azure resources have been created." -ForegroundColor DarkGreen
+Write-Host "COMPLETED! - Azure resources have been created." -ForegroundColor DarkCyan

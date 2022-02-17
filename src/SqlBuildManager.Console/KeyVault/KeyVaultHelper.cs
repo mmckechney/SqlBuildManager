@@ -14,6 +14,7 @@ using SqlBuildManager.Console.CommandLine;
 using System.Linq;
 using Polly;
 using Azure.Messaging.ServiceBus.Administration;
+using SqlBuildManager.Console.Aad;
 
 namespace SqlBuildManager.Console.KeyVault
 {
@@ -28,24 +29,6 @@ namespace SqlBuildManager.Console.KeyVault
         public const string Password = "Password";
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static TokenCredential _tokenCred = null;
-        internal static TokenCredential TokenCredential
-        {
-            get
-            {
-                if (_tokenCred == null)
-
-                {
-                    _tokenCred = new ChainedTokenCredential(
-                        new ManagedIdentityCredential(), 
-                        new AzureCliCredential(), 
-                        new AzurePowerShellCredential(), 
-                        new VisualStudioCredential(),
-                        new VisualStudioCodeCredential());
-                }
-                return _tokenCred;
-            }
-        }
 
         private static SecretClient _secretClient = null;
         internal static SecretClient SecretClient(string keyVaultName)
@@ -53,7 +36,7 @@ namespace SqlBuildManager.Console.KeyVault
 
             if(_secretClient == null)
             {
-                var cred = KeyVaultHelper.TokenCredential;
+                var cred = AadHelper.TokenCredential;
                 string keyVaultUrl = $"https://{keyVaultName}.vault.azure.net/";
                 _secretClient = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: cred);
             }

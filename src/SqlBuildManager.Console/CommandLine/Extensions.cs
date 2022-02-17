@@ -162,6 +162,7 @@ namespace SqlBuildManager.Console.CommandLine
 
         public static Option<T> Copy<T>(this Option<T> opt, bool required)
         {
+
             var aliases = opt.Aliases.ToArray();
             Option<T> newOpt = new Option<T>(aliases, opt.Description);
             //newOpt.Name = opt.Name;

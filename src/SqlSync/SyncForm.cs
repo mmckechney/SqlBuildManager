@@ -41,12 +41,6 @@ namespace SqlSync
 		private System.ComponentModel.IContainer components;
 		private System.Windows.Forms.SaveFileDialog saveAutoScriptFileDialog1;
 		private System.Windows.Forms.MenuStrip mainMenu1;
-		private System.Windows.Forms.ToolStripMenuItem mnuCompareTables;
-		private System.Windows.Forms.ToolStripMenuItem mnuCompareViews;
-		private System.Windows.Forms.ToolStripMenuItem mnuCompareStoredProcs;
-		private System.Windows.Forms.ToolStripMenuItem mnuCompareFunctions;
-		private System.Windows.Forms.ToolStripMenuItem mnuCompareUsers;
-		private System.Windows.Forms.ToolStripMenuItem mnuServerLogins;
 		private System.Windows.Forms.ToolStripMenuItem menuItem2;
 		private System.Windows.Forms.ToolStripMenuItem mnuChangeConnection;
 		private System.Windows.Forms.ToolStripMenuItem menuItem3;
@@ -168,13 +162,6 @@ namespace SqlSync
             this.mnuLookUpTables = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuSqlBuildManager = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuDataDump = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuComparisons = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuCompareTables = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuCompareViews = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuCompareStoredProcs = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuCompareFunctions = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuCompareUsers = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuServerLogins = new System.Windows.Forms.ToolStripMenuItem();
             this.bgScripting = new System.ComponentModel.BackgroundWorker();
             this.settingsControl1 = new SqlSync.SettingsControl();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -457,62 +444,7 @@ namespace SqlSync
             this.mnuDataDump.Text = "Open Data Extraction";
             this.mnuDataDump.Visible = false;
             this.mnuDataDump.Click += new System.EventHandler(this.mnuDataDump_Click);
-            // 
-            // mnuComparisons
-            // 
-            this.mnuComparisons.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuCompareTables,
-            this.mnuCompareViews,
-            this.mnuCompareStoredProcs,
-            this.mnuCompareFunctions,
-            this.mnuCompareUsers,
-            this.mnuServerLogins});
-            this.mnuComparisons.Enabled = false;
-            this.mnuComparisons.Name = "mnuComparisons";
-            this.mnuComparisons.Size = new System.Drawing.Size(89, 20);
-            this.mnuComparisons.Text = "&Comparisons";
-            // 
-            // mnuCompareTables
-            // 
-            this.mnuCompareTables.Name = "mnuCompareTables";
-            this.mnuCompareTables.Size = new System.Drawing.Size(233, 22);
-            this.mnuCompareTables.Text = "&Tables (with Keys and Indexes)";
-            this.mnuCompareTables.Click += new System.EventHandler(this.mnuCompareTables_Click);
-            // 
-            // mnuCompareViews
-            // 
-            this.mnuCompareViews.Name = "mnuCompareViews";
-            this.mnuCompareViews.Size = new System.Drawing.Size(233, 22);
-            this.mnuCompareViews.Text = "&Views";
-            this.mnuCompareViews.Click += new System.EventHandler(this.mnuCompareViews_Click);
-            // 
-            // mnuCompareStoredProcs
-            // 
-            this.mnuCompareStoredProcs.Name = "mnuCompareStoredProcs";
-            this.mnuCompareStoredProcs.Size = new System.Drawing.Size(233, 22);
-            this.mnuCompareStoredProcs.Text = "&Stored Procedures";
-            this.mnuCompareStoredProcs.Click += new System.EventHandler(this.mnuCompareStoredProcs_Click);
-            // 
-            // mnuCompareFunctions
-            // 
-            this.mnuCompareFunctions.Name = "mnuCompareFunctions";
-            this.mnuCompareFunctions.Size = new System.Drawing.Size(233, 22);
-            this.mnuCompareFunctions.Text = "&User Defined Functions";
-            this.mnuCompareFunctions.Click += new System.EventHandler(this.mnuCompareFunctions_Click);
-            // 
-            // mnuCompareUsers
-            // 
-            this.mnuCompareUsers.Name = "mnuCompareUsers";
-            this.mnuCompareUsers.Size = new System.Drawing.Size(233, 22);
-            this.mnuCompareUsers.Text = "&Database Users";
-            this.mnuCompareUsers.Click += new System.EventHandler(this.mnuCompareUsers_Click);
-            // 
-            // mnuServerLogins
-            // 
-            this.mnuServerLogins.Name = "mnuServerLogins";
-            this.mnuServerLogins.Size = new System.Drawing.Size(233, 22);
-            this.mnuServerLogins.Text = "Server &Logins";
-            this.mnuServerLogins.Click += new System.EventHandler(this.mnuServerLogins_Click);
+
             // 
             // bgScripting
             // 
@@ -685,75 +617,6 @@ namespace SqlSync
 			ddScriptType.SelectedIndex = 0;
 		}
 
-		private void ShowComparisonForm(ObjectSyncData[] syncData)
-		{
-			if(syncData != null)
-			{
-				statStatus.Text = "Initilizing Database to File System Object Comparison";
-				ObjectComparison frmCompare = new ObjectComparison(syncData,ref helper);
-				frmCompare.ShowDialog();
-				statStatus.Text = "Ready.";
-
-			}
-			else
-			{
-				statStatus.Text = "Comparison failed. Please try to reconnect to the database";
-			}
-		}
-
-
-
-
-
-
-		
-		#region ## Comparison Menu Items ##
-		private void mnuServerLogins_Click(object sender, System.EventArgs e)
-		{
-			InitilizeHelperClass();
-			ObjectSyncData[] data =  helper.CompareServerLogins(this.settingsControl1.Project);
-			ShowComparisonForm(data);
-		}
-
-		private void mnuCompareFunctions_Click(object sender, System.EventArgs e)
-		{
-			InitilizeHelperClass();
-			ObjectSyncData[] data =  helper.CompareUserDefinedFunctions(this.settingsControl1.Project);
-			ShowComparisonForm(data);
-		}
-
-		private void mnuCompareUsers_Click(object sender, System.EventArgs e)
-		{
-			InitilizeHelperClass();
-			ObjectSyncData[] data =  helper.CompareDatabaseUsers(this.settingsControl1.Project);
-			ShowComparisonForm(data);
-		}
-
-		private void mnuCompareTables_Click(object sender, System.EventArgs e)
-		{
-			InitilizeHelperClass();
-			ObjectSyncData[] data =  helper.CompareTableObjects(this.settingsControl1.Project);
-			ShowComparisonForm(data);
-
-		}
-
-		private void mnuCompareViews_Click(object sender, System.EventArgs e)
-		{
-			InitilizeHelperClass();
-			ObjectSyncData[] data =  helper.CompareViews(this.settingsControl1.Project);
-			ShowComparisonForm(data);
-		}
-
-		private void mnuCompareStoredProcs_Click(object sender, System.EventArgs e)
-		{
-			InitilizeHelperClass();
-			ObjectSyncData[] data =  helper.CompareStoredProcs(this.settingsControl1.Project);
-			ShowComparisonForm(data);
-
-		}
-
-		#endregion
-
 		#region ## Action Menu Items ##
 		private void mnuChangeConnection_Click(object sender, System.EventArgs e)
 		{
@@ -840,7 +703,6 @@ namespace SqlSync
 			this.connData.DatabaseName = ddDatabase.SelectedItem.ToString();
 			if(this.settingsControl1.Project != "(Select Destination)")
 			{
-				this.mnuCompareFunctions.Enabled = true;
 				this.grpScripting.Enabled = true;
 			}
 
@@ -863,7 +725,7 @@ namespace SqlSync
 
 				if(ddDatabase.SelectedItem != null)
 				{
-					mnuComparisons.Enabled = true;
+					//mnuComparisons.Enabled = true;
 					grpScripting.Enabled = true;
 				}
 			}

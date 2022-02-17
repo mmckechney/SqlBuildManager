@@ -44,7 +44,7 @@ sbm aci savesettings --aciname "<ACI Name>" --acirg "<ACI resource group>" --ide
 
 You can automate they collection and saving of secrets with the included PowerShell script:
 
-- [create_aci_settingsfile.ps1](../scripts/templates/create_aci_settingsfile.ps1) - saves secrets to Key Vault and creates the settings JSON file for you.
+- [create_aci_settingsfile.ps1](../scripts/templates/aci/create_aci_settingsfile.ps1) - saves secrets to Key Vault and creates the settings JSON file for you.
 
 ``` PowerShell
 #Collects resource keys, saves them to Key Vault and creates settings file

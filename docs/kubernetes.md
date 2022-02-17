@@ -36,15 +36,15 @@ It is recommended that you can create the resources via the included PowerShell 
 
 ### Basic Overview
 
-The standard deployment definition for SQL Build Manger (see [sample_deployment.yaml](../scripts/templates/kubernetes/sample_deployment.yaml)) mounts two volumes - one for [secrets](../scripts/templates/kubernetes/sample_secrets.yaml) named `sbm` and one for [runtime configuration](../scripts/templates/kubernetes/sample_runtime_configmap.yaml) named `runtime`. The secrets files contains the Base64 encoded values for your connection strings and passwords while the runtime configuration contains the parameters that will be used to execute the build. Both of these should be deployed to Kubernetes prior to creating your pods. You can easily create the full `secrets.yaml` file and a template of your `runtime.yaml` file by using the following command. You can instead use [create_aks_secrets_and_runtime_files.ps1](../scripts/templates/create_aks_secrets_and_runtime_files.ps1) to automate the collection of secrets and creation of these files. Before you `kubetcl apply` the `runtime.yaml` file, you will need to add the `PackageName` and `JobName` values - this can be done for you with the [`sbm prep` command below](#2-upload-your-sbm-package-file-to-your-storage-account)
+The standard deployment definition for SQL Build Manger (see [sample_deployment.yaml](../scripts/templates/kubernetes/sample_deployment.yaml)) mounts two volumes - one for [secrets](../scripts/templates/kubernetes/sample_secrets.yaml) named `sbm` and one for [runtime configuration](../scripts/templates/kubernetes/sample_runtime_configmap.yaml) named `runtime`. The secrets files contains the Base64 encoded values for your connection strings and passwords while the runtime configuration contains the parameters that will be used to execute the build. Both of these should be deployed to Kubernetes prior to creating your pods. You can easily create the full `secrets.yaml` file and a template of your `runtime.yaml` file by using the following command. You can instead use [create_aks_secrets_and_runtime_files.ps1](../scripts/templates/kubernetes/create_aks_secrets_and_runtime_files.ps1) to automate the collection of secrets and creation of these files. Before you `kubetcl apply` the `runtime.yaml` file, you will need to add the `PackageName` and `JobName` values - this can be done for you with the [`sbm prep` command below](#2-upload-your-sbm-package-file-to-your-storage-account)
 
 ``` bash
 sbm k8s savesettings  -u "<sql username>" -p <sql password> --storageaccountname "<storage acct name>" --storageaccountkey "<storage acct key>"  -eh "<event hub connection string>" -sb "<service bus topic connection string>"--concurrency "<int value>" --concurrencytype "<Count|Server|MaxServer>"
 ```
 
-If you plan on leveraging Azure Key Vault to manage your secrets, you can skip the `sbm k8s savesettings` step. Instead, you should run these two PowerShell scripts to create the two Kubernetes config files and to save the secrets to Key Vault. 
-- [create_aks_keyvault_config.ps1](../scripts/templates/create_aks_keyvault_config.ps1) - to create `podIdentityAndBinding.yaml` and `secretProviderClass.yaml` 
-- [add_secrets_to_keyvault.ps1](../scripts/templates/add_secrets_to_keyvault.ps1) - save secrets to Azure Key Vault
+If you plan on leveraging Azure Key Vault to manage your secrets, you can skip the `sbm k8s savesettings` step. Instead, you should run these two PowerShell scripts to create the two Kubernetes config files and to save the secrets to Key Vault.
+- [create_aks_keyvault_config.ps1](../scripts/templates/kubernetes/create_aks_keyvault_config.ps1) - to create `podIdentityAndBinding.yaml` and `secretProviderClass.yaml` 
+- [add_secrets_to_keyvault.ps1](../scripts/templates/KeyVault/add_secrets_to_keyvault.ps1) - save secrets to Azure Key Vault
 
 ``` PowerShell
 #create the config files, with the appropriate settings added

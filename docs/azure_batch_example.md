@@ -8,7 +8,7 @@ az login
 ```
 
 ## 1. Save your batch settings to a `--settingsfile`
-This only needs to be run once and this file can be reused for future builds as long as you don't change any keys or passwords. By creating this file now, you greatly simplify the subsequent commands. If you include the `--keyvault` option, the secrets will be saved in Azure Key vault and not the settings file. You can also simplify the collection of the various keys and connection strings and saving by using the PowerShell script [create_batch_settingsfiles.ps1](../scripts/templates/create_batch_settingsfiles.ps1)
+This only needs to be run once and this file can be reused for future builds as long as you don't change any keys or passwords. By creating this file now, you greatly simplify the subsequent commands. If you include the `--keyvault` option, the secrets will be saved in Azure Key vault and not the settings file. You can also simplify the collection of the various keys and connection strings and saving by using the PowerShell script [create_batch_settingsfiles.ps1](../scripts/templates/Batch/create_batch_settingsfiles.ps1)
 
 Replace the sample values with your own account values and keys
 

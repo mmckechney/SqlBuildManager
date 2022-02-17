@@ -31,6 +31,11 @@ namespace SqlBuildManager.Console.CloudStorage
             return $"DefaultEndpointsProtocol=https;AccountName={storageAccountName};AccountKey={storageAccountKey};EndpointSuffix=core.windows.net";
         }
 
+        internal static bool ConsolidateLogFiles(string storageAccountName, string storageAccountKey, string outputContainerName, List<string> workerFiles)
+        {
+            var client = CreateStorageClient(storageAccountName, storageAccountKey);
+            return ConsolidateLogFiles(client,outputContainerName, workerFiles);
+        }
         internal static bool ConsolidateLogFiles(BlobServiceClient storageSvcClient, string outputContainerName, List<string> workerFiles)
         {
             workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql", "execution.log", "csv" });
@@ -172,14 +177,14 @@ namespace SqlBuildManager.Console.CloudStorage
                 cmdLine.BatchJobName = cmdLine.BatchArgs.BatchJobName.ToLower();
                 if (cmdLine.BatchArgs.BatchJobName.Length < 3 || cmdLine.BatchArgs.BatchJobName.Length > 41 || !Regex.IsMatch(cmdLine.BatchArgs.BatchJobName, @"^[a-z0-9]+(-[a-z0-9]+)*$"))
                 {
-                    throw new ArgumentException("The job name must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'");
+                    throw new ArgumentException($"The job name must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'. Value provided: '{cmdLine.JobName}'");
                 }
                 jobId = cmdLine.BatchArgs.BatchJobName;
                 storageContainerName = cmdLine.BatchArgs.BatchJobName + "-" + jobToken; ;
             }
             else
             {
-                throw new ArgumentException("The job name is required and must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'");
+                throw new ArgumentException("The job name is required and must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'. No Value provided!");
             }
 
             return (jobId, storageContainerName);
@@ -282,7 +287,7 @@ namespace SqlBuildManager.Console.CloudStorage
 
             return ResourceFile.FromUrl(blobSasUri, blobName, null);
         }
-        internal static bool CombineBatchQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
+        internal static bool CombineQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
         {
             bool hadErrors = false;
             log.LogInformation("Consolidating Query output files...");

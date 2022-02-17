@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Text.Json;
 using System.Linq;
+using SqlBuildManager.Console.Shared;
+using SqlBuildManager.Console.Aad;
 
 namespace SqlBuildManager.Console.Aci
 {
@@ -20,49 +22,25 @@ namespace SqlBuildManager.Console.Aci
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static string KeyVaultName = "Sbm_KeyVaultName";
-        private static string JobName = "Sbm_JobName";
-        private static string PackageName = "Sbm_PackageName";
-        private static string Concurrency = "Sbm_Concurrency";
-        private static string ConcurrencyType = "Sbm_ConcurrencyType";
-        private static string DacpacName = "Sbm_DacpacName";
-
         private static string GetAciResourceId(string subscriptionId, string resourceGroupName, string aciName)
         {
             return $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerInstance/containerGroups/{aciName}";
         }
-        private static TokenCredential _tokenCred = null;
-        internal static TokenCredential TokenCredential
-        {
-            get
-            {
-                if (_tokenCred == null)
-
-                {
-                    _tokenCred = new ChainedTokenCredential(
-                        new ManagedIdentityCredential(),
-                        new AzureCliCredential(),
-                        new AzurePowerShellCredential(),
-                        new VisualStudioCredential(),
-                        new VisualStudioCodeCredential(),
-                        new InteractiveBrowserCredential());
-                }
-                return _tokenCred;
-            }
-        }
+        
 
         private static ResourcesManagementClient _resourceClient = null;
         internal static ResourcesManagementClient ResourceClient(string subscriptionId)
         {
             if (_resourceClient == null)
             {
-                _resourceClient = new ResourcesManagementClient(subscriptionId, AciHelper.TokenCredential);
+                _resourceClient = new ResourcesManagementClient(subscriptionId, AadHelper.TokenCredential); ;
             }
             return _resourceClient;
         }
             
         internal static string CreateAciArmTemplate(CommandLineArgs cmdLine)
         {
+            //TODO: Accomodate custom container repositories
             string exePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
             string pathToTemplates = Path.Combine(exePath, "Aci");
             string template = File.ReadAllText(Path.Combine(pathToTemplates, "aci_arm_template.json"));
@@ -76,7 +54,7 @@ namespace SqlBuildManager.Console.Aci
             for(int i=0;i<cmdLine.AciArgs.ContainerCount;i++)
             {
                 var tmpContainer = containerTemplate.Replace("{{counter}}", i.ToString().PadLeft(padding, '0'));
-                tmpContainer = tmpContainer.Replace("{{tag}}", cmdLine.AciArgs.ContainerTag);
+                tmpContainer = tmpContainer.Replace("{{tag}}", cmdLine.ContainerRegistryArgs.ImageTag);
                 tmpContainer = tmpContainer.Replace("{{keyVaultName}}", cmdLine.ConnectionArgs.KeyVaultName);
                 tmpContainer = tmpContainer.Replace("{{dacpacName}}", Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac));
                 tmpContainer = tmpContainer.Replace("{{jobname}}", cmdLine.JobName);
@@ -94,15 +72,15 @@ namespace SqlBuildManager.Console.Aci
 
         internal static CommandLineArgs ReadRuntimeEnvironmentVariables(CommandLineArgs cmdLine)
         {
-            cmdLine.KeyVaultName = Environment.GetEnvironmentVariable(AciHelper.KeyVaultName);
-            cmdLine.JobName = Environment.GetEnvironmentVariable(AciHelper.JobName);
-            cmdLine.BuildFileName = Environment.GetEnvironmentVariable(AciHelper.PackageName);
-            cmdLine.PlatinumDacpac = Environment.GetEnvironmentVariable(AciHelper.DacpacName);
-            if (int.TryParse(Environment.GetEnvironmentVariable(AciHelper.Concurrency), out int c))
+            cmdLine.KeyVaultName = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
+            cmdLine.JobName = Environment.GetEnvironmentVariable(ContainerEnvVariables.JobName);
+            cmdLine.BuildFileName = Environment.GetEnvironmentVariable(ContainerEnvVariables.PackageName);
+            cmdLine.PlatinumDacpac = Environment.GetEnvironmentVariable(ContainerEnvVariables.DacpacName);
+            if (int.TryParse(Environment.GetEnvironmentVariable(ContainerEnvVariables.Concurrency), out int c))
             {
                 cmdLine.Concurrency = c;
             }
-            if(Enum.TryParse<ConcurrencyType>(Environment.GetEnvironmentVariable(AciHelper.ConcurrencyType), out ConcurrencyType ct))
+            if(Enum.TryParse<ConcurrencyType>(Environment.GetEnvironmentVariable(ContainerEnvVariables.ConcurrencyType), out ConcurrencyType ct))
             {
                 cmdLine.ConcurrencyType = ct;
             }

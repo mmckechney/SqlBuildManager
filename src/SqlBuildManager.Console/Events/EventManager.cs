@@ -3,16 +3,18 @@ using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Processor;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using SqlBuildManager.Logging.Threaded;
 using SqlBuildManager.Interfaces.Console;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace SqlBuildManager.Console.Events
 {
-    public class EventManager
+    public class EventManager : IDisposable
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private string eventHubconnectionString = "";
@@ -20,10 +22,25 @@ namespace SqlBuildManager.Console.Events
         private string storageConnectionString = "";
         private string jobName = "";
         private string consumerGroup = EventHubConsumerClient.DefaultConsumerGroupName;
+        private DateTime utcMonitorStart = DateTime.UtcNow;
 
-        public int DatabaseCommits { get; set; } = 0;
-        public int DatabaseErrors { get; set; } = 0;
+        private int databaseCommitMessages = 0;
+        private int databaseErrorMessages = 0;
+        private int eventsScanned = 0;
 
+
+        private void IncrementDatabaseCommitMessages()
+        {
+            Interlocked.Increment(ref databaseCommitMessages);
+        }
+        private void IncrementDatabaseErrorsMessages()
+        {
+            Interlocked.Increment(ref databaseErrorMessages);
+        }
+        private void IncrementEventsScanned()
+        {
+            Interlocked.Increment(ref eventsScanned);
+        }
         public bool StreamEvents { get;set; } = false;
 
         public EventManager(string eventHubconnectionString, string storageConnectionString, string storageContainerName, string jobName)
@@ -41,7 +58,8 @@ namespace SqlBuildManager.Console.Events
             {
                 if(_blobClient == null)
                 {
-                    _blobClient = new BlobContainerClient(storageConnectionString, storageContainerName);
+                    _blobClient = new BlobContainerClient(storageConnectionString, "eventhubcheckpoint");
+                    _blobClient.CreateIfNotExistsAsync().Wait();
                 }
                 return _blobClient;
             }
@@ -52,55 +70,120 @@ namespace SqlBuildManager.Console.Events
         {
             get
             {
+
                 if (_eventClient == null)
                 {
                     _eventClient = new EventProcessorClient(this.BlobClient, consumerGroup, eventHubconnectionString);
                     _eventClient.ProcessEventAsync += ProcessEventHandler;
                     _eventClient.ProcessErrorAsync += ProcessErrorHandler;
+                    //Tip to future self.. don't checkpoint the handler, use the time stamp.
+                    //This is in case there are more than one instance of the app running at the same time
+                    _eventClient.PartitionInitializingAsync += InitializeEventHandler;
                 }
                 return _eventClient;
             }
         }
-        public (int, int) GetCommitAndErrorCounts()
+        public (int, int,int) GetCommitErrorAndScannedCounts()
         {
-            return (this.DatabaseCommits, this.DatabaseErrors);
+            return (this.databaseCommitMessages, this.databaseErrorMessages, this.eventsScanned);
+        }
+
+        private Task InitializeEventHandler(PartitionInitializingEventArgs args)
+        {
+            try
+            {
+                if (args.CancellationToken.IsCancellationRequested)
+                {
+                    return Task.CompletedTask;
+                }
+
+               log.LogDebug($"Initialize EventHub partition: { args.PartitionId } from EnqueueTime {utcMonitorStart}");
+
+                // If no checkpoint was found, start processing events enqueued now -5 minutes or in the future.
+                // This should be the case -- rely on timestamp, not a checkpoint to ensure nothing is missed across multiple instances
+                EventPosition startPositionWhenNoCheckpoint = EventPosition.FromEnqueuedTime(utcMonitorStart);
+                args.DefaultStartingPosition = startPositionWhenNoCheckpoint;
+            }
+            catch
+            {
+            }
+
+            return Task.CompletedTask;
         }
         private Task ProcessErrorHandler(ProcessErrorEventArgs eventArgs)
         {
-            // Write details about the error to the console window
-            log.LogError($"\tPartition '{ eventArgs.PartitionId}': an unhandled exception was encountered. This was not expected to happen.");
-            log.LogError(eventArgs.Exception.Message);
+            try
+            {
+                // Write details about the error to the console window
+                log.LogError($"\tPartition '{ eventArgs.PartitionId}': an unhandled exception was encountered. This was not expected to happen.");
+                log.LogError(eventArgs.Exception.Message);
+            }
+            catch(Exception exe)
+            {
+                log.LogError($"Failure to process event error args: {exe.Message}");
+            }
             return Task.CompletedTask;
         }
 
-        private async Task ProcessEventHandler(ProcessEventArgs eventArgs)
+        private Task ProcessEventHandler(ProcessEventArgs eventArgs)
         {
-            var msg = JsonSerializer.Deserialize<EventHubMessageFormat>(Encoding.UTF8.GetString(eventArgs.Data.Body.ToArray()));
-            //log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}{msg.Properties.LogMsg.DatabaseName}");
-            if (!string.IsNullOrWhiteSpace(msg.Properties.LogMsg.JobName) && msg.Properties.LogMsg.JobName.ToLower() == this.jobName.ToLower())
+            try
             {
-                switch(msg.Properties.LogMsg.LogType)
+                this.IncrementEventsScanned();
+                var msg = JsonSerializer.Deserialize<EventHubMessageFormat>(Encoding.UTF8.GetString(eventArgs.Data.Body.ToArray()));
+                //log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}{msg.Properties.LogMsg.DatabaseName}");
+                if (!string.IsNullOrWhiteSpace(msg.Properties.LogMsg.JobName) && msg.Properties.LogMsg.JobName.ToLower() == this.jobName.ToLower())
                 {
-                    case LogType.Commit:
-                        if(this.StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(13)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
-                        this.DatabaseCommits++;
-                        break;
-                    case LogType.Error:
-                        if(this.StreamEvents) log.LogError($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(13)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
-                        this.DatabaseErrors++;
-                        break;
+                    switch (msg.Properties.LogMsg.LogType)
+                    {
+                        case LogType.Commit:
+                            if (this.StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(13)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
+                            this.IncrementDatabaseCommitMessages();
+                            break;
+                        case LogType.Error:
+                            if (this.StreamEvents) log.LogError($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(13)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
+                            this.IncrementDatabaseErrorsMessages();
+                            break;
+                    }
                 }
+
             }
-            // Update checkpoint in the blob storage so that the app receives only new events the next time it's run
-            await eventArgs.UpdateCheckpointAsync(eventArgs.CancellationToken);
+            catch (Exception exe)
+            {
+                log.LogError($"Failure to process event message: {exe.Message}");
+            }
+            return Task.CompletedTask;
         }
 
-        public Task MonitorEventHub(bool stream)
+        public Task MonitorEventHub(bool stream, DateTime? monitorUtcStart, CancellationToken cancellationToken)
         {
+
+            if (!monitorUtcStart.HasValue)
+            {
+                utcMonitorStart = DateTime.UtcNow.AddMinutes(-5);
+            }else
+            {
+                utcMonitorStart = monitorUtcStart.Value;
+            }
             this.StreamEvents = stream;
             // Start the processing
-            return this.EventClient.StartProcessingAsync();
+            return this.EventClient.StartProcessingAsync(cancellationToken);
 
+        }
+
+        public void Dispose()
+        {
+            if(this._eventClient != null)
+            {
+                this._eventClient.StopProcessing();
+                this._eventClient.ProcessEventAsync -= ProcessEventHandler;
+                this._eventClient.ProcessErrorAsync -= ProcessErrorHandler;
+                this._eventClient = null;
+            }
+            if(this._blobClient != null)
+            {
+                this._blobClient = null;
+            }
         }
     }
 }

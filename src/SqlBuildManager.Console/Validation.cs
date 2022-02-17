@@ -485,5 +485,125 @@ namespace SqlBuildManager.Console
             return 0;
         }
 
+        public static List<string> ValidateContainerAppArgs(CommandLineArgs cmdLine)
+        {
+
+            List<string> messages = new List<string>();
+            if (String.IsNullOrEmpty(cmdLine.ContainerAppArgs.EnvironmentName))
+            {
+                messages.Add("--environmentname is required in command line or --settingsfile");
+            }
+            if (String.IsNullOrEmpty(cmdLine.ContainerRegistryArgs.ImageTag))
+            {
+                messages.Add("--imaagetag is required in command line or --settingsfile");
+            }
+            if (String.IsNullOrEmpty(cmdLine.ContainerRegistryArgs.ImageName))
+            {
+                messages.Add("--imagename is required in command line or --settingsfile");
+            }
+            if (String.IsNullOrEmpty(cmdLine.ContainerAppArgs.SubscriptionId))
+            {
+                messages.Add("--subscriptionid is required in command line or --settingsfile");
+            }
+            if (String.IsNullOrEmpty(cmdLine.ContainerAppArgs.ResourceGroup))
+            {
+                messages.Add("--resourcegroup is required in command line or --settingsfile");
+            }
+            if (String.IsNullOrEmpty(cmdLine.ContainerAppArgs.Location))
+            {
+                messages.Add("--location is required in command line or --settingsfile");
+            }
+
+            messages.AddRange(Validation.ValidateUserNameAndPasswordArgs(cmdLine));
+            messages.AddRange(Validation.ValidateStorageAccountArgs(cmdLine));
+            messages.AddRange(Validation.ValidateServiceBusAndEventHubArgs(cmdLine));
+
+            return messages;
+
+        }
+
+        public static List<string> ValidateAciAppArgs(CommandLineArgs cmdLine)
+        {
+            List<string> messages = new List<string>();
+            if (string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName))
+            {
+                messages.Add("--aciname is required in command line or --settingsfile");
+            }
+            if(string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup))
+            {
+                messages.Add("--resourcegroup is required in command line or --settingsfile");
+            }
+            if(string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
+            {
+                messages.Add("--identityname is required in command line or --settingsfile");
+            }
+            if(cmdLine.AciArgs.ContainerCount == 0)
+            {
+                messages.Add("--containercount is required in command line or --settingsfile");
+              }
+
+            if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.ImageTag))
+            {
+                messages.Add("--imagetag is required in command line or --settingsfile");
+            }
+            return messages;
+        }
+
+        public static List<string> ValidateStorageAccountArgs(CommandLineArgs cmdLine)
+        {
+            List<string> messages = new List<string>();
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
+            {
+                messages.Add("--storageaccountname is required in command line or --settingsfile");
+             }
+            
+            if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            {
+                messages.Add("--storageaccountkey is required in command line or --settingsfile");
+            }
+
+            return messages;
+        }
+        public static List<string> ValidateUserNameAndPasswordArgs(CommandLineArgs cmdLine)
+        {
+            List<string> messages = new List<string>();
+
+            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.AzureADPassword || cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.Password)
+            {
+                if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+                {
+                    messages.Add("The --username and --password arguments are required when authentication type is set to Password or AzurePassword.");
+                }
+            }
+
+            //Validate that if username or password is specified, then both are
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+            {
+                if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+                {
+                    messages.Add("The --username and --password arguments must be used together in command line or --settingsfile.");
+                }
+            }
+
+            return messages;
+        }
+
+        public static List<string> ValidateServiceBusAndEventHubArgs(CommandLineArgs cmdLine)
+        {
+            List<string> messages = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                messages.Add("--servicebustopicconnection is required in command line or --settingsfile");
+            }
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
+            {
+                messages.Add("--eventhubconnection is required in command line or --settingsfile");
+            }
+
+            return messages;
+        }
+
+        
     }
 }

@@ -6,6 +6,10 @@ param
 
 $batchAccountName = $prefix + "batchacct"
 $storageAccountName = $prefix + "storage"
+if("" -eq $resourceGroupName)
+{
+    $resourceGroupName = "$prefix-rg"
+}
 
 $batchAcctKey  = az batch account keys list --name $batchAccountName --resource-group $resourceGroupName -o tsv --query 'primary'
 $batchAcctEndpoint = az batch account show --name $batchAccountName --resource-group $resourceGroupName -o tsv --query "accountEndpoint"
@@ -13,7 +17,7 @@ $storageAcctKey = (az storage account keys list --account-name $storageAccountNa
 
 $sbNamespaceName = $prefix + "servicebus"
 
-Write-Host "Retrieveing list of completed Batch jobs for $batchAccountName "
+Write-Host "Retrieving list of completed Batch jobs for $batchAccountName "
 $jobs = az batch job list --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey -o tsv --query "[?contains(@.state 'completed')].id"
 foreach ($job in $jobs) {
    
@@ -26,7 +30,7 @@ foreach ($job in $jobs) {
     az storage container delete --name $storageContainerName --auth-mode key --account-key "$storageAcctKey" --account-name $storageAccountName
     
 }
-
+Write-Host "Cleaning up old Service Bus Topic subscriptions from $sbNamespaceName"
 $subs = (az servicebus topic subscription list -g $resourceGroupName --namespace-name $sbNamespaceName --topic-name "sqlbuildmanager" ) | ConvertFrom-Json -AsHashtable
 if($null -ne $subs)
 {

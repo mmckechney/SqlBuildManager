@@ -19,7 +19,7 @@ namespace SqlSync.Connection
         }
       
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public static string appName = "Application Name=Sql Build Manager v{0} [{1}];";
+        public static string appName = "Sql Build Manager v{0} [{1}];";
         static ConnectionHelper()
         {
             string version;
@@ -28,7 +28,7 @@ namespace SqlSync.Connection
             else
                 version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-            appName = string.Format($"Application Name=Sql Build Manager v{version} [{System.Environment.UserName}];");
+            appName = string.Format($"Sql Build Manager v{version} [{System.Environment.UserName}];");
         }
         public static SqlConnection GetConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut)
         {
@@ -78,6 +78,7 @@ namespace SqlSync.Connection
             {
                 case AuthenticationType.Windows:
                     builder.IntegratedSecurity = true;
+                    builder.TrustServerCertificate = true;
                     break;
                 case AuthenticationType.AzureADIntegrated:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryIntegrated;

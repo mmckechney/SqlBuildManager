@@ -1,9 +1,9 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/runtime:6.0.0-rc.1-focal AS base
+FROM mcr.microsoft.com/dotnet/runtime:6.0.2-focal AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.100-rc.1-focal AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.102-focal AS build
 WORKDIR /src
 COPY ["SqlBuildManager.Console/sbm.csproj", "SqlBuildManager.Console/"]
 COPY ["SqlBuildManager.Enterprise/SqlBuildManager.Enterprise.csproj", "SqlBuildManager.Enterprise/" ]
@@ -13,17 +13,18 @@ COPY ["SqlSync.Connection/SqlSync.Connection.csproj", "SqlSync.Connection/" ]
 COPY ["SqlSync.Constants/SqlSync.Constants.csproj", "SqlSync.Constants/" ]
 COPY ["SqlSync.DbInformation/SqlSync.DbInformation.csproj", "SqlSync.DbInformation/" ]
 COPY ["SqlSync.ObjectScript/SqlSync.ObjectScript.csproj", "SqlSync.ObjectScript/" ]
-COPY ["SqlSync.SqlBuild/SqlSync.SqlBuild.csproj", "SqlSync.SqlBuild/" ]
+COPY ["SqlSync.SqlBuild/SQLSync.SqlBuild.csproj", "SqlSync.SqlBuild/" ]
+COPY ["SqlSync.SqlBuild/SQLSync.SqlBuild.csproj", "SqlSync.SqlBuild/SqlSync.SqlBuild.csproj" ]
 COPY ["SqlBuildManager.ScriptHandling/SqlBuildManager.ScriptHandling.csproj", "SqlBuildManager.ScriptHandling/"]
 RUN dotnet restore "SqlBuildManager.Console/sbm.csproj"
 
 
 COPY . .
 WORKDIR "/src/SqlBuildManager.Console"
-RUN dotnet build "sbm.csproj" --configuration Release -f net5.0 -o /app/build -r linux-x64 
+RUN dotnet build "sbm.csproj" --configuration Release -f net6.0 -o /app/build -r linux-x64 
 
 FROM build AS publish
-RUN dotnet publish "sbm.csproj" --configuration Release -f net5.0 -o /app/publish -r linux-x64  
+RUN dotnet publish "sbm.csproj" --configuration Release -f net6.0 -o /app/publish -r linux-x64  
 
 FROM base AS final
 WORKDIR /app

@@ -1,6 +1,6 @@
 # Massively Parallel Database Builds
 
-If you have a fleet of databases to update, it could take a very long time to run your build on a single machine - even if you leverage the threaded model. To solve this problem, SQL Build Manager offers three ways to parallelize database builds across many compute nodes: [Azure Batch](azure_batch.md),  [Kubernetes](kubernetes.md) and [Azure Container Instances (ACI)](aci.md).
+If you have a fleet of databases to update, it could take a very long time to run your build on a single machine - even if you leverage the threaded model. To solve this problem, SQL Build Manager offers three ways to parallelize database builds across many compute nodes: [Azure Container Apps](containerapp.md), [Azure Batch](azure_batch.md),  [Kubernetes](kubernetes.md) and [Azure Container Instances (ACI)](aci.md).
 
 In each method, compute resources area able to manage concurrency to help you maximize throughput while not overloading your SQL Servers. See [Concurrency Options](concurrency_options.md).
 
@@ -100,9 +100,9 @@ Running a build using Kubernetes follows the process below. If you do not levera
 3. Database targets are sent to Service Bus Topic with `sbm k8s enqueue`
 4. The pods are started via `kubectl`
    - `kubectl apply -f runtime.yaml` - this sets the runtime settings for the pods (.sbm package name, job name and concurrency settings)
-   - `kubectl apply -f secretProviderClass.yaml` - configuration setting up the managed identity. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/create_aks_keyvault_config.ps1) to create the config for you
+   - `kubectl apply -f secretProviderClass.yaml` - configuration setting up the managed identity. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/kubernetes/create_aks_keyvault_config.ps1) to create the config for you
    - `kubectl apply -f podIdentityAndBinding.yaml` - configuration to bind the managed identity to the pods. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/create_aks_keyvault_config.ps1) to create the config for you
-   - `kubectl apply -f basic_deploy_keyvault.yaml` - deployment to create the pods. You can find an example deployment configuration in [sample_deployment_keyvault.yaml](../scripts/templates/kubernetes/sample_deployment_keyvault.yaml) 
+   - `kubectl apply -f basic_deploy_keyvault.yaml` - deployment to create the pods. You can find an example deployment configuration in [sample_deployment_keyvault.yaml](../scripts/templates/kubernetes/sample_deployment_keyvault.yaml)
 5. The pods, leveraging the Managed Identity assigned to them when they were created, accessed the Key Vault and retrieves the secrets
 6. The pods start processing messages from the Service Bus Topic...
 7. And update the databases in parallel

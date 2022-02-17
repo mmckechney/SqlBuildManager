@@ -4,9 +4,9 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
-### **Important change in Version 14+:**
+### **Important changes in Version 14+:**
 
-There are two new options to massively parallel processing: [Kubernetes](docs/kubernetes.md) and [Azure Container Instance](docs/aci.md)!
+There are three new options to massively parallel processing: [Azure Container Apps](docs/containerapps.md), [Kubernetes](docs/kubernetes.md) and [Azure Container Instance](docs/aci.md)!
 
  [Batch node pools](docs/massively_parallel.md) are now created with assigned Managed Identities. Because of this, the workstation running `sbm` _needs to have a valid Azure authentication token_. This can be done via Azure CLI `az login`, Azure PowerShell `Connect-AzAccount`, or if running from an automation box, ensure that the machine itself has a Managed Identity that has permissions to create Azure resources. Alternatively, you can pre-create the batch pools manually via the Azure portal, being sure to assign the correct Managed Identity to the pool.
 
@@ -30,6 +30,7 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
 - [Command Line Reference/ Quickstart](docs/commandline.md)
 - [Running Locally](docs/local_build.md)
 - [Massively Parallel Database Builds](docs/massively_parallel.md)
+  - [Azure Container Apps](docs/containerapp.md)
   - [Azure Batch](docs/azure_batch.md)
   - [Kubernetes](docs/kubernetes.md)
   - [Azure Container Instances (ACI)](docs/aci.md)
@@ -143,6 +144,10 @@ Using the `sbm threaded run` command will allow for updating multiple databases 
 
 Using the `sbm batch run` command leverages Azure Batch to permit massively parallel updates across thousands of databases. To leverage Azure Batch, you will first need to set up your Batch account. The instructions for this can be found [here](docs/azure_batch.md).
 An excellent tool for viewing and monitoring your Azure batch accounts and jobs can be found here [https://azure.github.io/BatchExplorer/](https://azure.github.io/BatchExplorer/)
+
+### **Azure Container Apps**
+
+Using the `sbm containerapp` commands leverages Azure Container Apps to permit massively parallel updates across thousands of databases. Learn how to use Container Apps [here](docs/containerapp.md).
 
 ### **Kubernetes**
 

@@ -20,6 +20,10 @@ namespace SqlBuildManager.Console.CommandLine
             bool tmp;
             (tmp,cmdLine) = DecryptSensitiveFields(cmdLine, true); 
             string key = GetSettingsFileEncryptionKey(cmdLine);
+            if (cmdLine.ContainerRegistryArgs != null && !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryPassword))
+            {
+                cmdLine.ContainerRegistryArgs.RegistryPassword = sb.Cryptography.EncryptText(cmdLine.ContainerRegistryArgs.RegistryPassword, key);
+            }
 
             if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
@@ -70,6 +74,11 @@ namespace SqlBuildManager.Console.CommandLine
 
         public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine, bool suppressLog  = false)
         {
+            if(cmdLine.Decrypted)
+            {
+                log.LogInformation("Command line arguments already decrypted.");
+                return (true, cmdLine);
+            }
             //Nothing to do if none of the settings came from a settings file!
             if(string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
@@ -78,6 +87,12 @@ namespace SqlBuildManager.Console.CommandLine
             bool consolidated = true;
             bool success;
             string key = GetSettingsFileEncryptionKey(cmdLine);
+
+            if (cmdLine.ContainerRegistryArgs != null && !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryPassword))
+            {
+                (success, cmdLine.ContainerRegistryArgs.RegistryPassword) = sb.Cryptography.DecryptText(cmdLine.ContainerRegistryArgs.RegistryPassword, key, "--registrypassword", suppressLog);
+                consolidated = consolidated & success;
+            }
 
             if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
@@ -127,7 +142,10 @@ namespace SqlBuildManager.Console.CommandLine
                 (success, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) = sb.Cryptography.DecryptText(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, key, "--servicebustopicconnection", suppressLog);
                 consolidated = consolidated & success;
             }
-
+            if(consolidated)
+            {
+                cmdLine.Decrypted = true;
+            }
             return (consolidated, cmdLine);
         }
 

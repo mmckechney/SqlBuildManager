@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net5.0-windows;net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>net6.0-windows</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
@@ -19,6 +19,13 @@
   </PropertyGroup>
  
   <ItemGroup>
+    <Compile Remove="Analysis\ComparisonForm.cs" />
+    <Compile Remove="Analysis\ConfigurationCompare.cs" />
+    <Compile Remove="Analysis\ConfigurationCompare.Designer.cs" />
+    <Compile Remove="Analysis\LinkedRichTextBoxes.cs" />
+    <Compile Remove="Analysis\LinkedRichTextBoxes.Designer.cs" />
+    <Compile Remove="Analysis\SimpleDiffForm.cs" />
+    <Compile Remove="Analysis\SimpleDiffForm.Designer.cs" />
     <Compile Remove="Controls\CodeReviewControl.cs" />
     <Compile Remove="Controls\CodeReviewControl.Designer.cs" />
     <Compile Remove="Controls\CodeReviewItemControl.cs" />
@@ -32,15 +39,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Remove="Analysis\ComparisonForm.resx" />
+    <EmbeddedResource Remove="Analysis\ConfigurationCompare.resx" />
+    <EmbeddedResource Remove="Analysis\LinkedRichTextBoxes.resx" />
+    <EmbeddedResource Remove="Analysis\SimpleDiffForm.resx" />
     <EmbeddedResource Remove="Controls\CodeReviewControl.resx" />
     <EmbeddedResource Remove="Controls\CodeReviewItemControl.resx" />
     <EmbeddedResource Remove="Controls\RemoteExecutionLogsContextMenuStrip.resx" />
     <EmbeddedResource Remove="LookUpTableForm.resx" />
+    <EmbeddedResource Remove="SyncForm.resx" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
-    <ProjectReference Include="..\SqlSync.ScrollBarSync\SqlSync.ScrollBarSync.vbproj" /> 
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" /> 
     <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" /> 
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" /> 
     <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" /> 
@@ -50,7 +61,7 @@
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" /> 
     <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" /> 
     <ProjectReference Include="..\SqlSync.SprocTest\SqlSync.SprocTest.csproj" /> 
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" /> 
+    <ProjectReference Include="..\\SqlSync.SqlBuild\SQLSync.SqlBuild.csproj" /> 
     <ProjectReference Include="..\SqlSync.TableScript\SqlSync.TableScript.csproj" /> 
     <ProjectReference Include="..\SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj" /> 
   </ItemGroup>
@@ -329,24 +340,22 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="150.5164.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="150.5164.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="160.5400.1" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Include="Serilog.Expressions" Version="3.2.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+    <PackageReference Include="Serilog.Expressions" Version="3.2.1" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="3.2.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
     <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
-    <PackageReference Include="Serilog.Sinks.AzureEventHub" Version="6.0.0-dev-00060" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
+    <PackageReference Include="Serilog.Sinks.AzureEventHub" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
