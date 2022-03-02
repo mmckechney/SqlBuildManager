@@ -3,19 +3,34 @@
 FROM mcr.microsoft.com/dotnet/runtime:6.0.2-focal AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.102-focal AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.200-focal AS build
 WORKDIR /src
+
+
+#The goofy "RUN true" is added because of bug: https://github.com/moby/moby/issues/37965 . Can be removed once this is fixed
 COPY ["SqlBuildManager.Console/sbm.csproj", "SqlBuildManager.Console/"]
+RUN true 
 COPY ["SqlBuildManager.Enterprise/SqlBuildManager.Enterprise.csproj", "SqlBuildManager.Enterprise/" ]
+RUN true 
 COPY ["SqlBuildManager.Interfaces/SqlBuildManager.Interfaces.csproj", "SqlBuildManager.Interfaces/" ]
+RUN true 
 COPY ["SqlBuildManager.Logging/SqlBuildManager.Logging.csproj", "SqlBuildManager.Logging/" ]
+RUN true 
 COPY ["SqlSync.Connection/SqlSync.Connection.csproj", "SqlSync.Connection/" ]
+RUN true 
 COPY ["SqlSync.Constants/SqlSync.Constants.csproj", "SqlSync.Constants/" ]
+RUN true 
 COPY ["SqlSync.DbInformation/SqlSync.DbInformation.csproj", "SqlSync.DbInformation/" ]
+RUN true 
 COPY ["SqlSync.ObjectScript/SqlSync.ObjectScript.csproj", "SqlSync.ObjectScript/" ]
-COPY ["SqlSync.SqlBuild/SQLSync.SqlBuild.csproj", "SqlSync.SqlBuild/" ]
-COPY ["SqlSync.SqlBuild/SQLSync.SqlBuild.csproj", "SqlSync.SqlBuild/SqlSync.SqlBuild.csproj" ]
+RUN true 
+COPY ["SqlSync.SqlBuild/SqlSync.SqlBuild.csproj", "SqlSync.SqlBuild/" ]
+RUN true 
+COPY ["SqlSync.SqlBuild/SqlSync.SqlBuild.csproj", "SqlSync.SqlBuild/SqlSync.SqlBuild.csproj" ]
+RUN true 
 COPY ["SqlBuildManager.ScriptHandling/SqlBuildManager.ScriptHandling.csproj", "SqlBuildManager.ScriptHandling/"]
+
+RUN true 
 RUN dotnet restore "SqlBuildManager.Console/sbm.csproj"
 
 

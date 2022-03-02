@@ -27,7 +27,7 @@
     <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
     <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" />
-    <ProjectReference Include="..\\SqlSync.SqlBuild\SQLSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="EnterpriseConfiguration.xml">

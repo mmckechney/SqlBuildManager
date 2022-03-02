@@ -40,6 +40,6 @@
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
     <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" />
-    <ProjectReference Include="..\\SqlSync.SqlBuild\SQLSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
 </Project>

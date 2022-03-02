@@ -44,7 +44,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
-    <ProjectReference Include="..\\SqlSync.SqlBuild\SQLSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
     <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />

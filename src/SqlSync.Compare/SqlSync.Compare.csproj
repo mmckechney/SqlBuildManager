@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\\SqlSync.SqlBuild\SQLSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

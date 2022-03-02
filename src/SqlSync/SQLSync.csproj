@@ -61,7 +61,7 @@
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" /> 
     <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" /> 
     <ProjectReference Include="..\SqlSync.SprocTest\SqlSync.SprocTest.csproj" /> 
-    <ProjectReference Include="..\\SqlSync.SqlBuild\SQLSync.SqlBuild.csproj" /> 
+    <ProjectReference Include="..\\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" /> 
     <ProjectReference Include="..\SqlSync.TableScript\SqlSync.TableScript.csproj" /> 
     <ProjectReference Include="..\SyntaxHighlightingTextBox\SyntaxHighlightingTextBox.csproj" /> 
   </ItemGroup>
@@ -349,7 +349,7 @@
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="160.5400.1" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Include="Serilog.Expressions" Version="3.2.1" />
+    <PackageReference Include="Serilog.Expressions" Version="3.3.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />

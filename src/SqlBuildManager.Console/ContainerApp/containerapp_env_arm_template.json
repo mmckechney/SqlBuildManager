@@ -81,19 +81,19 @@
 
   },
   "variables": {
-    "environment_id": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/kubeEnvironments/', parameters('environmentName'))]",
+    "environment_id": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.App/managedEnvironments/', parameters('environmentName'))]",
     "var_registryName": "[if(empty(parameters('registryServer')),'blueskydevus/',concat(parameters('registryServer'),'/'))]",
     "var_registry_secret_name": "[if(empty(parameters('registrypassword')),'registryPassword',concat(replace(parameters('registryServer'),'.',''),'-',parameters('registryUserName')))]"
   },
   "resources": [
     {
       "name": "[concat('sbm',parameters('jobname'))]",
-      "type": "Microsoft.Web/containerApps",
+      "type": "Microsoft.App/containerApps",
       "apiVersion": "2021-03-01",
       "kind": "workerapp",
       "location": "[parameters('location')]",
       "properties": {
-        "kubeEnvironmentId": "[variables('environment_id')]",
+        "managedEnvironmentId": "[variables('environment_id')]",
         "configuration": {
           "activeRevisionsMode": "single",
           "secrets": [
