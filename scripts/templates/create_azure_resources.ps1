@@ -148,17 +148,17 @@ if($deployAks)
     ##############################
     # Create AKS Key Vault configs
     ##############################
-    ./Kubernetes/create_aks_keyvault_config_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+    ./kubernetes/create_aks_keyvault_config_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
 
     ##################################
     # Secrets and Runtime File for AKS
     ##################################
-    ./Kubernetes/create_aks_secrets_and_runtime_files_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+    ./kubernetes/create_aks_secrets_and_runtime_files_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
 
     #############################################
     # Copy sample K8s YAML files for test configs
     #############################################
-    ./Kubernetes/create_aks_job_yaml_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+    ./kubernetes/create_aks_job_yaml_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
 }
 
 #################################

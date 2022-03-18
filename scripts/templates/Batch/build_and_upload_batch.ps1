@@ -30,16 +30,17 @@ $linuxenv = @{
 }
 $vars = $winenv, $linuxenv
 
+$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 foreach ($env in $vars) {
 
     Write-Host "Publishing for $($env.OSName)" -ForegroundColor DarkGreen
 
     if($uploadonly -eq $false)
     {
-        dotnet publish  "..\..\src\SqlBuildManager.Console\sbm.csproj" -r $env.BuildTarget --configuration Debug -f $frameworkTarget
+        dotnet publish  Resolve-Path (Join-Path $scriptDir  "..\..\..\src\SqlBuildManager.Console\sbm.csproj") -r $env.BuildTarget --configuration Debug -f $frameworkTarget
     }
     
-    $source= Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish"
+    $source= Resolve-Path (Join-Path $scriptDir "..\..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")
     if($env.OSName -eq "Windows")
     {
         $version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion  #Get version for Batch application

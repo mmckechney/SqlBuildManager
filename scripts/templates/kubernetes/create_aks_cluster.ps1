@@ -13,16 +13,20 @@ $aksVnet = $prefix + "vnet"
 $aksSubnet = "akssubnet"
 $virtualKubletSubnet = "virtualnodesubnet"
 $containerRegistryName = $prefix + "containerregistry"
+$nsgName = $prefix + "nsg"
 
 Write-Host "Making sure container provider is registered" -ForegroundColor DarkGreen
 az feature register --name EnablePodIdentityPreview --namespace Microsoft.ContainerService  -o table
 az provider register -n Microsoft.ContainerService  -o table
 
+Write-Host "Creating Network Security Group $nsgName" -ForegroundColor DarkGreen
+az network nsg create  --resource-group $resourceGroupName --name $nsgName -o table
+
 Write-Host "Creating VNET $aksVnet and AKS subnet: $aksSubnet, for the AKS cluster $aksClusterName" -ForegroundColor DarkGreen
-az network vnet create --resource-group $resourceGroupName --name $aksVnet  --address-prefixes 10.180.0.0/20 --subnet-name $aksSubnet --subnet-prefix 10.180.0.0/22 -o table
+az network vnet create --resource-group $resourceGroupName --name $aksVnet  --address-prefixes 10.180.0.0/20 --subnet-name $aksSubnet --subnet-prefix 10.180.0.0/22 --network-security-group  $nsgName -o table
 
 Write-Host "Creating $virtualKubletSubnet for the AKS cluster $aksClusterName" -ForegroundColor DarkGreen
-az network vnet subnet create --resource-group $resourceGroupName --vnet-name $aksVnet --name $virtualKubletSubnet --address-prefixes 10.180.4.0/22  -o table
+az network vnet subnet create --resource-group $resourceGroupName --vnet-name $aksVnet --name $virtualKubletSubnet --address-prefixes 10.180.4.0/22 --network-security-group  $nsgName -o table
 
 $aksVnetId = az network vnet show --resource-group $resourceGroupName --name $aksVnet --query id -o tsv
 $aksSubnetId = az network vnet subnet show --resource-group $resourceGroupName --vnet-name $aksVnet --name $aksSubnet --query id -o tsv
@@ -54,9 +58,9 @@ $userAssignedIdentity = $prefix + "identity"
 
 
 ##Install Key Vault CSI driver
-Write-Host "Installing Key Vault CSI driver for: $aksClusterName" -ForegroundColor DarkGreen
-helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
-helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name
+# Write-Host "Installing Key Vault CSI driver for: $aksClusterName" -ForegroundColor DarkGreen
+# helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
+# helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name
 
 ##Add role assignments
 Write-Host "Adding Role Assignments" -ForegroundColor DarkGreen
