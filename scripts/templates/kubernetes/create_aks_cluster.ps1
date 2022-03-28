@@ -29,13 +29,21 @@ Write-Host "Creating $virtualKubletSubnet for the AKS cluster $aksClusterName" -
 az network vnet subnet create --resource-group $resourceGroupName --vnet-name $aksVnet --name $virtualKubletSubnet --address-prefixes 10.180.4.0/22 --network-security-group  $nsgName -o table
 
 $aksVnetId = az network vnet show --resource-group $resourceGroupName --name $aksVnet --query id -o tsv
-$aksSubnetId = az network vnet subnet show --resource-group $resourceGroupName --vnet-name $aksVnet --name $aksSubnet --query id -o tsv
+
+# Virtual Node don't yet work for Keyvault sourced secrets
+# $aksSubnetId = az network vnet subnet show --resource-group $resourceGroupName --vnet-name $aksVnet --name $aksSubnet --query id -o tsv
+# Write-Host "Creating AKS Cluster with virtual node add-on: $aksClusterName" -ForegroundColor DarkGreen
+# az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-managed-identity --enable-pod-identity --network-plugin azure --enable-addons virtual-node --vnet-subnet-id $aksSubnetId --aci-subnet-name $virtualKubletSubnet --yes -o table
 
 Write-Host "Creating AKS Cluster: $aksClusterName" -ForegroundColor DarkGreen
-az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-managed-identity --enable-pod-identity --network-plugin azure --enable-addons azure-keyvault-secrets-provider -o table # --enable-addons virtual-node --vnet-subnet-id $aksSubnetId --aci-subnet-name $virtualKubletSubnet --yes
+az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-managed-identity --enable-pod-identity --network-plugin azure --yes -o table
+
+Write-Host "Enabling Azure Keyvault Secrets provider on AKS Cluster: $aksClusterName" -ForegroundColor DarkGreen
+az aks addon enable  --name $aksClusterName --resource-group $resourceGroupName -a azure-keyvault-secrets-provider -o table 
 
 if($includeContainerRegistry)
 {
+    Write-Host "Attaching Azure Container Registry '$containerRegistryName' to AKS Cluster: $aksClusterName" -ForegroundColor DarkGreen
     az aks update --name $aksClusterName --resource-group $resourceGroupName --attach-acr $containerRegistryName -o table
 }
 
