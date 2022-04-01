@@ -89,7 +89,7 @@
     {
       "name": "[concat('sbm',parameters('jobname'))]",
       "type": "Microsoft.App/containerApps",
-      "apiVersion": "2021-03-01",
+      "apiVersion": "2022-01-01-preview",
       "kind": "containerapp",
       "location": "[parameters('location')]",
       "properties": {

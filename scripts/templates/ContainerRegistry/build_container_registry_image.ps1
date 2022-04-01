@@ -26,7 +26,7 @@ if ($success)
     $ver = $Matches.0
     $verTag =  "sqlbuildmanager:$ver"
     Write-Host "Building with image tags: '$verTag' | '$dateTag' | '$vnextTag' (used in integration tests)" -ForegroundColor DarkGreen
-    az acr build --image $dateTag --image $vnextTag --image $ver --registry $azureContainerRegistry --file "$dockerFile" "$sourcePath" --no-logs --query outputimages
+    az acr build --image $dateTag --image $vnextTag --image $verTag --registry $azureContainerRegistry --file "$dockerFile" "$sourcePath" --no-logs --query outputimages
 }
 else 
 {
