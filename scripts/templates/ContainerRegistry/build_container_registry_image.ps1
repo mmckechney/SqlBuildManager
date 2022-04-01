@@ -24,7 +24,8 @@ $success = ((Get-Content $assemblyVersionFile)  -match '\d{1,3}\.\d{1,3}\.\d{1,3
 if ($success)
 {
     $ver = $Matches.0
-    Write-Host "Building with image tags: $ver | '$dateTag' | '$vnextTag' (used in integration tests)" -ForegroundColor DarkGreen
+    $verTag =  "sqlbuildmanager:$ver"
+    Write-Host "Building with image tags: '$verTag' | '$dateTag' | '$vnextTag' (used in integration tests)" -ForegroundColor DarkGreen
     az acr build --image $dateTag --image $vnextTag --image $ver --registry $azureContainerRegistry --file "$dockerFile" "$sourcePath" --no-logs --query outputimages
 }
 else 
