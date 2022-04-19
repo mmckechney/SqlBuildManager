@@ -17,6 +17,7 @@ using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Console.ContainerApp.Internal;
 using System.Diagnostics;
 using SqlBuildManager.Console.Aad;
+using SqlBuildManager.Console.Arm;
 
 namespace SqlBuildManager.Console.ContainerApp
 {
@@ -30,8 +31,8 @@ namespace SqlBuildManager.Console.ContainerApp
 
                 // https://github.com/Azure-Samples/azure-samples-net-management/blob/master/samples/resources/deploy-using-arm-template/Program.cs
                 var rgName = cmdLine.ContainerAppArgs.ResourceGroup;
+                var subId = cmdLine.ContainerAppArgs.SubscriptionId;
                 var deploymentName = cmdLine.JobName;
-                var deployments = ResourceClient(cmdLine.ContainerAppArgs.SubscriptionId).Deployments;
                 string parametersString = GetParametersString(cmdLine);
                 log.LogDebug($"ContainerApp parameters:{Environment.NewLine}{parametersString}");
                 log.LogDebug(GetSecretsString(cmdLine));
@@ -40,23 +41,13 @@ namespace SqlBuildManager.Console.ContainerApp
                 string templateString = GetTemplateFileContents(cmdLine.ContainerAppArgs.EnvironmentVariablesOnly, !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer));
                 log.LogDebug($"ContainerApp template:{Environment.NewLine}{templateString}");
                 log.LogInformation($"Starting a deployment for Container App 'sbm{deploymentName}' in environment '{cmdLine.ContainerAppArgs.EnvironmentName}'");
-
-                var parameters = new Deployment
-                (
-                    new DeploymentProperties(DeploymentMode.Incremental)
-                    {
-                        Template = templateString,
-                        Parameters = parametersString
-                    }
-                 );
-                var rawResult = await deployments.StartCreateOrUpdateAsync(rgName, deploymentName, parameters);
-                await rawResult.WaitForCompletionAsync();
+                bool success = await ArmHelper.SubmitDeployment(subId, rgName, templateString, parametersString, $"sbm{deploymentName}");
 
                 //Introduce a delay to see if that will help with what seems to be an issue with a timely managed identity assignment
                 Thread.Sleep(10000);
 
                 log.LogInformation("Completed Container App deployment: " + deploymentName);
-                return true;
+                return success;
             }
             catch (Exception ex)
             {
@@ -232,15 +223,6 @@ namespace SqlBuildManager.Console.ContainerApp
 
 
 
-        private static ResourcesManagementClient _resourceClient = null;
-        internal static ResourcesManagementClient ResourceClient(string subscriptionId)
-        {
-            if (_resourceClient == null)
-            {
-                _resourceClient = new ResourcesManagementClient(subscriptionId, AadHelper.TokenCredential);
-            }
-            return _resourceClient;
-        }
 
         internal static string GetTemplateFileContents(bool envOnly, bool includeRegistry)
         {

@@ -28,7 +28,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static SqlBuildManager.Console.Aci.AciDeploymentResult;
+using static SqlBuildManager.Console.Aci.Arm.Deployment;
 using sb = SqlSync.SqlBuild;
 using SqlBuildManager.Console.ContainerApp;
 using System.Diagnostics.Metrics;

@@ -37,7 +37,7 @@ foreach ($env in $vars) {
 
     if($uploadonly -eq $false)
     {
-        dotnet publish  Resolve-Path (Join-Path $scriptDir  "..\..\..\src\SqlBuildManager.Console\sbm.csproj") -r $env.BuildTarget --configuration Debug -f $frameworkTarget
+        dotnet publish  Resolve-Path (Join-Path $scriptDir  "..\..\..\src\SqlBuildManager.Console\sbm.csproj") -r $env.BuildTarget --configuration Debug -f $frameworkTarget --self-contained
     }
     
     $source= Resolve-Path (Join-Path $scriptDir "..\..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")

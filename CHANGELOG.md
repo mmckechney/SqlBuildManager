@@ -1,5 +1,11 @@
 ﻿# SQL Build Manager Change Log
 
+### Version 14.2.1
+- *UPDATED:* Updated Azure Container App resource manager API
+- *FIXED:* Build issue with Batch deployments in .NET 6
+- *FIXED:* Updated AKS creation script to fix VNET assignment
+- *UPDATED:* Updated Azure SDK packages to latest versions (requiring some code changes)
+
 ### Version 14.2.0
 
 - *ADDED:* You can now use Azure Container Apps as a compute platform for leveraging database builds with the new `sbm containerapps` commands. See the [Azure Container Apps documentation](containerapps.md) for background, information and how-to examples

@@ -28,7 +28,7 @@ namespace SqlBuildManager.Console.Aci
         public int Cpu { get; set; }
 
         [JsonPropertyName("memoryInGB")]
-        public int MemoryInGB { get; set; }
+        public double MemoryInGB { get; set; }
     }
 
     public class Resource

@@ -25,18 +25,17 @@ az network nsg create  --resource-group $resourceGroupName --name $nsgName -o ta
 Write-Host "Creating VNET $aksVnet and AKS subnet: $aksSubnet, for the AKS cluster $aksClusterName" -ForegroundColor DarkGreen
 az network vnet create --resource-group $resourceGroupName --name $aksVnet  --address-prefixes 10.180.0.0/20 --subnet-name $aksSubnet --subnet-prefix 10.180.0.0/22 --network-security-group  $nsgName -o table
 
-Write-Host "Creating $virtualKubletSubnet for the AKS cluster $aksClusterName" -ForegroundColor DarkGreen
-az network vnet subnet create --resource-group $resourceGroupName --vnet-name $aksVnet --name $virtualKubletSubnet --address-prefixes 10.180.4.0/22 --network-security-group  $nsgName -o table
-
 $aksVnetId = az network vnet show --resource-group $resourceGroupName --name $aksVnet --query id -o tsv
+$aksSubnetId = az network vnet subnet show --resource-group $resourceGroupName --vnet-name $aksVnet --name $aksSubnet --query id -o tsv
 
 # Virtual Node don't yet work for Keyvault sourced secrets
-# $aksSubnetId = az network vnet subnet show --resource-group $resourceGroupName --vnet-name $aksVnet --name $aksSubnet --query id -o tsv
+#Write-Host "Creating $virtualKubletSubnet for the AKS cluster $aksClusterName" -ForegroundColor DarkGreen
+#az network vnet subnet create --resource-group $resourceGroupName --vnet-name $aksVnet --name $virtualKubletSubnet --address-prefixes 10.180.4.0/22 --network-security-group  $nsgName -o table
 # Write-Host "Creating AKS Cluster with virtual node add-on: $aksClusterName" -ForegroundColor DarkGreen
 # az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-managed-identity --enable-pod-identity --network-plugin azure --enable-addons virtual-node --vnet-subnet-id $aksSubnetId --aci-subnet-name $virtualKubletSubnet --yes -o table
 
 Write-Host "Creating AKS Cluster: $aksClusterName" -ForegroundColor DarkGreen
-az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-managed-identity --enable-pod-identity --network-plugin azure --yes -o table
+az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-managed-identity --enable-pod-identity --network-plugin azure --vnet-subnet-id $aksSubnetId --yes -o table
 
 Write-Host "Enabling Azure Keyvault Secrets provider on AKS Cluster: $aksClusterName" -ForegroundColor DarkGreen
 az aks addon enable  --name $aksClusterName --resource-group $resourceGroupName -a azure-keyvault-secrets-provider -o table 

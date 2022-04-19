@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace SqlBuildManager.Console.ExternalTest
 {
     [TestClass]
-    internal class LocalTests
+    public class LocalTests
     {
 
 

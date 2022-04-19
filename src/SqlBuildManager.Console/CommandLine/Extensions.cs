@@ -120,6 +120,8 @@ namespace SqlBuildManager.Console.CommandLine
                         case "WhatIf":
                         case "LogLevel":
                         case "SettingsFileKey":
+                        case "ContainerAppArgs":
+                        case "ContainerRegistryArgs":
                             //ignore these
                             break;
 
@@ -127,6 +129,10 @@ namespace SqlBuildManager.Console.CommandLine
                             if (property.PropertyType == typeof(bool))
                             {
                                 if (property.Name == "PollBatchPoolStatus" && (toStringType == StringType.Batch))
+                                {
+                                    continue;
+                                }
+                                if(property.Name == "Decrypted" && (toStringType == StringType.Batch))
                                 {
                                     continue;
                                 }

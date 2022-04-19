@@ -15,29 +15,15 @@ using System.Text.Json;
 using System.Linq;
 using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Console.Aad;
-
+using SqlBuildManager.Console.Arm;
+using SqlBuildManager.Console.Aci.Arm;
 namespace SqlBuildManager.Console.Aci
 {
     class AciHelper
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static string GetAciResourceId(string subscriptionId, string resourceGroupName, string aciName)
-        {
-            return $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerInstance/containerGroups/{aciName}";
-        }
-        
-
-        private static ResourcesManagementClient _resourceClient = null;
-        internal static ResourcesManagementClient ResourceClient(string subscriptionId)
-        {
-            if (_resourceClient == null)
-            {
-                _resourceClient = new ResourcesManagementClient(subscriptionId, AadHelper.TokenCredential); ;
-            }
-            return _resourceClient;
-        }
-            
+           
         internal static string CreateAciArmTemplate(CommandLineArgs cmdLine)
         {
             //TODO: Accomodate custom container repositories
@@ -96,31 +82,21 @@ namespace SqlBuildManager.Console.Aci
                 {
                     await DeleteAciInstance(subscriptionId,resourceGroupName,aciName);
                 }
-
-                // https://github.com/Azure-Samples/azure-samples-net-management/blob/master/samples/resources/deploy-using-arm-template/Program.cs
                 var rgName = resourceGroupName;
                 var deploymentName = jobName;
                 var templateFileContents = File.ReadAllText(templateFileName);
-                var deployments = ResourceClient(subscriptionId).Deployments;
 
                 log.LogInformation($"Starting a deployment for ACI '{aciName}' for job: {deploymentName}");
+                bool success = await ArmHelper.SubmitDeployment(subscriptionId, rgName, templateFileContents, "{}", deploymentName);
 
-                var parameters = new Deployment
-                (
-                    new DeploymentProperties(DeploymentMode.Incremental)
-                    {
-                        Template = templateFileContents,
-                        Parameters = "{}"
-                    }
-                 );
-                var rawResult = await deployments.StartCreateOrUpdateAsync(rgName, deploymentName, parameters);
-                await rawResult.WaitForCompletionAsync();
+                log.LogInformation($"Completed ACI deployment: {deploymentName}. Waiting for identity assignment completion....");
+
 
                 //Introduce a delay to see if that will help with what seems to be an issue with a timely managed identity assignment
                 Thread.Sleep(10000);
 
-                log.LogInformation("Completed ACI deployment: " + deploymentName);
-                return true;
+                log.LogInformation("Completed ACI deployment");
+                return success;
             }
             catch(Exception ex)
             {
@@ -134,7 +110,7 @@ namespace SqlBuildManager.Console.Aci
         {
             try
             {
-                (int containerCount, int memory, int cpu) = await GetAciCountMemoryAndCpu(subscriptionId, resourceGroupName, aciName);
+                (int containerCount, double memory, int cpu) = await GetAciCountMemoryAndCpu(subscriptionId, resourceGroupName, aciName);
 
                 var j = JsonSerializer.Deserialize<TemplateClass>(File.ReadAllText(templateFileName));
                 var templateContainerCount = j.Resources.First().Properties.Containers.Count();
@@ -165,49 +141,44 @@ namespace SqlBuildManager.Console.Aci
 
         internal static async Task<bool> DeleteAciInstance(string subscriptionId, string resourceGroupName, string aciName)
         {
-            string aciResourceId = GetAciResourceId(subscriptionId, resourceGroupName, aciName);
-            //var resp = await ResourceClient(subscriptionId).Resources.CheckExistenceByIdAsync(aciResourceId, "2021-03-01");
             try
             {
-                
                 log.LogInformation("Removing any pre-existing ACI deployment");
-                var resp = await ResourceClient(subscriptionId).Resources.StartDeleteByIdAsync(aciResourceId, "2021-03-01");
-                await resp.WaitForCompletionAsync();
+                var success = await ArmHelper.DeleteResource(subscriptionId, resourceGroupName, aciName);
                 log.LogInformation("Pre-existing ACI deployment removed");
+                return success; 
             }
             catch(Exception exe)
             {
                 log.LogError($"Unable to remove existing ACI instance: {exe.Message}");
                 return false;
             }
-            return true;
         }
 
         internal static async Task<bool> AciIsInErrorState(string subscriptionId, string resourceGroupName, string aciName)
         {
+
             var aciResult = await GetAciInstanceData(subscriptionId, resourceGroupName, aciName);
-            var containerCount = aciResult.Value.Properties.Containers.Count;
-            var status = aciResult.Value.Properties.Containers.Where(c => c.Properties.InstanceView.CurrentState.DetailStatus.ToLower() == "error").Count();
+            var containerCount = aciResult.Properties.Containers.Count;
+            var status = aciResult.Properties.Containers.Where(c => c.Properties.InstanceView.CurrentState.DetailStatus.ToLower() == "error").Count();
 
             return status == containerCount;
         }
 
-        internal static async Task<(int,int, int)> GetAciCountMemoryAndCpu(string subscriptionId, string resourceGroupName, string aciName)
-        { 
-            var aciResult = await GetAciInstanceData( subscriptionId,  resourceGroupName, aciName);
-            var containerCount = aciResult.Value.Properties.Containers.Count;
-            var memoryPer = aciResult.Value.Properties.Containers.Select(c => c.Properties.Resources.Requests.MemoryInGB).FirstOrDefault();
-            var cpuPer = aciResult.Value.Properties.Containers.Select(c => c.Properties.Resources.Requests.Cpu).FirstOrDefault();
+        internal static async Task<(int,double, int)> GetAciCountMemoryAndCpu(string subscriptionId, string resourceGroupName, string aciName)
+        {
+            var aciResult = await GetAciInstanceData(subscriptionId, resourceGroupName, aciName);
+            var containerCount = aciResult.Properties.Containers.Count;
+            var memoryPer = aciResult.Properties.Containers.Select(c => c.Properties.Resources.Requests.MemoryInGB).FirstOrDefault();
+            var cpuPer = aciResult.Properties.Containers.Select(c => c.Properties.Resources.Requests.Cpu).FirstOrDefault();
 
-            return(containerCount, memoryPer, cpuPer);
+            return (containerCount, memoryPer, cpuPer);
         }
 
-        private static async Task<AciDeploymentResult.Result> GetAciInstanceData(string subscriptionId, string resourceGroupName, string aciName)
+        private static async Task<Aci.Arm.Deployment> GetAciInstanceData(string subscriptionId, string resourceGroupName, string aciName)
         {
-            string aciResourceId = GetAciResourceId(subscriptionId, resourceGroupName, aciName);
-
-            var resp = await ResourceClient(subscriptionId).Resources.GetByIdAsync(aciResourceId, "2021-03-01");
-            var aciResult = JsonSerializer.Deserialize<AciDeploymentResult.Result>(JsonSerializer.Serialize(resp));
+            var resp = await ArmHelper.GetAciDeploymentDetails(subscriptionId, resourceGroupName, aciName);
+            var aciResult = JsonSerializer.Deserialize<Aci.Arm.Deployment>(JsonSerializer.Serialize(resp));
 
             return aciResult;
         }
