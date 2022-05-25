@@ -17,7 +17,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllBytes(platinumPath, Properties.Resources.PlatinumSchema_simple);
             File.WriteAllBytes(tarnishedPath, Properties.Resources.TarnishedSchema_simple);
 
-            string result = DacPacHelper.ScriptDacPacDeltas(platinumPath, tarnishedPath, workingDir);
+            string result = DacPacHelper.ScriptDacPacDeltas(platinumPath, tarnishedPath, workingDir, false, false);
             Assert.IsNotNull(result);
             Assert.IsFalse(string.IsNullOrEmpty(result));
         }
@@ -30,7 +30,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             File.WriteAllBytes(platinumPath, Properties.Resources.PlatinumSchema_simple);
 
-            string result = DacPacHelper.ScriptDacPacDeltas(platinumPath, platinumPath, workingDir);
+            string result = DacPacHelper.ScriptDacPacDeltas(platinumPath, platinumPath, workingDir, false, false);
             Assert.IsNotNull(result);
             Assert.IsFalse(string.IsNullOrEmpty(result));
         }
@@ -46,7 +46,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllBytes(platinumPath, Properties.Resources.PlatunumSchema);
             File.WriteAllBytes(tarnishedPath, Properties.Resources.TarnishedSchema);
 
-            string result = DacPacHelper.ScriptDacPacDeltas(platinumPath, tarnishedPath, workingDir);
+            string result = DacPacHelper.ScriptDacPacDeltas(platinumPath, tarnishedPath, workingDir, false, false);
             Assert.IsNotNull(result);
             Assert.IsFalse(string.IsNullOrEmpty(result));
         }
@@ -62,7 +62,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllBytes(tarnishedPath, Properties.Resources.TarnishedSchema_simple);
             string buildFileName = Path.GetTempFileName();
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, false, string.Empty,500, out buildFileName);
+            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, false, string.Empty,500, false, out buildFileName);
 
             Assert.IsTrue(result == DacpacDeltasStatus.Success);
             Assert.IsTrue(File.ReadAllBytes(buildFileName).Length > 0);
@@ -78,7 +78,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllBytes(tarnishedPath, Properties.Resources.TarnishedSchema1);
             string buildFileName = Path.GetTempFileName();
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, false, string.Empty, 500, out buildFileName);
+            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, false, string.Empty, 500, false, out buildFileName);
 
             Assert.IsTrue(result == DacpacDeltasStatus.Success);
             Assert.IsTrue(File.ReadAllBytes(buildFileName).Length > 0);
@@ -93,7 +93,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllBytes(platinumPath, Properties.Resources.PlatinumSchema_simple);
             string buildFileName = Path.GetTempFileName();
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, platinumPath, false, string.Empty, 500, out buildFileName);
+            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, platinumPath, false, string.Empty, 500, false, out buildFileName);
 
             Assert.IsTrue(result == DacpacDeltasStatus.InSync);
             Assert.IsTrue(string.IsNullOrEmpty(buildFileName));
@@ -108,7 +108,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllBytes(platinumPath, Properties.Resources.Platinumschema1);
             string buildFileName = Path.GetTempFileName();
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, platinumPath, false, string.Empty, 500, out buildFileName);
+            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, platinumPath, false, string.Empty, 500, false, out buildFileName);
 
             Assert.IsTrue(result == DacpacDeltasStatus.InSync);
             Assert.IsTrue(string.IsNullOrEmpty(buildFileName));

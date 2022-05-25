@@ -42,27 +42,11 @@
       "defaultValue": "",
       "type": "String"
     },
-    "storageAccountKey": {
-      "defaultValue": "",
-      "type": "String"
-    },
     "storageAccountName": {
       "defaultValue": "",
       "type": "String"
     },
-    "eventHubConnectionString": {
-      "defaultValue": "",
-      "type": "String"
-    },
     "serviceBusTopicConnectionString": {
-      "defaultValue": "",
-      "type": "String"
-    },
-    "username": {
-      "defaultValue": "",
-      "type": "String"
-    },
-    "password": {
       "defaultValue": "",
       "type": "String"
     },
@@ -78,6 +62,22 @@
       "defaultValue": "",
       "type": "String"
     },
+    "identityResourceGroup": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "identityName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "identityClientId": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "keyVaultName": {
+      "defaultValue": "",
+      "type": "String"
+    },
     "allowObjectDelete": {
       "defaultValue": "",
       "type": "String"
@@ -87,43 +87,29 @@
   "variables": {
     "environment_id": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.App/managedEnvironments/', parameters('environmentName'))]",
     "var_registryName": "[if(empty(parameters('registryServer')),'blueskydevus/',concat(parameters('registryServer'),'/'))]",
-    "var_registry_secret_name": "[if(empty(parameters('registrypassword')),'registryPassword',concat(replace(parameters('registryServer'),'.',''),'-',parameters('registryUserName')))]"
+    "var_registry_secret_name": "[if(empty(parameters('registryPassword')),'registrypassword',concat(replace(parameters('registryServer'),'.',''),'-',parameters('registryUserName')))]"
   },
   "resources": [
     {
       "name": "[concat('sbm',parameters('jobname'))]",
       "type": "Microsoft.App/containerApps",
       "apiVersion": "2022-03-01",
-      "kind": "workerapp",
+      "kind": "containerapp",
       "location": "[parameters('location')]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{2}', subscription().subscriptionId, parameters('identityResourceGroup'), parameters('identityName'))]": {}
+        }
+      },
       "properties": {
         "managedEnvironmentId": "[variables('environment_id')]",
         "configuration": {
           "activeRevisionsMode": "single",
           "secrets": [
             {
-              "name": "storageaccountkey",
-              "value": "[parameters('storageAccountKey')]"
-            },
-            {
-              "name": "storageaccountname",
-              "value": "[parameters('storageAccountName')]"
-            },
-            {
-              "name": "eventhubconnectionstring",
-              "value": "[parameters('eventHubConnectionString')]"
-            },
-            {
               "name": "servicebustopicconnectionstring",
               "value": "[parameters('serviceBusTopicConnectionString')]"
-            },
-            {
-              "name": "username",
-              "value": "[parameters('userName')]"
-            },
-            {
-              "name": "password",
-              "value": "[parameters('password')]"
             },
             {
               "name": "[variables('var_registry_secret_name')]",
@@ -169,28 +155,16 @@
                   "value": "[parameters('concurrencyType')]"
                 },
                 {
-                  "name": "Sbm_StorageAccountKey",
-                  "value": "[parameters('storageAccountKey')]"
-                },
-                {
                   "name": "Sbm_StorageAccountName",
-                  "value": "[parameters('storageAccountName')]"
+                  "value": "[parameters('storageaccountname')]"
                 },
                 {
-                  "name": "Sbm_EventHubConnectionString",
-                  "value": "[parameters('eventHubConnectionString')]"
+                  "name": "Sbm_KeyVaultName",
+                  "value": "[parameters('keyVaultName')]"
                 },
                 {
-                  "name": "Sbm_ServiceBusTopicConnectionString",
-                  "value": "[parameters('serviceBusTopicConnectionString')]"
-                },
-                {
-                  "name": "Sbm_UserName",
-                  "value": "[parameters('userName')]"
-                },
-                {
-                  "name": "Sbm_Password",
-                  "value": "[parameters('password')]"
+                  "name": "Sbm_IdentityClientId",
+                  "value": "[parameters('identityClientId')]"
                 },
                 {
                   "name": "Sbm_AllowObjectDelete",

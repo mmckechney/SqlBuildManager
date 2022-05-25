@@ -126,9 +126,17 @@ namespace SqlBuildManager.Console.Queue
                 }
 
                 //Confirm message count in Queue 
+                int retry = 0;
                 var activeMessages = await MonitorServiceBustopic(cType);
+                while(activeMessages != count && retry < 4 )
+                {
+                    Thread.Sleep(1000);
+                    activeMessages = await MonitorServiceBustopic(cType);
+                }
+
                 if(activeMessages != count)
                 {
+
                     log.LogError($"After attempting to queue messages, there are only {activeMessages} out of {count} messages in the Service Bus Subscription. Before running your workload, please run a 'dequeue' command and try again");
                     return -1;
                 }
@@ -341,40 +349,65 @@ namespace SqlBuildManager.Console.Queue
         public async Task CompleteMessage(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
-            log.LogInformation($"Completing {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
-            if (this._sessionReceiver != null)
+            try
             {
-                await this._sessionReceiver.CompleteMessageAsync(message);
+                log.LogInformation($"Completing {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+                if (this._sessionReceiver != null)
+                {
+                    await this._sessionReceiver.CompleteMessageAsync(message);
+                }
+                else
+                {
+                    await this.MessageReceiver.CompleteMessageAsync(message);
+                }
             }
-            else
+            catch(ServiceBusException sbE)
             {
-                await this.MessageReceiver.CompleteMessageAsync(message);
+                log.LogError($"Unable to compelete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}. This may result in duplicate processing: {sbE.Message}");
+            }
+            catch (Exception exe)
+            {
+                log.LogError($"Unable to compelete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}. This may result in duplicate processing: {exe.Message}");
             }
         }
         public async Task AbandonMessage(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
-            log.LogInformation($"Abandoning {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
-            if (this._sessionReceiver != null)
+            try
             {
-                await this._sessionReceiver.AbandonMessageAsync(message);
+                log.LogInformation($"Abandoning {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+                if (this._sessionReceiver != null)
+                {
+                    await this._sessionReceiver.AbandonMessageAsync(message);
+                }
+                else
+                {
+                    await this.MessageReceiver.AbandonMessageAsync(message);
+                }
             }
-            else
+            catch (Exception exe)
             {
-                await this.MessageReceiver.AbandonMessageAsync(message);
+                log.LogError($"Failed to Abandon message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}: {exe.Message}");
             }
         }
         public async Task DeadletterMessage(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
-            log.LogInformation($"Deadlettering {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
-            if (this._sessionReceiver != null)
+            try
             {
-                await this._sessionReceiver.DeadLetterMessageAsync(message);
+                log.LogInformation($"Deadlettering {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+                if (this._sessionReceiver != null)
+                {
+                    await this._sessionReceiver.DeadLetterMessageAsync(message);
+                }
+                else
+                {
+                    await this.MessageReceiver.DeadLetterMessageAsync(message);
+                }
             }
-            else
-            { 
-                await this.MessageReceiver.DeadLetterMessageAsync(message);
+            catch(Exception exe)
+            {
+                log.LogError($"Failed to Deadletter message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}: {exe.Message}");
             }
         }
 
@@ -404,7 +437,8 @@ namespace SqlBuildManager.Console.Queue
                     log.LogError($"Problem deleting subscriptipn '{topicSub}': {results.Content}");
                     return false;
                 }
-            }catch(Exception ex)
+            }
+            catch(Exception ex)
             {
                 log.LogError($"Problem deleting subscriptipn '{topicSub}': {ex.Message}");
                 return false;

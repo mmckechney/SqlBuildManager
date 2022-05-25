@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Xml.Serialization;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 namespace SqlSync.Connection
 {
     public class RegisteredServerHelper
@@ -75,16 +76,8 @@ namespace SqlSync.Connection
             string serverFileContents = string.Empty;
             try
             {
-                System.Net.WebRequest req = System.Net.WebRequest.Create(RegisteredServerHelper.RegisteredServerFileName);
-                req.Proxy = System.Net.WebRequest.DefaultWebProxy;
-                req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                req.Timeout = 2000;
-                System.Net.WebResponse resp = req.GetResponse();
-                System.IO.StreamReader sr = new System.IO.StreamReader(resp.GetResponseStream());
-
-                serverFileContents = sr.ReadToEnd();
-                sr.Close();
-
+                var httpClient = new HttpClient();
+                serverFileContents = httpClient.GetStringAsync(RegisteredServerHelper.RegisteredServerFileName).GetAwaiter().GetResult();
 
                 //Write this file to the local path, in case it is unavailable next time.
                 if (!File.Exists(localRegisteredServerPath))

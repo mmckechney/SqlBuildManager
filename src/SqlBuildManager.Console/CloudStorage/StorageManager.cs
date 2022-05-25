@@ -219,28 +219,31 @@ namespace SqlBuildManager.Console.CloudStorage
                 return false;
             }
         }
-        internal static async Task<bool> UploadFileToContainer(string storageAccountName, string storageAccountKey, string containerName, string filePath, bool isRetry = false)
+        internal static async Task<bool> UploadFilesToContainer(string storageAccountName, string storageAccountKey, string containerName, string[] filePaths, bool isRetry = false)
         {
 
             try
             {
-                if (!isRetry)
+                foreach (var filePath in filePaths)
                 {
-                    log.LogInformation($"Uploading file {filePath} to container [{containerName}]...");
-                }
-                string blobName = Path.GetFileName(filePath);
+                    if (!isRetry)
+                    {
+                        log.LogInformation($"Uploading file {filePath} to container [{containerName}]...");
+                    }
+                    string blobName = Path.GetFileName(filePath);
 
-                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
-                BlobContainerClient container = new BlobContainerClient(connstr, containerName);
-                await container.CreateIfNotExistsAsync();
+                    var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
+                    BlobContainerClient container = new BlobContainerClient(connstr, containerName);
+                    await container.CreateIfNotExistsAsync();
 
-                var storageCreds = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-                BlockBlobClient blobData = new BlockBlobClient(new Uri($"https://{storageAccountName}.blob.core.windows.net/{containerName}/{blobName}"), storageCreds);   //container.GetBlockBlobClient(blobName);
-                using (var fs = new FileStream(filePath, FileMode.Open))
-                {
-                    blobData.Upload(fs);
+                    var storageCreds = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
+                    BlockBlobClient blobData = new BlockBlobClient(new Uri($"https://{storageAccountName}.blob.core.windows.net/{containerName}/{blobName}"), storageCreds);   //container.GetBlockBlobClient(blobName);
+                    using (var fs = new FileStream(filePath, FileMode.Open))
+                    {
+                        blobData.Upload(fs);
+                    }
+                    log.LogInformation($"File {filePath} uploaded to container [{containerName}]");
                 }
-                log.LogInformation($"File {filePath} uploaded to container [{containerName}]");
                 return true;
             }
             catch(Azure.RequestFailedException rfExe)
@@ -249,16 +252,16 @@ namespace SqlBuildManager.Console.CloudStorage
                 {
                     log.LogInformation("Existing container is still being deleted. waiting...");
                     System.Threading.Thread.Sleep(2000);
-                    return await UploadFileToContainer(storageAccountName, storageAccountKey, containerName, filePath, true); ;
+                    return await UploadFilesToContainer(storageAccountName, storageAccountKey, containerName, filePaths, true); ;
                 }
                 else
                 {
-                    log.LogError($"Unable to upload file {filePath} to container {containerName}: {rfExe.Message}");
+                    log.LogError($"Unable to upload files '{string.Join(',', filePaths)}' to container {containerName}: {rfExe.Message}");
                     return false;
                 }
             }catch (Exception ex)
             {
-                log.LogError($"Unable to upload file {filePath} to container {containerName}: {ex.Message}");
+                log.LogError($"Unable to upload files '{string.Join(',', filePaths)}' to container {containerName}: {ex.Message}");
                 return false;
             }
         }

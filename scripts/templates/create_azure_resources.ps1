@@ -125,7 +125,7 @@ else
 #########################
 if($build -and $deployBatch)
 {
-    ./Batch/build_and_upload_batch_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -path $outputPath
+    ./Batch/build_and_upload_batch_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -path $outputPath -action BuildAndUpload
 }
 else 
 {
@@ -153,7 +153,7 @@ if($deployAks)
     ##################################
     # Secrets and Runtime File for AKS
     ##################################
-    ./kubernetes/create_aks_secrets_and_runtime_files_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+    ./kubernetes/create_aks_secrets_and_runtime_files_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
 
     #############################################
     # Copy sample K8s YAML files for test configs
@@ -167,7 +167,8 @@ if($deployAks)
 if($deployContainerAppEnv)
 {
     # Create test file referencing the 
-    ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry 
+    ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $false
+    ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $true
     if($deployContainerRegistry)
     {
         ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false

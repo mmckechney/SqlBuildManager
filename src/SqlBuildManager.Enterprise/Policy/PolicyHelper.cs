@@ -159,7 +159,7 @@ namespace SqlBuildManager.Enterprise.Policy
                     }
 
                 }
-                log.LogDebug("Loaded {activePolicies.Count.ToString()} script policy objects from EnterpriseConfiguration");
+                log.LogDebug($"Loaded {activePolicies.Count.ToString()} script policy objects from EnterpriseConfiguration");
             }
             else
             {

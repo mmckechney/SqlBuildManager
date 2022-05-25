@@ -27,7 +27,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void ConfigureProcessInfo()
         {
 
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerTests>("SqlBuildManager.Console.log", @"C:\temp");
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", @"C:\temp");
             this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-windows.json");
             this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-linux.json");

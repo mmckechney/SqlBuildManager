@@ -57,38 +57,10 @@ namespace SqlBuildManager.Console.ExternalTest
         {
             return logContents + System.Environment.NewLine + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
         }
-        private string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
+
+        private static string GetUniqueBatchJobName(string prefix)
         {
-            var log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", @"C:\temp");
-            log.LogInformation("Creating DACPAC for tests");
-            string fullname = Path.GetFullPath($"TestConfig/{database}.dacpac");
-
-            var args = new string[]{
-                "dacpac",
-                "--username", cmdLine.AuthenticationArgs.UserName,
-                "--password", cmdLine.AuthenticationArgs.Password,
-                "--dacpacname", fullname,
-                "--database", database,
-                "--server", server };
-
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            var result = val.Result;
-
-            if (result == 0)
-            {
-                return fullname;
-            }
-            else
-            {
-                return null;
-            }
-
-        }
-        private static string GetUniqueBatchJobName()
-        {
-            string name = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().ToLower().Replace("-", "").Substring(0, 3);
+            string name = prefix + "-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "-" + Guid.NewGuid().ToString().ToLower().Replace("-", "").Substring(0, 3);
             return name;
         }
         public static IEnumerable<string> ReadLines(string path)
@@ -121,7 +93,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             return startingLines;
         }
-        public string ReleventLogFileContents(int startingLine)
+        public static string ReleventLogFileContents(int startingLine)
         {
 
             string logFile = Path.Combine(@"C:\temp", LogFileName);
@@ -377,7 +349,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
 
-            string dacpacName = CreateDacpac(this.cmdLine, server, database);
+            string dacpacName = DatabaseHelper.CreateDacpac(this.cmdLine, server, database);
             Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
 
             //get the size of the log file before we start
@@ -429,7 +401,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, secondOverride });
 
-            string dacpacName = CreateDacpac(this.cmdLine, server, database);
+            string dacpacName = DatabaseHelper.CreateDacpac(this.cmdLine, server, database);
             Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
 
             //get the size of the log file before we start
@@ -666,7 +638,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
             }
-            string jobName = GetUniqueBatchJobName();
+            string jobName = GetUniqueBatchJobName("batch-sbm");
             int startingLine = LogFileCurrentLineCount();
 
             var args = new string[]{ 
@@ -723,7 +695,7 @@ namespace SqlBuildManager.Console.ExternalTest
             string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
             File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
 
-            string jobName = GetUniqueBatchJobName();
+            string jobName = GetUniqueBatchJobName("batch-plat");
             int startingLine = LogFileCurrentLineCount();
             var concurType = ConcurrencyType.Count.ToString();
             var args = new string[]{
@@ -781,10 +753,10 @@ namespace SqlBuildManager.Console.ExternalTest
 
             DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
 
-            string dacpacName = CreateDacpac(this.cmdLine, server, database);
+            string dacpacName = DatabaseHelper.CreateDacpac(this.cmdLine, server, database);
             Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
 
-           string jobName = GetUniqueBatchJobName();
+           string jobName = GetUniqueBatchJobName("batch-dacpac");
            int startingLine = LogFileCurrentLineCount();
             var concurType = ConcurrencyType.Count.ToString();
             var args = new string[]{
@@ -822,6 +794,131 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataTestMethod]
+        public void Batch_Override_DacpacSource_FocceApplyCustom_Success(string batchMethod, string settingsFile)
+        {
+            int removeCount = 1;
+            string server, database;
+            string firstOverride = this.overrideFileContents.First();
+            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+            string server2, database2;
+            string thirdOverride = this.overrideFileContents.ElementAt(2);
+            (server2, database2) = DatabaseHelper.ExtractServerAndDbFromLine(thirdOverride);
+
+            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, thirdOverride });
+
+            string dacpacName = DatabaseHelper.CreateDacpac(this.cmdLine, server, database);
+            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            //Create new table in first so that the third will need a custom DACPAC
+            DatabaseHelper.CreateRandomTable(this.cmdLine,  firstOverride);
+
+
+            settingsFile = Path.GetFullPath(settingsFile);
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", minusFirst,
+                "--platinumdacpac", dacpacName };
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            ;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Custom dacpac required for"), "A custom DACPAC should have been required for a database");
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count() - removeCount}"), $"Should have run against a {this.overrideFileContents.Count() - removeCount} databases");
+            }
+
+        }
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataTestMethod]
+        public void Batch_Queue_DacpacSource_FocceApplyCustom_Success(string batchMethod, string settingsFile)
+        {
+            int removeCount = 1;
+            string server, database;
+            string firstOverride = this.overrideFileContents.First();
+            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+            string server2, database2;
+            string thirdOverride = this.overrideFileContents.ElementAt(2);
+            (server2, database2) = DatabaseHelper.ExtractServerAndDbFromLine(thirdOverride);
+
+            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(this.overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(this.cmdLine, new List<string>() { firstOverride, thirdOverride });
+
+            string dacpacName = DatabaseHelper.CreateDacpac(this.cmdLine, server, database);
+            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            //Create new table in first so that the third will need a custom DACPAC
+            DatabaseHelper.CreateRandomTable(this.cmdLine, firstOverride);
+
+
+            string jobName = GetUniqueBatchJobName("bat");
+            var concurType = ConcurrencyType.Count.ToString();
+            var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override" , minusFirst,
+                "--concurrencytype",  concurType,
+                "--jobname", jobName
+            };
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            Task<int> val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", minusFirst,
+                "--platinumdacpac", dacpacName,
+                "--concurrencytype", concurType,
+                "--concurrency", "5",
+                "--jobname", jobName,
+                "--unittest"};
+
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Custom dacpac required for"), "A custom DACPAC should have been required for a database");
+            }
+
+        }
 
 
     }

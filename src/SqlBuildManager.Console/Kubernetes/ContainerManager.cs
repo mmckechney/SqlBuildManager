@@ -94,6 +94,16 @@ namespace SqlBuildManager.Console.Kubernetes
                 }
                 log.LogDebug($"concurrencyType= {args.ConcurrencyType}");
             }
+
+            if (File.Exists("/etc/runtime/AllowObjectDelete"))
+            {
+                if (bool.TryParse(File.ReadAllText("/etc/runtime/AllowObjectDelete"), out bool allow))
+                {
+                    args.AllowObjectDelete = allow;
+                }
+                log.LogDebug($"allowObjectDelete= {args.AllowObjectDelete}");
+            }
+
             return (true, args);
         }
 
@@ -136,15 +146,17 @@ data:
   DacpacName: '{0}'
   PackageName: '{1}'
   JobName: '{2}'
-  Concurrency: '{3}'
-  ConcurrencyType: '{4}'";
+  AllowObjectDelete: '{3}'
+  Concurrency: '{4}'
+  ConcurrencyType: '{5}'";
 
             var complete = string.Format(template,
                 args.DacPacArgs.PlatinumDacpac,
                 args.BuildFileName,
                 args.JobName,
+                args.AllowObjectDelete,
                 args.Concurrency,
-                args.ConcurrencyType);
+                args.ConcurrencyType); ;
 
             return complete;
         }

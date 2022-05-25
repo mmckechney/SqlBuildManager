@@ -40,6 +40,10 @@ namespace SqlSync.SqlBuild.MultiDb
                 string[] contents = File.ReadAllLines(fileName);
                 return ImportMultiDbTextConfig(contents);
             }
+            else
+            {
+                log.LogError($"The specified database override configuration file '{fileName}' does not exist");
+            }
             
             return null;
         }

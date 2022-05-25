@@ -3,24 +3,25 @@ using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Serilog.Core;
-using SqlBuildManager.Console.Aci;
+using Spectre.Console;
+using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Console.Kubernetes;
-using SqlBuildManager.Console.Events;
+using SqlBuildManager.Console.ContainerApp;
 using SqlBuildManager.Console.KeyVault;
+using SqlBuildManager.Console.Kubernetes;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
-using SqlBuildManager.Logging;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.AdHocQuery;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.ComponentModel;
 using System.IO;
@@ -28,12 +29,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static SqlBuildManager.Console.Aci.Arm.Deployment;
 using sb = SqlSync.SqlBuild;
-using SqlBuildManager.Console.ContainerApp;
-using System.Diagnostics.Metrics;
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.SqlServer.Management.XEvent;
+using clb = SqlBuildManager.Console.CommandLine.CommandLineBuilder;
 
 namespace SqlBuildManager.Console
 {
@@ -70,11 +67,11 @@ namespace SqlBuildManager.Console
             {
                 Task.Run(async () =>
                 {
-                    RootCommand rootCommand = CommandLineBuilder.SetUp();
+                    var parser = clb.GetCommandParser();
 
                     try
                     {
-                        int result = await rootCommand.InvokeAsync(Worker.startArgs.Args);
+                        int result = await parser.InvokeAsync(Worker.startArgs.Args); //  rootCommand.InvokeAsync(Worker.startArgs.Args);
                         exitCode = result;
 
                     }
@@ -109,6 +106,7 @@ namespace SqlBuildManager.Console
 
         private static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine)
         {
+            if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
             bool decryptSuccess;
@@ -356,18 +354,18 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        internal static void SaveAndEncryptSettings(CommandLineArgs cmdLine, bool clearText)
+        internal static int SaveAndEncryptSettings(CommandLineArgs cmdLine, bool clearText)
         {
 
             if (string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
                 log.LogError("When 'sbm batch/aci/containerapp savesettings' is specified the --settingsfile argument is also required");
-                return;
+                return -3;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.SettingsFileKey) && cmdLine.SettingsFileKey.Length < 16)
             {
                 log.LogError("The value for the --settingsfilekey must be at least 16 characters long");
-                return;
+                return -4;
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
@@ -388,8 +386,13 @@ namespace SqlBuildManager.Console
                 cmdLine.AuthenticationArgs = null; // new CommandLineArgs.Authentication();
                 cmdLine.ConnectionArgs.EventHubConnectionString = null;
                 cmdLine.ConnectionArgs.BatchAccountKey = null;
-                cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null;
                 cmdLine.ConnectionArgs.StorageAccountKey = null;
+                cmdLine.ContainerRegistryArgs.RegistryPassword = null;
+                if (string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName))
+                {
+                    //will need this for KEDA in ContainerApps, so only remove if NOT for ContainerApps
+                    cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null;
+                }
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
             {
@@ -421,11 +424,14 @@ namespace SqlBuildManager.Console
                 else
                 {
                     log.LogInformation("Settings file not saved");
+                    return -2;
                 }
+                return 0;
             }
             catch (Exception exe)
             {
                 log.LogError($"Unable to save settings file.\r\n{exe.ToString()}");
+                return -1;
             }
 
         }
@@ -526,6 +532,7 @@ namespace SqlBuildManager.Console
                     TargetDatabaseOverrides = new List<DatabaseOverride>() { new DatabaseOverride() { DefaultDbTarget = def, OverrideDbTarget = target } },
                     ProjectFileName = projectFileName,
                     BuildFileName = cmdLine.BuildFileName,
+                    AllowObjectDelete = cmdLine.AllowObjectDelete
 
                 };
                 ConnectionData connData = new ConnectionData()
@@ -643,18 +650,27 @@ namespace SqlBuildManager.Console
             log.LogInformation("Running Threaded Execution...");
             ThreadedExecution runner = new ThreadedExecution(cmdLine);
             int retVal = runner.Execute();
-            if (retVal == (int)ExecutionReturn.Successful)
+            ExecutionReturn exeResult;
+            if (Enum.TryParse<ExecutionReturn>(retVal.ToString(), out exeResult))
             {
-                log.LogInformation("Completed Successfully");
-            }
-            else if (retVal == (int)ExecutionReturn.DacpacDatabasesInSync)
-            {
-                log.LogInformation("Datbases already in sync");
-                retVal = (int)ExecutionReturn.Successful;
+                switch(exeResult)
+                {
+                    case ExecutionReturn.Successful:
+                        log.LogInformation("Completed Successfully");
+                        break;
+                    case ExecutionReturn.DacpacDatabasesInSync:
+                        log.LogInformation("Datbases already in sync");
+                        retVal = (int)ExecutionReturn.Successful;
+                        break;
+                    default:
+                        log.LogWarning($"Completed with Errors - check log [{exeResult.ToString()}]");
+                        break;
+                }
+
             }
             else
             {
-                log.LogWarning("Completed with Errors - check log");
+                log.LogWarning($"Completed with Errors - check log. Return code [{retVal.ToString()}]");
             }
 
             TimeSpan span = DateTime.Now - start;
@@ -681,7 +697,9 @@ namespace SqlBuildManager.Console
                 //var writeTasks = new List<Task>();
                 log.LogInformation($"Writing log files to blob storage at {outputContainerSasUrl}");
                 var renameLogFiles = new string[] { "sqlbuildmanager", "csv" };
+                
                 BlobContainerClient container = new BlobContainerClient(new Uri(outputContainerSasUrl));
+                log.LogInformation($"Getting file list from {rootLoggingPath}");
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
                 var taskId = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_ID");
                 string machine = Environment.MachineName;
@@ -748,7 +766,6 @@ namespace SqlBuildManager.Console
             int result = 1;
             try
             {
-
                 //If the provided build file name is the full path, just get the file name to find it in Blob storage
                 cmdLine.BuildFileName = Path.GetFileName(cmdLine.BuildFileName);
 
@@ -973,6 +990,7 @@ namespace SqlBuildManager.Console
         }
 
         private static int cursorCounter = 0;
+
         public class CursorStatusItem
         {
             public string Label { get; set; } = "";
@@ -1010,6 +1028,8 @@ namespace SqlBuildManager.Console
             (initSuccess, cmdLine) = Init(cmdLine);
             cmdLine.RunningAsContainer = true;
             cmdLine = ContainerAppHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+            if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            (bool discard, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             cmdLine.ContainerAppArgs.RunningAsContainerApp = true;
             
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
@@ -1024,7 +1044,7 @@ namespace SqlBuildManager.Console
             return await RunGenericContainerQueueWorker(cmdLine);
         }
 
-        internal static async Task<int> DeployContainerApp(CommandLineArgs cmdLine, bool unittest, bool stream, bool monitor)
+        internal static async Task<int> DeployContainerApp(CommandLineArgs cmdLine, bool unittest, bool stream, bool monitor, bool deleteWhenDone)
         {
             bool initSuccess;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -1035,63 +1055,49 @@ namespace SqlBuildManager.Console
                 validationErrors.ForEach(m => log.LogError(m));
                 return -1;
             }
+            int retVal = 0;
             var utcMonitorStart = DateTime.UtcNow;
             var success =  await ContainerApp.ContainerAppHelper.DeployContainerApp(cmdLine);
+            if (!success) retVal = -7;
 
-            if(success && monitor)
+
+            if (success && monitor)
             {
-                return await MonitorContainerAppRuntimeProgress(cmdLine,stream, utcMonitorStart,  unittest);
+                retVal = await MonitorContainerAppRuntimeProgress(cmdLine,stream, utcMonitorStart,  unittest);
             }
-            else if (success)
-                return 0;
-            else
-                return 5;
+            if(deleteWhenDone)
+            {
+               success =  await ContainerAppHelper.DeleteContainerApp(cmdLine);
+                if (!success) retVal = -6;
+            }
+
+            return retVal;
 
         }
 
-        internal static async Task<int> PrepAndUploadContainerAppBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo outputFile, bool force)
+        internal static async Task<int> PrepAndUploadContainerAppBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo platinumDacpac, bool force)
         {
             var success = false;
             (success, cmdLine) = Init(cmdLine);
-            cmdLine.BuildFileName = packageName.FullName;
+            if (packageName != null)
+            {
+                cmdLine.BuildFileName = packageName.FullName;
+            }
             if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
             {
                 log.LogError("--storageaccountname and --storageaccountkey are required");
                 return -1;
             }
-            if (await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
-            {
-                if (!force)
-                {
-                    System.Console.Write($"The container {cmdLine.JobName} already exists in storage account {cmdLine.ConnectionArgs.StorageAccountName}. Do you want to delete any existing files and continue upload? (Y/n)");
-                    var key = System.Console.ReadKey().Key;
-                    System.Console.WriteLine();
-                    if (key == ConsoleKey.Y)
-                    {
-                        force = true;
-                    }
-                    else
-                    {
-                        System.Console.WriteLine("Exiting. The package file was not uploaded and no files were deleted from storage");
-                        return 0;
-                    }
-                }
-                if (force)
-                {
-                    if (!await StorageManager.DeleteStorageContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
-                    {
-                        log.LogError("Unable to delete container. The package file was not uploaded");
-                        return -1;
-                    }
-                }
-            }
 
-            if (!await StorageManager.UploadFileToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, packageName.FullName))
+            (bool retVal, string sbmName) = await ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
+            if (retVal)
             {
-                log.LogError("Unable to upload SBM package file to storage");
-                return 1;
+                return 0;
             }
-            return 0;
+            else
+            {
+                return -1;
+            }
         }
 
         internal static async Task<int> ContainerAppTestSettings(CommandLineArgs cmdLine)
@@ -1166,33 +1172,37 @@ namespace SqlBuildManager.Console
 
         }
 
-        internal static void SaveAndEncryptAciSettings(CommandLineArgs cmdLine, bool clearText)
+        internal static int SaveAndEncryptAciSettings(CommandLineArgs cmdLine, bool clearText)
         {
             cmdLine.BatchArgs = null;
             cmdLine.ConnectionArgs.BatchAccountKey = null;
             cmdLine.ConnectionArgs.BatchAccountName = null;
             cmdLine.ConnectionArgs.BatchAccountUrl = null;
-            cmdLine.IdentityArgs.ClientId = null;
             cmdLine.IdentityArgs.PrincipalId = null;
             cmdLine.IdentityArgs.ResourceId = null;
 
-            SaveAndEncryptSettings(cmdLine, clearText);
+            return SaveAndEncryptSettings(cmdLine, clearText);
         }
-        internal static void SaveAndEncryptContainerAppSettings(CommandLineArgs cmdLine, bool clearText)
+        internal static int SaveAndEncryptContainerAppSettings(CommandLineArgs cmdLine, bool clearText)
         {
             cmdLine.BatchArgs = null;
             cmdLine.ConnectionArgs.BatchAccountKey = null;
             cmdLine.ConnectionArgs.BatchAccountName = null;
             cmdLine.ConnectionArgs.BatchAccountUrl = null;
-            cmdLine.IdentityArgs = null;
             cmdLine.AciArgs = null;
-            SaveAndEncryptSettings(cmdLine, clearText);
+            cmdLine.IdentityArgs.PrincipalId = null;
+            cmdLine.IdentityArgs.ResourceId = null;
+            return SaveAndEncryptSettings(cmdLine, clearText);
         }
 
 
-        internal static async Task<int> UploadKubernetesBuildPackage(FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, string keyvaultname, string jobName, string storageAccountName, string storageAccountKey, bool force)
+        internal static async Task<int> UploadKubernetesBuildPackage(FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, FileInfo platinumDacpac, string keyvaultname, string jobName, string storageAccountName, string storageAccountKey, bool force, bool allowObjectDelete, string @override)
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
+            if (!string.IsNullOrWhiteSpace(@override))
+            {
+                cmdLine.Override = @override;
+            }
 
             if (runtimeFile != null)
             {
@@ -1212,7 +1222,7 @@ namespace SqlBuildManager.Console
                 return -4;
             }
 
-            cmdLine.BuildFileName = packageName.Name;
+            cmdLine.AllowObjectDelete = allowObjectDelete;
             if (!string.IsNullOrWhiteSpace(jobName)) cmdLine.JobName = jobName;
             if (!string.IsNullOrWhiteSpace(storageAccountKey)) cmdLine.StorageAccountKey = storageAccountKey;
             if (!string.IsNullOrWhiteSpace(storageAccountName)) cmdLine.StorageAccountName = storageAccountName;
@@ -1223,6 +1233,84 @@ namespace SqlBuildManager.Console
                 return 1;
 
             }
+            (bool retVal, string sbmName) = await ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
+            if (!retVal)
+            {
+                return 1;
+            }
+            else
+            {
+                if (runtimeFile != null)
+                {
+                    if(!string.IsNullOrEmpty(sbmName))
+                    {
+                        cmdLine.BuildFileName = Path.GetFileName(sbmName);
+                    }
+                    if (packageName != null)
+                    {
+                        cmdLine.BuildFileName = packageName.Name;
+                    }
+                    if (platinumDacpac != null)
+                    {
+                        cmdLine.PlatinumDacpac = platinumDacpac.Name;
+                    }
+                    string runtimeContents = ContainerManager.GenerateRuntimeYaml(cmdLine);
+                    File.WriteAllText(runtimeFile.FullName, runtimeContents);
+                    log.LogInformation($"Updated runtime file '{runtimeFile.FullName}' with job and package name");
+                }
+                return 0;
+            }
+
+        }
+
+        private static async Task<(bool,string)> ValidateAndUploadContainerBuildFilesToStorage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo platinumDacpac, bool force)
+        {
+            if (packageName == null && platinumDacpac == null)
+            {
+                log.LogError("Either a --packagename or --platinumdacpac argument is required");
+                return (false,"");
+            }
+
+            bool sbmGenerated = false;
+            //Need to build the SBM package 
+            if(platinumDacpac != null && packageName == null)
+            {
+                if (string.IsNullOrEmpty(cmdLine.MultiDbRunConfigFileName))
+                {
+                    log.LogError("When a --platinumdacpac argument is specified without a --packagename, then an --override value is required so that the SBM package can be generated");
+                    return (false, "");
+                }
+
+                var multiData = MultiDbHelper.ImportMultiDbTextConfig(cmdLine.MultiDbRunConfigFileName);
+                if(multiData == null)
+                {
+                    log.LogError($"Unable to derive database targets from specified --override setting of '{cmdLine.MultiDbRunConfigFileName}' . Please check that the file exists and is properly formatted.");
+                    return (false, "");
+                }
+                string sbmName;
+                cmdLine.PlatinumDacpac = platinumDacpac.FullName;
+                var stat = Worker.GetSbmFromDacPac(cmdLine, multiData, out sbmName, true);
+                if(stat == sb.DacpacDeltasStatus.Success)
+                {
+                    if (Path.GetFileNameWithoutExtension(sbmName) != Path.GetFileNameWithoutExtension(platinumDacpac.FullName))
+                    {
+                        var newSbmName = Path.Combine(Path.GetDirectoryName(platinumDacpac.FullName), Path.GetFileNameWithoutExtension(platinumDacpac.FullName) + ".sbm");
+                        File.Copy(sbmName, newSbmName,true);
+                        packageName = new FileInfo(newSbmName);
+                    }
+                    else
+                    {
+                        packageName = new FileInfo(sbmName);
+                    }
+                    sbmGenerated = true;
+                }
+                else
+                {
+                    log.LogError("Unable to create an SBM package from the specified --platinumdacpac and --override settings. Please check their values.");
+                    return (false, "");
+                }
+            }
+
             if (await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
             {
                 if (!force)
@@ -1237,7 +1325,7 @@ namespace SqlBuildManager.Console
                     else
                     {
                         System.Console.WriteLine("Exiting. The package file was not uploaded and no files were deleted from storage");
-                        return 0;
+                        return (true, "");
                     }
                 }
                 if (force)
@@ -1245,28 +1333,28 @@ namespace SqlBuildManager.Console
                     if (!await StorageManager.DeleteStorageContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
                     {
                         log.LogError("Unable to delete container. The package file was not uploaded");
-                        return -1;
+                        return (false, "");
                     }
                 }
             }
+            List<string> filePaths = new List<string>();
+            if (packageName != null) filePaths.Add(packageName.FullName);
+            if (platinumDacpac != null) filePaths.Add(platinumDacpac.FullName);
 
-            if (!await StorageManager.UploadFileToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, packageName.FullName))
+            if (!await StorageManager.UploadFilesToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, filePaths.ToArray()))
             {
-                return 1;
-            }
-            else
-            {
-                if (runtimeFile != null)
-                {
-                    string runtimeContents = ContainerManager.GenerateRuntimeYaml(cmdLine);
-                    File.WriteAllText(runtimeFile.FullName, runtimeContents);
-                    log.LogInformation($"Updated runtime file '{runtimeFile.FullName}' with job and package name");
-                }
-                return 0;
+                log.LogError("Unable to upload files to storage");
+                return (false, "");
             }
 
+            if(sbmGenerated)
+            {
+                log.LogInformation($"An SBM Package file was generated and uploaded with the DACPAC. When running the `deploy` command, please use this argument: --packagename \"{packageName.FullName}\"");
+                return (true, packageName.FullName);
+            }
+
+            return (true, "");
         }
-
         internal static async Task<int> MonitorAciRuntimeProgress(CommandLineArgs cmdLine, FileInfo templateFile, DateTime? utcMonitorStart,  bool unitest, bool stream = false)
         {
             if (templateFile != null)
@@ -1321,6 +1409,8 @@ namespace SqlBuildManager.Console
             }
             cmdLine.RunningAsContainer = true;
             cmdLine = Aci.AciHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+            if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+
             int seconds = 5;
             log.LogInformation($"Waiting {seconds} for Managed Identity assignment");
             System.Threading.Thread.Sleep(seconds * 1000);
@@ -1334,9 +1424,9 @@ namespace SqlBuildManager.Console
             return await RunGenericContainerQueueWorker(cmdLine);
         }
 
-        internal static async Task<int> PrepAndUploadAciBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo outputFile, bool force)
+        internal static async Task<int> PrepAndUploadAciBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo platinumDacpac, FileInfo outputFile, bool force)
         {
-            cmdLine.BuildFileName = packageName.FullName;
+            if(packageName != null) cmdLine.BuildFileName = packageName.FullName;
             var valErrors = Validation.ValidateAciAppArgs(cmdLine);
             if(valErrors.Count > 0)
             {
@@ -1354,6 +1444,7 @@ namespace SqlBuildManager.Console
                     return -4;
                 }
             }
+            (bool na, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
 
             if ((string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
                 && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
@@ -1361,37 +1452,14 @@ namespace SqlBuildManager.Console
                 log.LogError("If --keyvaultname is not provided as an argument or in the --settingsfile, then --storageaccountname and --storageaccountkey are required");
                 return -1;
             }
-            if (await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+            (bool retVal, string sbmName) = await ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
+            if (!retVal)
             {
-                if (!force)
-                {
-                    System.Console.Write($"The container {cmdLine.JobName} already exists in storage account {cmdLine.ConnectionArgs.StorageAccountName}. Do you want to delete any existing files and continue upload? (Y/n)");
-                    var key = System.Console.ReadKey().Key;
-                    System.Console.WriteLine();
-                    if (key == ConsoleKey.Y)
-                    {
-                        force = true;
-                    }
-                    else
-                    {
-                        System.Console.WriteLine("Exiting. The package file was not uploaded and no files were deleted from storage");
-                        return 0;
-                    }
-                }
-                if (force)
-                {
-                    if (!await StorageManager.DeleteStorageContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
-                    {
-                        log.LogError("Unable to delete container. The package file was not uploaded");
-                        return -1;
-                    }
-                }
+                return -1;
             }
-
-            if (!await StorageManager.UploadFileToContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, packageName.FullName))
+            if(!string.IsNullOrWhiteSpace(sbmName))
             {
-                log.LogError("Unable to upload SBM package file to storage");
-                return 1;
+                cmdLine.BuildFileName = sbmName;
             }
 
             string template = Aci.AciHelper.CreateAciArmTemplate(cmdLine);
@@ -1401,23 +1469,12 @@ namespace SqlBuildManager.Console
                 fileName = Path.Combine(Directory.GetCurrentDirectory(), $"{cmdLine.JobName}_aci_template.json");
             }
             else
-
             {
                 fileName = outputFile.FullName;
             }
             File.WriteAllText(fileName, template);
             log.LogInformation($"Wrote ACI deployment ARM template to: {fileName}");
 
-            //else
-            //{
-            //    //if (runtimeFile != null)
-            //    //{
-            //    //    string runtimeContents = ContainerManager.GenerateRuntimeYaml(cmdLine);
-            //    //    File.WriteAllText(runtimeFile.FullName, runtimeContents);
-            //    //    log.LogInformation($"Updated runtime file '{runtimeFile.FullName}' with job and package name");
-            //    //}
-            //    return 0;
-            //}
             return 0;
         }
 
@@ -1761,18 +1818,20 @@ namespace SqlBuildManager.Console
                 }
             }
             log.LogInformation($"Added {cmdLine.Scripts.Count()} scripts to '{cmdLine.OutputSbm}'");
+            var fi = new FileInfo(cmdLine.OutputSbm);
+            ListPackageScripts(new FileInfo[] { fi }, true);
             return 0;
 
         }
 
-        internal static int CreatePackageFromDacpacs(string outputSbm, FileInfo platinumDacpac, FileInfo targetDacpac)
+        internal static int CreatePackageFromDacpacs(string outputSbm, FileInfo platinumDacpac, FileInfo targetDacpac, bool allowObjectDelete)
         {
             var outputSbmFile = Path.GetFullPath(outputSbm);
-            var res = sb.DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacpac.FullName, targetDacpac.FullName, true, string.Empty, 500, out string tmpSbm);
+            var res = sb.DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacpac.FullName, targetDacpac.FullName, true, string.Empty, 500, allowObjectDelete, out string tmpSbm);
 
             if (res == sb.DacpacDeltasStatus.Success)
             {
-                File.Move(tmpSbm, outputSbmFile);
+                File.Move(tmpSbm, outputSbmFile, true);
                 log.LogInformation($"Created SBM package:  {outputSbmFile}");
                 ListPackageScripts(new FileInfo[] { new FileInfo(outputSbmFile) }, true);
                 return 0;
@@ -1829,7 +1888,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation($"Temporary DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {targetTmp}");
             }
 
-            var res = sb.DacPacHelper.CreateSbmFromDacPacDifferences(goldTmp, targetTmp, true, string.Empty, 500, out string tmpSbm);
+            var res = sb.DacPacHelper.CreateSbmFromDacPacDifferences(goldTmp, targetTmp, true, string.Empty, 500, cmdLine.AllowObjectDelete, out string tmpSbm);
             log.LogInformation("Cleaning up temporary files");
             File.Delete(goldTmp);
             File.Delete(targetTmp);
@@ -2212,7 +2271,7 @@ namespace SqlBuildManager.Console
                    cmd.AuthenticationArgs.Password,
                    cmd.BuildRevision,
                    cmd.DefaultScriptTimeout,
-                   multiDb, out sbmName, batchScripts);
+                   multiDb, out sbmName, batchScripts, cmd.AllowObjectDelete);
             }
             else
             {
@@ -2226,7 +2285,7 @@ namespace SqlBuildManager.Console
                     cmd.AuthenticationArgs.Password,
                     cmd.BuildRevision,
                     cmd.DefaultScriptTimeout,
-                    multiDb, out sbmName, batchScripts);
+                    multiDb, out sbmName, batchScripts, cmd.AllowObjectDelete);
             }
         }
 
@@ -2305,7 +2364,27 @@ namespace SqlBuildManager.Console
             return sb.ToString().Trim();
         }
 
-      
+        internal static void UnpackSbmFile(DirectoryInfo directory, FileInfo package)
+        {
+            var projectFileName = "";
+            var projectFilePath = "";
+            string result;
+            string dir = directory.FullName;
+            if(!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            bool success = SqlSync.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFile(package.FullName, ref dir,ref projectFilePath, ref projectFileName,false, true, out result);
+            if(File.Exists(Path.Combine(dir,projectFileName)))
+            {
+                var sbmName = Path.GetFileNameWithoutExtension(package.FullName) + ".sbx";
+                File.Move(Path.Combine(dir, projectFileName), Path.Combine(dir, sbmName));
+            }
+            if(success)
+            {
+                log.LogInformation($"SBM file extracted to: {Path.GetFullPath(directory.FullName)}");
+            }
+        }
 
         internal class StartArgs
         {

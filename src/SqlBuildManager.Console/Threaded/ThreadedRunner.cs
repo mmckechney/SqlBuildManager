@@ -152,6 +152,7 @@ namespace SqlBuildManager.Console.Threaded
                 runData.PlatinumDacPacFileName = cmdArgs.DacPacArgs.PlatinumDacpac;
                 runData.BuildRevision = cmdArgs.BuildRevision;
                 runData.DefaultScriptTimeout = cmdArgs.DefaultScriptTimeout;
+                runData.AllowObjectDelete = cmdArgs.AllowObjectDelete;
 
 
                 //Initilize the logging directory for this run
@@ -164,7 +165,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     runData.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
-                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.authType, this.username, this.password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout);
+                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.authType, this.username, this.password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete);
                     switch(status)
                     {
                         case DacpacDeltasStatus.Success:
@@ -219,6 +220,7 @@ namespace SqlBuildManager.Console.Threaded
 
                 //Create the objects that will handle the event communication back.
                 bg = new BackgroundWorker();
+                //bg.ProgressChanged += Bg_ProgressChanged;
                 bg.WorkerReportsProgress = true;
                 e = new DoWorkEventArgs(null);
             }
@@ -254,6 +256,30 @@ namespace SqlBuildManager.Console.Threaded
             return 0;
 
         }
+
+        //private void Bg_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        //{
+        //    if(e.UserState is GeneralStatusEventArgs)
+        //    {
+        //        log.LogInformation(((GeneralStatusEventArgs)e.UserState).StatusMessage);
+        //    }
+        //    else if(e.UserState is BuildScriptEventArgs)
+        //    {
+        //    }
+        //    else if(e.UserState is ScriptRunStatusEventArgs)
+        //    {
+        //    }
+        //    else if (e.UserState is ScriptRunProjectFileSavedEventArgs)
+        //    {
+        //    }
+        //    else if (e.UserState is ScriptRunProjectFileSavedEventArgs)
+        //    {
+        //    }
+        //    else
+        //    {
+        //        log.LogInformation(e.UserState.ToString());
+        //    }
+        //}
 
         void helper_BuildSuccessTrialRolledBackEvent(object sender, EventArgs e)
         {

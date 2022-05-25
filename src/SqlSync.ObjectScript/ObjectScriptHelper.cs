@@ -867,7 +867,7 @@ namespace SqlSync.ObjectScript
 		#endregion
 
         #region ## Script Hashing ##
-        private string GetHash(ref MD5CryptoServiceProvider oMD5Hasher, string script)
+        private string GetHash(ref MD5 oMD5Hasher, string script)
         {   string textHash;
             byte[] arrbytHashValue;
             byte[] textBytes =  new ASCIIEncoding().GetBytes(script);
@@ -878,7 +878,7 @@ namespace SqlSync.ObjectScript
         public ObjectScriptHashData GetDatabaseObjectHashes()
         {
 
-            MD5CryptoServiceProvider oMD5Hasher= new MD5CryptoServiceProvider();
+            var oMD5Hasher= System.Security.Cryptography.MD5.Create();
             ObjectScriptHashData hashData = new ObjectScriptHashData();
 
             this.combineTableObjects = false;
@@ -1090,7 +1090,7 @@ namespace SqlSync.ObjectScript
 
                     if (d == null || d.Count() == 0 || d.First() != 1)
                     {
-                        log.LogError("The selected database {this.ConnData.DatabaseName} is not included in the SMO.Databases collection for SMO server {this.smoServer.Name}");
+                        log.LogError($"The selected database {this.ConnData.DatabaseName} is not included in the SMO.Databases collection for SMO server {this.smoServer.Name}");
                     }
                     else
                     {

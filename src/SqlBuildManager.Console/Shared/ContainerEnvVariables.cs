@@ -8,6 +8,7 @@ namespace SqlBuildManager.Console.Shared
 {
     internal class ContainerEnvVariables
     {
+        internal static string IdentityClientId { get; } = "Sbm_IdentityClientId";
         internal static string KeyVaultName { get; } = "Sbm_KeyVaultName";
         internal static string JobName { get; } = "Sbm_JobName";
         internal static string PackageName { get; } = "Sbm_PackageName";
@@ -20,6 +21,7 @@ namespace SqlBuildManager.Console.Shared
         internal static string ServiceBusTopicConnectionString { get; } = "Sbm_ServiceBusTopicConnectionString";
         internal static string UserName { get; } = "Sbm_UserName";
         internal static string Password { get; } = "Sbm_Password";
+        internal static string AllowObjectDelete { get; } = "Sbm_AllowObjectDelete";
 
     }
 }

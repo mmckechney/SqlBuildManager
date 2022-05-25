@@ -7,7 +7,8 @@ param
     [string] $sqlUserName,
     [string] $sqlPassword,
     [string] $imageTag,
-    [bool] $withContainerRegistry = $true
+    [bool] $withContainerRegistry = $true,
+    [bool] $withKeyVault = $true
 )
 
 if("" -eq $resourceGroupName)
@@ -24,9 +25,23 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
     $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()
     $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
 }
- 
-# $keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
-# Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
+ if($withKeyVault)
+ {
+    $keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+    Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
+
+    $identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+    Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
+
+    $identityClientId = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].clientId"
+    Write-Host "Using Managed Identity ClientId:'$identityClientId'" -ForegroundColor DarkGreen
+ }
+ else
+ {
+    Write-Host "Not using KeyVault"  -ForegroundColor DarkGreen
+    $keyVaultName = ""
+    $identityName = ""
+ }
 
 $storageAccountName =  az storage account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using storage account name:'$storageAccountName'" -ForegroundColor DarkGreen
@@ -45,13 +60,10 @@ if($withContainerRegistry)
 
 if("" -eq $imageTag)
 {
-    $imageTag = "latest-vNext" #Get-Date -Format "yyyy-MM-dd"
+    $imageTag = "latest-vNext"
     Write-Host "Using Image Tag: $imageTag" -ForegroundColor DarkGreen
 }
 
-# $identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
-# Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
-
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-.$scriptDir/create_containerapp_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -containerAppEnvironmentName $containerAppEnvironmentName -containerRegistryName $containerRegistryName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -imageTag $imageTag -withContainerRegistry $withContainerRegistry 
+.$scriptDir/create_containerapp_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -containerAppEnvironmentName $containerAppEnvironmentName -containerRegistryName $containerRegistryName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -imageTag $imageTag -withContainerRegistry $withContainerRegistry -keyVaultName $keyVaultName -identityName $identityName -identityClientId $identityClientId
 

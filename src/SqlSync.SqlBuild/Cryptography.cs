@@ -67,7 +67,7 @@ namespace SqlSync.SqlBuild
             byte[] encryptedBytes = null;
             using (MemoryStream ms = new MemoryStream())
             {
-                using (RijndaelManaged AES = new RijndaelManaged())
+                using (var AES = Aes.Create())
                 {
                     AES.KeySize = 256;
                     AES.BlockSize = 128;
@@ -96,7 +96,7 @@ namespace SqlSync.SqlBuild
 
             using (MemoryStream ms = new MemoryStream())
             {
-                using (RijndaelManaged AES = new RijndaelManaged())
+                using (var AES = Aes.Create())
                 {
                     AES.KeySize = 256;
                     AES.BlockSize = 128;
@@ -123,7 +123,7 @@ namespace SqlSync.SqlBuild
         {
             StringBuilder Sb = new StringBuilder();
 
-            using (SHA256 hash = SHA256Managed.Create())
+            using (var hash = SHA256.Create())
             {
                 Encoding enc = Encoding.UTF8;
                 Byte[] result = hash.ComputeHash(enc.GetBytes(value));

@@ -286,7 +286,7 @@ namespace SqlSync.SqlBuild
                 var database = ((SqlSyncBuildData.ScriptRow)filteredScripts[0].Row).Database;
                 string targetDatabase = GetTargetDatabase(database);
                 log.LogWarning($"Custom dacpac required for {serverName} : {targetDatabase}. Generating file.");
-                var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, this.connData.AuthenticationType, this.connData.UserId, this.connData.Password, projectFilePath, runData.BuildRevision, runData.DefaultScriptTimeout);
+                var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, this.connData.AuthenticationType, this.connData.UserId, this.connData.Password, projectFilePath, runData.BuildRevision, runData.DefaultScriptTimeout, runData.AllowObjectDelete);
 
                 if(stat == DacpacDeltasStatus.Success)
                 {
@@ -307,6 +307,10 @@ namespace SqlSync.SqlBuild
                         this.BuildCommittedEvent(this, RunnerReturn.DacpacDatabasesInSync);
                 }
 
+            }
+            else if (buildResults.FinalStatus != BuildItemStatus.Committed)
+            {
+                log.LogWarning($"Build was not successful. Status is {buildResults.FinalStatus.ToString()} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName)}' ");
             }
 
 

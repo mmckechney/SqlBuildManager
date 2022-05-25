@@ -11,6 +11,7 @@ param
     [string] $eventHubNamespaceName,
     [string] $serviceBusNamespaceName,
     [string] $identityName,
+    [string] $identityClientId,
     [string] $sqlUserName,
     [string] $sqlPassword
 )
@@ -66,6 +67,7 @@ $params = @("aci", "savesettings")
 $params += ("--settingsfile", $settingsAci)
 $params += ("--aciname", $aciName)
 $params += ("--identityname", $identityName)
+$params += ("--clientid", $identityClientId)
 $params += ("--idrg", $resourceGroupName)
 $params += ("--acirg", $resourceGroupName)
 $params += ("-sb", """$serviceBusConnectionString""")

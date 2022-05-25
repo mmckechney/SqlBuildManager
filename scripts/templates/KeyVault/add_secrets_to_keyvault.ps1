@@ -17,7 +17,7 @@ Write-Host "Path set to $path" -ForegroundColor DarkGreen
 
 Write-Host "Setting current user Key Vault Access Policy" -ForegroundColor DarkGreen
 $currentUser = az account show -o tsv --query "user.name"
-$currentUserObjectId = az ad user show --id $currentUser -o tsv --query objectId
+$currentUserObjectId = az ad user show --id $currentUser -o tsv --query id
 az keyvault set-policy --name $keyVaultName --object-id $currentUserObjectId --secret-permissions get list  set -o table
 
 Write-Host "Collecting Secret Information from resources" -ForegroundColor DarkGreen

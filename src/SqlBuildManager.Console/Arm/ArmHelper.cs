@@ -93,6 +93,27 @@ namespace SqlBuildManager.Console.Arm
                 return false;
             }
         }
+        public static async Task<bool> DeleteResource(string resourceId)
+        {
+            //var armResource = new ArmClient(AadHelper.TokenCredential).GetArmDeploymentResource(new ResourceIdentifier(resourceId));
+            var armResource = new ArmClient(AadHelper.TokenCredential).GetGenericResource(new ResourceIdentifier(resourceId));
+            var result = await armResource.DeleteAsync(WaitUntil.Completed);
+            while (!result.HasCompleted)
+            {
+                result.UpdateStatus();
+                Thread.Sleep(1000);
+            }
+            if(result.GetRawResponse().Status >= 300)
+            {
+                log.LogError($"Unable to delete resource {resourceId}. {result.GetRawResponse().ReasonPhrase}");
+                return false;
+            }
+            else
+            {
+                log.LogInformation($"Successfully deleted resource {resourceId}");
+                return true;
+            }
+        }
         public static async Task<bool> DeleteResource(string subscriptionId, string resourceGroupName, string resourceName)
         {
             try

@@ -18,7 +18,7 @@ using SqlBuildManager.Console.Aad;
 
 namespace SqlBuildManager.Console.KeyVault
 {
-    internal class KeyVaultHelper
+    public class KeyVaultHelper
     {
         public const string BatchAccountKey = "BatchAccountKey";
         public const string StorageAccountKey = "StorageAccountKey";
@@ -27,6 +27,7 @@ namespace SqlBuildManager.Console.KeyVault
         public const string ServiceBusTopicConnectionString = "ServiceBusTopicConnectionString";
         public const string UserName = "UserName";
         public const string Password = "Password";
+        public const string ContainerRegistryPassword = "ContainerRegistryPassword";
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 
@@ -48,13 +49,23 @@ namespace SqlBuildManager.Console.KeyVault
         {
             try
             {
-                var pollyRetrySecrets = Policy.Handle<Azure.Identity.AuthenticationFailedException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.1, retryAttempt)));
+                var pollyRetrySecrets = Policy.Handle<Azure.Identity.AuthenticationFailedException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
                 var secret =  pollyRetrySecrets.Execute(() => KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName));
                 return secret.Value.Value;
             }
+            catch(Azure.RequestFailedException rfe)
+            {
+                log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: [RequestFailedException] {rfe.ErrorCode}");
+                return null;
+            }
+            catch(AuthenticationFailedException afe)
+            {
+                log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: [AuthenticationFailedException] {afe.Message}");
+                return null;
+            }
             catch (Exception exe)
             {
-                log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: {exe.Message}");
+                log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}:[{exe.GetType()}] {exe.Message}");
                 return null;
             }
         }
@@ -89,6 +100,7 @@ namespace SqlBuildManager.Console.KeyVault
             keys.Add(SaveSecret(kvName, KeyVaultHelper.UserName, cmdLine.AuthenticationArgs.UserName));
             keys.Add(SaveSecret(kvName, KeyVaultHelper.Password, cmdLine.AuthenticationArgs.Password));
             keys.Add(SaveSecret(kvName, KeyVaultHelper.BatchAccountKey, cmdLine.ConnectionArgs.BatchAccountKey));
+            keys.Add(SaveSecret(kvName, KeyVaultHelper.ContainerRegistryPassword, cmdLine.ContainerRegistryArgs.RegistryPassword));
 
             return keys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
 
@@ -112,7 +124,11 @@ namespace SqlBuildManager.Console.KeyVault
                 cmdLine.StorageAccountKey = tmp;
                 retrieved.Add(KeyVaultHelper.StorageAccountKey);
             }
-            else { return (false,cmdLine); } //short circuit. Storage key is always needed.
+            else 
+            {
+                //short circuit. Storage key is always needed.
+                return (false,cmdLine); 
+            } 
 
             tmp = GetSecret(kvName, KeyVaultHelper.EventHubConnectionString);
             if(!string.IsNullOrWhiteSpace(tmp))
@@ -142,18 +158,27 @@ namespace SqlBuildManager.Console.KeyVault
                 retrieved.Add(KeyVaultHelper.UserName);
             }
 
+            tmp = GetSecret(kvName, KeyVaultHelper.ContainerRegistryPassword);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.RegistryPassword = tmp;
+                retrieved.Add(KeyVaultHelper.ContainerRegistryPassword);
+            }
+
             tmp = GetSecret(kvName, KeyVaultHelper.Password);
             if (!string.IsNullOrWhiteSpace(tmp))
             {
                 cmdLine.Password = tmp;
                 retrieved.Add(KeyVaultHelper.Password);
             }
-
-            tmp = GetSecret(kvName, KeyVaultHelper.BatchAccountKey);
-            if (!string.IsNullOrWhiteSpace(tmp))
+            if (cmdLine.BatchArgs != null && !string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchPoolName))
             {
-                cmdLine.BatchAccountKey = tmp;
-                retrieved.Add(KeyVaultHelper.BatchAccountKey);
+                tmp = GetSecret(kvName, KeyVaultHelper.BatchAccountKey);
+                if (!string.IsNullOrWhiteSpace(tmp))
+                {
+                    cmdLine.BatchAccountKey = tmp;
+                    retrieved.Add(KeyVaultHelper.BatchAccountKey);
+                }
             }
             if (retrieved.Count > 0)
             {

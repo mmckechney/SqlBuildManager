@@ -45,8 +45,11 @@ Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -Foregr
 $identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
 
+$identityClientId = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].clientId"
+Write-Host "Using Managed Identity ClientId:'$identityClientId'" -ForegroundColor DarkGreen
+
 $containerRegistryName = az acr list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-.$scriptDir/create_aci_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -aciname $aciName -imageTag $imageTag -containerRegistryName $containerRegistryName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword 
-.$scriptDir/create_aci_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -aciname $aciName -imageTag $imageTag -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword 
+.$scriptDir/create_aci_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -aciname $aciName -imageTag $imageTag -containerRegistryName $containerRegistryName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -identityClientId $identityClientId
+.$scriptDir/create_aci_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -aciname $aciName -imageTag $imageTag -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -identityClientId $identityClientId

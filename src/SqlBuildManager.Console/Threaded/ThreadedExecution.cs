@@ -150,8 +150,9 @@ namespace SqlBuildManager.Console.Threaded
             WriteToLog(new LogMsg() { Message = "**** Starting log for Run ID: " + ThreadedExecution.RunID + " ****", LogType = LogType.Message });
 
 
-            //Load multi-db data. Won't be used for a queue run
-            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            //Load multi-db data. Won't be used for a queue run unless we have a platinum DACPAC that will need this to create the SBM file
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) || 
+                (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac) && !string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName)))
             {
                 int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
                 if (tmpValReturn != 0)
@@ -447,18 +448,22 @@ namespace SqlBuildManager.Console.Threaded
         {
             int retVal = await ProcessThreadedBuild(runner);
 
-            if (retVal == 0)
+            RunnerReturn tmp;
+            Enum.TryParse<RunnerReturn>(retVal.ToString(), out tmp);
+            switch(tmp)
             {
-                await this.qManager.CompleteMessage(message);
-                return 0;
+                case RunnerReturn.SuccessWithTrialRolledBack:
+                case RunnerReturn.BuildCommitted:
+                case RunnerReturn.CommittedWithCustomDacpac:
+                case RunnerReturn.DacpacDatabasesInSync:
+                    await this.qManager.CompleteMessage(message);
+                    return 0;
+                default:
+                    await this.qManager.DeadletterMessage(message);
+                    queueReturnValue += 1;
+                    return 1;
+
             }
-            else
-            {
-                await this.qManager.DeadletterMessage(message);
-                queueReturnValue += -42;
-                return -42;
-            }
-            
         }
         private async Task<int> ProcessThreadedBuild(ThreadedRunner runner)
         {
@@ -488,6 +493,7 @@ namespace SqlBuildManager.Console.Threaded
                         msg.LogType = LogType.Commit;
                         WriteToLog(msg);
                         WriteToLog(new LogMsg() { LogType = LogType.SuccessDatabases, Message = cfgString });
+                        returnVal = 0;
                         break;
 
                     case (int)RunnerReturn.RolledBack:

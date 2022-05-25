@@ -49,7 +49,7 @@ namespace SqlSync.SqlBuild
 
         }
 
-        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName, string path, bool ignoreCompatError = false)
+        internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName, string path, bool allowObjectDelete, bool ignoreCompatError)
         {
             try
             {
@@ -59,6 +59,11 @@ namespace SqlSync.SqlBuild
                 opts.IgnoreExtendedProperties = true;
                 opts.BlockOnPossibleDataLoss = false;
                 opts.IgnoreUserSettingsObjects = true;
+                if(allowObjectDelete)
+                {
+                    opts.DropObjectsNotInSource = true;
+                }
+
                 if(ignoreCompatError)
                 {
                     opts.AllowIncompatiblePlatform = true;
@@ -76,7 +81,7 @@ namespace SqlSync.SqlBuild
                 if (dexe.ToString().Contains("DeploymentCompatibilityException"))
                 {
                     log.LogWarning("Encountered a Deployment Compatibility Exception! Generating scripts with \"AllowIncompatiblePlatform=true\" setting. This may result in script runtime errors.");
-                    return ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path, true);
+                    return ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path, allowObjectDelete, true);
                 }
                 else
                 {
@@ -93,12 +98,12 @@ namespace SqlSync.SqlBuild
            
         }
       
-        public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, out string buildPackageName)
+        public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, out string buildPackageName)
         {
             log.LogInformation($"Generating SBM build from dacpac differences: {Path.GetFileName(platinumDacPacFileName)} vs { Path.GetFileName(targetDacPacFileName)}");
             string path = Path.GetDirectoryName(targetDacPacFileName);
             buildPackageName = string.Empty;
-            string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path);
+            string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path, allowObjectDelete, false);
             if (!string.IsNullOrEmpty(rawScript))
             {
                 
@@ -147,7 +152,7 @@ namespace SqlSync.SqlBuild
                         }
                         catch (Exception exe)
                         {
-                            log.LogError($"Unable to delte file {f}. {exe.ToString()}");
+                            log.LogError($"Unable to delete file {f}. {exe.ToString()}");
                         }
                     });
                     return DacpacDeltasStatus.Success;
@@ -267,7 +272,7 @@ namespace SqlSync.SqlBuild
         }
 
 
-        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, AuthenticationType authType,  string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout)
+        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, AuthenticationType authType,  string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete)
         {
             string tmpDacPacName = Path.Combine(workingDirectory,targetDatabase + ".dacpac");
             if(!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName))
@@ -277,7 +282,7 @@ namespace SqlSync.SqlBuild
 
             string sbmFileName;
 
-            var stat = CreateSbmFromDacPacDifferences(runData.PlatinumDacPacFileName, tmpDacPacName, false, buildRevision, defaultScriptTimeout, out sbmFileName);
+            var stat = CreateSbmFromDacPacDifferences(runData.PlatinumDacPacFileName, tmpDacPacName, false, buildRevision, defaultScriptTimeout, allowObjectDelete, out sbmFileName);
             if(stat != DacpacDeltasStatus.Success)
             {
                 return stat;
@@ -308,8 +313,7 @@ namespace SqlSync.SqlBuild
             return DacpacDeltasStatus.Success;
         }
 
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout,  MultiDbData multiDb, out string sbmName, bool batchScripts)
-        {
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout,  MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete)        {
             string workingFolder = (!string.IsNullOrEmpty(rootLoggingPath) ? rootLoggingPath : Path.GetTempPath());
    
             workingFolder = Path.Combine(workingFolder, "Dacpac");
@@ -324,7 +328,7 @@ namespace SqlSync.SqlBuild
 
             if (!String.IsNullOrEmpty(targetDacpac))
             {
-                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacpac, batchScripts, buildRevision, defaultScriptTimeout, out sbmName);
+                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacpac, batchScripts, buildRevision, defaultScriptTimeout, allowObjectDelete,out sbmName);
             }
             else if (!string.IsNullOrEmpty(database) && !string.IsNullOrEmpty(server))
             {
@@ -334,7 +338,7 @@ namespace SqlSync.SqlBuild
                     log.LogError($"Error extracting dacpac from {database} : {server}");
                     return DacpacDeltasStatus.ExtractionFailure;
                 }
-                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, batchScripts, buildRevision, defaultScriptTimeout, out sbmName);
+                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, batchScripts, buildRevision, defaultScriptTimeout, allowObjectDelete, out sbmName);
             }
 
             if (stat == DacpacDeltasStatus.Processing && multiDb != null)
@@ -352,7 +356,7 @@ namespace SqlSync.SqlBuild
                             log.LogError($"Error extracting dacpac from {server} : {database}");
                             return DacpacDeltasStatus.ExtractionFailure;
                         }
-                        stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, batchScripts, buildRevision, defaultScriptTimeout, out sbmName);
+                        stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacPac, batchScripts, buildRevision, defaultScriptTimeout, allowObjectDelete, out sbmName);
 
                         if (stat == DacpacDeltasStatus.InSync)
                         {
@@ -395,9 +399,9 @@ namespace SqlSync.SqlBuild
             }
             return stat;
         }
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, AuthenticationType authType,  string server, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts)
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, AuthenticationType authType,  string server, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete)
         {
-            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, authType,  username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName, batchScripts);
+            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, authType,  username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName, batchScripts, allowObjectDelete);
         }
       
 

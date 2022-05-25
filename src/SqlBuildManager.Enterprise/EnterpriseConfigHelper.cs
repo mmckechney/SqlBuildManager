@@ -7,6 +7,8 @@ using System.IO;
 using SqlBuildManager.Enterprise.ActiveDirectory;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
+
 namespace SqlBuildManager.Enterprise
 {
 
@@ -80,16 +82,8 @@ namespace SqlBuildManager.Enterprise
                 {
                     configPath = Path.GetFullPath(configPath);
                 }
-                System.Net.WebRequest req = System.Net.WebRequest.Create(configPath);
-                req.Proxy = System.Net.WebRequest.DefaultWebProxy;
-                req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                req.Timeout = 6000;
-                System.Net.WebResponse resp = req.GetResponse();
-                System.IO.StreamReader sr = new System.IO.StreamReader(resp.GetResponseStream());
-
-                configuration = sr.ReadToEnd();
-                sr.Close();
-
+                var httpClient = new HttpClient();
+                configuration = httpClient.GetStringAsync(configPath).GetAwaiter().GetResult();
 
                 //Write this file to the local path, in case it is unavailable next time.
                 if (File.Exists(localConfigPath))

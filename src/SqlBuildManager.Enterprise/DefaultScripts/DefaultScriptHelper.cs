@@ -120,7 +120,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
         {
             if (!File.Exists(enterpriseFilePath))
             {
-                log.LogWarning("Unable to move enterprise file to local. Enterprise file does not exist: {enterpriseFilePath}");
+                log.LogWarning($"Unable to move enterprise file to local. Enterprise file does not exist: {enterpriseFilePath}");
                 return false;
             }
 

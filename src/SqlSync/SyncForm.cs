@@ -58,7 +58,6 @@ namespace SqlSync
         private Button btnGo;
         private Button btnCancel;
         private CheckBox chkIncludeHeaders;
-		private System.Windows.Forms.ToolStripMenuItem mnuComparisons;
         private Panel panel1;
 
 		public SyncForm()
@@ -82,7 +81,6 @@ namespace SqlSync
 		{
 			InitializeComponent();
 
-			this.mnuComparisons.Enabled = true;
 
 			//Set the connection data
 			this.connData = new ConnectionData();
@@ -363,8 +361,7 @@ namespace SqlSync
             // mainMenu1
             // 
             this.mainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuItem2,
-            this.mnuComparisons});
+            this.menuItem2});
             this.mainMenu1.Location = new System.Drawing.Point(0, 0);
             this.mainMenu1.Name = "mainMenu1";
             this.mainMenu1.Size = new System.Drawing.Size(800, 24);

@@ -75,6 +75,9 @@ namespace SqlBuildManager.Console.CommandLine
                 this.SettingsFile = value.FullName;
             }
         }
+
+        [JsonIgnore]
+        public bool AllowObjectDelete { get; set; } = false;
         public string Override {
             set
             {
@@ -393,7 +396,7 @@ namespace SqlBuildManager.Console.CommandLine
         [Serializable]
         public class DacPac
         {
-            public virtual string PlatinumDacpac { get; set; }
+            public virtual string PlatinumDacpac { get; set; } = string.Empty;
             public virtual string TargetDacpac { get; set; }
             public string PlatinumDbSource { get; set; }
             public string PlatinumServerSource { get; set; }
@@ -451,13 +454,14 @@ namespace SqlBuildManager.Console.CommandLine
         public string Location { set { this.ContainerAppArgs.Location = value; } }
         public string ResourceGroup { set { this.ContainerAppArgs.ResourceGroup = value; } }
         public bool EnvironmentVariablesOnly { set { this.ContainerAppArgs.EnvironmentVariablesOnly = value; } }
+        public int MaxContainers { set { this.ContainerAppArgs.MaxContainerCount = value; } }
         public class ContainerApp
         {
             public string EnvironmentName { get; set; } = string.Empty;
             public string SubscriptionId { get; set; } = string.Empty;
             public string ResourceGroup { get; set; } = string.Empty;
             public string Location { get; set; } = string.Empty;
-            public int  MaxContainerCount { get; set; } = 10;
+            public int MaxContainerCount { get; set; } = 10;
             [JsonIgnore]
             public bool RunningAsContainerApp { get; set; } = false;
             [JsonIgnore]

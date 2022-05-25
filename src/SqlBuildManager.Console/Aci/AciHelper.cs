@@ -17,13 +17,15 @@ using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.Arm;
 using SqlBuildManager.Console.Aci.Arm;
+using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+
 namespace SqlBuildManager.Console.Aci
 {
     class AciHelper
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-           
+
         internal static string CreateAciArmTemplate(CommandLineArgs cmdLine)
         {
             //TODO: Accomodate custom container repositories
@@ -33,6 +35,16 @@ namespace SqlBuildManager.Console.Aci
             template = template.Replace("{{identityName}}", cmdLine.IdentityArgs.IdentityName);
             template = template.Replace("{{identityResourceGroup}}", cmdLine.IdentityArgs.ResourceGroup);
             template = template.Replace("{{aciName}}", cmdLine.AciArgs.AciName);
+
+            string credsTemplate = "";
+            if (!string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
+            {
+                credsTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "registryCredentialsSnippet.txt"));
+                credsTemplate = credsTemplate.Replace("{{registryServer}}", cmdLine.ContainerRegistryArgs.RegistryServer);
+                credsTemplate = credsTemplate.Replace("{{registryPassword}}", cmdLine.ContainerRegistryArgs.RegistryPassword);
+                credsTemplate = credsTemplate.Replace("{{registryUserName}}", cmdLine.ContainerRegistryArgs.RegistryUserName);
+}
+            template = template.Replace("\"{{registryCredentials}}\"", credsTemplate);
 
             string containerTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "container_template.json"));
             List<string> containers = new List<string>();
@@ -47,6 +59,26 @@ namespace SqlBuildManager.Console.Aci
                 tmpContainer = tmpContainer.Replace("{{packageName}}", Path.GetFileName(cmdLine.BuildFileName));
                 tmpContainer = tmpContainer.Replace("{{concurrency}}", cmdLine.Concurrency.ToString());
                 tmpContainer = tmpContainer.Replace("{{concurrencyType}}", cmdLine.ConcurrencyType.ToString());
+                tmpContainer = tmpContainer.Replace("{{identityClientId}}", cmdLine.IdentityArgs.ClientId.ToString());
+                tmpContainer = tmpContainer.Replace("{{allowObjectDelete}}", cmdLine.AllowObjectDelete.ToString());
+
+                if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
+                {
+                    tmpContainer = tmpContainer.Replace("{{registryServer}}", "blueskydevus");
+                }
+                else
+                {
+                    tmpContainer = tmpContainer.Replace("{{registryServer}}", cmdLine.ContainerRegistryArgs.RegistryServer);
+                }
+
+                if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.ImageName))
+                {
+                    tmpContainer = tmpContainer.Replace("{{imagename}}", "sqlbuildmanager");
+                }
+                else
+                {
+                    tmpContainer = tmpContainer.Replace("{{imagename}}", cmdLine.ContainerRegistryArgs.ImageName);
+                }
 
                 containers.Add(tmpContainer);
             }
@@ -59,6 +91,8 @@ namespace SqlBuildManager.Console.Aci
         internal static CommandLineArgs ReadRuntimeEnvironmentVariables(CommandLineArgs cmdLine)
         {
             cmdLine.KeyVaultName = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
+            cmdLine.ClientId = Environment.GetEnvironmentVariable(ContainerEnvVariables.IdentityClientId);
+            AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
             cmdLine.JobName = Environment.GetEnvironmentVariable(ContainerEnvVariables.JobName);
             cmdLine.BuildFileName = Environment.GetEnvironmentVariable(ContainerEnvVariables.PackageName);
             cmdLine.PlatinumDacpac = Environment.GetEnvironmentVariable(ContainerEnvVariables.DacpacName);
@@ -69,6 +103,11 @@ namespace SqlBuildManager.Console.Aci
             if(Enum.TryParse<ConcurrencyType>(Environment.GetEnvironmentVariable(ContainerEnvVariables.ConcurrencyType), out ConcurrencyType ct))
             {
                 cmdLine.ConcurrencyType = ct;
+            }
+            bool allow;
+            if (bool.TryParse(Environment.GetEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete), out allow))
+            {
+                cmdLine.AllowObjectDelete = allow;
             }
 
             return cmdLine;

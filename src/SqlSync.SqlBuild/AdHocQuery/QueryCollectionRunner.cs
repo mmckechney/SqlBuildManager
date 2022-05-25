@@ -149,7 +149,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             catch (Exception exe)
             {
                 errorMessage = exe.Message;
-                log.LogError(exe, "Error Executing Query: {query}");
+                log.LogError(exe, $"Error Executing Query: {query}");
                 Result r = new Result();
                 r.Add("","** Execution Error: "+errorMessage);
                 results.Results.Add(r);

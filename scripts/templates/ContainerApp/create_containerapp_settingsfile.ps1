@@ -10,6 +10,9 @@ param
     [string] $serviceBusNamespaceName,
     [string] $sqlUserName,
     [string] $sqlPassword,
+    [string] $keyVaultName,
+    [string] $identityName,
+    [string] $identityClientId,
     [string] $imageTag,
     [bool] $withContainerRegistry
 )
@@ -38,11 +41,26 @@ if($withContainerRegistry)
     $acrUserName = az acr credential show -g $resourceGroupName --name $containerRegistryName -o tsv --query username
     $acrPassword = az acr credential show -g $resourceGroupName --name  $containerRegistryName -o tsv --query passwords[0].value
     $acrServerName = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
-    $settingsContainerApp = Join-Path $path "settingsfile-containerapp.json"
+    if("" -eq $keyVaultName)
+    {
+        $settingsContainerApp = Join-Path $path "settingsfile-containerapp.json"
+    }
+    else 
+    {
+        $settingsContainerApp = Join-Path $path "settingsfile-containerapp-kv.json"
+    }
 }
 else 
 {
-    $settingsContainerApp = Join-Path $path "settingsfile-containerapp-no-registry.json"
+    if("" -eq $keyVaultName)
+    {
+        $settingsContainerApp = Join-Path $path "settingsfile-containerapp-no-registry.json"
+    }
+    else 
+    {
+        $settingsContainerApp = Join-Path $path "settingsfile-containerapp-no-registry-kv.json"
+    }
+    
 }
 
 $location = az containerapp env show -g $resourceGroupName -n $containerAppEnvironmentName -o tsv --query location
@@ -72,7 +90,6 @@ $params +=("--storageaccountname",$storageAccountName)
 $params +=("--storageaccountkey",$storageAcctKey)
 $params +=("--eventhubconnection",$eventHubConnectionString)
 $params +=("--defaultscripttimeout",500)
-
 $params +=("--subscriptionid",$subscriptionId)
 $params +=("--force","true")
 if($haveSqlInfo)
@@ -86,6 +103,22 @@ if($withContainerRegistry)
     $params +=("--registryusername",$acrUserName)
     $params +=("--registrypassword",$acrPassword)
 }
-
+if("" -ne  $keyVaultName)
+{
+    $params += ("-kv", $keyVaultName)
+}
+if("" -ne  $identityName)
+{
+    $params += ("--identityname", $identityName)
+}
+if("" -ne  $identityName)
+{
+    $params += ("--idrg", $resourceGroupName)
+}
+if("" -ne  $identityName)
+{
+    $params += ("--clientid", $identityClientId)
+}
+ #Write-Host $params -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList $params -Wait
 

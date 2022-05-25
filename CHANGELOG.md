@@ -1,5 +1,13 @@
 ﻿# SQL Build Manager Change Log
 
+### Version 14.2.2
+- *ADDED:* Managed Identity and Key Vault support for Container Apps
+- *ADDED:* Categorized subcommands in command line help output
+- *ADDED:* DACPAC as source now supported with Container Apps, Kubernetes and Azure Container Instance
+- *FIXED:* Removed false error return code in Batch execution when a custom DACPAC is created for a target database at runtime.
+- *FIXED:* Missing custom container registry settings on ACI deployments
+- *ADDED:* Added new package management command `sbm unpack` to extract the contents of an SMB file into scripts and SBX control file
+
 ### Version 14.2.1
 - *UPDATED:* Updated Azure Container App resource manager API
 - *FIXED:* Build issue with Batch deployments in .NET 6
@@ -8,7 +16,7 @@
 
 ### Version 14.2.0
 
-- *ADDED:* You can now use Azure Container Apps as a compute platform for leveraging database builds with the new `sbm containerapps` commands. See the [Azure Container Apps documentation](containerapps.md) for background, information and how-to examples
+- *ADDED:* You can now use Azure Container Apps as a compute platform for leveraging database builds with the new `sbm containerapps` commands. See the [Azure Container Apps documentation](docs/containerapp.md) for background, information and how-to examples
 - *ADDED:* New options for container image tags and container registries for all container options (Azure Container Apps, Kubernetes, Azure Container Instance)
 - *UPDATED:* Updates to deployment scripts and unit tests
 - *ADDED:* New command `sbm utility eventhub` to scan EventHub for job event counts
@@ -25,16 +33,16 @@
 
 ### Version 14.0.0
 
-- **NEW:** You can now use Kubernetes as a compute platform for leveraging database builds with the new `sbm k8s` commands. See the [Kubernetes documentation](kubernetes.md) for background, information and how-to examples
-- **NEW:** You can now use Azure Container Instance as a compute platform for leveraging database builds with the new `sbm aci` commands. See the [ACI documentation](aci.md) for background, information and how-to examples
-- *ADDED:* New Azure Key Vault integration -- secrets can now be stored in Key Vault and no longer need to be stored in the settings file or passed via command line. See the [documentation here](massively_parallel.md)
+- **NEW:** You can now use Kubernetes as a compute platform for leveraging database builds with the new `sbm k8s` commands. See the [Kubernetes documentation](docs/kubernetes.md) for background, information and how-to examples
+- **NEW:** You can now use Azure Container Instance as a compute platform for leveraging database builds with the new `sbm aci` commands. See the [ACI documentation](docs/aci.md) for background, information and how-to examples
+- *ADDED:* New Azure Key Vault integration -- secrets can now be stored in Key Vault and no longer need to be stored in the settings file or passed via command line. See the [documentation here](docs/massively_parallel.md)
 - **IMPORTANT:** Batch node pools are now created with assigned Managed Identities. Because of this, the workstation running `sbm` needs to have a valid Azure authentication token. This can be done via Azure CLI `az login`, Azure PowerShell `Connect-AzAccount`, or if running from an automation box, ensure that the machine itself has a Managed Identity that has permissions to create Azure Batch resources. 
 - *UPDATED:* Automation scripts `/scripts/templates` have been updated to simplify the creation of Azure resources, runtime, secrets file and pushing secrets to Key Vault
 - *UPDATED:* Batch and Kubernetes now have Managed Identity assigned to allow seamless access to Key Vault
 
 ### Version 13.1.0
 
-- *UPDATED:* The `sbm create` command now has four sub-commands `fromscripts`,  `fromdiff`, `fromdacpacs` and `fromdacpacdiff`. See the [Command Line Reference](commandline.md) for details and usage
+- *UPDATED:* The `sbm create` command now has four sub-commands `fromscripts`,  `fromdiff`, `fromdacpacs` and `fromdacpacdiff`. See the [Command Line Reference](docs/commandline.md) for details and usage
 - **NOTE:** The `sbm scriptextract` command is being deprecated in favor of `sbm create fromdacpacdiff` and will be removed in a future release
 - *UPDATED:* Corrected how the `sbm build` local build command handles logging. It is now all encapsulated in the `.sbm` file as it should be
 - *UPDATED:* Documentation updates and improvements
@@ -69,7 +77,7 @@
 
 ### Version 13.0.0
 
-- *ADDED:* New option to leverage Azure Service Bus Topic as a database target source. See the [Azure Batch](azure_batch.md) docs for more detail
+- *ADDED:* New option to leverage Azure Service Bus Topic as a database target source. See the [Azure Batch](docs/azure_batch.md) docs for more detail
 - *ADDED:* New command option `--settingsfilekey`, a key for the encryption of sensitive information in the settings file. If provided when saving the settings file, it of course must also be provided when using the settings file. This version moved away from a static (and not really secure) encryption key used prior. The argument value can be either the key string or a file path to a key file. The key may also be 'silently' provided by setting a `sbm-settingsfilekey` Environment variable. If not provided a machine value will be used.
 - *FIXED:* Modified unit tests to Close and Flush loggers to avoid file locking issues
 
@@ -81,7 +89,7 @@
 
 - **NOTE:** **Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**
 - **NOTE:** Now built against .NET 5 and .NET Core 3.1
-- *ADDED:* New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](concurrency_options.md)
+- *ADDED:* New `threaded` and `batch` command options: `--concurrency` and `--concurrencytype`. See docs on [Concurrency Options](docs/concurrency_options.md)
 - *UPDATED:* Now leveraging `Microsoft.SqlServer.DACFx` NuGet package instead of `sqlpackage.exe` command line to manage DACPACs
 - *FIXED:* Updated `BlueSkyDev.Logging.AzureEventHubAppender` to v1.3.2 due to app hanging if EventHub connection string was incorrect
 

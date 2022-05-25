@@ -77,6 +77,10 @@
     "registryServer": {
       "defaultValue": "",
       "type": "String"
+    },
+    "allowObjectDelete": {
+      "defaultValue": "",
+      "type": "String"
     }
 
   },
@@ -89,7 +93,7 @@
     {
       "name": "[concat('sbm',parameters('jobname'))]",
       "type": "Microsoft.App/containerApps",
-      "apiVersion": "2022-01-01-preview",
+      "apiVersion": "2022-03-01",
       "kind": "containerapp",
       "location": "[parameters('location')]",
       "properties": {
@@ -153,6 +157,10 @@
                   "value": "[parameters('packageName')]"
                 },
                 {
+                  "name": "Sbm_DacpacName",
+                  "value": "[parameters('dacpacName')]"
+                },
+                {
                   "name": "Sbm_Concurrency",
                   "value": "[parameters('concurrency')]"
                 },
@@ -183,6 +191,10 @@
                 {
                   "name": "Sbm_Password",
                   "secretRef": "password"
+                },
+                {
+                  "name": "Sbm_AllowObjectDelete",
+                  "value": "[parameters('allowObjectDelete')]"
                 }
               ]
             }

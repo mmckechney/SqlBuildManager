@@ -4,17 +4,19 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
+### _Be sure to review the [change log](CHANGELOG.md) for the latest updates, enhancements and bug fixes_
+
 ### **Important changes in Version 14+:**
 
-There are three new options to massively parallel processing: [Azure Container Apps](docs/containerapps.md), [Kubernetes](docs/kubernetes.md) and [Azure Container Instance](docs/aci.md)!
+There are three new options to massively parallel processing: [Azure Container Apps](docs/containerapp.md), [Kubernetes](docs/kubernetes.md) and [Azure Container Instance](docs/aci.md)!
 
  [Batch node pools](docs/massively_parallel.md) are now created with assigned Managed Identities. Because of this, the workstation running `sbm` _needs to have a valid Azure authentication token_. This can be done via Azure CLI `az login`, Azure PowerShell `Connect-AzAccount`, or if running from an automation box, ensure that the machine itself has a Managed Identity that has permissions to create Azure resources. Alternatively, you can pre-create the batch pools manually via the Azure portal, being sure to assign the correct Managed Identity to the pool.
 
-[Kubernetes](docs/massively_parallel.md#kubernetes-process-flow) and [Azure Container Instance](docs/massively_parallel.md#azure-container-instance-process-flow) also require local machine authentication in order to access Azure Key Vault. Authentication is not needed for [local](local_build.md) or [threaded builds](docs/threaded_build.md)
+[Kubernetes](docs/massively_parallel.md#kubernetes-process-flow), [Azure Container Apps](docs/containerapp.md), and  [Azure Container Instance](docs/massively_parallel.md#azure-container-instance-process-flow) also require local machine authentication (`az login`) in order to access Azure Key Vault. Authentication is not needed for [local](local_build.md) or [threaded builds](docs/threaded_build.md)
 
 The keys, connection strings and passwords can now be stored in Azure Key Vault rather than saving the encrypted values in a settings file or being passed in via the command line. Regardless if you use Batch, Kubernetes or ACI , this integration is enabled by leveraging [User Assigned Managed Identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-manage-user-assigned-managed-identities). To easily accomplish this setup, there are a set of PowerShell scripts in the [`scripts/templates` folder](scripts/templates). A complete environment can be created with [`create_azure_resources.ps1`](scripts/templates/create_azure_resources.ps1). Please note that Azure Key Vault is required for [Azure Container Instance](docs/aci.md) builds.
 
-You will also need to be logged into Azure if you are leveraging Azure Key Vault to store your secrets, regardless if you are using [Azure Batch](docs/massively_parallel.md#batch-process-flow), [Kubernetes](docs/massively_parallel.md#kubernetes-process-flow) or [Azure Container Instance](docs/massively_parallel.md#azure-container-instance-process-flow))
+You will also need to be logged into Azure if you are leveraging Azure Key Vault to store your secrets, regardless if you are using [Azure Batch](docs/massively_parallel.md#batch-process-flow), [Kubernetes](docs/massively_parallel.md#kubernetes-process-flow), [Azure Container Apps](docs/containerapp.md), or [Azure Container Instance](docs/massively_parallel.md#azure-container-instance-process-flow)
 
 ---
 
@@ -118,7 +120,7 @@ There are several ways to create a build package from the command line.  Which y
 4. You can also add new scripts to an existing SBM package or SBX project file using `sbm add`
 5. From a DACPAC file using the `sbm scriptextract` command. This method leverages a DACPAC that was created against your "Platinum Database" (why platinum? because it's even more precious than gold!). The Platinum database should have the schema that you want all of your other databases to look like. (don't have a DACPAC created, don't worry, you can create one with the `sbm dacpac` command) 
 
-**_NOTE:_** The `sbm scriptextract` method is being deprecated in favor of `sbm create fromdacpacdiff` and will be removed in a future release
+**_NOTE:_** The `sbm scriptextract` method has been deprecated in favor of `sbm create fromdacpacdiff`.
 
 ----
 

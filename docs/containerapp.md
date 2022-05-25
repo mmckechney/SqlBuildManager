@@ -22,7 +22,11 @@ The default container image can be found on Docker Hub at https://hub.docker.com
 ``` bash
 docker build -f Dockerfile .. -t sqlbuildmanager:latest
 ```
+If you don't have Docker desktop or would rather off load your container builds, you can leverage Azure Container Registry build tasks with the Azure CLI from the `src` directory. This will build your image and save it to the registry:
 
+``` bash
+az acr build --image $nameAndTag --registry $azureContainerRegistryName --file Dockerfile .
+```
 ### Environment Setup
 
 While the Container App execution process will create the app for you, you will need a Container App Environment to deploy the app into. It also leverages [Azure Service Bus](https://azure.microsoft.com/en-us/services/service-bus/), [Azure Event Hub](https://azure.microsoft.com/en-us/services/event-hubs) and [Azure Blob Storage](https://azure.microsoft.com/en-us/services/storage/blobs/). You can create your own resources either through the [Azure portal](https://portal.azure.com), [az cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) or [Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/). The only special configuration is with Azure Service Bus which requires a Topic named `sqlbuildmanager`.

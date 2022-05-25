@@ -23,6 +23,7 @@ namespace SqlSync.SqlBuild
         public bool ForceCustomDacpac { get; set; }
         public string BuildRevision { get; set; }
         public int DefaultScriptTimeout { get; set; } = 500;
- 
+        public bool AllowObjectDelete { get; set; } = false;
+
     }
 }

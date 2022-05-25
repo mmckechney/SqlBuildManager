@@ -592,6 +592,7 @@ namespace SqlBuildManager.Console.Batch
             log.LogInformation($"Creating pool [{poolId}]...");
 
             //var creds = new BatchSharedKeyCredential(batchAccountName, batchAccountKey);
+            if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
             var creds = new CustomClientCredentials(AadHelper.TokenCredential);
             var managementClient = new BatchManagementClient(creds);
             managementClient.SubscriptionId = subscriptionId;

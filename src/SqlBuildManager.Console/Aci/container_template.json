@@ -1,39 +1,49 @@
       {
           "name": "sqlbuildmanager{{counter}}",
           "properties": {
-              "image": "blueskydevus/sqlbuildmanager:{{tag}}",
+              "image": "{{registryServer}}/{{imagename}}:{{tag}}",
               "command": [
                   "dotnet",
                   "sbm.dll",
                   "aci",
                   "worker"
               ],
-              "environmentVariables": [{
-                      "name": "Sbm_KeyVaultName",
-                      "value": "{{keyVaultName}}"
-                  },
-                  {
-                      "name": "Sbm_JobName",
-                      "value": "{{jobname}}"
-                  },
-                  {
-                      "name": "Sbm_PackageName",
-                      "value": "{{packageName}}"
-                  },
-                  {
-                      "name": "Sbm_DacpacName",
-                      "value": "{{dacpacName}}"
-                  },
-                  {
-                      "name": "Sbm_Concurrency",
-                      "value": "{{concurrency}}"
-                  },
-                  {
-                      "name": "Sbm_ConcurrencyType",
-                      "value": "{{concurrencyType}}"
-                  }
+            "environmentVariables": [
+              {
+                "name": "Sbm_KeyVaultName",
+                "value": "{{keyVaultName}}"
+              },
+              {
+                "name": "Sbm_JobName",
+                "value": "{{jobname}}"
+              },
+              {
+                "name": "Sbm_PackageName",
+                "value": "{{packageName}}"
+              },
+              {
+                "name": "Sbm_DacpacName",
+                "value": "{{dacpacName}}"
+              },
+              {
+                "name": "Sbm_Concurrency",
+                "value": "{{concurrency}}"
+              },
+              {
+                "name": "Sbm_ConcurrencyType",
+                "value": "{{concurrencyType}}"
+              },
 
-              ],
+              {
+                "name": "Sbm_IdentityClientId",
+                "value": "{{identityClientId}}"
+              },
+              {
+                "name": "Sbm_AllowObjectDelete",
+                "value": "{{allowObjectDelete}}"
+              }
+
+            ],
               "resources": {
                   "requests": {
                       "cpu": 1,

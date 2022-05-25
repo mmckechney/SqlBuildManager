@@ -1031,8 +1031,8 @@ namespace SqlSync.SqlBuild
 
 			byte[] arrbytHashValue;
 
-			System.Security.Cryptography.SHA1CryptoServiceProvider oSHA1Hasher=
-				new System.Security.Cryptography.SHA1CryptoServiceProvider();
+           var oSHA1Hasher = System.Security.Cryptography.SHA1.Create();
+
 
             try
             {
@@ -1104,7 +1104,7 @@ namespace SqlSync.SqlBuild
         /// <returns></returns>
         internal static string GetSHA1Hash(string textContents)
         {
-            System.Security.Cryptography.SHA1CryptoServiceProvider oSHA1Hasher = new System.Security.Cryptography.SHA1CryptoServiceProvider();
+            var oSHA1Hasher = System.Security.Cryptography.SHA1.Create();
 
             byte[] textBytes =  new ASCIIEncoding().GetBytes(textContents);
             byte[] arrbytHashValue = oSHA1Hasher.ComputeHash(textBytes);
@@ -1554,7 +1554,7 @@ namespace SqlSync.SqlBuild
                 if (!Directory.Exists(workingDirectory))
                     Directory.CreateDirectory(workingDirectory);
 
-                log.LogDebug("Successfully created working directory at '{workingDirectory}'");
+                log.LogDebug($"Successfully created working directory at '{workingDirectory}'");
 
                 return true;
             }

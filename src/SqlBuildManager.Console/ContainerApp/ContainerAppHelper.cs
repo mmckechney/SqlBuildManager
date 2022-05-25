@@ -12,6 +12,7 @@ using Azure.ResourceManager.Resources.Models;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Linq;
 using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Console.ContainerApp.Internal;
@@ -38,15 +39,21 @@ namespace SqlBuildManager.Console.ContainerApp
                 log.LogDebug(GetSecretsString(cmdLine));
                 log.LogDebug(GetEnvironmentVariablesString(cmdLine));
 
-                string templateString = GetTemplateFileContents(cmdLine.ContainerAppArgs.EnvironmentVariablesOnly, !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer));
+                string templateString = GetTemplateFileContents(cmdLine);
                 log.LogDebug($"ContainerApp template:{Environment.NewLine}{templateString}");
                 log.LogInformation($"Starting a deployment for Container App 'sbm{deploymentName}' in environment '{cmdLine.ContainerAppArgs.EnvironmentName}'");
                 bool success = await ArmHelper.SubmitDeployment(subId, rgName, templateString, parametersString, $"sbm{deploymentName}");
 
-                //Introduce a delay to see if that will help with what seems to be an issue with a timely managed identity assignment
-                Thread.Sleep(10000);
-
-                log.LogInformation("Completed Container App deployment: " + deploymentName);
+                if (success)
+                {
+                    //Introduce a delay to see if that will help with what seems to be an issue with a timely managed identity assignment
+                    Thread.Sleep(10000);
+                    log.LogInformation("Completed Container App deployment: " + deploymentName);
+                }
+                else
+                {
+                    log.LogError("Container App deployment failed. Unablet to proceed.");
+                }    
                 return success;
             }
             catch (Exception ex)
@@ -56,10 +63,46 @@ namespace SqlBuildManager.Console.ContainerApp
             }
         }
 
+        internal static async Task<bool> DeleteContainerApp(CommandLineArgs cmdLine)
+        {
+            if (await ArmHelper.DeleteResource(cmdLine.ContainerAppArgs.SubscriptionId, cmdLine.ContainerAppArgs.ResourceGroup, $"sbm{cmdLine.JobName}"))
+            {
+                log.LogInformation($"Successfully deleted ContainerApp: sbm{cmdLine.JobName}");
+                return true;
+            }
+            else
+            {
+                log.LogError($"Unable to delete ContainerApp: sbm{cmdLine.JobName}");
+                return false;
+            }
+        }
+
         internal static CommandLineArgs ReadRuntimeEnvironmentVariables(CommandLineArgs cmdLine)
         {
             log.LogInformation("Reading environment variables for Continer App worker");
             string tmp;
+
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
+            if (!string.IsNullOrEmpty(tmp))
+            {
+                cmdLine.KeyVaultName = tmp;
+            }
+            else
+            {
+                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.KeyVaultName}");
+            }
+
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.IdentityClientId);
+            if (!string.IsNullOrEmpty(tmp))
+            {
+                cmdLine.ClientId = tmp;
+                AadHelper.ManagedIdentityClientId = tmp;
+            }
+            else
+            {
+                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.IdentityClientId}");
+            }
+
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.JobName);
             if(!string.IsNullOrEmpty(tmp))
             {
@@ -80,64 +123,24 @@ namespace SqlBuildManager.Console.ContainerApp
                 log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.PackageName}");
             }
 
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.StorageAccountKey);
-            if(!string.IsNullOrEmpty(tmp))
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.DacpacName);
+            if (!string.IsNullOrEmpty(tmp))
             {
-               cmdLine.StorageAccountKey = tmp;
+                cmdLine.PlatinumDacpac = tmp;
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.StorageAccountKey}");
+                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.DacpacName}");
             }
-      
-            tmp =  Environment.GetEnvironmentVariable(ContainerEnvVariables.StorageAccountName);
-            if(!string.IsNullOrEmpty(tmp))
+
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.StorageAccountName);
+            if (!string.IsNullOrEmpty(tmp))
             {
-               cmdLine.StorageAccountName = tmp;
+                cmdLine.StorageAccountName = tmp;
             }
             else
             {
                 log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.StorageAccountName}");
-            }
-
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubConnectionString);
-            if(!string.IsNullOrEmpty(tmp))
-            {
-               cmdLine.EventHubConnection = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.EventHubConnectionString}");
-            }
-
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString);
-            if(!string.IsNullOrEmpty(tmp))
-            {
-               cmdLine.ServiceBusTopicConnection = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.ServiceBusTopicConnectionString}");
-            }
-
-            tmp =  Environment.GetEnvironmentVariable(ContainerEnvVariables.UserName);
-            if(!string.IsNullOrEmpty(tmp))
-            {
-               cmdLine.UserName = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.UserName}");
-            }
- 
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.Password);
-            if(!string.IsNullOrEmpty(tmp))
-            {
-               cmdLine.Password = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.Password}");
             }
 
             if (int.TryParse(Environment.GetEnvironmentVariable(ContainerEnvVariables.Concurrency), out int c))
@@ -158,6 +161,80 @@ namespace SqlBuildManager.Console.ContainerApp
                 log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.ConcurrencyType}");
             }
 
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete);
+            if (!string.IsNullOrEmpty(tmp))
+            {
+                bool allow;
+                if (bool.TryParse(tmp, out allow))
+                {
+                    cmdLine.AllowObjectDelete = allow;
+                }
+                else
+                {
+                    log.LogWarning($"The environment variable {ContainerEnvVariables.AllowObjectDelete} is expecting a boolean value but retrieved '{tmp}'");
+                }
+             }
+            else
+            {
+                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.AllowObjectDelete}");
+            }
+
+
+            //If KeyVault is provided, these will get read from KeyVault Secrets
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.StorageAccountKey);
+                if (!string.IsNullOrEmpty(tmp))
+                {
+                    cmdLine.StorageAccountKey = tmp;
+                }
+                else
+                {
+                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.StorageAccountKey}");
+                }
+
+                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubConnectionString);
+                if (!string.IsNullOrEmpty(tmp))
+                {
+                    cmdLine.EventHubConnection = tmp;
+                }
+                else
+                {
+                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.EventHubConnectionString}");
+                }
+
+                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString);
+                if (!string.IsNullOrEmpty(tmp))
+                {
+                    cmdLine.ServiceBusTopicConnection = tmp;
+                }
+                else
+                {
+                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.ServiceBusTopicConnectionString}");
+                }
+
+                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.UserName);
+                if (!string.IsNullOrEmpty(tmp))
+                {
+                    cmdLine.UserName = tmp;
+                }
+                else
+                {
+                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.UserName}");
+                }
+
+                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.Password);
+                if (!string.IsNullOrEmpty(tmp))
+                {
+                    cmdLine.Password = tmp;
+                }
+                else
+                {
+                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.Password}");
+                }
+            }
+           
+
             //cmdLine.KeyVaultName = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
             //cmdLine.PlatinumDacpac = Environment.GetEnvironmentVariable(ContainerEnvVariables.DacpacName);
 
@@ -167,9 +244,22 @@ namespace SqlBuildManager.Console.ContainerApp
         private static string GetParametersString(CommandLineArgs cmdLine)
         {
             var parms = new ContainerAppParameters();
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                parms.Password = new Password() { Value = cmdLine.AuthenticationArgs.Password };
+                parms.StorageAccountKey = new StorageAccountKey() { Value = cmdLine.ConnectionArgs.StorageAccountKey };
+                parms.EventHubConnectionString = new EventHubConnectionString() { Value = cmdLine.ConnectionArgs.EventHubConnectionString };
+                parms.Username = new Username() { Value = cmdLine.AuthenticationArgs.UserName };
+                
+            }else
+            {
+                parms.IdentityName = new IdentityName() { Value = cmdLine.IdentityArgs.IdentityName };
+                parms.IdentityResourceGroup = new IdentityResourceGroup { Value = cmdLine.IdentityArgs.ResourceGroup };
+                parms.KeyVaultName = new KeyVaultName() { Value = cmdLine.ConnectionArgs.KeyVaultName };
+                parms.IdentityClientId = new IdentityClientId() { Value = cmdLine.IdentityArgs.ClientId };
+            }
             parms.Concurrency = new Concurrency() { Value = cmdLine.Concurrency.ToString() };
             parms.ConcurrencyType = new Internal.ConcurrencyType() { Value = cmdLine.ConcurrencyType.ToString() };
-            parms.Password = new Password() { Value = cmdLine.AuthenticationArgs.Password };
             parms.ImageTag = new ImageTag() { Value = cmdLine.ContainerRegistryArgs.ImageTag };
             parms.ImageName = new ImageName() { Value = cmdLine.ContainerRegistryArgs.ImageName };
             parms.RegistryServer = new RegistryServer() { Value = cmdLine.ContainerRegistryArgs.RegistryServer };
@@ -177,17 +267,23 @@ namespace SqlBuildManager.Console.ContainerApp
             parms.RegistryPassword = new RegistryPassword() { Value = cmdLine.ContainerRegistryArgs.RegistryPassword };
             parms.EnvironmentName = new EnvironmentName() { Value = cmdLine.ContainerAppArgs.EnvironmentName };
             parms.ServiceBusTopicConnectionString = new ServiceBusTopicConnectionString() { Value = cmdLine.ConnectionArgs.ServiceBusTopicConnectionString };
-            parms.EventHubConnectionString = new EventHubConnectionString() { Value = cmdLine.ConnectionArgs.EventHubConnectionString };
             parms.Jobname = new Jobname() { Value = cmdLine.JobName };
             parms.Location = new Internal.Location() { Value = cmdLine.ContainerAppArgs.Location };
             parms.MaxContainers = new MaxContainers() { Value = cmdLine.ContainerAppArgs.MaxContainerCount };
             parms.PackageName = new PackageName() { Value = Path.GetFileName(cmdLine.BuildFileName) };
-            parms.StorageAccountKey = new StorageAccountKey() { Value = cmdLine.ConnectionArgs.StorageAccountKey };
             parms.StorageAccountName = new StorageAccountName() { Value = cmdLine.ConnectionArgs.StorageAccountName };
-            parms.Username = new Username() { Value = cmdLine.AuthenticationArgs.UserName };
-            parms.DacpacName = new DacpacName() { Value = "" };
+            if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
+            {
+                parms.DacpacName = new DacpacName() { Value = Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac) };
+            }
+            parms.AllowObjectDelete = new AllowObjectDelete() { Value = cmdLine.AllowObjectDelete.ToString() };
 
-            var jsonText = JsonSerializer.Serialize<ContainerAppParameters>(parms);
+            var jsonText = JsonSerializer.Serialize<ContainerAppParameters>(parms, new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                
+            });
             return jsonText;
 
         }
@@ -224,21 +320,31 @@ namespace SqlBuildManager.Console.ContainerApp
 
 
 
-        internal static string GetTemplateFileContents(bool envOnly, bool includeRegistry)
+        internal static string GetTemplateFileContents(CommandLineArgs cmdLine)
         {
-            
             string exePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
             string pathToTemplates = Path.Combine(exePath, "ContainerApp");
             string template;
-            if(!envOnly)
+
+            //Pick the proper template
+            if(!cmdLine.ContainerAppArgs.EnvironmentVariablesOnly)
             {
-                template =  File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_arm_template.json"));
+                if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+                {
+                    template = File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_arm_template.json"));
+                }
+                else
+                {
+                    template = File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_identity_arm_template.json"));
+                }
             }
             else
             {
                 template =  File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_env_arm_template.json"));
             }
-            if(includeRegistry)
+
+            //Add Container Registry information if provided
+            if(!string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
             {
                 var registrySnippit = File.ReadAllText(Path.Combine(pathToTemplates, "registries.json"));
                 template = template.Replace("\"registriesplaceholder\"", registrySnippit);
@@ -247,6 +353,7 @@ namespace SqlBuildManager.Console.ContainerApp
             {
                 template = template.Replace("\"registriesplaceholder\"", "");
             }
+
             return template;
         }    
            

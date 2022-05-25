@@ -42,6 +42,7 @@ using SqlSync.Validator;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Logging;
 using sb = SqlSync.SqlBuild;
+using System.Net.Http;
 //using SqlBuildManager.Enterprise.CodeReview;
 namespace SqlSync.SqlBuild
 
@@ -4368,7 +4369,7 @@ namespace SqlSync.SqlBuild
                         }
                         catch (Exception exe)
                         {
-                            log.LogWarning(exe, "Unable to read file '{0}' for single file policy check validation");
+                            log.LogWarning(exe, $"Unable to read file for single file policy check validation");
                         }
 
                     }
@@ -7816,24 +7817,16 @@ namespace SqlSync.SqlBuild
                         {
                             try
                             {
-                                System.Net.WebRequest req = System.Net.WebRequest.Create(fileURL[i]);
-                                req.Proxy = System.Net.WebRequest.DefaultWebProxy;
-                                req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                                System.Net.WebResponse resp = req.GetResponse();
-                                var redirectUrl = resp.ResponseUri.AbsoluteUri;
-                                var ver = redirectUrl.Substring(redirectUrl.LastIndexOf("/v") + 2);
+                                var httpClient = new HttpClient();
+                                var resp = httpClient.GetAsync(fileURL[i]).GetAwaiter().GetResult();
+                                var verFull = resp.RequestMessage.RequestUri.AbsolutePath;
+                                var ver = verFull.Substring(verFull.LastIndexOf("/v") + 2);
 
                                 verData.LatestVersion = new Version(ver);
                                 verData.LastCompatableVersion = new Version(ver);
 
                                 string changeNotesFilePath = "https://raw.githubusercontent.com/mmckechney/SqlBuildManager/master/CHANGELOG.md";
-                                req = System.Net.WebRequest.Create(changeNotesFilePath);
-                                req.Proxy = System.Net.WebRequest.DefaultWebProxy;
-                                req.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                                resp = req.GetResponse();
-                                StreamReader srChangeNotes = new StreamReader(resp.GetResponseStream());
-                                string changeNotesFileContents = srChangeNotes.ReadToEnd();
-                                srChangeNotes.Close();
+                                var changeNotesFileContents = httpClient.GetStringAsync(changeNotesFilePath).GetAwaiter().GetResult();
 
 
                                 verData.ReleaseNotes = changeNotesFileContents;

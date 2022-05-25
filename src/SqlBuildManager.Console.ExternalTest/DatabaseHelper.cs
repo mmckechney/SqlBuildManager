@@ -1,7 +1,12 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+
+using System.IO;
+
 namespace SqlBuildManager.Console.ExternalTest
 {
     class DatabaseHelper
@@ -73,6 +78,36 @@ namespace SqlBuildManager.Console.ExternalTest
             }
 
             return string.Empty;
+        }
+
+        internal static string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
+        {
+            var log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", @"C:\temp");
+            log.LogInformation("Creating DACPAC for tests");
+            string fullname = Path.GetFullPath($"TestConfig/{database}.dacpac");
+
+            var args = new string[]{
+                "dacpac",
+                "--username", cmdLine.AuthenticationArgs.UserName,
+                "--password", cmdLine.AuthenticationArgs.Password,
+                "--dacpacname", fullname,
+                "--database", database,
+                "--server", server };
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            if (result == 0)
+            {
+                return fullname;
+            }
+            else
+            {
+                return null;
+            }
+
         }
 
 
