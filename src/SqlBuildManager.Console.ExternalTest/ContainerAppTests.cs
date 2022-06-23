@@ -189,8 +189,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest", "true",
                 "--monitor", "true",
                 "--env", "true",
-                "--stream", "true"//,
-                //"--deletewhendone", "true"
+                "--stream", "true",
+                "--deletewhendone", "true"
             };
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -488,6 +488,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //Create another table in the first that will be applied when the custom DACPAC is created
             DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+            DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
 
             //enqueue the topic messages
             args = new string[]{

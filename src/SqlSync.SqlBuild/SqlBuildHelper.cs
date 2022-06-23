@@ -17,6 +17,7 @@ using SqlSync.Constants;
 using System.Linq;
 using SqlBuildManager.Interfaces.Console;
 using Microsoft.Extensions.Logging;
+using Polly;
 namespace SqlSync.SqlBuild
 {
 	/// <summary>
@@ -1884,7 +1885,11 @@ namespace SqlSync.SqlBuild
 			{
 				BuildConnectData cData = new BuildConnectData();
                 cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName, this.connData.UserId, this.connData.Password, connData.AuthenticationType, this.connData.ScriptTimeout);
-				cData.Connection.Open();
+
+                //Add a robust retry policy on database connection opening
+                var pollyConnection = Policy.Handle<SqlException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
+                pollyConnection.Execute(() => cData.Connection.Open());
+
 				cData.HasLoggingTable = LogTableExists(cData.Connection);
 				cData.Connection.InfoMessage +=new SqlInfoMessageEventHandler(Connection_InfoMessage);
                 if(!databaseName.Equals(this.logToDatabaseName) && this.isTransactional) //we don't want a transaction for the logging database
