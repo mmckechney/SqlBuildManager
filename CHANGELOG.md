@@ -1,6 +1,6 @@
-﻿# SQL Build Manager Change Log
+# SQL Build Manager Change Log
 
-### Version 14.2.2
+### Version 14.3.0
 - *ADDED:* Managed Identity and Key Vault support for Container Apps
 - *ADDED:* Categorized subcommands in command line help output
 - *ADDED:* DACPAC as source now supported with Container Apps, Kubernetes and Azure Container Instance
