@@ -86,7 +86,6 @@
     <None Include="Images\SqlBuildIcon.psp" />
     <None Include="Images\SqlBuildIcon2.psp" />
     <None Include="Images\storedproc.xcf" />
-    <None Include="packages.config" />
     <None Include="Properties\DataSources\SqlBuildManager.ServiceClient.Sbm.BuildService.BuildRecord.datasource" />
     <None Include="Properties\DataSources\SqlBuildManager.ServiceClient.ServerConfigData.datasource" />
     <None Include="Properties\DataSources\SqlSync.DbInformation.DatabaseItem.datasource" />

@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.Constants", "SqlSyn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSync.DbInformation", "SqlSync.DbInformation\SqlSync.DbInformation.csproj", "{37A22666-195A-4CBB-A541-CFFBFB9D7905}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Console", "SqlBuildManager.Console\SqlBuildManager.Console.csproj", "{E4496045-D324-4297-BE19-EBE664129C71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Console", "SqlBuildManager.Console\sbm.csproj", "{E4496045-D324-4297-BE19-EBE664129C71}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.ScriptHandling", "SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj", "{AEBC2C93-C00E-4F48-8C83-0F69417F0C25}"
 EndProject
