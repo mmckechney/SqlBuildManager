@@ -81,10 +81,13 @@ namespace SqlBuildManager.Enterprise
                 if (!configPath.ToLower().StartsWith("http"))
                 {
                     configPath = Path.GetFullPath(configPath);
+                    configuration = File.ReadAllText(configPath);
                 }
-                var httpClient = new HttpClient();
-                configuration = httpClient.GetStringAsync(configPath).GetAwaiter().GetResult();
-
+                else
+                {
+                    var httpClient = new HttpClient();
+                    configuration = httpClient.GetStringAsync(configPath).GetAwaiter().GetResult();
+                }
                 //Write this file to the local path, in case it is unavailable next time.
                 if (File.Exists(localConfigPath))
                     File.SetAttributes(localConfigPath, FileAttributes.Normal);

@@ -111,7 +111,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest", "true",
                 "--monitor", "true",
                 "--stream", "true",
-                "--delete", "true"
+                "--deletewhendone", "true"
 
             };
             val = rootCommand.InvokeAsync(args);
@@ -189,8 +189,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest", "true",
                 "--monitor", "true",
                 "--env", "true",
-                "--stream", "true",
-                "--delete", "true"
+                "--stream", "true"//,
+                //"--deletewhendone", "true"
             };
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -296,7 +296,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest", "true",
                 "--monitor", "true",
                 "--stream", "true",
-                "--delete", "true"
+                "--deletewhendone", "true"
 
             };
             val = rootCommand.InvokeAsync(args);
@@ -405,7 +405,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest", "true",
                 "--monitor", "true",
                 "--stream", "true",
-                "--delete", "true"
+                "--deletewhendone", "true"
 
             };
             val = rootCommand.InvokeAsync(args);
@@ -518,7 +518,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest", "true",
                 "--monitor", "true",
                 "--stream", "true",
-                "--delete", "true",
+                "--deletewhendone", "true",
                 "--allowobjectdelete", "true"
 
             };

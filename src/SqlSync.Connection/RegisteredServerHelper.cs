@@ -76,8 +76,17 @@ namespace SqlSync.Connection
             string serverFileContents = string.Empty;
             try
             {
-                var httpClient = new HttpClient();
-                serverFileContents = httpClient.GetStringAsync(RegisteredServerHelper.RegisteredServerFileName).GetAwaiter().GetResult();
+                if(RegisteredServerHelper.RegisteredServerFileName.ToLower().StartsWith("http"))
+                {
+                    var httpClient = new HttpClient();
+                    serverFileContents = httpClient.GetStringAsync(RegisteredServerHelper.RegisteredServerFileName).GetAwaiter().GetResult();
+                }
+                else
+                {
+                    serverFileContents = File.ReadAllText(RegisteredServerHelper.RegisteredServerFileName);
+
+                }
+
 
                 //Write this file to the local path, in case it is unavailable next time.
                 if (!File.Exists(localRegisteredServerPath))

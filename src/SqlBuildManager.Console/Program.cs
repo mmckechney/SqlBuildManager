@@ -1,36 +1,11 @@
-﻿using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Specialized;
-using Microsoft.Extensions.Logging;
-using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Console.Kubernetes;
-using SqlBuildManager.Console.Queue;
-using SqlBuildManager.Console.Threaded;
-using SqlBuildManager.Enterprise.Policy;
-using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.AdHocQuery;
-using SqlSync.SqlBuild.MultiDb;
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.ComponentModel;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static SqlSync.SqlBuild.SqlSyncBuildData;
-using sb = SqlSync.SqlBuild;
-using SqlBuildManager.Console.CloudStorage;
-using System.CommandLine.IO;
-using SqlBuildManager.Console.KeyVault;
-using System.Text.Json;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CommandLine;
+using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console
 {
