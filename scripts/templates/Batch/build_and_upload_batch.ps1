@@ -75,12 +75,16 @@ if($action -ne "BuildOnly")
     foreach ($env in $vars)
     {
         Write-Host "Creating new Azure Batch Application named $($env.ApplicationName)"  -ForegroundColor DarkGreen
-        az batch application create --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" -o table
+       # az batch application create --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" -o table
         
         Write-Host "Uploading application package $($env.ApplicationName) [$($env.BuildOutputZip)] to Azure Batch account"  -ForegroundColor DarkGreen
+
+        ##  Work around -- the Azure CLI batch upload has been giving errors, so uploading with PowerShell 
         az batch application package create --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" --version "$version" --package-file "$($env.BuildOutputZip)"  -o table
+       # New-AzBatchApplicationPackage -AccountName "$batchAcctName" -ResourceGroupName "$resourceGroupName" -ApplicationId "$($env.ApplicationName)" -ApplicationVersion "$version" -Format zip -FilePath "$($env.BuildOutputZip)"
         
         Write-Host "Setting default application for  $($env.ApplicationName) version to $version"  -ForegroundColor DarkGreen
-        az batch application set --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" --default-version "$version" -o table
+        #az batch application set --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" --default-version "$version" -o table
     }
 }
+

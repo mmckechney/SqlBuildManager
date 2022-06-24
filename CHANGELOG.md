@@ -1,5 +1,10 @@
 # SQL Build Manager Change Log
 
+### Version 14.3.1
+ - *ADDED:* New `--monitor` argument for `sbm batch run` to get running count of datbase activity  (commits, error, in queue)
+ - *ADDED:* New `--stream` argument for `sbm batch run` (used in conjunction with `--monitor`) to also stream specific database completion messages as the occur
+ - *ADDED:* Monitoring of remaining queue messages only when Service Bus is used, but no Event Hub connection is provided
+
 ### Version 14.3.0
 - *ADDED:* Managed Identity and Key Vault support for Container Apps
 - *ADDED:* Categorized subcommands in command line help output

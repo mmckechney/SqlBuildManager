@@ -31,6 +31,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using sb = SqlSync.SqlBuild;
 using clb = SqlBuildManager.Console.CommandLine.CommandLineBuilder;
+using SqlBuildManager.Console.Batch;
 
 namespace SqlBuildManager.Console
 {
@@ -238,7 +239,7 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        internal async static Task<int> RunBatchExecution(CommandLineArgs cmdLine)
+        internal static int RunBatchExecution(CommandLineArgs cmdLine, bool monitor = false, bool unittest = false, bool stream = false)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -249,13 +250,33 @@ namespace SqlBuildManager.Console
 
             DateTime start = DateTime.Now;
             Batch.Execution batchExe = new Batch.Execution(cmdLine);
+
             log.LogDebug("Entering Batch Execution");
             log.LogInformation("Running Batch Execution...");
             int retVal;
             string readOnlySas;
-            (retVal, readOnlySas) = await batchExe.StartBatch();
+            Task monitorTask = null;
+         
+           
+            //Register the monitoring events if designated
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) && monitor)
+            {
+                batchExe.BatchProcessStartedEvent += new Batch.BatchMonitorEventHandler(Batch_MonitorStart);
+                batchExe.BatchExecutionCompletedEvent += new BatchMonitorEventHandler(Batch_MonitorEnd);
+            }
+            else
+            {
+                stream = false;
+            }
 
-            //await MonitorServiceBusRuntimeProgress(cmdLine, false, false);
+            Task<(int, string)> batchExeTask = batchExe.StartBatch(stream,unittest);
+            batchExeTask.Wait();
+            (retVal, readOnlySas) = batchExeTask.Result;
+            
+            if (monitorTask != null)
+            {
+                monitorTask.Wait(500);
+            }
 
             if (retVal == (int)ExecutionReturn.Successful)
             {
@@ -278,6 +299,16 @@ namespace SqlBuildManager.Console
             log.LogDebug("Exiting Batch Execution");
 
             return retVal;
+        }
+
+        private static Task<int> batchMonitorTask = null;
+        private static void Batch_MonitorStart(object sender, BatchMonitorEventArgs e)
+        {
+            batchMonitorTask  = MonitorServiceBusRuntimeProgress(e.CmdLine, e.Stream,DateTime.UtcNow,  e.UnitTest);
+        }
+        private static void Batch_MonitorEnd(object sender, EventArgs e)
+        {
+            Worker.activeServiceBusMonitoring = false;
         }
 
         internal static int RunBatchQuery(CommandLineArgs cmdLine)
@@ -618,7 +649,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static int RunThreadedExecution(CommandLineArgs cmdLine)
+        internal static int RunThreadedExecution(CommandLineArgs cmdLine, bool unittest = false)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
@@ -845,8 +876,10 @@ namespace SqlBuildManager.Console
                 System.Threading.Thread.Sleep(15000);
             }
         }
+        private static bool activeServiceBusMonitoring = true;
         internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool stream, DateTime? utcStartDate, bool unittest = false, bool checkAciState = false)
         {
+            Worker.activeServiceBusMonitoring = true;
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 bool kvSuccess;
@@ -858,12 +891,6 @@ namespace SqlBuildManager.Console
                 }
             }
             int targets = 0;
-            if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && File.Exists(cmdLine.MultiDbRunConfigFileName))
-            {
-                var lines = File.ReadAllLines(cmdLine.MultiDbRunConfigFileName);
-                targets = lines.Where(l => !string.IsNullOrWhiteSpace(l)).Count();
-                System.Console.WriteLine($"Monitoring for the status of {targets} databases");
-            }
 
             var qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
 
@@ -872,8 +899,22 @@ namespace SqlBuildManager.Console
             (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
             var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, storageString, jobName, jobName);
 
-            CancellationTokenSource cancelSource = new CancellationTokenSource();
-            var eventTask = ehandler.MonitorEventHub(stream, utcStartDate, cancelSource.Token);
+            Task eventHubMonitorTask = null;
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
+            {
+                CancellationTokenSource cancelSource = new CancellationTokenSource();
+                eventHubMonitorTask = ehandler.MonitorEventHub(stream, utcStartDate, cancelSource.Token);
+            }else
+            {
+                log.LogInformation("No Event Hub connection provided. Unable to track live progress other than Queue message count.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && File.Exists(cmdLine.MultiDbRunConfigFileName))
+            {
+                var lines = File.ReadAllLines(cmdLine.MultiDbRunConfigFileName);
+                targets = lines.Where(l => !string.IsNullOrWhiteSpace(l)).Count();
+                System.Console.WriteLine($"Monitoring for the status of {targets} databases");
+            }
 
             long messageCount;
 
@@ -882,7 +923,7 @@ namespace SqlBuildManager.Console
             int lastErrorCount = -1;
             int lastEventCount = -1;
             int events = 0;
-            int error, commit;
+            int error = 0, commit = 0;
             bool firstLoop = true;
             int cursorStepBack = (targets == 0) ? 3 : 4;
             int unitTestLoops = 0;
@@ -891,7 +932,7 @@ namespace SqlBuildManager.Console
                 _ = GetAciErrorState(cmdLine);
             }
 
-            while (true)
+            while (true && Worker.activeServiceBusMonitoring)
             {
 
                 if (Worker.aciIsInErrorState)
@@ -901,21 +942,31 @@ namespace SqlBuildManager.Console
                     return -1;
                 }
 
+                var lines = new List<CursorStatusItem>();
                 messageCount = await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
                 (commit, error, events) = ehandler.GetCommitErrorAndScannedCounts();
-                var lines = new List<CursorStatusItem>()
+                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
                 {
-                    new CursorStatusItem(){Label= "Events Scanned:", Counter = events},
-                    new CursorStatusItem(){Label= "Remaining Messages:", Counter = messageCount},
-                    new CursorStatusItem(){Label= "Database Commits:", Counter = commit},
-                    new CursorStatusItem(){Label= "Database Errors:", Counter = error}
-                };
-                if(targets > 0)
+                    
+                    lines = new List<CursorStatusItem>()
+                    {
+                        new CursorStatusItem(){Label= "Events Scanned:", Counter = events},
+                        new CursorStatusItem(){Label= "Remaining Messages:", Counter = messageCount},
+                        new CursorStatusItem(){Label= "Database Commits:", Counter = commit},
+                        new CursorStatusItem(){Label= "Database Errors:", Counter = error}
+                    };
+                    if (targets > 0)
+                    {
+                        lines.Insert(2, new CursorStatusItem() { Label = "Remaining Databases:", Counter = (targets - commit - error) });
+                    }
+                }
+                else
                 {
-                    lines.Insert(2, new CursorStatusItem() { Label = "Remaining Databases:", Counter = (targets - commit - error) });
+                    lines.Add(new CursorStatusItem() { Label = "Remaining Queue Messages:", Counter = messageCount });
                 }
                 if (unittest) firstLoop = true; //Won't have a console to change position for unit tests
-                SetCursorStatus(lines, firstLoop);
+                SetCursorStatus(lines, firstLoop, stream);
+
                 
 
 
@@ -937,7 +988,9 @@ namespace SqlBuildManager.Console
                     }
                     else
                     {
-                        eventTask.Wait(500);
+                        if(eventHubMonitorTask != null) 
+                            eventHubMonitorTask.Wait(500);
+
                         break;
                     }
                 }
@@ -967,18 +1020,22 @@ namespace SqlBuildManager.Console
                 unitTestLoops++;
             }
 
-            eventTask.Dispose();
+            eventHubMonitorTask.Dispose();
             ehandler.Dispose();
 
             await qManager.DeleteSubscription();
-            log.LogInformation("Consolidating log files");
-            StorageManager.ConsolidateLogFiles(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, new List<string>());
-            string sas = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, true);
 
-            log.LogInformation($"Log files can be found here: {sas}");
-            log.LogInformation("The read-only SAS token URL is valid for 7 days.");
-            log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
+            //Batch jobs have their own consolidation....
+            if (cmdLine.BatchArgs == null || string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
+            {
+                log.LogInformation("Consolidating log files");
+                StorageManager.ConsolidateLogFiles(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, new List<string>());
+                string sas = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, true);
 
+                log.LogInformation($"Log files can be found here: {sas}");
+                log.LogInformation("The read-only SAS token URL is valid for 7 days.");
+                log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
+            }
             if (error > 0)
             {
                 return 1;
@@ -996,7 +1053,7 @@ namespace SqlBuildManager.Console
             public string Label { get; set; } = "";
             public long Counter { get; set; } = 0;
         }
-        private static void SetCursorStatus(List<CursorStatusItem> items, bool first)
+        private static void SetCursorStatus(List<CursorStatusItem> items, bool first, bool stream)
         {
             string spinner = "| ";
             string spacer = "  ";
@@ -1008,7 +1065,7 @@ namespace SqlBuildManager.Console
                 case 2: spinner = "\\ "; break;
                 case 3: spinner = "| "; break;
             }
-            if (!first)
+            if (!first && !stream)
             {
                 System.Console.SetCursorPosition(0, System.Console.CursorTop - (items.Count()-1));
             }
@@ -1016,10 +1073,24 @@ namespace SqlBuildManager.Console
             StringBuilder sb = new StringBuilder();
             for(int i=0;i<items.Count;i++)
             {
-                sb.AppendLine($"{spinner}{items[i].Label.PadRight(maxLabel, ' ')}{spacer}{items[i].Counter.ToString().PadLeft(5,'0')}");
-                spinner = "  ";
+                if (!stream)
+                {
+                    sb.AppendLine($"{spinner}{items[i].Label.PadRight(maxLabel, ' ')}{spacer}{items[i].Counter.ToString().PadLeft(5, '0')}");
+                    spinner = "  ";
+                }
+                else
+                {
+                    sb.Append($"{items[i].Label.PadRight(maxLabel, ' ')}{spacer}{items[i].Counter.ToString().PadLeft(5, '0')} | ");
+                }
             }
-            System.Console.Write(sb.ToString().Trim());
+            if (!stream)
+            {
+                System.Console.Write(sb.ToString().Trim());
+            }
+            else
+            {
+                System.Console.WriteLine(sb.ToString().Substring(0, sb.Length -2));
+            }
         }
 
         internal static async Task<int> RunContainerAppWorker(CommandLineArgs cmdLine)
@@ -1533,7 +1604,7 @@ namespace SqlBuildManager.Console
                         new CursorStatusItem(){Label= "Database Commits:", Counter = currentCommit},
                         new CursorStatusItem(){Label= "Database Errors:", Counter = currentError}
                 };
-                SetCursorStatus(lines, firstLoop);
+                SetCursorStatus(lines, firstLoop, false);
                 Thread.Sleep(1000);
                 firstLoop = false;
             }

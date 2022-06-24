@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+
 namespace SqlBuildManager.Console.ExternalTest
 {
     /// <summary>
@@ -156,7 +158,6 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
             }
         }
-        
 
         [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
@@ -666,7 +667,73 @@ namespace SqlBuildManager.Console.ExternalTest
             "--concurrencytype", concurType.ToString(),
             "--concurrency", concurrency.ToString(),
             "--jobname", jobName,
-            "--unittest"};
+            "--unittest",
+            "--monitor",
+            "--stream"
+            };
+
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+        }
+
+        [DataRow("run", "TestConfig/settingsfile-linux-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Count, 5)]
+        [DataTestMethod]
+        public void Batch_Queue_SBMSource_MissingEventHubConnection_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            string settingFileNoEventHub = Path.Combine(Path.GetDirectoryName(settingsFile), "settingsfile-no-eventhub.json");
+
+            CommandLineArgs cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingFileNoEventHub) };
+            cmdLine.ConnectionArgs.EventHubConnectionString = null;
+            var updatedJson = JsonConvert.SerializeObject(cmdLine, Formatting.Indented, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
+            File.WriteAllText(settingFileNoEventHub, updatedJson);
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+
+            string jobName = GetUniqueBatchJobName("batch-sbm");
+            int startingLine = LogFileCurrentLineCount();
+
+             var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingFileNoEventHub,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override" , this.overrideFilePath,
+                "--concurrencytype",  concurType.ToString(),
+                "--jobname", jobName};
+
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var  result = val.Result;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+
+            args = new string[]{
+            "batch",  batchMethod,
+            "--settingsfile", settingFileNoEventHub,
+            "--settingsfilekey", this.settingsFileKeyPath,
+            "--override", this.overrideFilePath,
+            "--packagename", sbmFileName,
+            "--concurrencytype", concurType.ToString(),
+            "--concurrency", concurrency.ToString(),
+            "--jobname", jobName,
+            "--unittest",
+            "--monitor",
+            "--stream"
+            };
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -724,7 +791,10 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrencytype", concurType,
                 "--concurrency", "5",
                 "--jobname", jobName,
-                "--unittest"};
+                "--unittest",
+                "--monitor",
+                "--stream"
+            };
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -784,7 +854,10 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrencytype", concurType,
                 "--concurrency", "5",
                 "--jobname", jobName,
-                "--unittest"};
+                "--unittest",
+                "--monitor",
+                "--stream"
+            };
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -904,7 +977,10 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrencytype", concurType,
                 "--concurrency", "5",
                 "--jobname", jobName,
-                "--unittest"};
+                "--unittest",
+                "--monitor",
+                "--stream"
+            };
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();

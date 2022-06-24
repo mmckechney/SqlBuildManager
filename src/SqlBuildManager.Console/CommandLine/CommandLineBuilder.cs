@@ -69,7 +69,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<DirectoryInfo> pathOption = new Option<DirectoryInfo>("--path", "Path to save secrets.yaml and runtime.yaml files").ExistingOnly();
 
         private static Option<bool> unitTestOption = new Option<bool>("--unittest", () => false, "Designation that execution is running as a unit test") { IsHidden = true };
-        private static Option<bool> streamEventsOption = new Option<bool>("--stream", () => false, "Stream database event log events (Commits and Errors");
+        private static Option<bool> streamEventsOption = new Option<bool>("--stream", () => false, "Stream database Event Log events (database Commit and Error messages)");
 
         private static Option<bool> decryptedOption = new Option<bool>("--decrypted", "Indicating that the settings file is already in clear text");
         private static Option<string> jobnameOption = new Option<string>(new string[] { "--jobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed");
@@ -437,12 +437,13 @@ namespace SqlBuildManager.Console.CommandLine
                     platinumdbsourceOption,
                     platinumserversourceOption,
                     timeoutretrycountOption,
-                    defaultscripttimeoutOption
+                    defaultscripttimeoutOption, 
+                    unitTestOption
                 };
                 DatabaseAuthArgs.ForEach(o => cmd.Add(o));
                 cmd.Add(authtypeOption);
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunThreadedExecution);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecution);
                 return cmd;
             }
         }
@@ -507,7 +508,10 @@ namespace SqlBuildManager.Console.CommandLine
                     forcecustomdacpacOption,
                     platinumdbsourceOption,
                     platinumserversourceOption,
-                    unitTestOption
+                    new Option<bool>("--monitor", () => false, "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument"),
+                    unitTestOption,
+                    streamEventsOption,
+                   
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
                 BatchSettingsOptions.ForEach(o => cmd.Add(o));
@@ -516,7 +520,7 @@ namespace SqlBuildManager.Console.CommandLine
                 ConnectionAndSecretsOptionsForBatch.ForEach(o => cmd.Add(o));
                 IdentityArgumentsForBatch.ForEach(o => cmd.Add(o));
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchExecution);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool>(Worker.RunBatchExecution);
                 return cmd;
             }
         }
@@ -542,7 +546,9 @@ namespace SqlBuildManager.Console.CommandLine
                     outputcontainersasurlOption,
                     transactionalOption,
                     timeoutretrycountOption,
-                    unitTestOption
+                    unitTestOption,
+                    new Option<bool>("--monitor"){IsHidden = true}, //these two options aren't used and are added just for reusability in unit tests
+                    new Option<bool>("--stream"){IsHidden = true},
 
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
@@ -552,7 +558,7 @@ namespace SqlBuildManager.Console.CommandLine
                 ConnectionAndSecretsOptionsForBatch.ForEach(o => cmd.Add(o));
                 cmd.Add(authtypeOption);
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunThreadedExecution);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecution);
                 cmd.IsHidden = true;
                 return cmd;
             }

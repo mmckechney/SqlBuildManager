@@ -64,7 +64,7 @@ namespace SqlBuildManager.Console.Batch
             this.batchType = BatchType.Query;
         }
 
-        public async Task<(int retval, string readOnlySas)> StartBatch()
+        public async Task<(int retval, string readOnlySas)> StartBatch(bool stream = false, bool unittest = false)
         {
             string applicationPackage = string.Empty;
             if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ApplicationPackage))
@@ -239,7 +239,7 @@ namespace SqlBuildManager.Console.Batch
 
                 foreach (string filePath in inputFilePaths)
                 {
-                    inputFiles.Add(StorageManager.UploadFileToBatchContainer(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName,storageCreds, filePath));
+                    inputFiles.Add(StorageManager.UploadFileToBatchContainer(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName, storageCreds, filePath));
                 }
 
                 //Create the individual command lines for each node
@@ -274,7 +274,7 @@ namespace SqlBuildManager.Console.Batch
                 {
                     log.LogInformation($"Adding {splitTargets.Count} tasks to job [{jobId}]...");
                 }
-                else if(!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+                else if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
                 {
                     log.LogInformation($"Adding tasks to job [{jobId}]...");
                 }
@@ -316,7 +316,7 @@ namespace SqlBuildManager.Console.Batch
                              //   uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
 
                         };
- 
+
                     tasks.Add(task);
                 }
 
@@ -327,9 +327,19 @@ namespace SqlBuildManager.Console.Batch
                 TimeSpan timeout = TimeSpan.FromMinutes(30);
                 log.LogInformation($"Monitoring all tasks for 'Completed' state, timeout in {timeout}...");
 
+                if (this.BatchProcessStartedEvent  != null)
+                {
+                    this.BatchProcessStartedEvent(this,new BatchMonitorEventArgs(this.cmdLine,stream,unittest));
+                }
+
                 IEnumerable<CloudTask> addedTasks = batchClient.JobOperations.ListTasks(jobId);
 
                 batchClient.Utilities.CreateTaskStateMonitor().WaitAll(addedTasks, TaskState.Completed, timeout);
+
+                if (this.BatchExecutionCompletedEvent != null)
+                {
+                    this.BatchExecutionCompletedEvent(this, new BatchMonitorEventArgs(this.cmdLine, stream, unittest));
+                }
 
                 log.LogInformation("All tasks reached state Completed.");
 
@@ -985,5 +995,25 @@ namespace SqlBuildManager.Console.Batch
             }
         }
 
+        public event BatchMonitorEventHandler BatchProcessStartedEvent;
+        public event BatchMonitorEventHandler BatchExecutionCompletedEvent;
+
     }
+
+    public delegate void BatchMonitorEventHandler(object sender, BatchMonitorEventArgs e);
+     public class BatchMonitorEventArgs : EventArgs
+    {
+
+        public BatchMonitorEventArgs(CommandLineArgs cmdLine, bool stream, bool unittest)
+        {
+            CmdLine = cmdLine;
+            Stream = stream;
+            UnitTest = unittest;
+        }
+
+        public CommandLineArgs CmdLine { get; }
+        public bool Stream { get; }
+        public bool UnitTest { get; }
+    }
+
 }
