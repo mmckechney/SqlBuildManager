@@ -88,6 +88,9 @@ namespace SqlSync.Connection
                     builder.UserID = uid;
                     builder.Password = pw;
                     break;
+                case AuthenticationType.ManagedIdentity:
+                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryManagedIdentity;
+                    break;
                 case AuthenticationType.Password:
                 default:
                     builder.Authentication = SqlAuthenticationMethod.SqlPassword;

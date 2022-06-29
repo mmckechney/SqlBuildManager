@@ -41,7 +41,21 @@
               {
                 "name": "Sbm_AllowObjectDelete",
                 "value": "{{allowObjectDelete}}"
+              },
+              {
+                "name": "Sbm_AuthType",
+                "value": "{{authType}}"
+              },
+              {
+                "name": "Sbm_EventHubConnectionString",
+                "value": "{{eventHub}}"
+              },
+              {
+                "name": "Sbm_ServiceBusTopicConnectionString",
+                "value": "{{serviceBus}}"
               }
+
+
 
             ],
               "resources": {

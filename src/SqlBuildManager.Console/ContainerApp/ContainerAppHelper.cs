@@ -19,6 +19,7 @@ using SqlBuildManager.Console.ContainerApp.Internal;
 using System.Diagnostics;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.Arm;
+using SqlSync.Connection;
 
 namespace SqlBuildManager.Console.ContainerApp
 {
@@ -77,169 +78,7 @@ namespace SqlBuildManager.Console.ContainerApp
             }
         }
 
-        internal static CommandLineArgs ReadRuntimeEnvironmentVariables(CommandLineArgs cmdLine)
-        {
-            log.LogInformation("Reading environment variables for Continer App worker");
-            string tmp;
-
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
-            if (!string.IsNullOrEmpty(tmp))
-            {
-                cmdLine.KeyVaultName = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.KeyVaultName}");
-            }
-
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.IdentityClientId);
-            if (!string.IsNullOrEmpty(tmp))
-            {
-                cmdLine.ClientId = tmp;
-                AadHelper.ManagedIdentityClientId = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.IdentityClientId}");
-            }
-
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.JobName);
-            if(!string.IsNullOrEmpty(tmp))
-            {
-               cmdLine.JobName = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.JobName}");
-            }
-
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.PackageName);
-            if(!string.IsNullOrEmpty(tmp))
-            {
-               cmdLine.BuildFileName = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.PackageName}");
-            }
-
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.DacpacName);
-            if (!string.IsNullOrEmpty(tmp))
-            {
-                cmdLine.PlatinumDacpac = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.DacpacName}");
-            }
-
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.StorageAccountName);
-            if (!string.IsNullOrEmpty(tmp))
-            {
-                cmdLine.StorageAccountName = tmp;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.StorageAccountName}");
-            }
-
-            if (int.TryParse(Environment.GetEnvironmentVariable(ContainerEnvVariables.Concurrency), out int c))
-            {
-                cmdLine.Concurrency = c;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.Concurrency}");
-            }
-
-            if (Enum.TryParse<CommandLine.ConcurrencyType>(Environment.GetEnvironmentVariable(ContainerEnvVariables.ConcurrencyType), out CommandLine.ConcurrencyType ct))
-            {
-                cmdLine.ConcurrencyType = ct;
-            }
-            else
-            {
-                log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.ConcurrencyType}");
-            }
-
-            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete);
-            if (!string.IsNullOrEmpty(tmp))
-            {
-                bool allow;
-                if (bool.TryParse(tmp, out allow))
-                {
-                    cmdLine.AllowObjectDelete = allow;
-                }
-                else
-                {
-                    log.LogWarning($"The environment variable {ContainerEnvVariables.AllowObjectDelete} is expecting a boolean value but retrieved '{tmp}'");
-                }
-             }
-            else
-            {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.AllowObjectDelete}");
-            }
-
-
-            //If KeyVault is provided, these will get read from KeyVault Secrets
-            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
-            {
-                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.StorageAccountKey);
-                if (!string.IsNullOrEmpty(tmp))
-                {
-                    cmdLine.StorageAccountKey = tmp;
-                }
-                else
-                {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.StorageAccountKey}");
-                }
-
-                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubConnectionString);
-                if (!string.IsNullOrEmpty(tmp))
-                {
-                    cmdLine.EventHubConnection = tmp;
-                }
-                else
-                {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.EventHubConnectionString}");
-                }
-
-                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString);
-                if (!string.IsNullOrEmpty(tmp))
-                {
-                    cmdLine.ServiceBusTopicConnection = tmp;
-                }
-                else
-                {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.ServiceBusTopicConnectionString}");
-                }
-
-                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.UserName);
-                if (!string.IsNullOrEmpty(tmp))
-                {
-                    cmdLine.UserName = tmp;
-                }
-                else
-                {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.UserName}");
-                }
-
-                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.Password);
-                if (!string.IsNullOrEmpty(tmp))
-                {
-                    cmdLine.Password = tmp;
-                }
-                else
-                {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.Password}");
-                }
-            }
-           
-
-            //cmdLine.KeyVaultName = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
-            //cmdLine.PlatinumDacpac = Environment.GetEnvironmentVariable(ContainerEnvVariables.DacpacName);
-
-            return cmdLine;
-        }
+    
 
         private static string GetParametersString(CommandLineArgs cmdLine)
         {
@@ -248,16 +87,27 @@ namespace SqlBuildManager.Console.ContainerApp
             {
                 parms.Password = new Password() { Value = cmdLine.AuthenticationArgs.Password };
                 parms.StorageAccountKey = new StorageAccountKey() { Value = cmdLine.ConnectionArgs.StorageAccountKey };
-                parms.EventHubConnectionString = new EventHubConnectionString() { Value = cmdLine.ConnectionArgs.EventHubConnectionString };
                 parms.Username = new Username() { Value = cmdLine.AuthenticationArgs.UserName };
                 
             }else
             {
-                parms.IdentityName = new IdentityName() { Value = cmdLine.IdentityArgs.IdentityName };
-                parms.IdentityResourceGroup = new IdentityResourceGroup { Value = cmdLine.IdentityArgs.ResourceGroup };
                 parms.KeyVaultName = new KeyVaultName() { Value = cmdLine.ConnectionArgs.KeyVaultName };
+            }
+
+            if(!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
+            {
+                parms.IdentityName = new IdentityName() { Value = cmdLine.IdentityArgs.IdentityName };
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup))
+            {
+                parms.IdentityResourceGroup = new IdentityResourceGroup() { Value = cmdLine.IdentityArgs.ResourceGroup };
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
+            {
                 parms.IdentityClientId = new IdentityClientId() { Value = cmdLine.IdentityArgs.ClientId };
             }
+
+            parms.EventHubConnectionString = new EventHubConnectionString() { Value = cmdLine.ConnectionArgs.EventHubConnectionString };
             parms.Concurrency = new Concurrency() { Value = cmdLine.Concurrency.ToString() };
             parms.ConcurrencyType = new Internal.ConcurrencyType() { Value = cmdLine.ConcurrencyType.ToString() };
             parms.ImageTag = new ImageTag() { Value = cmdLine.ContainerRegistryArgs.ImageTag };
@@ -272,6 +122,7 @@ namespace SqlBuildManager.Console.ContainerApp
             parms.MaxContainers = new MaxContainers() { Value = cmdLine.ContainerAppArgs.MaxContainerCount };
             parms.PackageName = new PackageName() { Value = Path.GetFileName(cmdLine.BuildFileName) };
             parms.StorageAccountName = new StorageAccountName() { Value = cmdLine.ConnectionArgs.StorageAccountName };
+            parms.AuthType = new AuthType() { Value = cmdLine.AuthenticationArgs.AuthenticationType.ToString() };
             if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
             {
                 parms.DacpacName = new DacpacName() { Value = Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac) };
@@ -329,7 +180,7 @@ namespace SqlBuildManager.Console.ContainerApp
             //Pick the proper template
             if(!cmdLine.ContainerAppArgs.EnvironmentVariablesOnly)
             {
-                if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+                if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
                 {
                     template = File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_arm_template.json"));
                 }

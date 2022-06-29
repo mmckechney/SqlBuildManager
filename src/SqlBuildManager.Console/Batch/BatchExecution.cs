@@ -4,7 +4,9 @@ using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
 using Microsoft.Azure.Management.Batch;
+using Microsoft.Azure.Management.ContainerInstance.Fluent.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Rest.Azure;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
@@ -649,7 +651,7 @@ namespace SqlBuildManager.Console.Batch
                     parameters: poolParameters,
                     cancellationToken: default(CancellationToken));
 
-                if(!pool.Response.IsSuccessStatusCode)
+                if (!pool.Response.IsSuccessStatusCode)
                 {
                     log.LogWarning($"Issue creating pool: {pool.Body.ProvisioningState.ToString()}");
                     return false;

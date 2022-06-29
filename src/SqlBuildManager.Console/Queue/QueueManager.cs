@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MoreLinq;
 using Polly;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Console.Threaded;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
@@ -45,13 +46,33 @@ namespace SqlBuildManager.Console.Queue
             CreateSubscriptions().Wait();
         }
 
+        private string EnsureQualifiedNamespace(string input)
+        {
+            //Do we just have the Service Bus name?
+            if(input.ToLower().IndexOf("servicebus.windows.net") == -1)
+            {
+                input += ".servicebus.windows.net";
+            }
+            log.LogInformation($"Using Service Bus: {input}");
+            return input;
+        }
         public ServiceBusClient Client
         {
             get
             {
-                if(_client == null)
+                if (_client == null)
                 {
-                    _client = new ServiceBusClient(topicConnectionString);
+                    if (ConnectionValidator.IsServiceBusConnectionString(topicConnectionString))
+                    {
+                        _client = new ServiceBusClient(topicConnectionString);
+                    }
+                    else
+                    {
+                        //If not a full connection string, should be a qualified namespace for Azure Identity Auth
+                        var tmp = EnsureQualifiedNamespace(topicConnectionString);
+                        _client = new ServiceBusClient(tmp, Aad.AadHelper.TokenCredential);
+
+                    }
                 }
                 return _client;
             }
@@ -62,7 +83,16 @@ namespace SqlBuildManager.Console.Queue
             {
                 if (_adminClient == null)
                 {
-                    _adminClient = new ServiceBusAdministrationClient(topicConnectionString);
+                    if (ConnectionValidator.IsServiceBusConnectionString(topicConnectionString))
+                    {
+                        _adminClient = new ServiceBusAdministrationClient(topicConnectionString);
+                    }
+                    else
+                    {
+                        //If not a full connection string, should be a qualified namespace for Azure Identity Auth
+                        var tmp = EnsureQualifiedNamespace(topicConnectionString);
+                        _adminClient = new ServiceBusAdministrationClient(tmp, Aad.AadHelper.TokenCredential);
+                    }
                 }
                 return _adminClient;
             }
@@ -314,8 +344,10 @@ namespace SqlBuildManager.Console.Queue
                 switch(sbe.Reason)
                 {
                     case ServiceBusFailureReason.MessagingEntityNotFound: //This execption is thrown when the subscription has been deleted, return empty list to indicate no more messages
+                        log.LogInformation($"Service Bus response: MessagingEntityNotFound: {sbe.Message} ");
                         return lstMsg;
                     case ServiceBusFailureReason.ServiceTimeout:  //This execption is thrown when no session is available, return empty list to indicate no more messages
+                        log.LogInformation($"Service Bus response: ServiceTimeout: {sbe.Message} ");
                         return lstMsg;
                     case ServiceBusFailureReason.SessionLockLost: //Try to get a new session
                        return await GetSessionBasedTargetsFromQueue(maxMessages, true);
@@ -332,6 +364,11 @@ namespace SqlBuildManager.Console.Queue
                         throw;
                 }
                 
+            }
+            catch(Exception exe)
+            {
+                log.LogError($"Error getting messages: {exe.ToString()}");
+                return lstMsg;
             }
             return lstMsg;
         }

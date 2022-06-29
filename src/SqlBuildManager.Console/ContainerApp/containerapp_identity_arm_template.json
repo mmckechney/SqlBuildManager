@@ -42,11 +42,27 @@
       "defaultValue": "",
       "type": "String"
     },
+    "storageAccountKey": {
+      "defaultValue": "",
+      "type": "String"
+    },
     "storageAccountName": {
       "defaultValue": "",
       "type": "String"
     },
+    "eventHubConnectionString": {
+      "defaultValue": "",
+      "type": "String"
+    },
     "serviceBusTopicConnectionString": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "username": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "password": {
       "defaultValue": "",
       "type": "String"
     },
@@ -60,6 +76,14 @@
     },
     "registryServer": {
       "defaultValue": "",
+      "type": "String"
+    },
+    "allowObjectDelete": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "authType": {
+      "defaultValue": "Password",
       "type": "String"
     },
     "identityResourceGroup": {
@@ -77,12 +101,7 @@
     "keyVaultName": {
       "defaultValue": "",
       "type": "String"
-    },
-    "allowObjectDelete": {
-      "defaultValue": "",
-      "type": "String"
     }
-
   },
   "variables": {
     "environment_id": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.App/managedEnvironments/', parameters('environmentName'))]",
@@ -108,8 +127,28 @@
           "activeRevisionsMode": "single",
           "secrets": [
             {
+              "name": "storageaccountkey",
+              "value": "[parameters('storageAccountKey')]"
+            },
+            {
+              "name": "storageaccountname",
+              "value": "[parameters('storageAccountName')]"
+            },
+            {
+              "name": "eventhubconnectionstring",
+              "value": "[parameters('eventHubConnectionString')]"
+            },
+            {
               "name": "servicebustopicconnectionstring",
               "value": "[parameters('serviceBusTopicConnectionString')]"
+            },
+            {
+              "name": "username",
+              "value": "[parameters('userName')]"
+            },
+            {
+              "name": "password",
+              "value": "[parameters('password')]"
             },
             {
               "name": "[variables('var_registry_secret_name')]",
@@ -155,8 +194,28 @@
                   "value": "[parameters('concurrencyType')]"
                 },
                 {
+                  "name": "Sbm_StorageAccountKey",
+                  "secretRef": "storageaccountkey"
+                },
+                {
                   "name": "Sbm_StorageAccountName",
-                  "value": "[parameters('storageaccountname')]"
+                  "secretRef": "storageaccountname"
+                },
+                {
+                  "name": "Sbm_EventHubConnectionString",
+                  "secretRef": "eventhubconnectionstring"
+                },
+                {
+                  "name": "Sbm_ServiceBusTopicConnectionString",
+                  "secretRef": "servicebustopicconnectionstring"
+                },
+                {
+                  "name": "Sbm_UserName",
+                  "secretRef": "username"
+                },
+                {
+                  "name": "Sbm_Password",
+                  "secretRef": "password"
                 },
                 {
                   "name": "Sbm_KeyVaultName",
@@ -167,8 +226,20 @@
                   "value": "[parameters('identityClientId')]"
                 },
                 {
+                  "name": "Sbm_IdentityResourceGroup",
+                  "value": "[parameters('identityResourceGroup')]"
+                },
+                {
+                  "name": "Sbm_IdentityName",
+                  "value": "[parameters('identityClientId')]"
+                },
+                {
                   "name": "Sbm_AllowObjectDelete",
                   "value": "[parameters('allowObjectDelete')]"
+                },
+                {
+                  "name": "Sbm_AuthType",
+                  "value": "[parameters('authType')]"
                 }
               ]
             }

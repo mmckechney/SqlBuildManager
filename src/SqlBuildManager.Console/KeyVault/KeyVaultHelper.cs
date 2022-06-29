@@ -15,6 +15,7 @@ using System.Linq;
 using Polly;
 using Azure.Messaging.ServiceBus.Administration;
 using SqlBuildManager.Console.Aad;
+using SqlBuildManager.Console.Shared;
 
 namespace SqlBuildManager.Console.KeyVault
 {
@@ -93,8 +94,16 @@ namespace SqlBuildManager.Console.KeyVault
             var keys = new List<string>();
             var kvName = cmdLine.ConnectionArgs.KeyVaultName;
 
-            keys.Add(SaveSecret(kvName, KeyVaultHelper.EventHubConnectionString, cmdLine.ConnectionArgs.EventHubConnectionString));
-            keys.Add(SaveSecret(kvName, KeyVaultHelper.ServiceBusTopicConnectionString, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString));
+            if (ConnectionValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
+            { 
+                keys.Add(SaveSecret(kvName, KeyVaultHelper.EventHubConnectionString, cmdLine.ConnectionArgs.EventHubConnectionString));
+            }
+
+            if (ConnectionValidator.IsServiceBusConnectionString(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                keys.Add(SaveSecret(kvName, KeyVaultHelper.ServiceBusTopicConnectionString, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString));
+            }
+               
             keys.Add(SaveSecret(kvName, KeyVaultHelper.StorageAccountKey, cmdLine.ConnectionArgs.StorageAccountKey));
             keys.Add(SaveSecret(kvName, KeyVaultHelper.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountName));
             keys.Add(SaveSecret(kvName, KeyVaultHelper.UserName, cmdLine.AuthenticationArgs.UserName));
@@ -151,12 +160,7 @@ namespace SqlBuildManager.Console.KeyVault
                 retrieved.Add(KeyVaultHelper.StorageAccountKey);
             }
 
-            tmp = GetSecret(kvName, KeyVaultHelper.UserName);
-            if (!string.IsNullOrWhiteSpace(tmp))
-            {
-                cmdLine.UserName = tmp;
-                retrieved.Add(KeyVaultHelper.UserName);
-            }
+
 
             tmp = GetSecret(kvName, KeyVaultHelper.ContainerRegistryPassword);
             if (!string.IsNullOrWhiteSpace(tmp))
@@ -165,11 +169,21 @@ namespace SqlBuildManager.Console.KeyVault
                 retrieved.Add(KeyVaultHelper.ContainerRegistryPassword);
             }
 
-            tmp = GetSecret(kvName, KeyVaultHelper.Password);
-            if (!string.IsNullOrWhiteSpace(tmp))
+            if (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
             {
-                cmdLine.Password = tmp;
-                retrieved.Add(KeyVaultHelper.Password);
+                tmp = GetSecret(kvName, KeyVaultHelper.UserName);
+                if (!string.IsNullOrWhiteSpace(tmp))
+                {
+                    cmdLine.UserName = tmp;
+                    retrieved.Add(KeyVaultHelper.UserName);
+                }
+
+                tmp = GetSecret(kvName, KeyVaultHelper.Password);
+                if (!string.IsNullOrWhiteSpace(tmp))
+                {
+                    cmdLine.Password = tmp;
+                    retrieved.Add(KeyVaultHelper.Password);
+                }
             }
             if (cmdLine.BatchArgs != null && !string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchPoolName))
             {

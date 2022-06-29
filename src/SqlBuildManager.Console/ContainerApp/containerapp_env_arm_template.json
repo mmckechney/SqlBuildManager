@@ -81,6 +81,26 @@
     "allowObjectDelete": {
       "defaultValue": "",
       "type": "String"
+    },
+    "authType": {
+      "defaultValue": "Password",
+      "type": "String"
+    },
+    "identityResourceGroup": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "identityName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "identityClientId": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "keyVaultName": {
+      "defaultValue": "",
+      "type": "String"
     }
 
   },
@@ -94,7 +114,7 @@
       "name": "[concat('sbm',parameters('jobname'))]",
       "type": "Microsoft.App/containerApps",
       "apiVersion": "2022-03-01",
-      "kind": "workerapp",
+      "kind": "containerapp",
       "location": "[parameters('location')]",
       "properties": {
         "managedEnvironmentId": "[variables('environment_id')]",
@@ -192,9 +212,29 @@
                   "name": "Sbm_Password",
                   "value": "[parameters('password')]"
                 },
+		{
+                  "name": "Sbm_KeyVaultName",
+                  "value": "[parameters('keyVaultName')]"
+                },
+                {
+                  "name": "Sbm_IdentityClientId",
+                  "value": "[parameters('identityClientId')]"
+                },
+                {
+                  "name": "Sbm_IdentityResourceGroup",
+                  "value": "[parameters('identityResourceGroup')]"
+                },
+                {
+                  "name": "Sbm_IdentityName",
+                  "value": "[parameters('identityClientId')]"
+                },
                 {
                   "name": "Sbm_AllowObjectDelete",
                   "value": "[parameters('allowObjectDelete')]"
+                },
+                {
+                  "name": "Sbm_AuthType",
+                  "value": "[parameters('authType')]"
                 }
               ]
             }

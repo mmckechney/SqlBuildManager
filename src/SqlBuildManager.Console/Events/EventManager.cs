@@ -3,6 +3,7 @@ using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Processor;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Interfaces.Console;
 using System;
 using System.Collections.Generic;
@@ -73,7 +74,16 @@ namespace SqlBuildManager.Console.Events
 
                 if (_eventClient == null)
                 {
-                    _eventClient = new EventProcessorClient(this.BlobClient, consumerGroup, eventHubconnectionString);
+                    if (ConnectionValidator.IsEventHubConnectionString(eventHubconnectionString))
+                    {
+                        _eventClient = new EventProcessorClient(this.BlobClient, consumerGroup, eventHubconnectionString);
+                    }
+                    else
+                    {
+                        (string namespaceName, string hubName) = GetEventHubNamespaceAndName(eventHubconnectionString);
+                        _eventClient = new EventProcessorClient(this.BlobClient, consumerGroup, namespaceName, hubName, Aad.AadHelper.TokenCredential);
+                    }
+
                     _eventClient.ProcessEventAsync += ProcessEventHandler;
                     _eventClient.ProcessErrorAsync += ProcessErrorHandler;
                     //Tip to future self.. don't checkpoint the handler, use the time stamp.
@@ -82,6 +92,34 @@ namespace SqlBuildManager.Console.Events
                 }
                 return _eventClient;
             }
+        }
+        public static (string, string) GetEventHubNamespaceAndName(string input)
+        {
+            string namespaceName = "";
+            string hubName = "";
+            
+            try
+            {
+                var split = input.Split("|");
+                hubName = split[1];
+                if (split[0].ToLower().EndsWith("servicebus.windows.net"))
+                {
+                    namespaceName = split[0];
+                }
+                else
+                {
+                    namespaceName = split[0] + ".servicebus.windows.net";
+                }
+
+                log.LogInformation($"Using EventHub Namespace: {namespaceName} with Event Hub name: {hubName}");
+                return (namespaceName, hubName);
+            }
+            catch(Exception exe)
+            {
+                log.LogError($"Unable to parse EventHub info: {exe.Message}");
+                return ("", "");
+            }
+
         }
         public (int, int,int) GetCommitErrorAndScannedCounts()
         {
@@ -157,17 +195,25 @@ namespace SqlBuildManager.Console.Events
 
         public Task MonitorEventHub(bool stream, DateTime? monitorUtcStart, CancellationToken cancellationToken)
         {
-
-            if (!monitorUtcStart.HasValue)
+            try
             {
-                utcMonitorStart = DateTime.UtcNow.AddMinutes(-5);
-            }else
-            {
-                utcMonitorStart = monitorUtcStart.Value;
+                if (!monitorUtcStart.HasValue)
+                {
+                    utcMonitorStart = DateTime.UtcNow.AddMinutes(-5);
+                }
+                else
+                {
+                    utcMonitorStart = monitorUtcStart.Value;
+                }
+                this.StreamEvents = stream;
+                // Start the processing
+                return this.EventClient.StartProcessingAsync(cancellationToken);
             }
-            this.StreamEvents = stream;
-            // Start the processing
-            return this.EventClient.StartProcessingAsync(cancellationToken);
+            catch(Exception exe)
+            {
+                log.LogError($"Error starting Event Processor monitoring: {exe.ToString()}");
+                return Task.CompletedTask;
+            }
 
         }
 

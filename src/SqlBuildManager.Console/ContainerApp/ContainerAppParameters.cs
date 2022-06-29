@@ -83,8 +83,16 @@ namespace SqlBuildManager.Console.ContainerApp.Internal
 
         [JsonPropertyName("allowObjectDelete")]
         public AllowObjectDelete AllowObjectDelete { get; set; }
+
+        [JsonPropertyName("authType")]
+        public AuthType AuthType { get; set; }
     }
 
+    public class AuthType
+    {
+        [JsonPropertyName("value")]
+        public string Value { get; set; }
+    }
     public class AllowObjectDelete
     {
         [JsonPropertyName("value")]

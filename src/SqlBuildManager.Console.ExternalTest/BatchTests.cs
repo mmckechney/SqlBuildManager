@@ -159,6 +159,53 @@ namespace SqlBuildManager.Console.ExternalTest
             }
         }
 
+        [DataRow("run", "TestConfig/settingsfile-windows-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-linux-mi.json", ConcurrencyType.Count, 10)]
+        [DataTestMethod]
+        public void Batch_Override_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            settingsFile = Path.GetFullPath(settingsFile);
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", this.overrideFilePath,
+                "--packagename", sbmFileName,
+                "--concurrency", "2",
+                "--concurrencytype","Server",
+            };
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "run")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            }
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            }
+        }
+       
+
+
         [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-linux.json")]
@@ -680,6 +727,75 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault-mi.json", ConcurrencyType.Count, 10)]
+        [DataTestMethod]
+        public void Batch_Queue_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            settingsFile = Path.GetFullPath(settingsFile);
+
+            string jobName = GetUniqueBatchJobName("batch-sbm");
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+
+            var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override" , this.overrideFilePath,
+                "--concurrencytype",  concurType.ToString(),
+                "--jobname", jobName};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            Task<int> val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+
+            args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--override", this.overrideFilePath,
+                "--packagename", sbmFileName,
+                "--concurrency", "2",
+                "--concurrencytype",  concurType.ToString(),
+                "--jobname", jobName,
+                "--monitor",
+                "--stream",
+                "--unittest"
+            };
+
+            rootCommand = CommandLineBuilder.SetUp();
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+
+
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "run")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            }
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            }
+        }
+
         [DataRow("run", "TestConfig/settingsfile-linux-queue.json", ConcurrencyType.MaxPerServer, 5)]
         [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Count, 5)]
         [DataTestMethod]
@@ -694,7 +810,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             string settingFileNoEventHub = Path.Combine(Path.GetDirectoryName(settingsFile), "settingsfile-no-eventhub.json");
 
-            CommandLineArgs cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingFileNoEventHub) };
+            CommandLineArgs cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile) };
             cmdLine.ConnectionArgs.EventHubConnectionString = null;
             var updatedJson = JsonConvert.SerializeObject(cmdLine, Formatting.Indented, new JsonSerializerSettings
             {

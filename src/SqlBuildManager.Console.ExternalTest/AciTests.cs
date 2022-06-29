@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ydn = YamlDotNet.Serialization;
+using SqlSync.Connection;
+
 namespace SqlBuildManager.Console.ExternalTest
 {
     /// <summary>
@@ -45,6 +47,74 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataTestMethod]
         public void ACI_Queue_SBMSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+
+            //get the size of the log file before we start
+            int startingLine = TestHelper.LogFileCurrentLineCount();
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            string jobName = TestHelper.GetUniqueJobName("aci");
+            string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+            //Prep the build
+            var args = new string[]{
+                "aci",  "prep",
+                "--settingsfile", settingsFile,
+                "--tag", imageTag,
+                "--jobname", jobName,
+                "--packagename", sbmFileName,
+                "--outputfile", outputFile,
+                "--containercount", containerCount.ToString(),
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString()
+            };
+
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            int result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //enqueue the topic messages
+            args = new string[]{
+                "aci",  "enqueue",
+                "--settingsfile", settingsFile,
+                "--jobname", jobName,
+                 "--concurrencytype", concurrencyType.ToString(),
+                 "--override", overrideFile
+            };
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //monitor for completion
+            args = new string[]{
+                "aci",  "deploy",
+                 "--settingsfile", settingsFile,
+                 "--templatefile", outputFile,
+                "--override", overrideFile,
+                "--unittest", "true",
+                "--monitor", "true"
+            };
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+
+        }
+        [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataTestMethod]
+        public void ACI_Queue_SBMSource_ManagedIdentity_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -252,6 +322,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //Create another table in the first that will be applied when the custom DACPAC is created
             DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+            DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
 
             //enqueue the topic messages
             args = new string[]{

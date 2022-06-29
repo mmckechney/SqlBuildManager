@@ -44,7 +44,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> buildrevisionOption = new Option<string>(new string[] { "--buildrevision" }, "If provided, the build will include an update to a \"Versions\" table and this will be the value used to add to a \"VersionNumber\" column (varchar(max))");
         private static Option<string> outputsbmOption = new Option<string>(new string[] { "-o", "--outputsbm" }, "Name (and path) of the SBM package or SBX file to create");
         private static Option<int> defaultscripttimeoutOption = new Option<int>(new string[] { "--defaultscripttimeout" }, "Override the default script timeouts set when creating a DACPAC");
-        private static Option<SqlSync.Connection.AuthenticationType> authtypeOption = new Option<SqlSync.Connection.AuthenticationType>(new string[] { "--authtype" }, "SQL Authentication type to use.") { Name = "AuthenticationType" };
+
         private static Option<bool> silentOption = new Option<bool>(new string[] { "--silent", "--force" }, () => false, "Suppresses overwrite prompt if file already exists");
 
         private static Option<string> dacpacOutputOption = new Option<string>(new string[] { "--dacpacname" }, "Name of the dacpac that you want to create") { IsRequired = true };
@@ -195,8 +195,8 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
         private static Option<string> keyVaultNameOption = new Option<string>(new string[] { "-kv", "--keyvaultname" }, "Name of Azure Key Vault to save secrets to/retrieve from. If provided, secrets will be used/saved to settings file or secrets.yaml");
-        private static Option<string> eventhubconnectionOption = new Option<string>(new string[] { "-eh", "--eventhubconnection" }, "Event Hub connection string for Event Hub logging");
-        private static Option<string> serviceBusconnectionOption = new Option<string>(new string[] { "-sb", "--servicebustopicconnection" }, "Service Bus connection string for Service Bus topic distribution");
+        private static Option<string> eventhubconnectionOption = new Option<string>(new string[] { "-eh", "--eventhubconnection" }, "Event Hub connection string for Event Hub logging. If using Managed Identity auth, use '<eventhub namespace>|<eventhub name>'");
+        private static Option<string> serviceBusconnectionOption = new Option<string>(new string[] { "-sb", "--servicebustopicconnection" }, "Service Bus connection string for Service Bus topic distribution. If using Managed Identity auth, just provide the Service Bus Namespace");
         private static Option<string> storageaccountnameOption = new Option<string>(new string[] { "--storageaccountname" }, "Name of Azure storage account associated build");
         private static Option<string> storageaccountkeyOption = new Option<string>(new string[] { "--storageaccountkey" }, "Account Key for the storage account");
         private static Option<string> batchaccountnameOption = new Option<string>(new string[] { "--acct", "--batchaccountname" }, "String name of the Azure Batch account");
@@ -250,13 +250,15 @@ namespace SqlBuildManager.Console.CommandLine
                 var list = new List<Option>()
                 {
                     usernameOption,
-                    passwordOption
+                    passwordOption,
+                    authtypeOption
                 };
                 return list;
             }
         }
-        private static Option<string> usernameOption = new Option<string>(new string[] { "-u", "--username" }, "The username to authenticate against the database if not using integrate auth");
-        private static Option<string> passwordOption = new Option<string>(new string[] { "-p", "--password" }, "The password to authenticate against the database if not using integrate auth");
+        private static Option<string> usernameOption = new Option<string>(new string[] { "-u", "--username" }, "The username to authenticate against the database if not using integrate or Managed Identity auth");
+        private static Option<string> passwordOption = new Option<string>(new string[] { "-p", "--password" }, "The password to authenticate against the database if not using integrate or Managed Identity auth");
+        private static Option<SqlSync.Connection.AuthenticationType> authtypeOption = new Option<SqlSync.Connection.AuthenticationType>(new string[] { "--authtype" }, "SQL Authentication type to use.") { Name = "AuthenticationType" };
 
         //Container Registry and Image Options 
         private static List<Option> ContainerRegistryAndImageOptions
@@ -371,7 +373,6 @@ namespace SqlBuildManager.Console.CommandLine
                     {
                         var cmd = new Command("dacpac", "Creates a DACPAC file from the target database")
                         {
-                            authtypeOption,
                             databaseOption.Copy(true),
                             serverOption.Copy(true),
                             dacpacOutputOption
@@ -407,7 +408,6 @@ namespace SqlBuildManager.Console.CommandLine
                     timeoutretrycountOption
                 };
                 DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-                cmd.Add(authtypeOption);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunLocalBuildAsync);
                 return cmd;
             }
@@ -441,7 +441,6 @@ namespace SqlBuildManager.Console.CommandLine
                     unitTestOption
                 };
                 DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-                cmd.Add(authtypeOption);
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecution);
                 return cmd;
@@ -464,7 +463,6 @@ namespace SqlBuildManager.Console.CommandLine
                     silentOption
                 };
                 DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-                cmd.Add(authtypeOption);
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
                 cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabases);
                 return cmd;
@@ -556,8 +554,8 @@ namespace SqlBuildManager.Console.CommandLine
                 BatchComputeOptions.ForEach(o => cmd.Add(o));
                 DatabaseAuthArgs.ForEach(o => cmd.Add(o));
                 ConnectionAndSecretsOptionsForBatch.ForEach(o => cmd.Add(o));
-                cmd.Add(authtypeOption);
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
+                IdentityArgumentsForBatch.ForEach(o => cmd.Add(o));
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecution);
                 cmd.IsHidden = true;
                 return cmd;
@@ -632,7 +630,7 @@ namespace SqlBuildManager.Console.CommandLine
         /// <summary>
         /// Batch Save settings file
         /// </summary>
-        private static Command saveSettingsCommand
+        private static Command batchSaveSettingsCommand
         {
             get
             {
@@ -723,7 +721,6 @@ namespace SqlBuildManager.Console.CommandLine
                 DatabaseAuthArgs.ForEach(o => cmd.Add(o));
                 ConnectionAndSecretsOptionsForBatch.ForEach(o => cmd.Add(o));
                 IdentityArgumentsForBatch.ForEach(o => cmd.Add(o));
-                cmd.Add(authtypeOption);
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
                 cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchQuery);
                 return cmd;
@@ -757,7 +754,6 @@ namespace SqlBuildManager.Console.CommandLine
                 DatabaseAuthArgs.ForEach(o => cmd.Add(o));
                 ConnectionAndSecretsOptionsForBatch.ForEach(o => { if (o.Name != "servicebustopicconnection") cmd.Add(o); });
                 IdentityArgumentsForBatch.ForEach(o => cmd.Add(o));
-                cmd.Add(authtypeOption);
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
                 cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabases);
                 cmd.IsHidden = true;
@@ -773,7 +769,7 @@ namespace SqlBuildManager.Console.CommandLine
             get
             {
                 var tmp = new Command("batch", "Commands for setting and executing a batch run or batch query");
-                tmp.Add(saveSettingsCommand);
+                tmp.Add(batchSaveSettingsCommand);
                 tmp.Add(batchPreStageCommand);
                 tmp.Add(batchEnqueueTargetsCommand);
                 tmp.Add(batchRunCommand);
@@ -809,7 +805,11 @@ namespace SqlBuildManager.Console.CommandLine
                 ContainerAppOptions.ForEach(o => cmd.Add(o));
                 IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
                 ConnectionAndSecretsOptions.ForEach(o => cmd.Add(o));
-                DatabaseAuthArgs.ForEach(o => cmd.Add(o));
+                ////TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps...
+                //DatabaseAuthArgs.ForEach(o => cmd.Add(o));
+                cmd.Add(usernameOption);
+                cmd.Add(passwordOption);
+                //end
                 ContainerRegistryAndImageOptions.ForEach(o => cmd.Add(o));
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptContainerAppSettings);
@@ -886,15 +886,20 @@ namespace SqlBuildManager.Console.CommandLine
                     unitTestOption,
                     streamEventsOption,
                     new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful Container App container deployment"),
-                   containerAppEnvOnly,
-                   containerAppDeleteAppUponCompletion
-                   
+                    containerAppEnvOnly,
+                    containerAppDeleteAppUponCompletion
+
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
                 ContainerAppOptions.ForEach(o => cmd.Add(o));
                 IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
                 ConnectionAndSecretsOptions.ForEach(o => cmd.Add(o));
-                DatabaseAuthArgs.ForEach(o => cmd.Add(o));
+
+                //TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps...
+                //DatabaseAuthArgs.ForEach(o => cmd.Add(o));
+                cmd.Add(usernameOption);
+                cmd.Add(passwordOption);
+                //end
                 ContainerRegistryAndImageOptions.ForEach(o => cmd.Add(o));
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool, bool>(Worker.DeployContainerApp);
@@ -1062,6 +1067,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(storageaccountnameOption);
                 cmd.Add(storageaccountkeyOption);
+                cmd.Add(authtypeOption);
                 ConcurrencyRequiredOptions.ForEach(o => cmd.Add(o));
 
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, bool>(Worker.PrepAndUploadAciBuildPackage);
@@ -1412,7 +1418,6 @@ namespace SqlBuildManager.Console.CommandLine
                 allowForObjectDeletionOption
             };
             DatabaseAuthArgs.ForEach(o => createFromDacpacDiffCommand.Add(o));
-            createFromDacpacDiffCommand.Add(authtypeOption);
             createFromDacpacDiffCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateFromDacpacDiff);
 
             //Create an SBM from a platium DACPAC file (deprecated, but keeping in sync with fromdacpacdiff for now
@@ -1474,7 +1479,6 @@ namespace SqlBuildManager.Console.CommandLine
                 databaseOption.Copy(true)
             };
             DatabaseAuthArgs.ForEach(o => createBackoutCommand.Add(o));
-            createBackoutCommand.Add(authtypeOption);
             createBackoutCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateBackout);
             #endregion
 

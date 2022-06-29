@@ -7,13 +7,22 @@ param
     [string] $eventHubNamespaceName,
     [string] $serviceBusNamespaceName,
     [string] $sqlUserName,
-    [string] $sqlPassword
+    [string] $sqlPassword,
+    [ValidateSet("Password", "ManagedIdentity", "Both")]
+    [string] $authType = "Both"
 )
 Write-Host "Create AKS secrets and runtime files"  -ForegroundColor Cyan
 
 $path = Resolve-Path $path
 Write-Host "Output path set to $path" -ForegroundColor DarkGreen
-
+if($authType -eq "Both")
+{
+    $authTypes = @("Password", "ManagedIdentity")
+}
+else
+{
+    $authTypes = @($authType)
+}
 
 Write-Host "Retrieving secrets from Azure resources" -ForegroundColor DarkGreen
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
@@ -35,11 +44,31 @@ $params += @("-eh","""$eventHubConnectionString""")
 $params += @("-sb","""$serviceBusConnectionString""")  
 $params += @("--concurrency", "5")
 $params += @("--concurrencytype", "Count")
-if([string]::IsNullOrWhiteSpace($sqlUserName) -eq $false)
+
+
+if($authTypes -contains "Password")
 {
-    $params += @("--username",$sqlUserName)  
-    $params += @("--password",$sqlPassword)
-}
+    if([string]::IsNullOrWhiteSpace($sqlUserName) -eq $false)
+    {
+        $params += @("--username",$sqlUserName)  
+        $params += @("--password",$sqlPassword)
+    }
+    Start-Process $sbmExe -ArgumentList $params
+}   
 
+if($authTypes -contains "ManagedIdentity")
+{
+    $params = @("k8s", "savesettings")
+    $params += @("--path", $path)
+    $params += @("--storageaccountname",$storageAccountName)  
+    $params += @("--storageaccountkey","""$storageAcctKey""") 
+    $params += @("-eh","$($eventhubNamespaceName).servicebus.windows.net|$($eventHubName)") 
+    $params += @("-sb","$($serviceBusNamespaceName).servicebus.windows.net")  
+    $params += @("--concurrency", "5")
+    $params += @("--concurrencytype", "Count")
+    $params += @("--authtype", "ManagedIdentity")
+    $params += @("--prefix", "mi-full")
 
-Start-Process $sbmExe -ArgumentList $params
+    Start-Process $sbmExe -ArgumentList $params
+}  
+

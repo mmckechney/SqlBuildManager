@@ -13,13 +13,25 @@ param
     [string] $identityName,
     [string] $identityClientId,
     [string] $sqlUserName,
-    [string] $sqlPassword
+    [string] $sqlPassword, 
+    [ValidateSet("Password", "ManagedIdentity", "Both")]
+    [string] $authType = "Both"
 )
 Write-Host "Create ACI settings file"  -ForegroundColor Cyan
 
 $path = Resolve-Path $path
 Write-Host "Output path set to $path" -ForegroundColor DarkGreen
 Write-Host "Retrieving keys from resources in $resourceGroupName" -ForegroundColor DarkGreen
+
+
+if($authType -eq "Both")
+{
+    $authTypes = @("Password", "ManagedIdentity")
+}
+else
+{
+    $authTypes = @($authType)
+}
 
 $haveSqlInfo = $true
 if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($sqlPassword))
@@ -37,10 +49,10 @@ $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --res
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
 if([string]::IsNullOrWhiteSpace($containerRegistryName))
 {
-    $settingsAci = Join-Path $path "settingsfile-aci-no-registry.json"
+    $baseFileName = Join-Path $path "settingsfile-aci-no-registry"
 }
 else {
-    $settingsAci = Join-Path $path "settingsfile-aci.json"
+    $baseFileName = Join-Path $path "settingsfile-aci"
 }
 
 
@@ -63,38 +75,56 @@ if($false -eq (Test-Path $keyFile))
     $settingsFileKey |  Set-Content -Path $keyFile
 }
 
-$params = @("aci", "savesettings")
-$params += ("--settingsfile", $settingsAci)
-$params += ("--aciname", $aciName)
-$params += ("--identityname", $identityName)
-$params += ("--clientid", $identityClientId)
-$params += ("--idrg", $resourceGroupName)
-$params += ("--acirg", $resourceGroupName)
-$params += ("-sb", """$serviceBusConnectionString""")
-$params += ("-kv", $keyVaultName)
-$params += ("--storageaccountname", $storageAccountName)
-$params += ("--storageaccountkey",$storageAcctKey)
-$params += ("-eh","""$eventHubConnectionString""")
-$params += ("--defaultscripttimeout", "500")
-$params += ("--subscriptionid",$subscriptionId)
-$params += ("--force")
-if($haveSqlInfo)
-{
-    $params += ("--username", $sqlUserName)
-    $params += ("--password", $sqlPassword)
-}
-if([string]::IsNullOrWhiteSpace($containerRegistryName) -eq $false)
-{
-    $params += ("--registryserver", $acrServerName)
-    $params += ("--registryusername", $acrUserName)
-    $params += ("--registrypassword", $acrPassword)
-}
-if([string]::IsNullOrWhiteSpace($imageTag) -eq $false)
-{
-    $params += ("--imagetag", $imageTag)
-}
-# Write-Host $params
-Start-Process $sbmExe -ArgumentList $params -Wait
 
+
+$sbAndEhArgs = 
+foreach($auth in $authTypes)
+{
+    if($auth -eq "ManagedIdentity" )
+    {
+        $settingsAci  =$baseFileName + "-mi.json"
+        $sbAndEhArgs = @("-sb", $serviceBusNamespaceName)
+        $sbAndEhArgs += ("-eh","$($eventhubNamespaceName)|$($eventHubName)")
+    }
+    else 
+    {
+        $settingsAci  = $baseFileName + ".json"
+        $sbAndEhArgs = @("-sb", """$serviceBusConnectionString""")
+        $sbAndEhArgs += ("-eh","""$eventHubConnectionString""")
+    }
+    Write-Host "Saving settings file to $settingsAci" -ForegroundColor DarkGreen
+
+    $params = @("aci", "savesettings")
+    $params += ("--settingsfile", "$($settingsAci)")
+    $params += ("--aciname", $aciName)
+    $params += ("--identityname", $identityName)
+    $params += ("--clientid", $identityClientId)
+    $params += ("--idrg", $resourceGroupName)
+    $params += ("--acirg", $resourceGroupName)
+    $params += ("-kv", $keyVaultName)
+    $params += ("--storageaccountname", $storageAccountName)
+    $params += ("--storageaccountkey",$storageAcctKey)
+    $params += ("--defaultscripttimeout", "500")
+    $params += ("--subscriptionid",$subscriptionId)
+    $params += ("--force")
+    if($haveSqlInfo)
+    {
+        $params += ("--username", $sqlUserName)
+        $params += ("--password", $sqlPassword)
+    }
+    if([string]::IsNullOrWhiteSpace($containerRegistryName) -eq $false)
+    {
+        $params += ("--registryserver", $acrServerName)
+        $params += ("--registryusername", $acrUserName)
+        $params += ("--registrypassword", $acrPassword)
+    }
+    if([string]::IsNullOrWhiteSpace($imageTag) -eq $false)
+    {
+        $params += ("--imagetag", $imageTag)
+    }
+    $params += ("--authtype", $auth)
+    Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow
+    Start-Process $sbmExe -ArgumentList ($params + $sbAndEhArgs) -Wait
+}
 
 

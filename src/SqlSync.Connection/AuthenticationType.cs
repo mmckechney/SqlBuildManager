@@ -12,7 +12,9 @@ namespace SqlSync.Connection
         [Description("Azure AD Integrated Authentication")]
         AzureADIntegrated,
         [Description("Azure AD Password Authentication")]
-        AzureADPassword
+        AzureADPassword,
+        [Description("Managed Identity")]
+        ManagedIdentity
     }
 }
 

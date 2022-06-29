@@ -18,6 +18,7 @@ using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.Arm;
 using SqlBuildManager.Console.Aci.Arm;
 using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+using SqlSync.Connection;
 
 namespace SqlBuildManager.Console.Aci
 {
@@ -61,6 +62,10 @@ namespace SqlBuildManager.Console.Aci
                 tmpContainer = tmpContainer.Replace("{{concurrencyType}}", cmdLine.ConcurrencyType.ToString());
                 tmpContainer = tmpContainer.Replace("{{identityClientId}}", cmdLine.IdentityArgs.ClientId.ToString());
                 tmpContainer = tmpContainer.Replace("{{allowObjectDelete}}", cmdLine.AllowObjectDelete.ToString());
+                tmpContainer = tmpContainer.Replace("{{authType}}", cmdLine.AuthenticationArgs.AuthenticationType.ToString());
+                tmpContainer = tmpContainer.Replace("{{eventHub}}", cmdLine.ConnectionArgs.EventHubConnectionString);
+                tmpContainer = tmpContainer.Replace("{{serviceBus}}", cmdLine.ConnectionArgs.ServiceBusTopicConnectionString);
+
 
                 if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
                 {
@@ -86,31 +91,6 @@ namespace SqlBuildManager.Console.Aci
 
             template = template.Replace("\"{{Container_Placeholder}}\"", allContainers);
             return template;
-        }
-
-        internal static CommandLineArgs ReadRuntimeEnvironmentVariables(CommandLineArgs cmdLine)
-        {
-            cmdLine.KeyVaultName = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
-            cmdLine.ClientId = Environment.GetEnvironmentVariable(ContainerEnvVariables.IdentityClientId);
-            AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
-            cmdLine.JobName = Environment.GetEnvironmentVariable(ContainerEnvVariables.JobName);
-            cmdLine.BuildFileName = Environment.GetEnvironmentVariable(ContainerEnvVariables.PackageName);
-            cmdLine.PlatinumDacpac = Environment.GetEnvironmentVariable(ContainerEnvVariables.DacpacName);
-            if (int.TryParse(Environment.GetEnvironmentVariable(ContainerEnvVariables.Concurrency), out int c))
-            {
-                cmdLine.Concurrency = c;
-            }
-            if(Enum.TryParse<ConcurrencyType>(Environment.GetEnvironmentVariable(ContainerEnvVariables.ConcurrencyType), out ConcurrencyType ct))
-            {
-                cmdLine.ConcurrencyType = ct;
-            }
-            bool allow;
-            if (bool.TryParse(Environment.GetEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete), out allow))
-            {
-                cmdLine.AllowObjectDelete = allow;
-            }
-
-            return cmdLine;
         }
 
         internal static async Task<bool> DeployAciInstance(string templateFileName, string subscriptionId, string resourceGroupName, string aciName, string jobName)

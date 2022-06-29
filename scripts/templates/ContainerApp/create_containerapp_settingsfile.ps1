@@ -14,12 +14,24 @@ param
     [string] $identityName,
     [string] $identityClientId,
     [string] $imageTag,
-    [bool] $withContainerRegistry
+    [bool] $withContainerRegistry,
+    ## TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps, but SB and EH are OK.
+    [ValidateSet("Password", "ManagedIdentity", "Both")]
+    [string] $authType = "Both"
 )
 Write-Host "Create Container App Settings file"  -ForegroundColor Cyan
 $path = Resolve-Path $path
 Write-Host "Output path set to $path" -ForegroundColor DarkGreen
 Write-Host "Retrieving keys from resources in $resourceGroupName" -ForegroundColor DarkGreen
+
+if($authType -eq "Both")
+{
+    $authTypes = @("Password", "ManagedIdentity")
+}
+else
+{
+    $authTypes = @($authType)
+}
 
 $haveSqlInfo = $true
 if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($sqlPassword))
@@ -27,42 +39,47 @@ if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($
     $haveSqlInfo = $false
 }
 
+Write-Host "Retrieving keys from resources in $resourceGroupName... Storage" -ForegroundColor DarkGreen
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
 
+Write-Host "Retrieving keys from resources in $resourceGroupName... Event Hub" -ForegroundColor DarkGreen
 $eventHubName = az eventhubs eventhub list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName -o tsv --query "[?contains(@.name '$prefix')].name"
 $eventHubAuthRuleName = az eventhubs eventhub authorization-rule list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName --eventhub-name $eventHubName -o tsv --query [].name
 $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list --resource-group $resourceGroupName --namespace-name $eventHubNamespaceName --eventhub-name $eventHubName --name $eventHubAuthRuleName -o tsv --query "primaryConnectionString"
 
+Write-Host "Retrieving keys from resources in $resourceGroupName... Service Bus" -ForegroundColor DarkGreen
 $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" -o tsv --query "[].name"
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
 
 if($withContainerRegistry)
 {
+    Write-Host "Retrieving keys from resources in $resourceGroupName... Container Registry" -ForegroundColor DarkGreen
     $acrUserName = az acr credential show -g $resourceGroupName --name $containerRegistryName -o tsv --query username
     $acrPassword = az acr credential show -g $resourceGroupName --name  $containerRegistryName -o tsv --query passwords[0].value
     $acrServerName = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
     if("" -eq $keyVaultName)
     {
-        $settingsContainerApp = Join-Path $path "settingsfile-containerapp.json"
+        $settingsContainerApp = Join-Path $path "settingsfile-containerapp"
     }
     else 
     {
-        $settingsContainerApp = Join-Path $path "settingsfile-containerapp-kv.json"
+        $settingsContainerApp = Join-Path $path "settingsfile-containerapp-kv"
     }
 }
 else 
 {
     if("" -eq $keyVaultName)
     {
-        $settingsContainerApp = Join-Path $path "settingsfile-containerapp-no-registry.json"
+        $settingsContainerApp = Join-Path $path "settingsfile-containerapp-no-registry"
     }
     else 
     {
-        $settingsContainerApp = Join-Path $path "settingsfile-containerapp-no-registry-kv.json"
+        $settingsContainerApp = Join-Path $path "settingsfile-containerapp-no-registry-kv"
     }
     
 }
 
+Write-Host "Retrieving keys from resources in $resourceGroupName... Container App Environment" -ForegroundColor DarkGreen
 $location = az containerapp env show -g $resourceGroupName -n $containerAppEnvironmentName -o tsv --query location
 $subscriptionId = az account show --query id --output tsv
 
@@ -75,50 +92,68 @@ if($false -eq (Test-Path $keyFile))
     $settingsFileKey |  Set-Content -Path $keyFile
 }
 
-$tmpPath = $settingsContainerApp
-Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
 
-$params = @("containerapp", "savesettings")
-$params +=("--environmentname",$containerAppEnvironmentName)
-$params +=("--location",$location)
-$params +=("--resourcegroup", $resourceGroupName)
-$params +=("--imagetag",$imageTag)
-$params +=("--servicebustopicconnection",$serviceBusConnectionString)
-$params +=("--settingsfile",$tmpPath)
-$params +=("--settingsfilekey",$keyFile)
-$params +=("--storageaccountname",$storageAccountName)
-$params +=("--storageaccountkey",$storageAcctKey)
-$params +=("--eventhubconnection",$eventHubConnectionString)
-$params +=("--defaultscripttimeout",500)
-$params +=("--subscriptionid",$subscriptionId)
-$params +=("--force","true")
-if($haveSqlInfo)
+
+foreach($auth in $authTypes)
 {
-    $params +=("--username",$sqlUserName)
-    $params +=("--password",$sqlPassword)
+    if($auth -eq "ManagedIdentity" )
+    {
+        $settingsContainerApp  =$settingsContainerApp + "-mi"
+        $sbAndEhArgs = @("--eventhubconnection","$($eventHubNamespaceName)|$($eventHubName)")
+    }
+    else 
+    {
+        $sbAndEhArgs = @("--eventhubconnection",$eventHubConnectionString)
+    }
+    $sbAndEhArgs += @("--servicebustopicconnection",$serviceBusConnectionString)
+    $tmpPath = "$($settingsContainerApp).json"
+    Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
+
+    $params = @("containerapp", "savesettings")
+    $params +=("--environmentname",$containerAppEnvironmentName)
+    $params +=("--location",$location)
+    $params +=("--resourcegroup", $resourceGroupName)
+    $params +=("--imagetag",$imageTag)
+    $params +=("--settingsfile",$tmpPath)
+    $params +=("--settingsfilekey",$keyFile)
+    $params +=("--storageaccountname",$storageAccountName)
+    $params +=("--storageaccountkey",$storageAcctKey)
+    
+    $params +=("--defaultscripttimeout",500)
+    $params +=("--subscriptionid",$subscriptionId)
+    $params +=("--force","true")
+    if($haveSqlInfo)
+    {
+        $params +=("--username",$sqlUserName)
+        $params +=("--password",$sqlPassword)
+    }
+    if($withContainerRegistry)
+    {
+        $params +=("--registryserver",$acrServerName)
+        $params +=("--registryusername",$acrUserName)
+        $params +=("--registrypassword",$acrPassword)
+    }
+    if("" -ne  $keyVaultName)
+    {
+        $params += ("-kv", $keyVaultName)
+    }
+    if("" -ne  $identityName)
+    {
+        $params += ("--identityname", $identityName)
+    }
+    if("" -ne  $identityName)
+    {
+        $params += ("--idrg", $resourceGroupName)
+    }
+    if("" -ne  $identityName)
+    {
+        $params += ("--clientid", $identityClientId)
+    }
+    # Container apps don't take this yet!
+    #$params += ("--authtype", $auth)
+    
+
+    Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow
+    Start-Process $sbmExe -ArgumentList ($params + $sbAndEhArgs)
 }
-if($withContainerRegistry)
-{
-    $params +=("--registryserver",$acrServerName)
-    $params +=("--registryusername",$acrUserName)
-    $params +=("--registrypassword",$acrPassword)
-}
-if("" -ne  $keyVaultName)
-{
-    $params += ("-kv", $keyVaultName)
-}
-if("" -ne  $identityName)
-{
-    $params += ("--identityname", $identityName)
-}
-if("" -ne  $identityName)
-{
-    $params += ("--idrg", $resourceGroupName)
-}
-if("" -ne  $identityName)
-{
-    $params += ("--clientid", $identityClientId)
-}
- #Write-Host $params -ForegroundColor DarkYellow
-Start-Process $sbmExe -ArgumentList $params -Wait
 

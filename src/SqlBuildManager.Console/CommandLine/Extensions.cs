@@ -5,6 +5,8 @@ using System.CommandLine;
 using System.Linq;
 using System.Globalization;
 using System.IO;
+using Microsoft.SqlServer.Management.Smo;
+using Microsoft.SqlServer.TransactSql.ScriptDom;
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -31,7 +33,8 @@ namespace SqlBuildManager.Console.CommandLine
                     }
                 }
                 else if (property.PropertyType == typeof(CommandLineArgs.DacPac) ||
-                         property.PropertyType == typeof(CommandLineArgs.Batch))
+                         property.PropertyType == typeof(CommandLineArgs.Batch) ||
+                         property.PropertyType == typeof(CommandLineArgs.Identity))
                 {
                     if (property.GetValue(obj) != null)
                     {
@@ -71,10 +74,6 @@ namespace SqlBuildManager.Console.CommandLine
                         }
                     }
                 }
-                else if (property.PropertyType == typeof(CommandLineArgs.Identity)) //ignore this
-                {
-
-                }
                 else
                 {
                     switch (property.Name)
@@ -113,6 +112,17 @@ namespace SqlBuildManager.Console.CommandLine
 
                         case "ServiceBusTopicConnectionString":
                             sb.Append("--servicebustopicconnection \"" + property.GetValue(obj).ToString() + "\" ");
+                            break;
+                        case "ResourceGroup":
+                            if(obj.GetType() == typeof(CommandLineArgs.Identity))
+                            {
+                               sb.Append($"--identityresourcegroup \"{property.GetValue(obj).ToString()}\" ");
+                                
+                            }
+                            else
+                            {
+                                sb.Append($"--resourcegroup \"{property.GetValue(obj).ToString()}\" ");
+                            }
                             break;
                         case "BatchJobName": //Ignore this because it will be counted as a duplicate for JobName
                         case "OverrideDesignated":

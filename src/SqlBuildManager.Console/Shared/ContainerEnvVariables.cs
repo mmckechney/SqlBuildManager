@@ -23,5 +23,10 @@ namespace SqlBuildManager.Console.Shared
         internal static string Password { get; } = "Sbm_Password";
         internal static string AllowObjectDelete { get; } = "Sbm_AllowObjectDelete";
 
+        internal static string AuthType { get; } = "Sbm_AuthType";
+
+        internal static string IdentityResourceGroup { get; } = "Sbm_IdentityResourceGroup";
+        internal static string IdentityName { get; } = "Sbm_IdentityName";
+
     }
 }

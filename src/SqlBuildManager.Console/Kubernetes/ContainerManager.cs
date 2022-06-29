@@ -1,14 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using SqlBuildManager.Console.CloudStorage;
-using Azure.Storage;
-using System.Threading.Tasks;
 using SqlBuildManager.Console.CommandLine;
-using System.Net.Sockets;
+using SqlBuildManager.Console.Shared;
+using SqlSync.Connection;
+using System;
+using System.IO;
 using YamlDotNet.Serialization;
+
 namespace SqlBuildManager.Console.Kubernetes
 {
     public class ContainerManager
@@ -24,23 +21,32 @@ namespace SqlBuildManager.Console.Kubernetes
 
             try
             {
-                args.EventHubConnection = File.ReadAllText("/etc/sbm/EventHubConnectionString");
-                log.LogDebug($"eventhub= {args.ConnectionArgs.EventHubConnectionString}");
+                if (File.Exists("/etc/sbm/EventHubConnectionString"))
+                {
+                    args.EventHubConnection = File.ReadAllText("/etc/sbm/EventHubConnectionString");
+                    log.LogDebug($"eventhub= {args.ConnectionArgs.EventHubConnectionString}");
+                }
 
-                args.ServiceBusTopicConnection=  File.ReadAllText("/etc/sbm/ServiceBusTopicConnectionString");
-                log.LogDebug($"serviceBus= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
-
-                args.Password = File.ReadAllText("/etc/sbm/Password");
-                log.LogDebug($"password= {args.AuthenticationArgs.Password}");
-
-                args.UserName = File.ReadAllText("/etc/sbm/UserName");
-                log.LogDebug($"username= {args.AuthenticationArgs.UserName}");
+                if (File.Exists("/etc/sbm/ServiceBusTopicConnectionString"))
+                {
+                    args.ServiceBusTopicConnection = File.ReadAllText("/etc/sbm/ServiceBusTopicConnectionString");
+                    log.LogDebug($"serviceBus= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
+                }
 
                 args.StorageAccountName = File.ReadAllText("/etc/sbm/StorageAccountName");
                 log.LogDebug($"storageaccountname= {args.ConnectionArgs.StorageAccountName}");
 
                 args.StorageAccountKey = File.ReadAllText("/etc/sbm/StorageAccountKey");
                 log.LogDebug($"storageaccountkey= {args.ConnectionArgs.StorageAccountKey}");
+
+                if(args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
+                {
+                    args.Password = File.ReadAllText("/etc/sbm/Password");
+                    log.LogDebug($"password= {args.AuthenticationArgs.Password}");
+
+                    args.UserName = File.ReadAllText("/etc/sbm/UserName");
+                    log.LogDebug($"username= {args.AuthenticationArgs.UserName}");
+                }
 
                 return (true,args);
             }
@@ -104,61 +110,102 @@ namespace SqlBuildManager.Console.Kubernetes
                 log.LogDebug($"allowObjectDelete= {args.AllowObjectDelete}");
             }
 
+            if (File.Exists("/etc/runtime/AuthType"))
+            {
+                if (Enum.TryParse<AuthenticationType>(File.ReadAllText("/etc/runtime/AuthType"), out AuthenticationType auth))
+                {
+                    args.AuthenticationType = auth;
+                }
+                log.LogDebug($"authType= {args.AllowObjectDelete}");
+            }
+
+
+            if (File.Exists("/etc/runtime/EventHubConnectionString"))
+            {
+                args.EventHubConnection = File.ReadAllText("/etc/runtime/EventHubConnectionString");
+                log.LogDebug($"EventHubConnectionString= {args.ConnectionArgs.EventHubConnectionString}");
+            }
+
+            if (File.Exists("/etc/runtime/ServiceBusTopicConnectionString"))
+            {
+                args.ServiceBusTopicConnection = File.ReadAllText("/etc/runtime/ServiceBusTopicConnectionString");
+                log.LogDebug($"ServiceBusTopicConnectionString= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
+            }
+
+
             return (true, args);
         }
 
         internal static string GenerateSecretsYaml(CommandLineArgs args)
         {
 
-            string template = @"
-apiVersion: v1
-kind: Secret
-metadata:
-  name: connection-secrets
-type: Opaque
-data: 
-  EventHubConnectionString: {0}
-  ServiceBusTopicConnectionString: {1}
-  UserName: {2}
-  Password: {3}
-  StorageAccountName:  {4}
-  StorageAccountKey: {5}";
+            var yml = new SecretYaml();
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountName))
+            {
+                yml.data.StorageAccountName = args.ConnectionArgs.StorageAccountName.EncodeBase64();
+            }
 
-            var complete = string.Format(template,
-                    args.ConnectionArgs.EventHubConnectionString.EncodeBase64(),
-                    args.ConnectionArgs.ServiceBusTopicConnectionString.EncodeBase64(),
-                    args.AuthenticationArgs.UserName.EncodeBase64(),
-                    args.AuthenticationArgs.Password.EncodeBase64(),
-                    args.ConnectionArgs.StorageAccountName.EncodeBase64(),
-                    args.ConnectionArgs.StorageAccountKey.EncodeBase64());
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountKey))
+            {
+                yml.data.StorageAccountKey = args.ConnectionArgs.StorageAccountKey.EncodeBase64();
+            }
 
-            return complete;
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.EventHubConnectionString))
+            {
+                yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString.EncodeBase64();
+            }
+
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString.EncodeBase64();
+            }
+
+            if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
+            {
+                if (!string.IsNullOrWhiteSpace(args.AuthenticationArgs.UserName))
+                {
+                    yml.data.UserName = args.AuthenticationArgs.UserName.EncodeBase64();
+                }
+
+                if (!string.IsNullOrWhiteSpace(args.AuthenticationArgs.Password))
+                {
+                    yml.data.Password = args.AuthenticationArgs.Password.EncodeBase64();
+                }
+            }
+
+            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            var yamlString = serializer.Serialize(yml);
+
+            return yamlString;
+          
+
         }
 
         internal static string GenerateRuntimeYaml(CommandLineArgs args)
         {
-            string template = @"
-kind: ConfigMap 
-apiVersion: v1 
-metadata:
-  name: runtime-properties
-data:
-  DacpacName: '{0}'
-  PackageName: '{1}'
-  JobName: '{2}'
-  AllowObjectDelete: '{3}'
-  Concurrency: '{4}'
-  ConcurrencyType: '{5}'";
 
-            var complete = string.Format(template,
-                args.DacPacArgs.PlatinumDacpac,
-                args.BuildFileName,
-                args.JobName,
-                args.AllowObjectDelete,
-                args.Concurrency,
-                args.ConcurrencyType); ;
+            var yml = new RuntimeYaml();
+            yml.data.DacpacName = args.DacPacArgs.PlatinumDacpac;
+            yml.data.PackageName = args.BuildFileName;
+            yml.data.JobName = args.JobName;
+            yml.data.AllowObjectDelete = args.AllowObjectDelete.ToString();
+            yml.data.Concurrency = args.Concurrency.ToString();
+            yml.data.ConcurrencyType = args.ConcurrencyType.ToString();
+            yml.data.AuthType = args.AuthenticationArgs.AuthenticationType.ToString();
+            
+            if(!ConnectionValidator.IsServiceBusConnectionString( args.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString;
+            }
+            if(!ConnectionValidator.IsEventHubConnectionString(args.ConnectionArgs.EventHubConnectionString))
+            {
+                yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString;
+            }
+            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            var yamlString = serializer.Serialize(yml);
 
-            return complete;
+            return yamlString;
+
         }
 
         private static string GetValueFromSecrets(string fileName, string key)
@@ -196,10 +243,13 @@ data:
             {
                 args = new CommandLineArgs();
             }
-            args.UserName = GetValueFromSecrets(filename, "UserName");
-            args.Password = GetValueFromSecrets(filename, "Password");
-            args.EventHubConnection = GetValueFromSecrets(filename, "EventHubConnectionString");
-            args.ServiceBusTopicConnection = GetValueFromSecrets(filename,"ServiceBusTopicConnectionString");
+            if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
+            {
+                args.UserName = GetValueFromSecrets(filename, "UserName");
+                args.Password = GetValueFromSecrets(filename, "Password");
+                args.EventHubConnection = GetValueFromSecrets(filename, "EventHubConnectionString");
+                args.ServiceBusTopicConnection = GetValueFromSecrets(filename, "ServiceBusTopicConnectionString");
+            }
             args.StorageAccountKey = GetValueFromSecrets(filename, "StorageAccountKey");
             args.StorageAccountName = GetValueFromSecrets(filename, "StorageAccountName");
 
@@ -221,9 +271,20 @@ data:
                 args.ConcurrencyType = con;
             }
 
-            if(int.TryParse(GetValueFromRuntimestring(filename, "Concurrency"), out int c))
-            { 
+            if (int.TryParse(GetValueFromRuntimestring(filename, "Concurrency"), out int c))
+            {
                 args.Concurrency = c;
+            }
+
+            if (Enum.TryParse<AuthenticationType>(GetValueFromRuntimestring(filename, "AuthType"), out AuthenticationType auth))
+            {
+                args.AuthenticationType = auth;
+            }
+
+            if (args.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
+            {
+                args.EventHubConnection = GetValueFromRuntimestring(filename, "EventHubConnectionString");
+                args.ServiceBusTopicConnection = GetValueFromRuntimestring(filename, "ServiceBusTopicConnectionString");
             }
 
             return args;

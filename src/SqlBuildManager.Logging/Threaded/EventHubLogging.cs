@@ -1,8 +1,11 @@
-﻿using Azure.Messaging.EventHubs.Producer;
+﻿using Azure.Core;
+using Azure.Identity;
+using Azure.Messaging.EventHubs.Producer;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Json;
 using System;
+using System.Net.NetworkInformation;
 
 namespace SqlBuildManager.Logging.Threaded
 {
@@ -14,11 +17,22 @@ namespace SqlBuildManager.Logging.Threaded
 		private static ILoggerFactory _LoggerFactory = null;
 		private static string _EventHubConnectionString = string.Empty;
 		private static Serilog.Core.Logger serilogLogger = null;
-		public static void ConfigureEventHubLogger(ILoggerFactory factory)
+
+        private static string _EventHubName = string.Empty;
+        private static string _EventHubNamespace = string.Empty;
+        private static string _ManagedIdentityIdClient = string.Empty;
+        public static void ConfigureEventHubLogger(ILoggerFactory factory)
 		{
 
-			EventHubProducerClient eventHubClient = new EventHubProducerClient(_EventHubConnectionString);
-
+			EventHubProducerClient eventHubClient;
+			if(!string.IsNullOrWhiteSpace(_EventHubConnectionString))
+		    {
+                eventHubClient = new EventHubProducerClient(_EventHubConnectionString);
+            }
+			else
+			{
+                eventHubClient = new EventHubProducerClient(_EventHubNamespace, _EventHubName,GetAadTokenCredential());
+            }
 
 			serilogLogger = new LoggerConfiguration()
 				.MinimumLevel.Verbose()
@@ -27,8 +41,25 @@ namespace SqlBuildManager.Logging.Threaded
 
 			_LoggerFactory.AddSerilog(serilogLogger);
 		}
-
-		public static ILoggerFactory EventHubLoggerFactory
+		private static TokenCredential GetAadTokenCredential()
+		{
+			TokenCredential _tokenCred;
+            if (string.IsNullOrWhiteSpace(_ManagedIdentityIdClient))
+            {
+                _tokenCred = new DefaultAzureCredential();
+            }
+            else
+            {
+                _tokenCred = new DefaultAzureCredential(
+                    new DefaultAzureCredentialOptions()
+                    {
+                        ManagedIdentityClientId = _ManagedIdentityIdClient,
+                        ExcludeAzureCliCredential = false
+                    });
+            }
+			return _tokenCred;
+        }
+        public static ILoggerFactory EventHubLoggerFactory
 		{
 			get
 			{
@@ -53,8 +84,22 @@ namespace SqlBuildManager.Logging.Threaded
 				return null;
 			}
 		}
+        public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type, string eventHubNamespace, string eventHubName, string managedIdentityClientId)
+        {
+            _EventHubNamespace = eventHubNamespace;
+			_EventHubName = eventHubName;
+			_ManagedIdentityIdClient = managedIdentityClientId;
+            try
+            {
+                return EventHubLoggerFactory.CreateLogger(type);
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
-		public static void CloseAndFlush()
+        public static void CloseAndFlush()
 		{
 			if (serilogLogger != null)
 			{
@@ -62,5 +107,6 @@ namespace SqlBuildManager.Logging.Threaded
 			}
 			_LoggerFactory = null;
 		}
+
 	}
 }

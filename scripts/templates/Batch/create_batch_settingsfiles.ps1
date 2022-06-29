@@ -39,13 +39,22 @@ $identity =  az identity show --resource-group $resourceGroupName --name $identi
 $subscriptionId = az account show -o tsv --query id
 
 $settingsJsonWindows = Join-Path $path "settingsfile-windows.json"
+$settingsJsonWindowsMi = Join-Path $path "settingsfile-windows-mi.json"
+
 $settingsJsonLinux = Join-Path $path "settingsfile-linux.json"
+$settingsJsonLinuxMi = Join-Path $path "settingsfile-linux-mi.json"
 
 $settingsJsonWindowsQueue = Join-Path $path "settingsfile-windows-queue.json"
+$settingsJsonWindowsQueueMi = Join-Path $path "settingsfile-windows-queue-mi.json"
+
 $settingsJsonLinuxQueue = Join-Path $path "settingsfile-linux-queue.json"
+$settingsJsonLinuxQueueMi = Join-Path $path "settingsfile-linux-queue-mi.json"
 
 $settingsJsonWindowsQueueKv = Join-Path $path "settingsfile-windows-queue-keyvault.json"
+$settingsJsonWindowsQueueKvMi = Join-Path $path "settingsfile-windows-queue-keyvault-mi.json"
+
 $settingsJsonLinuxQueueKv = Join-Path $path "settingsfile-linux-queue-keyvault.json"
+$settingsJsonLinuxQueueKvMi = Join-Path $path "settingsfile-linux-queue-keyvault-mi.json"
 
 $keyFile = Join-Path $path "settingsfilekey.txt"
 if($false -eq (Test-Path $keyFile))
@@ -63,17 +72,17 @@ $winParams += ("-os", "Windows")
 $linuxParams = @("--batchpoolname","SqlBuildManagerPoolLinux")
 $linuxParams += ("-os", "Linux")
 
+
 $params = @("batch", "savesettings")
 $params += @("--settingsfilekey",$keyFile)
 $params += @("--batchaccountname",$batchAccountName)
 $params += @("--batchaccountkey",$batchAcctKey)
 $params += @("--batchaccounturl", "https://$batchAcctEndpoint" )
 $params += @("--batchnodecount ","2")  
-$params += @("--batchvmsize", "STANDARD_DS1_V2")
+$params += @("--batchvmsize", "STANDARD_D1_V2")
 $params += @("--rootloggingpath","C:/temp")
 $params += @("--storageaccountname",$storageAccountName)
 $params += @("--storageaccountkey",$storageAcctKey)
-$params += @("-eh",$eventHubConnectionString) 
 $params += @("--defaultscripttimeout", "500")
 $params += @("--concurrency", "5")
 $params += @("--concurrencytype", "Count")
@@ -90,31 +99,70 @@ if($haveSqlInfo)
     $params += ("--password",$sqlPassword)
 }
 
+
+$sbConnParam = @("-sb", $serviceBusConnectionString)
+$sbNamespaceParam = @("-sb", $serviceBusNamespaceName)
+
+$ehConnParam = @("-eh",$eventHubConnectionString) 
+$ehNameParam = @("-eh","""$($eventHubNamespaceName)|$($eventHubName)""")
+
+$keyVaultParam = @("--keyvaultname", $keyVaultName)
+
+
+# With Password auth (default)
 Write-Host "Saving settings file to $settingsJsonWindows" -ForegroundColor DarkGreen
 $tmpPath = @("--settingsfile", $settingsJsonWindows)
-Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath)
+Write-Host $params   $winParams   $tmpPath -ForegroundColor DarkYellow
+Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $ehConnParam )
 
 Write-Host "Saving settings file to $settingsJsonLinux" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonLinux)
-Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath)  
+Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath  + $ehConnParam )  
 
-$params += @("-sb", $serviceBusConnectionString)
+#With Managed Identity auth
+$authMi = @("--authtype", "ManagedIdentity");
+
+Write-Host "Saving settings file to $settingsJsonWindowsMi" -ForegroundColor DarkGreen
+$tmpPath = @("--settingsfile", $settingsJsonWindowsMi)
+Write-Host $params  $winParams   $tmpPath -ForegroundColor DarkYellow
+Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $authMi + $ehNameParam)
+
+Write-Host "Saving settings file to $settingsJsonLinuxMi" -ForegroundColor DarkGreen 
+$tmpPath = @("--settingsfile",$settingsJsonLinuxMi)
+Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $authMi + $ehNameParam )
+
+# With Password auth (default)
+
 
 Write-Host "Saving settings file to $settingsJsonWindowsQueue" -ForegroundColor DarkGreen
 $tmpPath = @("--settingsfile",$settingsJsonWindowsQueue)
-Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath)
+Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $sbConnParam  + $ehConnParam )
 
 Write-Host "Saving settings file to $settingsJsonWindowsQueueKv" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonWindowsQueueKv)
-Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath)  
- 
+Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $sbConnParam + $ehConnParam + $keyVaultParam )  
 
 Write-Host "Saving settings file to $settingsJsonLinuxQueue" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonLinuxQueue)
-Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath)  
+Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $sbConnParam + $ehConnParam )  
  
 Write-Host "Saving settings file to $settingsJsonLinuxQueueKv" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonLinuxQueueKv)
-Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath)  
+Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $sbConnParam  + $ehConnParam + $keyVaultParam )  
 
-    
+#With Managed Identity auth
+Write-Host "Saving settings file to $settingsJsonWindowsQueueMi" -ForegroundColor DarkGreen
+$tmpPath = @("--settingsfile",$settingsJsonWindowsQueueMi)
+Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $authMi + $sbNamespaceParam  + $ehNameParam)
+
+Write-Host "Saving settings file to $settingsJsonWindowsQueueKvMi" -ForegroundColor DarkGreen 
+$tmpPath = @("--settingsfile",$settingsJsonWindowsQueueKvMi)
+Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $authMi + $sbNamespaceParam  + $ehNameParam + $keyVaultParam) 
+
+Write-Host "Saving settings file to $settingsJsonLinuxQueueMi" -ForegroundColor DarkGreen 
+$tmpPath = @("--settingsfile",$settingsJsonLinuxQueueMi)
+Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $authMi + $sbNamespaceParam  + $ehNameParam)
+ 
+Write-Host "Saving settings file to $settingsJsonLinuxQueueKvMi" -ForegroundColor DarkGreen 
+$tmpPath = @("--settingsfile",$settingsJsonLinuxQueueKvMi)
+Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $authMi + $sbNamespaceParam  + $ehNameParam + $keyVaultParam)

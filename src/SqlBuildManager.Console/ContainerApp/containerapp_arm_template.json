@@ -81,7 +81,28 @@
     "allowObjectDelete": {
       "defaultValue": "",
       "type": "String"
+    },
+    "authType": {
+      "defaultValue": "Password",
+      "type": "String"
+    },
+    "identityResourceGroup": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "identityName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "identityClientId": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "keyVaultName": {
+      "defaultValue": "",
+      "type": "String"
     }
+
 
   },
   "variables": {
@@ -193,9 +214,30 @@
                   "secretRef": "password"
                 },
                 {
+                  "name": "Sbm_KeyVaultName",
+                  "value": "[parameters('keyVaultName')]"
+                },
+                {
+                  "name": "Sbm_IdentityClientId",
+                  "value": "[parameters('identityClientId')]"
+                },
+                {
+                  "name": "Sbm_IdentityResourceGroup",
+                  "value": "[parameters('identityResourceGroup')]"
+                },
+                {
+                  "name": "Sbm_IdentityName",
+                  "value": "[parameters('identityClientId')]"
+                },
+                {
                   "name": "Sbm_AllowObjectDelete",
                   "value": "[parameters('allowObjectDelete')]"
+                },
+                {
+                  "name": "Sbm_AuthType",
+                  "value": "[parameters('authType')]"
                 }
+
               ]
             }
           ],

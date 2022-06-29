@@ -29,20 +29,18 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
  {
     $keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
     Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
-
-    $identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
-    Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
-
-    $identityClientId = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].clientId"
-    Write-Host "Using Managed Identity ClientId:'$identityClientId'" -ForegroundColor DarkGreen
- }
- else
- {
+}
+else {
     Write-Host "Not using KeyVault"  -ForegroundColor DarkGreen
-    $keyVaultName = ""
-    $identityName = ""
- }
+    
+}
 
+$identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
+Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
+
+$identityClientId = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].clientId"
+Write-Host "Using Managed Identity ClientId:'$identityClientId'" -ForegroundColor DarkGreen
+ 
 $storageAccountName =  az storage account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using storage account name:'$storageAccountName'" -ForegroundColor DarkGreen
 

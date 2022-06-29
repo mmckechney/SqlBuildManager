@@ -5,7 +5,10 @@ param
     [bool] $includeContainerRegistry
 )
 Write-Host "Create AKS cluster"  -ForegroundColor Cyan
-
+if("" -eq  $resourceGroupName)
+{
+    $resourceGroupName = "$($prefix)-rg"
+}
 $aksClusterName = $prefix + "aks"
 $keyVaultName = $prefix + "keyvault"
 $userAssignedIdentity = $prefix + "identity"

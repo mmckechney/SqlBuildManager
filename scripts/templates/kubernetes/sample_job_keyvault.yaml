@@ -14,6 +14,7 @@ spec:
       containers:
       - name: sqlbuildmanager
         image: blueskydevus/sqlbuildmanager:latest-vNext
+        imagePullPolicy: Always
         resources: 
           limits:
             memory: "512M"

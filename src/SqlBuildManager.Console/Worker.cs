@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 using sb = SqlSync.SqlBuild;
 using clb = SqlBuildManager.Console.CommandLine.CommandLineBuilder;
 using SqlBuildManager.Console.Batch;
+using SqlBuildManager.Console.Shared;
 
 namespace SqlBuildManager.Console
 {
@@ -405,32 +406,50 @@ namespace SqlBuildManager.Console
                 log.LogInformation($"Saved secrets to Azure Key Vault {cmdLine.ConnectionArgs.KeyVaultName}: {string.Join(", ", lst)}");
             }
 
-            if (!clearText)
-            {
-                cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);
-            }
-
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
                 //remove secrets from the command line so they are not saved to the config.
-                var kvTmp = cmdLine.ConnectionArgs.KeyVaultName;
-                cmdLine.AuthenticationArgs = null; // new CommandLineArgs.Authentication();
-                cmdLine.ConnectionArgs.EventHubConnectionString = null;
+                cmdLine.AuthenticationArgs.UserName = null;
+                cmdLine.AuthenticationArgs.Password = null;
                 cmdLine.ConnectionArgs.BatchAccountKey = null;
                 cmdLine.ConnectionArgs.StorageAccountKey = null;
                 cmdLine.ContainerRegistryArgs.RegistryPassword = null;
-                if (string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName))
+
+                if (ConnectionValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
                 {
-                    //will need this for KEDA in ContainerApps, so only remove if NOT for ContainerApps
-                    cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null;
+                    cmdLine.ConnectionArgs.EventHubConnectionString = null;
+                }
+
+                if (ConnectionValidator.IsServiceBusConnectionString(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+                {
+                    if (string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName))
+                    {
+                        //will need this for KEDA in ContainerApps, so only remove if NOT for ContainerApps
+                        cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null;
+
+                    }
                 }
             }
+
+
+            //Clear out username and password is AuthenticationType is ManagedIdentity
+            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
+            {
+                cmdLine.AuthenticationArgs.UserName = null;
+                cmdLine.AuthenticationArgs.Password = null;
+            }
+
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
             {
                 //Clean out ACI, Container App and Container Registry for Batch runs
                 cmdLine.AciArgs = null;
                 cmdLine.ContainerAppArgs = null;
                 cmdLine.ContainerRegistryArgs = null;
+            }
+
+            if (!clearText)
+            {
+                cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);
             }
 
             var mystuff = JsonConvert.SerializeObject(cmdLine, Formatting.Indented, new JsonSerializerSettings
@@ -673,7 +692,10 @@ namespace SqlBuildManager.Console
                 return -4353;
             }
 
-
+            if (cmdLine.IdentityArgs != null)
+            {
+                AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            }
             DateTime start = DateTime.Now;
             log.LogDebug("Entering Threaded Execution");
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
@@ -845,6 +867,15 @@ namespace SqlBuildManager.Console
             }
             cmdLine.RunningAsContainer = true;
             bool success = true;
+
+            //runtime params
+            (success, cmdLine) = ContainerManager.ReadRuntimeParameters(cmdLine);
+            if (!success)
+            {
+                log.LogError("Unable to acquire runtime values. Terminating container.");
+                return -2;
+            }
+
             //Get secrets
             (success, cmdLine) = ContainerManager.ReadSecrets(cmdLine);
             if (!success)
@@ -852,12 +883,12 @@ namespace SqlBuildManager.Console
                 log.LogError("Unable to acquire secrets from secret store. Terminating container.");
                 return -2;
             }
-            //runtime params
-            (success, cmdLine) = ContainerManager.ReadRuntimeParameters(cmdLine);
-            if (!success)
+      
+            if(cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
             {
-                log.LogError("Unable to acquire runtime values. Terminating container.");
-                return -2;
+                int sleepTime = 10;
+                log.LogInformation($"Sleeping for {sleepTime} seconds to assure Managed Identity Assignment");
+                Thread.Sleep(sleepTime * 1000);
             }
             return await RunGenericContainerQueueWorker(cmdLine);
         }
@@ -904,7 +935,8 @@ namespace SqlBuildManager.Console
             {
                 CancellationTokenSource cancelSource = new CancellationTokenSource();
                 eventHubMonitorTask = ehandler.MonitorEventHub(stream, utcStartDate, cancelSource.Token);
-            }else
+            }
+            else
             {
                 log.LogInformation("No Event Hub connection provided. Unable to track live progress other than Queue message count.");
             }
@@ -1020,7 +1052,10 @@ namespace SqlBuildManager.Console
                 unitTestLoops++;
             }
 
-            eventHubMonitorTask.Dispose();
+            if (eventHubMonitorTask != null)
+            {
+                eventHubMonitorTask.Dispose();
+            }
             ehandler.Dispose();
 
             await qManager.DeleteSubscription();
@@ -1098,9 +1133,13 @@ namespace SqlBuildManager.Console
             bool initSuccess;
             (initSuccess, cmdLine) = Init(cmdLine);
             cmdLine.RunningAsContainer = true;
-            cmdLine = ContainerAppHelper.ReadRuntimeEnvironmentVariables(cmdLine);
-            if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            cmdLine = Shared.EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
             (bool discard, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+            cmdLine = Shared.EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+            if (cmdLine.IdentityArgs != null)
+            {
+                AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            }
             cmdLine.ContainerAppArgs.RunningAsContainerApp = true;
             
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
@@ -1479,18 +1518,27 @@ namespace SqlBuildManager.Console
                 Directory.CreateDirectory(cmdLine.RootLoggingPath);
             }
             cmdLine.RunningAsContainer = true;
-            cmdLine = Aci.AciHelper.ReadRuntimeEnvironmentVariables(cmdLine);
-            if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+
+            
 
             int seconds = 5;
             log.LogInformation($"Waiting {seconds} for Managed Identity assignment");
             System.Threading.Thread.Sleep(seconds * 1000);
+
+            cmdLine = Shared.EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+
             bool kvSuccess;
             (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             if (!kvSuccess)
             {
                 log.LogError("Unable to retrieve required connection secrets. Terminating container");
                 return -2;
+            }
+            //Re-read (mostly for unit tests in case there is a connection string from the KV
+            cmdLine = Shared.EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+            if (cmdLine.IdentityArgs != null)
+            {
+                AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
             }
             return await RunGenericContainerQueueWorker(cmdLine);
         }

@@ -6,6 +6,18 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 ### _Be sure to review the [change log](CHANGELOG.md) for the latest updates, enhancements and bug fixes_
 
+### **Key feature enhancement with Version 14.4+: Expanded use of Azure Managed Identity to connect to resources**
+
+With this update, it significantly reduces the the need to save and manage secrets and connection strings
+
+- _Database Connections:_ [Kubernetes](docs/kubernetes.md),  [Azure Container Instance](docs/aci.md) and [Batch](docs/massively_parallel.md) methods now allow for the use of Azure Managed Identity to authenticate to SQL Databases (with new `--authtype ManagedIdentity`). 
+
+- _Service Bus:_ For any deployment type other than [Azure Container Apps](docs/containerapp.md), use the name of the Service Bus namespace as the value for `--servicebustopicconnection` in place of the full connection string (see below for explanation)
+- _Event Hub:_ For any deployment type, use the Event Hub Namespace and Event Hub name as values for `--eventhubconnection` in the pipe delimited format `<Event Hub Namespace>|<Event Hub Name>`
+
+_NOTE:_ [Azure Container Apps](docs/containerapp.md) does not currently allow for Managed Identity authentication to Azure SQL database. Also, the Service Bus connection string is required for the KEDA scaler so you can not use just the namespace. You _can_ use the  `<Event Hub Namespace>|<Event Hub Name>` convention for Event Hubs however!
+
+
 ### **Important changes in Version 14+:**
 
 There are three new options to massively parallel processing: [Azure Container Apps](docs/containerapp.md), [Kubernetes](docs/kubernetes.md) and [Azure Container Instance](docs/aci.md)!

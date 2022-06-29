@@ -113,6 +113,88 @@ namespace SqlBuildManager.Console.ExternalTest
            
         }
 
+        [DataRow("TestConfig/mi-full-runtime.yaml", "TestConfig/mi-full-secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/acr_basic_job.yaml")]
+        [DataTestMethod]
+        public void Kubernetes_Queue_SBMSource_ManagedIdentity_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
+        {
+
+            var prc = new ProcessHelper();
+            secretsFile = Path.GetFullPath(secretsFile);
+            runtimeFile = Path.GetFullPath(runtimeFile);
+            deployFile = Path.GetFullPath(deployFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+
+            //get the size of the log file before we start
+            int startingLine = TestHelper.LogFileCurrentLineCount();
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+
+            //Clear any exiting pods
+            var result = prc.ExecuteProcess("kubectl", $"delete job sqlbuildmanager ");
+
+            //Prep the build
+            var args = new string[]{
+                "k8s",  "prep",
+                "--secretsfile", secretsFile,
+                "--runtimefile", runtimeFile,
+                "--jobname", TestHelper.GetUniqueJobName("k8s"),
+                "--packagename", sbmFileName};
+
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            //enqueue the topic messages
+            args = new string[]{
+                "k8s",  "enqueue",
+                "--secretsfile", secretsFile,
+                "--runtimefile", runtimeFile,
+                "--override", overrideFile};
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {secretsProviderFile}");
+            Assert.AreEqual(0, result, "Failed to apply secrets provider file");
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {podIdentityFile}");
+            Assert.AreEqual(0, result, "Failed to apply pod identity file");
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {secretsFile}");
+            Assert.AreEqual(0, result, "Failed to apply secrets file");
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {runtimeFile}");
+            Assert.AreEqual(0, result, "Failed to apply runtime configmap file");
+
+            result = prc.ExecuteProcess("kubectl", $"apply -f {deployFile}");
+            Assert.AreEqual(0, result, "Failed to apply job deployment file");
+
+            result = prc.ExecuteProcess("kubectl", $"get pods");
+            Assert.AreEqual(0, result);
+
+            //monitor for completion
+            args = new string[]{
+                "k8s",  "monitor",
+                "--secretsfile", secretsFile,
+                "--runtimefile", runtimeFile,
+                "--override", overrideFile,
+                "--unittest", "true"};
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+            Assert.AreEqual(0, result);
+
+
+        }
+
         [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_job_keyvault.yaml")]
         [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/acr_basic_job_keyvault.yaml")]
         [DataTestMethod]
@@ -122,6 +204,7 @@ namespace SqlBuildManager.Console.ExternalTest
             secretsProviderFile = Path.GetFullPath(secretsProviderFile);
             podIdentityFile = Path.GetFullPath(podIdentityFile);
             runtimeFile = Path.GetFullPath(runtimeFile);
+            secretsFile = Path.GetFullPath(secretsFile);
             deployFile = Path.GetFullPath(deployFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
             var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
@@ -178,6 +261,7 @@ namespace SqlBuildManager.Console.ExternalTest
             result = prc.ExecuteProcess("kubectl", $"get pods");
             Assert.AreEqual(0, result);
 
+            secretsFile = Path.GetFullPath("TestConfig/mi-full-secrets.yaml");
             //monitor for completion
             args = new string[]{
                 "k8s",  "monitor",
