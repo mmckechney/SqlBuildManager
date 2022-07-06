@@ -24,7 +24,7 @@ $azureIdentityBinding = $azureIdentityBinding.Replace("{{subscriptionId}}", $sub
 $azureIdentityBinding = $azureIdentityBinding.Replace("{{userAssignedIdentityName}}", $userAssignedIdentityName)
 $azureIdentityBinding = $azureIdentityBinding.Replace("{{resourceGroupName}}", $resourceGroupName)
 $azureIdentityBinding = $azureIdentityBinding.Replace("{{userAssignedClientId}}", $userAssignedClientId)
-$azureIdentityBinding | Out-File -FilePath (Join-Path $path "podIdentityAndBinding.yaml")
+$azureIdentityBinding | Out-File -FilePath (Join-Path $path "k8s-podIdentityAndBinding.yaml")
 
 $fileName = Join-Path $path "secretProviderClass.yaml"
 Write-Host("Writing $fileName");
@@ -32,5 +32,5 @@ $providerClass=  Get-Content "$($scriptDir)/secretProviderClass_template.yaml"
 $providerClass=  $providerClass.Replace("{{userAssignedClientId}}", $userAssignedClientId)
 $providerClass=  $providerClass.Replace("{{keyVaultName}}", $keyVaultName)
 $providerClass=  $providerClass.Replace("{{tenantId}}", $tenantId)
-$providerClass=  $providerClass | Out-File -FilePath (Join-Path $path "secretProviderClass.yaml")
+$providerClass=  $providerClass | Out-File -FilePath (Join-Path $path "k8s-secretProviderClass.yaml")
 

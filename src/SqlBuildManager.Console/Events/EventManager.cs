@@ -2,7 +2,9 @@
 using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Processor;
 using Azure.Storage.Blobs;
+using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Interfaces.Console;
 using System;
@@ -12,6 +14,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using cs = SqlBuildManager.Console.CloudStorage;
 
 namespace SqlBuildManager.Console.Events
 {
@@ -20,10 +23,12 @@ namespace SqlBuildManager.Console.Events
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private string eventHubconnectionString = "";
         private string storageContainerName = "";
-        private string storageConnectionString = "";
+        private string storageAccountName = "";
+        private string storageAccountKey= "";
         private string jobName = "";
         private string consumerGroup = EventHubConsumerClient.DefaultConsumerGroupName;
         private DateTime utcMonitorStart = DateTime.UtcNow;
+        
 
         private int databaseCommitMessages = 0;
         private int databaseErrorMessages = 0;
@@ -44,12 +49,13 @@ namespace SqlBuildManager.Console.Events
         }
         public bool StreamEvents { get;set; } = false;
 
-        public EventManager(string eventHubconnectionString, string storageConnectionString, string storageContainerName, string jobName)
+        public EventManager(string eventHubconnectionString, string storageAccountName, string storageAccountKey, string storageContainerName, string jobName)
         {
             this.eventHubconnectionString = eventHubconnectionString;
             this.jobName = jobName;
-            this.storageConnectionString = storageConnectionString;
+            this.storageAccountName = storageAccountName;
             this.storageContainerName = storageContainerName;
+            this.storageAccountKey = storageAccountKey;
         }
 
         private BlobContainerClient _blobClient = null;
@@ -57,9 +63,9 @@ namespace SqlBuildManager.Console.Events
         {
             get
             {
-                if(_blobClient == null)
+                if (_blobClient == null)
                 {
-                    _blobClient = new BlobContainerClient(storageConnectionString, "eventhubcheckpoint");
+                    _blobClient = cs.StorageManager.GetBlobContainerClient(this.storageAccountName, this.storageAccountKey, "eventhubcheckpoint");
                     _blobClient.CreateIfNotExistsAsync().Wait();
                 }
                 return _blobClient;

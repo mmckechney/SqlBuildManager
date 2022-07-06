@@ -125,10 +125,10 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
         //TODO: Enable Managed Identity****** Managed Identity for SQL Authentication is not available for Container Apps currently, only SB and EH
-        [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        //[DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-containerapp-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        //[DataRow("TestConfig/settingsfile-containerapp-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        //[DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         
         [DataTestMethod]
         public void ContainerApp_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
@@ -224,7 +224,7 @@ namespace SqlBuildManager.Console.ExternalTest
             int startingLine = TestHelper.LogFileCurrentLineCount();
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            string jobName = TestHelper.GetUniqueJobName("c");
+            string jobName = TestHelper.GetUniqueJobName("ca");
             string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
             //Prep the build

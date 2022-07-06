@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using SqlBuildManager.Console.CommandLine;
 using System.Text.RegularExpressions;
 using System.Linq;
+using SqlBuildManager.Console.ContainerApp.Internal;
+using static System.Net.WebRequestMethods;
 
 namespace SqlBuildManager.Console.CloudStorage
 {
@@ -21,12 +23,26 @@ namespace SqlBuildManager.Console.CloudStorage
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         internal static BlobServiceClient CreateStorageClient(string storageAccountName, string storageAccountKey)
         {
-            StorageSharedKeyCredential creds = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-            var serviceClient = new BlobServiceClient(new Uri($"https://{storageAccountName}.blob.core.windows.net"), creds);
+            BlobServiceClient serviceClient = null;
+            if (string.IsNullOrWhiteSpace(storageAccountKey))
+            {
+                serviceClient = new BlobServiceClient(new Uri($"https://{storageAccountName}.blob.core.windows.net"),Aad.AadHelper.TokenCredential);
+            }
+            else
+            {
+                StorageSharedKeyCredential creds = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
+                serviceClient = new BlobServiceClient(new Uri($"https://{storageAccountName}.blob.core.windows.net"), creds);
+            }
+           
+            
 
             return serviceClient;
         }
-        internal static string GetStorageConnectionString(string storageAccountName, string storageAccountKey)
+        internal static StorageSharedKeyCredential GetStorageSharedKeyCredential(string storageAccountName, string storageAccountKey)
+        {
+            return new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
+        }
+        private static string GetStorageConnectionString(string storageAccountName, string storageAccountKey)
         {
             return $"DefaultEndpointsProtocol=https;AccountName={storageAccountName};AccountKey={storageAccountKey};EndpointSuffix=core.windows.net";
         }
@@ -125,7 +141,7 @@ namespace SqlBuildManager.Console.CloudStorage
                 log.LogInformation($"Downloading {blob.Uri} to local working file {localPath}");
                 BlobDownloadInfo blobDownload = await blob.DownloadAsync();
 
-                using (FileStream fileStream = File.OpenWrite(localPath))
+                using (FileStream fileStream = System.IO.File.OpenWrite(localPath))
                 {
                     await blobDownload.Content.CopyToAsync(fileStream);
                 }
@@ -137,12 +153,17 @@ namespace SqlBuildManager.Console.CloudStorage
                 return string.Empty;
             }
         }
+       
+        internal static string GetContainerRawUrl(string storageAccountName, string outputContainerName)
+        {
+            return $"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}";
+        }
         internal static string GetOutputContainerSasUrl(string storageAccountName, string storageAccountKey, string outputContainerName, bool forRead)
         {
             var cred = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
             return GetOutputContainerSasUrl(storageAccountName, outputContainerName,cred,forRead);
         }
-        internal static string GetOutputContainerSasUrl(string storageAccountName, string outputContainerName, StorageSharedKeyCredential storageCreds, bool forRead)
+        private static string GetOutputContainerSasUrl(string storageAccountName, string outputContainerName, StorageSharedKeyCredential storageCreds, bool forRead)
         {
             log.LogDebug($"Ensuring presence of output blob container '{outputContainerName}'");
             var container = new BlobContainerClient(new Uri($"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}"), storageCreds);
@@ -191,8 +212,7 @@ namespace SqlBuildManager.Console.CloudStorage
         }
         internal static async Task<bool> StorageContainerExists(string storageAccountName, string storageAccountKey, string containerName)
         {
-            var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
-            BlobContainerClient container = new BlobContainerClient(connstr, containerName);
+            var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
             var r = await container.ExistsAsync();
             return r.Value;
 
@@ -201,8 +221,7 @@ namespace SqlBuildManager.Console.CloudStorage
         {
             try
             {
-                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
-                BlobContainerClient container = new BlobContainerClient(connstr, containerName);
+                var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
                 var result = await container.DeleteAsync();
                 if(result.Status == 202)
                 {
@@ -232,12 +251,10 @@ namespace SqlBuildManager.Console.CloudStorage
                     }
                     string blobName = Path.GetFileName(filePath);
 
-                    var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
-                    BlobContainerClient container = new BlobContainerClient(connstr, containerName);
+                    var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
                     await container.CreateIfNotExistsAsync();
 
-                    var storageCreds = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-                    BlockBlobClient blobData = new BlockBlobClient(new Uri($"https://{storageAccountName}.blob.core.windows.net/{containerName}/{blobName}"), storageCreds);   //container.GetBlockBlobClient(blobName);
+                    var blobData = GetBlockBlobClient(storageAccountName, storageAccountKey, containerName, blobName);
                     using (var fs = new FileStream(filePath, FileMode.Open))
                     {
                         blobData.Upload(fs);
@@ -265,6 +282,31 @@ namespace SqlBuildManager.Console.CloudStorage
                 return false;
             }
         }
+        internal static async Task<bool> DownloadBlobToLocal(string sasUrl, string localFileName)
+        {
+            try
+            {
+                var cloudBlobContainer = new BlobContainerClient(new Uri(sasUrl));
+                var blob = cloudBlobContainer.GetBlobClient(Path.GetFileName(localFileName));
+                var resp = await blob.DownloadToAsync(localFileName);
+                if (resp.Status < 300)
+                {
+                    return true;
+                }
+                else
+                {
+                    log.LogError($"Unable to download file {Path.GetFileName(localFileName)} to {localFileName}: {resp.ReasonPhrase}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                log.LogError($"Unable to download file {Path.GetFileName(localFileName)} to {localFileName}: {ex.Message}");
+                return false;
+            }
+        }
+
+
         internal static ResourceFile UploadFileToBatchContainer(string storageAcctName, string containerName, StorageSharedKeyCredential storageCreds, string filePath)
         {
             log.LogInformation($"Uploading file {filePath} to container [{containerName}]...");
@@ -333,9 +375,9 @@ namespace SqlBuildManager.Console.CloudStorage
 
                             }
 
-                            if (File.Exists(tmp))
+                            if (System.IO.File.Exists(tmp))
                             {
-                                File.Delete(tmp);
+                                System.IO.File.Delete(tmp);
                             }
                         }
                         counter++;
@@ -348,15 +390,32 @@ namespace SqlBuildManager.Console.CloudStorage
 
         internal static async Task<bool> WriteLogsToBlobContainer(string storageAccountName, string storageAccountKey, string outputContainerName, string rootLoggingPath)
         {
+            var container = GetBlobContainerClient(storageAccountName, storageAccountKey, outputContainerName);
+            var res = await WriteLogsToBlobContainer(container, rootLoggingPath);
+            return res;
+        }
+        internal static async Task<bool> WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
+        {
+            BlobContainerClient container = new BlobContainerClient(new Uri(outputContainerSasUrl));
+            var res = await WriteLogsToBlobContainer(container, rootLoggingPath);
+            return res;
+         
+        }
+        private static async Task<bool> WriteLogsToBlobContainer(BlobContainerClient containerClient, string rootLoggingPath)
+        {
             try
             {
                 //var writeTasks = new List<Task>();
-                log.LogInformation($"Writing log files to blob storage at {storageAccountName}");
+                log.LogInformation($"Writing log files to blob storage at {containerClient.AccountName}");
                 var renameLogFiles = new string[] { "sqlbuildmanager", "csv" };
-                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
-                BlobContainerClient container = new BlobContainerClient(connstr, outputContainerName);
+
+                log.LogInformation($"Getting file list from {rootLoggingPath}");
                 var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
-                var taskId = Environment.GetEnvironmentVariable("HOSTNAME");
+                var taskId = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_ID");
+                if(string.IsNullOrEmpty(taskId))
+                {
+                    taskId = Environment.GetEnvironmentVariable("HOSTNAME");
+                }
                 string machine = Environment.MachineName;
 
                 foreach (var f in fileList)
@@ -370,7 +429,7 @@ namespace SqlBuildManager.Console.CloudStorage
 
                             tmp = $"{taskId}/{tmp}";
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
-                            var rename = container.GetBlockBlobClient(tmp);
+                            var rename = containerClient.GetBlockBlobClient(tmp);
                             using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 await rename.UploadAsync(fs);
@@ -379,12 +438,9 @@ namespace SqlBuildManager.Console.CloudStorage
                         }
                         else if (renameLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
-
-                            //var localTemp = Path.Combine(Path.GetDirectoryName(f), tmp);
-                            //File.Copy(f, localTemp);
                             tmp = $"{taskId}/{tmp}";
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
-                            var rename = container.GetBlockBlobClient(tmp);
+                            var rename = containerClient.GetBlockBlobClient(tmp);
                             using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 await rename.UploadAsync(fs);
@@ -394,7 +450,7 @@ namespace SqlBuildManager.Console.CloudStorage
                         else
                         {
                             log.LogInformation($"Saving File '{f}' as '{tmp}'");
-                            var b = container.GetBlockBlobClient(tmp);
+                            var b = containerClient.GetBlockBlobClient(tmp);
                             using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
                                 await b.UploadAsync(fs);
@@ -414,6 +470,36 @@ namespace SqlBuildManager.Console.CloudStorage
                 log.LogError($"Unable to upload log files to blob storage.{Environment.NewLine}{exe.Message}");
                 return false;
             }
+        }
+        internal static BlobContainerClient GetBlobContainerClient(string storageAccountName, string storageAccountKey, string containerName)
+        {
+            BlobContainerClient containerClient = null;
+            if (string.IsNullOrWhiteSpace(storageAccountKey))
+{
+                var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
+                containerClient = new BlobContainerClient(new Uri(url), Aad.AadHelper.TokenCredential);
+            }
+            else
+            {
+                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
+                containerClient = new BlobContainerClient(connstr, containerName);
+            }
+            return containerClient;
+        }
+        private static BlockBlobClient GetBlockBlobClient(string storageAccountName, string storageAccountKey, string containerName, string blobName)
+        {
+            BlockBlobClient containerClient = null;
+            if (string.IsNullOrWhiteSpace(storageAccountKey))
+            {
+                var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}/{blobName}";
+                containerClient = new BlockBlobClient(new Uri(url), Aad.AadHelper.TokenCredential);
+            }
+            else
+            {
+                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
+                containerClient = new BlockBlobClient(connstr, containerName, blobName);
+            }
+            return containerClient;
         }
 
     }

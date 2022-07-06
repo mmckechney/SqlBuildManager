@@ -198,7 +198,7 @@ namespace SqlBuildManager.Console.ExternalTest
             File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
 
             //Get the creds locally from the K8s file
-            var secretsFile = Path.GetFullPath("TestConfig/secrets.yaml");
+            var secretsFile = Path.GetFullPath("TestConfig/k8s-secrets.yaml");
             var ymlD = new ydn.Deserializer();
             var obj = ymlD.Deserialize<dynamic>(File.ReadAllText(secretsFile));
             var pw = Encoding.UTF8.GetString(Convert.FromBase64String(obj["data"]["Password"]));
@@ -263,7 +263,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
         [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataTestMethod]
-        public void ACI_Queue_DacpacSource_ForceApplyCustom_eyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public void ACI_Queue_DacpacSource_ForceApplyCustom_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -284,7 +284,7 @@ namespace SqlBuildManager.Console.ExternalTest
             File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
 
             //Get the creds locally from the K8s file
-            var secretsFile = Path.GetFullPath("TestConfig/secrets.yaml");
+            var secretsFile = Path.GetFullPath("TestConfig/k8s-secrets.yaml");
             var ymlD = new ydn.Deserializer();
             var obj = ymlD.Deserialize<dynamic>(File.ReadAllText(secretsFile));
             var pw = Encoding.UTF8.GetString(Convert.FromBase64String(obj["data"]["Password"]));

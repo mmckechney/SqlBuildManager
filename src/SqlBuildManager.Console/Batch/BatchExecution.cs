@@ -1,12 +1,8 @@
-﻿using Azure.Storage;
-using Azure.Storage.Blobs;
-using Microsoft.Azure.Batch;
+﻿using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
 using Microsoft.Azure.Management.Batch;
-using Microsoft.Azure.Management.ContainerInstance.Fluent.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.Rest.Azure;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
@@ -153,9 +149,9 @@ namespace SqlBuildManager.Console.Batch
                 timer.Start();
 
                 //Get storage ready
-                BlobServiceClient storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
-                StorageSharedKeyCredential storageCreds = new StorageSharedKeyCredential(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
-                string containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName, storageCreds, false);
+                var storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
+                var storageCreds =  StorageManager.GetStorageSharedKeyCredential(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
+                string containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false);
                 log.LogDebug($"Output write SAS token: {containerSasToken}");
 
 
@@ -406,12 +402,10 @@ namespace SqlBuildManager.Console.Batch
                     log.LogInformation($"Setting job {jobId} status to exit code: {myExitCode}");
                     CloudJob j = batchClient.JobOperations.GetJob(jobId);
                     j.Terminate("Error");
-                }                    
+                }
 
-
-                readOnlySasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName, storageCreds, true);
-                log.LogInformation($"Log files can be found here: {readOnlySasToken}");
-                log.LogInformation("The read-only SAS token URL is valid for 7 days.");
+                readOnlySasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, true);
+                log.LogInformation($"The consolidated log files can be found in the Azure storage account '{cmdLine.ConnectionArgs.StorageAccountName}' in blob container '{storageContainerName}'");
                 log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
                 log.LogInformation("You can also get details on your Azure Batch execution from the \"Azure Batch Explorer\" found here: https://azure.github.io/BatchExplorer/");
 
@@ -621,7 +615,7 @@ namespace SqlBuildManager.Console.Batch
 
                 case OsType.Windows:
                 default:
-                    imageReference = new bm.ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer", sku: "2016-Datacenter-with-containers", version: "latest");
+                    imageReference = new bm.ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer", sku: "2022-datacenter", version: "latest");
                     virtualMachineConfiguration = new bm.VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
 
                     break;

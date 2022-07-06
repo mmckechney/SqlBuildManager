@@ -53,7 +53,7 @@ namespace SqlBuildManager.Console.ContainerApp
                 }
                 else
                 {
-                    log.LogError("Container App deployment failed. Unablet to proceed.");
+                    log.LogError("Container App deployment failed. Unable to proceed.");
                 }    
                 return success;
             }

@@ -80,6 +80,8 @@ if($false -eq (Test-Path $keyFile))
 $sbAndEhArgs = 
 foreach($auth in $authTypes)
 {
+    $params = @("aci", "savesettings")
+
     if($auth -eq "ManagedIdentity" )
     {
         $settingsAci  =$baseFileName + "-mi.json"
@@ -91,10 +93,11 @@ foreach($auth in $authTypes)
         $settingsAci  = $baseFileName + ".json"
         $sbAndEhArgs = @("-sb", """$serviceBusConnectionString""")
         $sbAndEhArgs += ("-eh","""$eventHubConnectionString""")
+        $params += ("--storageaccountkey",$storageAcctKey)
     }
     Write-Host "Saving settings file to $settingsAci" -ForegroundColor DarkGreen
 
-    $params = @("aci", "savesettings")
+    
     $params += ("--settingsfile", "$($settingsAci)")
     $params += ("--aciname", $aciName)
     $params += ("--identityname", $identityName)
@@ -103,7 +106,7 @@ foreach($auth in $authTypes)
     $params += ("--acirg", $resourceGroupName)
     $params += ("-kv", $keyVaultName)
     $params += ("--storageaccountname", $storageAccountName)
-    $params += ("--storageaccountkey",$storageAcctKey)
+
     $params += ("--defaultscripttimeout", "500")
     $params += ("--subscriptionid",$subscriptionId)
     $params += ("--force")

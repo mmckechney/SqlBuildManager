@@ -37,14 +37,16 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/basic_job.yaml")]
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/acr_basic_job.yaml")]
+        [DataRow("TestConfig/k8s-runtime.yaml", "TestConfig/k8s-secrets.yaml", "TestConfig/k8s-basic_job.yaml")]
+        [DataRow("TestConfig/k8s-runtime.yaml", "TestConfig/k8s-secrets.yaml", "TestConfig/k8s-acr_basic_job.yaml")]
         [DataTestMethod]
         public void Kubernetes_Queue_SBMSource_Local_Secrets_Success(string runtimeFile, string secretsFile, string deployFile)
         {
             var prc = new ProcessHelper();
             secretsFile = Path.GetFullPath(secretsFile);
             runtimeFile = Path.GetFullPath(runtimeFile);
+            string testRunTimeFile = Path.Combine(Path.GetDirectoryName(runtimeFile), "k8s-runtime-test.yaml");
+            File.Copy(runtimeFile, testRunTimeFile, true);
             deployFile = Path.GetFullPath(deployFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
             var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
@@ -66,7 +68,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var args = new string[]{
                 "k8s",  "prep",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--jobname", TestHelper.GetUniqueJobName("k8s"),
                 "--packagename", sbmFileName};
 
@@ -79,7 +81,7 @@ namespace SqlBuildManager.Console.ExternalTest
             args = new string[]{
                 "k8s",  "enqueue",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", overrideFile};
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -89,7 +91,7 @@ namespace SqlBuildManager.Console.ExternalTest
             result = prc.ExecuteProcess("kubectl", $"apply -f {secretsFile}");
             Assert.AreEqual(0, result);
 
-            result = prc.ExecuteProcess("kubectl", $"apply -f {runtimeFile}");
+            result = prc.ExecuteProcess("kubectl", $"apply -f {testRunTimeFile}");
             Assert.AreEqual(0, result);
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {deployFile}");
@@ -102,7 +104,7 @@ namespace SqlBuildManager.Console.ExternalTest
             args = new string[]{
                 "k8s",  "monitor",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", overrideFile,
                 "--unittest", "true"};
             val = rootCommand.InvokeAsync(args);
@@ -113,14 +115,16 @@ namespace SqlBuildManager.Console.ExternalTest
            
         }
 
-        [DataRow("TestConfig/mi-full-runtime.yaml", "TestConfig/mi-full-secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/acr_basic_job.yaml")]
+        [DataRow("TestConfig/k8s-mi-runtime.yaml",  "TestConfig/k8s-secretProviderClass.yaml", "TestConfig/k8s-podIdentityAndBinding.yaml", "TestConfig/k8s-acr_basic_job.yaml")]
         [DataTestMethod]
-        public void Kubernetes_Queue_SBMSource_ManagedIdentity_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
+        public void Kubernetes_Queue_SBMSource_ManagedIdentity_Success(string runtimeFile, string secretsProviderFile, string podIdentityFile, string deployFile)
         {
 
             var prc = new ProcessHelper();
-            secretsFile = Path.GetFullPath(secretsFile);
+
             runtimeFile = Path.GetFullPath(runtimeFile);
+            string testRunTimeFile = Path.Combine(Path.GetDirectoryName(runtimeFile), "k8s-runtime-test.yaml");
+            File.Copy(runtimeFile, testRunTimeFile, true);
             deployFile = Path.GetFullPath(deployFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
             var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
@@ -141,8 +145,7 @@ namespace SqlBuildManager.Console.ExternalTest
             //Prep the build
             var args = new string[]{
                 "k8s",  "prep",
-                "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--jobname", TestHelper.GetUniqueJobName("k8s"),
                 "--packagename", sbmFileName};
 
@@ -154,8 +157,7 @@ namespace SqlBuildManager.Console.ExternalTest
             //enqueue the topic messages
             args = new string[]{
                 "k8s",  "enqueue",
-                "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", overrideFile};
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -168,10 +170,8 @@ namespace SqlBuildManager.Console.ExternalTest
             result = prc.ExecuteProcess("kubectl", $"apply -f {podIdentityFile}");
             Assert.AreEqual(0, result, "Failed to apply pod identity file");
 
-            result = prc.ExecuteProcess("kubectl", $"apply -f {secretsFile}");
-            Assert.AreEqual(0, result, "Failed to apply secrets file");
-
-            result = prc.ExecuteProcess("kubectl", $"apply -f {runtimeFile}");
+  
+            result = prc.ExecuteProcess("kubectl", $"apply -f {testRunTimeFile}");
             Assert.AreEqual(0, result, "Failed to apply runtime configmap file");
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {deployFile}");
@@ -183,8 +183,7 @@ namespace SqlBuildManager.Console.ExternalTest
             //monitor for completion
             args = new string[]{
                 "k8s",  "monitor",
-                "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", overrideFile,
                 "--unittest", "true"};
             val = rootCommand.InvokeAsync(args);
@@ -195,8 +194,8 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_job_keyvault.yaml")]
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/acr_basic_job_keyvault.yaml")]
+        [DataRow("TestConfig/k8s-runtime.yaml", "TestConfig/k8s-secrets.yaml", "TestConfig/k8s-secretProviderClass.yaml", "TestConfig/k8s-podIdentityAndBinding.yaml", "TestConfig/k8s-basic_job_keyvault.yaml")]
+        [DataRow("TestConfig/k8s-runtime.yaml", "TestConfig/k8s-secrets.yaml", "TestConfig/k8s-secretProviderClass.yaml", "TestConfig/k8s-podIdentityAndBinding.yaml", "TestConfig/k8s-acr_basic_job_keyvault.yaml")]
         [DataTestMethod]
         public void Kubernetes_Queue_SBMSource_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
         {
@@ -204,6 +203,8 @@ namespace SqlBuildManager.Console.ExternalTest
             secretsProviderFile = Path.GetFullPath(secretsProviderFile);
             podIdentityFile = Path.GetFullPath(podIdentityFile);
             runtimeFile = Path.GetFullPath(runtimeFile);
+            string testRunTimeFile = Path.Combine(Path.GetDirectoryName(runtimeFile), "k8s-runtime-test.yaml");
+            File.Copy(runtimeFile, testRunTimeFile, true);
             secretsFile = Path.GetFullPath(secretsFile);
             deployFile = Path.GetFullPath(deployFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -226,7 +227,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var args = new string[]{
                 "k8s",  "prep",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--jobname", TestHelper.GetUniqueJobName("k8s-kv"),
                 "--packagename", sbmFileName};
 
@@ -239,7 +240,7 @@ namespace SqlBuildManager.Console.ExternalTest
             args = new string[]{
                 "k8s",  "enqueue",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", overrideFile};
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -252,7 +253,7 @@ namespace SqlBuildManager.Console.ExternalTest
             result = prc.ExecuteProcess("kubectl", $"apply -f {podIdentityFile}");
             Assert.AreEqual(0, result, "Failed to apply pod identity file");
 
-            result = prc.ExecuteProcess("kubectl", $"apply -f {runtimeFile}");
+            result = prc.ExecuteProcess("kubectl", $"apply -f {testRunTimeFile}");
             Assert.AreEqual(0, result, "Failed to apply runtime  file");
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {deployFile}");
@@ -261,12 +262,12 @@ namespace SqlBuildManager.Console.ExternalTest
             result = prc.ExecuteProcess("kubectl", $"get pods");
             Assert.AreEqual(0, result);
 
-            secretsFile = Path.GetFullPath("TestConfig/mi-full-secrets.yaml");
+
             //monitor for completion
             args = new string[]{
                 "k8s",  "monitor",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", overrideFile,
                 "--unittest", "true"};
             val = rootCommand.InvokeAsync(args);
@@ -277,8 +278,8 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/basic_job_keyvault.yaml")]
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/acr_basic_job_keyvault.yaml")]
+        [DataRow("TestConfig/k8s-runtime.yaml", "TestConfig/k8s-secrets.yaml", "TestConfig/k8s-secretProviderClass.yaml", "TestConfig/k8s-podIdentityAndBinding.yaml", "TestConfig/k8s-basic_job_keyvault.yaml")]
+        [DataRow("TestConfig/k8s-runtime.yaml", "TestConfig/k8s-secrets.yaml", "TestConfig/k8s-secretProviderClass.yaml", "TestConfig/k8s-podIdentityAndBinding.yaml", "TestConfig/k8s-acr_basic_job_keyvault.yaml")]
         [DataTestMethod]
         public void Kubernetes_Queue_DacpacSource_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
         {
@@ -286,6 +287,8 @@ namespace SqlBuildManager.Console.ExternalTest
             secretsProviderFile = Path.GetFullPath(secretsProviderFile);
             podIdentityFile = Path.GetFullPath(podIdentityFile);
             runtimeFile = Path.GetFullPath(runtimeFile);
+            string testRunTimeFile = Path.Combine(Path.GetDirectoryName(runtimeFile), "k8s-runtime-test.yaml");
+            File.Copy(runtimeFile, testRunTimeFile, true);
             deployFile = Path.GetFullPath(deployFile);
             secretsFile = Path.GetFullPath(secretsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -321,7 +324,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var args = new string[]{
                 "k8s",  "prep",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--jobname", TestHelper.GetUniqueJobName("k8s-kv"),
                 "--platinumdacpac", dacpacName,
                 "--override", minusFirst
@@ -336,7 +339,7 @@ namespace SqlBuildManager.Console.ExternalTest
             args = new string[]{
                 "k8s",  "enqueue",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", minusFirst
             };
             val = rootCommand.InvokeAsync(args);
@@ -350,7 +353,7 @@ namespace SqlBuildManager.Console.ExternalTest
             result = prc.ExecuteProcess("kubectl", $"apply -f {podIdentityFile}");
             Assert.AreEqual(0, result, "Failed to apply pod identity file");
 
-            result = prc.ExecuteProcess("kubectl", $"apply -f {runtimeFile}");
+            result = prc.ExecuteProcess("kubectl", $"apply -f {testRunTimeFile}");
             Assert.AreEqual(0, result, "Failed to apply runtime  file");
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {deployFile}");
@@ -363,7 +366,7 @@ namespace SqlBuildManager.Console.ExternalTest
             args = new string[]{
                 "k8s",  "monitor",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", minusFirst        ,
                 "--unittest", "true"};
             val = rootCommand.InvokeAsync(args);
@@ -372,12 +375,12 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result);
 
             var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
-            Assert.IsTrue(logFileContents.Contains("DACPAC created"), "A DACPAC should have been used for the build");
+            Assert.IsTrue(logFileContents.Contains("DACPAC created") || logFileContents.Contains("Dacpac Databases In Sync"), "A DACPAC should have been used for the build");
 
 
         }
 
-        [DataRow("TestConfig/runtime.yaml", "TestConfig/secrets.yaml", "TestConfig/secretProviderClass.yaml", "TestConfig/podIdentityAndBinding.yaml", "TestConfig/acr_basic_job_keyvault.yaml")]
+        [DataRow("TestConfig/k8s-runtime.yaml", "TestConfig/k8s-secrets.yaml", "TestConfig/k8s-secretProviderClass.yaml", "TestConfig/k8s-podIdentityAndBinding.yaml", "TestConfig/k8s-acr_basic_job_keyvault.yaml")]
         [DataTestMethod]
         public void Kubernetes_Queue_DacpacSource_ForceApplyCustom_KeyVault_Secrets_Success(string runtimeFile, string secretsFile, string secretsProviderFile, string podIdentityFile, string deployFile)
         {
@@ -385,6 +388,8 @@ namespace SqlBuildManager.Console.ExternalTest
             secretsProviderFile = Path.GetFullPath(secretsProviderFile);
             podIdentityFile = Path.GetFullPath(podIdentityFile);
             runtimeFile = Path.GetFullPath(runtimeFile);
+            string testRunTimeFile = Path.Combine(Path.GetDirectoryName(runtimeFile), "k8s-runtime-test.yaml");
+            File.Copy(runtimeFile, testRunTimeFile, true);
             deployFile = Path.GetFullPath(deployFile);
             secretsFile = Path.GetFullPath(secretsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -426,7 +431,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var args = new string[]{
                 "k8s",  "prep",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--jobname", TestHelper.GetUniqueJobName("k8s-kv"),
                 "--platinumdacpac", dacpacName,
                 "--override", minusFirst
@@ -439,12 +444,13 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //Create another table in the first that will be applied when the custom DACPAC is created
             DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+            DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
 
             //enqueue the topic messages
             args = new string[]{
                 "k8s",  "enqueue",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", minusFirst
             };
             val = rootCommand.InvokeAsync(args);
@@ -458,7 +464,7 @@ namespace SqlBuildManager.Console.ExternalTest
             result = prc.ExecuteProcess("kubectl", $"apply -f {podIdentityFile}");
             Assert.AreEqual(0, result, "Failed to apply pod identity file");
 
-            result = prc.ExecuteProcess("kubectl", $"apply -f {runtimeFile}");
+            result = prc.ExecuteProcess("kubectl", $"apply -f {testRunTimeFile}");
             Assert.AreEqual(0, result, "Failed to apply runtime  file");
 
             result = prc.ExecuteProcess("kubectl", $"apply -f {deployFile}");
@@ -471,7 +477,7 @@ namespace SqlBuildManager.Console.ExternalTest
             args = new string[]{
                 "k8s",  "monitor",
                 "--secretsfile", secretsFile,
-                "--runtimefile", runtimeFile,
+                "--runtimefile", testRunTimeFile,
                 "--override", minusFirst,
                 "--unittest", "true",
                 "--stream", "true"

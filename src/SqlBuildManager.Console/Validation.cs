@@ -336,39 +336,39 @@ namespace SqlBuildManager.Console
         {
             int returnVal = 0;
             List<string> messages = new List<string>();
-            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountName))
+            if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountName))
             {
                 messages.Add("--batchaccountname is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey))
+            if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountUrl))
+            if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountUrl))
             {
                 messages.Add("--batchaccounturl is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.StorageAccountName))
+            if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
             {
                 messages.Add("--storageaccountname is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.StorageAccountKey))
+            if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
             {
-                messages.Add("--storageaccountkey is required in command line or --settingsfile Json");
+                messages.Add("--storageaccountkey is required in command line or --settingsfile json if a Managed Identity is not included");
                 returnVal = -888;
             }
 
-            if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
+            if (String.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchVmSize))
             {
                 messages.Add("--batchvmsize, is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
 
-            if (!String.IsNullOrEmpty(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) && string.IsNullOrEmpty(cmdLine.BatchArgs.BatchJobName))
+            if (!String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) && string.IsNullOrEmpty(cmdLine.BatchArgs.BatchJobName))
             {
                 messages.Add("When --servicebusconnection is provided in command line or --settingsfile Json, then --batchjobname is required");
                 returnVal = -888;
@@ -555,11 +555,11 @@ namespace SqlBuildManager.Console
             if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
             {
                 messages.Add("--storageaccountname is required in command line or --settingsfile");
-             }
+            }
             
-            if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
             {
-                messages.Add("--storageaccountkey is required in command line or --settingsfile");
+                messages.Add("--storageaccountkey is required in command line or --settingsfile if a Managed Identity is not included");
             }
 
             return messages;

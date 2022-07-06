@@ -33,9 +33,9 @@ namespace SqlBuildManager.Console.ExternalTest
         {
 
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", @"C:\temp");
-            this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-windows.json");
+            this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-windows.json");
             this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
-            this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-linux.json");
+            this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
             this.overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
             this.cmdLine = new CommandLineArgs();
@@ -106,17 +106,17 @@ namespace SqlBuildManager.Console.ExternalTest
 
         
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json", ConcurrencyType.Count,10)]
-        [DataRow("run", "TestConfig/settingsfile-windows.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-linux.json", ConcurrencyType.Count, 10)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count,10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.Count, 10)]
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json", ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-windows.json", ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-linux.json", ConcurrencyType.Server, 2)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.Server, 2)]
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json", ConcurrencyType.MaxPerServer, 2)]
-        [DataRow("run", "TestConfig/settingsfile-windows.json", ConcurrencyType.MaxPerServer, 2)]
-        [DataRow("run", "TestConfig/settingsfile-linux.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.MaxPerServer, 2)]
         [DataTestMethod]
         public void Batch_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
@@ -159,8 +159,8 @@ namespace SqlBuildManager.Console.ExternalTest
             }
         }
 
-        [DataRow("run", "TestConfig/settingsfile-windows-mi.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-linux-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi.json", ConcurrencyType.Count, 10)]
         [DataTestMethod]
         public void Batch_Override_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
@@ -206,9 +206,9 @@ namespace SqlBuildManager.Console.ExternalTest
        
 
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Override_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
         {
@@ -235,9 +235,9 @@ namespace SqlBuildManager.Console.ExternalTest
         }
         
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Override_PlatinumDbSource_Succes(string batchMethod, string settingsFile)
         {
@@ -278,9 +278,9 @@ namespace SqlBuildManager.Console.ExternalTest
             }
         }
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Override_PlatinumDbSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
         {
@@ -328,9 +328,9 @@ namespace SqlBuildManager.Console.ExternalTest
             }
 
         }
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Override_PlatinumDbSource_ADbAlreadyInSync(string batchMethod, string settingsFile)
         {
@@ -381,9 +381,9 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Override_DacpacSource_Success(string batchMethod, string settingsFile)
         {
@@ -429,9 +429,9 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Override_DacpacSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
         {
@@ -482,9 +482,9 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("query", "TestConfig/settingsfile-windows.json")]
-        [DataRow("query", "TestConfig/settingsfile-linux.json")]
+        [DataRow("querythreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Query_SelectSuccess(string batchMethod, string settingsFile)
         {
@@ -546,9 +546,9 @@ namespace SqlBuildManager.Console.ExternalTest
             
         }
 
-        [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("query", "TestConfig/settingsfile-windows.json")]
-        [DataRow("query", "TestConfig/settingsfile-linux.json")]
+        [DataRow("querythreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Query_InsertFail(string batchMethod, string settingsFile)
         {
@@ -585,9 +585,9 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An INSERT statement should have been found");
         }
 
-        [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("query", "TestConfig/settingsfile-windows.json")]
-        [DataRow("query", "TestConfig/settingsfile-linux.json")]
+        [DataRow("querythreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Query_DeleteFail(string batchMethod, string settingsFile)
         {
@@ -624,9 +624,9 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "A DELETE statement should have been found");
         }
 
-        [DataRow("querythreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("query", "TestConfig/settingsfile-windows.json")]
-        [DataRow("query", "TestConfig/settingsfile-linux.json")]
+        [DataRow("querythreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Query_UpdateFail(string batchMethod, string settingsFile)
         {
@@ -662,21 +662,21 @@ namespace SqlBuildManager.Console.ExternalTest
             //Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An UPDATE statement should have been found");
         }
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json",ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json",ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json",ConcurrencyType.Server, 2)]
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Count, 5)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Count, 5)]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json", ConcurrencyType.Count, 5)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json", ConcurrencyType.Count, 5)]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json", ConcurrencyType.Count, 5)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json",ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json",ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json",ConcurrencyType.Server, 2)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.Count, 5)]
         [DataTestMethod]
         public void Batch_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
@@ -727,10 +727,10 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-mi.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault-mi.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-mi.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json", ConcurrencyType.Count, 10)]
         [DataTestMethod]
         public void Batch_Queue_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
@@ -796,8 +796,8 @@ namespace SqlBuildManager.Console.ExternalTest
             }
         }
 
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue.json", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Count, 5)]
         [DataTestMethod]
         public void Batch_Queue_SBMSource_MissingEventHubConnection_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
@@ -859,11 +859,11 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json")]
         [DataTestMethod]
         public void Batch_Queue_PlatinumDbSource_Success(string batchMethod, string settingsFile)
         {
@@ -920,11 +920,11 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-windows-queue-keyvault.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue-keyvault.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json")]
         [DataTestMethod]
         public void Batch_Queue_DacpacSource_Success(string batchMethod, string settingsFile)
         {
@@ -984,8 +984,8 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
         public void Batch_Override_DacpacSource_FocceApplyCustom_Success(string batchMethod, string settingsFile)
         {
@@ -1039,8 +1039,8 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-windows-queue.json")]
-        [DataRow("run", "TestConfig/settingsfile-linux-queue.json")]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json")]
         [DataTestMethod]
         public void Batch_Queue_DacpacSource_FocceApplyCustom_Success(string batchMethod, string settingsFile)
         {

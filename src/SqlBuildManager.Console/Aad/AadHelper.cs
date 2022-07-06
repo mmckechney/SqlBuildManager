@@ -43,12 +43,8 @@ namespace SqlBuildManager.Console.Aad
                     }
                     else
                     {
-                        _tokenCred = new DefaultAzureCredential(
-                            new DefaultAzureCredentialOptions() {
-                                ManagedIdentityClientId = AadHelper.ManagedIdentityClientId,
-                                ExcludeAzureCliCredential = false 
-                            });
-                        log.LogInformation($"Creating DefaultAzureCredential with ManagedIdentityClientId of: '{AadHelper.ManagedIdentityClientId}'");
+                        _tokenCred = new ChainedTokenCredential(new AzureCliCredential(), new ManagedIdentityCredential(ManagedIdentityClientId = AadHelper.ManagedIdentityClientId), new AzurePowerShellCredential());
+                        log.LogInformation($"Creating ChainedTokenCredential with ManagedIdentityClientId of: '{AadHelper.ManagedIdentityClientId}'");
                     }
                 }
                 return _tokenCred;

@@ -38,23 +38,23 @@ $serviceBusConnectionString = az servicebus topic authorization-rule keys list -
 $identity =  az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json -AsHashtable
 $subscriptionId = az account show -o tsv --query id
 
-$settingsJsonWindows = Join-Path $path "settingsfile-windows.json"
-$settingsJsonWindowsMi = Join-Path $path "settingsfile-windows-mi.json"
+$settingsJsonWindows = Join-Path $path "settingsfile-batch-windows.json"
+$settingsJsonWindowsMi = Join-Path $path "settingsfile-batch-windows-mi.json"
 
-$settingsJsonLinux = Join-Path $path "settingsfile-linux.json"
-$settingsJsonLinuxMi = Join-Path $path "settingsfile-linux-mi.json"
+$settingsJsonLinux = Join-Path $path "settingsfile-batch-linux.json"
+$settingsJsonLinuxMi = Join-Path $path "settingsfile-batch-linux-mi.json"
 
-$settingsJsonWindowsQueue = Join-Path $path "settingsfile-windows-queue.json"
-$settingsJsonWindowsQueueMi = Join-Path $path "settingsfile-windows-queue-mi.json"
+$settingsJsonWindowsQueue = Join-Path $path "settingsfile-batch-windows-queue.json"
+$settingsJsonWindowsQueueMi = Join-Path $path "settingsfile-batch-windows-queue-mi.json"
 
-$settingsJsonLinuxQueue = Join-Path $path "settingsfile-linux-queue.json"
-$settingsJsonLinuxQueueMi = Join-Path $path "settingsfile-linux-queue-mi.json"
+$settingsJsonLinuxQueue = Join-Path $path "settingsfile-batch-linux-queue.json"
+$settingsJsonLinuxQueueMi = Join-Path $path "settingsfile-batch-linux-queue-mi.json"
 
-$settingsJsonWindowsQueueKv = Join-Path $path "settingsfile-windows-queue-keyvault.json"
-$settingsJsonWindowsQueueKvMi = Join-Path $path "settingsfile-windows-queue-keyvault-mi.json"
+$settingsJsonWindowsQueueKv = Join-Path $path "settingsfile-batch-windows-queue-keyvault.json"
+$settingsJsonWindowsQueueKvMi = Join-Path $path "settingsfile-batch-windows-queue-keyvault-mi.json"
 
-$settingsJsonLinuxQueueKv = Join-Path $path "settingsfile-linux-queue-keyvault.json"
-$settingsJsonLinuxQueueKvMi = Join-Path $path "settingsfile-linux-queue-keyvault-mi.json"
+$settingsJsonLinuxQueueKv = Join-Path $path "settingsfile-batch-linux-queue-keyvault.json"
+$settingsJsonLinuxQueueKvMi = Join-Path $path "settingsfile-batch-linux-queue-keyvault-mi.json"
 
 $keyFile = Join-Path $path "settingsfilekey.txt"
 if($false -eq (Test-Path $keyFile))

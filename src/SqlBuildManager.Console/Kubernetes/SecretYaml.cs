@@ -25,7 +25,6 @@ namespace SqlBuildManager.Console.Kubernetes
         public string ServiceBusTopicConnectionString { get; set; } = null;
         public string UserName { get; set; } = null;
         public string Password { get; set; } = null;
-        public string StorageAccountName { get; set; } = null;
         public string StorageAccountKey { get; set; } = null;
     }
 }

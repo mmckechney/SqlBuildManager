@@ -12,7 +12,7 @@ foreach($file in $testSettingsFiles)
     if($name.EndsWith("yaml") -or $name.EndsWith("json"))
     {
         Write-Host "Looking for refrences to: $name" -ForegroundColor Cyan
-        $results = Get-ChildItem $testPath  -File | Select-String -pattern $name
+        $results = Get-ChildItem $testPath  -File | Select-String -pattern "/$name"
         if($null -ne $results)
         {
              Write-Host "$($results.Length) references found" -ForegroundColor Green   

@@ -1,16 +1,16 @@
-﻿using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Specialized;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Spectre.Console;
 using SqlBuildManager.Console.Aad;
+using SqlBuildManager.Console.Batch;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.ContainerApp;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Kubernetes;
 using SqlBuildManager.Console.Queue;
+using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
@@ -20,8 +20,6 @@ using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.ComponentModel;
 using System.IO;
@@ -29,10 +27,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using sb = SqlSync.SqlBuild;
 using clb = SqlBuildManager.Console.CommandLine.CommandLineBuilder;
-using SqlBuildManager.Console.Batch;
-using SqlBuildManager.Console.Shared;
+using sb = SqlSync.SqlBuild;
 
 namespace SqlBuildManager.Console
 {
@@ -159,7 +155,7 @@ namespace SqlBuildManager.Console
             if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.LogInformation("Writing log files to storage...");
-                var blobTask = WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
+                var blobTask = StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
                 blobTask.Wait();
             }
 
@@ -312,7 +308,7 @@ namespace SqlBuildManager.Console
             Worker.activeServiceBusMonitoring = false;
         }
 
-        internal static int RunBatchQuery(CommandLineArgs cmdLine)
+        internal static async Task<int> RunBatchQuery(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(Program.applicationLogFileName, cmdLine.RootLoggingPath);
@@ -357,10 +353,10 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Downloading the consolidated output file...");
                 try
                 {
-                    var cloudBlobContainer = new BlobContainerClient(new Uri(readOnlySas));
-                    var blob = cloudBlobContainer.GetBlobClient(cmdLine.OutputFile.Name);
-                    blob.DownloadTo(cmdLine.OutputFile.FullName);
-                    log.LogInformation($"Output file copied locally to {cmdLine.OutputFile.FullName}");
+                    if(await StorageManager.DownloadBlobToLocal(readOnlySas, cmdLine.OutputFile.FullName))
+                    {
+                        log.LogInformation($"Output file copied locally to {cmdLine.OutputFile.FullName}");
+                    }
                 }
                 catch (Exception exe)
                 {
@@ -733,85 +729,13 @@ namespace SqlBuildManager.Console
             if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.LogInformation("Writing log files to storage...");
-                var blobTask = WriteLogsToBlobContainer(cmdLine.BatchArgs.OutputContainerSasUrl, cmdLine.RootLoggingPath);
+                var blobTask = StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
                 blobTask.Wait();
             }
 
             log.LogDebug("Exiting Threaded Execution");
             return retVal;
 
-        }
-
-
-        private static async Task<bool> WriteLogsToBlobContainer(string outputContainerSasUrl, string rootLoggingPath)
-        {
-            try
-            {
-                //var writeTasks = new List<Task>();
-                log.LogInformation($"Writing log files to blob storage at {outputContainerSasUrl}");
-                var renameLogFiles = new string[] { "sqlbuildmanager", "csv" };
-                
-                BlobContainerClient container = new BlobContainerClient(new Uri(outputContainerSasUrl));
-                log.LogInformation($"Getting file list from {rootLoggingPath}");
-                var fileList = Directory.GetFiles(rootLoggingPath, "*.*", SearchOption.AllDirectories);
-                var taskId = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_ID");
-                string machine = Environment.MachineName;
-
-                foreach (var f in fileList)
-                {
-                    try
-                    {
-                        var tmp = Path.GetRelativePath(rootLoggingPath, f);
-
-                        if (Program.AppendLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
-                        {
-
-                            tmp = $"{taskId}/{tmp}";
-                            log.LogInformation($"Saving File '{f}' as '{tmp}'");
-                            var rename = container.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            {
-                                await rename.UploadAsync(fs);
-
-                            }
-                        }
-                        else if (renameLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
-                        {
-
-                            //var localTemp = Path.Combine(Path.GetDirectoryName(f), tmp);
-                            //File.Copy(f, localTemp);
-                            tmp = $"{taskId}/{tmp}";
-                            log.LogInformation($"Saving File '{f}' as '{tmp}'");
-                            var rename = container.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            {
-                                await rename.UploadAsync(fs);
-
-                            }
-                        }
-                        else
-                        {
-                            log.LogInformation($"Saving File '{f}' as '{tmp}'");
-                            var b = container.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            {
-                                await b.UploadAsync(fs);
-
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        log.LogError($"Unable to upload log file '{f}' to blob storage: {e.Message}");
-                    }
-                }
-                return true;
-            }
-            catch (Exception exe)
-            {
-                log.LogError($"Unable to upload log files to blob storage.{Environment.NewLine}{exe.Message}");
-                return false;
-            }
         }
 
         private static async Task<int> RunGenericContainerQueueWorker(CommandLineArgs cmdLine)
@@ -842,7 +766,16 @@ namespace SqlBuildManager.Console
                         keepGoing = false;
                     }
                 }
-                cmdLine.BatchArgs.OutputContainerSasUrl = CloudStorage.StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, false);
+
+                if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+                {
+                    cmdLine.BatchArgs.OutputContainerSasUrl = CloudStorage.StorageManager.GetContainerRawUrl(cmdLine.ConnectionArgs.StorageAccountName, jobName);
+                }
+                else
+                {
+                    cmdLine.BatchArgs.OutputContainerSasUrl = CloudStorage.StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, false);
+                }
+                
 
                 if (keepGoing)
                 {
@@ -926,9 +859,8 @@ namespace SqlBuildManager.Console
             var qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
 
             //set up event handler
-            var storageString = CloudStorage.StorageManager.GetStorageConnectionString(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
             (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
-            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, storageString, jobName, jobName);
+            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString,cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey,jobName, jobName);
 
             Task eventHubMonitorTask = null;
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
@@ -1061,14 +993,11 @@ namespace SqlBuildManager.Console
             await qManager.DeleteSubscription();
 
             //Batch jobs have their own consolidation....
-            if (cmdLine.BatchArgs == null || string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
+            if (cmdLine.BatchArgs == null || string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchPoolName))
             {
                 log.LogInformation("Consolidating log files");
                 StorageManager.ConsolidateLogFiles(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, new List<string>());
-                string sas = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, true);
-
-                log.LogInformation($"Log files can be found here: {sas}");
-                log.LogInformation("The read-only SAS token URL is valid for 7 days.");
+                log.LogInformation($"The consolidated log files can be found in the Azure storage account '{cmdLine.ConnectionArgs.StorageAccountName}' in blob container '{cmdLine.JobName}'");
                 log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
             }
             if (error > 0)
@@ -1193,9 +1122,14 @@ namespace SqlBuildManager.Console
             {
                 cmdLine.BuildFileName = packageName.FullName;
             }
-            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName)) 
             {
-                log.LogError("--storageaccountname and --storageaccountkey are required");
+                log.LogError("--storageaccountname is required");
+                return -1;
+            }
+            if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
+            {
+                log.LogError("--storageaccountkey is required if a Managed Identity is not included");
                 return -1;
             }
 
@@ -1337,12 +1271,18 @@ namespace SqlBuildManager.Console
             if (!string.IsNullOrWhiteSpace(storageAccountKey)) cmdLine.StorageAccountKey = storageAccountKey;
             if (!string.IsNullOrWhiteSpace(storageAccountName)) cmdLine.StorageAccountName = storageAccountName;
 
-            if (string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+            if (string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
             {
-                log.LogError("Values for --jobname, --storageaccountname and --storageaccountkey are required as prameters or included in the --secretsfile and --runtimefile");
+                log.LogError("Values for --jobname, and --storageaccountname are required as prameters or included in the --secretsfile and --runtimefile");
                 return 1;
 
             }
+            //if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
+            //{
+            //    log.LogError("A value for --storageaccountkey are required as prameters or included in the --secretsfile and --runtimefile");
+            //    return 1;
+
+            //}
             (bool retVal, string sbmName) = await ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
             if (!retVal)
             {
@@ -1565,10 +1505,9 @@ namespace SqlBuildManager.Console
             }
             (bool na, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
 
-            if ((string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
-                && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
-                log.LogError("If --keyvaultname is not provided as an argument or in the --settingsfile, then --storageaccountname and --storageaccountkey are required");
+                log.LogError("If --keyvaultname is not provided as an argument or in the --settingsfile, then --storageaccountname is required");
                 return -1;
             }
             (bool retVal, string sbmName) = await ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
@@ -1605,10 +1544,9 @@ namespace SqlBuildManager.Console
             bool firstLoop = true;
             (junk, cmdLine) = Init(cmdLine);
 
-            var storageString = CloudStorage.StorageManager.GetStorageConnectionString(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
             (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
-            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, storageString, jobName, jobName);
-            if(!startDate.HasValue)
+            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, jobName);
+            if (!startDate.HasValue)
             {
                 startDate = DateTime.UtcNow.AddDays(-14);
             }
@@ -1688,10 +1626,17 @@ namespace SqlBuildManager.Console
             }
             else
             {
-                string secrets = ContainerManager.GenerateSecretsYaml(cmdLine);
                 var secretsName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secrets.yaml" : $"{prefix}-secrets.yaml");
-                File.WriteAllText(secretsName, secrets);
-                log.LogInformation($"Secrets file written to: {secretsName}");
+                string secrets = ContainerManager.GenerateSecretsYaml(cmdLine);
+                if (!string.IsNullOrWhiteSpace(secrets))
+                {
+                    File.WriteAllText(secretsName, secrets);
+                    log.LogInformation($"Secrets file written to: {secretsName}");
+                }
+                else
+                {
+                    log.LogInformation($"NO secrets are needed, NOT saving secrets yaml to : {secretsName}");
+                }
             }
 
             string runtime = ContainerManager.GenerateRuntimeYaml(cmdLine);

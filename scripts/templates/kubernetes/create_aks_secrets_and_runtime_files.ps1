@@ -44,6 +44,7 @@ $params += @("-eh","""$eventHubConnectionString""")
 $params += @("-sb","""$serviceBusConnectionString""")  
 $params += @("--concurrency", "5")
 $params += @("--concurrencytype", "Count")
+$params += @("--prefix", "k8s")
 
 
 if($authTypes -contains "Password")
@@ -61,13 +62,12 @@ if($authTypes -contains "ManagedIdentity")
     $params = @("k8s", "savesettings")
     $params += @("--path", $path)
     $params += @("--storageaccountname",$storageAccountName)  
-    $params += @("--storageaccountkey","""$storageAcctKey""") 
     $params += @("-eh","$($eventhubNamespaceName).servicebus.windows.net|$($eventHubName)") 
     $params += @("-sb","$($serviceBusNamespaceName).servicebus.windows.net")  
     $params += @("--concurrency", "5")
     $params += @("--concurrencytype", "Count")
     $params += @("--authtype", "ManagedIdentity")
-    $params += @("--prefix", "mi-full")
+    $params += @("--prefix", "k8s-mi")
 
     Start-Process $sbmExe -ArgumentList $params
 }  

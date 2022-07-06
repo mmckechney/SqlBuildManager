@@ -107,7 +107,7 @@
   "variables": {
     "environment_id": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.App/managedEnvironments/', parameters('environmentName'))]",
     "var_registryName": "[if(empty(parameters('registryServer')),'blueskydevus/',concat(parameters('registryServer'),'/'))]",
-    "var_registry_secret_name": "[if(empty(parameters('registrypassword')),'registryPassword',concat(replace(parameters('registryServer'),'.',''),'-',parameters('registryUserName')))]"
+    "var_registry_secret_name": "[if(empty(parameters('registryServer')),'registryPassword',concat(replace(parameters('registryServer'),'.',''),'-',parameters('registryUserName')))]"
   },
   "resources": [
     {
@@ -226,7 +226,7 @@
                 },
                 {
                   "name": "Sbm_IdentityName",
-                  "value": "[parameters('identityClientId')]"
+                  "value": "[parameters('identityName')]"
                 },
                 {
                   "name": "Sbm_AllowObjectDelete",

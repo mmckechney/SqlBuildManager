@@ -10,6 +10,7 @@ spec:
     metadata:
       labels:
         jobgroup: sqlbuildmanager
+        aadpodidbinding: azure-pod-identity-binding-selector
     spec:
       containers:
       - name: sqlbuildmanager

@@ -46,5 +46,7 @@ namespace SqlBuildManager.Console.Kubernetes
 
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
         public string EventHubConnectionString { get; set; } = null;
+        public string StorageAccountName { get; set; } = null;
+     
     }
 }

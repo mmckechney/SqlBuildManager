@@ -15,7 +15,7 @@ param
     [string] $identityClientId,
     [string] $imageTag,
     [bool] $withContainerRegistry,
-    ## TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps, but SB and EH are OK.
+    ## TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps. SB KEDA also requires a connection string. But EH can fully use MI
     [ValidateSet("Password", "ManagedIdentity", "Both")]
     [string] $authType = "Both"
 )
@@ -96,20 +96,23 @@ if($false -eq (Test-Path $keyFile))
 
 foreach($auth in $authTypes)
 {
+    $params = @("containerapp", "savesettings")
+
     if($auth -eq "ManagedIdentity" )
     {
-        $settingsContainerApp  =$settingsContainerApp + "-mi"
+        $settingsContainerApp = $settingsContainerApp + "-mi"
         $sbAndEhArgs = @("--eventhubconnection","$($eventHubNamespaceName)|$($eventHubName)")
     }
     else 
     {
         $sbAndEhArgs = @("--eventhubconnection",$eventHubConnectionString)
+        $params +=("--storageaccountkey",$storageAcctKey)
     }
     $sbAndEhArgs += @("--servicebustopicconnection",$serviceBusConnectionString)
     $tmpPath = "$($settingsContainerApp).json"
     Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
 
-    $params = @("containerapp", "savesettings")
+    
     $params +=("--environmentname",$containerAppEnvironmentName)
     $params +=("--location",$location)
     $params +=("--resourcegroup", $resourceGroupName)
@@ -117,7 +120,7 @@ foreach($auth in $authTypes)
     $params +=("--settingsfile",$tmpPath)
     $params +=("--settingsfilekey",$keyFile)
     $params +=("--storageaccountname",$storageAccountName)
-    $params +=("--storageaccountkey",$storageAcctKey)
+    
     
     $params +=("--defaultscripttimeout",500)
     $params +=("--subscriptionid",$subscriptionId)
@@ -150,10 +153,10 @@ foreach($auth in $authTypes)
         $params += ("--clientid", $identityClientId)
     }
     # Container apps don't take this yet!
-    #$params += ("--authtype", $auth)
+    #$params += ("--authtype", "Password")
     
 
-    Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow
+    #Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow
     Start-Process $sbmExe -ArgumentList ($params + $sbAndEhArgs)
 }
 

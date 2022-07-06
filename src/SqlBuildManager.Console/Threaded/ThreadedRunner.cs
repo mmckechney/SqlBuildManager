@@ -257,30 +257,6 @@ namespace SqlBuildManager.Console.Threaded
 
         }
 
-        //private void Bg_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        //{
-        //    if(e.UserState is GeneralStatusEventArgs)
-        //    {
-        //        log.LogInformation(((GeneralStatusEventArgs)e.UserState).StatusMessage);
-        //    }
-        //    else if(e.UserState is BuildScriptEventArgs)
-        //    {
-        //    }
-        //    else if(e.UserState is ScriptRunStatusEventArgs)
-        //    {
-        //    }
-        //    else if (e.UserState is ScriptRunProjectFileSavedEventArgs)
-        //    {
-        //    }
-        //    else if (e.UserState is ScriptRunProjectFileSavedEventArgs)
-        //    {
-        //    }
-        //    else
-        //    {
-        //        log.LogInformation(e.UserState.ToString());
-        //    }
-        //}
-
         void helper_BuildSuccessTrialRolledBackEvent(object sender, EventArgs e)
         {
             log.LogDebug(this.TargetTag + " BuildSuccessTrialRolledBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.SuccessWithTrialRolledBack));

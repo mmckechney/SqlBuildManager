@@ -1,11 +1,12 @@
 # SQL Build Manager Change Log
 
 ### Version 14.4.0
- - *ADDED:* Added new `ManagedIdentity` authentication type to eliminate the need for a UserName and Password to authenticate to Azure SQL databases that have Azure AD authenication enabled and identity assigned
- - *ADDED:* Ability to use Managed Identity for Service Bus and EventHub connections (see [README.md](README.md) for details)
+ - *ADDED:* Added new `ManagedIdentity` authentication type to eliminate the need for a UserName and Password to authenticate to Azure SQL databases that have Azure AD authentication enabled and identity assigned
+ - *ADDED:* Ability to use Managed Identity for Service Bus, Event Hub and Blob storage connections with most services (see [managed_identity.md](/docs/managed_identity.md) for details and limitations)
  - *ADDED:* New `--monitor` argument for `sbm batch run` to get running count of datbase activity  (commits, error, in queue)
  - *ADDED:* New `--stream` argument for `sbm batch run` (used in conjunction with `--monitor`) to also stream specific database completion messages as the occur
  - *UPDATED:* Monitoring of remaining queue messages only when Service Bus is used, but no Event Hub connection is provided
+ - *UPDATED:* Reorganized Unit Test settings file creation scripts to group by execution compute type
 
 ### Version 14.3.0
 - *ADDED:* Managed Identity and Key Vault support for Container Apps

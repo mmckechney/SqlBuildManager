@@ -33,9 +33,6 @@ namespace SqlBuildManager.Console.Kubernetes
                     log.LogDebug($"serviceBus= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
                 }
 
-                args.StorageAccountName = File.ReadAllText("/etc/sbm/StorageAccountName");
-                log.LogDebug($"storageaccountname= {args.ConnectionArgs.StorageAccountName}");
-
                 args.StorageAccountKey = File.ReadAllText("/etc/sbm/StorageAccountKey");
                 log.LogDebug($"storageaccountkey= {args.ConnectionArgs.StorageAccountKey}");
 
@@ -119,7 +116,6 @@ namespace SqlBuildManager.Console.Kubernetes
                 log.LogDebug($"authType= {args.AllowObjectDelete}");
             }
 
-
             if (File.Exists("/etc/runtime/EventHubConnectionString"))
             {
                 args.EventHubConnection = File.ReadAllText("/etc/runtime/EventHubConnectionString");
@@ -132,32 +128,32 @@ namespace SqlBuildManager.Console.Kubernetes
                 log.LogDebug($"ServiceBusTopicConnectionString= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
             }
 
+            if (File.Exists("/etc/runtime/StorageAccountName"))
+            {
+                args.ConnectionArgs.StorageAccountName = File.ReadAllText("/etc/runtime/StorageAccountName");
+                log.LogDebug($"StorageAccountName= {args.ConnectionArgs.StorageAccountName}");
+            }
+
 
             return (true, args);
         }
 
         internal static string GenerateSecretsYaml(CommandLineArgs args)
         {
-
+            bool secretAdded = false;
             var yml = new SecretYaml();
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountName))
-            {
-                yml.data.StorageAccountName = args.ConnectionArgs.StorageAccountName.EncodeBase64();
-            }
-
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountKey))
-            {
-                yml.data.StorageAccountKey = args.ConnectionArgs.StorageAccountKey.EncodeBase64();
-            }
+           
 
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.EventHubConnectionString))
             {
                 yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString.EncodeBase64();
+                secretAdded = true;
             }
 
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString.EncodeBase64();
+                secretAdded = true;
             }
 
             if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
@@ -165,18 +161,35 @@ namespace SqlBuildManager.Console.Kubernetes
                 if (!string.IsNullOrWhiteSpace(args.AuthenticationArgs.UserName))
                 {
                     yml.data.UserName = args.AuthenticationArgs.UserName.EncodeBase64();
+                    secretAdded = true;
                 }
 
                 if (!string.IsNullOrWhiteSpace(args.AuthenticationArgs.Password))
                 {
                     yml.data.Password = args.AuthenticationArgs.Password.EncodeBase64();
+                    secretAdded = true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountKey))
+                {
+                    yml.data.StorageAccountKey = args.ConnectionArgs.StorageAccountKey.EncodeBase64();
+                    secretAdded = true;
                 }
             }
 
-            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
-            var yamlString = serializer.Serialize(yml);
+            if (secretAdded)
+            {
+                var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+                var yamlString = serializer.Serialize(yml);
+                return yamlString;
+            }
+            else
+            {
+                log.LogInformation("No secrets were provided or needed. No secrets yaml is being generated");
+                return string.Empty;
+            }
 
-            return yamlString;
+            
           
 
         }
@@ -201,6 +214,12 @@ namespace SqlBuildManager.Console.Kubernetes
             {
                 yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString;
             }
+
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountName))
+            {
+                yml.data.StorageAccountName = args.ConnectionArgs.StorageAccountName;
+            }
+            
             var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
             var yamlString = serializer.Serialize(yml);
 
@@ -243,15 +262,28 @@ namespace SqlBuildManager.Console.Kubernetes
             {
                 args = new CommandLineArgs();
             }
+
             if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
             {
-                args.UserName = GetValueFromSecrets(filename, "UserName");
-                args.Password = GetValueFromSecrets(filename, "Password");
-                args.EventHubConnection = GetValueFromSecrets(filename, "EventHubConnectionString");
-                args.ServiceBusTopicConnection = GetValueFromSecrets(filename, "ServiceBusTopicConnectionString");
+                var tmp = GetValueFromSecrets(filename, "UserName");
+                if (!string.IsNullOrWhiteSpace(tmp)) args.UserName = tmp;
+                
+                tmp = GetValueFromSecrets(filename, "Password");
+                if (!string.IsNullOrWhiteSpace(tmp)) args.Password = tmp;
+
+                tmp = GetValueFromSecrets(filename, "EventHubConnectionString");
+                if (!string.IsNullOrWhiteSpace(tmp)) args.EventHubConnection = tmp;
+
+                tmp = GetValueFromSecrets(filename, "ServiceBusTopicConnectionString");
+                if (!string.IsNullOrWhiteSpace(tmp)) args.ServiceBusTopicConnection = tmp;
+
+                tmp = GetValueFromSecrets(filename, "StorageAccountKey");
+                if (!string.IsNullOrWhiteSpace(tmp)) args.StorageAccountKey = tmp;
+
+                tmp = GetValueFromSecrets(filename, "StorageAccountName");
+                if (!string.IsNullOrWhiteSpace(tmp)) args.StorageAccountName = tmp;
             }
-            args.StorageAccountKey = GetValueFromSecrets(filename, "StorageAccountKey");
-            args.StorageAccountName = GetValueFromSecrets(filename, "StorageAccountName");
+            
 
             return args;
 
@@ -262,9 +294,17 @@ namespace SqlBuildManager.Console.Kubernetes
             {
                 args = new CommandLineArgs();
             }
-            args.BuildFileName = GetValueFromRuntimestring(filename, "PackageName");
-            args.JobName = GetValueFromRuntimestring(filename, "JobName");
-            args.PlatinumDacpac = GetValueFromRuntimestring(filename, "DacpacName");
+
+            var tmp = GetValueFromRuntimestring(filename, "PackageName");
+            if (!string.IsNullOrWhiteSpace(tmp)) args.BuildFileName = tmp;
+
+
+            tmp  = GetValueFromRuntimestring(filename, "JobName");
+            if (!string.IsNullOrWhiteSpace(tmp)) args.JobName = tmp;
+
+
+            tmp = GetValueFromRuntimestring(filename, "DacpacName");
+            if (!string.IsNullOrWhiteSpace(tmp)) args.PlatinumDacpac = tmp;
 
             if (Enum.TryParse<ConcurrencyType>(GetValueFromRuntimestring(filename, "ConcurrencyType"), out ConcurrencyType con))
             {
@@ -283,9 +323,16 @@ namespace SqlBuildManager.Console.Kubernetes
 
             if (args.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
             {
-                args.EventHubConnection = GetValueFromRuntimestring(filename, "EventHubConnectionString");
-                args.ServiceBusTopicConnection = GetValueFromRuntimestring(filename, "ServiceBusTopicConnectionString");
+
+                tmp = GetValueFromRuntimestring(filename, "EventHubConnectionString");
+                if (!string.IsNullOrWhiteSpace(tmp)) args.EventHubConnection = tmp;
+
+                tmp = GetValueFromRuntimestring(filename, "ServiceBusTopicConnectionString");
+                if (!string.IsNullOrWhiteSpace(tmp)) args.ServiceBusTopicConnection = tmp;
             }
+
+            tmp = GetValueFromRuntimestring(filename, "StorageAccountName");
+            if (!string.IsNullOrWhiteSpace(tmp)) args.ConnectionArgs.StorageAccountName = tmp;
 
             return args;
 

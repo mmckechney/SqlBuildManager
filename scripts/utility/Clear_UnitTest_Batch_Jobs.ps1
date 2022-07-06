@@ -25,7 +25,7 @@ else {
 
 foreach ($job in $jobs) {
    
-    if($job.StartsWith("SqlBuild") -or $job.StartsWith("batch-sbm"))
+    if($job.StartsWith("SqlBuild") -or $job.StartsWith("batch-") -or $job.StartsWith("bat-"))
     {
         Write-Host "Removing job: $($job)" -ForegroundColor Green
         az batch job delete --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey  --job-id $job --yes
