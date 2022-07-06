@@ -32,7 +32,9 @@ steps:
     repository: 'blueskydevus/sqlbuildmanager'
     command: 'buildAndPush'
     Dockerfile: './src/Dockerfile'
-    tags: 'latest-$(Build.SourceBranchName)'
+    tags: |
+      'latest-$(Build.SourceBranchName)'
+      'latest-vNext'
     
 - task: Docker@2
   displayName: Logout of DockerHub
