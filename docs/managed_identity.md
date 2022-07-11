@@ -17,13 +17,12 @@ Each of the remote execution options allows for varying use of Azure Managed Ide
  | Service Bus              |   Yes         |   Yes                                                                                                                         |   No, see [note](#service-bus)    |   Yes                     |
  | Event Hub                |   Yes         |   Yes                                                                                                                         |   Yes                             |   Yes                     |
  | Azure Container Registry |   N/A         |   Yes, with [`--attach-acr`](https://docs.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli)|   No                              |   No                      | 
- |                          |               |                                                                                                                               |                                   |                           |
-
- ## Managed Identity to Compute Assignment
+ 
+## Managed Identity to Compute Assignment
 
 Examples of each of these can be generated for you by running [create_azure_resources.ps1](../scripts/templates/create_azure_resources.ps1) which will create samples Azure resources (including a user assigned Managed Identity) as well as sample settings files with various options that are used in the test caes. You can also review the test methods in [SqlBuildManager.Console.ExternalTest](../src/SqlBuildManager.Console.ExternalTest/) to see working examples of various compute options and settings.
 
- ### Azure Batch
+### Azure Batch
 
 The identity is assigned at the creation of the Azure Batch account. For an example, see [azuredeploy_batch.bicep](../scripts/templates/Batch/azuredeploy_batch.bicep)
 

@@ -320,9 +320,7 @@ namespace SqlBuildManager.Console.ExternalTest
             int result = val.Result;
             Assert.AreEqual(0, result);
 
-            //Create another table in the first that will be applied when the custom DACPAC is created
-            DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
-            DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
+
 
             //enqueue the topic messages
             args = new string[]{
@@ -336,6 +334,10 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
             Assert.AreEqual(0, result);
+
+            //Create another table in the first that will be applied when the custom DACPAC is created
+            DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+            DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
 
             //monitor for completion
             args = new string[]{
