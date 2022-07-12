@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Spectre.Console;
@@ -1611,14 +1613,15 @@ namespace SqlBuildManager.Console
             System.Console.WriteLine(KeyVault.KeyVaultHelper.GetSecret("sbm3keyvault", "StorageAccountName"));
         }
 
-        internal static void SaveKubernetesSettings(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
+        internal static Task<KubernetesFiles> SaveKubernetesSettings(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
         {
             var dir = Directory.GetCurrentDirectory();
+            var secretsName = "";
             if (path != null)
             {
                 dir = path.FullName;
             }
-
+            //Save secrets to KV or create settings file
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
                 var lst = KeyVaultHelper.SaveSecrets(cmdLine);
@@ -1626,7 +1629,7 @@ namespace SqlBuildManager.Console
             }
             else
             {
-                var secretsName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secrets.yaml" : $"{prefix}-secrets.yaml");
+                secretsName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secrets.yaml" : $"{prefix}-secrets.yaml");
                 string secrets = ContainerManager.GenerateSecretsYaml(cmdLine);
                 if (!string.IsNullOrWhiteSpace(secrets))
                 {
@@ -1639,13 +1642,80 @@ namespace SqlBuildManager.Console
                 }
             }
 
+            //Create runtime file
             string runtime = ContainerManager.GenerateRuntimeYaml(cmdLine);
             var runtimeName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "runtime.yaml" : $"{prefix}-runtime.yaml");
             File.WriteAllText(runtimeName, runtime);
             log.LogInformation($"Runtime file written to: {runtimeName}");
 
+            string secretsProvider = ContainerManager.GenerateSecretsProviderYaml(cmdLine);
+            var secretsProviderFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secretProviderClass.yaml" : $"{prefix}-secretProviderClass.yaml");
+            File.WriteAllText(secretsProviderFileName, secretsProvider);
+            log.LogInformation($"Secrets Provider Class file written to: {secretsProviderFileName}");
+
+            string azureIdentity = ContainerManager.GenerateIdentityAndBindingYaml(cmdLine);
+            var azureIdentityFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "podIdentityAndBinding.yaml" : $"{prefix}-podIdentityAndBinding.yaml");
+            File.WriteAllText(azureIdentityFileName, azureIdentity);
+            log.LogInformation($"Identity and Binfing file written to: {azureIdentityFileName}");
+
+            string jobYaml = ContainerManager.GenerateJobYaml(cmdLine);
+            var jobYamlFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "job.yaml" : $"{prefix}-job.yaml");
+            File.WriteAllText(jobYamlFileName, jobYaml);
+            log.LogInformation($"Job Yaml file written to: {jobYamlFileName}");
+
+            var kf = new KubernetesFiles
+            {
+                RuntimeConfigMapFile = runtimeName,
+                SecretsFile = secretsName,
+                SecretsProviderFile = secretsProviderFileName,
+                AzureIdentityFileName = azureIdentityFileName,
+                JobFileName = jobYamlFileName,
+            };
+
+            return Task.Run(() => (kf));
+        }
+
+        internal static async Task<int> KubernetesUp(CommandLineArgs cmdLine, FileInfo Override, FileInfo packagename, FileInfo platinumdacpac, bool force, bool allowObjectDelete, bool unittest, bool stream)
+        {
+            var output = JsonConvert.SerializeObject(cmdLine, Formatting.Indented);
+            log.LogInformation(output);
 
 
+            //Save secrets
+            cmdLine.BuildFileName = packagename.FullName;
+            if (platinumdacpac != null)
+            {
+                cmdLine.PlatinumDacpac = platinumdacpac.FullName;
+            }
+            cmdLine.MultiDbRunConfigFileName = Override.FullName;
+            var kubernetesFile = await SaveKubernetesSettings(cmdLine, cmdLine.JobName, new DirectoryInfo(Environment.CurrentDirectory));
+
+
+            //Upload 'prep'
+            var runtimeFileInfo = new FileInfo(kubernetesFile.RuntimeConfigMapFile);
+            FileInfo secretsFileInfo = null;
+            if (!string.IsNullOrWhiteSpace(kubernetesFile.SecretsFile))
+            {
+                secretsFileInfo = new FileInfo(kubernetesFile.SecretsFile);
+            }
+            await UploadKubernetesBuildPackage(secretsFileInfo, runtimeFileInfo, packagename, platinumdacpac, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, force, allowObjectDelete, Override.FullName);
+
+            //Enqueue
+            await EnqueueContainerOverrideTargets(secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, Override);
+
+
+            KubectlProcess.ApplyFile(kubernetesFile.AzureIdentityFileName);
+            KubectlProcess.ApplyFile(kubernetesFile.SecretsProviderFile);
+            KubectlProcess.ApplyFile(kubernetesFile.RuntimeConfigMapFile);
+            if(!string.IsNullOrWhiteSpace(kubernetesFile.SecretsFile))
+            {
+                KubectlProcess.ApplyFile(kubernetesFile.SecretsFile);
+
+            }
+            KubectlProcess.ApplyFile(kubernetesFile.JobFileName);
+
+            await MonitorKubernetesRuntimeProgress(secretsFileInfo, runtimeFileInfo, cmdLine, unittest, stream);
+            return 0;
         }
 
         #region .: Helper Processes :.

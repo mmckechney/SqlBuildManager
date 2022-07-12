@@ -5,7 +5,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SqlBuildManager.Console.Kubernetes
+namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     public class SecretYaml
     {
@@ -16,7 +16,7 @@ namespace SqlBuildManager.Console.Kubernetes
              { "name", "connection-secrets" }
             };
         public string type = "Opaque";
-        public SecretsData data = new Kubernetes.SecretsData();
+        public SecretsData data = new SecretsData();
 
     }
     public class SecretsData

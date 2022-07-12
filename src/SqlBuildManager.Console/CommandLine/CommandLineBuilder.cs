@@ -229,7 +229,8 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     clientIdOption,
                     identityNameOption,
-                    identityResourceGroupOption
+                    identityResourceGroupOption,
+                    tenantIdOption
                 };
                 return list;
             }
@@ -240,6 +241,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> identityResourceGroupOption = new Option<string>(new string[] { "--idrg", "--identityresourcegroup" }, "Resource Group name for the Azure User Assigned Managed Identity");
         private static Option<string> identityNameOption = new Option<string>(new string[] { "-id", "--identityname" }, "Name of User Assigned Managed identity that will be assigned") { IsRequired = true };
         private static Option<string> subscriptionIdOption = new Option<string>(new string[] { "--subscriptionid" }, "Azure subscription Id for the Azure resources");
+        private static Option<string> tenantIdOption = new Option<string>(new string[] { "--tenantid" }, "Azure Active Directory Tenant Id for the Identity");
 
 
         //Database authentication args
@@ -1192,6 +1194,37 @@ namespace SqlBuildManager.Console.CommandLine
         #endregion
 
         #region Kubernetes Commands
+        private static Command KubernetesUpCommand
+        {
+            get
+            {
+
+                var cmd = new Command("up", "Collects secrets and runtime information, then executes build. [NOTE: 'kubectl' need to be in your path]")
+                {
+                    jobnameOption,
+                    overrideAsFileOption,
+                    packagenameAsFileToUploadOption,
+                    platinumdacpacFileInfoOption,
+                    forceOption,
+                    allowForObjectDeletionOption,
+                    imageTagOption,
+                    imageNameOption,
+                    imageRepositoryOption,
+
+                };
+                ConnectionAndSecretsOptions.ForEach(o => cmd.Add(o));
+                DatabaseAuthArgs.ForEach(o => cmd.Add(o));
+                ConcurrencyOptions.ForEach(o => cmd.Add(o));
+                IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
+                cmd.Add(subscriptionIdOption);
+                cmd.Add(unitTestOption);
+                cmd.Add(streamEventsOption);
+
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, bool, bool, bool, bool>(Worker.KubernetesUp);
+                return cmd;
+
+            }
+        }
         private static Command kubernetesWorkerCommand
         {
             get
@@ -1316,6 +1349,7 @@ namespace SqlBuildManager.Console.CommandLine
             get
             {
                 var cmd = new Command("k8s", "Commands for setting and executing a build running in pods on Kubernetes");
+                cmd.Add(KubernetesUpCommand);
                 cmd.Add(kubernetesSaveSettingsCommand);
                 cmd.Add(kubernetesrPrepCommand);
                 cmd.Add(kubernetesEnqueueTargetsCommand);

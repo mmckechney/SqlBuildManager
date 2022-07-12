@@ -425,15 +425,32 @@ namespace SqlBuildManager.Console.CommandLine
         public string ResourceId { set { this.IdentityArgs.ResourceId = value; } }
         public string IdentityResourceGroup { set { this.IdentityArgs.ResourceGroup = value; } }
         public string SubscriptionId { set { this.IdentityArgs.SubscriptionId = value; this.ContainerAppArgs.SubscriptionId = value; } }
+        public string TenantId { set { this.IdentityArgs.TenantId = value; } }
 
         public class Identity
         {
+            private string _resourceid = string.Empty;
             public string IdentityName { get; set; } = string.Empty;
             public string ClientId { get; set; } = string.Empty;
             public string PrincipalId { get; set; } = string.Empty;
-            public string ResourceId { get; set; } = string.Empty;
+            public string ResourceId
+            {
+                get
+                {
+                    if (!_resourceid.StartsWith("/subscriptions") && !string.IsNullOrEmpty(IdentityName) && !string.IsNullOrEmpty(ResourceGroup) && !string.IsNullOrEmpty(SubscriptionId))
+                    {
+                        _resourceid = $"/subscriptions/{SubscriptionId}/resourcegroups/{ResourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{IdentityName}";
+                    }
+                    return _resourceid;
+                }
+                set
+                {
+                    this._resourceid = value;
+                }
+            }
             public string ResourceGroup { get; set; } = string.Empty;
             public string SubscriptionId { get; set; } = string.Empty;
+            public string TenantId { get; set; } = string.Empty;
         }
 
         

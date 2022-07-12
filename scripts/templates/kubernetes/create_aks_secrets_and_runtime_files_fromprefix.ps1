@@ -18,9 +18,18 @@ $path = Resolve-Path $path
 if([string]::IsNullOrWhiteSpace($sqlUserName))
 {
     Write-Host("Looking for SQL credentials") -ForegroundColor DarkGreen
-    $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()
-    $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
-}else {
+    if(Test-Path (Join-Path $path "un.txt"))
+    {
+        $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()
+    }
+
+    if(Test-Path (Join-Path $path "pw.txt"))
+    {
+        $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
+    }
+}
+else 
+{
     Write-Host("Using provided SQL credentials") -ForegroundColor DarkGreen
 
 }

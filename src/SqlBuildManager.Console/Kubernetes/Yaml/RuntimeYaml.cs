@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
-namespace SqlBuildManager.Console.Kubernetes
+namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     public class RuntimeYaml
     {
@@ -18,7 +18,7 @@ namespace SqlBuildManager.Console.Kubernetes
              { "name", "runtime-properties" }
             };
 
-        public RuntimeData data = new Kubernetes.RuntimeData();
+        public RuntimeData data = new RuntimeData();
 
     }
     public class RuntimeData
@@ -47,6 +47,6 @@ namespace SqlBuildManager.Console.Kubernetes
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
         public string EventHubConnectionString { get; set; } = null;
         public string StorageAccountName { get; set; } = null;
-     
+
     }
 }

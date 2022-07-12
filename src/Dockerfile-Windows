@@ -1,0 +1,43 @@
+#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0.301-windowsservercore-ltsc2019 AS base
+WORKDIR /app
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0.301-windowsservercore-ltsc2019 AS build
+#\\WORKDIR  src
+
+
+#The goofy "RUN true" is added because of bug: https://github.com/moby/moby/issues/37965 . Can be removed once this is fixed
+COPY ["src/SqlBuildManager.Console/sbm.csproj", "SqlBuildManager.Console/"]
+#RUN true 
+COPY ["src/SqlBuildManager.Enterprise/SqlBuildManager.Enterprise.csproj", "SqlBuildManager.Enterprise/" ]
+#RUN true 
+COPY ["src/SqlBuildManager.Interfaces/SqlBuildManager.Interfaces.csproj", "SqlBuildManager.Interfaces/" ]
+#RUN true 
+COPY ["src/SqlBuildManager.Logging/SqlBuildManager.Logging.csproj", "SqlBuildManager.Logging/" ]
+#RUN true 
+COPY ["src/SqlSync.Connection/SqlSync.Connection.csproj", "SqlSync.Connection/" ]
+#RUN true 
+COPY ["src/SqlSync.Constants/SqlSync.Constants.csproj", "SqlSync.Constants/" ]
+#RUN true 
+COPY ["src/SqlSync.DbInformation/SqlSync.DbInformation.csproj", "SqlSync.DbInformation/" ]
+#RUN true 
+COPY ["src/SqlSync.ObjectScript/SqlSync.ObjectScript.csproj", "SqlSync.ObjectScript/" ]
+#RUN true 
+COPY ["src/SqlSync.SqlBuild/SqlSync.SqlBuild.csproj", "SqlSync.SqlBuild/" ]
+#RUN true 
+COPY ["src/SqlSync.SqlBuild/SqlSync.SqlBuild.csproj", "SqlSync.SqlBuild/SqlSync.SqlBuild.csproj" ]
+#RUN true 
+COPY ["src/SqlBuildManager.ScriptHandling/SqlBuildManager.ScriptHandling.csproj", "SqlBuildManager.ScriptHandling/"]
+
+COPY . .
+WORKDIR /src
+
+
+FROM build AS publish
+RUN dotnet publish SqlBuildManager.Console/sbm.csproj --configuration Release -f net6.0 -o /app/publish -r win-x64 --self-contained
+
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .

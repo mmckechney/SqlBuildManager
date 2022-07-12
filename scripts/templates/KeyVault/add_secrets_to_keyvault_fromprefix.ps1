@@ -20,8 +20,15 @@ Write-Host "Retrieving resource names from resources in $resourceGroupName with 
 
 if([string]::IsNullOrWhiteSpace($sqlUserName))
 {
-    $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()
-    $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
+    if(Test-Path (Join-Path $path "un.txt"))
+    {
+        $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()
+    }
+
+    if(Test-Path (Join-Path $path "pw.txt"))
+    {
+        $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
+    }
 }
 
 $haveSqlInfo = $true

@@ -37,7 +37,7 @@ $serviceBusConnectionString = az servicebus topic authorization-rule keys list -
 
 
 $params = @("k8s", "savesettings")
-$params += @("--path", $path)
+$params += @("--path", """$path""")
 $params += @("--storageaccountname",$storageAccountName)  
 $params += @("--storageaccountkey","""$storageAcctKey""") 
 $params += @("-eh","""$eventHubConnectionString""") 
@@ -60,7 +60,7 @@ if($authTypes -contains "Password")
 if($authTypes -contains "ManagedIdentity")
 {
     $params = @("k8s", "savesettings")
-    $params += @("--path", $path)
+    $params += @("--path", """$path""")
     $params += @("--storageaccountname",$storageAccountName)  
     $params += @("-eh","$($eventhubNamespaceName).servicebus.windows.net|$($eventHubName)") 
     $params += @("-sb","$($serviceBusNamespaceName).servicebus.windows.net")  

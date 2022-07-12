@@ -4,6 +4,8 @@ using SqlBuildManager.Console.Shared;
 using SqlSync.Connection;
 using System;
 using System.IO;
+using System.Text;
+using System.Text.Encodings.Web;
 using YamlDotNet.Serialization;
 
 namespace SqlBuildManager.Console.Kubernetes
@@ -138,10 +140,64 @@ namespace SqlBuildManager.Console.Kubernetes
             return (true, args);
         }
 
+        internal static string GenerateSecretsProviderYaml(CommandLineArgs args)
+        {
+            var yml = new Yaml.SecretsProviderYaml();
+            if(!string.IsNullOrWhiteSpace(args.ConnectionArgs.KeyVaultName))
+            {
+                yml.spec.parameters.keyvaultName = args.ConnectionArgs.KeyVaultName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(args.IdentityArgs.TenantId))
+            {
+                yml.spec.parameters.tenantId = args.IdentityArgs.TenantId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(args.IdentityArgs.ClientId))
+            {
+                yml.spec.parameters.userAssignedIdentityID = args.IdentityArgs.ClientId;
+            }
+
+            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            var yamlString = serializer.Serialize(yml);
+            yamlString = yamlString.TrimEnd() +  Yaml.Objects.definition;
+            return yamlString;
+
+        }
+
+        internal static string GenerateIdentityAndBindingYaml(CommandLineArgs args)
+        {
+            var yml = new Yaml.AzureIdentity(args.IdentityArgs.IdentityName, args.IdentityArgs.ResourceGroup, args.IdentityArgs.ResourceId);
+            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            var identityYaml = serializer.Serialize(yml);
+
+            var ymlB = new Yaml.AzureIdentityBinding(args.IdentityArgs.IdentityName);
+            var bindingYaml = serializer.Serialize(ymlB);
+
+            var sb = new StringBuilder();
+            sb.AppendLine(identityYaml);
+            sb.AppendLine("---");
+            sb.AppendLine(bindingYaml);
+
+            return sb.ToString();
+
+        }
+
+        internal static string GenerateJobYaml(CommandLineArgs args)
+        {
+            bool hasSecrets = GenerateSecretsYaml(args).Length > 0;
+            var yml = new Yaml.JobYaml(args.ContainerRegistryArgs.RegistryServer,args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, hasSecrets);
+            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            var jobYaml = serializer.Serialize(yml);
+
+
+            return jobYaml;
+
+        } 
         internal static string GenerateSecretsYaml(CommandLineArgs args)
         {
             bool secretAdded = false;
-            var yml = new SecretYaml();
+            var yml = new Yaml.SecretYaml();
            
 
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.EventHubConnectionString))
@@ -197,7 +253,7 @@ namespace SqlBuildManager.Console.Kubernetes
         internal static string GenerateRuntimeYaml(CommandLineArgs args)
         {
 
-            var yml = new RuntimeYaml();
+            var yml = new Yaml.RuntimeYaml();
             yml.data.DacpacName = args.DacPacArgs.PlatinumDacpac;
             yml.data.PackageName = args.BuildFileName;
             yml.data.JobName = args.JobName;
