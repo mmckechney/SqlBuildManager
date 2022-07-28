@@ -80,7 +80,10 @@
     <None Update="ContainerApp\containerapp_env_arm_template.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="ContainerApp\registries.json">
+    <None Update="ContainerApp\registries-identity.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="ContainerApp\registries-pw.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
