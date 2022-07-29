@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.SqlServer.Management.Sdk.Sfc;
+using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,27 +14,38 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     internal class JobYaml
     {
-        public JobYaml(string registry, string image, string tag, bool hasSecrets)
+        [YamlIgnore()]
+        public static string Name { get; set; } = "sqlbuildmanager";
+        [YamlIgnore()]
+        public static string Kind { get { return "Job"; } }
+        public JobYaml(string registry, string image, string tag, bool hasKeyVault, bool useManagedIdentity)
         {
             if (!registry.EndsWith("azurecr.io")) registry += ".azurecr.io";
             spec.template.spec.containers[0].image = $"{registry}/{image}:{tag}";
-            if(hasSecrets)
+            if(hasKeyVault) //replace volume with CSI driver
             {
                 spec.template.spec.volumes = new List<Dictionary<string, object>> { spec.template.spec.volumes[0], SecretsConfigs.csi }.ToArray();
-                spec.template.spec.containers[0].volumeMounts = new Mounts[] { spec.template.spec.containers[0].volumeMounts[0], SecretsConfigs.sbm };
+            }
+
+            if(useManagedIdentity) //remove secrets volume and mount
+            {
+                spec.template.spec.volumes = new List<Dictionary<string, object>> { spec.template.spec.volumes[0] }.ToArray();
+                spec.template.spec.containers[0].volumeMounts = new Mounts[] { spec.template.spec.containers[0].volumeMounts[0] };
             }
         }
         [YamlMember(Order = 1)]
         public string apiVersion { get { return "batch/v1"; } }
         [YamlMember(Order = 2)]
-        public string kind { get { return "Job"; } }
+        public string kind { get { return Kind; } }
+       
+
         [YamlMember(Order = 3)]
         public Dictionary<string, object> metadata = new Dictionary<string, object>
         {
             {"name","sqlbuildmanager" },
             {"labels",  new Dictionary<string, string>
                 {
-                    {"jobgroup" , "sqlbuildmanager" }
+                    {"jobgroup" , Name }
                 }
             }
         };
@@ -65,10 +77,18 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
     internal class ContainerSpec
     {
         [YamlMember(Order = 1)]
-        public string restartPolicy { get { return "OnFailure"; } }
+        public Dictionary<string, string> nodeSelector = new Dictionary<string, string>
+        {
+            { "kubernetes.io/os","linux"}
+        };
+
         [YamlMember(Order = 2)]
-        public Containers[] containers = new Containers[1] {new Containers()};
+        public Containers[] containers = new Containers[1] { new Containers() };
+
         [YamlMember(Order = 3)]
+        public string restartPolicy { get { return "OnFailure"; } }
+        
+        [YamlMember(Order = 4)]
         public Dictionary<string, object>[] volumes = new Dictionary<string, object>[]
         {
             new  Dictionary<string, object>
@@ -77,6 +97,15 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
                 {"configMap", new Dictionary<string,string>
                     {
                         { "name", "runtime-properties"}
+                    }
+                }
+            },
+            new  Dictionary<string, object>
+            {
+                {"name", "sbm" },
+                {"secret", new Dictionary<string,string>
+                    {
+                        { "secretName", "connection-secrets"}
                     }
                 }
             }
@@ -102,13 +131,15 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
             }
         };
         [YamlMember(Order = 6)]
-        public string[] command = new string[] { "dotnet", "sbm.dll", "k8s", "worker" };
+        public List<string> command = new List<string> { "dotnet", "sbm.dll", "k8s", "worker" };
         [YamlMember(Order = 7)]
         public Mounts[] volumeMounts = new Mounts[]
             {
-                new Mounts(){ name = "runtime", mountPath = "/etc/runtime" , readOnly = "true"}
+                new Mounts(){ name = "runtime", mountPath = "/etc/runtime" , readOnly = "true"},
+                new Mounts(){ name = "sbm",mountPath = "/etc/sbm", readOnly = "true" }
             };
-       
+
+
         internal class Mounts
         {
             public string name { get; internal set; }
@@ -138,12 +169,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
                 }
             };
 
-            public static Mounts sbm = new Mounts()
-            {
-                name = "sbm",
-                mountPath = "/etc/sbm",
-                readOnly = "true"
-            };
+           
         }
     }
 }

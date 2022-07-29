@@ -48,16 +48,15 @@ The `create_azure_resources.ps1` script will create the following resources whic
 - Batch Account (`{prefix}batchacct`) - a Batch account used to process database builds. Pre-configured with two applications `SqlBuildManagerLinux` and `SqlBuildManagerWindows` that have the local build of the console app uploaded to each respective OS target. Also pre-configured to use the Managed Identity
 - 2 Azure SQL Servers (`{prefix}sql-a` and `{prefix}sql-b`) each with `-testDatabaseCount` number of databases.These can be used for integration testing from `SqlBuildManager.Console.ExternalTest.csproj`
 
-In addition to creating the resources above it will create the following files in the `outputPath` location folder:
+In addition to creating the resources above it will create the following files in the `outputPath` location folder. These are used by the [`SqlBuildManager.Console.ExternalTest`](https://github.com/mmckechney/SqlBuildManager/tree/master/src/SqlBuildManager.Console.ExternalTest) project (which is also a great place to look to see execution examples):
 
-1. `settingsfile-*.json` - batch settings files that contains all of the SQL, Batch, Storage and Service Bus endpoints and connection keys for use in testing. There will also be two files ending with `-keyvault.json` that will not contain any secrets, but will instead contain the Key Vault name. The secrets will also have been saved to the Key Vault.
-2. `settingsfile-linux-aci-queue-keyvault.json` - settings file for ACI builds. This will not contain secrets as ACI will always leverage Key Vault.
-3. `settingsfilekey.txt` - a text file containing the encryption key for the settings files
-5. `secrets.yaml` - secrets file containing the the Base64 encoded keys, connection strings and password used by Kubernetes. This file is not needed if using Key Vault.
-6. `runtime.yaml` - runtime files template for Kubernetes builds
-7. `secretsProviderClass.yaml` - the Azure Key vault `SecretProviderClass` configuration set up with the Key Vault name and Managed Identity information. Used by Kubernetes when leveraging Key Vault
-8. `podIdentityAndBinding.yaml` - the Azure Key vault `AzureIdentity` and `AzureIdentityBinding` configuration set up  with the Key Vault name and Managed Identity information. Used by Kubernetes when leveraging Key Vault
-9. `databasetargets.cfg` - a pre-configured database listing file for use in a Batch, Kubernetes or threaded execution targeting the SQL Azure databases just created. This is used by the integration tests
+1. `settingsfile-batch*.json` - batch settings files that contains all of the SQL, Batch, Storage and Service Bus endpoints and connection keys for use in testing. There will also be two files ending with `-keyvault.json` that will not contain any secrets, but will instead contain the Key Vault name. The secrets will also have been saved to the Key Vault.
+2. `settingsfile-aci-*.json` - settings files for ACI builds. This will not contain secrets as ACI will always leverage Key Vault.
+3. `settingsfile-containerapp-*.json` - settings files for Container App builds
+4. `settingsfile-k8s-*.json` - settings files for Kubernetes builds 
+5. `settingsfilekey.txt` - a text file containing the encryption key for the settings files
+6. `databasetargets.cfg` - a pre-configured database listing file for use by the integration tests that use an SBM file as a script source 
+7. `clientdbtargets.cfg` - a pre-configured database listing file for use by the integration tests that use a DACPAC as a script source
 
 **IMPORTANT:** These files can be used _as is_ for the integration testing but are also great reference examples of how to create your own files for production use
 
@@ -72,7 +71,7 @@ Running a build using Azure Batch follows the process below. If you do not lever
 
 
 
-0. Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault as well as be used to configure the Batch Pool nodes. 
+Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault as well as be used to configure the Batch Pool nodes. 
 1. Keys, Connection strings and passwords saved in Azure Key Vault with `sbm batch savesettings -kv`. You can also save the secrets to Key Vault in any other fashion you'd like. The secret names are: `StorageAccountKey`, `StorageAccountName`, `EventHubConnectionString`,`ServiceBusTopicConnectionString`, `UserName` (for SQL Server username), `Password` (for SQL Server password), `BatchAccountKey`. This will only need to be done once as long as your secrets do not change.
 2. Database targets are sent to Service Bus Topic with `sbm batch enqueue`
 3. Batch execution is started with `sbm batch run`. You can pre-stage the worker nodes with `sbm batch prestage`
@@ -94,11 +93,14 @@ Running a build using Kubernetes follows the process below. If you do not levera
 
 
 
-0. Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault. 
+Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault. 
 1. Keys, Connection strings and passwords saved in Azure Key Vault with `sbm k8s savesettings -kv`. You can also save the secrets to Key Vault in any other fashion you'd like. The secret names are: `StorageAccountKey`, `StorageAccountName`, `EventHubConnectionString`,`ServiceBusTopicConnectionString`, `UserName` (for SQL Server username), `Password` (for SQL Server password). This will only need to be done once as long as your secrets do not change.
+
+Excution is started with `sbm k8s run`. This command encapulates the following steps which can be run independently if desired:
+
 2. The `.sbm` package file is uploaded to Blob Storage via `sbm k8s prep`
 3. Database targets are sent to Service Bus Topic with `sbm k8s enqueue`
-4. The pods are started via `kubectl`
+4. The pods are started via `kubectl` (all run internally with the `run` command)
    - `kubectl apply -f runtime.yaml` - this sets the runtime settings for the pods (.sbm package name, job name and concurrency settings)
    - `kubectl apply -f secretProviderClass.yaml` - configuration setting up the managed identity. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/kubernetes/create_aks_keyvault_config.ps1) to create the config for you
    - `kubectl apply -f podIdentityAndBinding.yaml` - configuration to bind the managed identity to the pods. Use [`create_aks_keyvault_config.ps1`](../scripts/templates/create_aks_keyvault_config.ps1) to create the config for you
@@ -121,7 +123,7 @@ Running a build using ACI follows the process below, please note that unlike Bat
 
 ![AKS process flow](images/aci_with_keyvault.png)
 
-0. Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault.
+Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault.
 1. Keys, Connection strings and passwords saved in Azure Key Vault with `sbm aci savesettings`. You can also save the secrets to Key Vault in any other fashion you'd like. The secret names are: `StorageAccountKey`, `StorageAccountName`, `EventHubConnectionString`,`ServiceBusTopicConnectionString`, `UserName` (for SQL Server username), `Password` (for SQL Server password). This will only need to be done once as long as your secrets do not change.
 2. The customized Azure Resource Management (ARM) template is created and the `.sbm` package file is uploaded to Blob Storage via `sbm aci prep`.
 3. Database targets are sent to Service Bus Topic with `sbm aci enqueue`

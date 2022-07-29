@@ -1,7 +1,9 @@
 
 param
 (
-    [string] $azureContainerRegistry
+    [string] $azureContainerRegistry, 
+    [string] $resourceGroupName,
+    [bool] $wait = $true
 )
 
 
@@ -26,12 +28,24 @@ if ($success)
     $ver = $Matches.0
     $verTag =  "sqlbuildmanager:$ver"
     Write-Host "Building with image tags: '$verTag' | '$dateTag' | '$vnextTag' (used in integration tests)" -ForegroundColor DarkGreen
-    az acr build --image $dateTag --image $vnextTag --image $verTag --registry $azureContainerRegistry --file "$dockerFile" "$sourcePath" --no-logs --query outputimages
+    if($true -eq $wait)
+    {
+        az acr build --image $dateTag --image $vnextTag --image $verTag --registry $azureContainerRegistry --resource-group $resourceGroupName --file "$dockerFile" "$sourcePath" --no-logs --query outputimages
+    }
+    else {
+        az acr build --image $dateTag --image $vnextTag --image $verTag --registry $azureContainerRegistry --resource-group $resourceGroupName --file "$dockerFile" "$sourcePath" --no-logs --query outputimages --no-wait
+    }
 }
 else 
 {
     Write-Host "Unable to read AssemblyVersion.cs file. Can not create a version tag" -ForegroundColor Yellow
     Write-Host "Building with image tags: '$dateTag' | '$vnextTag' (used in integrat ion tests)" -ForegroundColor DarkGreen
-    az acr build --image $dateTag --image $vnextTag --registry $azureContainerRegistry --file "$dockerFile" "$sourcePath" --no-logs --query outputimages
+    if($true -eq $wait)
+    {
+        az acr build --image $dateTag --image $vnextTag --registry $azureContainerRegistry --resource-group $resourceGroupName  --file "$dockerFile" "$sourcePath" --no-logs --query outputimages
+    }
+    else {
+        az acr build --image $dateTag --image $vnextTag --registry $azureContainerRegistry --resource-group $resourceGroupName  --file "$dockerFile" "$sourcePath" --no-logs --query outputimages --no-wait
+    }
 }
 

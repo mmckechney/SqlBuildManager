@@ -3,14 +3,13 @@ param
     [string] $resourceGroupName,
     [string] $prefix
 )
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName = "$prefix-rg"
-}
+
+#############################################
+# Get set resource name variables from prefix
+#############################################
+. ./../prefix_resource_names.ps1 -prefix $prefix
 Write-Host "Create Batch Account from prefix: $prefix"  -ForegroundColor Cyan
-$batchAccountName = $prefix + "batchacct"
-$storageAccountName = $prefix + "storage"
-$userAssignedIdentity = $prefix + "identity"
+
 $location = az group show -n $resourceGroupName -o tsv --query location
 Write-Host "Using location: $location" -ForegroundColor Green
 

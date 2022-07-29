@@ -7,16 +7,16 @@ param
     [string] $sqlPassword
 )
 
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName = "$prefix-rg"
-}
+#############################################
+# Get set resource name variables from prefix
+#############################################
+. ./../prefix_resource_names.ps1 -prefix $prefix
+
 Write-Host "Adding secrets to Key Vault from prefix: $prefix "  -ForegroundColor Cyan
 $path = Resolve-Path $path
 Write-Host "Path set to $path" -ForegroundColor DarkGreen
 
 Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
-
 
 if([string]::IsNullOrWhiteSpace($sqlUserName))
 {
@@ -37,22 +37,13 @@ if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($
     $haveSqlInfo = $false
 }
 
-$keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
-
-$batchAccountName = az batch account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using batch account name:'$batchAccountName'" -ForegroundColor DarkGreen
-
-$storageAccountName =  az storage account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using storage account name:'$storageAccountName'" -ForegroundColor DarkGreen
-
-$eventHubNamespaceName = az eventhubs namespace list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using Event Hub Namespace name:'$eventHubNamespaceName'" -ForegroundColor DarkGreen
-
-$serviceBusNamespaceName = az servicebus namespace list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -ForegroundColor DarkGreen
 
-$scriptDir
+
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 .$scriptDir/add_secrets_to_keyvault.ps1 -path $path -resourceGroupName  $resourceGroupName -keyVaultName $keyVaultName -batchAccountName $batchAccountName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword
 

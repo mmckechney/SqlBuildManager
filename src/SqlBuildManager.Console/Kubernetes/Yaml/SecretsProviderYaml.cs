@@ -11,14 +11,20 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     internal class SecretsProviderYaml
     {
+        [YamlIgnore()]
+        public static string Name { get; set; } = "azure-kvname";
+        [YamlIgnore()]
+        public static string Kind { get { return "SecretProviderClass"; } }
+
         [YamlMember(Order = 1)]
         public string apiVersion { get { return "secrets-store.csi.x-k8s.io/v1"; } }
         [YamlMember(Order = 2)]
-        public string kind { get { return "SecretProviderClass"; } }
+        public string kind { get { return Kind; } }
+        
         [YamlMember(Order = 3)]
         public Dictionary<string, string> metadata = new Dictionary<string, string>
             {
-             { "name", "azure-kvname" }
+             { "name", Name }
             };
         [YamlMember(Order = 4)]
         public SecretsProviderSpec spec = new SecretsProviderSpec();
@@ -65,9 +71,6 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         internal static string definition = @"
     objects:  |
       array:
-        - |
-          objectName: BatchAccountKey
-          objectType: secret
         - |
           objectName: StorageAccountKey
           objectType: secret 

@@ -25,6 +25,7 @@ namespace SqlBuildManager.Console.ExternalTest
     {
  
         private string settingsFileKeyPath;
+        private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]
         public void ConfigureProcessInfo()
@@ -33,6 +34,8 @@ namespace SqlBuildManager.Console.ExternalTest
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", @"C:\temp");
             this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
 
+            System.Console.SetOut(new StringWriter(this.ConsoleOutput));    // Associate StringBuilder with StdOut
+            this.ConsoleOutput.Clear();    // Clear text from any previous text runs
         }
         [TestCleanup]
         public void CleanUp()
@@ -40,17 +43,77 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-kv.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+
+        [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+
+        [DataTestMethod]
+        public void ContainerApp_Run_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+
+            //get the size of the log file before we start
+            int startingLine = TestHelper.LogFileCurrentLineCount();
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            string jobName = TestHelper.GetUniqueJobName("ca");
+            string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+            //monitor for completion
+            var args = new string[]{
+                //"--loglevel", "Debug",
+                "containerapp",  "run",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "-P", sbmFileName,
+                "--override", overrideFile,
+                "--jobname", jobName,
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString(),
+                "--maxcontainers", containerCount.ToString(),
+                "--imagetag", imageTag,
+                "--unittest", "true",
+                "--monitor", "true",
+                "--stream", "true",
+                "--deletewhendone", "true"
+
+            };
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            int result = val.Result;
+            Assert.AreEqual(0, result);
+
+            var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+            Debug.WriteLine(this.ConsoleOutput.ToString());
+            Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+
+        }
+
+
+
         [DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         [DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
 
         [DataTestMethod]
-        public void ContainerApp_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public void ContainerApp_StepWise_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -121,14 +184,16 @@ namespace SqlBuildManager.Console.ExternalTest
             result = val.Result;
             Assert.AreEqual(0, result);
 
+            var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+            Debug.WriteLine(this.ConsoleOutput.ToString());
+            Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
 
         }
 
         //TODO: Enable Managed Identity****** Managed Identity for SQL Authentication is not available for Container Apps currently, only SB and EH
         //[DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-containerapp-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        //[DataRow("TestConfig/settingsfile-containerapp-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        //[DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         
         [DataTestMethod]
         public void ContainerApp_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
@@ -180,7 +245,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //monitor for completion
             args = new string[]{
-                //"--loglevel", "Debug",
+                "--loglevel", "Debug",
                 "containerapp",  "deploy",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
@@ -201,6 +266,10 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
             Assert.AreEqual(0, result);
+
+            var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+            Debug.WriteLine(this.ConsoleOutput.ToString());
+            Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
 
 
         }
@@ -258,7 +327,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //monitor for completion
             args = new string[]{
-                //"--loglevel", "debug",
+                "--loglevel", "debug",
                 "containerapp",  "deploy",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
@@ -280,13 +349,15 @@ namespace SqlBuildManager.Console.ExternalTest
             result = val.Result;
             Assert.AreEqual(0, result);
 
+            var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+            Debug.WriteLine(this.ConsoleOutput.ToString());
+            Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
 
         }
 
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-containerapp-kv.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataTestMethod]
         public void ContainerApp_Queue_DacpacSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
@@ -387,12 +458,14 @@ namespace SqlBuildManager.Console.ExternalTest
             result = val.Result;
             Assert.AreEqual(0, result);
 
-
+            var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+            Debug.WriteLine(this.ConsoleOutput.ToString());
+            Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
         }
 
 
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-containerapp-kv.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataTestMethod]
         public void ContainerApp_Queue_DacpacSource_DbAlreadyInSync_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
@@ -475,7 +548,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //monitor for completion
             args = new string[]{
-                //"--loglevel", "Debug",
+                "--loglevel", "Debug",
                 "containerapp",  "deploy",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
@@ -499,10 +572,14 @@ namespace SqlBuildManager.Console.ExternalTest
             var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
             Assert.IsTrue(logFileContents.Contains("Dacpac Databases In Sync"), "There should be a DB already in sync that forced a custom DACPAC to be created");
 
+            var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+            Debug.WriteLine(this.ConsoleOutput.ToString());
+            Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-kv.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-containerapp-kv.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataTestMethod]
         public void ContainerApp_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
@@ -613,6 +690,10 @@ namespace SqlBuildManager.Console.ExternalTest
 
             var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
             Assert.IsTrue(logFileContents.Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
+
+            var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+            Debug.WriteLine(this.ConsoleOutput.ToString());
+            Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
 
         }
     }

@@ -389,7 +389,7 @@ namespace SqlBuildManager.Console
 
             if (string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
-                log.LogError("When 'sbm batch/aci/containerapp savesettings' is specified the --settingsfile argument is also required");
+                log.LogError("When 'sbm batch/aci/containerapp/k8s savesettings' is specified the --settingsfile argument is also required");
                 return -3;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.SettingsFileKey) && cmdLine.SettingsFileKey.Length < 16)
@@ -420,7 +420,7 @@ namespace SqlBuildManager.Console
 
                 if (ConnectionValidator.IsServiceBusConnectionString(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
                 {
-                    if (string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName))
+                    if (cmdLine.ContainerAppArgs == null || string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName))
                     {
                         //will need this for KEDA in ContainerApps, so only remove if NOT for ContainerApps
                         cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null;
@@ -794,6 +794,7 @@ namespace SqlBuildManager.Console
         }
         internal static async Task<int> RunKubernetesQueueWorker(CommandLineArgs cmdLine)
         {
+            (var x, cmdLine) = Init(cmdLine);
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
             if (!Directory.Exists(cmdLine.RootLoggingPath))
@@ -804,7 +805,7 @@ namespace SqlBuildManager.Console
             bool success = true;
 
             //runtime params
-            (success, cmdLine) = ContainerManager.ReadRuntimeParameters(cmdLine);
+            (success, cmdLine) = KubernetesManager.ReadRuntimeParameters(cmdLine);
             if (!success)
             {
                 log.LogError("Unable to acquire runtime values. Terminating container.");
@@ -812,7 +813,7 @@ namespace SqlBuildManager.Console
             }
 
             //Get secrets
-            (success, cmdLine) = ContainerManager.ReadSecrets(cmdLine);
+            (success, cmdLine) = KubernetesManager.ReadSecrets(cmdLine);
             if (!success)
             {
                 log.LogError("Unable to acquire secrets from secret store. Terminating container.");
@@ -1085,6 +1086,37 @@ namespace SqlBuildManager.Console
             return await RunGenericContainerQueueWorker(cmdLine);
         }
 
+        internal static async Task<int> ContainerAppsRun(CommandLineArgs cmdLine, bool unittest, bool stream, bool monitor, bool deleteWhenDone, bool force)
+        {
+            FileInfo packageFileInfo = string.IsNullOrWhiteSpace(cmdLine.BuildFileName) ? null : new FileInfo(cmdLine.BuildFileName);
+            FileInfo dacpacFileInfo = string.IsNullOrWhiteSpace(cmdLine.DacpacName) ? null : new FileInfo(cmdLine.DacpacName);
+            var res = await PrepAndUploadContainerAppBuildPackage(cmdLine, packageFileInfo, dacpacFileInfo, force);
+            if(res != 0)
+            {
+                log.LogError("Failed to upload build package to Blob storage");
+                return 1;
+            }
+
+            res =  await EnqueueOverrideTargets(cmdLine);
+            if (res != 0)
+            {
+                log.LogError("Failed to enqueue override targets");
+                return 1;
+            }
+
+            res = await DeployContainerApp(cmdLine, unittest, stream, true, deleteWhenDone);
+            if (res != -7)
+            {
+                log.LogError("Failed to deploy container app");
+                log.LogInformation("Cleaning up any remaining queue messages...");
+                await DeQueueOverrideTargets(cmdLine);
+                return res;
+            }
+            else
+            {
+                return res;
+            }
+        }
         internal static async Task<int> DeployContainerApp(CommandLineArgs cmdLine, bool unittest, bool stream, bool monitor, bool deleteWhenDone)
         {
             bool initSuccess;
@@ -1172,19 +1204,18 @@ namespace SqlBuildManager.Console
             return await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest, false);
         }
 
-        internal static async Task<int> MonitorKubernetesRuntimeProgress(FileInfo secretsFile, FileInfo runtimeFile, CommandLineArgs args, bool unittest = false, bool stream = false)
+        internal static async Task<int> MonitorKubernetesRuntimeProgress(CommandLineArgs cmdLine, FileInfo secretsFile, FileInfo runtimeFile, bool unittest = false, bool stream = false)
         {
-            CommandLineArgs cmdLine = new CommandLineArgs();
-            if (runtimeFile != null)
+            if (cmdLine == null)
             {
-                cmdLine = ContainerManager.GetArgumentsFromRuntimeFile(runtimeFile.FullName, cmdLine);
+                cmdLine = new CommandLineArgs();
+            }
+            (var x, cmdLine) = Init(cmdLine);
+            if (runtimeFile != null && secretsFile != null)
+            {
+                cmdLine = KubernetesManager.SetCmdLineArgsFromSecretsAndConfigmap(cmdLine, secretsFile.Name, runtimeFile.FullName);
             }
 
-            if (secretsFile != null)
-            {
-                cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
-            }
-            cmdLine.ConnectionArgs.KeyVaultName = args.ConnectionArgs.KeyVaultName;
             bool kvSuccess;
             (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             if (!kvSuccess)
@@ -1193,24 +1224,29 @@ namespace SqlBuildManager.Console
                 return -4;
             }
 
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString)) cmdLine.ServiceBusTopicConnection = args.ConnectionArgs.ServiceBusTopicConnectionString;
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString)) cmdLine.EventHubConnection = args.ConnectionArgs.EventHubConnectionString;
-            if (!string.IsNullOrWhiteSpace(args.JobName)) cmdLine.JobName = args.JobName;
-            if (!string.IsNullOrWhiteSpace(args.MultiDbRunConfigFileName)) cmdLine.MultiDbRunConfigFileName = args.MultiDbRunConfigFileName;
-
             return await MonitorServiceBusRuntimeProgress(cmdLine, stream, DateTime.UtcNow.AddMinutes(-15), unittest);
 
         }
 
-        internal static async Task<int> DequeueKubernetesOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection)
+        internal static async Task<int> DequeueKubernetesOverrideTargets(CommandLineArgs cmdLine, FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection)
         {
             bool valid;
-            CommandLineArgs cmdLine = new CommandLineArgs();
-            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, keyvaultname, jobname, concurrencytype, servicebustopicconnection, cmdLine);
+            if (cmdLine == null)
+            {
+                cmdLine = new CommandLineArgs();
+            }
+            (var x, cmdLine) = Init(cmdLine);
+            if (secretsFile != null && runtimeFile != null)
+            {
+                KubernetesManager.SetCmdLineArgsFromSecretsAndConfigmap(cmdLine, secretsFile.Name, runtimeFile.Name);
+            }
+
+            (valid, cmdLine) = ValidateContainerQueueArgs(cmdLine, keyvaultname, jobname, concurrencytype, servicebustopicconnection);
             if (!valid)
             {
                 return 1;
             }
+            
 
             var val = await DeQueueOverrideTargets(cmdLine);
             return val;
@@ -1240,43 +1276,46 @@ namespace SqlBuildManager.Console
             cmdLine.IdentityArgs.ResourceId = null;
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
-
-
-        internal static async Task<int> UploadKubernetesBuildPackage(FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, FileInfo platinumDacpac, string keyvaultname, string jobName, string storageAccountName, string storageAccountKey, bool force, bool allowObjectDelete, string @override)
+        internal static int SaveAndEncryptKubernetesSettings(CommandLineArgs cmdLine, bool clearText)
         {
-            CommandLineArgs cmdLine = new CommandLineArgs();
-            if (!string.IsNullOrWhiteSpace(@override))
+            cmdLine.BatchArgs = null;
+            cmdLine.ConnectionArgs.BatchAccountKey = null;
+            cmdLine.ConnectionArgs.BatchAccountName = null;
+            cmdLine.ConnectionArgs.BatchAccountUrl = null;
+            cmdLine.AciArgs = null;
+            cmdLine.ContainerAppArgs = null;
+            cmdLine.IdentityArgs.PrincipalId = null;
+            cmdLine.IdentityArgs.ResourceId = null;
+            cmdLine.ContainerRegistryArgs.RegistryUserName = null;
+            cmdLine.ContainerRegistryArgs.RegistryPassword = null;
+            if(cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
             {
-                cmdLine.Override = @override;
+                cmdLine.KeyVaultName = null;
             }
+            return SaveAndEncryptSettings(cmdLine, clearText);
+        }
 
-            if (runtimeFile != null)
-            {
-                cmdLine = ContainerManager.GetArgumentsFromRuntimeFile(runtimeFile.FullName, cmdLine);
-            }
-            if (secretsFile != null)
-            {
-                cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
-            }
 
-            cmdLine.KeyVaultName = keyvaultname;
+        internal static async Task<(int, CommandLineArgs)> UploadKubernetesBuildPackage(CommandLineArgs cmdLine, FileInfo secretsFile, FileInfo runtimeFile, FileInfo packageName, FileInfo platinumDacpac, bool force)
+        {
+            (var x, cmdLine) = Init(cmdLine);
+            if (runtimeFile != null && secretsFile != null)
+            {
+                cmdLine = KubernetesManager.SetCmdLineArgsFromSecretsAndConfigmap(cmdLine, secretsFile.Name, runtimeFile.Name);
+            }
+            
             bool kvSuccess;
             (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             if (!kvSuccess)
             {
                 log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
-                return -4;
+                return (-4, cmdLine);
             }
-
-            cmdLine.AllowObjectDelete = allowObjectDelete;
-            if (!string.IsNullOrWhiteSpace(jobName)) cmdLine.JobName = jobName;
-            if (!string.IsNullOrWhiteSpace(storageAccountKey)) cmdLine.StorageAccountKey = storageAccountKey;
-            if (!string.IsNullOrWhiteSpace(storageAccountName)) cmdLine.StorageAccountName = storageAccountName;
 
             if (string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
             {
                 log.LogError("Values for --jobname, and --storageaccountname are required as prameters or included in the --secretsfile and --runtimefile");
-                return 1;
+                return (1, cmdLine);
 
             }
             //if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
@@ -1288,29 +1327,30 @@ namespace SqlBuildManager.Console
             (bool retVal, string sbmName) = await ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
             if (!retVal)
             {
-                return 1;
+                return (1, cmdLine);
             }
             else
             {
+                if (!string.IsNullOrEmpty(sbmName))
+                {
+                    cmdLine.BuildFileName = Path.GetFileName(sbmName);
+                }
+                if (packageName != null)
+                {
+                    cmdLine.BuildFileName = packageName.Name;
+                }
+                if (platinumDacpac != null)
+                {
+                    cmdLine.PlatinumDacpac = platinumDacpac.Name;
+                }
                 if (runtimeFile != null)
                 {
-                    if(!string.IsNullOrEmpty(sbmName))
-                    {
-                        cmdLine.BuildFileName = Path.GetFileName(sbmName);
-                    }
-                    if (packageName != null)
-                    {
-                        cmdLine.BuildFileName = packageName.Name;
-                    }
-                    if (platinumDacpac != null)
-                    {
-                        cmdLine.PlatinumDacpac = platinumDacpac.Name;
-                    }
-                    string runtimeContents = ContainerManager.GenerateRuntimeYaml(cmdLine);
+                  
+                    string runtimeContents = KubernetesManager.GenerateConfigmapYaml(cmdLine);
                     File.WriteAllText(runtimeFile.FullName, runtimeContents);
                     log.LogInformation($"Updated runtime file '{runtimeFile.FullName}' with job and package name");
                 }
-                return 0;
+                return (0, cmdLine);
             }
 
         }
@@ -1613,111 +1653,102 @@ namespace SqlBuildManager.Console
             System.Console.WriteLine(KeyVault.KeyVaultHelper.GetSecret("sbm3keyvault", "StorageAccountName"));
         }
 
-        internal static Task<KubernetesFiles> SaveKubernetesSettings(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
+        
+
+        internal static async Task<int> KubernetesRun(CommandLineArgs cmdLine, FileInfo Override, FileInfo packagename, FileInfo platinumdacpac, bool force, bool allowObjectDelete, bool unittest, bool stream, bool cleanupOnFailure)
         {
-            var dir = Directory.GetCurrentDirectory();
-            var secretsName = "";
-            if (path != null)
+            (var x, cmdLine) = Init(cmdLine);
+
+            if(packagename == null && platinumdacpac == null)
             {
-                dir = path.FullName;
+                log.LogError("Either an SBM package or DACPAC file is required.");
+                return -1;
             }
-            //Save secrets to KV or create settings file
-            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
-            {
-                var lst = KeyVaultHelper.SaveSecrets(cmdLine);
-                log.LogInformation($"Saved secrets to Azure Key Vault {cmdLine.ConnectionArgs.KeyVaultName}: {string.Join(", ", lst)}");
-            }
-            else
-            {
-                secretsName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secrets.yaml" : $"{prefix}-secrets.yaml");
-                string secrets = ContainerManager.GenerateSecretsYaml(cmdLine);
-                if (!string.IsNullOrWhiteSpace(secrets))
-                {
-                    File.WriteAllText(secretsName, secrets);
-                    log.LogInformation($"Secrets file written to: {secretsName}");
-                }
-                else
-                {
-                    log.LogInformation($"NO secrets are needed, NOT saving secrets yaml to : {secretsName}");
-                }
-            }
-
-            //Create runtime file
-            string runtime = ContainerManager.GenerateRuntimeYaml(cmdLine);
-            var runtimeName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "runtime.yaml" : $"{prefix}-runtime.yaml");
-            File.WriteAllText(runtimeName, runtime);
-            log.LogInformation($"Runtime file written to: {runtimeName}");
-
-            string secretsProvider = ContainerManager.GenerateSecretsProviderYaml(cmdLine);
-            var secretsProviderFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secretProviderClass.yaml" : $"{prefix}-secretProviderClass.yaml");
-            File.WriteAllText(secretsProviderFileName, secretsProvider);
-            log.LogInformation($"Secrets Provider Class file written to: {secretsProviderFileName}");
-
-            string azureIdentity = ContainerManager.GenerateIdentityAndBindingYaml(cmdLine);
-            var azureIdentityFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "podIdentityAndBinding.yaml" : $"{prefix}-podIdentityAndBinding.yaml");
-            File.WriteAllText(azureIdentityFileName, azureIdentity);
-            log.LogInformation($"Identity and Binfing file written to: {azureIdentityFileName}");
-
-            string jobYaml = ContainerManager.GenerateJobYaml(cmdLine);
-            var jobYamlFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "job.yaml" : $"{prefix}-job.yaml");
-            File.WriteAllText(jobYamlFileName, jobYaml);
-            log.LogInformation($"Job Yaml file written to: {jobYamlFileName}");
-
-            var kf = new KubernetesFiles
-            {
-                RuntimeConfigMapFile = runtimeName,
-                SecretsFile = secretsName,
-                SecretsProviderFile = secretsProviderFileName,
-                AzureIdentityFileName = azureIdentityFileName,
-                JobFileName = jobYamlFileName,
-            };
-
-            return Task.Run(() => (kf));
-        }
-
-        internal static async Task<int> KubernetesUp(CommandLineArgs cmdLine, FileInfo Override, FileInfo packagename, FileInfo platinumdacpac, bool force, bool allowObjectDelete, bool unittest, bool stream)
-        {
-            var output = JsonConvert.SerializeObject(cmdLine, Formatting.Indented);
-            log.LogInformation(output);
-
-
             //Save secrets
-            cmdLine.BuildFileName = packagename.FullName;
+            if (packagename != null)
+            {
+                cmdLine.BuildFileName = packagename.FullName;
+            }
             if (platinumdacpac != null)
             {
                 cmdLine.PlatinumDacpac = platinumdacpac.FullName;
             }
             cmdLine.MultiDbRunConfigFileName = Override.FullName;
-            var kubernetesFile = await SaveKubernetesSettings(cmdLine, cmdLine.JobName, new DirectoryInfo(Environment.CurrentDirectory));
-
 
             //Upload 'prep'
-            var runtimeFileInfo = new FileInfo(kubernetesFile.RuntimeConfigMapFile);
-            FileInfo secretsFileInfo = null;
-            if (!string.IsNullOrWhiteSpace(kubernetesFile.SecretsFile))
+            (var retVal, cmdLine) = await UploadKubernetesBuildPackage(cmdLine, null, null, packagename, platinumdacpac, force);
+            if(retVal != 0)
             {
-                secretsFileInfo = new FileInfo(kubernetesFile.SecretsFile);
+                log.LogError("There was a problem uploading the build package to Azure storage");
+                return -1;
             }
-            await UploadKubernetesBuildPackage(secretsFileInfo, runtimeFileInfo, packagename, platinumdacpac, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, force, allowObjectDelete, Override.FullName);
+
+            //Create YAML files
+            var kubernetesFiles = await KubernetesManager.SaveKubernetesYamlFiles(cmdLine, cmdLine.JobName, new DirectoryInfo(Environment.CurrentDirectory));
+            var runtimeFileInfo = new FileInfo(kubernetesFiles.RuntimeConfigMapFile);
+            FileInfo secretsFileInfo = null;
+            bool secretsExist = false;
+            if (!string.IsNullOrWhiteSpace(kubernetesFiles.SecretsFile))
+            {
+                secretsFileInfo = new FileInfo(kubernetesFiles.SecretsFile);
+                secretsExist = true;
+            }
 
             //Enqueue
-            await EnqueueContainerOverrideTargets(secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, Override);
-
-
-            KubectlProcess.ApplyFile(kubernetesFile.AzureIdentityFileName);
-            KubectlProcess.ApplyFile(kubernetesFile.SecretsProviderFile);
-            KubectlProcess.ApplyFile(kubernetesFile.RuntimeConfigMapFile);
-            if(!string.IsNullOrWhiteSpace(kubernetesFile.SecretsFile))
+            retVal = await EnqueueContainerOverrideTargets(cmdLine,secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, Override);
+            if (retVal != 0)
             {
-                KubectlProcess.ApplyFile(kubernetesFile.SecretsFile);
-
+                log.LogError("There was a problem enqueuing the database targest to Service Bus");
+                return -1;
             }
-            KubectlProcess.ApplyFile(kubernetesFile.JobFileName);
+            //Kubernetes apply
+            var success = KubernetesManager.ApplyDeployment(kubernetesFiles);
+            if(!success)
+            {
+                log.LogError("There was a problem deploying to Kubernetes");
+                log.LogInformation("Attempting to clean up Kubernetes resources...");
+                if (cleanupOnFailure)
+                {
+                    await DequeueKubernetesOverrideTargets(cmdLine, secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString);
+                    KubernetesManager.CleanUpKubernetesResource(secretsExist);
+                }
+                return -1;
+            }
+            //Monitor pod creation
+            log.LogInformation("Checking for successful job start...");
+            if (!Kubernetes.KubernetesManager.MonitorForPodStart())
+            {
+                log.LogError("Failed to start Kubernetes jobs. Running clean-up");
+                await DeQueueOverrideTargets(cmdLine);
+                if (cleanupOnFailure)
+                {
+                    KubernetesManager.CleanUpKubernetesResource(secretsExist);
+                }
+                return -1;
+            }
 
-            await MonitorKubernetesRuntimeProgress(secretsFileInfo, runtimeFileInfo, cmdLine, unittest, stream);
+            //Monitor service bus
+            await MonitorKubernetesRuntimeProgress(cmdLine, secretsFileInfo, runtimeFileInfo, unittest, stream);
+
+            //Clean-up
+            log.LogInformation("Cleaning up Kubernetes resources...");
+            KubernetesManager.CleanUpKubernetesResource(secretsExist);
             return 0;
         }
-
+        internal static async Task<int> SaveKubernetesYamlFiles(CommandLineArgs cmdLine,DirectoryInfo path, string prefix, FileInfo packagename, FileInfo platinumdacpac, bool force)
+        {
+            (var x, cmdLine) = Init(cmdLine);
+            if (packagename != null)
+            {
+                cmdLine.BuildFileName = packagename.FullName;
+            }
+            if (platinumdacpac != null)
+            {
+                cmdLine.PlatinumDacpac = platinumdacpac.FullName;
+            }
+            await KubernetesManager.SaveKubernetesYamlFiles(cmdLine, prefix, path);
+            return 0;
+        }
         #region .: Helper Processes :.
         internal static int CreateDacpac(CommandLineArgs cmdLine)
         {
@@ -1751,17 +1782,8 @@ namespace SqlBuildManager.Console
             return 0;
         }
 
-        private static (bool, CommandLineArgs) ValidateContainerQueueArgs(FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, CommandLineArgs cmdLine)
+        private static (bool, CommandLineArgs) ValidateContainerQueueArgs(CommandLineArgs cmdLine, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection)
         {
-            if (runtimeFile != null)
-            {
-                cmdLine = ContainerManager.GetArgumentsFromRuntimeFile(runtimeFile.FullName, cmdLine);
-            }
-
-            if (secretsFile != null)
-            {
-                cmdLine = ContainerManager.GetArgumentsFromSecretsFile(secretsFile.FullName, cmdLine);
-            }
 
             cmdLine.KeyVaultName = keyvaultname;
             bool kvSuccess;
@@ -1794,14 +1816,22 @@ namespace SqlBuildManager.Console
 
             return (true, cmdLine);
         }
-        internal static async Task<int> EnqueueContainerOverrideTargets(FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, FileInfo Override)
+        internal static async Task<int> EnqueueContainerOverrideTargets(CommandLineArgs cmdLine, FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, FileInfo Override)
         {
             bool valid;
-            CommandLineArgs cmdLine = new CommandLineArgs();
-            (valid, cmdLine) = ValidateContainerQueueArgs(secretsFile, runtimeFile, keyvaultname, jobname, concurrencytype, servicebustopicconnection, cmdLine);
-            if (!valid)
+            if (cmdLine == null)
             {
-                return 1;
+                cmdLine = new CommandLineArgs();
+            }
+            (var x, cmdLine) = Init(cmdLine);
+            if (secretsFile != null && runtimeFile != null)
+            {
+                cmdLine = KubernetesManager.SetCmdLineArgsFromSecretsAndConfigmap(cmdLine, secretsFile.Name, runtimeFile.Name);
+                (valid, cmdLine) = ValidateContainerQueueArgs(cmdLine, keyvaultname, jobname, concurrencytype, servicebustopicconnection);
+                if (!valid)
+                {
+                    return 1;
+                }
             }
             //TODO: validate jobname format
 
@@ -2519,6 +2549,8 @@ namespace SqlBuildManager.Console
                 log.LogInformation($"SBM file extracted to: {Path.GetFullPath(directory.FullName)}");
             }
         }
+
+       
 
         internal class StartArgs
         {

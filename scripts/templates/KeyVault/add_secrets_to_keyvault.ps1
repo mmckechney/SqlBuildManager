@@ -59,7 +59,6 @@ if("" -ne $eventhubNamespaceName)
 {
     $keyName = "EventHubConnectionString"
     Write-Host "Adding $keyName to $keyVaultName" -ForegroundColor DarkGreen
-    $eventHubName = az eventhubs eventhub list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName -o tsv --query "[?contains(@.name '$prefix')].name"
     $eventHubAuthRuleName = az eventhubs eventhub authorization-rule list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName --eventhub-name $eventHubName -o tsv --query [].name
     $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list --resource-group $resourceGroupName --namespace-name $eventHubNamespaceName --eventhub-name $eventHubName --name $eventHubAuthRuleName -o tsv --query "primaryConnectionString"
     az keyvault secret set --value $eventHubConnectionString --vault-name $keyVaultName --name $keyName -o tsv --query "name"

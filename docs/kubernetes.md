@@ -6,7 +6,8 @@
   - [Container Image](#container-image)
   - [Environment Setup](#environment-setup)
   - [Basic Overview](#basic-overview)
-- [Example and How To](#example-and-how-to)
+- [Example and How To: Single-step](#example-and-how-to-single-step)
+- [Example and How To: Multi-step](#example-and-how-to-multi-step)
 
 ----
 
@@ -42,25 +43,17 @@ It is recommended that you can create the resources via the included PowerShell 
 
 ### Basic Overview
 
-The standard deployment definition for SQL Build Manger (see [sample_deployment.yaml](../scripts/templates/kubernetes/sample_deployment.yaml)) mounts two volumes - one for [secrets](../scripts/templates/kubernetes/sample_secrets.yaml) named `sbm` and one for [runtime configuration](../scripts/templates/kubernetes/sample_runtime_configmap.yaml) named `runtime`. The secrets files contains the Base64 encoded values for your connection strings and passwords while the runtime configuration contains the parameters that will be used to execute the build. Both of these should be deployed to Kubernetes prior to creating your pods. You can easily create the full `secrets.yaml` file and a template of your `runtime.yaml` file by using the following command. You can instead use [create_aks_secrets_and_runtime_files.ps1](../scripts/templates/kubernetes/create_aks_secrets_and_runtime_files.ps1) to automate the collection of secrets and creation of these files. Before you `kubetcl apply` the `runtime.yaml` file, you will need to add the `PackageName` and `JobName` values - this can be done for you with the [`sbm prep` command below](#2-upload-your-sbm-package-file-to-your-storage-account)
+**With version 14.5+, Kubernetes deployment has been greatly simplified and consolidated into a single `sbm k8s run` command.** The following stepwise manual YAML file deployment is still available if you need more control than offered by the one step method
 
-``` bash
-sbm k8s savesettings  -u "<sql username>" -p <sql password> --storageaccountname "<storage acct name>" --storageaccountkey "<storage acct key>"  -eh "<event hub connection string>" -sb "<service bus topic connection string>"--concurrency "<int value>" --concurrencytype "<Count|Server|MaxServer>"
-```
-
-If you plan on leveraging Azure Key Vault to manage your secrets, you can skip the `sbm k8s savesettings` step. Instead, you should run these two PowerShell scripts to create the two Kubernetes config files and to save the secrets to Key Vault.
-- [create_aks_keyvault_config.ps1](../scripts/templates/kubernetes/create_aks_keyvault_config.ps1) - to create `podIdentityAndBinding.yaml` and `secretProviderClass.yaml` 
-- [add_secrets_to_keyvault.ps1](../scripts/templates/KeyVault/add_secrets_to_keyvault.ps1) - save secrets to Azure Key Vault
-
-``` PowerShell
-#create the config files, with the appropriate settings added
-create_aks_keyvault_config.ps1 -path "<path to save the files>" -resourceGroupName "<resource group with the KV and identity>" -keyVaultName "<name of Key Vault>" -identityName "<managed identity name"
-
-#will extact the needed secrets from the resources and save them in Key Vault
-add_secrets_to_keyvault.ps1  -path "<path to sql pw file>" -resourceGroupName "<resource group with your resources>"  -keyVaultName "<name of Key Vault>" -batchAccountName "<name of Batch Account>" -storageAccountName "<name of Storage Account>" -eventHubNamespaceName "<name of Event Hub Namespace>" -serviceBusNamespaceName "<name of Service Bus Namespace>"-sqlUserName "<sql username>" -sqlPassword "<sql password>"
+#### One step deployment
 
 
-```
+
+
+#### Step-wise deployment
+
+The standard deployment definition for SQL Build Manger (see [sample_job.yaml](../scripts/templates/kubernetes/sample_job.yaml)) mounts two volumes - one for [secrets](../scripts/templates/kubernetes/sample_secrets.yaml) named `sbm` and one for [configmap runtime configuration](../scripts/templates/kubernetes/sample_runtime_configmap.yaml) named `runtime`. The secrets files contains the Base64 encoded values for your connection strings and passwords while the runtime configuration contains the parameters that will be used to execute the build. Both of these should be deployed to Kubernetes prior to creating your pods. Before you `kubetcl apply` the `runtime.yaml` file, you will need to add the `PackageName` and `JobName` values - this can be done for you with the [`sbm prep` command below](#3-upload-your-sbm-package-file-to-your-storage-account)
+
 
 
 Once the pods are deployed, they will start up as `k8s worker` by:
@@ -73,10 +66,32 @@ Once the pods are deployed, they will start up as `k8s worker` by:
 If there are messages on the Service Bus Topic that match the `JobName` from the runtime config, it will start processing those messages and log its progress to the Event Hub. Once complete, it will wait for more messages matching the `JobName` on the Service Bus Topic until the pod is terminated.
 
 ----
+## Example and How To: Single-step
+To allow SQL Build Manager to handle all steps, you can leverage the `sbm k8s run` command which will leverage a settings file and/or command line arguments. It is recommended to use a settings file, to make things easier
 
-## Example and How To
+### 1. Save Settings
 
-### 0. Remove pre-existing pods
+The example below show secrets stored in the settings file. You can also leverage [Key Vault to store secrets](keyvault.md) by providing a `--keyvaultname` value or leverage [Managed Identity](managed_identity.md) with `--clientid`, `--identityname`, `--identityresourcegroup`, `--tenantid`, `--subscriptionid`
+
+``` bash 
+sbm k8s savesettings --settingsfile "<settings file name>" --settingsfilekey "<settings file key name>" 
+--imagename "<container image name>"--imagetag "<image tag>" --registry "<container registry>"
+--storageaccountname "<Storage Account Name>" --storageaccountkey "<Storage Account Key>" 
+--eh "<Event hub connection string>" --sb "<Event hub connection string>" 
+--username "<Db username>"  --password "<Db password>"  
+```
+
+### 2. Execute the build:
+
+Just the one command will orchestrate each of the steps, including making the `kubectl` calls for you. You do need to have `kubectl` in the path and you will need to be authenticated against the target Kubernetes cluster
+
+``` bash 
+sbm k8s run --settingsfile "<settings file name>" --settingsfilekey "<settings file key name>" --jobname "<job name>" --override "<override file>" --packagename "<sbm file name>"
+```
+
+## Example and How To: Multi-step
+
+### 1. Remove pre-existing pods
 
 Each Kubernetes job is specific to particular settings (secrets, jobname and package file). To ensure the running pods are configured properly and ready to pull Service Bus Topic messages, you will need to remove any existing pods. **_This is true even if you are running the same build twice since the pods are deactivated after a run._**
 
@@ -85,29 +100,31 @@ az login  #establish a connection to your Azure account
 kubectl delete job sqlbuildmanager
 ```
 
-### 1. Save the common settings to the config files
+### 2. Save the common settings to the config files
 
-As explained above in the [Basic Overview](#basic-overview) the pods leverage both secrets and runtime configmap values. This command will create those files for you. For ease of use, these files will also be leveraged in subsequent `sbm k8s` commands so you don't have to keep typing in all of the options again and again.
+As explained above in the [Basic Overview](#basic-overview) the pods leverage both secrets and runtime configmap values. These commands will create those files for you. For ease of use, these files will also be leveraged in subsequent `sbm k8s` commands so you don't have to keep typing in all of the options again and again.
 
 ``` bash
 sbm k8s savesettings  -u "<sql username>" -p "<sql password>" --storageaccountname "<storage acct name>" --storageaccountkey "<storage acct key>"  -eh "<event hub connection string>" -sb "<service bus topic connection string>"--concurrency "<int value>" --concurrencytype "<Count|Server|MaxServer>"
-```
+
+sbm k8s createyaml --settingsfile "<setting file name>" --settingsfilekey "<setting file key name>" --path "<dir to save files>" --prefix "prefix" --jobname "<name of build>" -packagename "<sbm file name>" --imagename "<container image name>"--imagetag "<image tag>" --registry "<container registry>"
+```    
 **Alternatively use the Key Vault PowerShell commands as highlighted above**
-### 2. Upload your SBM Package file to your storage account
+### 3. Upload your SBM Package file to your storage account
 
 The Kubernetes pods retrieve the build package from Azure storage, this command will create a storage container with the name of the `--jobname` (it will be lower cased and any invalid characters removed) and upload the SBM file to the new container. If you provide the `--runtimefile` value for the runtime YAML file, it will also update the `PackageName` and `JobName` values of the YAML file for you.
 
 ``` bash
 # For job using local secrets
-sbm k8s prep --secretsfile "secrets.yaml" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
+sbm k8s prep --settingsfile "<setting file name>" --settingsfilekey "<setting file key name>" --secretsfile "secrets.yaml" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
 ```
 
 ``` bash
 # For job using Key Vault secrets
-sbm k8s prep --keyvaultname "<key vault name>" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
+sbm k8s prep --settingsfile "<setting file name>" --settingsfilekey "<setting file key name>" --keyvaultname "<key vault name>" --runtimefile "runtime.yaml" --jobname "Build1234" --packagename "db_update.sbm"
 ```
 
-### 3. Queue up the override targets in Service Bus
+### 4. Queue up the override targets in Service Bus
 
 You can use the saved settings files created by `sbm k8s savesettings` or use the `--concurrencytype`,  `--servicebustopicconnection` and `--jobname` arguments.
 
@@ -115,15 +132,15 @@ You can use the saved settings files created by `sbm k8s savesettings` or use th
 
 ``` bash
 # For job using local secrets
-sbm k8s enqueue --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
-````
+sbm k8s enqueue --settingsfile "<setting file name>" --settingsfilekey "<setting file key name>" --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
+```
 
 ``` bash
 # For job using Key Vault secrets
-sbm k8s enqueue --keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
+sbm k8s enqueue --settingsfile "<setting file name>" --settingsfilekey "<setting file key name>" --keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 
-### 4. Deploy the pods to Kubernetes Job
+### 5. Deploy the pods to Kubernetes Job
 
 Leveraging the `kubetcl` command line interface, run the `apply` commands for the `secrets.yaml` (this will upload the values for the connection to Azure Service Bus, Event Grid, Storage and databases) and `runtime.yaml` (this will upload the values for the build package name, job name and runtime concurrency options).  Next apply the `deployment.yaml` to create the pods
 
@@ -160,23 +177,23 @@ sqlbuildmanager-79fd65cf45-vrfgt   1/1     Running   0          10m
 sqlbuildmanager-79fd65cf45-wg2c9   1/1     Running   0          10m
 ```
 
-### 5. Monitor the progress and look for errors
+### 6. Monitor the progress and look for errors
 
 This command will monitor the number of messages left in the Service Bus Topic and also monitor the Event Hub for error and commit messages.
 
 ``` bash
 # For job using local secrets
-sbm k8s monitor --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
+sbm k8s monitor --settingsfile "<setting file name>" --settingsfilekey "<setting file key name>" --secretsfile "<secrets.yaml file>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 
 ``` bash
 # For job using Key Vault secrets
-sbm k8s monitor --keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
+sbm k8s monitor --settingsfile "<setting file name>" --settingsfilekey "<setting file key name>"--keyvaultname "<key vault name>" --runtimefile "<runtime.yaml file>"  --override "<override.cfg file>"
 ```
 
 The `--override` argument is not necessary, it will allow the monitor to track the target database count and stop monitoring when all targets have been processed. 
 
  All of the run logs will be transferred from the pods to the storage container specified in the `jobname` argument. When monitoring is complete, it will output a Blob container SAS token that you can use in [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) to easily view the logs.
 
- **IMPORTANT:** After the `sbm k8s monitor` completes, as part of the clean-up, it will remove the Service Bus Topic associated with the build. This will deactivate the running pods so all subsequent run will need to be reset as [specified above](#0-remove-pre-existing-pods).
+ **IMPORTANT:** After the `sbm k8s monitor` completes, as part of the clean-up, it will remove the Service Bus Topic associated with the build. This will deactivate the running pods so all subsequent run will need to be reset as [specified above](#1-remove-pre-existing-pods).
 

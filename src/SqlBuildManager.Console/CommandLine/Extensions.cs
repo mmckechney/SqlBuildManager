@@ -190,6 +190,14 @@ namespace SqlBuildManager.Console.CommandLine
             }
             return args.ToArray();
         }
+
+        public static void AddRange(this Command cmd, List<Option> options)
+        {
+            foreach(var opt in options)
+            {
+                cmd.Add(opt);
+            }
+        }
         public static string Quoted(this string str)
         {
             return "\"" + str + "\"";

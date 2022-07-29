@@ -6,14 +6,13 @@ param
     [ValidateSet("BuildOnly", "UploadOnly", "BuildAndUpload")]
     [string] $action = "BuildAndUpload"
 )
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName = "$prefix-rg"
-}
+#############################################
+# Get set resource name variables from prefix
+#############################################
+. ./../prefix_resource_names.ps1 -prefix $prefix
+
 Write-Host "Build and Upload Batch from prefix: $prefix" -ForegroundColor Cyan
 Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
-
-$batchAccountName = az batch account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using batch account name: $batchAccountName"  -ForegroundColor DarkGreen
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path

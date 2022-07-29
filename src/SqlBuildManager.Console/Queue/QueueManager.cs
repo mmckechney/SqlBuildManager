@@ -158,7 +158,7 @@ namespace SqlBuildManager.Console.Queue
                 //Confirm message count in Queue 
                 int retry = 0;
                 var activeMessages = await MonitorServiceBustopic(cType);
-                while(activeMessages != count && retry < 4 )
+                while(activeMessages < count && retry < 4 )
                 {
                     Thread.Sleep(1000);
                     activeMessages = await MonitorServiceBustopic(cType);
@@ -596,13 +596,14 @@ namespace SqlBuildManager.Console.Queue
                     });
                 });
                
-                       log.LogDebug($"Filter named {jobName} has been added for subscription `{subName}`.");
+                log.LogDebug($"Filter named {jobName} has been added for subscription `{subName}`.");
             }
             catch (Exception ex)
             {
                 if (ex.Message.Contains("already exists"))
                 {
                     log.LogInformation($"The subscription filter '{jobName}' already exists");
+                    this._adminClient = null;
                 }
                 else
                 {

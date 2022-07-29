@@ -5,18 +5,14 @@ param
     [bool] $includeContainerRegistry
 )
 Write-Host "Create AKS cluster"  -ForegroundColor Cyan
-if("" -eq  $resourceGroupName)
-{
-    $resourceGroupName = "$($prefix)-rg"
-}
-$aksClusterName = $prefix + "aks"
-$keyVaultName = $prefix + "keyvault"
-$userAssignedIdentity = $prefix + "identity"
-$aksVnet = $prefix + "vnet"
+
+#############################################
+# Get set resource name variables from prefix
+#############################################
+. ./../prefix_resource_names.ps1 -prefix $prefix
+
 $aksSubnet = "akssubnet"
 $virtualKubletSubnet = "virtualnodesubnet"
-$containerRegistryName = $prefix + "containerregistry"
-$nsgName = $prefix + "nsg"
 
 Write-Host "Making sure container provider is registered" -ForegroundColor DarkGreen
 az feature register --name EnablePodIdentityPreview --namespace Microsoft.ContainerService  -o table
@@ -84,17 +80,18 @@ $userAssignedClientId = az identity show --resource-group $resourceGroupName --n
 if($null -eq $userAssignedClientId)
 {
     Write-Host "Creating user assigned identity for: $aksClusterName" -ForegroundColor DarkGreen
-    $userAssignedClientId = az identity create -g $resourceGroupName -n $userAssignedIdentity -o tsv --query "clientId"
+    $userAssignedClientId = az identity create --resource-group $resourceGroupName --name $userAssignedIdentity -o tsv --query "clientId"
 }
 
 # Assign identity to the AKS VM Scale set
-$vmScaleSetName = az vmss list -g $nodeResourceGroup -o tsv --query [].name
+#$vmScaleSetName = az vmss list -g $nodeResourceGroup -o tsv --query [].name
+$vmScaleSetName = az resource list --resource-group $nodeResourceGroup -o tsv --query "[?type=='Microsoft.Compute/virtualMachineScaleSets'].name"
 Write-Host "Assign identity to the AKS VM Scale set: $vmScaleSetName used by $aksClusterName" -ForegroundColor DarkGreen
 $identityResourceId = az identity show --resource-group $resourceGroupName --name $userAssignedIdentity -o tsv --query "id"
 az vmss identity assign  --name $vmScaleSetName --resource-group $nodeResourceGroup --identities $identityResourceId -o table
 
 # Set Policy
 Write-Host "Setting Key Vault policy for : $keyVaultName" -ForegroundColor DarkGreen
-az keyvault set-policy -n $keyVaultName --secret-permissions get --spn $userAssignedClientId -o table
-az keyvault set-policy -n $keyVaultName --key-permissions get --spn $userAssignedClientId -o table
-az keyvault set-policy -n $keyVaultName --certificate-permissions get --spn $userAssignedClientId -o table
+az keyvault set-policy --name $keyVaultName --resource-group $resourceGroupName --secret-permissions get --spn $userAssignedClientId -o table
+az keyvault set-policy --name $keyVaultName --resource-group $resourceGroupName --key-permissions get --spn $userAssignedClientId -o table
+az keyvault set-policy --name $keyVaultName --resource-group $resourceGroupName --certificate-permissions get --spn $userAssignedClientId -o table

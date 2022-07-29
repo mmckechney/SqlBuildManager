@@ -4,6 +4,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -433,10 +434,12 @@ namespace SqlBuildManager.Console.CommandLine
             public string IdentityName { get; set; } = string.Empty;
             public string ClientId { get; set; } = string.Empty;
             public string PrincipalId { get; set; } = string.Empty;
+            [JsonIgnore]
             public string ResourceId
             {
                 get
                 {
+                    if (_resourceid == null) _resourceid = String.Empty;
                     if (!_resourceid.StartsWith("/subscriptions") && !string.IsNullOrEmpty(IdentityName) && !string.IsNullOrEmpty(ResourceGroup) && !string.IsNullOrEmpty(SubscriptionId))
                     {
                         _resourceid = $"/subscriptions/{SubscriptionId}/resourcegroups/{ResourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{IdentityName}";

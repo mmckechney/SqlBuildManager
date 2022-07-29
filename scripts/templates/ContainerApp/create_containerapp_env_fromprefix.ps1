@@ -5,18 +5,14 @@ param
     [string] $prefix,
     [string] $resourceGroupName
 )
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName = "$prefix-rg"
-}
+#############################################
+# Get set resource name variables from prefix
+#############################################
+. ./../prefix_resource_names.ps1 -prefix $prefix
+
 Write-Host "Create Container App Environment from prefix: $prefix"  -ForegroundColor Cyan
-$containerAppEnvName = $prefix + "containerappenv"
 Write-Host "Using Container App Environment name: '$containerAppEnvName'"  -ForegroundColor Green
-
-$logAnalyticsWorkspace = $prefix + "loganalytics"
 Write-Host "Using Log Analytics workspace name: '$logAnalyticsWorkspace'"  -ForegroundColor Green
-
-$containerRegistryName = $prefix + "containerregistry"
 Write-Host "Using Container Registry name: '$containerRegistryName'"  -ForegroundColor Green
 
 $location =  az group show -n $resourceGroupName -o tsv --query location

@@ -68,15 +68,9 @@ Deploys an AKS cluster and associates it with the appropriate user assigned Mana
 
 ----
 
-### create_aks_keyvault_config_fromprefix.ps1
+### create_aks_settingsfile_fromprefix.ps1
 
-Creates the `podIdentityAndBinding.yaml` and `secretProviderClass.yaml` configuration files with the details from the Key Vault and Managed Identity found in  the specified resource group with the matching $prefix values.  To specify your own resource names, use `create_aks_keyvault_config.ps1`
-
-----
-
-### create_aks_secrets_and_rutime_files_fromprefix.ps1
-
-Creates the `secrets.yaml` and `runtime.yaml` file used by a Kubernetes build  that include the secrets and values for the Azure resources created in the target resource group with the target name prefix. To specify your own resource names, use `ccreate_aks_secrets_and_rutime_files.ps1`
+Creates `settingsfile-k8s.*.json` files that include all of the information used to execute Kubernetes builds for resources matching the $prefix values. To specify your own resource names, use `create_aks_settingsfile.ps1`
 
 ----
 

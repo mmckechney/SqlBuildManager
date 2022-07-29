@@ -33,17 +33,17 @@ $prefix,
  
  )
 
+#############################################
+# Get set resource name variables from prefix
+#############################################
+. ./prefix_resource_names.ps1 -prefix $prefix
+
  if($false -eq (Test-Path  $outputPath))
  {
     New-Item -Path $outputPath -ItemType Directory
  }
 $outputPath = Resolve-Path $outputPath
 Write-Host "Will be saving output files to $outputPath" -ForegroundColor Green
-
-#################
-# Variables Setup
-#################
-$resourceGroupName = $prefix + "-rg"
 
 ################
 # Resource Group
@@ -61,6 +61,8 @@ az deployment group create --resource-group $resourceGroupName --template-file a
 # Set Identity privs
 ####################
  ./ManagedIdentity/set_managedidentity_rbac_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName
+
+ ./ManagedIdentity/set_current_user_rbac_fromprefix.ps1 -prefix $prefix 
 
 #################
 # Batch
@@ -80,7 +82,7 @@ else
 if($deployContainerRegistry)
 {
     ./ContainerRegistry/create_container_registry_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix
-    ./ContainerRegistry/build_container_registry_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix
+    ./ContainerRegistry/build_container_registry_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -wait $false
 }
 #################
 # AKS
@@ -113,6 +115,7 @@ else
 if($testDatabaseCount -gt 0)
 {
    ./Database/create_databases_from_prefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path  $outputPath -testDatabaseCount $testDatabaseCount
+   ./Database/create_login_for_managedidentity_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path  $outputPath
 }
 else 
 {
@@ -146,20 +149,10 @@ $sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\net6.0\sbm.
 if($deployAks)
 {
     ##############################
-    # Create AKS Key Vault configs
+    # Create AKS Settings files
     ##############################
-    ./kubernetes/create_aks_keyvault_config_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
-
-    ##################################
-    # Secrets and Runtime File for AKS
-    ##################################
-    ./kubernetes/create_aks_secrets_and_runtime_files_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
-
-    #############################################
-    # Copy sample K8s YAML files for test configs
-    #############################################
-    ./kubernetes/create_aks_job_yaml_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
-}
+    ./kubernetes/create_aks_settingsfile_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+ }
 
 #################################
 # Settings File for Container App
