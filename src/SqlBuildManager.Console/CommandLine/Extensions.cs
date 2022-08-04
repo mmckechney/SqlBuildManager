@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.CommandLine;
-using System.Linq;
 using System.Globalization;
-using System.IO;
-using Microsoft.SqlServer.Management.Smo;
-using Microsoft.SqlServer.TransactSql.ScriptDom;
+using System.Linq;
+using System.Text;
+
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -14,7 +12,13 @@ namespace SqlBuildManager.Console.CommandLine
     {
         public static string ToStringExtension(this object obj, StringType toStringType)
         {
-            StringBuilder sb = new StringBuilder();
+            var args = obj.ToArgs(toStringType);
+            return string.Join(" ", args);
+        }
+
+        public static string[] ToArgs(this object obj, StringType toStringType = StringType.Basic)
+        {
+            List<string> args = new List<string>();
             foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
             {
                 if (!property.CanRead || (property.GetValue(obj) == null || string.IsNullOrWhiteSpace(property.GetValue(obj).ToString())))
@@ -29,28 +33,37 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     if (property.GetValue(obj) != null && toStringType == StringType.Basic)
                     {
-                        sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
+                        args.AddRange(property.GetValue(obj).ToArgs(toStringType));
                     }
                 }
+                else if (property.PropertyType == typeof(CommandLineArgs.Batch))
+                {
+
+                    if (property.GetValue(obj) != null)
+                    {
+                        args.AddRange(property.GetValue(obj).ToArgs(toStringType));
+                    }
+                    break;
+
+                }
                 else if (property.PropertyType == typeof(CommandLineArgs.DacPac) ||
-                         property.PropertyType == typeof(CommandLineArgs.Batch) ||
                          property.PropertyType == typeof(CommandLineArgs.Identity))
                 {
                     if (property.GetValue(obj) != null)
                     {
-                        sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
+                        args.AddRange(property.GetValue(obj).ToArgs(toStringType));
                     }
                 }
                 else if (property.PropertyType == typeof(CommandLineArgs.Authentication)) //Special case if Key Vault is specified
                 {
-                    if(obj is CommandLineArgs)
+                    if (obj is CommandLineArgs)
                     {
                         var cmd = (CommandLineArgs)obj;
-                        if(string.IsNullOrWhiteSpace(cmd.ConnectionArgs.KeyVaultName))
+                        if (string.IsNullOrWhiteSpace(cmd.ConnectionArgs.KeyVaultName))
                         {
                             if (property.GetValue(obj) != null)
                             {
-                                sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
+                                args.AddRange(property.GetValue(obj).ToArgs(toStringType));
                             }
                         }
 
@@ -61,16 +74,16 @@ namespace SqlBuildManager.Console.CommandLine
                     if (property.GetValue(obj) != null)
                     {
                         var conArgs = (CommandLineArgs.Connections)property.GetValue(obj);
-                        if(!string.IsNullOrWhiteSpace(conArgs.KeyVaultName))
+                        if (!string.IsNullOrWhiteSpace(conArgs.KeyVaultName))
                         {
-                            if (sb.ToString().IndexOf("--keyvaultname") == -1)
+                            if (!args.Contains("--keyvaultname"))
                             {
-                                sb.Append($"--keyvaultname \"{conArgs.KeyVaultName}\" ");
+                                args.AddRange(new string[] { "--keyvaultname", conArgs.KeyVaultName.Quoted() });
                             }
                         }
                         else
                         {
-                            sb.Append(property.GetValue(obj).ToStringExtension(toStringType));
+                            args.AddRange(property.GetValue(obj).ToArgs(toStringType));
                         }
                     }
                 }
@@ -79,13 +92,14 @@ namespace SqlBuildManager.Console.CommandLine
                     switch (property.Name)
                     {
                         case "AuthenticationType":
-                            sb.Append("--authtype \"" + property.GetValue(obj).ToString() + "\" ");
+                            args.AddRange(new string[] { "--authtype", property.GetValue(obj).ToString().Quoted() });
                             break;
 
                         case "SettingsFile":
                             if (toStringType == StringType.Basic)
                             {
-                                sb.Append("--settingsfile \"" + property.GetValue(obj).ToString() + "\" ");
+                                //TODO: do we need this?
+                                //args.AddRange(new string[] { "--settingsfile", property.GetValue(obj).ToString().Quoted() });
                             }
                             break;
 
@@ -98,30 +112,30 @@ namespace SqlBuildManager.Console.CommandLine
                             }
                             else
                             {
-                                sb.Append("--override \"" + property.GetValue(obj).ToString() + "\" ");
+                                args.AddRange(new string[] { "--override ", property.GetValue(obj).ToString().Quoted() });
                             }
                             break;
 
                         case "BuildFileName":
-                            sb.Append("--packagename \"" + property.GetValue(obj).ToString() + "\" ");
+                            args.AddRange(new string[] { "--packagename", property.GetValue(obj).ToString().Quoted() });
                             break;
 
                         case "EventHubConnectionString":
-                            sb.Append("--eventhubconnection \"" + property.GetValue(obj).ToString() + "\" ");
+                            args.AddRange(new string[] { "--eventhubconnection", property.GetValue(obj).ToString().Quoted() });
                             break;
 
                         case "ServiceBusTopicConnectionString":
-                            sb.Append("--servicebustopicconnection \"" + property.GetValue(obj).ToString() + "\" ");
+                            args.AddRange(new string[] { "--servicebustopicconnection", property.GetValue(obj).ToString().Quoted() });
                             break;
                         case "ResourceGroup":
-                            if(obj.GetType() == typeof(CommandLineArgs.Identity))
+                            if (obj.GetType() == typeof(CommandLineArgs.Identity))
                             {
-                               sb.Append($"--identityresourcegroup \"{property.GetValue(obj).ToString()}\" ");
-                                
+                                args.AddRange(new string[] { "--identityresourcegroup", property.GetValue(obj).ToString().Quoted() });
+
                             }
                             else
                             {
-                                sb.Append($"--resourcegroup \"{property.GetValue(obj).ToString()}\" ");
+                                args.AddRange(new string[] { "--resourcegroup", property.GetValue(obj).ToString().Quoted() });
                             }
                             break;
                         case "BatchJobName": //Ignore this because it will be counted as a duplicate for JobName
@@ -136,35 +150,36 @@ namespace SqlBuildManager.Console.CommandLine
                             break;
 
                         default:
+
                             if (property.PropertyType == typeof(bool))
                             {
                                 if (property.Name == "PollBatchPoolStatus" && (toStringType == StringType.Batch))
                                 {
                                     continue;
                                 }
-                                if(property.Name == "Decrypted" && (toStringType == StringType.Batch))
+                                if (property.Name == "Decrypted" && (toStringType == StringType.Batch))
                                 {
                                     continue;
                                 }
                                 if (bool.Parse(property.GetValue(obj).ToString()) == true) //ignore anything not set
                                 {
-                                    sb.Append("--" + property.Name.ToLower() + " true ");
+                                    args.AddRange(new string[] { $"--{property.Name.ToLower()}", "true" });
                                 }
                             }
                             else if (property.PropertyType == typeof(string))
                             {
-                                sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
+                                args.AddRange(new string[] { $"--{property.Name.ToLower()}", property.GetValue(obj).ToString().Quoted() });
                             }
                             else
                             {
                                 double num;
                                 if (double.TryParse(property.GetValue(obj).ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out num))
                                 {
-                                    sb.Append("--" + property.Name.ToLower() + " " + property.GetValue(obj).ToString() + " ");
+                                    args.AddRange(new string[] { $"--{property.Name.ToLower()}", property.GetValue(obj).ToString() });
                                 }
                                 else
                                 {
-                                    sb.Append("--" + property.Name.ToLower() + " \"" + property.GetValue(obj).ToString() + "\" ");
+                                    args.AddRange(new string[] { $"--{property.Name.ToLower()}", property.GetValue(obj).ToString().Quoted() });
                                 }
                             }
                             break;
@@ -173,9 +188,20 @@ namespace SqlBuildManager.Console.CommandLine
                 }
 
             }
-            return sb.ToString();
+            return args.ToArray();
         }
 
+        public static void AddRange(this Command cmd, List<Option> options)
+        {
+            foreach(var opt in options)
+            {
+                cmd.Add(opt);
+            }
+        }
+        public static string Quoted(this string str)
+        {
+            return "\"" + str + "\"";
+        }
         public static Option<T> Copy<T>(this Option<T> opt, bool required)
         {
 

@@ -7,18 +7,29 @@ using System.Threading.Tasks;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
-namespace SqlBuildManager.Console.Kubernetes
+namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
-    public class RuntimeYaml
+    public class ConfigmapYaml
     {
+        [YamlIgnore()]
+        public static string Name { get; set; } = "runtime-properties";
+        [YamlIgnore()]
+        public static string Kind { get { return "ConfigMap"; } }
+
+        [YamlMember(Order = 1)]
         public string apiVersion = "v1";
-        public string kind = "ConfigMap";
+
+        [YamlMember(Order = 2)]
+        public string kind { get { return Kind; } }
+
+        [YamlMember(Order = 3)]
         public Dictionary<string, string> metadata = new Dictionary<string, string>
             {
-             { "name", "runtime-properties" }
+             { "name", Name }
             };
 
-        public RuntimeData data = new Kubernetes.RuntimeData();
+        [YamlMember(Order = 4)]
+        public RuntimeData data = new RuntimeData();
 
     }
     public class RuntimeData
@@ -47,6 +58,6 @@ namespace SqlBuildManager.Console.Kubernetes
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
         public string EventHubConnectionString { get; set; } = null;
         public string StorageAccountName { get; set; } = null;
-     
+
     }
 }

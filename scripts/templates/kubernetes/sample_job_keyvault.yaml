@@ -12,6 +12,8 @@ spec:
         jobgroup: sqlbuildmanager
         aadpodidbinding: azure-pod-identity-binding-selector
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
       containers:
       - name: sqlbuildmanager
         image: blueskydevus/sqlbuildmanager:latest-vNext

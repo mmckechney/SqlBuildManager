@@ -4,19 +4,32 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+using YamlDotNet.Serialization;
 
-namespace SqlBuildManager.Console.Kubernetes
+namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     public class SecretYaml
     {
+
+        [YamlIgnore()]
+        public static string Name { get; set; } = "connection-secrets";
+        [YamlIgnore()]
+        public static string Kind { get { return "Secret"; } }
+
+        [YamlMember(Order = 1)]
         public string apiVersion = "v1";
-        public string kind = "Secret";
+
+        [YamlMember(Order = 2)]
+        public string kind { get { return Kind; } }
+        [YamlMember(Order = 3)]
         public Dictionary<string, string> metadata = new Dictionary<string, string>
             {
-             { "name", "connection-secrets" }
+             { "name", Name }
             };
+        [YamlMember(Order = 4)]
         public string type = "Opaque";
-        public SecretsData data = new Kubernetes.SecretsData();
+        [YamlMember(Order = 5)]
+        public SecretsData data = new SecretsData();
 
     }
     public class SecretsData

@@ -39,21 +39,21 @@ if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($
     $haveSqlInfo = $false
 }
 
-Write-Host "Retrieving keys from resources in $resourceGroupName... Storage" -ForegroundColor DarkGreen
+Write-Host "Retrieving keys from resources in $resourceGroupName... $storageAccountName" -ForegroundColor DarkGreen
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
 
-Write-Host "Retrieving keys from resources in $resourceGroupName... Event Hub" -ForegroundColor DarkGreen
+Write-Host "Retrieving keys from resources in $resourceGroupName... $eventhubNamespaceName $eventHubName" -ForegroundColor DarkGreen
 $eventHubName = az eventhubs eventhub list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName -o tsv --query "[?contains(@.name '$prefix')].name"
 $eventHubAuthRuleName = az eventhubs eventhub authorization-rule list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName --eventhub-name $eventHubName -o tsv --query [].name
 $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list --resource-group $resourceGroupName --namespace-name $eventHubNamespaceName --eventhub-name $eventHubName --name $eventHubAuthRuleName -o tsv --query "primaryConnectionString"
 
-Write-Host "Retrieving keys from resources in $resourceGroupName... Service Bus" -ForegroundColor DarkGreen
+Write-Host "Retrieving keys from resources in $resourceGroupName... $serviceBusNamespaceName sqlbuildmanager" -ForegroundColor DarkGreen
 $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" -o tsv --query "[].name"
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
 
 if($withContainerRegistry)
 {
-    Write-Host "Retrieving keys from resources in $resourceGroupName... Container Registry" -ForegroundColor DarkGreen
+    Write-Host "Retrieving keys from resources in $resourceGroupName... $containerRegistryName" -ForegroundColor DarkGreen
     $acrUserName = az acr credential show -g $resourceGroupName --name $containerRegistryName -o tsv --query username
     $acrPassword = az acr credential show -g $resourceGroupName --name  $containerRegistryName -o tsv --query passwords[0].value
     $acrServerName = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
@@ -79,7 +79,7 @@ else
     
 }
 
-Write-Host "Retrieving keys from resources in $resourceGroupName... Container App Environment" -ForegroundColor DarkGreen
+Write-Host "Retrieving keys from resources in $resourceGroupName... $containerAppEnvironmentName" -ForegroundColor DarkGreen
 $location = az containerapp env show -g $resourceGroupName -n $containerAppEnvironmentName -o tsv --query location
 $subscriptionId = az account show --query id --output tsv
 
@@ -96,12 +96,24 @@ if($false -eq (Test-Path $keyFile))
 
 foreach($auth in $authTypes)
 {
-    $params = @("containerapp", "savesettings")
 
+    $params = @("containerapp", "savesettings")
     if($auth -eq "ManagedIdentity" )
     {
         $settingsContainerApp = $settingsContainerApp + "-mi"
         $sbAndEhArgs = @("--eventhubconnection","$($eventHubNamespaceName)|$($eventHubName)")
+        if("" -ne  $identityName)
+        {
+            $params += ("--identityname", $identityName)
+        }
+        if("" -ne  $identityName)
+        {
+            $params += ("--idrg", $resourceGroupName)
+        }
+        if("" -ne  $identityName)
+        {
+            $params += ("--clientid", $identityClientId)
+        }
     }
     else 
     {
@@ -140,18 +152,7 @@ foreach($auth in $authTypes)
     {
         $params += ("-kv", $keyVaultName)
     }
-    if("" -ne  $identityName)
-    {
-        $params += ("--identityname", $identityName)
-    }
-    if("" -ne  $identityName)
-    {
-        $params += ("--idrg", $resourceGroupName)
-    }
-    if("" -ne  $identityName)
-    {
-        $params += ("--clientid", $identityClientId)
-    }
+
     # Container apps don't take this yet!
     #$params += ("--authtype", "Password")
     

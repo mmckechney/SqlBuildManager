@@ -12,10 +12,11 @@ $outputDbConfigFile = Join-Path $path "databasetargets.cfg"
 $clientDbConfigFile = Join-Path $path "clientdbtargets.cfg"
 
 $sqlServers =  (az sql server list --resource-group $resourceGroupName ) | ConvertFrom-Json -AsHashtable
+Write-Host "Using server targets: $sqlServers"  -ForegroundColor Cyan
 foreach($server in $sqlServers)
 {
     $dbs = az sql db list --resource-group $resourceGroupName --server "$($server.name)" --query "[].name" -o tsv
-
+    Write-Host "Server $server databases: $dbs"  -ForegroundColor Cyan
     foreach($db in $dbs)
     {
         if($db -ne "master")

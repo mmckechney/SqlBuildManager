@@ -1,25 +1,24 @@
 param
 (
+    [string] $sbmExe = "sbm.exe",
     [string] $path = "..\..\..\src\TestConfig",
     [string] $resourceGroupName,
     [string] $prefix,
     [string] $sqlUserName,
     [string] $sqlPassword
 )
-
 #############################################
 # Get set resource name variables from prefix
 #############################################
 . ./../prefix_resource_names.ps1 -prefix $prefix
 
-Write-Host "Adding secrets to Key Vault from prefix: $prefix "  -ForegroundColor Cyan
-$path = Resolve-Path $path
-Write-Host "Path set to $path" -ForegroundColor DarkGreen
-
+Write-Host "Create AKS settings file from prefix: $prefix"  -ForegroundColor Cyan
 Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
 
+$path = Resolve-Path $path
 if([string]::IsNullOrWhiteSpace($sqlUserName))
 {
+    Write-Host("Looking for SQL credentials") -ForegroundColor DarkGreen
     if(Test-Path (Join-Path $path "un.txt"))
     {
         $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()
@@ -30,21 +29,21 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
         $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
     }
 }
-
-$haveSqlInfo = $true
-if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($sqlPassword))
+    else 
 {
-    $haveSqlInfo = $false
+    Write-Host("Using provided SQL credentials") -ForegroundColor DarkGreen
+
 }
 
-Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
-Write-Host "Using batch account name:'$batchAccountName'" -ForegroundColor DarkGreen
 Write-Host "Using storage account name:'$storageAccountName'" -ForegroundColor DarkGreen
 Write-Host "Using Event Hub Namespace name:'$eventHubNamespaceName'" -ForegroundColor DarkGreen
 Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -ForegroundColor DarkGreen
+Write-Host "Using Azure Container Registry name:'$containerRegistryName'" -ForegroundColor DarkGreen
+Write-Host "Using identity name: '$userAssignedIdentityName'" -ForegroundColor DarkGreen
+Write-Host "Using keyvault name: '$keyVaultName'" -ForegroundColor DarkGreen
+
 
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-.$scriptDir/add_secrets_to_keyvault.ps1 -path $path -resourceGroupName  $resourceGroupName -keyVaultName $keyVaultName -batchAccountName $batchAccountName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword
+.$scriptDir/create_aks_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName  $resourceGroupName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -acrName $containerRegistryName -identityName $userAssignedIdentityName -keyVaultName $keyVaultName
 
- 

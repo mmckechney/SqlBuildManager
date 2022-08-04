@@ -7,10 +7,11 @@ param
     [string] $sqlUserName,
     [string] $sqlPassword
 )
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName = "$prefix-rg"
-}
+#############################################
+# Get set resource name variables from prefix
+#############################################
+. ./../prefix_resource_names.ps1 -prefix $prefix
+
 Write-Host "Create batch settings files from prefix: $prefix"  -ForegroundColor Cyan
 $path = Resolve-Path $path
 
@@ -21,22 +22,11 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
     $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
 }
  
-$keyVaultName = az keyvault list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using key vault name:'$keyVaultName'" -ForegroundColor DarkGreen
-
-$batchAccountName = az batch account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using batch account name:'$batchAccountName'" -ForegroundColor DarkGreen
-
-$storageAccountName =  az storage account list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using storage account name:'$storageAccountName'" -ForegroundColor DarkGreen
-
-$eventHubNamespaceName = az eventhubs namespace list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using Event Hub Namespace name:'$eventHubNamespaceName'" -ForegroundColor DarkGreen
-
-$serviceBusNamespaceName = az servicebus namespace list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -ForegroundColor DarkGreen
-
-$identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
 Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path

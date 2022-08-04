@@ -1,5 +1,11 @@
 # SQL Build Manager Change Log
 
+### Version 14.5.0
+ - *ADDED:* Simplified Kubernetes with `sbm k8s run` that will orchestrate the individual steps (`prep`, `enqueue`, `monitor`) and encapsulate all `kubectl` commands used to create resources
+ - *ADDED:* Simplified Container Apps with `sbm containerapp run` that will orchestrate the individual steps (`prep`, `enqueue`, `deploy` and `montitor`)
+ - *UPDATED:* `sbm k8s savesettings` will now create a json file instead of yaml files. All other subcommands will also take `--settingsfile` and `--settingsfilekey` values to be more in sync with the other execution types. You can still generate YAML files dynamically with `sbm k8s creatyaml` if you want to
+ - *UPDATED:* Overhaul of [template scripts](scripts/templates/README.md) used to create sample and integration test resources and settings files to unify prefix resource names
+
 ### Version 14.4.0
  - *ADDED:* Added new `ManagedIdentity` authentication type to eliminate the need for a UserName and Password to authenticate to Azure SQL databases that have Azure AD authentication enabled and identity assigned
  - *ADDED:* Ability to use Managed Identity for Service Bus, Event Hub and Blob storage connections with most services (see [managed_identity.md](/docs/managed_identity.md) for details and limitations)

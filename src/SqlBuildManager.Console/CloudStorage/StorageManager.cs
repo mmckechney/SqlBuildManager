@@ -267,8 +267,8 @@ namespace SqlBuildManager.Console.CloudStorage
             {
                 if (rfExe.ErrorCode == "ContainerBeingDeleted")
                 {
-                    log.LogInformation("Existing container is still being deleted. waiting...");
-                    System.Threading.Thread.Sleep(2000);
+                    log.LogInformation("Existing storage container is still being deleted. waiting...");
+                    System.Threading.Thread.Sleep(3000);
                     return await UploadFilesToContainer(storageAccountName, storageAccountKey, containerName, filePaths, true); ;
                 }
                 else

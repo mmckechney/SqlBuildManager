@@ -5,10 +5,11 @@ param
     [string] $resourceGroupName
 )   
 
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName = "$prefix-rg"
-}
+#############################################
+# Get set resource name variables from prefix
+#############################################
+. ./../prefix_resource_names.ps1 -prefix $prefix
+
 $path = Resolve-Path $path
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path

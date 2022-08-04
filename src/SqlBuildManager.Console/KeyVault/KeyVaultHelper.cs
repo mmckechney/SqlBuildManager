@@ -56,7 +56,7 @@ namespace SqlBuildManager.Console.KeyVault
             }
             catch(Azure.RequestFailedException rfe)
             {
-                log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: [RequestFailedException] {rfe.ErrorCode}");
+                log.LogWarning($"Unable to get secret '{secretName}' from vault {keyVaultName}: [RequestFailedException] {rfe.ErrorCode}");
                 return null;
             }
             catch(AuthenticationFailedException afe)

@@ -1,0 +1,4 @@
+﻿{
+  "server": "[parameters('registryServer')]",
+  "identity": "[format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{2}', subscription().subscriptionId, parameters('identityResourceGroup'), parameters('identityName'))]"
+}

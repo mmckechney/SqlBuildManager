@@ -5,17 +5,18 @@ param
     [string] $path = "..\..\..\src\TestConfig"
 )
 
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName =  "$($prefix)-rg"
-}
+#############################################
+# Get set resource name variables from prefix
+#############################################
+. ./../prefix_resource_names.ps1 -prefix $prefix
+
 Write-Host "Creating AAD Admin for User Assigned Managed Identity" -ForegroundColor Green
 
 $servers= @("$($prefix)sql-a","$($prefix)sql-b")
 Write-Host "Getting  managed identity information"  -ForegroundColor Cyan
-$identityName = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].name"
-$clientId = az identity list --resource-group $resourceGroupName -o tsv --query "[?contains(@.name '$prefix')].clientId"
+$clientId = az identity show --resource-group $resourceGroupName --name $identityName --query clientId -o tsv
 Write-Host "Using managed identity: $identityName" 
+Write-Host "Using managed identity client id : $clientId" 
 
 foreach($server in $servers)
 {

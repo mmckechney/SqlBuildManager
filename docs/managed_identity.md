@@ -17,13 +17,12 @@ Each of the remote execution options allows for varying use of Azure Managed Ide
  | Service Bus              |   Yes         |   Yes                                                                                                                         |   No, see [note](#service-bus)    |   Yes                     |
  | Event Hub                |   Yes         |   Yes                                                                                                                         |   Yes                             |   Yes                     |
  | Azure Container Registry |   N/A         |   Yes, with [`--attach-acr`](https://docs.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli)|   No                              |   No                      | 
- |                          |               |                                                                                                                               |                                   |                           |
-
- ## Managed Identity to Compute Assignment
+ 
+## Managed Identity to Compute Assignment
 
 Examples of each of these can be generated for you by running [create_azure_resources.ps1](../scripts/templates/create_azure_resources.ps1) which will create samples Azure resources (including a user assigned Managed Identity) as well as sample settings files with various options that are used in the test caes. You can also review the test methods in [SqlBuildManager.Console.ExternalTest](../src/SqlBuildManager.Console.ExternalTest/) to see working examples of various compute options and settings.
 
- ### Azure Batch
+### Azure Batch
 
 The identity is assigned at the creation of the Azure Batch account. For an example, see [azuredeploy_batch.bicep](../scripts/templates/Batch/azuredeploy_batch.bicep)
 
@@ -52,7 +51,7 @@ To instruct the app to pull secrets from Azure Key Vault, you need to provide th
 
 By default, the app uses username/password database authentication. To enable Managed Identity authentication, you will first need to add the [Manged Identity as a user to the database](https://docs.microsoft.com/en-us/azure/azure-sql/database/authentication-azure-ad-user-assigned-managed-identity?view=azuresql#managing-a-managed-identity-for-a-server-or-instance). Once this has been done, you can direct the app to use the identity to authenticate with the `--authtype ManagedIdentity` flag. (As always, this can be saved in a settings file with `savesettings` for easier execution and reuse).
 
-**NOTE:** Azre Container Apps does not currently allow for Managed Identity authentication to Azure SQL Databases
+**NOTE:** Azure Container Apps does not currently allow for Managed Identity authentication to Azure SQL Databases
 
 
 ### Blob Storage

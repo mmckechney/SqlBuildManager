@@ -197,8 +197,15 @@ namespace SqlBuildManager.Console.ContainerApp
             //Add Container Registry information if provided
             if(!string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
             {
-                var registrySnippit = File.ReadAllText(Path.Combine(pathToTemplates, "registries.json"));
-                template = template.Replace("\"registriesplaceholder\"", registrySnippit);
+                if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
+                {
+                    var registrySnippit = File.ReadAllText(Path.Combine(pathToTemplates, "registries-pw.json"));
+                    template = template.Replace("\"registriesplaceholder\"", registrySnippit);
+                }else
+                {
+                    var registrySnippit = File.ReadAllText(Path.Combine(pathToTemplates, "registries-identity.json"));
+                    template = template.Replace("\"registriesplaceholder\"", registrySnippit);
+                }
             }
             else
             {
