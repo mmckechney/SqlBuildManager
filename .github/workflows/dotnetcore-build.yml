@@ -15,18 +15,13 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Setup .NET 6
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0.x'
 
-    # - name: Setup .NET 5
-    #   uses: actions/setup-dotnet@v1
-    #   with:
-    #     dotnet-version: 5.0.x
-  
     - name: Clean
       run: dotnet clean ./src/SqlBuildManager.Console/sbm.csproj --configuration Release && dotnet nuget locals all --clear
 
@@ -58,16 +53,6 @@ jobs:
     - name: Run SqlSync.SqlBuild.UnitTest
       run: dotnet test ./src/SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --configuration Release
 
-    # .NET 5.0 pubish
-    # - name: Publish the Windows desktop app
-    #   run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f net5.0-windows
-
-    # - name: Publish the Windows CLI app 
-    #   run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release -f net5.0
-
-    # - name: Publish the Linux CLI app
-    #   run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f net5.0
-
     # .NET Core 6.0 pubish
     - name: Publish the Windows desktop app
       run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f net6.0-windows 
@@ -77,25 +62,6 @@ jobs:
 
     - name: Publish the Linux CLI app
       run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f net6.0 --self-contained
-
-    # # .NET 5.0 artifacts
-    # - name: Upload a Build Artifact sbm-windows
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: sbm-windows
-    #     path: "./src/SqlBuildManager.Console/bin/Release/net5.0/win-x64/publish"
-
-    # - name: Upload a Build Artifact sbm-linux
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: sbm-linux
-    #     path: "./src/SqlBuildManager.Console/bin/Release/net5.0/linux-x64/publish"
-
-    # - name: Upload a Build Artifact
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: SqlBuildManager Desktop
-    #     path: "./src/SqlSync/bin/Release/net5.0-windows/win-x64/publish"     
 
     # .NET 6 artifacts
     - name: Upload a Build Artifact sbm-windows

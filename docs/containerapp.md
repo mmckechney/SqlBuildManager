@@ -1,7 +1,7 @@
 # Leveraging Azure Container Apps for database builds
 
 - [Why use Container Apps?](#why-use-container-apps)
-  - [Process Flow](massively_parallel.md#azure-container-instance-process-flow)
+  - [Process Flow](massively_parallel.md#process-flow-details)
 - [Getting Started](#getting-started)
   - [Container Image](#container-image)
   - [Environment Setup](#environment-setup)
@@ -53,6 +53,16 @@ You can automate they collection and saving of secrets with the included PowerSh
 # Collects resource keys and creates settings encrypted file
 create_containerapp_settingsfile.ps1 -path "<path to save the files>" -resourceGroupName "<resource group with the KV and identity>" -containerAppEnvironmentName "<env name>" -containerRegistryName "<if using Azure Container registry>" -storageAccountName "<Name of storage account>" -eventHubNamespaceName "<Name of event hub namespace>" -serviceBusNamespaceName "<Name of service bus namespace>" -sqlUserName "<SQL user name" -sqlPassword "<SQL Password>" -withContainerRegistry ($true|$false) 
 ```
+### **Single Command execution**
+
+### 2. Use `run` command
+This will orchestrate the step-wise commands for a simplified build experience
+
+``` bash
+sbm containerapp run --settingsfile "<settings file name>" --tag "<container version tag>" --jobname "<job name>" -P "<sbm package name>" --concurrencytype "<concurrency type>" --override "<override file name>"
+```
+
+### **Step-wise execution**
 
 ### 2. Upload your SBM Package file to your storage account and create customized ARM template
 

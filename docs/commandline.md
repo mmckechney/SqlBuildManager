@@ -23,6 +23,8 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 - `threaded` - For updating multiple databases simultaneously from the current machine ([docs](threaded_build.md))
 - `batch` - Commands for setting and executing a batch run using Azure Batch ([docs](azure_batch.md))
 - `k8s` - Commands for setting and executing a distributed run using Kubernetes ([docs](kubernetes.md))
+- `containerapp` - Commands for setting and executing a distributed run using Azure Container Apps ([docs](containerapp.md))
+- `aci` - Commands for setting and executing a distributed run using Azure Container Instances ([docs](aci.md))
 
 ### Utility actions
 
@@ -46,11 +48,14 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 `sbm batch [command]`
 
-- `savesettings` - Save a settings JSON file for Batch arguments (see Batch documentation)
+- `savesettings` - Save a settings json file for Batch arguments (see Batch documentation)
 - `prestage` - Pre-stage the Azure Batch VM nodes
-- `cleanup` - Azure Batch Clean Up - remove VM nodes
+- `enqueue` - Sends database override targets to Service Bus Topic
 - `run` - For updating multiple databases simultaneously using Azure batch services
-- `enqueue` - to send your database targets to an Azure Service Bus Topic (see [queue docs](override_options.md#service-bus-topic))
+- `query` - Run a SELECT query across multiple databases using Azure Batch
+- `cleanup` - Azure Batch Clean Up - remove VM nodes
+- `dequeue` - Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them (see [queue docs](override_options.md#service-bus-topic))
+
 
 #### For details information on running batch builds, see the Batch documentation
 
@@ -66,12 +71,15 @@ The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 For examples of each, see the [Kubernetes documentation](kubernetes.md)
 
-- `savesettings` - Saves settings to `secrets.yaml` and `runtime.yaml` files for Kubernetes pod deployments. You can also leverage [Azure Key Vault](kubernetes.md#environment-setup) to manage secrets, eliminating the local file containing passwords, connection strings, etc.
-- `prep` - Creates a storage container and uploads the SBM package file that will be used for the build. If the `--runtimefile` option is provided, it will also update that file with the appropriate values
+- `savesettings` - Saves settings file for Kubernetes deployments
+- `run` - Run a build in Kubernetes (Orchestrates the prep, enqueue and monitor commands as well as kubectl). [NOTE: 'kubectl' must be installed and in your path]
+- `prep` - Creates a storage container and uploads the SBM and/or DACPAC files that will be used for the build. If the --runtimefile option is provided, it will also update that file with the updated values
 - `enqueue` - Sends database override targets to Service Bus Topic
 - `monitor` - Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)
-- `dequeue`- Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them. This is just used for clean up is something went wrong and is not necessary in normal processing.
-- `worker` - [Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus topic
+- `dequeue` - Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them
+- `createyaml` - Helper command to create yaml files from a settings json file and runtime parameters
+- `worker` - [Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic
+
 
 ### ACI sub-commands
 
@@ -79,13 +87,28 @@ For examples of each, see the [Kubernetes documentation](kubernetes.md)
 
 For examples of each, see the [Azure Container Instance (ACI) documentation](aci.md)
 
-- `savesettings` - Save a settings JSON file for ACI. This option always leverages [Azure Key Vault](massively_parallel.md#Steps) to manage secrets, eliminating the local file containing passwords, connection strings, etc.
-- `prep` - Creates a storage container and uploads the SBM package file that will be used for the build. It will also create a customized Azure Resource Manager (ARM) template as defined by the `--outputfile` argument. This is used in the next step to create the container instances.
+- `savesettings` - Saves settings file for Azure Container Instances container deployments. This option always leverages [Azure Key Vault](massively_parallel.md#Steps) to manage secrets
+- `prep` - Creates ACI arm template, a storage container, and uploads the SBM and/or DACPAC files that will be used for the build.
 - `enqueue` - Sends database override targets to Service Bus Topic
-- `deploy` - Uses the ARM template created in the `sbm aci prep` step to deploy and start the containers in ACI. If you leave the `--monitor` flag default, it will automatically start to `monitor` the Service Bus and Event Hub for build progress
-- `monitor` - Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors). Not necessary of you leave the `sbm aci deploy` `--monitor` flag as the default `true`
-- `dequeue`- Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them. This is just used for clean up is something went wrong and is not necessary in normal processing.
-- `worker` - [Used by ACI] Starts the pod as a worker - polling and retrieving items from target service bus topic
+- `deploy` - Deploy the ACI instance using the template file created from 'sbm prep' and start containers
+- `monitor` - Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)
+- `dequeue` - Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them
+- `worker` - [Used by ACI] Starts the container(s) as a worker - polling and retrieving items from target service bus queue topic
+
+
+
+### ContainerApp sub-commands
+
+`sbm containerapp [command]`
+
+- `savesettings` - Saves settings file for Azure Container App deployments
+- `run` - Runs a build on Container Apps (orchestrates the prep, enqueue, deploy and montitor commands)
+- `prep` - Creates an Azure storage container and uploads the SBM and/or DACPAC files that will be used for the build.
+- `enqueue` - Sends database override targets to Service Bus Topic
+- `deploy` - Deploy the Container App instance using the template file created from 'sbm containerapp prep' and start containers
+- `monitor` - Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)
+- `dequeue` - Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them
+- `worker` - [Used by Container Apps] Starts the pod as a worker - polling and retrieving items from target service bus queue topic
 
 
 ----
