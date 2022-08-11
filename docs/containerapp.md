@@ -1,7 +1,7 @@
 # Leveraging Azure Container Apps for database builds
 
 - [Why use Container Apps?](#why-use-container-apps)
-  - [Process Flow](massively_parallel.md#azure-container-instance-process-flow)
+  - [Process Flow](massively_parallel.md#process-flow-details)
 - [Getting Started](#getting-started)
   - [Container Image](#container-image)
   - [Environment Setup](#environment-setup)

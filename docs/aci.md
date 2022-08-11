@@ -1,7 +1,7 @@
 # Leveraging Azure Container Instance (ACI) for database builds
 
 - [Why use ACI?](#why-use-aci)
-  - [Process Flow](massively_parallel.md#azure-container-instance-process-flow)
+  - [Process Flow](massively_parallel.md#process-flow-details)
 - [Getting Started](#getting-started)
   - [Container Image](#container-image)
   - [Environment Setup](#environment-setup)

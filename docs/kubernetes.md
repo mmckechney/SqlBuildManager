@@ -1,7 +1,7 @@
 # Leveraging Kubernetes for database builds
 
 - [Why use Kubernetes?](#why-use-kubernetes)
-  - [Process Flow](massively_parallel.md#kubernetes-process-flow)
+  - [Process Flow](massively_parallel.md#process-flow-details)
 - [Getting Started](#getting-started)
   - [Container Image](#container-image)
   - [Environment Setup](#environment-setup)

@@ -40,11 +40,10 @@ An extra command for `sbm batch`. This will deprovision and remove VMs from the 
 ![Remote execution process flow](images/remote_execution_flow.png)
 
 Start an Azure connection with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) via `az login`. This will create an authentication token that the `sbm` tooling will use to connect to Key Vault and the other Azure services 
-1. `savesettings` - keys, Connection strings and passwords saved in Azure Key Vault if `--keyvault` specified, otherwise it will be encrypted to the JSON file. Non-sensitive information is always saved in the json file 
+1. `savesettings` - keys, connection strings and passwords saved in Azure Key Vault if `--keyvault` specified, otherwise it will be AES256 encrypted to the JSON file. Non-sensitive information is always saved in the json file 
 2. `prep` - The `.sbm` package and DACPAC (if provided) is uploaded to blob storage and resource specific templates are created and readied for deployment
 3. `enqueue` - Using the `--override` file as a source, Service Bus Topic messages are enqueued, one for each target database
 4. `deploy` (run for batch) - The compute resources are created and immediately start processing messages from the Service Bus topic and performing the build on the targe databases
-4. The containers are deployed and started using `sbm aci deploy`. And monitor is started (by default), checking the Event Hub and Service Bus
 5. `monitor` - the Service Bus Topic is monitored for remaining messages and EventHub for completion events. Once complets, the compute resource will upload the run logs to the blob storage container 
 
 If using a Managed Identity, the compute resources will leverage this identity vs. connection strings and passwords to access the various resources. See the [Managed Identity documentation](managed_identity.md) to see how each service is able to take advantage of this.

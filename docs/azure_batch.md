@@ -1,7 +1,7 @@
 ﻿# Leveraging Azure Batch for database builds
 
 - [Why use Azure Batch?](#why-use-azure-batch)
-  - [Process Flow](massively_parallel.md#batch-process-flow)
+  - [Process Flow](massively_parallel.md#process-flow-details)
 - [Getting Started](#getting-started)
 - [Upload or Update SQL Build Manager binaries](#upload-or-update-sql-build-manager-binaries)
 - [Running a Batch Build](#running-a-batch-build)
