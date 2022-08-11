@@ -191,4 +191,3 @@ The `--override` argument is not necessary, it will allow the monitor to track t
  All of the run logs will be transferred from the pods to the storage container specified in the `jobname` argument. When monitoring is complete, it will output a Blob container SAS token that you can use in [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) to easily view the logs.
 
  **IMPORTANT:** After the `sbm k8s monitor` completes, as part of the clean-up, it will remove the Service Bus Topic associated with the build. This will deactivate the running pods so all subsequent run will need to be reset as [specified above](#1-remove-pre-existing-pods).
-
