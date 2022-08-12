@@ -1,5 +1,10 @@
 # SQL Build Manager Change Log
 
+### Version 14.6.0
+ - *ADDED:* Added Kubernetes namespace isolation in `sqlbuildmanager` namespace when using `sbm k8s run` and creating yaml files via `sbm k8s createyaml`
+ - *ADDED:* Added `jobname` based kubernetes resources to isolate independent and/or concurrent runs when using `sbm k8s run`
+ - *UPDATED:* Switched pre-build image source from docker hub blueskydevus/sqlbuildmanager to GitHub container registry mmckechney/sqlbuildmanager
+ 
 ### Version 14.5.0
  - *ADDED:* Simplified Kubernetes with `sbm k8s run` that will orchestrate the individual steps (`prep`, `enqueue`, `monitor`) and encapsulate all `kubectl` commands used to create resources
  - *ADDED:* Simplified Container Apps with `sbm containerapp run` that will orchestrate the individual steps (`prep`, `enqueue`, `deploy` and `montitor`)

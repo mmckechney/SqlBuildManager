@@ -400,12 +400,13 @@ namespace SqlBuildManager.Console.Queue
             }
             catch(ServiceBusException sbE)
             {
-                log.LogError($"Unable to compelete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}. This may result in duplicate processing: {sbE.Message}");
+                log.LogError($"Unable to complete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}. This may result in duplicate processing: {sbE.Message}");
             }
             catch (Exception exe)
             {
-                log.LogError($"Unable to compelete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}. This may result in duplicate processing: {exe.Message}");
+                log.LogError($"Unable to complete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}. This may result in duplicate processing: {exe.Message}");
             }
+            return;
         }
         public async Task AbandonMessage(ServiceBusReceivedMessage message)
         {
@@ -426,6 +427,7 @@ namespace SqlBuildManager.Console.Queue
             {
                 log.LogError($"Failed to Abandon message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}: {exe.Message}");
             }
+            return;
         }
         public async Task DeadletterMessage(ServiceBusReceivedMessage message)
         {
@@ -446,6 +448,7 @@ namespace SqlBuildManager.Console.Queue
             {
                 log.LogError($"Failed to Deadletter message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}: {exe.Message}");
             }
+            return;
         }
 
         internal async Task<bool> DeleteSubscription()

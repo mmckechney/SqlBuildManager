@@ -11,8 +11,31 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     internal class SecretsProviderYaml
     {
+        public SecretsProviderYaml(string providerName, string keyVaultName, string tentantId, string clientId)
+        {
+            secretsProviderName = providerName; 
+            if (!string.IsNullOrWhiteSpace(keyVaultName))
+            {
+                spec.parameters.keyvaultName = keyVaultName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(tentantId))
+            {
+                spec.parameters.tenantId = tentantId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(clientId))
+            {
+                spec.parameters.userAssignedIdentityID = clientId;
+            }
+             metadata = new Dictionary<string, string>
+            {
+                { "name", providerName },
+                { "namespace", KubernetesManager.SbmNamespace }
+            };
+        }
         [YamlIgnore()]
-        public static string Name { get; set; } = "azure-kvname";
+        public static string secretsProviderName { get; private set; } = "azure-kvname";
         [YamlIgnore()]
         public static string Kind { get { return "SecretProviderClass"; } }
 
@@ -20,12 +43,10 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         public string apiVersion { get { return "secrets-store.csi.x-k8s.io/v1"; } }
         [YamlMember(Order = 2)]
         public string kind { get { return Kind; } }
-        
+
         [YamlMember(Order = 3)]
-        public Dictionary<string, string> metadata = new Dictionary<string, string>
-            {
-             { "name", Name }
-            };
+        public Dictionary<string, string> metadata;
+        
         [YamlMember(Order = 4)]
         public SecretsProviderSpec spec = new SecretsProviderSpec();
 

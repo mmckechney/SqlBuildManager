@@ -10,14 +10,16 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     internal class AzureIdentityBindingYaml
     {
-        [YamlIgnore()]
-        public static string Name { get; set; } = "azure-pod-identity-binding";
-        [YamlIgnore()] 
-        public static string Kind { get { return "AzureIdentityBinding"; } }
         public AzureIdentityBindingYaml(string identityName)
-{
+        {
             spec.azureIdentity = identityName;
         }
+        
+        [YamlIgnore()]
+        public static string Name { get; private set; } = "azure-pod-identity-binding";
+        [YamlIgnore()] 
+        public static string Kind { get { return "AzureIdentityBinding"; } }
+       
         [YamlMember(Order = 1)]
         public string apiVersion { get { return "aadpodidentity.k8s.io/v1"; } }
         [YamlMember(Order = 2)]
@@ -25,7 +27,8 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         [YamlMember(Order = 3)]
         public Dictionary<string, string> metadata = new Dictionary<string, string>
             {
-             { "name", Name }
+             { "name", Name },
+             { "namespace", KubernetesManager.SbmNamespace }
             };
         [YamlMember(Order = 4)]
         public BindingSpec spec = new BindingSpec();

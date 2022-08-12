@@ -11,27 +11,30 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     internal class AzureIdentityYaml
     {
-        [YamlIgnore()]
-        public static string Name { get; set; } = "idname";
-        [YamlIgnore()]
-        public static string Kind { get { return "AzureIdentity"; } }
         public AzureIdentityYaml(string identityName, string resourceId, string clientId)
         {
-            metadata["name"] = identityName;
             Name = identityName;
             spec.resourceID = resourceId;
             spec.clientID = clientId;
+            metadata = new Dictionary<string, string>
+            {
+                 { "name", Name },
+                 { "namespace", KubernetesManager.SbmNamespace }
+            };
         }
+
+        [YamlIgnore()]
+        public static string Name { get; private set; } = "idname";
+        [YamlIgnore()]
+        public static string Kind { get { return "AzureIdentity"; } }
+       
         [YamlMember(Order = 1)]
         public string apiVersion { get { return "aadpodidentity.k8s.io/v1"; } }
 
         [YamlMember(Order = 2)]
         public string kind { get { return Kind; } }
         [YamlMember(Order = 3)]
-        public Dictionary<string, string> metadata = new Dictionary<string, string>
-            {
-             { "name", Name }
-            };
+        public Dictionary<string, string> metadata;
         [YamlMember(Order = 4)]
         public IdentitySpec spec = new IdentitySpec();
     }

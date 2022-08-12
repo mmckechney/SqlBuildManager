@@ -10,7 +10,15 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     public class SecretYaml
     {
-
+        public SecretYaml(string secretName)
+        {
+            Name = secretName;
+            metadata = new Dictionary<string, string>
+            {
+             { "name", secretName },
+             { "namespace", KubernetesManager.SbmNamespace }
+            };
+        }
         [YamlIgnore()]
         public static string Name { get; set; } = "connection-secrets";
         [YamlIgnore()]
@@ -22,10 +30,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         [YamlMember(Order = 2)]
         public string kind { get { return Kind; } }
         [YamlMember(Order = 3)]
-        public Dictionary<string, string> metadata = new Dictionary<string, string>
-            {
-             { "name", Name }
-            };
+        public Dictionary<string, string> metadata;
         [YamlMember(Order = 4)]
         public string type = "Opaque";
         [YamlMember(Order = 5)]

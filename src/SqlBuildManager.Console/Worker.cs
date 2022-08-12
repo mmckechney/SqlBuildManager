@@ -995,14 +995,7 @@ namespace SqlBuildManager.Console
 
             await qManager.DeleteSubscription();
 
-            //Batch jobs have their own consolidation....
-            if (cmdLine.BatchArgs == null || string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchPoolName))
-            {
-                log.LogInformation("Consolidating log files");
-                StorageManager.ConsolidateLogFiles(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, new List<string>());
-                log.LogInformation($"The consolidated log files can be found in the Azure storage account '{cmdLine.ConnectionArgs.StorageAccountName}' in blob container '{cmdLine.JobName}'");
-                log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
-            }
+         
             if (error > 0)
             {
                 return 1;
@@ -1012,7 +1005,17 @@ namespace SqlBuildManager.Console
                 return 0;
             }
         }
-
+        private static void ConsolidateRuntimeLogFiles(CommandLineArgs cmdLine)
+        {
+            //Batch jobs have their own consolidation....
+            if (cmdLine.BatchArgs == null || string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchPoolName))
+            {
+                log.LogInformation("Consolidating log files");
+                StorageManager.ConsolidateLogFiles(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, new List<string>());
+                log.LogInformation($"The consolidated log files can be found in the Azure storage account '{cmdLine.ConnectionArgs.StorageAccountName}' in blob container '{cmdLine.JobName}'");
+                log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
+            }
+        }
         private static int cursorCounter = 0;
 
         public class CursorStatusItem
@@ -1201,10 +1204,13 @@ namespace SqlBuildManager.Console
                 return 1;
             }
 
-            return await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest, false);
+            var retVal =  await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest, false);
+            ConsolidateRuntimeLogFiles(cmdLine);
+            
+            return retVal;
         }
 
-        internal static async Task<int> MonitorKubernetesRuntimeProgress(CommandLineArgs cmdLine, FileInfo secretsFile, FileInfo runtimeFile, bool unittest = false, bool stream = false)
+        internal static async Task<int> MonitorKubernetesRuntimeProgress(CommandLineArgs cmdLine, FileInfo secretsFile, FileInfo runtimeFile, bool unittest = false, bool stream = false, bool consolidateLogs = true)
         {
             if (cmdLine == null)
             {
@@ -1224,7 +1230,12 @@ namespace SqlBuildManager.Console
                 return -4;
             }
 
-            return await MonitorServiceBusRuntimeProgress(cmdLine, stream, DateTime.UtcNow.AddMinutes(-15), unittest);
+            var retVal =  await MonitorServiceBusRuntimeProgress(cmdLine, stream, DateTime.UtcNow.AddMinutes(-15), unittest);
+            if (consolidateLogs)
+            {
+                ConsolidateRuntimeLogFiles(cmdLine);
+            }
+            return retVal;
 
         }
 
@@ -1460,7 +1471,10 @@ namespace SqlBuildManager.Console
                 return 1;
             }
 
-            return await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest,  true);
+            var retVal =  await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest,  true);
+            ConsolidateRuntimeLogFiles(cmdLine);
+            
+            return retVal;
         }
 
         internal static async Task<int> DeployAciTemplate(CommandLineArgs cmdLine, FileInfo templateFile, bool monitor, bool unittest = false, bool stream = false)
@@ -1658,8 +1672,8 @@ namespace SqlBuildManager.Console
         internal static async Task<int> KubernetesRun(CommandLineArgs cmdLine, FileInfo Override, FileInfo packagename, FileInfo platinumdacpac, bool force, bool allowObjectDelete, bool unittest, bool stream, bool cleanupOnFailure)
         {
             (var x, cmdLine) = Init(cmdLine);
-
-            if(packagename == null && platinumdacpac == null)
+            string k8Jobname = KubernetesManager.KubernetesJobName(cmdLine);
+            if (packagename == null && platinumdacpac == null)
             {
                 log.LogError("Either an SBM package or DACPAC file is required.");
                 return -1;
@@ -1716,7 +1730,8 @@ namespace SqlBuildManager.Console
             }
             //Monitor pod creation
             log.LogInformation("Checking for successful job start...");
-            if (!Kubernetes.KubernetesManager.MonitorForPodStart())
+            
+            if (!Kubernetes.KubernetesManager.MonitorForPodStart(k8Jobname))
             {
                 log.LogError("Failed to start Kubernetes jobs. Running clean-up");
                 await DeQueueOverrideTargets(cmdLine);
@@ -1728,12 +1743,14 @@ namespace SqlBuildManager.Console
             }
 
             //Monitor service bus
-            await MonitorKubernetesRuntimeProgress(cmdLine, secretsFileInfo, runtimeFileInfo, unittest, stream);
+            retVal = await MonitorKubernetesRuntimeProgress(cmdLine, secretsFileInfo, runtimeFileInfo, unittest, stream, false);
 
             //Clean-up
             log.LogInformation("Cleaning up Kubernetes resources...");
-            KubernetesManager.CleanUpKubernetesResource(secretsExist);
-            return 0;
+            KubernetesManager.CleanUpKubernetesResource(secretsExist, k8Jobname);
+
+            ConsolidateRuntimeLogFiles(cmdLine);
+            return retVal;
         }
         internal static async Task<int> SaveKubernetesYamlFiles(CommandLineArgs cmdLine,DirectoryInfo path, string prefix, FileInfo packagename, FileInfo platinumdacpac, bool force)
         {

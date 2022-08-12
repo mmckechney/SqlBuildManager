@@ -11,8 +11,17 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     public class ConfigmapYaml
     {
+        public ConfigmapYaml(string k8ConfigMapName)
+        {
+            ConfigmapYaml.k8ConfigMapName = k8ConfigMapName;
+            metadata = new Dictionary<string, string>
+            {
+                { "name", k8ConfigMapName },
+                { "namespace", KubernetesManager.SbmNamespace }
+            };
+        }
         [YamlIgnore()]
-        public static string Name { get; set; } = "runtime-properties";
+        public static string k8ConfigMapName { get; private set; } = "runtime-properties";
         [YamlIgnore()]
         public static string Kind { get { return "ConfigMap"; } }
 
@@ -23,10 +32,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         public string kind { get { return Kind; } }
 
         [YamlMember(Order = 3)]
-        public Dictionary<string, string> metadata = new Dictionary<string, string>
-            {
-             { "name", Name }
-            };
+        public Dictionary<string, string> metadata;
 
         [YamlMember(Order = 4)]
         public RuntimeData data = new RuntimeData();

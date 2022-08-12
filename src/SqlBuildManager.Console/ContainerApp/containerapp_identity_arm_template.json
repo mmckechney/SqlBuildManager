@@ -105,7 +105,7 @@
   },
   "variables": {
     "environment_id": "[concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.App/managedEnvironments/', parameters('environmentName'))]",
-    "var_registryName": "[if(empty(parameters('registryServer')),'blueskydevus/',concat(parameters('registryServer'),'/'))]",
+    "var_registryName": "[if(empty(parameters('registryServer')),'ghcr.io/mmckechney/',concat(parameters('registryServer'),'/'))]",
     "var_registry_secret_name": "[if(empty(parameters('registryServer')),'registrypassword',concat(replace(parameters('registryServer'),'.',''),'-',parameters('registryUserName')))]"
   },
   "resources": [

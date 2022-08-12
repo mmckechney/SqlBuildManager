@@ -16,7 +16,7 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: sqlbuildmanager
-        image: blueskydevus/sqlbuildmanager:latest-vNext
+        image: ghcr.io/mmckechney/sqlbuildmanager:latest-vNext
         imagePullPolicy: Always
         resources: 
           limits:

@@ -13,7 +13,7 @@ Each remote build option follows the same basic steps to stage the required conf
 
 ### **savesettings**
 
-Save a settings JSON file for the target compute environment. This step is optional, but is designed for reuse in subsequent commands and across multiple builds targeting the same environment. Each remote type has some variation of options, so use `sbm {remote type} savesettings -h` for specfics. You can also save sensitive information to Azure Key Vault by specifying a `--keyvault` value.
+Save a settings JSON file for the target compute environment. This step is optional, but is designed for reuse in subsequent commands and across multiple builds targeting the same environment. Each remote type has some variation of options, so use `sbm {remote type} savesettings -h` for specifics. You can also save sensitive information to Azure Key Vault by specifying a `--keyvault` value.
 
 ### **run**
 Single command used to execute by orchestrating the other commands decribed below. \
@@ -29,7 +29,7 @@ Remote executions pull their database targets from Azure Service Bus. This step 
 (named `run` for `sbm batch`) Deploys the compute infrastucture (for `containerapp` and `aci`) and automatically starts the build once the compute resources are available (`containerapp`, `aci` and `batch`). There is no equivalent step for Kubernetes, for this use the single `k8s run` command or manually run `kubetcl` commands to deploy the pods. 
 
 ### **monitor**
-By default the `deploy` command automatically flows into and starts monitoring. Monitoring polls the Service Bus Topic for remaining messages and Azure Event Hub for database processing events. A build is considered compelte when the total number of database completion events (commits or errors) is equal to the total number of targets. 
+By default the `deploy` command automatically flows into and starts monitoring. Monitoring polls the Service Bus Topic for remaining messages and Azure Event Hub for database processing events. A build is considered complete when the total number of database completion events (commits or errors) is equal to the total number of targets.
 
 ### **cleanup**
 

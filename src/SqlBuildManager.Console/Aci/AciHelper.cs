@@ -69,7 +69,7 @@ namespace SqlBuildManager.Console.Aci
 
                 if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
                 {
-                    tmpContainer = tmpContainer.Replace("{{registryServer}}", "blueskydevus");
+                    tmpContainer = tmpContainer.Replace("{{registryServer}}", "ghcr.io/mmckechney");
                 }
                 else
                 {

@@ -16,7 +16,7 @@ resource aci_resource_name 'Microsoft.ContainerInstance/containerGroups@2021-03-
       {
         name: 'sqlbuildmanager1'
         properties: {
-          image: 'blueskydevus/sqlbuildmanager:14.0.0'
+          image: 'ghcr.io/mmckechney/sqlbuildmanager:latest'
           command: [
             'sbm'
             'aci'

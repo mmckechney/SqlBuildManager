@@ -426,36 +426,24 @@ namespace SqlBuildManager.Console.CloudStorage
 
                         if (Program.AppendLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
-
                             tmp = $"{taskId}/{tmp}";
-                            log.LogInformation($"Saving File '{f}' as '{tmp}'");
-                            var rename = containerClient.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            {
-                                await rename.UploadAsync(fs);
-
-                            }
                         }
                         else if (renameLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
                         {
                             tmp = $"{taskId}/{tmp}";
-                            log.LogInformation($"Saving File '{f}' as '{tmp}'");
-                            var rename = containerClient.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            {
-                                await rename.UploadAsync(fs);
-
-                            }
                         }
-                        else
+                        
+                        var bClient = containerClient.GetBlockBlobClient(tmp);
+                        //if (bClient.Exists()) //Check for duplicates (in case of a previous crash, and create a new as needed
+                        //{
+                        //    tmp = tmp + DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss");
+                        //    bClient = containerClient.GetBlockBlobClient(tmp);
+                        //}
+                        log.LogInformation($"Saving File '{f}' as '{tmp}'");
+                        using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         {
-                            log.LogInformation($"Saving File '{f}' as '{tmp}'");
-                            var b = containerClient.GetBlockBlobClient(tmp);
-                            using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            {
-                                await b.UploadAsync(fs);
+                            await bClient.UploadAsync(fs);
 
-                            }
                         }
                     }
                     catch (Exception e)

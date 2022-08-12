@@ -18,7 +18,7 @@ If you have a fleet of databases to update, it could take a very long time to ru
 
 ### Container Image
 
-The default container image can be found on Docker Hub at https://hub.docker.com/repository/docker/blueskydevus/sqlbuildmanager/general, or you could build your own from source using the following command from the `/src/` folder
+The default container image can be found in GitHub Container Registry at https://github.com/mmckechney/SqlBuildManager/pkgs/container/sqlbuildmanager, or you could build your own from source using the following command from the `/src/` folder
 
 ``` bash
 docker build -f Dockerfile .. -t sqlbuildmanager:latest

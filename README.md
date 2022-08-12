@@ -11,11 +11,10 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 With this update, it significantly reduces the the need to save and manage secrets and connection strings. For full details on leveraging Managed Identity to connect to the other Azure resources such as SQL Database, Blob storage, Service Bus, Event Hub, Key Vault and Azure Container registry, see the [Managed Identity documentation here](/docs/managed_identity.md).
 
-
-
 ---
 
 ## Contents
+
 - [Important Concepts!](#important-concepts)
 - [Key Features - Why use SQL Build Manager?](#key-features)
 - [Running builds](#running-builds-command-line)
@@ -32,15 +31,15 @@ With this update, it significantly reduces the the need to save and manage secre
 - For users of the Windows Form app: [SQL Build Manager Manual](docs/SqlBuildManagerManual.md)\
   (Note: this isn't 100% up to date, so the screen shots may vary from the current app)
 
-----
+---
 
 ## Important Concepts
 
 Below are some high level concepts used by SQL Build Manager. You will see these used through out the documents and how-to's so it is important to understand what they mean:
 
 ### **"Build"**
-The action of updating to your database or fleet of databases with SQL Build Manager. Your build is wrapped in an all-or-nothing transaction meaning if a script fails, your database will be rolledback to the state it was prior to your build. The app also maintains a build history in the database by adding a logging table to the database.
 
+The action of updating to your database or fleet of databases with SQL Build Manager. Your build is wrapped in an all-or-nothing transaction meaning if a script fails, your database will be rolledback to the state it was prior to your build. The app also maintains a build history in the database by adding a logging table to the database.
 
 ### **"Package"**
 
@@ -52,14 +51,15 @@ The list of servers/databases you want to update with a build. When a package is
 
 ### **Remote Build Execution**
 
-The ability to distribute the load across multiple compute nodes. There are four options with SQL Build Manager: Azure Batch, Azure Kubernetes Service, Azure Container Apps and Azure Container Instance. Each of these has some specific configuration required, but have simiar process steps. The concept of parallel remote build is outlined [here](docs/massively_parallel.md) with specifics for each options are available
+The ability to distribute the load across multiple compute nodes. There are four options with SQL Build Manager: Azure Batch, Azure Kubernetes Service, Azure Container Apps and Azure Container Instance. Each of these has some specific configuration required, but have simliar process steps. The concept of parallel remote build is outlined [here](docs/massively_parallel.md) with specifics for each options are available.
 
 ### **"Settings" file**
 
-A configuration file that can be saved and re-used across multiple builds. It saves configurations for your remote envionment, identities, container names,  connection strings, etc. Any sensitive information is encrypted with AES265 encryption with the value you provide with the `--settingsfilekey`. Sensitive information can instead be stored in Azure Key Vault with a `--keyvault` parameter if needed
+A configuration file that can be saved and re-used across multiple builds. It saves configurations for your remote envionment, identities, container names,  connection strings, etc. Any sensitive information is encrypted with AES265 encryption with the value you provide with the `--settingsfilekey`. Sensitive information can instead be stored in Azure Key Vault with a `--keyvault` parameter if desired.
 
 ### **"jobname"**
-The name of a build. This is used as the name or name prefix for all of the Azure services used in a remote build including the blob storage container, running docker containers, service bus topic, etc. 
+
+The name of a build. This is used as the name or name prefix for all of the Azure services used in a remote build including the blob storage container, running docker containers, service bus topic, etc.
 
 ---
 
@@ -75,7 +75,7 @@ The name of a build. This is used as the name or name prefix for all of the Azur
 - Full SHA-1 hashing of individual scripts and complete `.sbm` package files to ensure integrity of the scripts
 - Execution of a build package (see below) is recorded in the database for full tracking of update history, script validation and potential rebuilding of packages
 
-----
+---
 
 ## Running Builds (command line)
 
@@ -106,7 +106,7 @@ Using the `sbm k8s run` commands leverages Kubernetes to permit massively parall
 
 Using the `sbm aci` commands leverages Azure Container Instance to permit massively parallel updates across thousands of databases. Learn how to use ACI [here](docs/aci.md).
 
-----
+---
 
 ## Querying across databases (command line)
 

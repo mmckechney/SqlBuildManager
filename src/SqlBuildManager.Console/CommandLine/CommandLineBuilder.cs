@@ -1380,7 +1380,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(serviceBusconnectionOption);
                 cmd.Add(eventhubconnectionOption);
                 cmd.AddRange(kubernetesYamlFileOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool>(Worker.MonitorKubernetesRuntimeProgress);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool, bool>(Worker.MonitorKubernetesRuntimeProgress);
                 return cmd;
             }
         }

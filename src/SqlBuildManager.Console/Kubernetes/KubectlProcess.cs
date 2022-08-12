@@ -4,9 +4,11 @@ using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
+using SqlBuildManager.Console.CommandLine;
 
 namespace SqlBuildManager.Console.Kubernetes
 {
@@ -19,45 +21,68 @@ namespace SqlBuildManager.Console.Kubernetes
             return resp;
         }
 
-        public static int DeleteKubernetesResource(string resourceKind, string resourceName)
+        public static int DeleteKubernetesResource(string resourceKind, string resourceName, string k8namespace = "")
         {
-            (int resp, string output, string error) =  RunKubectl($"delete  {resourceKind} {resourceName}");
+            if (!string.IsNullOrWhiteSpace(k8namespace))
+            {
+                k8namespace = $" -n {k8namespace}";
+            }
+            (int resp, string output, string error) =  RunKubectl($"delete  {resourceKind} {resourceName} {k8namespace}");
+            return resp;
+        }
+        public static int CreateKubernetesResource(string resourceKind, string resourceName, string k8namespace = "")
+        {
+            if (!string.IsNullOrWhiteSpace(k8namespace))
+            {
+                k8namespace = $" -n {k8namespace}";
+            }
+            (int resp, string output, string error) = RunKubectl($"create  {resourceKind} {resourceName} {k8namespace}");
+            return resp;
+        }
+        public static int DescribeKubernetesResource(string resourceKind, string resourceName, string k8namespace = "")
+        {
+            if (!string.IsNullOrWhiteSpace(k8namespace))
+            {
+                k8namespace = $" -n {k8namespace}";
+            }
+            (int resp, string output, string error) = RunKubectl($"describe  {resourceKind} {resourceName} {k8namespace}",false);
             return resp;
         }
 
-        public static PodStatus GetJobPodStatus()
+        public static PodStatus GetJobPodStatus(string k8jobName, bool logStatus)
         {
             bool hasError = false;
             bool hasRunning = false;
             bool hasCompleted = false;
             bool hasPending = false;
-            (int resp, string output, string error) = RunKubectl($"get pods", false);
+ 
+            (int resp, string output, string error) = RunKubectl($"get pods -n {KubernetesManager.SbmNamespace}", false);
             if(resp == 0)
             {
                 var arrOut = output.Split("\n", StringSplitOptions.RemoveEmptyEntries);
                 foreach(var line in arrOut)
                 {
-                    if(line.Trim().StartsWith("sqlbuildmanager"))
+                    if(line.Trim().StartsWith(k8jobName))
                     {
                         var linearr = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                         if (line.ToLower().Contains("error") || line.ToLower().Contains("crashloopbackoff"))
                         {
-                            log.LogError($"Pod {linearr[0]} is showing error status {linearr[2]}");
+                            if(logStatus)  log.LogError($"Pod {linearr[0]} is showing error status {linearr[2]}");
                             hasError = true;
                         }
                         if(line.ToLower().Contains("running"))
                         {
-                            log.LogError($"Pod {linearr[0]} is running");
+                            if (logStatus) log.LogInformation($"Pod {linearr[0]} is running");
                             hasRunning = true;
                         }
                         if(line.ToLower().Contains("completed"))
                         {
-                            log.LogError($"Pod {linearr[0]} is completed");
+                            if (logStatus) log.LogInformation($"Pod {linearr[0]} is completed");
                             hasCompleted = true;
                         }
                         if (line.ToLower().Contains("pending"))
 {
-                            log.LogError($"Pod {linearr[0]} is pending");
+                            if (logStatus) log.LogWarning($"Pod {linearr[0]} is pending");
                             hasPending = true;
                         }
                     }
