@@ -12,6 +12,7 @@ namespace SqlSync.Controls
 {
     public partial class ViewLogFileMenuItem : ToolStripMenuItem
     {
+        private static string logFileName = string.Empty;
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         BackgroundWorker bg;
         public ViewLogFileMenuItem()
@@ -39,9 +40,14 @@ namespace SqlSync.Controls
             try
             {
                 string file = SqlBuildManager.Logging.ApplicationLogging.LogFileName;
+                if(!File.Exists(file))
+                {
+                    file = Path.Combine(Path.GetDirectoryName(file), Path.GetFileNameWithoutExtension(file) + DateTime.Now.ToString("yyyyMMdd") + Path.GetExtension(file));
+                }
+
                 if (File.Exists(file))
                 {
-
+                    logFileName = file;
                     string contents;
                     using (FileStream fs = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
@@ -67,12 +73,12 @@ namespace SqlSync.Controls
         {
             if (e.Result is string)
             {
-                SqlSync.ScriptDisplayForm frmScript = new ScriptDisplayForm(e.Result.ToString(), "", "Sql Build Manager Application Log", SqlSync.Highlighting.SyntaxHightlightType.LogFile);
+                SqlSync.ScriptDisplayForm frmScript = new ScriptDisplayForm(e.Result.ToString(), "", logFileName, SqlSync.Highlighting.SyntaxHightlightType.LogFile);
                 frmScript.WordWrap = false;
                 frmScript.ScrollToEndOnLoad = true;
                 frmScript.Show();
             }
-            else if(e.Result is Exception)
+            else if(e.Result is Exception || e.Result == null)
             {
                 MessageBox.Show("Sorry, there was an error trying to load the application log file","Something went wrong", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

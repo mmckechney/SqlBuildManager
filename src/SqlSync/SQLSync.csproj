@@ -10,7 +10,7 @@
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
-    <ApplicationIcon>SqlBuildManager.ico</ApplicationIcon>
+    <ApplicationIcon>images/SqlBuildManager.ico</ApplicationIcon>
     <AssemblyName>SqlBuildManager</AssemblyName>
   </PropertyGroup>
 
@@ -47,7 +47,6 @@
     <EmbeddedResource Remove="Controls\CodeReviewItemControl.resx" />
     <EmbeddedResource Remove="Controls\RemoteExecutionLogsContextMenuStrip.resx" />
     <EmbeddedResource Remove="LookUpTableForm.resx" />
-    <EmbeddedResource Remove="SyncForm.resx" />
   </ItemGroup>
 
   <ItemGroup>

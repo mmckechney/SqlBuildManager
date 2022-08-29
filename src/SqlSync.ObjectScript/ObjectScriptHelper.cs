@@ -1074,28 +1074,33 @@ namespace SqlSync.ObjectScript
                 if (!this.smoServer.ConnectionContext.IsOpen)
                     this.smoServer.ConnectionContext.Connect();
 
-
+                
 
 
                 if (this.smoDatabase == null || this.smoDatabase.Name != this.ConnData.DatabaseName)
                 {
-                    foreach (Database smoDb in this.smoServer.Databases)
-                    {
-                        log.LogDebug($"SMO database found {smoDb.Name}");
-                    }
+                    this.smoDatabase = this.smoServer.Databases[this.ConnData.DatabaseName];
+                    //for (int i = 0; i < this.smoServer.Databases.Count; i++)
+                    //{
+                    //    if (this.smoServer.Databases[i].Name == this.ConnData.DatabaseName)
+                    //    {
+                    //        this.smoDatabase = this.smoServer.Databases[i];
+                    //        break;
+                    //    }
+                    //}
 
-                    var d = from Database db in this.smoServer.Databases
-                            where db.Name.Equals(this.ConnData.DatabaseName, StringComparison.CurrentCultureIgnoreCase)
-                            select 1;
+                    //var d = from Database db in this.smoServer.Databases
+                    //        where db.Name.Equals(this.ConnData.DatabaseName, StringComparison.CurrentCultureIgnoreCase)
+                    //        select 1;
 
-                    if (d == null || d.Count() == 0 || d.First() != 1)
-                    {
-                        log.LogError($"The selected database {this.ConnData.DatabaseName} is not included in the SMO.Databases collection for SMO server {this.smoServer.Name}");
-                    }
-                    else
-                    {
-                        this.smoDatabase = this.smoServer.Databases[this.ConnData.DatabaseName];
-                    }
+                    //if (d == null || d.Count() == 0 || d.First() != 1)
+                    //{
+                    //    log.LogError($"The selected database {this.ConnData.DatabaseName} is not included in the SMO.Databases collection for SMO server {this.smoServer.Name}");
+                    //}
+                    //else
+                    //{
+                    //    this.smoDatabase = this.smoServer.Databases[this.ConnData.DatabaseName];
+                    //}
                 }
 
                 if (this.smoDatabase == null)

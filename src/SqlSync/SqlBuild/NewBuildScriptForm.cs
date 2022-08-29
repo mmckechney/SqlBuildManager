@@ -362,7 +362,7 @@ namespace SqlSync.SqlBuild
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblFileName.Location = new System.Drawing.Point(101, 10);
             this.lblFileName.Name = "lblFileName";
-            this.lblFileName.Size = new System.Drawing.Size(418, 20);
+            this.lblFileName.Size = new System.Drawing.Size(611, 20);
             this.lblFileName.TabIndex = 1;
             // 
             // rtbDescription
@@ -428,7 +428,7 @@ namespace SqlSync.SqlBuild
             this.button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button2.Location = new System.Drawing.Point(273, 159);
+            this.button2.Location = new System.Drawing.Point(369, 220);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(68, 25);
             this.button2.TabIndex = 11;
@@ -438,7 +438,7 @@ namespace SqlSync.SqlBuild
             // 
             this.button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button1.Location = new System.Drawing.Point(197, 159);
+            this.button1.Location = new System.Drawing.Point(293, 220);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(57, 25);
             this.button1.TabIndex = 10;
@@ -511,7 +511,7 @@ namespace SqlSync.SqlBuild
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(536, 91);
+            this.panel1.Size = new System.Drawing.Size(729, 91);
             this.panel1.TabIndex = 16;
             // 
             // lblModDate
@@ -520,7 +520,7 @@ namespace SqlSync.SqlBuild
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblModDate.Location = new System.Drawing.Point(425, 59);
             this.lblModDate.Name = "lblModDate";
-            this.lblModDate.Size = new System.Drawing.Size(94, 20);
+            this.lblModDate.Size = new System.Drawing.Size(287, 20);
             this.lblModDate.TabIndex = 21;
             // 
             // lblAddDate
@@ -529,7 +529,7 @@ namespace SqlSync.SqlBuild
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblAddDate.Location = new System.Drawing.Point(425, 39);
             this.lblAddDate.Name = "lblAddDate";
-            this.lblAddDate.Size = new System.Drawing.Size(96, 20);
+            this.lblAddDate.Size = new System.Drawing.Size(289, 20);
             this.lblAddDate.TabIndex = 20;
             // 
             // label10
@@ -640,7 +640,7 @@ namespace SqlSync.SqlBuild
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel2.Location = new System.Drawing.Point(0, 91);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(536, 201);
+            this.panel2.Size = new System.Drawing.Size(729, 262);
             this.panel2.TabIndex = 19;
             // 
             // label11
@@ -674,7 +674,7 @@ namespace SqlSync.SqlBuild
             // NewBuildScriptForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
-            this.ClientSize = new System.Drawing.Size(536, 292);
+            this.ClientSize = new System.Drawing.Size(729, 353);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;

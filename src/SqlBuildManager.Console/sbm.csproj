@@ -2,6 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net6.0</TargetFrameworks>
+	  <ApplicationIcon>..\SqlSync\Images\Database-commandline.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="ProcessHelper.cs" />
