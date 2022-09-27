@@ -1,24 +1,13 @@
-﻿using SqlBuildManager.Console.CommandLine;
+﻿using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.Arm;
+using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using Azure.ResourceManager.Resources;
-using Microsoft.Azure.Batch;
-using Microsoft.Extensions.Logging;
-using Azure.Core;
-using Azure.Identity;
-using Azure.ResourceManager.Resources.Models;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Text.Json;
 using System.Linq;
-using SqlBuildManager.Console.Shared;
-using SqlBuildManager.Console.Aad;
-using SqlBuildManager.Console.Arm;
-using SqlBuildManager.Console.Aci.Arm;
-using Microsoft.Azure.Management.ContainerRegistry.Fluent;
-using SqlSync.Connection;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.Aci
 {

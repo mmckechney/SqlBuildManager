@@ -2,14 +2,10 @@
 using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Processor;
 using Azure.Storage.Blobs;
-using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Logging;
-using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Interfaces.Console;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Threading;

@@ -1,14 +1,4 @@
-﻿using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
-using Microsoft.SqlServer.Management.Sdk.Sfc;
-using Microsoft.SqlServer.Management.Smo;
-using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Console.ContainerApp.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using YamlDotNet.Serialization;
 using static SqlBuildManager.Console.Kubernetes.Yaml.Containers;
 

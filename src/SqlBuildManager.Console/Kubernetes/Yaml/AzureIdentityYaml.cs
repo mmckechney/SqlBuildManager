@@ -1,10 +1,4 @@
-﻿using Microsoft.Azure.Management.Sql.Fluent.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using YamlDotNet.Core;
+﻿using System.Collections.Generic;
 using YamlDotNet.Serialization;
 
 namespace SqlBuildManager.Console.Kubernetes.Yaml

@@ -1,18 +1,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.KeyVault;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Serilog;
-using Microsoft.Azure.Management.AppService.Fluent.Models;
-using SqlBuildManager.Console.KeyVault;
-using System.Diagnostics;
-using static SqlBuildManager.Console.CommandLine.CommandLineArgs;
 
 namespace SqlBuildManager.Console.ExternalTest
 {

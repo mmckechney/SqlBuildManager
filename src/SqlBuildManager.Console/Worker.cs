@@ -1,6 +1,4 @@
-﻿using Microsoft.Azure.Management.ContainerRegistry.Fluent;
-using Microsoft.Extensions.DependencyModel;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Spectre.Console;

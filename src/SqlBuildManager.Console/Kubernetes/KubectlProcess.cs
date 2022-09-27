@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using Microsoft.Azure.Management.Network.Fluent.Models;
-using Microsoft.Extensions.Logging;
-using Spectre.Console;
-using SqlBuildManager.Console.CommandLine;
+﻿using Microsoft.Extensions.Logging;
+using System;
 
 namespace SqlBuildManager.Console.Kubernetes
 {

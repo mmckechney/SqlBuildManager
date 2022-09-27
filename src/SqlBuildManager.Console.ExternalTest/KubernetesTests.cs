@@ -3,21 +3,11 @@ using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using ydn = YamlDotNet.Serialization;
-using System.Dynamic;
-using Microsoft.Azure.Management.Fluent;
-using Microsoft.Win32;
-using SqlBuildManager.Console.ContainerApp.Internal;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
-using System.Text.RegularExpressions;
-using Microsoft.Azure.Management.KeyVault.Fluent;
-using Microsoft.Azure.Management.AppService.Fluent.Models;
-using System.Diagnostics;
 
 namespace SqlBuildManager.Console.ExternalTest
 {

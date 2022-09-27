@@ -3,7 +3,7 @@ param
     [string] $prefix,
     [string] $resourceGroupName,
     [bool] $includeActiveBatchJobs = $true,
-    [bool] $removeAllContainerApps = $false
+    [bool] $removeAllContainerApps = $true
 )
 if("" -eq $resourceGroupName)
 {
