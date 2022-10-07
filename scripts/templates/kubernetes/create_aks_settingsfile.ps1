@@ -7,8 +7,8 @@ param
     [string] $eventHubNamespaceName,
     [string] $serviceBusNamespaceName,
     [string] $acrName, 
-    [string] $identityName,
     [string] $keyVaultName,
+    [string] $serviceAccountName,
     [string] $sqlUserName,
     [string] $sqlPassword,
     [ValidateSet("Password", "ManagedIdentity", "Both")]
@@ -30,8 +30,6 @@ else
 Write-Host "Retrieving secrets from Azure resources" -ForegroundColor DarkGreen
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
 
-$subscriptionId = az account show -o tsv --query id
-Write-Host "Using subscription id: '$subscriptionId'" -ForegroundColor DarkGreen
 
 Write-Host "Retrieving EventHub information" -ForegroundColor DarkGreen
 $eventHubAuthRuleName = az eventhubs eventhub authorization-rule list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName --eventhub-name $eventHubName -o tsv --query [].name
@@ -42,8 +40,8 @@ $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --res
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
 
 Write-Host "Retrieving Identity information" -ForegroundColor DarkGreen
-$clientID = az identity show --name $identityName --resource-group $resourceGroupName -o tsv --query clientId
-$tenantId = az identity show --name $identityName --resource-group $resourceGroupName -o tsv --query tenantId
+
+$tenantId = az account show -o tsv --query tenantId
 
 
 $settingsFile = Join-Path $path "settingsfile-k8s-sec.json"
@@ -55,11 +53,8 @@ $saveSettingsShared += @("--concurrency", "5")
 $saveSettingsShared += @("--concurrencytype", "Count")
 $saveSettingsShared += @("--registry", $acrName)
 $saveSettingsShared += @("--tag", "latest-vNext")
-$saveSettingsShared += @("--identityname", $identityName)
-$saveSettingsShared += @("--clientid", $clientID)
 $saveSettingsShared += @("--tenantid", $tenantId)
-$saveSettingsShared += @("--identityresourcegroup",$resourceGroupName )
-$saveSettingsShared += @("--subscriptionid",$subscriptionId )
+$saveSettingsShared  += @("--serviceaccountname", $serviceAccountName)
 $saveSettingsShared += @("--force")
 
 
@@ -98,7 +93,7 @@ if($authTypes -contains "ManagedIdentity")
     $params += @("-sb","$($serviceBusNamespaceName).servicebus.windows.net")
     $params += @("--authtype", "ManagedIdentity")
     
-
+    
     $settingsFile = Join-Path $path "settingsfile-k8s-sec-mi.json"
     Write-Host $params  -ForegroundColor Yellow
     Write-Host ($params + @("--settingsfile", """$settingsFile"""))-ForegroundColor Yellow

@@ -237,6 +237,18 @@ namespace SqlBuildManager.Console.CommandLine
                 return list;
             }
         }
+        private static List<Option> IdentityArgumentsForKubernetes
+        {
+            get
+            {
+                var list = new List<Option>()
+                {
+                    serviceAccountNameOption,
+                    tenantIdOption
+                };
+                return list;
+            }
+        }
         private static Option<string> clientIdOption = new Option<string>("--clientid", "Client ID (AppId) for the Azure User Assigned Managed Identity");
         private static Option<string> principalIdOption = new Option<string>("--principalid", "Principal ID for the Azure User Assigned Managed Identity");
         private static Option<string> resourceIdOption = new Option<string>("--resourceid", "Resource ID (full resource path) for the Azure User Assigned Managed Identity");
@@ -244,6 +256,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> identityNameOption = new Option<string>(new string[] { "-id","--id", "--identityname" }, "Name of User Assigned Managed identity that will be assigned") { IsRequired = true };
         private static Option<string> subscriptionIdOption = new Option<string>(new string[] { "--subscriptionid" }, "Azure subscription Id for the Azure resources");
         private static Option<string> tenantIdOption = new Option<string>(new string[] { "--tenantid" }, "Azure Active Directory Tenant Id for the Identity");
+        private static Option<string> serviceAccountNameOption = new Option<string>(new string[] { "--serviceaccountname", "--serviceaccount" }, "Kubernetes Service Account used for Workload Identity Authentication");
 
 
         //Database authentication args
@@ -1261,10 +1274,11 @@ namespace SqlBuildManager.Console.CommandLine
                     imageNameOption,
                     imageRepositoryOption
                 });
-                ConnectionAndSecretsOptions.ForEach(o => cmd.Add(o));
-                DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-                ConcurrencyOptions.ForEach(o => cmd.Add(o));
-                IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
+                cmd.AddRange(IdentityArgumentsForKubernetes);
+                cmd.AddRange(ConnectionAndSecretsOptions);
+                cmd.AddRange(DatabaseAuthArgs);
+                cmd.AddRange(ConcurrencyOptions);
+                //IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
                 cmd.Add(subscriptionIdOption);
                 cmd.Add(unitTestOption);
                
@@ -1294,6 +1308,8 @@ namespace SqlBuildManager.Console.CommandLine
                     imageTagOption,
                     imageNameOption,
                     imageRepositoryOption,
+
+                    serviceAccountNameOption
 
                 });
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, DirectoryInfo, string, FileInfo, FileInfo, bool>(Worker.SaveKubernetesYamlFiles);
@@ -1345,7 +1361,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(imageTagOption);
                 cmd.Add(imageNameOption);
                 cmd.Add(imageRepositoryOption);
-                cmd.AddRange(IdentityArgumentsForContainerApp);
+                cmd.AddRange(IdentityArgumentsForKubernetes);
                 cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConnectionAndSecretsOptions);
                 cmd.AddRange(DatabaseAuthArgs);
@@ -1734,6 +1750,10 @@ namespace SqlBuildManager.Console.CommandLine
                             ctx.HelpBuilder.CustomizeSymbol(clientIdOption,
                                 firstColumnText: $"\u0000{Environment.NewLine}** Identity Options:\u0000{Environment.NewLine}{OptionString(clientIdOption)}",
                                 secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{clientIdOption.Description}");
+
+                            ctx.HelpBuilder.CustomizeSymbol(serviceAccountNameOption,
+                                firstColumnText: $"\u0000{Environment.NewLine}** Identity Options:\u0000{Environment.NewLine}{OptionString(serviceAccountNameOption)}",
+                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{serviceAccountNameOption.Description}");
 
                             ctx.HelpBuilder.CustomizeSymbol(keyVaultNameOption,
                                 firstColumnText: $"\u0000{Environment.NewLine}** Connection and Secrets Options:\u0000{Environment.NewLine}{OptionString(keyVaultNameOption)}",

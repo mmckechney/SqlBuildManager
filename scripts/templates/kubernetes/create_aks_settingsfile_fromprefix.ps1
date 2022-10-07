@@ -39,11 +39,11 @@ Write-Host "Using storage account name:'$storageAccountName'" -ForegroundColor D
 Write-Host "Using Event Hub Namespace name:'$eventHubNamespaceName'" -ForegroundColor DarkGreen
 Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -ForegroundColor DarkGreen
 Write-Host "Using Azure Container Registry name:'$containerRegistryName'" -ForegroundColor DarkGreen
-Write-Host "Using identity name: '$userAssignedIdentityName'" -ForegroundColor DarkGreen
+Write-Host "Using Kubernetes Service Account name: '$serviceAccountName'" -ForegroundColor DarkGreen
 Write-Host "Using keyvault name: '$keyVaultName'" -ForegroundColor DarkGreen
 
 
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-.$scriptDir/create_aks_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName  $resourceGroupName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -acrName $containerRegistryName -identityName $userAssignedIdentityName -keyVaultName $keyVaultName
+.$scriptDir/create_aks_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName  $resourceGroupName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -acrName $containerRegistryName  -keyVaultName $keyVaultName -serviceAccount $serviceAccountName
 

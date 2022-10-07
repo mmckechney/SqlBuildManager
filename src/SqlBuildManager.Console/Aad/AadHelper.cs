@@ -24,9 +24,25 @@ namespace SqlBuildManager.Console.Aad
             set
             {
                 _managedIdentityClientId = value;
-                log.LogInformation($"ManagedIdentityClientId value set to {_managedIdentityClientId}");
+                if (!string.IsNullOrEmpty(_managedIdentityClientId))
+                {
+                    log.LogInformation($"ManagedIdentityClientId value set to {_managedIdentityClientId}");
+                }
             }
         }
+        private static string _tenantId = String.Empty;
+        public static string TenantId
+        {
+            get => _tenantId; set
+            {
+                _tenantId = value;
+                if (!string.IsNullOrEmpty(_tenantId))
+                {
+                    log.LogInformation($"TenantId value set to {_tenantId}");
+                }
+            }
+        }
+
         private static TokenCredential _tokenCred = null;
         internal static TokenCredential TokenCredential
         {
@@ -38,17 +54,36 @@ namespace SqlBuildManager.Console.Aad
 
                     if (string.IsNullOrWhiteSpace(AadHelper.ManagedIdentityClientId))
                     {
-                        _tokenCred = new DefaultAzureCredential();
-                        log.LogInformation("Creating DefaultAzureCredential, no ManagedIdentityClientId specified");
+                        if (!string.IsNullOrEmpty(AadHelper.TenantId))
+                        {
+                            log.LogInformation($"Creating DefaultAzureCredential for Tenant '{AadHelper.TenantId}', no ManagedIdentityClientId specified");
+                            _tokenCred = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { TenantId = AadHelper.TenantId });
+                        }
+                        else
+                        {
+                            log.LogInformation("Creating DefaultAzureCredential, no ManagedIdentityClientId specified");
+                            _tokenCred = new DefaultAzureCredential();
+                        }
+                        
                     }
                     else
                     {
-                        _tokenCred = new ChainedTokenCredential(new AzureCliCredential(), new ManagedIdentityCredential(ManagedIdentityClientId = AadHelper.ManagedIdentityClientId), new AzurePowerShellCredential());
+                        AzureCliCredentialOptions cliOpts = new AzureCliCredentialOptions();
+                        AzurePowerShellCredentialOptions pwshOpts = new AzurePowerShellCredentialOptions();
+                        if (!string.IsNullOrEmpty(AadHelper.TenantId))
+                        {
+                            cliOpts.TenantId = AadHelper.TenantId;
+                            pwshOpts.TenantId = AadHelper.TenantId;
+                        }
+                        
+                        _tokenCred = new ChainedTokenCredential(new AzureCliCredential(cliOpts), new ManagedIdentityCredential(ManagedIdentityClientId = AadHelper.ManagedIdentityClientId), new AzurePowerShellCredential(pwshOpts));
                         log.LogInformation($"Creating ChainedTokenCredential with ManagedIdentityClientId of: '{AadHelper.ManagedIdentityClientId}'");
                     }
                 }
                 return _tokenCred;
             }
         }
+
+        
     }
 }

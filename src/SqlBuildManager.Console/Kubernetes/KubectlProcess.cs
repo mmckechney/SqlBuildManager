@@ -30,6 +30,16 @@ namespace SqlBuildManager.Console.Kubernetes
             (int resp, string output, string error) = RunKubectl($"create  {resourceKind} {resourceName} {k8namespace}");
             return resp;
         }
+
+        public static string GetKubernetesResourcesInNamespace(string resourceKind, string k8namespace = "")
+        {
+            if (!string.IsNullOrWhiteSpace(k8namespace))
+            {
+                k8namespace = $" -n {k8namespace}";
+            }
+            (int resp, string output, string error) = RunKubectl($"get  {resourceKind} {k8namespace} -o json");
+            return output;
+        }
         public static int DescribeKubernetesResource(string resourceKind, string resourceName, string k8namespace = "")
         {
             if (!string.IsNullOrWhiteSpace(k8namespace))

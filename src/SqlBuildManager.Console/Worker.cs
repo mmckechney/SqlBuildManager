@@ -105,6 +105,7 @@ namespace SqlBuildManager.Console
         private static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine)
         {
             if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            if (cmdLine.IdentityArgs != null) AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
             bool decryptSuccess;
@@ -691,6 +692,7 @@ namespace SqlBuildManager.Console
             if (cmdLine.IdentityArgs != null)
             {
                 AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+                AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
             }
             DateTime start = DateTime.Now;
             log.LogDebug("Entering Threaded Execution");
@@ -1072,6 +1074,7 @@ namespace SqlBuildManager.Console
             if (cmdLine.IdentityArgs != null)
             {
                 AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+                AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
             }
             cmdLine.ContainerAppArgs.RunningAsContainerApp = true;
             
@@ -1295,12 +1298,17 @@ namespace SqlBuildManager.Console
             cmdLine.ContainerAppArgs = null;
             cmdLine.IdentityArgs.PrincipalId = null;
             cmdLine.IdentityArgs.ResourceId = null;
+            cmdLine.IdentityArgs.IdentityName = null;
+            cmdLine.IdentityArgs.ClientId = null;
+            cmdLine.IdentityArgs.ResourceGroup = null;
+            cmdLine.IdentityArgs.SubscriptionId = null;
             cmdLine.ContainerRegistryArgs.RegistryUserName = null;
             cmdLine.ContainerRegistryArgs.RegistryPassword = null;
-            if(cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
+            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
             {
                 cmdLine.KeyVaultName = null;
             }
+           
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
 
@@ -1533,6 +1541,7 @@ namespace SqlBuildManager.Console
             if (cmdLine.IdentityArgs != null)
             {
                 AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+                AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
             }
             return await RunGenericContainerQueueWorker(cmdLine);
         }

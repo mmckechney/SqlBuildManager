@@ -27,4 +27,8 @@ $aksClusterName = $prefix + "aks"
 $aksVnet = $prefix + "vnet"
 $nsgName = $prefix + "nsg"
 
+#Used with Kubernetes Workload Identity
+$serviceAccountName= $prefix + "serviceaccount"
+$federatedIdName = $prefix + "federatedidname"
+
 

@@ -13,8 +13,6 @@ namespace SqlBuildManager.Console.Kubernetes
         public string RuntimeConfigMapFile { get; set; }
         public string SecretsFile { get; set; }
         public string SecretsProviderFile { get; set; }
-        public string AzureIdentityFileName { get;set; }
-        public string AzureBindingFileName { get; set; }
         public string JobFileName { get; set; }
     }
 }

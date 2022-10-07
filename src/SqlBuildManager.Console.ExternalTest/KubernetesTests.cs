@@ -280,12 +280,6 @@ namespace SqlBuildManager.Console.ExternalTest
                 result = prc.ExecuteProcess("kubectl", $"apply -f {yamlFiles.SecretsProviderFile}");
                 Assert.AreEqual(0, result, "Failed to apply secrets provider file");
 
-                result = prc.ExecuteProcess("kubectl", $"apply -f {yamlFiles.AzureIdentityFileName}");
-                Assert.AreEqual(0, result, "Failed to apply pod identity file");
-
-                result = prc.ExecuteProcess("kubectl", $"apply -f {yamlFiles.AzureBindingFileName}");
-                Assert.AreEqual(0, result, "Failed to apply pod identity file");
-
                 if (!string.IsNullOrWhiteSpace(yamlFiles.SecretsFile))
                 {
                     result = prc.ExecuteProcess("kubectl", $"apply -f {yamlFiles.SecretsFile}");
@@ -436,11 +430,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 result = prc.ExecuteProcess("kubectl", $"apply -f {yamlFiles.SecretsProviderFile}");
                 Assert.AreEqual(0, result, "Failed to apply secrets provider file");
 
-                result = prc.ExecuteProcess("kubectl", $"apply -f {yamlFiles.AzureIdentityFileName}");
-                Assert.AreEqual(0, result, "Failed to apply pod identity file");
+                //result = prc.ExecuteProcess("kubectl", $"apply -f {yamlFiles.AzureIdentityFileName}");
+                //Assert.AreEqual(0, result, "Failed to apply pod identity file");
 
-                result = prc.ExecuteProcess("kubectl", $"apply -f {yamlFiles.AzureBindingFileName}");
-                Assert.AreEqual(0, result, "Failed to apply pod identity file");
+                //result = prc.ExecuteProcess("kubectl", $"apply -f {yamlFiles.AzureBindingFileName}");
+                //Assert.AreEqual(0, result, "Failed to apply pod identity file");
 
                 if (!string.IsNullOrWhiteSpace(yamlFiles.SecretsFile))
                 {

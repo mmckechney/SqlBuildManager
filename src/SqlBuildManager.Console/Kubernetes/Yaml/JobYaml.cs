@@ -4,9 +4,9 @@ using static SqlBuildManager.Console.Kubernetes.Yaml.Containers;
 
 namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
-    internal class JobYaml
+    public class JobYaml
     {
-        public JobYaml(string k8jobname, string k8ConfigMapName, string k8SecretsName, string k8SecretsProviderName, string registry, string image, string tag, bool hasKeyVault, bool useManagedIdentity)
+        public JobYaml(string k8jobname, string k8ConfigMapName, string k8SecretsName, string k8SecretsProviderName, string registry, string image, string tag, bool hasKeyVault, bool useManagedIdentity, string serviceAccountName)
         {
 
             if (!string.IsNullOrWhiteSpace(k8jobname))
@@ -20,7 +20,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
                 registry += ".azurecr.io";
             }
 
-            spec = new JobSpec(k8jobname, k8ConfigMapName, k8SecretsName);
+            spec = new JobSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
             spec.template.spec.containers[0].image = $"{registry}/{image}:{tag}";
             if (hasKeyVault) //replace volume with CSI driver
             {
@@ -62,12 +62,12 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         [YamlMember(Order = 4)]
         public JobSpec spec;
     }
-    internal class JobSpec
+    public class JobSpec
     {
 
-        public JobSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName)
+        public JobSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName)
         {
-            template = new JobTemplate(k8jobname, k8ConfigMapName, k8SecretsName);
+            template = new JobTemplate(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
         }
  
         [YamlMember(Order = 1)]
@@ -75,31 +75,31 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         [YamlMember(Order = 2)]
         public JobTemplate template;
     }
-    internal class JobTemplate
+    public class JobTemplate
     {
         
-        public JobTemplate(string k8jobname, string k8ConfigMapName, string k8SecretsName)
+        public JobTemplate(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName)
         {
             metadata =  new Dictionary<string, object>
             {
                 {"labels",  new Dictionary<string, string>
                     {
-                        {"jobgroup" , k8jobname },
-                        {"aadpodidbinding" , "azure-pod-identity-binding-selector" }
+                        {"jobgroup" , k8jobname }//,
+                        //{"aadpodidbinding" , "azure-pod-identity-binding-selector" }
                     }
                 }
             };
-            spec = new ContainerSpec(k8jobname, k8ConfigMapName, k8SecretsName);
+            spec = new ContainerSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
         }
         public Dictionary<string, object> metadata;
         public ContainerSpec spec;
 
     }
 
-    internal class ContainerSpec
+    public class ContainerSpec
     {
-
-        public ContainerSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName)
+        private string _serviceAccountName;
+        public ContainerSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName)
         {
             volumes = new Dictionary<string, object>[]
             {
@@ -123,6 +123,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
                 }
             };
             containers = new Containers[1] { new Containers(k8jobname) };
+            _serviceAccountName = serviceAccountName;
         }
         [YamlMember(Order = 1)]
         public Dictionary<string, string> nodeSelector = new Dictionary<string, string>
@@ -131,15 +132,17 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         };
 
         [YamlMember(Order = 2)]
+        public string serviceAccountName { get => _serviceAccountName; }
+        [YamlMember(Order = 3)]
         public Containers[] containers;
 
-        [YamlMember(Order = 3)]
-        public string restartPolicy { get { return "OnFailure"; } }
-
         [YamlMember(Order = 4)]
+        public string restartPolicy { get => "OnFailure";  }
+
+        [YamlMember(Order = 5)]
         public Dictionary<string, object>[] volumes;
     }
-    internal class Containers
+    public class Containers
     {
         private static string k8jobname = string.Empty;
         internal Containers(string k8jobname)
@@ -147,11 +150,11 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
             Containers.k8jobname = k8jobname;
         }
         [YamlMember(Order = 1)]
-        public string name { get { return k8jobname; } }
+        public string name { get => k8jobname;  }
         [YamlMember(Order = 2)]
         public string image { get; internal set; }
         [YamlMember(Order = 3)]
-        public string imagePullPolicy { get { return "Always"; } }
+        public string imagePullPolicy { get => "Always";  }
         
         [YamlMember(Order = 5)]
         public Dictionary<string, object> resources = new Dictionary<string, object>
@@ -173,7 +176,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
             };
 
 
-        internal class Mounts
+        public class Mounts
         {
             public string name { get; internal set; }
             public string mountPath { get; internal set; }

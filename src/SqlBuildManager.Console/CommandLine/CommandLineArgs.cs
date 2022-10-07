@@ -182,6 +182,15 @@ namespace SqlBuildManager.Console.CommandLine
 
         [JsonIgnore]
         public bool WhatIf { get; set; } = false;
+        [JsonIgnore]
+        public virtual string ServiceAccountName
+        {
+            set
+            {
+                if (IdentityArgs == null) IdentityArgs = new Identity();
+                IdentityArgs.ServiceAccountName = value;
+            }
+        }
 
         #region Not direct (inferred) commandline options
         [JsonIgnore]
@@ -454,6 +463,8 @@ namespace SqlBuildManager.Console.CommandLine
             public string ResourceGroup { get; set; } = string.Empty;
             public string SubscriptionId { get; set; } = string.Empty;
             public string TenantId { get; set; } = string.Empty;
+
+            public string ServiceAccountName { get; set; } = string.Empty;
         }
 
         

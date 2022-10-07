@@ -11,6 +11,12 @@
   <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
+	<ItemGroup>
+		<Content Include="..\TestConfig\**\*.*">
+			<Link>TestConfig\%(RecursiveDir)%(FileName)%(Extension)</Link>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\dbconfig.cfg" />
     <EmbeddedResource Include="Resources\InsertForThreadedTest.sbm" />

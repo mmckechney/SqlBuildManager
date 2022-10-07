@@ -157,12 +157,6 @@ namespace SqlBuildManager.Console.Kubernetes
                 returnCode += KubectlProcess.CreateKubernetesResource("namespace", KubernetesManager.SbmNamespace);
             }
 
-            log.LogInformation($"Applying file {files.AzureIdentityFileName}");
-            returnCode += KubectlProcess.ApplyFile(files.AzureIdentityFileName);
-
-            log.LogInformation($"Applying file {files.AzureBindingFileName}");
-            returnCode += KubectlProcess.ApplyFile(files.AzureBindingFileName);
-
             log.LogInformation($"Applying file {files.SecretsProviderFile}");
             returnCode += KubectlProcess.ApplyFile(files.SecretsProviderFile);
 
@@ -193,8 +187,6 @@ namespace SqlBuildManager.Console.Kubernetes
             }
             returnCode += KubectlProcess.DeleteKubernetesResource(ConfigmapYaml.Kind, ConfigmapYaml.k8ConfigMapName, KubernetesManager.SbmNamespace);
             returnCode += KubectlProcess.DeleteKubernetesResource(SecretsProviderYaml.Kind, SecretsProviderYaml.secretsProviderName, KubernetesManager.SbmNamespace);
-            //returnCode += KubectlProcess.DeleteKubernetesResource(AzureIdentityYaml.Kind, AzureIdentityYaml.Name, KubernetesManager.SbmNamespace);
-            //returnCode += KubectlProcess.DeleteKubernetesResource(AzureIdentityBindingYaml.Kind, AzureIdentityBindingYaml.Name, KubernetesManager.SbmNamespace);
             return returnCode == 0;
         }
 
@@ -311,17 +303,6 @@ namespace SqlBuildManager.Console.Kubernetes
             File.WriteAllText(secretsProviderFileName, secretsProvider);
             log.LogInformation($"Secrets Provider Class file written to: {secretsProviderFileName}");
 
-            //Create Azure Identity
-            string azureIdentity = KubernetesManager.GenerateIdentityYaml(cmdLine);
-            var azureIdentityFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "identity.yaml" : $"{prefix}-identity.yaml");
-            File.WriteAllText(azureIdentityFileName, azureIdentity);
-            log.LogInformation($"Identity file written to: {azureIdentityFileName}");
-
-            //Create Azure Identity Binding
-            string azureIdentityBinding = KubernetesManager.GenerateIdentityBindingYaml(cmdLine);
-            var azureIdentityBindingFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "identityBinding.yaml" : $"{prefix}-identityBinding.yaml");
-            File.WriteAllText(azureIdentityBindingFileName, azureIdentityBinding);
-            log.LogInformation($"Identity Binding file written to: {azureIdentityBindingFileName}");
 
             string jobYaml = KubernetesManager.GenerateJobYaml(cmdLine);
             var jobYamlFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "job.yaml" : $"{prefix}-job.yaml");
@@ -333,8 +314,6 @@ namespace SqlBuildManager.Console.Kubernetes
                 RuntimeConfigMapFile = cfgMapName,
                 SecretsFile = secretsName,
                 SecretsProviderFile = secretsProviderFileName,
-                AzureIdentityFileName = azureIdentityFileName,
-                AzureBindingFileName = azureIdentityBindingFileName,
                 JobFileName = jobYamlFileName,
             };
 
@@ -352,26 +331,7 @@ namespace SqlBuildManager.Console.Kubernetes
             return yamlString;
 
         }
-
-        internal static string GenerateIdentityYaml(CommandLineArgs args)
-        {
-            var yml = new Yaml.AzureIdentityYaml(args.IdentityArgs.IdentityName, args.IdentityArgs.ResourceId, args.IdentityArgs.ClientId);
-            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
-            var identityYaml = serializer.Serialize(yml);
-
-            return identityYaml;
-
-        }
-        internal static string GenerateIdentityBindingYaml(CommandLineArgs args)
-        {
-            var ymlB = new Yaml.AzureIdentityBindingYaml(args.IdentityArgs.IdentityName);
-            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
-            var bindingYaml = serializer.Serialize(ymlB);
-
-            return bindingYaml;
-
-        }
-
+            
         internal static string GenerateJobYaml(CommandLineArgs args)
         {
             bool hasKeyVault = !string.IsNullOrWhiteSpace(args.ConnectionArgs.KeyVaultName);
@@ -380,7 +340,7 @@ namespace SqlBuildManager.Console.Kubernetes
             string k8ConfigMapName = KubernetesConfigmapName(args);
             string k8SecretsName = KubernetesSecretsName(args);
             string k8SecretsProviderName= KubernetesSecretProviderClassName(args);
-            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName,k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer,args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, hasKeyVault, useMangedIdenty);
+            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName,k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer,args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, hasKeyVault, useMangedIdenty, args.IdentityArgs.ServiceAccountName);
             var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
             var jobYaml = serializer.Serialize(yml);
 

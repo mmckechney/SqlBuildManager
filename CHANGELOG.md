@@ -1,5 +1,9 @@
 # SQL Build Manager Change Log
 
+### Version 15.0.0
+
+- *NEW:* Updates Kubernetes deployment to leverage Workload Identity (vs Pod Identity). This is a breaking change from version 14.x
+
 ### Version 14.6.1
 
  - *UPDATED:* Added Windows installer setup project for SQL Build Manager windows form app
