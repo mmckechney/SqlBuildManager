@@ -11,7 +11,7 @@ if("" -eq $resourceGroupName)
 }
 
 Write-Host "Cleaning up old Service Bus Topic subscriptions from $sbNamespaceName"
-$subs = (az servicebus topic subscription list -g $resourceGroupName --namespace-name $sbNamespaceName --topic-name "sqlbuildmanager" ) | ConvertFrom-Json -AsHashtable
+$subs = (az servicebus topic subscription list -g $resourceGroupName --namespace-name $sbNamespaceName --topic-name "sqlbuildmanager" ) | ConvertFrom-Json
 if($null -ne $subs)
 {
     foreach($sub in $subs)

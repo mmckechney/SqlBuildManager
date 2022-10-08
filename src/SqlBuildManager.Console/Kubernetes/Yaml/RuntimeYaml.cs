@@ -65,5 +65,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         public string EventHubConnectionString { get; set; } = null;
         public string StorageAccountName { get; set; } = null;
 
+        public string KeyVaultName { get; set; } = null;
+
     }
 }

@@ -1,8 +1,8 @@
 # SQL Build Manager Change Log
 
-### Version 15.0.0
+### Version 15.0.0-beta
 
-- *NEW:* Updates Kubernetes deployment to leverage Workload Identity (vs Pod Identity). This is a breaking change from version 14.x
+- *NEW:* With v15+ the Kubernetes implementation is switching from using AAD Pod Identity to [Workload Identity (preview)](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview). Because Workload Identity is in Public Preview, v15 will remain in beta until the feature goes GA. This is a breaking change from any previous Kubernetes deployments. To understand how to configure your cluster, review the steps in the [create_aks_cluster.ps1](scripts/templates/kubernetes/create_aks_cluster.ps1) script.
 
 ### Version 14.6.1
 

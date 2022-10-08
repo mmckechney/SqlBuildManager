@@ -11,7 +11,7 @@ Write-Host "Output path set to $path" -ForegroundColor DarkGreen
 $outputDbConfigFile = Join-Path $path "databasetargets.cfg"
 $clientDbConfigFile = Join-Path $path "clientdbtargets.cfg"
 
-$sqlServers =  (az sql server list --resource-group $resourceGroupName ) | ConvertFrom-Json -AsHashtable
+$sqlServers =  (az sql server list --resource-group $resourceGroupName ) | ConvertFrom-Json
 Write-Host "Using server targets: $sqlServers"  -ForegroundColor Cyan
 foreach($server in $sqlServers)
 {

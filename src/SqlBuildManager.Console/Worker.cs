@@ -804,28 +804,23 @@ namespace SqlBuildManager.Console
             cmdLine.RunningAsContainer = true;
             bool success = true;
 
-            //runtime params
-            (success, cmdLine) = KubernetesManager.ReadRuntimeParameters(cmdLine);
+            //Configmap params
+            (success, cmdLine) = KubernetesManager.ReadConfigmapParameters(cmdLine);
             if (!success)
             {
                 log.LogError("Unable to acquire runtime values. Terminating container.");
                 return -2;
             }
 
-            //Get secrets
-            (success, cmdLine) = KubernetesManager.ReadSecrets(cmdLine);
-            if (!success)
+            if(!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
-                log.LogError("Unable to acquire secrets from secret store. Terminating container.");
-                return -2;
+                (bool discard, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+            }
+            else
+            {
+                (success, cmdLine) = KubernetesManager.ReadOpaqueSecrets(cmdLine);
             }
       
-            if(cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
-            {
-                int sleepTime = 10;
-                log.LogInformation($"Sleeping for {sleepTime} seconds to assure Managed Identity Assignment");
-                Thread.Sleep(sleepTime * 1000);
-            }
             return await RunGenericContainerQueueWorker(cmdLine);
         }
 

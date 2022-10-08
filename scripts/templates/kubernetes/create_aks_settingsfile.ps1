@@ -27,6 +27,15 @@ else
     $authTypes = @($authType)
 }
 
+$keyFile = Join-Path $path "settingsfilekey.txt"
+if($false -eq (Test-Path $keyFile))
+{
+    $AESKey = New-Object Byte[] 32
+    [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)
+    $settingsFileKey = [System.Convert]::ToBase64String($AESKey);
+    $settingsFileKey |  Set-Content -Path $keyFile
+}
+
 Write-Host "Retrieving secrets from Azure resources" -ForegroundColor DarkGreen
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
 
@@ -45,7 +54,6 @@ $tenantId = az account show -o tsv --query tenantId
 
 
 $settingsFile = Join-Path $path "settingsfile-k8s-sec.json"
-$keyFile = Join-Path $path "settingsfilekey.txt"
 
 $saveSettingsShared =  @("k8s", "savesettings")
 $saveSettingsShared += @("--settingsfilekey", """$keyFile""")

@@ -1467,6 +1467,24 @@ namespace SqlBuildManager.Console.CommandLine
                 return cmd;
             }
         }
+        private static Command kubernetesAksCommand
+        {
+            get
+            {
+                var cmd = new Command("aks", "Commands for setting and executing a build running in pods on Kubernetes");
+                cmd.Add(kubernetesSaveSettingsCommand);
+                cmd.Add(KubernetesRunCommand);
+                cmd.Add(kubernetesPrepCommand);
+                cmd.Add(kubernetesEnqueueTargetsCommand);
+                cmd.Add(kubernetesMonitorCommand);
+                cmd.Add(kubernetesDequeueTargetsCommand);
+                cmd.Add(KubernetesCreateYamlCommand);
+                cmd.Add(kubernetesWorkerCommand);
+                
+                cmd.IsHidden = true;
+                return cmd;
+            }
+        }
 
         #endregion
         public static RootCommand SetUp()
@@ -1658,6 +1676,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(threadedCommand);
             rootCommand.Add(containerAppCommand);
             rootCommand.Add(kubernetesCommand);
+            rootCommand.Add(kubernetesAksCommand);
             rootCommand.Add(aciCommand);
             rootCommand.Add(batchCommand);
             rootCommand.Add(utilityCommand);

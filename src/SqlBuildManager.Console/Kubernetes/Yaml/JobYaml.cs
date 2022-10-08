@@ -22,12 +22,8 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 
             spec = new JobSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
             spec.template.spec.containers[0].image = $"{registry}/{image}:{tag}";
-            if (hasKeyVault) //replace volume with CSI driver
-            {
-                spec.template.spec.volumes = new List<Dictionary<string, object>> { spec.template.spec.volumes[0], new SecretsConfigs(k8SecretsProviderName).csi }.ToArray();
-            }
 
-            if (useManagedIdentity) //remove secrets volume and mount
+            if (useManagedIdentity || hasKeyVault) //remove secrets volume and mount
             {
                 spec.template.spec.volumes = new List<Dictionary<string, object>> { spec.template.spec.volumes[0] }.ToArray();
                 spec.template.spec.containers[0].volumeMounts = new Mounts[] { spec.template.spec.containers[0].volumeMounts[0] };
@@ -181,37 +177,6 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
             public string name { get; internal set; }
             public string mountPath { get; internal set; }
             public string readOnly { get; internal set; }
-        }
-
-        internal class SecretsConfigs
-        {
-
-            public SecretsConfigs(string k8SecretsProviderName)
-            {
-
-                csi = new Dictionary<string, object>
-                {
-                    { "name", "sbm" },
-                    {
-                        "csi",
-                        new Dictionary<string, object>
-                        {
-                            { "driver", "secrets-store.csi.k8s.io" },
-                            { "readOnly", "true" },
-                            {
-                                "volumeAttributes",
-                                new Dictionary<string, string>
-                                {
-                                    { "secretProviderClass",k8SecretsProviderName }
-                                }
-                            }
-                        }
-                    }
-                };
-            }
-            public Dictionary<string, object> csi;
-
-           
         }
     }
 }

@@ -37,6 +37,7 @@ $prefix,
 # Get set resource name variables from prefix
 #############################################
 . ./prefix_resource_names.ps1 -prefix $prefix
+. ./key_file_names.ps1 -prefix $prefix -path $outputPath
 
  if($false -eq (Test-Path  $outputPath))
  {
@@ -60,16 +61,16 @@ az deployment group create --resource-group $resourceGroupName --template-file a
 ####################
 # Set Identity privs
 ####################
- ./ManagedIdentity/set_managedidentity_rbac_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName
+ ./ManagedIdentity/set_managedidentity_rbac_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName --path $outputPath
 
- ./ManagedIdentity/set_current_user_rbac_fromprefix.ps1 -prefix $prefix 
+ ./ManagedIdentity/set_current_user_rbac_fromprefix.ps1 -prefix $prefix -path $outputPath
 
 #################
 # Batch
 #################
 if($deployBatch)
 {
-    ./Batch/create_batch_account_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName
+    ./Batch/create_batch_account_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath
 }
 else 
 {
@@ -81,15 +82,15 @@ else
 ########################################
 if($deployContainerRegistry)
 {
-    ./ContainerRegistry/create_container_registry_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix
-    ./ContainerRegistry/build_container_registry_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -wait $false
+    ./ContainerRegistry/create_container_registry_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -path $outputPath
+    ./ContainerRegistry/build_container_registry_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -wait $false -path $outputPath
 }
 #################
 # AKS
 #################
 if($deployAks)
 {
-    ./Kubernetes/create_aks_cluster.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -includeContainerRegistry $deployContainerRegistry
+    ./Kubernetes/create_aks_cluster.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -includeContainerRegistry $deployContainerRegistry -path $outputPath
 }
 else 
 {
@@ -101,7 +102,7 @@ else
 #################
 if($deployContainerAppEnv)
 {
-    ./ContainerApp/create_containerapp_env_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName 
+    ./ContainerApp/create_containerapp_env_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath
 
 }
 else 
@@ -115,7 +116,7 @@ else
 if($testDatabaseCount -gt 0)
 {
    ./Database/create_databases_from_prefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path  $outputPath -testDatabaseCount $testDatabaseCount
-   ./Database/create_login_for_managedidentity_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path  $outputPath
+   ./Database/create_login_for_managedidentity_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path  $outputPath 
 }
 else 
 {

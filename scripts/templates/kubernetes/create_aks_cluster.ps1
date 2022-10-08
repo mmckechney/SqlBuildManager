@@ -10,6 +10,7 @@ Write-Host "Create AKS cluster"  -ForegroundColor Cyan
 # Get set resource name variables from prefix
 #############################################
 . ./../prefix_resource_names.ps1 -prefix $prefix
+. ./../key_file_names.ps1 -prefix $prefix -path $path
 
 $aksSubnet = "akssubnet"
 #$virtualKubletSubnet = "virtualnodesubnet"
@@ -61,10 +62,7 @@ $aksSubnetId = az network vnet subnet show --resource-group $resourceGroupName -
 # az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-managed-identity --enable-pod-identity --network-plugin azure --enable-addons virtual-node --vnet-subnet-id $aksSubnetId --aci-subnet-name $virtualKubletSubnet --yes -o table
 
 Write-Host "Creating AKS Cluster: $aksClusterName" -ForegroundColor DarkGreen
-az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-oidc-issuer --enable-workload-identity --network-plugin azure --vnet-subnet-id $aksSubnetId --yes -o table
-
-Write-Host "Enabling Azure Keyvault Secrets provider on AKS Cluster: $aksClusterName" -ForegroundColor DarkGreen
-az aks addon enable  --name $aksClusterName --resource-group $resourceGroupName -a azure-keyvault-secrets-provider -o table 
+az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-oidc-issuer --enable-workload-identity --network-plugin azure --vnet-subnet-id $aksSubnetId  --generate-ssh-keys --yes -o table
 
 if($includeContainerRegistry)
 {

@@ -16,6 +16,7 @@ $path = Resolve-Path $path
 # Get set resource name variables from prefix
 #############################################
 . ./../prefix_resource_names.ps1 -prefix $prefix
+. ./../key_file_names.ps1 -prefix $prefix -path $path
 
 Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
 if([string]::IsNullOrWhiteSpace($sqlUserName))

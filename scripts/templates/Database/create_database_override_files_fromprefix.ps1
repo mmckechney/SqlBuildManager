@@ -9,6 +9,7 @@ param
 # Get set resource name variables from prefix
 #############################################
 . ./../prefix_resource_names.ps1 -prefix $prefix
+. ./../key_file_names.ps1 -prefix $prefix -path $path
 
 $path = Resolve-Path $path
 

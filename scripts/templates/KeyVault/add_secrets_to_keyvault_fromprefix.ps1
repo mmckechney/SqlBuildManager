@@ -11,6 +11,7 @@ param
 # Get set resource name variables from prefix
 #############################################
 . ./../prefix_resource_names.ps1 -prefix $prefix
+. ./../key_file_names.ps1 -prefix $prefix -path $path
 
 Write-Host "Adding secrets to Key Vault from prefix: $prefix "  -ForegroundColor Cyan
 $path = Resolve-Path $path

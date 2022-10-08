@@ -9,6 +9,7 @@ param
 # Get set resource name variables from prefix
 #############################################
 . ./../prefix_resource_names.ps1 -prefix $prefix
+. ./../key_file_names.ps1 -prefix $prefix -path $path
 
 Write-Host "Create Container App Environment from prefix: $prefix"  -ForegroundColor Cyan
 Write-Host "Using Container App Environment name: '$containerAppEnvName'"  -ForegroundColor Green

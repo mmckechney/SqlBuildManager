@@ -35,7 +35,7 @@ $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list -
 $serviceBusTopicAuthRuleName = az servicebus topic authorization-rule list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" -o tsv --query "[].name"
 $serviceBusConnectionString = az servicebus topic authorization-rule keys list --resource-group $resourceGroupName --namespace-name $serviceBusNamespaceName --topic-name "sqlbuildmanager" --name $serviceBusTopicAuthRuleName -o tsv --query "primaryConnectionString"
 
-$identity =  az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json -AsHashtable
+$identity =  az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json
 $subscriptionId = az account show -o tsv --query id
 
 $settingsJsonWindows = Join-Path $path "settingsfile-batch-windows.json"
