@@ -101,12 +101,12 @@ namespace SqlBuildManager.Console.ExternalTest
             string logFile = Path.Combine(@"C:\temp", LogFileName);
            return string.Join(Environment.NewLine, ReadLines(logFile).Skip(startingLine).ToArray());
         }
- 
+
         #endregion
 
-        
 
-        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count,10)]
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.Count, 10)]
 
@@ -132,6 +132,7 @@ namespace SqlBuildManager.Console.ExternalTest
             int startingLine = LogFileCurrentLineCount();
 
             var args = new string[]{
+                "--loglevel", "Debug",
                 "batch",  batchMethod,
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
@@ -946,6 +947,7 @@ namespace SqlBuildManager.Console.ExternalTest
            int startingLine = LogFileCurrentLineCount();
             var concurType = ConcurrencyType.Count.ToString();
             var args = new string[]{
+                "--loglevel", "Debug",
                 "batch", "enqueue",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,
@@ -962,6 +964,7 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
+                "--loglevel", "Debug",
                 "batch",  batchMethod,
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", this.settingsFileKeyPath,

@@ -151,5 +151,17 @@ namespace SqlBuildManager.Console.Arm
             }
         }
 
+
+        internal static (string,string, string) GetSubRgAndIdentityName(string identityResourceId)
+        {
+            try
+            {
+                var ri = new ResourceIdentifier(identityResourceId);
+                return (ri.SubscriptionId, ri.ResourceGroupName, ri.Name);
+            }catch
+            {
+                return (null, null, null);
+            }
+        }
     }
 }

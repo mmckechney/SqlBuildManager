@@ -74,7 +74,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--outputfile", outputFile,
                 "--containercount", containerCount.ToString(),
                 "--concurrencytype", concurrencyType.ToString(),
-                "--concurrency", concurrency.ToString()
+                "--concurrency", concurrency.ToString(),
+                "--force"
             };
 
             var val = rootCommand.InvokeAsync(args);
@@ -142,7 +143,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--outputfile", outputFile,
                 "--containercount", containerCount.ToString(),
                 "--concurrencytype", concurrencyType.ToString(),
-                "--concurrency", concurrency.ToString()
+                "--concurrency", concurrency.ToString(),
+                "--force"
             };
 
             var val = rootCommand.InvokeAsync(args);
@@ -197,12 +199,12 @@ namespace SqlBuildManager.Console.ExternalTest
             string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
             File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
 
-            //Get the creds locally from the K8s file
-            var secretsFile = Path.GetFullPath("TestConfig/k8s-secrets.yaml");
-            var ymlD = new ydn.Deserializer();
-            var obj = ymlD.Deserialize<dynamic>(File.ReadAllText(secretsFile));
-            var pw = Encoding.UTF8.GetString(Convert.FromBase64String(obj["data"]["Password"]));
-            var un = Encoding.UTF8.GetString(Convert.FromBase64String(obj["data"]["UserName"]));
+            //Get the creds for the DB to be used for unit test DACPAC creation
+            var userNameFile = Path.GetFullPath("TestConfig/un.txt");
+            var un = File.ReadAllText(userNameFile).Trim();
+            var pwFile = Path.GetFullPath("TestConfig/pw.txt");
+            var pw = File.ReadAllText(pwFile).Trim();
+
 
             var cmdLine = new CommandLineArgs() { UserName = un, Password = pw };
             DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
@@ -226,7 +228,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--containercount", containerCount.ToString(),
                 "--concurrencytype", concurrencyType.ToString(),
                 "--concurrency", concurrency.ToString(),
-                "--override", minusFirst
+                "--override", minusFirst,
+                 "--force"
             };
 
             var val = rootCommand.InvokeAsync(args);
@@ -283,12 +286,11 @@ namespace SqlBuildManager.Console.ExternalTest
             string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
             File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
 
-            //Get the creds locally from the K8s file
-            var secretsFile = Path.GetFullPath("TestConfig/k8s-secrets.yaml");
-            var ymlD = new ydn.Deserializer();
-            var obj = ymlD.Deserialize<dynamic>(File.ReadAllText(secretsFile));
-            var pw = Encoding.UTF8.GetString(Convert.FromBase64String(obj["data"]["Password"]));
-            var un = Encoding.UTF8.GetString(Convert.FromBase64String(obj["data"]["UserName"]));
+            //Get the creds for the DB to be used for unit test DACPAC creation
+            var userNameFile = Path.GetFullPath("TestConfig/un.txt");
+            var un = File.ReadAllText(userNameFile).Trim();
+            var pwFile = Path.GetFullPath("TestConfig/pw.txt");
+            var pw = File.ReadAllText(pwFile).Trim();
 
             var cmdLine = new CommandLineArgs() { UserName = un, Password = pw };
             DatabaseHelper.CreateRandomTable(cmdLine, new List<string>() { firstOverride, thirdOverride });
@@ -312,7 +314,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--containercount", containerCount.ToString(),
                 "--concurrencytype", concurrencyType.ToString(),
                 "--concurrency", concurrency.ToString(),
-                "--override", minusFirst
+                "--override", minusFirst,
+                "--force"
             };
 
             var val = rootCommand.InvokeAsync(args);

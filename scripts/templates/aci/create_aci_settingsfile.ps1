@@ -38,7 +38,7 @@ if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($
 {
     $haveSqlInfo = $false
 }
-
+$tenantId = az account show -o tsv --query tenantId
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
 
 $eventHubName = az eventhubs eventhub list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName -o tsv --query "[?contains(@.name '$prefix')].name"
@@ -104,6 +104,7 @@ foreach($auth in $authTypes)
     $params += ("--clientid", $identityClientId)
     $params += ("--idrg", $resourceGroupName)
     $params += ("--acirg", $resourceGroupName)
+    $params += @("--tenantid", $tenantId)
     $params += ("-kv", $keyVaultName)
     $params += ("--storageaccountname", $storageAccountName)
 

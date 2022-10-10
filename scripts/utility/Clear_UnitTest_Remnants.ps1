@@ -19,5 +19,14 @@ if($removeAllContainerApps)
 }
 .\Clear_UnitTest_YamlFiles.ps1 
 kubectl delete all --all -n sqlbuildmanager
-kubectl delete configmap --all -n sqlbuildmanager
+
+$configMaps = (kubectl get configmap -o name)
+foreach($map in $configMaps) 
+{ 
+    if($map -ne "configmap/kube-root-ca.crt") 
+    { 
+        kubectl delete $map
+    }
+}
+
 kubectl delete secret  -n sqlbuildmanager --field-selector=type=Opaque

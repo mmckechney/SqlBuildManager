@@ -62,7 +62,7 @@ $saveSettingsShared += @("--concurrencytype", "Count")
 $saveSettingsShared += @("--registry", $acrName)
 $saveSettingsShared += @("--tag", "latest-vNext")
 $saveSettingsShared += @("--tenantid", $tenantId)
-$saveSettingsShared  += @("--serviceaccountname", $serviceAccountName)
+$saveSettingsShared += @("--serviceaccountname", $serviceAccountName)
 $saveSettingsShared += @("--force")
 
 

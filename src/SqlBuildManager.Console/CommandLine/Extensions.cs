@@ -43,8 +43,6 @@ namespace SqlBuildManager.Console.CommandLine
                     {
                         args.AddRange(property.GetValue(obj).ToArgs(toStringType));
                     }
-                    break;
-
                 }
                 else if (property.PropertyType == typeof(CommandLineArgs.DacPac) ||
                          property.PropertyType == typeof(CommandLineArgs.Identity))
@@ -136,6 +134,18 @@ namespace SqlBuildManager.Console.CommandLine
                             else
                             {
                                 args.AddRange(new string[] { "--resourcegroup", property.GetValue(obj).ToString().Quoted() });
+                            }
+                            break;
+                        case "TenantId":
+                            if(toStringType != StringType.Batch)
+                            {
+                                args.AddRange(new string[] { "--tenantid", property.GetValue(obj).ToString().Quoted() });
+                            }
+                            break;
+                        case "ServiceAccountName":
+                            if (toStringType != StringType.Batch)
+                            {
+                                args.AddRange(new string[] { "--serviceaccountname", property.GetValue(obj).ToString().Quoted() });
                             }
                             break;
                         case "BatchJobName": //Ignore this because it will be counted as a duplicate for JobName

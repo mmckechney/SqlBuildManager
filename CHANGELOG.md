@@ -1,8 +1,11 @@
 # SQL Build Manager Change Log
 
-### Version 15.0.0-beta
+### Version 15.0.1-beta
 
 - *NEW:* With v15+ the Kubernetes implementation is switching from using AAD Pod Identity to [Workload Identity (preview)](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview). Because Workload Identity is in Public Preview, v15 will remain in beta until the feature goes GA. This is a breaking change from any previous Kubernetes deployments. To understand how to configure your cluster, review the steps in the [create_aks_cluster.ps1](scripts/templates/kubernetes/create_aks_cluster.ps1) script.
+- *UPDATED:* Application now targets .NET 7
+_ *ADDED:* Option to provide Azure AD Tenant ID for deployments. This will be necessary if local ID has access to multiple tenants and the target tenant is not the default
+- *FIXED:* Regression in Batch processing from generated settings files. 
 
 ### Version 14.6.1
 

@@ -140,6 +140,12 @@ namespace SqlBuildManager.Console.Batch
             log.LogInformation($"Using Azure Batch account: {cmdLine.ConnectionArgs.BatchAccountName} ({cmdLine.ConnectionArgs.BatchAccountUrl})");
             log.LogInformation($"Setting job id to: {jobId}");
 
+            //Use the storage container name as the job name if using an override config (vs. queue)
+            if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && string.IsNullOrWhiteSpace(cmdLine.JobName))
+            {
+                cmdLine.JobName = storageContainerName;
+            }
+
             string readOnlySasToken = string.Empty;
             try
             {
@@ -162,6 +168,11 @@ namespace SqlBuildManager.Console.Batch
                 // Create a Batch pool, VM configuration, Windows Server image
                 //bool success = CreateBatchPoolLegacy(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount,cmdLine.BatchArgs.BatchVmSize,cmdLine.BatchArgs.BatchPoolOs);
                 bool success = await CreateBatchPool(cmdLine, poolId);
+                if(!success)
+                {
+                    log.LogError("Unable to create Batch node pool. Can not continue processing");
+                    return (-324, "");
+                }
 
 
                 // The collection of data files that are to be processed by the tasks
@@ -599,6 +610,7 @@ namespace SqlBuildManager.Console.Batch
 
             //var creds = new BatchSharedKeyCredential(batchAccountName, batchAccountKey);
             if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            if (cmdLine.IdentityArgs != null) AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
             var creds = new CustomClientCredentials(AadHelper.TokenCredential);
             var managementClient = new BatchManagementClient(creds);
             managementClient.SubscriptionId = subscriptionId;
@@ -609,8 +621,8 @@ namespace SqlBuildManager.Console.Batch
             switch (os)
             {
                 case OsType.Linux:
-                    imageReference = new bm.ImageReference(publisher: "Canonical", offer: "UbuntuServer", sku: "18.04-lts", version: "latest");
-                    virtualMachineConfiguration = new bm.VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 18.04");
+                    imageReference = new bm.ImageReference(publisher: "microsoft-azure-batch", offer: "ubuntu-server-container", sku: "20-04-lts", version: "latest");
+                    virtualMachineConfiguration = new bm.VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 20.04");
                     break;
 
                 case OsType.Windows:
@@ -844,7 +856,11 @@ namespace SqlBuildManager.Console.Batch
             // Create a Batch pool, VM configuration, Windows Server image
            // bool success = CreateBatchPoolLegacy(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize, cmdLine.BatchArgs.BatchPoolOs);
             bool success = CreateBatchPool(cmdLine, PoolName).GetAwaiter().GetResult();
-
+            if (!success)
+            {
+                log.LogError("Unable to create Batch node pool. Cannot continue processing");
+                return (-324);
+            }
             if (cmdLine.BatchArgs.PollBatchPoolStatus)
             {
                 log.LogInformation($"Waiting for pool {this.PoolName} to be created");

@@ -1415,7 +1415,7 @@ namespace SqlBuildManager.Console
                 }
             }
 
-            if (await StorageManager.StorageContainerExists(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
+            if (StorageManager.StorageContainerHasExistingFiles(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName))
             {
                 if (!force)
                 {
@@ -1480,6 +1480,7 @@ namespace SqlBuildManager.Console
 
         internal static async Task<int> DeployAciTemplate(CommandLineArgs cmdLine, FileInfo templateFile, bool monitor, bool unittest = false, bool stream = false)
         {
+            Init(cmdLine);
             if (monitor)
             {
                 bool kvSuccess;
@@ -1543,6 +1544,7 @@ namespace SqlBuildManager.Console
 
         internal static async Task<int> PrepAndUploadAciBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo platinumDacpac, FileInfo outputFile, bool force)
         {
+            Init(cmdLine);
             if(packageName != null) cmdLine.BuildFileName = packageName.FullName;
             var valErrors = Validation.ValidateAciAppArgs(cmdLine);
             if(valErrors.Count > 0)
@@ -2342,6 +2344,7 @@ namespace SqlBuildManager.Console
 
         internal async static Task<int> EnqueueOverrideTargets(CommandLineArgs cmdLine)
         {
+            Init(cmdLine);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(applicationLogFileName);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(applicationLogFileName, cmdLine.RootLoggingPath);
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);

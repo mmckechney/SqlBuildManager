@@ -47,10 +47,10 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    - name: Setup .NET 6
+    - name: Setup .NET 7
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '7.x'
 
  
     - name: Clean
@@ -60,10 +60,10 @@ jobs:
       run: dotnet clean ./src/SqlSync/SQLSync.csproj --configuration Release && dotnet nuget locals all --clear
     
     - name: Restore and build console app
-      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net6.0
+      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net7.0
 
     - name: Restore and build desktop app
-      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f net6.0-windows
+      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f net7.0-windows
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl

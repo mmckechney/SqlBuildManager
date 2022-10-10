@@ -457,6 +457,14 @@ namespace SqlBuildManager.Console.CommandLine
                 }
                 set
                 {
+                    (string sub, string rg, string name) = Arm.ArmHelper.GetSubRgAndIdentityName(value);
+                    if(sub != null)
+                    {
+                        IdentityName = name;
+                        SubscriptionId = sub;
+                        ResourceGroup = rg;
+
+                    }
                     this._resourceid = value;
                 }
             }

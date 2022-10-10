@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using SqlBuildManager.Console.ContainerApp.Internal;
 using static System.Net.WebRequestMethods;
+using System.Security.Policy;
 
 namespace SqlBuildManager.Console.CloudStorage
 {
@@ -210,11 +211,20 @@ namespace SqlBuildManager.Console.CloudStorage
 
             return (jobId, storageContainerName);
         }
-        internal static async Task<bool> StorageContainerExists(string storageAccountName, string storageAccountKey, string containerName)
+        internal static bool StorageContainerHasExistingFiles(string storageAccountName, string storageAccountKey, string containerName)
         {
             var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
-            var r = await container.ExistsAsync();
-            return r.Value;
+           var files = container.GetBlobs();
+            if(files.Any())
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+    
+
 
         }
         internal static async Task<bool> DeleteStorageContainer(string storageAccountName, string storageAccountKey, string containerName)
@@ -252,7 +262,6 @@ namespace SqlBuildManager.Console.CloudStorage
                     string blobName = Path.GetFileName(filePath);
 
                     var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
-                    await container.CreateIfNotExistsAsync();
 
                     var blobData = GetBlockBlobClient(storageAccountName, storageAccountKey, containerName, blobName);
                     using (var fs = new FileStream(filePath, FileMode.Open))
@@ -465,13 +474,18 @@ namespace SqlBuildManager.Console.CloudStorage
             if (string.IsNullOrWhiteSpace(storageAccountKey))
 {
                 var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
+                log.LogDebug($"Creating container with URL: '{url}' and Token Credential");
                 containerClient = new BlobContainerClient(new Uri(url), Aad.AadHelper.TokenCredential);
             }
             else
             {
+
                 var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
+                log.LogDebug($"Creating container with account name '{storageAccountName}' and container name '{containerName}' and key '{storageAccountKey}'. ");
                 containerClient = new BlobContainerClient(connstr, containerName);
             }
+
+            containerClient.CreateIfNotExists();
             return containerClient;
         }
         private static BlockBlobClient GetBlockBlobClient(string storageAccountName, string storageAccountKey, string containerName, string blobName)

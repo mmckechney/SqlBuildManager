@@ -38,7 +38,7 @@ if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($
 {
     $haveSqlInfo = $false
 }
-
+$tenantId = az account show -o tsv --query tenantId
 Write-Host "Retrieving keys from resources in $resourceGroupName... $storageAccountName" -ForegroundColor DarkGreen
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
 
@@ -124,7 +124,7 @@ foreach($auth in $authTypes)
     $tmpPath = "$($settingsContainerApp).json"
     Write-Host "Saving settings file to $tmpPath" -ForegroundColor DarkGreen
 
-    
+    $params += @("--tenantid", $tenantId)
     $params +=("--environmentname",$containerAppEnvironmentName)
     $params +=("--location",$location)
     $params +=("--resourcegroup", $resourceGroupName)

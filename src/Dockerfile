@@ -1,9 +1,9 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/runtime:6.0.2-focal AS base
+FROM mcr.microsoft.com/dotnet/runtime:7.0.0 AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.200-focal AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0.0 AS build
 WORKDIR /src
 
 
@@ -36,10 +36,10 @@ RUN dotnet restore "SqlBuildManager.Console/sbm.csproj"
 
 COPY . .
 WORKDIR "/src/SqlBuildManager.Console"
-RUN dotnet build "sbm.csproj" --configuration Release -f net6.0 -o /app/build -r linux-x64 
+RUN dotnet build "sbm.csproj" --configuration Release -f net7.0 -o /app/build -r linux-x64 
 
 FROM build AS publish
-RUN dotnet publish "sbm.csproj" --configuration Release -f net6.0 -o /app/publish -r linux-x64  
+RUN dotnet publish "sbm.csproj" --configuration Release -f net7.0 -o /app/publish -r linux-x64  
 
 FROM base AS final
 WORKDIR /app

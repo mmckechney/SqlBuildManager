@@ -62,7 +62,6 @@ namespace SqlBuildManager.Console.Events
                 if (_blobClient == null)
                 {
                     _blobClient = cs.StorageManager.GetBlobContainerClient(this.storageAccountName, this.storageAccountKey, "eventhubcheckpoint");
-                    _blobClient.CreateIfNotExistsAsync().Wait();
                 }
                 return _blobClient;
             }

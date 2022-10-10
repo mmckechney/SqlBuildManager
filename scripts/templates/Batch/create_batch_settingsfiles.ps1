@@ -37,6 +37,7 @@ $serviceBusConnectionString = az servicebus topic authorization-rule keys list -
 
 $identity =  az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json
 $subscriptionId = az account show -o tsv --query id
+$tenantId = az account show -o tsv --query tenantId
 
 $settingsJsonWindows = Join-Path $path "settingsfile-batch-windows.json"
 $settingsJsonWindowsMi = Join-Path $path "settingsfile-batch-windows-mi.json"
@@ -90,6 +91,7 @@ $params += @("--clientid",$identity.clientId)
 $params += @("--principalid",$identity.principalId)
 $params += @("--resourceid",$identity.id)
 $params += @("--idrg",$identity.resourceGroup)
+$params += @("--tenantid", $tenantId)
 $params += @("--subscriptionid", $subscriptionId)
 $params += @("--silent")
 

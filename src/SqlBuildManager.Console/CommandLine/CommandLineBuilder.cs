@@ -218,7 +218,9 @@ namespace SqlBuildManager.Console.CommandLine
                     principalIdOption,
                     resourceIdOption,
                     identityResourceGroupOption,
-                    subscriptionIdOption
+                    subscriptionIdOption,
+                    identityNameOption, 
+                    tenantIdOption
                 };
                 return list;
             }
@@ -733,6 +735,7 @@ namespace SqlBuildManager.Console.CommandLine
                     deletebatchjobOption,
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
+                    jobnameOption
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
                 BatchComputeOptions.ForEach(o => cmd.Add(o));
@@ -764,7 +767,8 @@ namespace SqlBuildManager.Console.CommandLine
                     outputcontainersasurlOption,
                     transactionalOption,
                     timeoutretrycountOption,
-                    silentOption
+                    silentOption,
+                    jobnameOption
 
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
