@@ -59,7 +59,7 @@ jobs:
 
     # .NET 7.0 pubish
     - name: Publish the Windows desktop app
-      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f ${{ env.DOTNET_VERSION }}windows 
+      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f ${{ env.DOTNET_VERSION }}-windows 
 
     - name: Publish the Windows CLI app 
       run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release -f ${{ env.DOTNET_VERSION }} --self-contained
