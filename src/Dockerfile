@@ -36,10 +36,10 @@ RUN dotnet restore "SqlBuildManager.Console/sbm.csproj"
 
 COPY . .
 WORKDIR "/src/SqlBuildManager.Console"
-RUN dotnet build "sbm.csproj" --configuration Release -f net7.0 -o /app/build -r linux-x64 
+RUN dotnet build "sbm.csproj" --configuration Release -f net7.0 -o /app/build -r linux-x64 --self-contained
 
 FROM build AS publish
-RUN dotnet publish "sbm.csproj" --configuration Release -f net7.0 -o /app/publish -r linux-x64  
+RUN dotnet publish "sbm.csproj" --configuration Release -f net7.0 -o /app/publish -r linux-x64  --self-contained
 
 FROM base AS final
 WORKDIR /app
