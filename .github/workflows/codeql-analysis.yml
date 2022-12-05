@@ -20,6 +20,10 @@ on:
   schedule:
     - cron: '37 9 * * 2'
 
+env:
+  DOTNET_VERSION: 'net7.0'
+  DOTNET_FRAMEWORK_VERSION: '7.x'  
+
 jobs:
   analyze:
     name: Analyze
@@ -47,10 +51,10 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    - name: Setup .NET 7
+    - name: Setup .NET ${{ env.DOTNET_FRAMEWORK_VERSION }}
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '7.x'
+        dotnet-version: ${{ env.DOTNET_FRAMEWORK_VERSION }}
 
  
     - name: Clean
@@ -60,10 +64,10 @@ jobs:
       run: dotnet clean ./src/SqlSync/SQLSync.csproj --configuration Release && dotnet nuget locals all --clear
     
     - name: Restore and build console app
-      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net7.0
+      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f ${{ env.DOTNET_VERSION }}
 
     - name: Restore and build desktop app
-      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f net7.0-windows
+      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f ${{ env.DOTNET_VERSION }}-windows
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl

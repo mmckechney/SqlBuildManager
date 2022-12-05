@@ -9,6 +9,10 @@ on:
     branches:
       - master
 
+env:
+  DOTNET_VERSION: 'net7.0'
+  DOTNET_FRAMEWORK_VERSION: '7.x'  
+
 jobs:
   build:
 
@@ -17,10 +21,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup .NET 7
+    - name: Setup .NET ${{ env.DOTNET_FRAMEWORK_VERSION }}
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '7..x'
+        dotnet-version: ${{ env.DOTNET_FRAMEWORK_VERSION }}
 
     - name: Clean
       run: dotnet clean ./src/SqlBuildManager.Console/sbm.csproj --configuration Release && dotnet nuget locals all --clear
@@ -29,10 +33,10 @@ jobs:
       run: dotnet clean ./src/SqlSync/SQLSync.csproj --configuration Release && dotnet nuget locals all --clear  
  
     - name: Restore and build console app
-      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net7.0 
+      run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f ${{ env.DOTNET_VERSION }}
 
     - name: Restore and build desktop app
-      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f net7.0-windows 
+      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f ${{ env.DOTNET_VERSION }}-windows 
 
     # Run tests
     - name: Run SqlBuildManager.Console.UnitTest
@@ -55,32 +59,32 @@ jobs:
 
     # .NET 7.0 pubish
     - name: Publish the Windows desktop app
-      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f net7.0-windows 
+      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f ${{ env.DOTNET_VERSION }}windows 
 
     - name: Publish the Windows CLI app 
-      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release -f net7.0 --self-contained
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release -f ${{ env.DOTNET_VERSION }} --self-contained
 
     - name: Publish the Linux CLI app
-      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f net7.0 --self-contained
+      run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f ${{ env.DOTNET_VERSION }} --self-contained
 
     # .NET 7 artifacts
     - name: Upload a Build Artifact sbm-windows
       uses: actions/upload-artifact@v2
       with:
-        name: sbm-windows-net7.0
-        path: "./src/SqlBuildManager.Console/bin/Release/net7.0/win-x64/publish"
+        name: sbm-windows-${{ env.DOTNET_VERSION }}
+        path: "./src/SqlBuildManager.Console/bin/Release/${{ env.DOTNET_VERSION }}/win-x64/publish"
 
     - name: Upload a Build Artifact sbm-linux
       uses: actions/upload-artifact@v2
       with:
-        name: sbm-linux-net7.0
-        path: "./src/SqlBuildManager.Console/bin/Release/net7.0/linux-x64/publish"
+        name: sbm-linux-${{ env.DOTNET_VERSION }}
+        path: "./src/SqlBuildManager.Console/bin/Release/${{ env.DOTNET_VERSION }}/linux-x64/publish"
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: SqlBuildManager Desktop net7.0
-        path: "./src/SqlSync/bin/Release/net7.0-windows/win-x64/publish"     
+        name: SqlBuildManager Desktop ${{ env.DOTNET_VERSION }}
+        path: "./src/SqlSync/bin/Release/${{ env.DOTNET_VERSION }}-windows/win-x64/publish"     
         
 
     
