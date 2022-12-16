@@ -85,27 +85,11 @@ namespace SqlSync.SqlBuild.UnitTest
         public void OverrideSequenceTest()
         {
             ServerData target = new ServerData();
-            DbOverrideSequence expected = new DbOverrideSequence(); 
-            DbOverrideSequence actual;
-            target.OverrideSequence = expected;
-            actual = target.OverrideSequence;
+            DbOverrides expected = new DbOverrides(); 
+            DbOverrides actual;
+            target.Overrides = expected;
+            actual = target.Overrides;
             Assert.AreEqual(expected, actual);
-        }
-
-        /// <summary>
-        ///A test for Databases
-        ///</summary>
-        [TestMethod()]
-        public void DatabasesTest()
-        {
-            ServerData target = new ServerData();
-            DatabaseList expected = new DatabaseList();
-            expected.Add(new DatabaseItem());
-            DatabaseList actual;
-            target.Databases = expected;
-            actual = target.Databases;
-            Assert.AreEqual(expected, actual);
-            Assert.AreEqual(1, actual.Count);
         }
 
         /// <summary>

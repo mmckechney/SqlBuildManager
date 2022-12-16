@@ -1,4 +1,5 @@
-﻿using MoreLinq;
+﻿using Microsoft.SqlServer.TransactSql.ScriptDom;
+using MoreLinq;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
@@ -45,15 +46,17 @@ namespace SqlBuildManager.Console.Threaded
         public static List<IEnumerable<(string, List<DatabaseOverride>)>> ConcurrencyByServer(MultiDbData multiData)
         {
             List<IEnumerable<(string, List<DatabaseOverride>)>> tmp = new List<IEnumerable<(string, List<DatabaseOverride>)>>();
-            foreach (ServerData srv in multiData)
+            var serverGroup = multiData.GroupBy(m => m.ServerName);
+            foreach ( var s in serverGroup)
             {
                 var lstSrv = new List<(string, List<DatabaseOverride>)>();
-                foreach (List<DatabaseOverride> ovr in srv.OverrideSequence.Values)
+                foreach (var o in s)
                 {
-                    lstSrv.Add((srv.ServerName, ovr));
+                    lstSrv.Add( (o.ServerName, o.Overrides.Select(d => d).ToList()));
                 }
                 tmp.Add(lstSrv);
             }
+    
             return tmp;
         }
 
@@ -82,10 +85,7 @@ namespace SqlBuildManager.Console.Threaded
             var flattened = new List<(string, List<DatabaseOverride>)>();
             foreach (ServerData srv in multiData)
             {
-                foreach (List<DatabaseOverride> ovr in srv.OverrideSequence.Values)
-                {
-                    flattened.Add((srv.ServerName, ovr));
-                }
+                flattened.Add((srv.ServerName, srv.Overrides));
             }
             return flattened;
         }

@@ -10,7 +10,7 @@ if("" -eq $resourceGroupName)
     $resourceGroupName = "$prefix-rg"
 }
 
-Write-Host "Cleaning up old Service Bus Topic subscriptions from $sbNamespaceName"
+Write-Host "Cleaning up old Service Bus Topic subscriptions from $sbNamespaceName" -ForegroundColor Green
 $subs = (az servicebus topic subscription list -g $resourceGroupName --namespace-name $sbNamespaceName --topic-name "sqlbuildmanager" ) | ConvertFrom-Json
 if($null -ne $subs)
 {

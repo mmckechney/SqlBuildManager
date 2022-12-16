@@ -38,17 +38,14 @@ namespace SqlSync.SqlBuild.Status
 
             foreach (ServerData srv in multiDbData)
             {
-                foreach (List<DatabaseOverride> ovr in srv.OverrideSequence.Values)
+                threadTotal++;
+                lock (StatusReporting.SyncObj)
                 {
-                    threadTotal++;
-                    lock (StatusReporting.SyncObj)
-                    {
-                        StatusReporting.SyncObj.WorkingRunners++;
-                    }
-                    StatusReportRunner runner = new StatusReportRunner(this.buildData, srv.ServerName, ovr, projectFilePath);
-                    runners.Add(runner);
-                    System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedScriptStatus, runner);
-               }
+                    StatusReporting.SyncObj.WorkingRunners++;
+                }
+                StatusReportRunner runner = new StatusReportRunner(this.buildData, srv.ServerName, srv.Overrides, projectFilePath);
+                runners.Add(runner);
+                System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedScriptStatus, runner);
             }
 
             int counter = 0;

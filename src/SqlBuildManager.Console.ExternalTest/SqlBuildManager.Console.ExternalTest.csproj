@@ -30,6 +30,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Resources\SimpleSelect_DoubleClient.sbm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\SimpleSelect_DoubleClient.sbm" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

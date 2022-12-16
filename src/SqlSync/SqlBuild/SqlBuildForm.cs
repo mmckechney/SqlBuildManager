@@ -1070,7 +1070,6 @@ namespace SqlSync.SqlBuild
             this.mnuIncludeSequence = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem15 = new System.Windows.Forms.ToolStripSeparator();
             this.startConfigureMultiServerDatabaseRunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.remoteExecutionServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuFileMRU = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
@@ -1139,7 +1138,6 @@ namespace SqlSync.SqlBuild
             this.mnuAutoScripting = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItem11 = new System.Windows.Forms.ToolStripSeparator();
             this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.constructCommandLineStringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
             this.scriptPolicyCheckingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runPolicyChecksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -1154,6 +1152,8 @@ namespace SqlSync.SqlBuild
             this.projectSiteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewLogFileMenuItem2 = new SqlSync.Controls.ViewLogFileMenuItem();
             this.setLoggingLevelMenuItem2 = new SqlSync.Controls.SetLoggingLevelMenuItem();
+            this.remoteExecutionServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.constructCommandLineStringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileBulkLoad = new System.Windows.Forms.OpenFileDialog();
             this.pnlManager = new System.Windows.Forms.Panel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
@@ -1211,8 +1211,10 @@ namespace SqlSync.SqlBuild
             this.grpAdvanced.SuspendLayout();
             this.grpBuildResults.SuspendLayout();
             this.pnlBuildScripts.SuspendLayout();
+            this.toolStripContainer1.SuspendLayout();
             this.toolStripContainer2.ContentPanel.SuspendLayout();
             this.toolStripContainer2.TopToolStripPanel.SuspendLayout();
+            this.toolStripContainer2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -1230,7 +1232,7 @@ namespace SqlSync.SqlBuild
             this.grbBuildScripts.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.grbBuildScripts.Location = new System.Drawing.Point(2, 2);
             this.grbBuildScripts.Name = "grbBuildScripts";
-            this.grbBuildScripts.Size = new System.Drawing.Size(518, 564);
+            this.grbBuildScripts.Size = new System.Drawing.Size(518, 540);
             this.grbBuildScripts.TabIndex = 14;
             this.grbBuildScripts.TabStop = false;
             this.grbBuildScripts.Text = "Build Scripts";
@@ -1243,7 +1245,7 @@ namespace SqlSync.SqlBuild
             this.btnSlideBuildScripts.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSlideBuildScripts.ImageIndex = 0;
             this.btnSlideBuildScripts.ImageList = this.imageListSlide;
-            this.btnSlideBuildScripts.Location = new System.Drawing.Point(497, 509);
+            this.btnSlideBuildScripts.Location = new System.Drawing.Point(497, 485);
             this.btnSlideBuildScripts.Margin = new System.Windows.Forms.Padding(0);
             this.btnSlideBuildScripts.Name = "btnSlideBuildScripts";
             this.btnSlideBuildScripts.Size = new System.Drawing.Size(15, 15);
@@ -1266,7 +1268,7 @@ namespace SqlSync.SqlBuild
             this.chkUpdateOnOverride.Checked = true;
             this.chkUpdateOnOverride.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkUpdateOnOverride.Font = new System.Drawing.Font("Verdana", 7.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkUpdateOnOverride.Location = new System.Drawing.Point(6, 518);
+            this.chkUpdateOnOverride.Location = new System.Drawing.Point(6, 494);
             this.chkUpdateOnOverride.Name = "chkUpdateOnOverride";
             this.chkUpdateOnOverride.Size = new System.Drawing.Size(420, 16);
             this.chkUpdateOnOverride.TabIndex = 16;
@@ -1279,7 +1281,7 @@ namespace SqlSync.SqlBuild
             this.chkScriptChanges.Checked = true;
             this.chkScriptChanges.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkScriptChanges.Font = new System.Drawing.Font("Verdana", 7.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkScriptChanges.Location = new System.Drawing.Point(6, 502);
+            this.chkScriptChanges.Location = new System.Drawing.Point(6, 478);
             this.chkScriptChanges.Name = "chkScriptChanges";
             this.chkScriptChanges.Size = new System.Drawing.Size(420, 16);
             this.chkScriptChanges.TabIndex = 15;
@@ -1310,11 +1312,10 @@ namespace SqlSync.SqlBuild
             this.lstScriptFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lstScriptFiles.FullRowSelect = true;
             this.lstScriptFiles.GridLines = true;
-            this.lstScriptFiles.HideSelection = false;
             this.lstScriptFiles.Location = new System.Drawing.Point(5, 17);
             this.lstScriptFiles.Name = "lstScriptFiles";
             this.lstScriptFiles.ShowItemToolTips = true;
-            this.lstScriptFiles.Size = new System.Drawing.Size(508, 479);
+            this.lstScriptFiles.Size = new System.Drawing.Size(508, 455);
             this.lstScriptFiles.SmallImageList = this.imageListBuildScripts;
             this.lstScriptFiles.TabIndex = 0;
             this.lstScriptFiles.UseCompatibleStateImageBehavior = false;
@@ -1407,14 +1408,14 @@ namespace SqlSync.SqlBuild
             this.renameScriptFIleToolStripMenuItem,
             this.toolStripSeparator12});
             this.ctxScriptFile.Name = "ctxScriptFile";
-            this.ctxScriptFile.Size = new System.Drawing.Size(389, 376);
+            this.ctxScriptFile.Size = new System.Drawing.Size(367, 354);
             this.ctxScriptFile.Opening += new System.ComponentModel.CancelEventHandler(this.ctxScriptFile_Opening);
             // 
             // mnuEditFile
             // 
             this.mnuEditFile.MergeIndex = 1;
             this.mnuEditFile.Name = "mnuEditFile";
-            this.mnuEditFile.Size = new System.Drawing.Size(388, 22);
+            this.mnuEditFile.Size = new System.Drawing.Size(366, 22);
             this.mnuEditFile.Text = "Edit File";
             this.mnuEditFile.Click += new System.EventHandler(this.mnuEditFile_Click);
             // 
@@ -1422,7 +1423,7 @@ namespace SqlSync.SqlBuild
             // 
             this.mnuEditScriptFile.MergeIndex = 0;
             this.mnuEditScriptFile.Name = "mnuEditScriptFile";
-            this.mnuEditScriptFile.Size = new System.Drawing.Size(388, 22);
+            this.mnuEditScriptFile.Size = new System.Drawing.Size(366, 22);
             this.mnuEditScriptFile.Text = "Edit/View Script Build Detail";
             this.mnuEditScriptFile.Click += new System.EventHandler(this.mnuEditScriptFile_Click);
             // 
@@ -1430,26 +1431,26 @@ namespace SqlSync.SqlBuild
             // 
             this.menuItem4.MergeIndex = 2;
             this.menuItem4.Name = "menuItem4";
-            this.menuItem4.Size = new System.Drawing.Size(385, 6);
+            this.menuItem4.Size = new System.Drawing.Size(363, 6);
             // 
             // makeFileWriteableremoveToolStripMenuItem
             // 
             this.makeFileWriteableremoveToolStripMenuItem.Name = "makeFileWriteableremoveToolStripMenuItem";
-            this.makeFileWriteableremoveToolStripMenuItem.Size = new System.Drawing.Size(388, 22);
+            this.makeFileWriteableremoveToolStripMenuItem.Size = new System.Drawing.Size(366, 22);
             this.makeFileWriteableremoveToolStripMenuItem.Text = "Make file writeable (remove Read Only attribute)";
             this.makeFileWriteableremoveToolStripMenuItem.Click += new System.EventHandler(this.makeFileWriteableremoveToolStripMenuItem_Click);
             // 
             // toolStripSeparator23
             // 
             this.toolStripSeparator23.Name = "toolStripSeparator23";
-            this.toolStripSeparator23.Size = new System.Drawing.Size(385, 6);
+            this.toolStripSeparator23.Size = new System.Drawing.Size(363, 6);
             // 
             // mnuAddSqlScriptText
             // 
             this.mnuAddSqlScriptText.MergeIndex = 4;
             this.mnuAddSqlScriptText.Name = "mnuAddSqlScriptText";
             this.mnuAddSqlScriptText.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.mnuAddSqlScriptText.Size = new System.Drawing.Size(388, 22);
+            this.mnuAddSqlScriptText.Size = new System.Drawing.Size(366, 22);
             this.mnuAddSqlScriptText.Text = "Add New Sql Script (Text)";
             this.mnuAddSqlScriptText.Click += new System.EventHandler(this.mnuAddSqlScriptText_Click);
             // 
@@ -1457,7 +1458,7 @@ namespace SqlSync.SqlBuild
             // 
             this.mnuAddScript.MergeIndex = 3;
             this.mnuAddScript.Name = "mnuAddScript";
-            this.mnuAddScript.Size = new System.Drawing.Size(388, 22);
+            this.mnuAddScript.Size = new System.Drawing.Size(366, 22);
             this.mnuAddScript.Text = "Add New File";
             this.mnuAddScript.Click += new System.EventHandler(this.mnuAddScript_Click);
             // 
@@ -1465,14 +1466,14 @@ namespace SqlSync.SqlBuild
             // 
             this.menuItem1.MergeIndex = 5;
             this.menuItem1.Name = "menuItem1";
-            this.menuItem1.Size = new System.Drawing.Size(385, 6);
+            this.menuItem1.Size = new System.Drawing.Size(363, 6);
             // 
             // mnuUpdatePopulates
             // 
             this.mnuUpdatePopulates.Enabled = false;
             this.mnuUpdatePopulates.MergeIndex = 6;
             this.mnuUpdatePopulates.Name = "mnuUpdatePopulates";
-            this.mnuUpdatePopulates.Size = new System.Drawing.Size(388, 22);
+            this.mnuUpdatePopulates.Size = new System.Drawing.Size(366, 22);
             this.mnuUpdatePopulates.Text = "Update Code Table Populate Scripts";
             this.mnuUpdatePopulates.Click += new System.EventHandler(this.mnuUpdatePopulates_Click);
             // 
@@ -1484,7 +1485,7 @@ namespace SqlSync.SqlBuild
             this.mnuUpdateObjectScripts.Enabled = false;
             this.mnuUpdateObjectScripts.MergeIndex = 7;
             this.mnuUpdateObjectScripts.Name = "mnuUpdateObjectScripts";
-            this.mnuUpdateObjectScripts.Size = new System.Drawing.Size(388, 22);
+            this.mnuUpdateObjectScripts.Size = new System.Drawing.Size(366, 22);
             this.mnuUpdateObjectScripts.Text = "Update Object Create Scripts";
             // 
             // mnuObjectScripts_FileDefault
@@ -1505,13 +1506,13 @@ namespace SqlSync.SqlBuild
             // 
             this.menuItem2.MergeIndex = 8;
             this.menuItem2.Name = "menuItem2";
-            this.menuItem2.Size = new System.Drawing.Size(385, 6);
+            this.menuItem2.Size = new System.Drawing.Size(363, 6);
             // 
             // mnuCreateExportFile
             // 
             this.mnuCreateExportFile.MergeIndex = 9;
             this.mnuCreateExportFile.Name = "mnuCreateExportFile";
-            this.mnuCreateExportFile.Size = new System.Drawing.Size(388, 22);
+            this.mnuCreateExportFile.Size = new System.Drawing.Size(366, 22);
             this.mnuCreateExportFile.Text = "Export Selected Script Entries";
             this.mnuCreateExportFile.Click += new System.EventHandler(this.mnuCreateExportFile_Click);
             // 
@@ -1519,7 +1520,7 @@ namespace SqlSync.SqlBuild
             // 
             this.mnuRemoveScriptFile.MergeIndex = 10;
             this.mnuRemoveScriptFile.Name = "mnuRemoveScriptFile";
-            this.mnuRemoveScriptFile.Size = new System.Drawing.Size(388, 22);
+            this.mnuRemoveScriptFile.Size = new System.Drawing.Size(366, 22);
             this.mnuRemoveScriptFile.Text = "Remove File(s)";
             this.mnuRemoveScriptFile.Click += new System.EventHandler(this.mnuRemoveScriptFile_Click);
             // 
@@ -1527,13 +1528,13 @@ namespace SqlSync.SqlBuild
             // 
             this.menuItem6.MergeIndex = 11;
             this.menuItem6.Name = "menuItem6";
-            this.menuItem6.Size = new System.Drawing.Size(385, 6);
+            this.menuItem6.Size = new System.Drawing.Size(363, 6);
             // 
             // mnuTryScript
             // 
             this.mnuTryScript.MergeIndex = 12;
             this.mnuTryScript.Name = "mnuTryScript";
-            this.mnuTryScript.Size = new System.Drawing.Size(388, 22);
+            this.mnuTryScript.Size = new System.Drawing.Size(366, 22);
             this.mnuTryScript.Text = "Try Script against Database (Rollback)";
             this.mnuTryScript.Click += new System.EventHandler(this.mnuTryScript_Click);
             // 
@@ -1541,7 +1542,7 @@ namespace SqlSync.SqlBuild
             // 
             this.mnuRunScript.MergeIndex = 13;
             this.mnuRunScript.Name = "mnuRunScript";
-            this.mnuRunScript.Size = new System.Drawing.Size(388, 22);
+            this.mnuRunScript.Size = new System.Drawing.Size(366, 22);
             this.mnuRunScript.Text = "Run Script against Database (Commit)";
             this.mnuRunScript.Click += new System.EventHandler(this.mnuRunScript_Click);
             // 
@@ -1549,13 +1550,13 @@ namespace SqlSync.SqlBuild
             // 
             this.mnuViewRunHistorySep.MergeIndex = 14;
             this.mnuViewRunHistorySep.Name = "mnuViewRunHistorySep";
-            this.mnuViewRunHistorySep.Size = new System.Drawing.Size(385, 6);
+            this.mnuViewRunHistorySep.Size = new System.Drawing.Size(363, 6);
             // 
             // mnuViewRunHistory
             // 
             this.mnuViewRunHistory.MergeIndex = 15;
             this.mnuViewRunHistory.Name = "mnuViewRunHistory";
-            this.mnuViewRunHistory.Size = new System.Drawing.Size(388, 22);
+            this.mnuViewRunHistory.Size = new System.Drawing.Size(366, 22);
             this.mnuViewRunHistory.Text = "View packaged script run history against current server";
             this.mnuViewRunHistory.Click += new System.EventHandler(this.mnuViewRunHistory_Click);
             // 
@@ -1563,21 +1564,21 @@ namespace SqlSync.SqlBuild
             // 
             this.showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem.Enabled = false;
             this.showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem.Name = "showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem";
-            this.showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem.Size = new System.Drawing.Size(388, 22);
+            this.showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem.Size = new System.Drawing.Size(366, 22);
             this.showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem.Text = "View object change history as run by Sql Build Manager";
             this.showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem.Click += new System.EventHandler(this.showObjectHistoryAsUpdatedViaSqlBuildManagerToolStripMenuItem_Click);
             // 
             // renameScriptFIleToolStripMenuItem
             // 
             this.renameScriptFIleToolStripMenuItem.Name = "renameScriptFIleToolStripMenuItem";
-            this.renameScriptFIleToolStripMenuItem.Size = new System.Drawing.Size(388, 22);
+            this.renameScriptFIleToolStripMenuItem.Size = new System.Drawing.Size(366, 22);
             this.renameScriptFIleToolStripMenuItem.Text = "Rename Script File";
             this.renameScriptFIleToolStripMenuItem.Click += new System.EventHandler(this.renameScriptFIleToolStripMenuItem_Click);
             // 
             // toolStripSeparator12
             // 
             this.toolStripSeparator12.Name = "toolStripSeparator12";
-            this.toolStripSeparator12.Size = new System.Drawing.Size(385, 6);
+            this.toolStripSeparator12.Size = new System.Drawing.Size(363, 6);
             // 
             // imageListBuildScripts
             // 
@@ -1613,7 +1614,7 @@ namespace SqlSync.SqlBuild
             this.policyCheckIconHelpToolStripMenuItem,
             this.backgrounLegendToolStripMenuItem,
             this.toolStripMenuItem1});
-            this.menuStrip1.Location = new System.Drawing.Point(3, 537);
+            this.menuStrip1.Location = new System.Drawing.Point(3, 513);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(512, 24);
             this.menuStrip1.TabIndex = 18;
@@ -1892,7 +1893,7 @@ namespace SqlSync.SqlBuild
             this.grpManager.Location = new System.Drawing.Point(3, 3);
             this.grpManager.MinimumSize = new System.Drawing.Size(533, 154);
             this.grpManager.Name = "grpManager";
-            this.grpManager.Size = new System.Drawing.Size(541, 176);
+            this.grpManager.Size = new System.Drawing.Size(547, 167);
             this.grpManager.TabIndex = 15;
             this.grpManager.TabStop = false;
             this.grpManager.Text = "Build Manager / Run Settings";
@@ -1900,7 +1901,7 @@ namespace SqlSync.SqlBuild
             // pictureBox1
             // 
             this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox1.Location = new System.Drawing.Point(519, 16);
+            this.pictureBox1.Location = new System.Drawing.Point(525, 16);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(17, 16);
             this.pictureBox1.TabIndex = 28;
@@ -1917,7 +1918,7 @@ namespace SqlSync.SqlBuild
             this.targetDatabaseOverrideCtrl1.Location = new System.Drawing.Point(99, 41);
             this.targetDatabaseOverrideCtrl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.targetDatabaseOverrideCtrl1.Name = "targetDatabaseOverrideCtrl1";
-            this.targetDatabaseOverrideCtrl1.Size = new System.Drawing.Size(437, 85);
+            this.targetDatabaseOverrideCtrl1.Size = new System.Drawing.Size(443, 76);
             this.targetDatabaseOverrideCtrl1.TabIndex = 1;
             this.targetDatabaseOverrideCtrl1.TargetChanged += new SqlSync.TargetChangedEventHandler(this.targetDatabaseOverrideCtrl1_TargetChanged);
             // 
@@ -1931,10 +1932,11 @@ namespace SqlSync.SqlBuild
             // 
             // txtBuildDesc
             // 
-            this.txtBuildDesc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.txtBuildDesc.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtBuildDesc.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.txtBuildDesc.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-            this.txtBuildDesc.Location = new System.Drawing.Point(99, 132);
+            this.txtBuildDesc.Location = new System.Drawing.Point(99, 123);
             this.txtBuildDesc.Name = "txtBuildDesc";
             this.txtBuildDesc.Size = new System.Drawing.Size(370, 21);
             this.txtBuildDesc.TabIndex = 2;
@@ -1945,10 +1947,10 @@ namespace SqlSync.SqlBuild
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.BackColor = System.Drawing.SystemColors.Control;
             this.btnCancel.ForeColor = System.Drawing.Color.Red;
-            this.btnCancel.Location = new System.Drawing.Point(475, 132);
+            this.btnCancel.Location = new System.Drawing.Point(475, 123);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(55, 23);
             this.btnCancel.TabIndex = 24;
@@ -1978,7 +1980,7 @@ namespace SqlSync.SqlBuild
             // label3
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label3.Location = new System.Drawing.Point(8, 135);
+            this.label3.Location = new System.Drawing.Point(8, 126);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(92, 16);
             this.label3.TabIndex = 12;
@@ -1986,14 +1988,15 @@ namespace SqlSync.SqlBuild
             // 
             // lnkStartBuild
             // 
-            this.lnkStartBuild.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lnkStartBuild.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkStartBuild.Enabled = false;
-            this.lnkStartBuild.Location = new System.Drawing.Point(96, 154);
+            this.lnkStartBuild.Location = new System.Drawing.Point(154, 145);
             this.lnkStartBuild.Name = "lnkStartBuild";
             this.lnkStartBuild.Size = new System.Drawing.Size(261, 16);
             this.lnkStartBuild.TabIndex = 3;
             this.lnkStartBuild.TabStop = true;
-            this.lnkStartBuild.Text = "Please Enter a Description";
+            this.lnkStartBuild.Text = "Please Enter a Description above to run build";
             this.lnkStartBuild.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lnkStartBuild.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkStartBuild_LinkClicked);
             // 
@@ -2071,10 +2074,9 @@ namespace SqlSync.SqlBuild
             this.lstBuild.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lstBuild.FullRowSelect = true;
             this.lstBuild.GridLines = true;
-            this.lstBuild.HideSelection = false;
             this.lstBuild.Location = new System.Drawing.Point(5, 15);
             this.lstBuild.Name = "lstBuild";
-            this.lstBuild.Size = new System.Drawing.Size(531, 319);
+            this.lstBuild.Size = new System.Drawing.Size(537, 304);
             this.lstBuild.TabIndex = 10;
             this.lstBuild.UseCompatibleStateImageBehavior = false;
             this.lstBuild.View = System.Windows.Forms.View.Details;
@@ -2173,7 +2175,7 @@ namespace SqlSync.SqlBuild
             this.mnuHelp});
             this.mainMenu1.Location = new System.Drawing.Point(0, 0);
             this.mainMenu1.Name = "mainMenu1";
-            this.mainMenu1.Size = new System.Drawing.Size(1073, 24);
+            this.mainMenu1.Size = new System.Drawing.Size(1079, 24);
             this.mainMenu1.TabIndex = 0;
             // 
             // mnuActionMain
@@ -2196,7 +2198,6 @@ namespace SqlSync.SqlBuild
             this.mnuExportScriptText,
             this.menuItem15,
             this.startConfigureMultiServerDatabaseRunToolStripMenuItem,
-            //this.remoteExecutionServiceToolStripMenuItem,
             this.toolStripSeparator7,
             this.mnuFileMRU,
             this.toolStripSeparator13,
@@ -2470,11 +2471,6 @@ namespace SqlSync.SqlBuild
             this.startConfigureMultiServerDatabaseRunToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
             this.startConfigureMultiServerDatabaseRunToolStripMenuItem.Text = "Configure Multi Server/Database Run";
             this.startConfigureMultiServerDatabaseRunToolStripMenuItem.Click += new System.EventHandler(this.startConfigureMultiServerDatabaseRunToolStripMenuItem_Click);
-            // 
-            // remoteExecutionServiceToolStripMenuItem
-            // 
-            this.remoteExecutionServiceToolStripMenuItem.Name = "remoteExecutionServiceToolStripMenuItem";
-            this.remoteExecutionServiceToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
             // 
             // toolStripSeparator7
             // 
@@ -2944,7 +2940,6 @@ namespace SqlSync.SqlBuild
             this.mnuAutoScripting,
             this.menuItem11,
             this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem,
-            //this.constructCommandLineStringToolStripMenuItem,
             this.toolStripSeparator14,
             this.scriptPolicyCheckingToolStripMenuItem,
             this.calculateScriptPackageHashSignatureToolStripMenuItem});
@@ -3058,13 +3053,6 @@ namespace SqlSync.SqlBuild
             this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem.Text = "Rebuild Previously Commited Build File";
             this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem.Click += new System.EventHandler(this.rebuildPreviouslyCommitedBuildFileToolStripMenuItem_Click);
             // 
-            // constructCommandLineStringToolStripMenuItem
-            // 
-            this.constructCommandLineStringToolStripMenuItem.Name = "constructCommandLineStringToolStripMenuItem";
-            this.constructCommandLineStringToolStripMenuItem.Size = new System.Drawing.Size(286, 22);
-            this.constructCommandLineStringToolStripMenuItem.Text = "Construct Command Line String";
-            this.constructCommandLineStringToolStripMenuItem.Click += new System.EventHandler(this.constructCommandLineStringToolStripMenuItem_Click);
-            // 
             // toolStripSeparator14
             // 
             this.toolStripSeparator14.Name = "toolStripSeparator14";
@@ -3169,6 +3157,18 @@ namespace SqlSync.SqlBuild
             this.setLoggingLevelMenuItem2.Size = new System.Drawing.Size(221, 22);
             this.setLoggingLevelMenuItem2.Text = "Set Logging Level";
             // 
+            // remoteExecutionServiceToolStripMenuItem
+            // 
+            this.remoteExecutionServiceToolStripMenuItem.Name = "remoteExecutionServiceToolStripMenuItem";
+            this.remoteExecutionServiceToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
+            // 
+            // constructCommandLineStringToolStripMenuItem
+            // 
+            this.constructCommandLineStringToolStripMenuItem.Name = "constructCommandLineStringToolStripMenuItem";
+            this.constructCommandLineStringToolStripMenuItem.Size = new System.Drawing.Size(286, 22);
+            this.constructCommandLineStringToolStripMenuItem.Text = "Construct Command Line String";
+            this.constructCommandLineStringToolStripMenuItem.Click += new System.EventHandler(this.constructCommandLineStringToolStripMenuItem_Click);
+            // 
             // openFileBulkLoad
             // 
             this.openFileBulkLoad.AddExtension = false;
@@ -3182,7 +3182,7 @@ namespace SqlSync.SqlBuild
             this.pnlManager.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlManager.Location = new System.Drawing.Point(526, 56);
             this.pnlManager.Name = "pnlManager";
-            this.pnlManager.Size = new System.Drawing.Size(547, 568);
+            this.pnlManager.Size = new System.Drawing.Size(553, 544);
             this.pnlManager.TabIndex = 19;
             // 
             // splitContainer1
@@ -3202,8 +3202,8 @@ namespace SqlSync.SqlBuild
             // 
             this.splitContainer1.Panel2.Controls.Add(this.grpBuildResults);
             this.splitContainer1.Panel2.Padding = new System.Windows.Forms.Padding(3);
-            this.splitContainer1.Size = new System.Drawing.Size(547, 568);
-            this.splitContainer1.SplitterDistance = 197;
+            this.splitContainer1.Size = new System.Drawing.Size(553, 544);
+            this.splitContainer1.SplitterDistance = 188;
             this.splitContainer1.TabIndex = 17;
             // 
             // pnlAdvanced
@@ -3211,9 +3211,9 @@ namespace SqlSync.SqlBuild
             this.pnlAdvanced.Controls.Add(this.lblAdvanced);
             this.pnlAdvanced.Controls.Add(this.grpAdvanced);
             this.pnlAdvanced.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlAdvanced.Location = new System.Drawing.Point(3, 179);
+            this.pnlAdvanced.Location = new System.Drawing.Point(3, 170);
             this.pnlAdvanced.Name = "pnlAdvanced";
-            this.pnlAdvanced.Size = new System.Drawing.Size(541, 15);
+            this.pnlAdvanced.Size = new System.Drawing.Size(547, 15);
             this.pnlAdvanced.TabIndex = 17;
             // 
             // lblAdvanced
@@ -3223,7 +3223,7 @@ namespace SqlSync.SqlBuild
             this.lblAdvanced.ForeColor = System.Drawing.SystemColors.ControlText;
             this.lblAdvanced.Location = new System.Drawing.Point(0, 0);
             this.lblAdvanced.Name = "lblAdvanced";
-            this.lblAdvanced.Size = new System.Drawing.Size(541, 13);
+            this.lblAdvanced.Size = new System.Drawing.Size(547, 13);
             this.lblAdvanced.TabIndex = 0;
             this.lblAdvanced.Text = "Advanced Runtime Settings (use with caution) >>";
             this.lblAdvanced.Click += new System.EventHandler(this.lblAdvanced_Click);
@@ -3236,7 +3236,7 @@ namespace SqlSync.SqlBuild
             this.grpAdvanced.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpAdvanced.Location = new System.Drawing.Point(0, 0);
             this.grpAdvanced.Name = "grpAdvanced";
-            this.grpAdvanced.Size = new System.Drawing.Size(541, 15);
+            this.grpAdvanced.Size = new System.Drawing.Size(547, 15);
             this.grpAdvanced.TabIndex = 16;
             this.grpAdvanced.TabStop = false;
             // 
@@ -3248,7 +3248,7 @@ namespace SqlSync.SqlBuild
             this.grpBuildResults.Location = new System.Drawing.Point(3, 3);
             this.grpBuildResults.Margin = new System.Windows.Forms.Padding(6);
             this.grpBuildResults.Name = "grpBuildResults";
-            this.grpBuildResults.Size = new System.Drawing.Size(541, 361);
+            this.grpBuildResults.Size = new System.Drawing.Size(547, 346);
             this.grpBuildResults.TabIndex = 16;
             this.grpBuildResults.TabStop = false;
             this.grpBuildResults.Text = "Build Results";
@@ -3259,14 +3259,14 @@ namespace SqlSync.SqlBuild
             this.pnlBuildScripts.Dock = System.Windows.Forms.DockStyle.Left;
             this.pnlBuildScripts.Location = new System.Drawing.Point(0, 56);
             this.pnlBuildScripts.Name = "pnlBuildScripts";
-            this.pnlBuildScripts.Size = new System.Drawing.Size(522, 568);
+            this.pnlBuildScripts.Size = new System.Drawing.Size(522, 544);
             this.pnlBuildScripts.TabIndex = 20;
             // 
             // splitter1
             // 
             this.splitter1.Location = new System.Drawing.Point(522, 56);
             this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(4, 568);
+            this.splitter1.Size = new System.Drawing.Size(4, 544);
             this.splitter1.TabIndex = 21;
             this.splitter1.TabStop = false;
             // 
@@ -3296,90 +3296,36 @@ namespace SqlSync.SqlBuild
             // toolStripContainer1
             // 
             // 
+            // toolStripContainer1.ContentPanel
             // 
-            // 
-            this.toolStripContainer1.BottomToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer1.BottomToolStripPanel.Name = "";
-            this.toolStripContainer1.BottomToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.toolStripContainer1.BottomToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            // 
-            // 
-            // 
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(150, 175);
-            // 
-            // 
-            // 
-            this.toolStripContainer1.LeftToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer1.LeftToolStripPanel.Name = "";
-            this.toolStripContainer1.LeftToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.toolStripContainer1.LeftToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(150, 150);
             this.toolStripContainer1.Location = new System.Drawing.Point(8, 8);
             this.toolStripContainer1.Name = "toolStripContainer1";
-            // 
-            // 
-            // 
-            this.toolStripContainer1.RightToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer1.RightToolStripPanel.Name = "";
-            this.toolStripContainer1.RightToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.toolStripContainer1.RightToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.toolStripContainer1.Size = new System.Drawing.Size(150, 175);
             this.toolStripContainer1.TabIndex = 22;
             this.toolStripContainer1.Text = "toolStripContainer1";
             // 
-            // 
-            // 
-            this.toolStripContainer1.TopToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer1.TopToolStripPanel.Name = "";
-            this.toolStripContainer1.TopToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.toolStripContainer1.TopToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            // 
             // toolStripContainer2
             // 
             // 
-            // 
-            // 
-            this.toolStripContainer2.BottomToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer2.BottomToolStripPanel.Name = "";
-            this.toolStripContainer2.BottomToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.toolStripContainer2.BottomToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            // 
-            // 
+            // toolStripContainer2.ContentPanel
             // 
             this.toolStripContainer2.ContentPanel.AutoScroll = true;
             this.toolStripContainer2.ContentPanel.Controls.Add(this.pnlManager);
             this.toolStripContainer2.ContentPanel.Controls.Add(this.splitter1);
             this.toolStripContainer2.ContentPanel.Controls.Add(this.pnlBuildScripts);
             this.toolStripContainer2.ContentPanel.Controls.Add(this.settingsControl1);
-            this.toolStripContainer2.ContentPanel.Size = new System.Drawing.Size(1073, 624);
+            this.toolStripContainer2.ContentPanel.Size = new System.Drawing.Size(1079, 600);
             this.toolStripContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
-            // 
-            // 
-            // 
-            this.toolStripContainer2.LeftToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer2.LeftToolStripPanel.Name = "";
-            this.toolStripContainer2.LeftToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.toolStripContainer2.LeftToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.toolStripContainer2.Location = new System.Drawing.Point(0, 0);
             this.toolStripContainer2.Name = "toolStripContainer2";
-            // 
-            // 
-            // 
-            this.toolStripContainer2.RightToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer2.RightToolStripPanel.Name = "";
-            this.toolStripContainer2.RightToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.toolStripContainer2.RightToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.toolStripContainer2.Size = new System.Drawing.Size(1073, 624);
+            this.toolStripContainer2.Size = new System.Drawing.Size(1079, 624);
             this.toolStripContainer2.TabIndex = 23;
             this.toolStripContainer2.Text = "toolStripContainer2";
             // 
-            // 
+            // toolStripContainer2.TopToolStripPanel
             // 
             this.toolStripContainer2.TopToolStripPanel.Controls.Add(this.mainMenu1);
-            this.toolStripContainer2.TopToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer2.TopToolStripPanel.Name = "";
-            this.toolStripContainer2.TopToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.toolStripContainer2.TopToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.toolStripContainer2.TopToolStripPanel.Size = new System.Drawing.Size(1073, 24);
             // 
             // settingsControl1
             // 
@@ -3390,7 +3336,7 @@ namespace SqlSync.SqlBuild
             this.settingsControl1.Project = "(select / create project)";
             this.settingsControl1.ProjectLabelText = "Project File:";
             this.settingsControl1.Server = "";
-            this.settingsControl1.Size = new System.Drawing.Size(1073, 56);
+            this.settingsControl1.Size = new System.Drawing.Size(1079, 56);
             this.settingsControl1.TabIndex = 17;
             this.settingsControl1.Click += new System.EventHandler(this.settingsControl1_Click);
             this.settingsControl1.DoubleClick += new System.EventHandler(this.settingsControl1_DoubleClick);
@@ -3412,7 +3358,7 @@ namespace SqlSync.SqlBuild
             this.progressBuild});
             this.statusStrip1.Location = new System.Drawing.Point(0, 624);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(1073, 24);
+            this.statusStrip1.Size = new System.Drawing.Size(1079, 24);
             this.statusStrip1.TabIndex = 24;
             this.statusStrip1.Text = "Build Duration: ";
             // 
@@ -3421,7 +3367,7 @@ namespace SqlSync.SqlBuild
             this.statGeneral.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.statGeneral.Name = "statGeneral";
             this.statGeneral.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
-            this.statGeneral.Size = new System.Drawing.Size(457, 19);
+            this.statGeneral.Size = new System.Drawing.Size(463, 19);
             this.statGeneral.Spring = true;
             this.statGeneral.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -3552,7 +3498,7 @@ namespace SqlSync.SqlBuild
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(1073, 648);
+            this.ClientSize = new System.Drawing.Size(1079, 648);
             this.Controls.Add(this.toolStripContainer2);
             this.Controls.Add(this.toolStripContainer1);
             this.Controls.Add(this.statusStrip1);
@@ -3589,9 +3535,13 @@ namespace SqlSync.SqlBuild
             this.grpAdvanced.PerformLayout();
             this.grpBuildResults.ResumeLayout(false);
             this.pnlBuildScripts.ResumeLayout(false);
+            this.toolStripContainer1.ResumeLayout(false);
+            this.toolStripContainer1.PerformLayout();
             this.toolStripContainer2.ContentPanel.ResumeLayout(false);
             this.toolStripContainer2.TopToolStripPanel.ResumeLayout(false);
             this.toolStripContainer2.TopToolStripPanel.PerformLayout();
+            this.toolStripContainer2.ResumeLayout(false);
+            this.toolStripContainer2.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -7318,43 +7268,49 @@ namespace SqlSync.SqlBuild
 
             if (!this.runningUnattended)
             {
-                if (e.Cancelled)
+                try
                 {
-                    statGeneral.Text = "Build Cancelled and Rolled Back.";
-                }
-                else if (e.Result != null)
-                {
-                    BuildResultStatus stat = (BuildResultStatus)e.Result;
-                    switch (stat)
+                    if (e.Cancelled)
                     {
-                        case BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK:
-                            statGeneral.Text = "Build Failed and Rolled Back";
-                            break;
-                        case BuildResultStatus.BUILD_COMMITTED:
-                            this.RefreshScriptFileList(true);
-                            statGeneral.Text = "Build Committed";
-                            break;
-                        case BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL:
-                            statGeneral.Text = "Build Successful. Rolled Back for Trial Build";
-                            break;
-                        case BuildResultStatus.SCRIPT_GENERATION_COMPLETE:
-                            statGeneral.Text = "Script Generation Complete";
-                            break;
-                        case BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK:
-                            statGeneral.Text = "Build Cancelled and Rolled Back.";
-                            break;
-                        case BuildResultStatus.BUILD_FAILED_NO_TRANSACTION:
-                            statGeneral.Text = "Build Failed. No Transaction set.";
-                            break;
-                        case BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION:
-                            statGeneral.Text = "Build Cancelled. No Transaction set.";
-                            break;
-                        default:
-                            statGeneral.Text = "Unknown Status.";
-                            break;
+                        statGeneral.Text = "Build Cancelled and Rolled Back.";
+                    }
+                    else if (e.Result != null)
+                    {
+                        BuildResultStatus stat = (BuildResultStatus)e.Result;
+                        switch (stat)
+                        {
+                            case BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK:
+                                statGeneral.Text = "Build Failed and Rolled Back";
+                                break;
+                            case BuildResultStatus.BUILD_COMMITTED:
+                                this.RefreshScriptFileList(true);
+                                statGeneral.Text = "Build Committed";
+                                break;
+                            case BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL:
+                                statGeneral.Text = "Build Successful. Rolled Back for Trial Build";
+                                break;
+                            case BuildResultStatus.SCRIPT_GENERATION_COMPLETE:
+                                statGeneral.Text = "Script Generation Complete";
+                                break;
+                            case BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK:
+                                statGeneral.Text = "Build Cancelled and Rolled Back.";
+                                break;
+                            case BuildResultStatus.BUILD_FAILED_NO_TRANSACTION:
+                                statGeneral.Text = "Build Failed. No Transaction set.";
+                                break;
+                            case BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION:
+                                statGeneral.Text = "Build Cancelled. No Transaction set.";
+                                break;
+                            default:
+                                statGeneral.Text = "Unknown Status.";
+                                break;
+
+                        }
 
                     }
-
+                }catch(Exception exe)
+                {
+                    MessageBox.Show(exe.Message, "Error during build", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
                 this.txtBuildDesc.Enabled = true;
@@ -8022,6 +7978,17 @@ namespace SqlSync.SqlBuild
 
         private void startConfigureMultiServerDatabaseRunToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if(string.IsNullOrWhiteSpace(this.buildZipFileName))
+            {
+                MessageBox.Show("Please load a project file prior creating a multi-database configuration");
+                return;
+            }
+
+            if(this.databasesUsed.Count > 1)
+            {
+                MessageBox.Show("Unable to configure multi-database run when more than one default database is specified.\r\n\r\nInstead, please use the command line (sbm.exe build) with a configuration file formatted as:\r\n\r\n<server>:<default1>,<override1>;<default2>,<override2>", "Not Available", MessageBoxButtons.OK, MessageBoxIcon.Information); 
+                return;
+            }
             MultiDbRunForm frm = new MultiDbRunForm(this.connData, this.databasesUsed, this.databaseList,this.buildZipFileName,this.projectFilePath,ref this.buildData);
             if(DialogResult.OK == frm.ShowDialog())
             {

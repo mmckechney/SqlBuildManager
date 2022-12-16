@@ -68,129 +68,129 @@ namespace SqlSync.SqlBuild.UnitTest
         /// <summary>
         ///A test for Sort
         ///</summary>
-        [TestMethod()]
-        public void SortTest_Numeric()
-        {
-            DbOverrideSequence target = new DbOverrideSequence(); 
-            List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
-            tmp1.Add(new DatabaseOverride("default1a","override1a"));
-            tmp1.Add(new DatabaseOverride("default1b","override1b"));
+        //[TestMethod()]
+        //public void SortTest_Numeric()
+        //{
+        //    DbOverrides target = new DbOverrides(); 
+        //    List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
+        //    tmp1.Add(new DatabaseOverride("default1a","override1a"));
+        //    tmp1.Add(new DatabaseOverride("default1b","override1b"));
 
-            List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
-            tmp2.Add(new DatabaseOverride("default2a", "override2a"));
-            tmp2.Add(new DatabaseOverride("default2b", "override2b"));
+        //    List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
+        //    tmp2.Add(new DatabaseOverride("default2a", "override2a"));
+        //    tmp2.Add(new DatabaseOverride("default2b", "override2b"));
 
-            target.Add("2", tmp2);
-            target.Add("1", tmp1);
-            target.Add("4", tmp1);
-            target.Add("3", tmp1);
-            target.Sort();
-            Dictionary<string,List<DatabaseOverride>>.Enumerator enumer = target.GetEnumerator();
-            enumer.MoveNext();
-            Assert.IsTrue("1" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"1\", returned " + enumer.Current.Key.ToString());
-            enumer.MoveNext();
-            Assert.IsTrue("2" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"2\", returned " + enumer.Current.Key.ToString());
-            enumer.MoveNext();
-            Assert.IsTrue("3" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"3\", returned " + enumer.Current.Key.ToString());
-            enumer.MoveNext();
-            Assert.IsTrue("4" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"4\", returned " + enumer.Current.Key.ToString());
+        //    target.Add("2", tmp2);
+        //    target.Add("1", tmp1);
+        //    target.Add("4", tmp1);
+        //    target.Add("3", tmp1);
+        //    target.Sort();
+        //    Dictionary<string,List<DatabaseOverride>>.Enumerator enumer = target.GetEnumerator();
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("1" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"1\", returned " + enumer.Current.Key.ToString());
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("2" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"2\", returned " + enumer.Current.Key.ToString());
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("3" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"3\", returned " + enumer.Current.Key.ToString());
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("4" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"4\", returned " + enumer.Current.Key.ToString());
      
-        }
+        //}
         /// <summary>
         ///A test for Sort
         ///</summary>
-        [TestMethod()]
-        public void SortTest_Alpha()
-        {
-            DbOverrideSequence target = new DbOverrideSequence();
-            List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
-            tmp1.Add(new DatabaseOverride("default1a", "override1a"));
-            tmp1.Add(new DatabaseOverride("default1b", "override1b"));
+        //[TestMethod()]
+        //public void SortTest_Alpha()
+        //{
+        //    DbOverrides target = new DbOverrides();
+        //    List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
+        //    tmp1.Add(new DatabaseOverride("default1a", "override1a"));
+        //    tmp1.Add(new DatabaseOverride("default1b", "override1b"));
 
-            List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
-            tmp2.Add(new DatabaseOverride("default2a", "override2a"));
-            tmp2.Add(new DatabaseOverride("default2b", "override2b"));
+        //    List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
+        //    tmp2.Add(new DatabaseOverride("default2a", "override2a"));
+        //    tmp2.Add(new DatabaseOverride("default2b", "override2b"));
 
-            target.Add("z", tmp2);
-            target.Add("a", tmp1);
-            target.Add("m", tmp2);
-            target.Sort();
-            Dictionary<string, List<DatabaseOverride>>.Enumerator enumer = target.GetEnumerator();
-            enumer.MoveNext();
-            Assert.IsTrue("a" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"a\", returned " + enumer.Current.Key.ToString());
-            enumer.MoveNext();
-            Assert.IsTrue("m" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"m\", returned " + enumer.Current.Key.ToString());
-            enumer.MoveNext();
-            Assert.IsTrue("z" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"z\", returned " + enumer.Current.Key.ToString());
+        //    target.Add("z", tmp2);
+        //    target.Add("a", tmp1);
+        //    target.Add("m", tmp2);
+        //    target.Sort();
+        //    Dictionary<string, List<DatabaseOverride>>.Enumerator enumer = target.GetEnumerator();
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("a" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"a\", returned " + enumer.Current.Key.ToString());
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("m" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"m\", returned " + enumer.Current.Key.ToString());
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("z" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"z\", returned " + enumer.Current.Key.ToString());
 
-        }
+        //}
         /// <summary>
         ///A test for Sort
         ///</summary>
-        [TestMethod()]
-        public void SortTest_MixedAlphaNumeric()
-        {
-            DbOverrideSequence target = new DbOverrideSequence();
-            List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
-            tmp1.Add(new DatabaseOverride("default1a", "override1a"));
-            tmp1.Add(new DatabaseOverride("default1b", "override1b"));
+        //[TestMethod()]
+        //public void SortTest_MixedAlphaNumeric()
+        //{
+        //    DbOverrides target = new DbOverrides();
+        //    List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
+        //    tmp1.Add(new DatabaseOverride("default1a", "override1a"));
+        //    tmp1.Add(new DatabaseOverride("default1b", "override1b"));
 
-            List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
-            tmp2.Add(new DatabaseOverride("default2a", "override2a"));
-            tmp2.Add(new DatabaseOverride("default2b", "override2b"));
+        //    List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
+        //    tmp2.Add(new DatabaseOverride("default2a", "override2a"));
+        //    tmp2.Add(new DatabaseOverride("default2b", "override2b"));
 
-            target.Add("z", tmp2);
-            target.Add("2", tmp1);
-            target.Add("m", tmp2);
-            target.Add("1", tmp2);
-            target.Add("3", tmp2);
-            target.Sort();
-            Dictionary<string, List<DatabaseOverride>>.Enumerator enumer = target.GetEnumerator();
-            enumer.MoveNext();
-            Assert.IsTrue("m" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"m\", returned " + enumer.Current.Key.ToString());
-            enumer.MoveNext();
-            Assert.IsTrue("z" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"z\", returned " + enumer.Current.Key.ToString());
-            enumer.MoveNext();
-            Assert.IsTrue("1" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"1\", returned " + enumer.Current.Key.ToString());
-            enumer.MoveNext();
-            Assert.IsTrue("2" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"2\", returned " + enumer.Current.Key.ToString());
-            enumer.MoveNext();
-            Assert.IsTrue("3" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"3\", returned " + enumer.Current.Key.ToString());
+        //    target.Add("z", tmp2);
+        //    target.Add("2", tmp1);
+        //    target.Add("m", tmp2);
+        //    target.Add("1", tmp2);
+        //    target.Add("3", tmp2);
+        //    target.Sort();
+        //    Dictionary<string, List<DatabaseOverride>>.Enumerator enumer = target.GetEnumerator();
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("m" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"m\", returned " + enumer.Current.Key.ToString());
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("z" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"z\", returned " + enumer.Current.Key.ToString());
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("1" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"1\", returned " + enumer.Current.Key.ToString());
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("2" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"2\", returned " + enumer.Current.Key.ToString());
+        //    enumer.MoveNext();
+        //    Assert.IsTrue("3" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"3\", returned " + enumer.Current.Key.ToString());
 
-        }
+        //}
 
         /// <summary>
         ///A test for GetSequenceId
         ///</summary>
-        [TestMethod()]
-        public void GetSequenceIdTest()
-        {
-            DbOverrideSequence target = new DbOverrideSequence();
-            List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
-            tmp1.Add(new DatabaseOverride("default1a", "override1a"));
-            tmp1.Add(new DatabaseOverride("default1b", "override1b"));
+        //[TestMethod()]
+        //public void GetSequenceIdTest()
+        //{
+        //    DbOverrides target = new DbOverrides();
+        //    List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
+        //    tmp1.Add(new DatabaseOverride("default1a", "override1a"));
+        //    tmp1.Add(new DatabaseOverride("default1b", "override1b"));
 
-            List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
-            tmp2.Add(new DatabaseOverride("default2a", "override2a"));
-            tmp2.Add(new DatabaseOverride("default2b", "override2b"));
+        //    List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
+        //    tmp2.Add(new DatabaseOverride("default2a", "override2a"));
+        //    tmp2.Add(new DatabaseOverride("default2b", "override2b"));
 
-            target.Add("z", tmp1);
-            target.Add("2", tmp2);
+        //    target.Add("z", tmp1);
+        //    target.Add("2", tmp2);
 
-            string actual;
-            actual = target.GetSequenceId("default2b", "override2b");
-            Assert.AreEqual("2", actual);
+        //    string actual;
+        //    actual = target.GetSequenceId("default2b", "override2b");
+        //    Assert.AreEqual("2", actual);
 
-            actual = target.GetSequenceId("default1a", "override1a");
-            Assert.AreEqual("z", actual);
+        //    actual = target.GetSequenceId("default1a", "override1a");
+        //    Assert.AreEqual("z", actual);
 
-            actual = target.GetSequenceId("defaultXXX", "override1a");
-            Assert.AreEqual("", actual);
+        //    actual = target.GetSequenceId("defaultXXX", "override1a");
+        //    Assert.AreEqual("", actual);
 
-            actual = target.GetSequenceId("default1a", "overrideXX");
-            Assert.AreEqual("", actual);
+        //    actual = target.GetSequenceId("default1a", "overrideXX");
+        //    Assert.AreEqual("", actual);
 
-        }
+        //}
 
         /// <summary>
         ///A test for GetOverrideDatabaseNameList
@@ -198,7 +198,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void GetOverrideDatabaseNameListTest()
         {
-            DbOverrideSequence target = new DbOverrideSequence();
+            DbOverrides target = new DbOverrides();
             List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
             tmp1.Add(new DatabaseOverride("default1a", "override1a"));
             tmp1.Add(new DatabaseOverride("default1b", "override1b"));
@@ -206,8 +206,8 @@ namespace SqlSync.SqlBuild.UnitTest
             List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
             tmp2.Add(new DatabaseOverride("default2a", "override2a"));
             tmp2.Add(new DatabaseOverride("default2b", "override2b"));
-            target.Add("a",tmp1);
-            target.Add("z",tmp2);
+            target.AddRange(tmp1);
+            target.AddRange(tmp2);
 
             List<string> actual = target.GetOverrideDatabaseNameList();
             Assert.AreEqual("override1a", actual[0]);
@@ -222,16 +222,11 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void AddTest()
         {
-            DbOverrideSequence target = new DbOverrideSequence();
+            DbOverrides target = new DbOverrides();
             List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
             tmp1.Add(new DatabaseOverride("default1a", "override1a"));
             tmp1.Add(new DatabaseOverride("default1b", "override1b"));
-
-            List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
-            tmp2.Add(new DatabaseOverride("default2a", "override2a"));
-            tmp2.Add(new DatabaseOverride("default2b", "override2b"));
-            target.Add("a", tmp1);
-            target.Add("z", tmp2);
+            target.AddRange(tmp1);
 
             Assert.AreEqual(2, target.Count);
         }
@@ -242,7 +237,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void DbOverrideSequenceConstructorTest()
         {
-            DbOverrideSequence target = new DbOverrideSequence();
+            DbOverrides target = new DbOverrides();
             Assert.AreEqual(0, target.Count);
         }
     }

@@ -754,6 +754,12 @@ namespace SqlSync.DbInformation
             for (int i = 0; i < overrides.Count; i++)
             {
                 connData.DatabaseName = overrides[i].OverrideDbTarget;
+
+                if(string.IsNullOrWhiteSpace(connData.DatabaseName))
+                {
+                    continue;
+                }
+
                 DatabaseObject routines = ChangeDates.DatabaseObjectChangeDates.Servers[serverName][connData.DatabaseName];
 
                 //Set the connection timeout to be short so that we are not waiting in the UI for a bad connection

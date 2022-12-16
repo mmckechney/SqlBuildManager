@@ -48,7 +48,7 @@ namespace SqlSync.SqlBuild.MultiDb
             {
                 this.lblServerCount.Text = this.multiDbData.Count.ToString();
                 foreach (ServerData sData in this.multiDbData)
-                    dbTotal += sData.OverrideSequence.Count;
+                    dbTotal += sData.Overrides.Count;
 
                 this.lblDatabaseCount.Text = dbTotal.ToString();
             }

@@ -26,25 +26,25 @@ namespace SqlSync.SqlBuild.MultiDb
             get { return pattern; }
             set { pattern = value; }
         }
-        private double start;
+        private int start;
 
-        public double Start
+        public int Start
         {
             get { return start; }
             set { start = value; }
         }
-        private double increment;
-
-        public double Increment
+        private int increment;
+        
+        public int Increment
         {
             get { return increment; }
             set { increment = value; }
         }
-
+        
         private void btnOK_Click(object sender, EventArgs e)
         {
-            double tmp;
-            if(!double.TryParse(txtStart.Text,out tmp) || !double.TryParse(txtIncrement.Text,out tmp))
+            int tmp;
+            if(!int.TryParse(txtStart.Text,out tmp) || !int.TryParse(txtIncrement.Text,out tmp))
             {
                 MessageBox.Show("The start and increment values must be numeric. Please re-enter", "Invalid Value", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
@@ -63,8 +63,8 @@ namespace SqlSync.SqlBuild.MultiDb
             else
                 pattern = txtDatabaseName.Text + @"\w?";
 
-            this.increment = double.Parse(txtIncrement.Text);
-            this.start = double.Parse(txtStart.Text);
+            this.increment = int.Parse(txtIncrement.Text);
+            this.start = int.Parse(txtStart.Text);
 
             this.DialogResult = DialogResult.OK;
             this.Close();

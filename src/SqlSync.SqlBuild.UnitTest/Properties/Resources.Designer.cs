@@ -98,7 +98,23 @@ namespace SqlSync.SqlBuild.UnitTest.Properties {
                 return ResourceManager.GetString("LoggingTable", resourceCulture);
             }
         }
-        
+
+        internal static string serialized_multidb_xml
+        {
+            get
+            {
+                return ResourceManager.GetString("serialized_multidb_xml", resourceCulture);
+            }
+        }
+        internal static string serialized_multidb_json
+        {
+            get
+            {
+                return ResourceManager.GetString("serialized_multidb_json", resourceCulture);
+            }
+        }
+
+
         /// <summary>
         ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
         ///&lt;ArrayOfServerData xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;

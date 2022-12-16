@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Xml.Serialization;
-using SqlSync.DbInformation;
-using SqlSync.Connection;
-using System.Data;
-using Microsoft.Data.SqlClient;
-using System.Xml;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Xml;
+using System.Xml.Serialization;
+
 namespace SqlSync.SqlBuild.MultiDb
 {
     public class MultiDbHelper
@@ -28,9 +29,22 @@ namespace SqlSync.SqlBuild.MultiDb
                         data = (MultiDbData)tmp;
                 }
             }
-            catch { }
+            catch 
+            {
+                try
+                {
+                    string contents = File.ReadAllText(fileName);
+                    data = DeserializeMultiDbConfigurationString(contents);
+                }
+                catch { }
+            }
             return data;
 
+        }
+
+        internal static MultiDbData DeserializeMultiDbConfigurationString(string contents)
+        {
+            return JsonSerializer.Deserialize<MultiDbData>(contents, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
         }
 
         public static MultiDbData ImportMultiDbTextConfig(string fileName)
@@ -54,16 +68,13 @@ namespace SqlSync.SqlBuild.MultiDb
             StringBuilder sbOvr = new StringBuilder();
             foreach (ServerData srv in cfg)
             {
-                foreach (var seq in srv.OverrideSequence)
+                foreach (var ovr in srv.Overrides)
                 {
-                    sbOvr.Length = 0;
-                    foreach (DatabaseOverride ovr in seq.Value)
-                    {
-                        sbOvr.Append(ovr.DefaultDbTarget + "," + ovr.OverrideDbTarget + ";");
-                    }
-                    sbOvr.Length = sbOvr.Length-1;
-                    sb.AppendLine(srv.ServerName + ":" + sbOvr.ToString());
+                    sbOvr.Append(ovr.DefaultDbTarget + "," + ovr.OverrideDbTarget + ";");
                 }
+                sbOvr.Length = sbOvr.Length - 1;
+                sb.AppendLine(srv.ServerName + ":" + sbOvr.ToString());
+                sbOvr.Length = 0;
             }
             return sb.ToString();
         }
@@ -95,13 +106,9 @@ namespace SqlSync.SqlBuild.MultiDb
 
                 string server = line.Split(':')[0];
                 string dbs = line.Split(':')[1];
-                ServerData sData = cfg[server];
-                if (sData == null)
-                {
-                    sData = new ServerData();
-                    sData.ServerName = server.Trim();
-                    cfg[server] = sData;
-                }
+
+                var sData = new ServerData();
+                sData.ServerName = server.Trim();
 
                 string[] arrDb = dbs.Split(';');
                 List<DatabaseOverride> tmpDb = new List<DatabaseOverride>();
@@ -122,10 +129,10 @@ namespace SqlSync.SqlBuild.MultiDb
                 }
                 if (tmpDb.Count > 0)
                 {
-                    sData.OverrideSequence.Add(dummySequence.ToString(), tmpDb);
+                    sData.Overrides.AddRange(tmpDb);
                     dummySequence++;
                 }
-                //cfg.Add(sData);
+                cfg.Add(sData);
             }
             return cfg;
         }
@@ -163,13 +170,9 @@ namespace SqlSync.SqlBuild.MultiDb
                 int counter = 0;
                 foreach (DataRow row in tbl.Rows)
                 {
-                    ServerData ser = multi[row[0].ToString().Trim()];
-                    if (ser == null)
-                    {
-                        ser = new ServerData();
-                        ser.ServerName = row[0].ToString().Trim();
-                    }
-
+                    var ser = new ServerData();
+                    ser.ServerName = row[0].ToString().Trim();
+                    
                     DatabaseOverride ovr;
                     if (tbl.Columns.Count == 2)
                     {
@@ -180,13 +183,13 @@ namespace SqlSync.SqlBuild.MultiDb
                         ovr = new DatabaseOverride(row[1].ToString().Trim(), row[2].ToString().Trim());
                         ovr.AppendedQueryRowData(row.ItemArray, 3, tbl.Columns);
                     }
-                    ser.OverrideSequence.Add(counter.ToString(), ovr);
+                    ser.Overrides.Add(ovr);
                     counter++;
-                    multi[ser.ServerName] = ser;
+                    multi.Add(ser);
                 }
 
                 message = string.Empty;
-                var dbs = multi.Sum(m => m.OverrideSequence.Count());
+                var dbs = multi.Sum(m => m.Overrides.Count());
                 log.LogInformation($"Found {dbs} target databases across {multi.Count()} target servers");
                 return multi;
             }
@@ -195,6 +198,46 @@ namespace SqlSync.SqlBuild.MultiDb
                 message = exe.Message;
                 return null;
             }
+        }
+
+        public static bool SaveMultiDbConfigToFile(string fileName, MultiDbData cfg, bool asXml = false)
+        {
+            try
+            {
+                string contents;
+                if (asXml)
+                {
+                    contents = SerializeMultiDbConfigurationToXml(cfg);
+                }
+                else
+                {
+                    contents = SerializeMultiDbConfigurationToJson(cfg);
+                }
+                File.WriteAllText(fileName, contents);
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex.Message);
+                return false;
+            }
+        }
+        public static string SerializeMultiDbConfigurationToXml(MultiDbData cfg)
+        {
+            XmlSerializer ser = new XmlSerializer(typeof(MultiDbData));
+            StringBuilder sb = new StringBuilder();
+            using (StringWriter sw = new StringWriter(sb))
+            {
+                ser.Serialize(sw, cfg);
+            }
+            return sb.ToString();
+        }
+        public static string SerializeMultiDbConfigurationToJson(MultiDbData cfg)
+        {
+
+            var output = JsonSerializer.Serialize(cfg, new JsonSerializerOptions() { WriteIndented = true, PropertyNameCaseInsensitive = true });
+            return output;
         }
 
         public static bool SaveMultiDbQueryConfiguration(string fileName, MultiDbQueryConfig cfg)
@@ -238,23 +281,21 @@ namespace SqlSync.SqlBuild.MultiDb
 
         public static bool ValidateMultiDatabaseData(MultiDbData dbData)
         {
-            for (int i = 0; i < dbData.Count; i++)
+            //for (int i = 0; i < dbData.Count; i++)
+            foreach(var svr in dbData)
             {
-                if (dbData[i].OverrideSequence == null)
+                if (svr.Overrides == null)
                     return false;
 
-               SerializableDictionary<string, List<DatabaseOverride>>.Enumerator enumer = dbData[i].OverrideSequence.GetEnumerator();
-               while (enumer.MoveNext())
-               {
-                   if (!ConnectionHelper.ValidateDatabaseOverrides(dbData[i].OverrideSequence[enumer.Current.Key]))
-                       return false;
-               }
+            
+                if (!ConnectionHelper.ValidateDatabaseOverrides(svr.Overrides))
+                    return false;
+       
             }
             return true;
         }
 
-
-
+        
     }
     public class MultiDbConfigurationException : Exception
     {

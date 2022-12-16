@@ -15,3 +15,5 @@ param
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 .$scriptDir/create_databases.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $path -testDatabaseCount $testDatabaseCount
+.$scriptDir/create_login_for_managedidentity_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $path
+.$scriptDir/create_database_override_files_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $path

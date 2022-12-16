@@ -4,6 +4,7 @@ using System.IO;
 using SqlSync.Connection;
 using System.Collections.Generic;
 using System;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Resources;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -60,12 +61,12 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(actual[0].ServerName, "SERVER");
             Assert.AreEqual(actual[1].ServerName, "SERVER2");
 
-            DbOverrideSequence seq = actual[0].OverrideSequence;
-            Assert.AreEqual(seq["0"][0].DefaultDbTarget, "default");
-            Assert.AreEqual(seq["0"][1].OverrideDbTarget, "target2");
-            seq = actual[1].OverrideSequence;
-            Assert.AreEqual(seq["1"][1].DefaultDbTarget, "default2");
-            Assert.AreEqual(seq["1"][0].OverrideDbTarget, "target");
+            DbOverrides seq = actual[0].Overrides;
+            Assert.AreEqual(seq[0].DefaultDbTarget, "default");
+            Assert.AreEqual(seq[1].OverrideDbTarget, "target2");
+            seq = actual[1].Overrides;
+            Assert.AreEqual(seq[1].DefaultDbTarget, "default2");
+            Assert.AreEqual(seq[0].OverrideDbTarget, "target");
         }
 
         /// <summary>
@@ -74,14 +75,16 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void ImportMultiDbTextConfigTest_MultipleOfSameServer()
         {
-            string[] fileContents = new string[] { "SERVER:default,target;default2,target2", "SERVER:default,target;default2,target2", "SERVER1:default,target;default3,target3" };
+            string[] fileContents = new string[] { "SERVER:default,target;default1,target1", "SERVER:default,target;default2,target2", "SERVER1:default,target;default3,target3" };
             MultiDbData actual;
             actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
             Assert.AreEqual("SERVER",actual[0].ServerName); //Make sure the items with the same server only get on server entry.
-            Assert.AreEqual("SERVER1",actual[1].ServerName);
-            Assert.AreEqual(2, actual[0].OverrideSequence.Count);
-            Assert.AreEqual(1, actual[1].OverrideSequence.Count);
-       }
+            Assert.AreEqual("SERVER",actual[1].ServerName);
+            Assert.AreEqual("SERVER1", actual[2].ServerName);
+            Assert.AreEqual(2, actual[0].Overrides.Count);
+            Assert.AreEqual(2, actual[1].Overrides.Count);
+            Assert.AreEqual(2, actual[2].Overrides.Count);
+        }
         /// <summary>
         ///A test for ImportMultiDbTextConfig
         ///</summary>
@@ -94,12 +97,12 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(actual[0].ServerName, "SERVER");
             Assert.AreEqual(actual[1].ServerName, "SERVER2");
 
-            DbOverrideSequence seq = actual[0].OverrideSequence;
-            Assert.AreEqual(seq["0"][0].DefaultDbTarget, "default");
-            Assert.AreEqual(seq["0"][1].OverrideDbTarget, "target2");
-            seq = actual[1].OverrideSequence;
-            Assert.AreEqual(seq["1"][1].DefaultDbTarget, "default2");
-            Assert.AreEqual(seq["1"][0].OverrideDbTarget, "target");
+            DbOverrides seq = actual[0].Overrides;
+            Assert.AreEqual(seq[0].DefaultDbTarget, "default");
+            Assert.AreEqual(seq[1].OverrideDbTarget, "target2");
+            seq = actual[1].Overrides;
+            Assert.AreEqual(seq[1].DefaultDbTarget, "default2");
+            Assert.AreEqual(seq[0].OverrideDbTarget, "target");
         }
         /// <summary>
         ///A test for ImportMultiDbTextConfig
@@ -145,12 +148,12 @@ namespace SqlSync.SqlBuild.UnitTest
                 Assert.AreEqual(actual[0].ServerName, "SERVER");
                 Assert.AreEqual(actual[1].ServerName, "SERVER2");
 
-                DbOverrideSequence seq = actual[0].OverrideSequence;
-                Assert.AreEqual(seq["0"][0].DefaultDbTarget, "default");
-                Assert.AreEqual(seq["0"][1].OverrideDbTarget, "target2");
-                seq = actual[1].OverrideSequence;
-                Assert.AreEqual(seq["1"][1].DefaultDbTarget, "default2");
-                Assert.AreEqual(seq["1"][0].OverrideDbTarget, "target");
+                DbOverrides seq = actual[0].Overrides;
+                Assert.AreEqual(seq[0].DefaultDbTarget, "default");
+                Assert.AreEqual(seq[1].OverrideDbTarget, "target2");
+                seq = actual[1].Overrides;
+                Assert.AreEqual(seq[1].DefaultDbTarget, "default2");
+                Assert.AreEqual(seq[0].OverrideDbTarget, "target");
             }
             finally
             {
@@ -192,11 +195,11 @@ namespace SqlSync.SqlBuild.UnitTest
                    Assert.AreEqual(@"Server1\Instance_1", actual[0].ServerName);
 
                    Assert.AreEqual(@"Server2\Instance_1", actual[1].ServerName);
-                   DbOverrideSequence seq = actual[1].OverrideSequence;
-                   Assert.AreEqual("Default", seq["1"][0].DefaultDbTarget);
-                   Assert.AreEqual("Db_0002", seq["1"][0].OverrideDbTarget);
+                   DbOverrides seq = actual[1].Overrides;
+                   Assert.AreEqual("Default", seq[0].DefaultDbTarget);
+                   Assert.AreEqual("Db_0002", seq[0].OverrideDbTarget);
 
-                   List<QueryRowItem> queryItems = seq["1"][0].QueryRowData;
+                   List<QueryRowItem> queryItems = seq[0].QueryRowData;
                    Assert.AreEqual("MyCompany2", queryItems[0].Value);
                    Assert.AreEqual("CompanyName", queryItems[0].ColumnName);
                    Assert.AreEqual("CompanyID", queryItems[1].ColumnName);
@@ -227,21 +230,12 @@ namespace SqlSync.SqlBuild.UnitTest
                 fileContents += @"
   <ServerData>
     <ServerName>(local)</ServerName>
-    <OverrideSequence>
-      <item>
-        <key>
-          <string>1</string>
-        </key>
-        <value>
-          <ArrayOfDatabaseOverride>
-            <DatabaseOverride>
-              <DefaultDbTarget>SqlBuildTest</DefaultDbTarget>
-              <OverrideDbTarget>master</OverrideDbTarget>
-            </DatabaseOverride>
-          </ArrayOfDatabaseOverride>
-        </value>
-      </item>
-    </OverrideSequence>
+        <Overrides>
+        <DatabaseOverride>
+            <DefaultDbTarget>SqlBuildTest</DefaultDbTarget>
+            <OverrideDbTarget>master</OverrideDbTarget>
+        </DatabaseOverride>
+        </Overrides>
   </ServerData>
 </ArrayOfServerData>";
                 File.WriteAllText(fileName, fileContents);
@@ -250,9 +244,9 @@ namespace SqlSync.SqlBuild.UnitTest
                 actual.IsTransactional = false;
 
                 Assert.AreEqual(actual[0].ServerName, "(local)");
-                DbOverrideSequence seq = actual[0].OverrideSequence;
-                Assert.AreEqual(seq["1"][0].DefaultDbTarget, "SqlBuildTest");
-                Assert.AreEqual(seq["1"][0].OverrideDbTarget, "master");
+                DbOverrides seq = actual[0].Overrides;
+                Assert.AreEqual(seq[0].DefaultDbTarget, "SqlBuildTest");
+                Assert.AreEqual(seq[0].OverrideDbTarget, "master");
                 Assert.IsFalse(actual.IsTransactional);
 
             }
@@ -299,22 +293,13 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void ValidateMultiDatabaseData_NullOverrideSequence()
         {
-            MultiDbData dbData = new MultiDbData();
+            MultiDbData dbData = new MultiDbData()
+            {
+                new ServerData(){ ServerName = "server1", Overrides = new DbOverrides(new DatabaseOverride("default", "target"),new DatabaseOverride("default2", "target2")) },
+                new ServerData(){ ServerName = "server2", Overrides = null }
+            };
 
-            ServerData srv1 = new ServerData();
-            srv1.ServerName = "server1";
-            dbData["server1"] = srv1;
-            ServerData srv2 = new ServerData();
-            srv2.ServerName = "server2";
-            dbData["server2"] = srv2;
-
-            DbOverrideSequence ovr = new DbOverrideSequence();
-            ovr.Add("1",new DatabaseOverride("default","target"));
-            ovr.Add("2",new DatabaseOverride("default2","target2"));
-            dbData["server1"].OverrideSequence = ovr;
-            dbData["server2"].OverrideSequence = null;
-
-            
+                       
             bool expected = false;
             bool actual = MultiDbHelper.ValidateMultiDatabaseData(dbData);
             Assert.AreEqual(expected, actual);
@@ -331,21 +316,21 @@ namespace SqlSync.SqlBuild.UnitTest
 
             ServerData srv1 = new ServerData();
             srv1.ServerName = "server1";
-            dbData["server1"] = srv1;
             ServerData srv2 = new ServerData();
             srv2.ServerName = "server2";
-            dbData["server2"] = srv2;
 
-            DbOverrideSequence ovr = new DbOverrideSequence();
-            ovr.Add("1", new DatabaseOverride("default", "target"));
-            ovr.Add("2", new DatabaseOverride("default2", "target2"));
-            dbData["server1"].OverrideSequence = ovr;
 
-            DbOverrideSequence ovr2 = new DbOverrideSequence();
-            ovr.Add("3", new DatabaseOverride("default", "target"));
-            ovr.Add("4", new DatabaseOverride("", ""));
-            dbData["server2"].OverrideSequence = ovr2;
+            DbOverrides ovr = new DbOverrides();
+            ovr.Add(new DatabaseOverride("default", "target"));
+            ovr.Add(new DatabaseOverride("default2", "target2"));
+            srv1.Overrides = ovr;
+            dbData.Add(srv1);
 
+            DbOverrides ovr2 = new DbOverrides();
+            ovr.Add(new DatabaseOverride("default", "target"));
+            ovr.Add(new DatabaseOverride("", ""));
+            srv2.Overrides = ovr2;
+            dbData.Add(srv2);
 
             bool expected = false;
             bool actual = MultiDbHelper.ValidateMultiDatabaseData(dbData);
@@ -361,34 +346,16 @@ namespace SqlSync.SqlBuild.UnitTest
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void ConvertMultiDbDataToTextConfigTest()
         {
-            DbOverrideSequence sequenceA = new DbOverrideSequence();
-            sequenceA.Add("1", new DatabaseOverride("default1", "override1"));
-            sequenceA.Add("2", new DatabaseOverride("default2", "override2"));
-            sequenceA.Add("0", new DatabaseOverride("default0", "override0"));
-
-            DatabaseOverride ovrX = new DatabaseOverride("defaultX", "overrideX");
-            DatabaseOverride ovrY = new DatabaseOverride("defaultY", "overrideY");
-            List<DatabaseOverride> lstOvr = new List<DatabaseOverride>();
-            lstOvr.Add(ovrX);
-            lstOvr.Add(ovrY);
-            sequenceA.Add("M", lstOvr);
-
-            ServerData serverA = new ServerData();
-            serverA.OverrideSequence = sequenceA;
-            serverA.ServerName = "ServerA";
-
-            DbOverrideSequence sequenceB = new DbOverrideSequence();
-            sequenceB.Add("6", new DatabaseOverride("default6", "override6"));
-            sequenceB.Add("7", new DatabaseOverride("default7", "override7"));
-            sequenceB.Add("5", new DatabaseOverride("default5", "override5"));
-           
-            ServerData serverB = new ServerData();
-            serverB.OverrideSequence = sequenceB;
-            serverB.ServerName = "ServerB";
-
-            MultiDbData cfg = new MultiDbData();
-            cfg.Add(serverA);
-            cfg.Add(serverB);
+            MultiDbData cfg = new MultiDbData
+            {
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default1", "override1")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default2", "override2")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default0", "override0")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("defaultX", "overrideX"), new DatabaseOverride("defaultY", "overrideY")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default6", "override6")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default7", "override7")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default5", "override5")) },
+            };
 
             string expected = 
 @"ServerA:default1,override1
@@ -402,6 +369,80 @@ ServerB:default5,override5
             string actual;
             actual = MultiDbHelper.ConvertMultiDbDataToTextConfig(cfg);
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod()]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        public void SerializeMultiDbAsXMl_Test()
+        {
+            MultiDbData cfg = new MultiDbData
+            {
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default1", "override1")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default2", "override2")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default0", "override0")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("defaultX", "overrideX"), new DatabaseOverride("defaultY", "overrideY")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default6", "override6")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default7", "override7")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default5", "override5")) },
+            };
+
+
+            string actual;
+            actual = MultiDbHelper.SerializeMultiDbConfigurationToXml(cfg);
+
+            var expected = Properties.Resources.serialized_multidb_xml;
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod()]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        public void SerializeMultiDbAsJson_Test()
+        {
+            MultiDbData cfg = new MultiDbData
+            {
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default1", "override1")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default2", "override2")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default0", "override0")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("defaultX", "overrideX"), new DatabaseOverride("defaultY", "overrideY")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default6", "override6")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default7", "override7")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default5", "override5")) },
+            };
+
+
+            string actual;
+            actual = MultiDbHelper.SerializeMultiDbConfigurationToJson(cfg);
+            var expected = Properties.Resources.serialized_multidb_json;
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod()]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        public void SerializeAndDeserializeMultiDbAsJson_Test()
+        {
+            MultiDbData cfg = new MultiDbData
+            {
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default1", "override1")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default2", "override2")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default0", "override0")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("defaultX", "overrideX"), new DatabaseOverride("defaultY", "overrideY")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default6", "override6")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default7", "override7")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default5", "override5")) },
+            };
+
+
+            string actual;
+            actual = MultiDbHelper.SerializeMultiDbConfigurationToJson(cfg);
+            var expected = Properties.Resources.serialized_multidb_json;
+            Assert.AreEqual(expected, actual);
+
+            var deserialized = MultiDbHelper.DeserializeMultiDbConfigurationString(actual);
+
+            Assert.AreEqual(cfg.Count, deserialized.Count);
+
         }
 
 

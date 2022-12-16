@@ -35,7 +35,7 @@ namespace SqlBuildManager.Console.Queue
         private ServiceBusReceiver _messageReceiver = null;
         private CancellationTokenSource tokenSource = null;
 
-        public QueueManager(string topicConnectionString, string jobName, ConcurrencyType concurrencyType)
+        public QueueManager(string topicConnectionString, string jobName, ConcurrencyType concurrencyType, bool unitest = false)
         {
             this.topicConnectionString = topicConnectionString;
             this.jobName = jobName;
@@ -43,7 +43,10 @@ namespace SqlBuildManager.Console.Queue
             this.topicSubscriptionName = jobName;
             this.topicSessionSubscriptionName = $"{jobName}session";
             this.concurrencyType = concurrencyType;
-            CreateSubscriptions().Wait();
+            if (!unitest)
+            {
+                CreateSubscriptions().Wait();
+            }
         }
 
         private string EnsureQualifiedNamespace(string input)
@@ -184,7 +187,7 @@ namespace SqlBuildManager.Console.Queue
             }
 
         }
-        private List<ServiceBusMessage> CreateMessages(List<IEnumerable<(string, List<DatabaseOverride>)>> buckets, string jobName)
+        public List<ServiceBusMessage> CreateMessages(List<IEnumerable<(string, List<DatabaseOverride>)>> buckets, string jobName)
         {
             try
             {

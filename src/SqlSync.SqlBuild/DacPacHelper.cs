@@ -346,9 +346,9 @@ namespace SqlSync.SqlBuild
                 foreach (var serv in multiDb)
                 {
                     server = serv.ServerName;
-                    for (int i = 0; i < serv.OverrideSequence.Count; i++)
+                    for (int i = 0; i < serv.Overrides.Count; i++)
                     {
-                        database = serv.OverrideSequence.ElementAt(i).Value[0].OverrideDbTarget;
+                        database = serv.Overrides.ElementAt(i).OverrideDbTarget;
 
                         string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
                         if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac))

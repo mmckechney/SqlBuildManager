@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ydn = YamlDotNet.Serialization;
 using SqlSync.Connection;
+using System.Diagnostics;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -22,6 +23,7 @@ namespace SqlBuildManager.Console.ExternalTest
     {
  
         private string settingsFileKeyPath;
+        private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]
         public void ConfigureProcessInfo()
@@ -29,6 +31,10 @@ namespace SqlBuildManager.Console.ExternalTest
 
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<AciTests>("SqlBuildManager.Console.log", @"C:\temp");
             this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+
+            System.Console.SetOut(new StringWriter(this.ConsoleOutput));    // Associate StringBuilder with StdOut
+            this.ConsoleOutput.Clear();    // Clear text from any previous text runs
+           
 
         }
         [TestCleanup]
@@ -112,6 +118,89 @@ namespace SqlBuildManager.Console.ExternalTest
 
 
         }
+
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataTestMethod]
+        public void ACI_Queue_SBMSource_DoubleDbConfig_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/clientdbtargets-doubledb.cfg");
+                var sbmFileName = Path.GetFullPath("SimpleSelect_DoubleClient.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect_DoubleClient);
+                }
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("aci");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //Prep the build
+                var args = new string[]{
+                "aci",  "prep",
+                "--settingsfile", settingsFile,
+                "--tag", imageTag,
+                "--jobname", jobName,
+                "--packagename", sbmFileName,
+                "--outputfile", outputFile,
+                "--containercount", containerCount.ToString(),
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString(),
+                "--force"
+            };
+
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //enqueue the topic messages
+                args = new string[]{
+                "aci",  "enqueue",
+                "--settingsfile", settingsFile,
+                "--jobname", jobName,
+                 "--concurrencytype", concurrencyType.ToString(),
+                 "--override", overrideFile
+            };
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //monitor for completion
+                args = new string[]{
+                "aci",  "deploy",
+                 "--settingsfile", settingsFile,
+                 "--templatefile", outputFile,
+                "--override", overrideFile,
+                "--unittest", "true",
+                "--monitor", "true"
+            };
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+            }
+            finally
+            {
+                Debug.WriteLine(this.ConsoleOutput.ToString());
+            }
+
+        }
+
         [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataTestMethod]

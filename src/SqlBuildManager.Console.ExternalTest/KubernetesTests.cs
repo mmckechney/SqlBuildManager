@@ -97,6 +97,129 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
+        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
+        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")]
+        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json")]
+        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        [DataTestMethod]
+        public void Kubernetes_Run_Queue_SBMSource_BadTarget_Fail(string settingsFile)
+        {
+            try
+            {
+                var prc = new ProcessHelper();
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets-badtargets.cfg");
+                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+                }
+                string jobName = TestHelper.GetUniqueJobName("k8s");
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+
+                //Clear any exiting pods
+                var result = prc.ExecuteProcess("kubectl", $"delete job sqlbuildmanager ");
+
+                var args = new string[]
+                {
+                "k8s", "run",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--jobname", jobName,
+                "--override", overrideFile,
+                "--packagename", sbmFileName,
+                "--force",
+                "--unittest",
+                "--stream"
+                };
+
+
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+
+                Assert.AreEqual(1, result);
+
+                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {(dbCount -2).ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Errors:        {(2).ToString().PadLeft(5, '0')}"));
+
+            }
+            finally
+            {
+                Debug.WriteLine(this.ConsoleOutput.ToString());
+            }
+
+        }
+
+
+        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
+        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")]
+        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json")]
+        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        [DataTestMethod]
+        public void Kubernetes_Run_Queue_DoubleDbConfig_SBMSource_Success(string settingsFile)
+        {
+            try
+            {
+                var prc = new ProcessHelper();
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/clientdbtargets-doubledb.cfg");
+                var sbmFileName = Path.GetFullPath("SimpleSelect_DoubleClient.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect_DoubleClient);
+                }
+                string jobName = TestHelper.GetUniqueJobName("k8s");
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+
+                //Clear any exiting pods
+                var result = prc.ExecuteProcess("kubectl", $"delete job sqlbuildmanager ");
+
+                var args = new string[]
+                {
+                "k8s", "run",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", this.settingsFileKeyPath,
+                "--jobname", jobName,
+                "--override", overrideFile,
+                "--packagename", sbmFileName,
+                "--force",
+                "--unittest",
+                "--stream"
+                };
+
+
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+
+                Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+            }
+            finally
+            {
+                Debug.WriteLine(this.ConsoleOutput.ToString());
+            }
+
+        }
+
         //Can't run local unit tests with MI since an SBM package needs to be created  :-)
         [DataRow("TestConfig/settingsfile-k8s-kv.json")]
         [DataRow("TestConfig/settingsfile-k8s-sec.json")]

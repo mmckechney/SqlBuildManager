@@ -18,8 +18,12 @@ if($removeAllContainerApps)
     .\Clean-ContainerApps.ps1 -resourceGroupName $resourceGroupName
 }
 .\Clear_UnitTest_YamlFiles.ps1 
+.\Clear_UnitTest_AciJson.ps1 
+
+Write-Host "Deleting Kubernetes Unit Test resources in sqlbuildmanager namespace" -ForegroundColor Green
 kubectl delete all --all -n sqlbuildmanager
 
+Write-Host "Deleting Kubernetes Unit Test ConfigMaps" -ForegroundColor Green
 $configMaps = (kubectl get configmap -o name)
 foreach($map in $configMaps) 
 { 
@@ -29,4 +33,5 @@ foreach($map in $configMaps)
     }
 }
 
+Write-Host "Deleting Kubernetes Unit Test secrets" -ForegroundColor Green
 kubectl delete secret  -n sqlbuildmanager --field-selector=type=Opaque
