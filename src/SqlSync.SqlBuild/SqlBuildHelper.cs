@@ -166,6 +166,12 @@ namespace SqlSync.SqlBuild
                 this.externalScriptLogFileName = externalScriptLogFileName;
 
         }
+
+        public void ProcessMultiDbBuild(MultiDbData multiDbRunData, string projectFileName, BackgroundWorker bgWorker, DoWorkEventArgs e)
+        {
+            this.projectFileName = projectFileName;
+            ProcessMultiDbBuild(multiDbRunData, bgWorker, e);
+        }
         /// <summary>
         /// Used when the user wants to run the build across multiple databases and/or servers
         /// </summary>
@@ -174,7 +180,6 @@ namespace SqlSync.SqlBuild
         /// <param name="e"></param>
         public void ProcessMultiDbBuild(MultiDbData multiDbRunData, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
-            int intSequence;
             string strSequence;
             this.committedScripts.Clear();
             this.connectDictionary.Clear();
@@ -183,37 +188,35 @@ namespace SqlSync.SqlBuild
             foreach (ServerData srvData in multiDbRunData)
             {
                 srvData.OverrideSequence.Sort();
-                foreach(KeyValuePair<string, List<DatabaseOverride>> sequence in srvData.OverrideSequence)
-                {
-                    if (int.TryParse(sequence.Key, out intSequence))
-                        strSequence = intSequence.ToString().PadLeft(3, '0');
-                    else
-                        strSequence = sequence.Key;
 
-                    SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData();
-                    runData.BuildData = multiDbRunData.BuildData;
-                    runData.BuildType = "Other";
+                var tmp = srvData.OverrideSequence.Select(o => o.Value).ToList();
+                List<DatabaseOverride> overrides = new List<DatabaseOverride>();
+                tmp.ForEach(o => overrides.AddRange(o));
 
-                    if (multiDbRunData.BuildDescription == null || multiDbRunData.BuildDescription.Length == 0)
-                        runData.BuildDescription = "Multi-Database Run ID:" + multiDbRunData.MultiRunId + ". Server:" + srvData.ServerName + "; Sequence: " + strSequence;
-                    else
-                        runData.BuildDescription = multiDbRunData.BuildDescription;
+                SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData();
+                runData.BuildData = multiDbRunData.BuildData;
+                runData.BuildType = "Multi Db Build";
 
-                    runData.StartIndex = 0;
-                    runData.ProjectFileName = multiDbRunData.ProjectFileName;
-                    runData.IsTrial =multiDbRunData.RunAsTrial;
-                    runData.BuildFileName = multiDbRunData.BuildFileName;
-                    runData.TargetDatabaseOverrides = sequence.Value;
-                    this.targetDatabaseOverrides = sequence.Value;
-                    SqlSyncBuildData.BuildRow buildResult = ProcessBuild(runData, bgWorker, e, srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
-                    buildResults.Add(buildResult);
+                if (multiDbRunData.BuildDescription == null || multiDbRunData.BuildDescription.Length == 0)
+                    runData.BuildDescription = $"Multi-Database Run ID: {multiDbRunData.MultiRunId}.  Server:{srvData.ServerName}";
+                else
+                    runData.BuildDescription = multiDbRunData.BuildDescription;
+
+                runData.StartIndex = 0;
+                runData.ProjectFileName = multiDbRunData.ProjectFileName;
+                runData.IsTrial =multiDbRunData.RunAsTrial;
+                runData.BuildFileName = multiDbRunData.BuildFileName;
+                runData.TargetDatabaseOverrides = overrides;
+                this.targetDatabaseOverrides = overrides;
+                SqlSyncBuildData.BuildRow buildResult = ProcessBuild(runData, bgWorker, e, srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
+                buildResults.Add(buildResult);
                     
-                    if(buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
-                    {
-                        PerformRunScriptFinalization(true,buildResults,multiDbRunData, ref e);
-                        return;
-                    }
+                if(buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
+                {
+                    PerformRunScriptFinalization(true,buildResults,multiDbRunData, ref e);
+                    return;
                 }
+                
             }
 
             PerformRunScriptFinalization(false, buildResults, multiDbRunData, ref e);
@@ -250,7 +253,7 @@ namespace SqlSync.SqlBuild
             int buildRetries = 0;
 
             if (bgWorker != null)
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Starting Build Process"));
+                bgWorker.ReportProgress(0, new GeneralStatusEventArgs($"Starting Build Process targeting: {serverName} "));
 
             DataView filteredScripts;
             SqlSyncBuildData.BuildRow myBuild;
@@ -309,7 +312,7 @@ namespace SqlSync.SqlBuild
                 }
 
             }
-            else if (buildResults.FinalStatus != BuildItemStatus.Committed)
+            else if (buildResults.FinalStatus != BuildItemStatus.Committed && buildResults.FinalStatus != BuildItemStatus.Pending)
             {
                 log.LogWarning($"Build was not successful. Status is {buildResults.FinalStatus.ToString()} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName)}' ");
             }
@@ -325,12 +328,12 @@ namespace SqlSync.SqlBuild
             return buildResults;
         }
         /// <summary>
-       /// Entry method to kick off a build.
-       /// This overload should be used for single server runs as it clears out the committedScript List collection
-       /// </summary>
-       /// <param name="runData"></param>
-       /// <param name="bgWorker"></param>
-       /// <param name="e"></param>
+        /// Entry method to kick off a build.
+        /// This overload should be used for single server runs as it clears out the committedScript List collection
+        /// </summary>
+        /// <param name="runData"></param>
+        /// <param name="bgWorker"></param>
+        /// <param name="e"></param>
         public void ProcessBuild(SqlBuildRunData runData, int allowableTimeoutRetries, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             this.connectDictionary.Clear();
@@ -782,7 +785,7 @@ namespace SqlSync.SqlBuild
                         tmpCommmittedScr.RunEnd = DateTime.Now;
                         committedScripts.Add(tmpCommmittedScr);
                         //Send Notification
-                        bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Script Successful",span));
+                        bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs($"Script Successful against {this.myRunRow.Database}",span));
 
                     }
 
@@ -1415,10 +1418,18 @@ namespace SqlSync.SqlBuild
         /// <returns>True if there is a script block in place</returns>
         public static bool HasBlockingSqlLog(System.Guid scriptId ,ConnectionData cData,string databaseName, out string scriptHash, out string scriptTextHash,out DateTime commitDate)
 		{
+
+
 			bool hasBlock = false;
 			scriptHash = string.Empty;
             scriptTextHash = string.Empty;
             commitDate = DateTime.MinValue;
+
+            if (string.IsNullOrWhiteSpace(databaseName))
+            {
+                return false;
+            }
+
             SqlCommand cmd = new SqlCommand("SELECT AllowScriptBlock,ScriptFileHash,CommitDate,ScriptText FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC");
 			cmd.Parameters.AddWithValue("@ScriptId",scriptId);
 			cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName,cData.SQLServerName,cData.UserId,cData.Password,cData.AuthenticationType,2);
@@ -1879,31 +1890,39 @@ namespace SqlSync.SqlBuild
         #region ## SQL Connection Helper Methods ##
         internal BuildConnectData GetConnectionDataClass(string serverName, string databaseName)
 		{
-			//always Upper case the database name
-            string databaseKey = serverName.ToUpper() + ":" + databaseName.ToUpper();
-            if (this.connectDictionary.ContainsKey(databaseKey) == false)
-			{
-				BuildConnectData cData = new BuildConnectData();
-                cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName, this.connData.UserId, this.connData.Password, connData.AuthenticationType, this.connData.ScriptTimeout);
+            try
+            {
+                //always Upper case the database name
+                string databaseKey = serverName.ToUpper() + ":" + databaseName.ToUpper();
+                if (this.connectDictionary.ContainsKey(databaseKey) == false)
+                {
+                    BuildConnectData cData = new BuildConnectData();
+                    cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName, this.connData.UserId, this.connData.Password, connData.AuthenticationType, this.connData.ScriptTimeout);
 
-                //Add a robust retry policy on database connection opening
-                var pollyConnection = Policy.Handle<SqlException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
-                pollyConnection.Execute(() => cData.Connection.Open());
+                    //Add a robust retry policy on database connection opening
+                    var pollyConnection = Policy.Handle<SqlException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
+                    pollyConnection.Execute(() => cData.Connection.Open());
 
-				cData.HasLoggingTable = LogTableExists(cData.Connection);
-				cData.Connection.InfoMessage +=new SqlInfoMessageEventHandler(Connection_InfoMessage);
-                if(!databaseName.Equals(this.logToDatabaseName) && this.isTransactional) //we don't want a transaction for the logging database
-				    cData.Transaction = cData.Connection.BeginTransaction(BuildTransaction.TransactionName);
-				cData.DatabaseName = databaseName;
-                cData.ServerName = serverName;
+                    cData.HasLoggingTable = LogTableExists(cData.Connection);
+                    cData.Connection.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
+                    if (!databaseName.Equals(this.logToDatabaseName) && this.isTransactional) //we don't want a transaction for the logging database
+                        cData.Transaction = cData.Connection.BeginTransaction(BuildTransaction.TransactionName);
+                    cData.DatabaseName = databaseName;
+                    cData.ServerName = serverName;
 
-                this.connectDictionary.Add(databaseKey, cData);
-				return cData;
-			}
-			else
-			{
-                return (BuildConnectData)this.connectDictionary[databaseKey];
-			}
+                    this.connectDictionary.Add(databaseKey, cData);
+                    return cData;
+                }
+                else
+                {
+                    return (BuildConnectData)this.connectDictionary[databaseKey];
+                }
+            }
+            catch(Exception exe)
+            {
+                log.LogError("Error getting connection data for " + serverName + "." + databaseName + " : " + exe.Message);
+                throw;
+            }
 		}
 		internal bool CommitBuild()
 		{

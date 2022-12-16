@@ -546,14 +546,37 @@ namespace SqlBuildManager.Console
 
 
                 //We need an override setting. if not provided, we need to glean it from the SqlSyncBuildProject.xml file 
-                if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
+                List<DatabaseOverride> overrides = new List<DatabaseOverride>();
+                MultiDbData multiDbData = null;
+                if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
+                {
+                    var x = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out MultiDbData multiData, out string[] errorMessages);
+                    if (string.IsNullOrWhiteSpace(cmdLine.Server))
+                    {
+                        cmdLine.Server = multiData.First().ServerName;
+                        overrides = multiData.First().OverrideSequence.First().Value;
+                    }
+                    if(string.IsNullOrWhiteSpace(cmdLine.Database))
+                    {
+                        cmdLine.Database = overrides.First().OverrideDbTarget;
+                    }
+
+                    if(multiData.Count > 1)
+                    {
+                        multiDbData = multiData;
+                    }
+             
+                }
+                else if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
                 {
                     cmdLine.ManualOverRideSets = sb.SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName, cmdLine.Database);
+                    var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
+                    var def = ovrRide.Split(':')[1].Split(',')[0];
+                    var target = ovrRide.Split(':')[1].Split(',')[1];
+                    overrides = new List<DatabaseOverride>() { new DatabaseOverride() { DefaultDbTarget = def, OverrideDbTarget = target } };
                 }
 
-                var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
-                var def = ovrRide.Split(':')[1].Split(',')[0];
-                var target = ovrRide.Split(':')[1].Split(',')[1];
+                
                 if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
                 {
                     cmdLine.RootLoggingPath = Directory.GetCurrentDirectory();
@@ -561,6 +584,7 @@ namespace SqlBuildManager.Console
 
                 string projFilePath = "", projectFileName = "";
                 sb.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.BuildFileName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
+                
                 bool success = sb.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sb.SqlSyncBuildData buildData, projectFileName, true);
                 if (!success)
                 {
@@ -576,10 +600,11 @@ namespace SqlBuildManager.Console
                     BuildDescription = cmdLine.Description,
                     BuildRevision = cmdLine.BuildRevision,
                     LogToDatabaseName = cmdLine.LogToDatabaseName,
-                    TargetDatabaseOverrides = new List<DatabaseOverride>() { new DatabaseOverride() { DefaultDbTarget = def, OverrideDbTarget = target } },
+                    TargetDatabaseOverrides = overrides,
                     ProjectFileName = projectFileName,
                     BuildFileName = cmdLine.BuildFileName,
-                    AllowObjectDelete = cmdLine.AllowObjectDelete
+                    AllowObjectDelete = cmdLine.AllowObjectDelete,
+                    
 
                 };
                 ConnectionData connData = new ConnectionData()
@@ -600,7 +625,20 @@ namespace SqlBuildManager.Console
                 LocalRunInfo.Sq1SyncBuildData = buildData;
                 LocalRunInfo.BuildZipFileName = cmdLine.BuildFileName;
                 LocalRunInfo.WorkingDirectory = workingDir;
-                helper.ProcessBuild(sqlBuildRunData, cmdLine.TimeoutRetryCount, bg, workArgs);
+
+                if (multiDbData == null)
+                {
+                    helper.ProcessBuild(sqlBuildRunData, cmdLine.TimeoutRetryCount, bg, workArgs);
+                }
+                else
+                {
+                    multiDbData.ProjectFileName = projectFileName;
+                    multiDbData.RunAsTrial = cmdLine.Trial;
+                    multiDbData.BuildFileName = cmdLine.BuildFileName;
+                    multiDbData.BuildDescription = cmdLine.Description;
+                    multiDbData.BuildData = buildData;
+                    helper.ProcessMultiDbBuild(multiDbData, projectFileName, bg, workArgs);
+                }
             }
             finally
             {

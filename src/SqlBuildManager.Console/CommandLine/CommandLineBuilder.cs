@@ -415,7 +415,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("build", "Performs a standard, local SBM execution via command line")
                 {
                     packagenameOption.Copy(true),
-                    serverOption.Copy(true),
+                    serverOption,
                     databaseOption,
                     rootloggingpathOption,
                     trialOption,

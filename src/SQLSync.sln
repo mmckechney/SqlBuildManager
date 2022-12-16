@@ -7,17 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		AssemblyVersioning.cs = AssemblyVersioning.cs
 		..\devops\batch_release.json = ..\devops\batch_release.json
 		..\devops\batch_update_releasepackage.ps1 = ..\devops\batch_update_releasepackage.ps1
-		..\CHANGELOG.md = ..\CHANGELOG.md
-		Clean-ObjAndBin.ps1 = Clean-ObjAndBin.ps1
-		Clean-TestResults.ps1 = Clean-TestResults.ps1
-		..\.github\workflows\codeql-analysis.yml = ..\.github\workflows\codeql-analysis.yml
-		..\.github\workflows\container-build.yml = ..\.github\workflows\container-build.yml
 		Dockerfile = Dockerfile
-		..\.github\workflows\dotnetcore-build.yml = ..\.github\workflows\dotnetcore-build.yml
 		format_release_notes.ps1 = format_release_notes.ps1
-		..\README.md = ..\README.md
-		RunTests.ps1 = RunTests.ps1
-		RunTestsWithCodeCoverage.ps1 = RunTestsWithCodeCoverage.ps1
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLSync", "SqlSync\SQLSync.csproj", "{F54DD837-AD98-4A45-A709-1AA9E38E1A24}"
@@ -75,6 +66,28 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sbm", "SqlBuildManager.Console\sbm.csproj", "{85198616-FFA4-4FE2-83B2-C322E2F54FE2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBuildManager.Console.ExternalTest", "SqlBuildManager.Console.ExternalTest\SqlBuildManager.Console.ExternalTest.csproj", "{DE4B2CCE-FBB9-464E-A307-B55D7DE60093}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{274E183C-E220-473C-A6CA-841FE5CBD932}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\codeql-analysis.yml = ..\.github\workflows\codeql-analysis.yml
+		..\.github\workflows\container-build.yml = ..\.github\workflows\container-build.yml
+		..\.github\workflows\container-release-build.yml = ..\.github\workflows\container-release-build.yml
+		..\.github\workflows\dotnetcore-build.yml = ..\.github\workflows\dotnetcore-build.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{BFBFD414-7EBA-4D5D-9327-58FE0D6B279D}"
+	ProjectSection(SolutionItems) = preProject
+		Clean-ObjAndBin.ps1 = Clean-ObjAndBin.ps1
+		Clean-TestResults.ps1 = Clean-TestResults.ps1
+		RunTests.ps1 = RunTests.ps1
+		RunTestsWithCodeCoverage.ps1 = RunTestsWithCodeCoverage.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{662886C9-B589-4835-860A-248385C3A0C0}"
+	ProjectSection(SolutionItems) = preProject
+		..\CHANGELOG.md = ..\CHANGELOG.md
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
