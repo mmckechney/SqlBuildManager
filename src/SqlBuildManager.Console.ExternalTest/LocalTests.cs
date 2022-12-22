@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -163,7 +164,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             var logFileContents = ReleventLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-            Assert.IsTrue(logFileContents.Contains("Build Committed"), "This test was should have worked");
+            Assert.IsTrue(logFileContents.Contains("Committing transaction for"), "This test was should have worked");
 
         }
     }
