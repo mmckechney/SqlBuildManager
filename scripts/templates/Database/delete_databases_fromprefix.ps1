@@ -12,7 +12,7 @@ $servers = (az sql server list --resource-group $resourceGroupName  --query [].n
 
 foreach($server in $servers) 
 { 
-    Write-Host "Deleteing database server $server in resource group $resourceGroupName, its elastic pools and databases" -ForegroundColor DarkGreen
+    Write-Host "Deleting database server $server in resource group $resourceGroupName, its elastic pools and databases" -ForegroundColor DarkGreen
     az sql server delete --name $server --resource-group $resourceGroupName  --yes 
 }
 
