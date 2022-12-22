@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild;
@@ -14,11 +15,18 @@ namespace SqlBuildManager.Console.UnitTest
     [TestClass()]
     public partial class ConcurrencyTest
     {
-        internal static (string, MultiDbData) GetMultiDbData()
+        internal static (string, MultiDbData) GetMultiDbData(bool doubleTarget = false)
         {
             var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
 
-            File.WriteAllBytes(tmpCfg, Properties.Resources.concurrency);
+            if (doubleTarget)
+            {
+                File.WriteAllBytes(tmpCfg, Properties.Resources.concurrency_doubledb);
+            }
+            else
+            {
+                File.WriteAllBytes(tmpCfg, Properties.Resources.concurrency);
+            }
             MultiDbData multiData;
             string[] errorMessages;
             CommandLineArgs cmdLine = new CommandLineArgs()
@@ -341,6 +349,29 @@ namespace SqlBuildManager.Console.UnitTest
             }
         }
 
+        [TestMethod]
+        public void DbOverride_DoubleDb_ConcurrencyByServerTest()
+        {
+            string tmpFile = string.Empty;
+            MultiDbData multiData;
+
+            try
+            {
+                (tmpFile, multiData) = GetMultiDbData(true);
+                var output = Concurrency.ConcurrencyByServer(multiData);
+                Assert.AreEqual(449, output[0].Count());
+                Assert.AreEqual(5, output.Count());
+                Assert.AreEqual(96, output.Last().Count());
+            }
+            finally
+            {
+                if (File.Exists(tmpFile))
+                {
+                    File.Delete(tmpFile);
+                }
+            }
+        }
+
         [DataRow(2,10,225,48)]
         [DataRow(5, 25, 90, 16)]
         [DataRow(10, 50, 45, 6)]
@@ -457,6 +488,31 @@ namespace SqlBuildManager.Console.UnitTest
 
         }
 
-       
+
+        [TestMethod]
+        public void QueueMessage_Creation_Test()
+        {
+            string tmpFile = string.Empty;
+            MultiDbData multiData;
+
+            try
+            {
+                (tmpFile, multiData) = ConcurrencyTest.GetMultiDbData(true);
+                var output = Concurrency.ConcurrencyByInt(multiData, 10);
+                var qMgr = new QueueManager("", "testing", CommandLine.ConcurrencyType.Count, true);
+
+                var messages = qMgr.CreateMessages(output, "testing");
+                var msg = messages.First().As<TargetMessage>();
+                Assert.AreEqual(2, msg.DbOverrideSequence.Count());
+            }
+            finally
+            {
+                if (File.Exists(tmpFile))
+                {
+                    File.Delete(tmpFile);
+                }
+            }
+        }
+
     }
 }

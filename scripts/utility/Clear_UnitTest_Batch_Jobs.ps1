@@ -14,7 +14,7 @@ if("" -eq $resourceGroupName)
 $batchAcctKey  = az batch account keys list --name $batchAccountName --resource-group $resourceGroupName -o tsv --query 'primary'
 $batchAcctEndpoint = az batch account show --name $batchAccountName --resource-group $resourceGroupName -o tsv --query "accountEndpoint"
 
-Write-Host "Retrieving list of completed Batch jobs for $batchAccountName "
+Write-Host "Retrieving list of completed Batch jobs for $batchAccountName " -ForegroundColor Green
 if($includeActive)
 {
     $jobs = az batch job list --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey -o tsv --query "[].id"

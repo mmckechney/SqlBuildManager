@@ -133,7 +133,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         public Containers[] containers;
 
         [YamlMember(Order = 4)]
-        public string restartPolicy { get => "OnFailure";  }
+        public string restartPolicy { get => "Never";  }
 
         [YamlMember(Order = 5)]
         public Dictionary<string, object>[] volumes;

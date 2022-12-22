@@ -10,6 +10,10 @@ using System.IO;
 using System.Xml.Serialization;
 using SqlSync.MRU;
 using SqlSync.Connection;
+using System.Linq;
+using MoreLinq;
+using MoreLinq.Extensions;
+
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class MultiDbRunForm : Form, IMRUClient    
@@ -80,7 +84,12 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             get
             {
-                runConfiguration =  GetServerDataCollection();
+                var all = GetServerDataCollection();
+                var sequenced = all.Where(s => s.SequenceId.HasValue).OrderBy(s => s.SequenceId);
+                var mdb = new MultiDbData();
+                mdb.AddRange(sequenced);
+
+                runConfiguration = mdb;
                 runConfiguration.RunAsTrial = this.runAsTrial;
                 runConfiguration.IsTransactional = this.isTransactional;
                 return runConfiguration;
@@ -107,10 +116,13 @@ namespace SqlSync.SqlBuild.MultiDb
         private void PopulateServerList(List<ServerData> srvData)
         {
             this.lstServers.Items.Clear();
-            foreach (ServerData dat in srvData)
+
+            var split = srvData.GroupBy(s => s.ServerName).ToList();
+
+            foreach (var dat in split)
             {
-                ListViewItem item = new ListViewItem(dat.ServerName);
-                item.Tag = dat;
+                ListViewItem item = new ListViewItem(dat.Key);
+                item.Tag = dat.ToList();
                 lstServers.Items.Add(item);
             }
 
@@ -159,7 +171,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 return;
             }
 
-            if (this.runConfiguration.Count == 1 && this.runConfiguration[0].OverrideSequence.Count == 0)
+            if (this.runConfiguration.Count == 1 && this.runConfiguration[0].Overrides.Count == 0)
             {
                 MessageBox.Show("Please configure a run order for at least one database item", "Unable to run", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -184,7 +196,7 @@ namespace SqlSync.SqlBuild.MultiDb
             if (this.runConfiguration == null)
                 return;
 
-            if (this.runConfiguration.Count == 1 && this.runConfiguration[0].OverrideSequence.Count == 0)
+            if (this.runConfiguration.Count == 1 && this.runConfiguration[0].Overrides.Count == 0)
             {
                 MessageBox.Show("Please configure a run order for at least one database item", "Unable to run", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -240,12 +252,10 @@ namespace SqlSync.SqlBuild.MultiDb
 
             if (DialogResult.OK == saveFileDialog1.ShowDialog())
             {
+                
                 MultiDbData data = this.RunConfiguration;
-                using (TextWriter writer = new StreamWriter(saveFileDialog1.FileName))
-                {
-                    XmlSerializer xmlS = new XmlSerializer(typeof(MultiDbData));
-                    xmlS.Serialize(writer, data);
-                }
+                MultiDbHelper.SaveMultiDbConfigToFile(saveFileDialog1.FileName, data);
+
                 this.mruManager.Add(saveFileDialog1.FileName);
                 this.loadedFileName = saveFileDialog1.FileName;
 
@@ -261,8 +271,9 @@ namespace SqlSync.SqlBuild.MultiDb
                 MultiDbData mult = new MultiDbData();
                 foreach (ListViewItem item in this.lstServers.Items)
                 {
-                    mult.Add((ServerData)item.Tag);
+                    mult.AddRange((List<ServerData>)item.Tag);
                 }
+            
                 return mult;
             }
             catch (Exception)
@@ -342,25 +353,36 @@ namespace SqlSync.SqlBuild.MultiDb
             if (data != null)
             {
                 bg.ReportProgress(0, "Applying configuration... ");
+                int counter = 1;
+
+                bg.ReportProgress(10, "Retrieving database list from " + this.server);
+                ConnectionData tmpC = new ConnectionData().Fill(this.connData);
+                tmpC.SQLServerName = this.server;
+                tmpC.DatabaseName = "master";
+                var dbList = InfoHelper.GetDatabaseList(tmpC);
                 foreach (ServerData srv in data)
                 {
+                    srv.SequenceId = counter;
+                    counter++;
                     //We need to get the list of databases for this server if it doesn't match the current connection
-                    if (srv.ServerName != this.server)
+                    if (srv.ServerName == this.server)
                     {
-                        bg.ReportProgress(10, "Retrieving database list from " + srv.ServerName);
-                        ConnectionData tmpC = new ConnectionData();
-                        tmpC.Fill(this.connData);
-                        tmpC.SQLServerName = srv.ServerName;
-                        tmpC.DatabaseName = "master";
-                        srv.Databases = InfoHelper.GetDatabaseList(tmpC);
-                    }
-                    else
-                    {
-                        srv.Databases = this.databaseList;
+                        var targets = srv.Overrides.Select(o => o.OverrideDbTarget);
+                        var match = dbList.Where(d => targets.Contains(d.DatabaseName)).First();
+                        dbList.Remove(match);
                     }
                     svrDataList.Add(srv);
                 }
-                e.Result = svrDataList;
+
+                foreach(var db in dbList)
+                {
+                    svrDataList.Add(new ServerData() { ServerName = this.server, Overrides = new DbOverrides() { new DatabaseOverride() { OverrideDbTarget = db.DatabaseName } } });
+                }
+                e.Result = svrDataList.OrderBy(s => s.Overrides.First().OverrideDbTarget).ToList();
+            }
+            else
+            {
+                e.Result = new List<ServerData>();
             }
         }
 
@@ -425,7 +447,7 @@ namespace SqlSync.SqlBuild.MultiDb
             if (this.runConfiguration == null)
                 return;
 
-            if (this.runConfiguration.Count == 1 && this.runConfiguration[0].OverrideSequence.Count == 0)
+            if (this.runConfiguration.Count == 1 && this.runConfiguration[0].Overrides.Count == 0)
             {
                 MessageBox.Show("Please configure a run order for at least one database item", "Unable to run", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -520,10 +542,17 @@ namespace SqlSync.SqlBuild.MultiDb
         private void AddNewServerItem(string serverName, DatabaseList dbList)
         {
             ListViewItem item = new ListViewItem(serverName);
+            var lstSrv = new List<ServerData>();
+            foreach (var db in dbList)
+            {
+                lstSrv.Add(new ServerData() { 
+                    ServerName = serverName, 
+                    Overrides = new DbOverrides() { new DatabaseOverride(this.defaultDatabases[0], db.DatabaseName) } });
+            }
             ServerData dat = new ServerData();
             dat.ServerName = serverName;
-            dat.Databases = dbList;
-            item.Tag = dat;
+            //dat.Databases = dbList;
+            item.Tag = lstSrv;
 
             lstServers.Items.Add(item);
             SwitchSelectedServer(item.Index);
@@ -548,7 +577,7 @@ namespace SqlSync.SqlBuild.MultiDb
             }
 
             //Change the MultiDbPage Control
-            ServerData dat = (ServerData)lstServers.Items[listViewItemIndex].Tag;
+            List<ServerData> dat = (List<ServerData>)lstServers.Items[listViewItemIndex].Tag;
             MultiDbPage page = new MultiDbPage(dat, this.defaultDatabases);
             page.ServerRemoved += new ServerChangedEventHandler(pg_ServerRemoved);
             page.DataBind();
@@ -558,6 +587,7 @@ namespace SqlSync.SqlBuild.MultiDb
         }
         private void SyncFormMultiDbPageData()
         {
+
             if (this.splitContainer1.Panel2.Controls[0] is MultiDbPage)
             {
                 MultiDbPage current = (MultiDbPage)this.splitContainer1.Panel2.Controls[0];

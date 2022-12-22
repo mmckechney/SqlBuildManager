@@ -275,8 +275,8 @@ namespace SqlBuildManager.Console.CommandLine
                 return list;
             }
         }
-        private static Option<string> usernameOption = new Option<string>(new string[] { "-u", "--username" }, "The username to authenticate against the database if not using integrate or Managed Identity auth");
-        private static Option<string> passwordOption = new Option<string>(new string[] { "-p", "--password" }, "The password to authenticate against the database if not using integrate or Managed Identity auth");
+        private static Option<string> usernameOption = new Option<string>(new string[] { "-u", "--username" }, "The username to authenticate against the database if not using integrated or Managed Identity auth");
+        private static Option<string> passwordOption = new Option<string>(new string[] { "-p", "--password" }, "The password to authenticate against the database if not using integrated or Managed Identity auth");
         private static Option<SqlSync.Connection.AuthenticationType> authtypeOption = new Option<SqlSync.Connection.AuthenticationType>(new string[] { "--authtype" }, "SQL Authentication type to use.") { Name = "AuthenticationType" };
 
         //Container Registry and Image Options 

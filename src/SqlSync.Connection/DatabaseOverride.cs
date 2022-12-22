@@ -8,21 +8,14 @@ namespace SqlSync.Connection
 {
     public class DatabaseOverride
     {
-        private string defaultDbTarget = string.Empty;
-
-        public string DefaultDbTarget
-        {
-            get { return defaultDbTarget; }
-            set { defaultDbTarget = value; }
-        }
+        public string DefaultDbTarget { get; set; } = string.Empty;
         private string overrideDbTarget = string.Empty;
-
         public string OverrideDbTarget
         {
             get
             {
                 if (this.overrideDbTarget.Trim().Length == 0)
-                    return defaultDbTarget;
+                    return DefaultDbTarget;
                 else
                     return overrideDbTarget;
             }
@@ -34,12 +27,12 @@ namespace SqlSync.Connection
         }
         public DatabaseOverride(string defaultDbTarget, string overrideDbTarget)
         {
-            this.defaultDbTarget = defaultDbTarget;
+            this.DefaultDbTarget = defaultDbTarget;
             this.overrideDbTarget = overrideDbTarget;
         }
         public override string ToString()
         {
-            return this.defaultDbTarget + ";"+ this.overrideDbTarget;
+            return this.DefaultDbTarget + ";"+ this.overrideDbTarget;
         }
         private List<QueryRowItem> queryRowData = new List<QueryRowItem>();
 

@@ -41,35 +41,32 @@ namespace SqlSync.ObjectScript.Hash
             bool baseLineSet = false;
             foreach (ServerData srv in multiDbData)
             {
-                srv.OverrideSequence.Sort(); //sort so the sequence is in proper order.
-                foreach (string sequenceKey in srv.OverrideSequence.Keys)
-                {
-                    foreach (DatabaseOverride ovr in srv.OverrideSequence[sequenceKey])
-                    {
-                        db = srv.ServerName + "." + ovr.OverrideDbTarget;
-                        if (!dbsSelected.Contains(db))
-                        {
-                            threadTotal++;
-                            lock (HashCollector.SyncObj)
-                            {
-                                HashCollector.SyncObj.WorkingRunners++;
-                            }
-                            HashCollectionRunner runner = new HashCollectionRunner(srv.ServerName, ovr.OverrideDbTarget);
-                            runner.HashCollectionRunnerUpdate += new HashCollectionRunner.HashCollectionRunnerUpdateEventHandler(runner_HashCollectionRunnerUpdate);
-                            if (!baseLineSet) //set the baseline to the first database handled.
-                            {
-                                runner.IsBaseLine = true;
-                                baseLineSet = true;
-                            }
+                srv.Overrides.Sort(); //sort so the sequence is in proper order.
 
-                            runners.Add(runner);
-                            if (runThreaded)
-                                System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedHashCollection, runner);
-                            else
-                                runner.CollectHashes();
+                foreach (DatabaseOverride ovr in srv.Overrides)
+                {
+                    db = srv.ServerName + "." + ovr.OverrideDbTarget;
+                    if (!dbsSelected.Contains(db))
+                    {
+                        threadTotal++;
+                        lock (HashCollector.SyncObj)
+                        {
+                            HashCollector.SyncObj.WorkingRunners++;
                         }
+                        HashCollectionRunner runner = new HashCollectionRunner(srv.ServerName, ovr.OverrideDbTarget);
+                        runner.HashCollectionRunnerUpdate += new HashCollectionRunner.HashCollectionRunnerUpdateEventHandler(runner_HashCollectionRunnerUpdate);
+                        if (!baseLineSet) //set the baseline to the first database handled.
+                        {
+                            runner.IsBaseLine = true;
+                            baseLineSet = true;
+                        }
+
+                        runners.Add(runner);
+                        if (runThreaded)
+                            System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedHashCollection, runner);
+                        else
+                            runner.CollectHashes();
                     }
-                   
                 }
             }
 

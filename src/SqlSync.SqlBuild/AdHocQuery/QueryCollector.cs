@@ -77,23 +77,20 @@ namespace SqlSync.SqlBuild.AdHocQuery
             //bool baseLineSet = false;
             foreach (ServerData srv in multiDbData)
             {
-                srv.OverrideSequence.Sort(); //sort so the sequence is in proper order.
-                foreach (string sequenceKey in srv.OverrideSequence.Keys)
-                {
-                    foreach (DatabaseOverride ovr in srv.OverrideSequence[sequenceKey])
-                    {
-                        db = srv.ServerName + "." + ovr.OverrideDbTarget;
 
-                        threadTotal++;
-                        lock (QueryCollector.SyncObj)
-                        {
-                            QueryCollector.SyncObj.WorkingRunners++;
-                        }
-                        QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, this.resultsFilePath, scriptTimeout, this.connData);
-                        runner.QueryCollectionRunnerUpdate += new QueryCollectionRunner.QueryCollectionRunnerUpdateEventHandler(runner_HashCollectionRunnerUpdate);
-                        runners.Add(runner);
-                        System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedHashCollection, runner);
+                foreach (DatabaseOverride ovr in srv.Overrides)
+                {
+                    db = srv.ServerName + "." + ovr.OverrideDbTarget;
+
+                    threadTotal++;
+                    lock (QueryCollector.SyncObj)
+                    {
+                        QueryCollector.SyncObj.WorkingRunners++;
                     }
+                    QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, this.resultsFilePath, scriptTimeout, this.connData);
+                    runner.QueryCollectionRunnerUpdate += new QueryCollectionRunner.QueryCollectionRunnerUpdateEventHandler(runner_HashCollectionRunnerUpdate);
+                    runners.Add(runner);
+                    System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedHashCollection, runner);
                 }
             }
 

@@ -18,6 +18,8 @@ using System.Linq;
 using SqlBuildManager.Interfaces.Console;
 using Microsoft.Extensions.Logging;
 using Polly;
+using SqlSync.SqlBuild.Validator;
+
 namespace SqlSync.SqlBuild
 {
 	/// <summary>
@@ -180,19 +182,13 @@ namespace SqlSync.SqlBuild
         /// <param name="e"></param>
         public void ProcessMultiDbBuild(MultiDbData multiDbRunData, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
-            string strSequence;
+            this.bgWorker = bgWorker;
             this.committedScripts.Clear();
             this.connectDictionary.Clear();
 
             List<SqlSyncBuildData.BuildRow> buildResults = new List<SqlSyncBuildData.BuildRow>();
             foreach (ServerData srvData in multiDbRunData)
             {
-                srvData.OverrideSequence.Sort();
-
-                var tmp = srvData.OverrideSequence.Select(o => o.Value).ToList();
-                List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-                tmp.ForEach(o => overrides.AddRange(o));
-
                 SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData();
                 runData.BuildData = multiDbRunData.BuildData;
                 runData.BuildType = "Multi Db Build";
@@ -206,20 +202,20 @@ namespace SqlSync.SqlBuild
                 runData.ProjectFileName = multiDbRunData.ProjectFileName;
                 runData.IsTrial =multiDbRunData.RunAsTrial;
                 runData.BuildFileName = multiDbRunData.BuildFileName;
-                runData.TargetDatabaseOverrides = overrides;
-                this.targetDatabaseOverrides = overrides;
+                runData.TargetDatabaseOverrides = srvData.Overrides;
+                this.targetDatabaseOverrides = srvData.Overrides;
                 SqlSyncBuildData.BuildRow buildResult = ProcessBuild(runData, bgWorker, e, srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
                 buildResults.Add(buildResult);
                     
                 if(buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
                 {
-                    PerformRunScriptFinalization(true,buildResults,multiDbRunData, ref e);
+                    PerformRunScriptFinalization(true,buildResults,multiDbRunData, bgWorker, ref e);
                     return;
                 }
                 
             }
 
-            PerformRunScriptFinalization(false, buildResults, multiDbRunData, ref e);
+            PerformRunScriptFinalization(false, buildResults, multiDbRunData, bgWorker, ref e);
         }
 
 
@@ -859,7 +855,7 @@ namespace SqlSync.SqlBuild
                 log.LogError("Build failure. Check execution logs for details");
                 if (!isMultiDbRun)
                 {
-                    PerformRunScriptFinalization(buildFailure, myBuild, ref workEventArgs);
+                    PerformRunScriptFinalization(buildFailure, myBuild,null, ref workEventArgs);
                 }
                 else
                 {
@@ -880,7 +876,7 @@ namespace SqlSync.SqlBuild
                 if (isMultiDbRun)
                     myBuild.FinalStatus = BuildItemStatus.Pending;
                 else
-                    PerformRunScriptFinalization(buildFailure, myBuild, ref workEventArgs);
+                    PerformRunScriptFinalization(buildFailure, myBuild, null, ref workEventArgs);
                 log.LogDebug("Build Successful!");
             }
 
@@ -912,13 +908,13 @@ namespace SqlSync.SqlBuild
             return script;
 
         }
-        internal void PerformRunScriptFinalization(bool buildFailure, SqlSyncBuildData.BuildRow myBuild, ref DoWorkEventArgs workEventArgs)
+        internal void PerformRunScriptFinalization(bool buildFailure, SqlSyncBuildData.BuildRow myBuild, BackgroundWorker bgWorker, ref DoWorkEventArgs workEventArgs)
         {
             List<SqlSyncBuildData.BuildRow> tmp = new List<SqlSyncBuildData.BuildRow>();
             tmp.Add(myBuild);
-            PerformRunScriptFinalization(buildFailure, tmp, null,ref workEventArgs);
+            PerformRunScriptFinalization(buildFailure, tmp, null, bgWorker, ref workEventArgs);
         }
-        internal void PerformRunScriptFinalization(bool buildFailure, List<SqlSyncBuildData.BuildRow> myBuilds,MultiDbData multiDbRunData, ref DoWorkEventArgs workEventArgs)
+        internal void PerformRunScriptFinalization(bool buildFailure, List<SqlSyncBuildData.BuildRow> myBuilds,MultiDbData multiDbRunData, BackgroundWorker bgWorker, ref DoWorkEventArgs workEventArgs)
         {
             DateTime end = DateTime.Now;
             for(int i=0;i<myBuilds.Count;i++)
@@ -949,11 +945,12 @@ namespace SqlSync.SqlBuild
                 {
                     if (this.isTransactional)
                     {
-                        bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Attempting to Commit Build"));
+                        if(bgWorker != null)
+                            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Attempting to Commit Build"));
 
                         bool commitSuccess = this.CommitBuild();
 
-                        if (commitSuccess)
+                        if (commitSuccess && bgWorker != null)
                             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Commit Successful"));
                     }
 
@@ -1004,12 +1001,12 @@ namespace SqlSync.SqlBuild
                 {
                     if (this.isTransactional)
                     {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
+                        if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK;
                     }
                     else
                     {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
+                        if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION;
 
                     }
@@ -1018,12 +1015,12 @@ namespace SqlSync.SqlBuild
                 {
                     if (this.isTransactional)
                     {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
                     }
                     else 
                     {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
                     }
                 }
@@ -1032,26 +1029,26 @@ namespace SqlSync.SqlBuild
             {
                 if (this.runScriptOnly)
                 {
-                    bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Script Generation Complete"));
+                    if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Script Generation Complete"));
                     workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
                 }
                 else
                 {
                     if (this.isTrialBuild == false)
                     {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Committed"));
+                        if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Committed"));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
                     }
                     else
                     {
                         if (this.isTransactional)
                         {
-                            bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Rolled back for Trial Build"));
+                            if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Rolled back for Trial Build"));
                             workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
                         }
                         else //should never really get here
                         {
-                            bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Committed with no transaction"));
+                            if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Committed with no transaction"));
                             workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
 
                         }
@@ -1158,29 +1155,29 @@ namespace SqlSync.SqlBuild
             }
             
         }
-        public static string GetTargetDatabase(string serverName, string defaultDatabase, MultiDbData multiDbRunData)
-        {
-            foreach (ServerData srvData in multiDbRunData)
-            {
-                if (serverName.ToUpper() != srvData.ServerName.ToUpper())
-                    continue;
+        //public static string GetTargetDatabase(string serverName, string defaultDatabase, MultiDbData multiDbRunData)
+        //{
+        //    foreach (ServerData srvData in multiDbRunData)
+        //    {
+        //        if (serverName.ToUpper() != srvData.ServerName.ToUpper())
+        //            continue;
 
-                foreach (KeyValuePair<string, List<DatabaseOverride>> sequence in srvData.OverrideSequence)
-                {
-                    List<DatabaseOverride> tmp = sequence.Value;
-                    for (int i = 0; i < tmp.Count; i++)
-                        if (tmp[i].DefaultDbTarget.ToUpper() == defaultDatabase.ToUpper())
-                            return tmp[i].OverrideDbTarget;
-                }
-            }
-            return defaultDatabase;
-        }
-		
-		#region ## SQL table logging ##
+        //        foreach (KeyValuePair<string, List<DatabaseOverride>> sequence in srvData.Overrides)
+        //        {
+        //            List<DatabaseOverride> tmp = sequence.Value;
+        //            for (int i = 0; i < tmp.Count; i++)
+        //                if (tmp[i].DefaultDbTarget.ToUpper() == defaultDatabase.ToUpper())
+        //                    return tmp[i].OverrideDbTarget;
+        //        }
+        //    }
+        //    return defaultDatabase;
+        //}
+
+        #region ## SQL table logging ##
         /// <summary>
         /// Ensures that the SqlBuild_Logging table exists and that it is setup properly. Self-heals if it is not. 
         /// </summary>
-		private void EnsureLogTablePresence()
+        private void EnsureLogTablePresence()
 		{
             this.sqlInfoMessage = string.Empty;
 			//Self healing: add the table if needed

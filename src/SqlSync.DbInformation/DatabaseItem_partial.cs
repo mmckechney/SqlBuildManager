@@ -10,5 +10,7 @@ namespace SqlSync.DbInformation
         {
             return this.DatabaseName;
         }
+
+        public int? SequenceId { get; set; } = null;
     }
 }

@@ -79,6 +79,15 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
             }
         }
 
+        internal static byte[] concurrency_doubledb
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("concurrency_doubledb", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>

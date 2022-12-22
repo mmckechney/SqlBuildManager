@@ -7268,43 +7268,49 @@ namespace SqlSync.SqlBuild
 
             if (!this.runningUnattended)
             {
-                if (e.Cancelled)
+                try
                 {
-                    statGeneral.Text = "Build Cancelled and Rolled Back.";
-                }
-                else if (e.Result != null)
-                {
-                    BuildResultStatus stat = (BuildResultStatus)e.Result;
-                    switch (stat)
+                    if (e.Cancelled)
                     {
-                        case BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK:
-                            statGeneral.Text = "Build Failed and Rolled Back";
-                            break;
-                        case BuildResultStatus.BUILD_COMMITTED:
-                            this.RefreshScriptFileList(true);
-                            statGeneral.Text = "Build Committed";
-                            break;
-                        case BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL:
-                            statGeneral.Text = "Build Successful. Rolled Back for Trial Build";
-                            break;
-                        case BuildResultStatus.SCRIPT_GENERATION_COMPLETE:
-                            statGeneral.Text = "Script Generation Complete";
-                            break;
-                        case BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK:
-                            statGeneral.Text = "Build Cancelled and Rolled Back.";
-                            break;
-                        case BuildResultStatus.BUILD_FAILED_NO_TRANSACTION:
-                            statGeneral.Text = "Build Failed. No Transaction set.";
-                            break;
-                        case BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION:
-                            statGeneral.Text = "Build Cancelled. No Transaction set.";
-                            break;
-                        default:
-                            statGeneral.Text = "Unknown Status.";
-                            break;
+                        statGeneral.Text = "Build Cancelled and Rolled Back.";
+                    }
+                    else if (e.Result != null)
+                    {
+                        BuildResultStatus stat = (BuildResultStatus)e.Result;
+                        switch (stat)
+                        {
+                            case BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK:
+                                statGeneral.Text = "Build Failed and Rolled Back";
+                                break;
+                            case BuildResultStatus.BUILD_COMMITTED:
+                                this.RefreshScriptFileList(true);
+                                statGeneral.Text = "Build Committed";
+                                break;
+                            case BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL:
+                                statGeneral.Text = "Build Successful. Rolled Back for Trial Build";
+                                break;
+                            case BuildResultStatus.SCRIPT_GENERATION_COMPLETE:
+                                statGeneral.Text = "Script Generation Complete";
+                                break;
+                            case BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK:
+                                statGeneral.Text = "Build Cancelled and Rolled Back.";
+                                break;
+                            case BuildResultStatus.BUILD_FAILED_NO_TRANSACTION:
+                                statGeneral.Text = "Build Failed. No Transaction set.";
+                                break;
+                            case BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION:
+                                statGeneral.Text = "Build Cancelled. No Transaction set.";
+                                break;
+                            default:
+                                statGeneral.Text = "Unknown Status.";
+                                break;
+
+                        }
 
                     }
-
+                }catch(Exception exe)
+                {
+                    MessageBox.Show(exe.Message, "Error during build", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
                 this.txtBuildDesc.Enabled = true;
@@ -7972,6 +7978,17 @@ namespace SqlSync.SqlBuild
 
         private void startConfigureMultiServerDatabaseRunToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if(string.IsNullOrWhiteSpace(this.buildZipFileName))
+            {
+                MessageBox.Show("Please load a project file prior creating a multi-database configuration");
+                return;
+            }
+
+            if(this.databasesUsed.Count > 1)
+            {
+                MessageBox.Show("Unable to configure multi-database run when more than one default database is specified.\r\n\r\nInstead, please use the command line (sbm.exe build) with a configuration file formatted as:\r\n\r\n<server>:<default1>,<override1>;<default2>,<override2>", "Not Available", MessageBoxButtons.OK, MessageBoxIcon.Information); 
+                return;
+            }
             MultiDbRunForm frm = new MultiDbRunForm(this.connData, this.databasesUsed, this.databaseList,this.buildZipFileName,this.projectFilePath,ref this.buildData);
             if(DialogResult.OK == frm.ShowDialog())
             {

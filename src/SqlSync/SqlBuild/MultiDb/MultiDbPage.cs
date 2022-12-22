@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using SqlSync.DbInformation;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.Connection;
+using System.Linq;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class MultiDbPage : UserControl
@@ -21,12 +22,12 @@ namespace SqlSync.SqlBuild.MultiDb
         }
         DatabaseList defaultDatabases = new DatabaseList();
         DatabaseList databaseList;
-        private ServerData srvData = null;
+        private List<ServerData> lstSrvData = null;
       
-        public ServerData ServerData
+        public List<ServerData> ServerData
         {
             get { return GetServerData(); }
-            set { srvData = value; }
+            set { lstSrvData = value; }
         }
         private MultiDbPage()
         {
@@ -38,33 +39,35 @@ namespace SqlSync.SqlBuild.MultiDb
             this.databaseList = databaseList;
             this.serverName = server;
         }
-        public MultiDbPage(ServerData srvData, List<string> defaultDatabases)
+        public MultiDbPage(List<ServerData> lstSrvData, List<string> defaultDatabases)
             : this()
         {
             this.defaultDatabases.AddExistingList(defaultDatabases);
-            this.serverName = srvData.ServerName;
-            this.srvData = srvData;
+            if (lstSrvData.Count > 0)
+            {
+                this.serverName = lstSrvData.First().ServerName;
+            }
+            this.lstSrvData = lstSrvData;
         }
         public void DataBind()
         {
             this.tabControl1.TabPages.Clear();
-            if (srvData != null)
+            if (lstSrvData != null && lstSrvData.Count > 0)
             {
+                //if (lstSrvData.Databases != null && lstSrvData.Databases.IsAllManuallyEntered())
+                //{
+                //    this.errorProvider1.SetError(this.lblServerName,"There was an error connecting to this server.\r\nUnable to generate a database list");
+                //}
 
-                if(srvData.Databases != null && srvData.Databases.IsAllManuallyEntered())
+
+                foreach (var svData in lstSrvData)
                 {
-                    this.errorProvider1.SetError(this.lblServerName,"There was an error connecting to this server.\r\nUnable to generate a database list");
-                }
-
-
-                foreach (KeyValuePair<string, List<DatabaseOverride>> setting in srvData.OverrideSequence)
-                {
-                    foreach(DatabaseOverride ovr in setting.Value)
+                    foreach(DatabaseOverride ovr in svData.Overrides)
                         if(!this.defaultDatabases.Contains(ovr.DefaultDbTarget))
                             this.defaultDatabases.Add(ovr.DefaultDbTarget,true);
                 }
 
-                this.lblServerName.Text = srvData.ServerName;
+                this.lblServerName.Text = lstSrvData.First().ServerName;
 
                 if (this.defaultDatabases.Count == 0)
                 {
@@ -73,10 +76,13 @@ namespace SqlSync.SqlBuild.MultiDb
                     this.defaultDatabases.Add(item);
                 }
 
-
+                var ovrs = new DbOverrides();
+                lstSrvData.ForEach(l => ovrs.AddRange(l.Overrides));
+                var dbs = new DatabaseList();
+                    
                 for (int i = 0; i < this.defaultDatabases.Count; i++)
                 {
-                    MultiDbConfig cfg = new MultiDbConfig(this.defaultDatabases[i], srvData.Databases, srvData.OverrideSequence);
+                    MultiDbConfig cfg = new MultiDbConfig(this.defaultDatabases[i], lstSrvData);
                     cfg.DataBind();
                     cfg.ValueChanged += new EventHandler(cfg_ValueChanged);
                     this.tabControl1.TabPages.Add(SetupTagPage(this.defaultDatabases[i].DatabaseName,cfg));
@@ -94,7 +100,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 }
                 for (int i = 0; i < this.defaultDatabases.Count; i++)
                 {
-                    MultiDbConfig cfg = new MultiDbConfig(this.defaultDatabases[i], this.databaseList);
+                    MultiDbConfig cfg = new MultiDbConfig(this.defaultDatabases[i]);
                     cfg.DataBind();
                     cfg.ValueChanged += new EventHandler(cfg_ValueChanged);
                     this.tabControl1.TabPages.Add(SetupTagPage(this.defaultDatabases[i].DatabaseName, cfg));
@@ -125,12 +131,9 @@ namespace SqlSync.SqlBuild.MultiDb
             }
         }
 
-        internal ServerData GetServerData()
+        internal List<ServerData> GetServerData()
         {
-            ServerData srvData = new ServerData();
-            srvData.ServerName = this.serverName;
-            srvData.Databases = this.srvData.Databases;
-            
+            List<ServerData> lstSrvData = new List<ServerData>();
             //Keep track of the largest override sequence
 
             int maxSet = 0;
@@ -139,23 +142,25 @@ namespace SqlSync.SqlBuild.MultiDb
             {
                 foreach (Control ctrl in tabControl1.TabPages[i].Controls)
                 {
+                    if (string.IsNullOrWhiteSpace(tabControl1.TabPages[i].Text))
+                        continue;
+
                     if (ctrl is MultiDbConfig)
                     {
                         MultiDbConfig cfg = (MultiDbConfig)ctrl;
-                        foreach (string sequenceId in cfg.DatabaseOverrideSequence.Keys)
+                        
+                        foreach (int? sequenceId in cfg.DatabaseOverrideSequence.Keys)
                         {
-                            if (srvData.OverrideSequence.ContainsKey(sequenceId))
+
+                            List<DatabaseOverride> tmp = new List<DatabaseOverride>();
+                            tmp.Add(cfg.DatabaseOverrideSequence[sequenceId.Value]);
+                            
+                            ServerData tmpSv = new ServerData() { ServerName = this.serverName, SequenceId = sequenceId.Value };
+                            tmpSv.Overrides.AddRange(tmp);
+                            lstSrvData.Add(tmpSv);
+                            if (tmp.Count > maxSet)
                             {
-                                srvData.OverrideSequence[sequenceId].Add(cfg.DatabaseOverrideSequence[sequenceId]);
-                                if (srvData.OverrideSequence[sequenceId].Count > maxSet)
-                                    maxSet = srvData.OverrideSequence[sequenceId].Count;
-                            }
-                            else
-                            {
-                                List<DatabaseOverride> tmp = new List<DatabaseOverride>();
-                                tmp.Add(cfg.DatabaseOverrideSequence[sequenceId]);
-                                srvData.OverrideSequence.Add(sequenceId, tmp);
-                                if (maxSet == 0) maxSet = 1;
+                                maxSet = tmp.Count;
                             }
                         }
                     }
@@ -163,15 +168,15 @@ namespace SqlSync.SqlBuild.MultiDb
             }
 
             //Next, we need to make sure we have the same number of overrides in each Override sequence collection. If not, add the a default "no override" setting...
-            foreach (string key in srvData.OverrideSequence.Keys)
+            foreach (var srvData in lstSrvData)
             {
                 //must be missing an override setting...
-                if ( srvData.OverrideSequence[key].Count < maxSet)
+                if ( srvData.Overrides.Count < maxSet)
                 {
                     foreach (DatabaseItem defaultDb in this.defaultDatabases)
                     {
                         bool found = false;
-                        foreach (DatabaseOverride dbO in srvData.OverrideSequence[key])
+                        foreach (DatabaseOverride dbO in srvData.Overrides)
                         {
                             if (dbO.DefaultDbTarget.ToLower() == defaultDb.DatabaseName.ToLower())
                             {
@@ -182,13 +187,13 @@ namespace SqlSync.SqlBuild.MultiDb
                         if(!found)
                         {
                             DatabaseOverride tmp = new DatabaseOverride(defaultDb.DatabaseName, defaultDb.DatabaseName);
-                            srvData.OverrideSequence[key].Add(tmp);
+                            srvData.Overrides.Add(tmp);
                         }   
                         
                     }
                 }
             }
-            return srvData;
+            return lstSrvData;
         }
 
         public event EventHandler ValueChanged;

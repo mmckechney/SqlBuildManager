@@ -97,7 +97,7 @@ namespace SqlSync.Connection {
             }
         }
         
-        public virtual bool Fill(ConnectionData dataClass) {
+        public virtual ConnectionData Fill(ConnectionData dataClass) {
             try {
                 this.SQLServerName = dataClass.SQLServerName;
                 this.DatabaseName = dataClass.DatabaseName;
@@ -106,7 +106,7 @@ namespace SqlSync.Connection {
                 this.StartingDirectory = dataClass.StartingDirectory;
                 this.authType = dataClass.authType;
                 this.ScriptTimeout = dataClass.ScriptTimeout;
-                return true;
+                return this;
             }
             catch (System.Exception ex) {
                 throw new System.ApplicationException("Error in the Auto-Generated: ConnectionData.Fill(ConnectionData) Method", ex);

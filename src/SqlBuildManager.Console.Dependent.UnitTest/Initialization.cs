@@ -53,6 +53,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         {
             File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_long);
         }
+        public void CopyDoubleDbConfigFileToTestPath()
+        {
+            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_doubledb);
+        }
         public string GetTrulyUniqueFile(string extension)
         {
             if (extension.StartsWith(".")) extension = extension.Replace(".", "");

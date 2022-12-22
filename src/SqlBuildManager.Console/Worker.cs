@@ -148,7 +148,7 @@ namespace SqlBuildManager.Console
             var collector = new QueryCollector(multiData, connData);
 
             var serverCount = multiData.Count();
-            var dbCount = multiData.Sum(d => d.OverrideSequence.Count);
+            var dbCount = multiData.Sum(d => d.Overrides.Count);
 
             log.LogInformation($"Running query across {serverCount} servers and {dbCount} databases...");
             bool success = collector.GetQueryResults(ref bg, cmdLine.OutputFile.FullName, SqlSync.SqlBuild.Status.ReportType.CSV, query, cmdLine.DefaultScriptTimeout);
@@ -554,7 +554,7 @@ namespace SqlBuildManager.Console
                     if (string.IsNullOrWhiteSpace(cmdLine.Server))
                     {
                         cmdLine.Server = multiData.First().ServerName;
-                        overrides = multiData.First().OverrideSequence.First().Value;
+                        overrides = multiData.First().Overrides;
                     }
                     if(string.IsNullOrWhiteSpace(cmdLine.Database))
                     {
@@ -570,6 +570,13 @@ namespace SqlBuildManager.Console
                 else if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
                 {
                     cmdLine.ManualOverRideSets = sb.SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName, cmdLine.Database);
+                    var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
+                    var def = ovrRide.Split(':')[1].Split(',')[0];
+                    var target = ovrRide.Split(':')[1].Split(',')[1];
+                    overrides = new List<DatabaseOverride>() { new DatabaseOverride() { DefaultDbTarget = def, OverrideDbTarget = target } };
+                }
+                else if(!string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets))
+                {
                     var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
                     var def = ovrRide.Split(':')[1].Split(',')[0];
                     var target = ovrRide.Split(':')[1].Split(',')[1];

@@ -121,6 +121,9 @@
   <data name="dbconfig" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dbconfig.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="dbconfig_doubledb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\dbconfig-doubledb.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="dbconfig_long" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dbconfig-long.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -138,6 +141,12 @@
   </data>
   <data name="SimpleSelect" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SimpleSelect.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="SimpleSelect_client" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SimpleSelect_client.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="SimpleSelect_DoubleClient" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SimpleSelect_DoubleClient.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="SimpleSelect_WithCodeReview" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SimpleSelect_WithCodeReview.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

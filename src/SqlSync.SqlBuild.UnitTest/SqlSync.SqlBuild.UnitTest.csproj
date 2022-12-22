@@ -6,10 +6,18 @@
     <Deterministic>false</Deterministic>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\dbconfig-doubledb.cfg" />
+    <None Remove="Resources\serialized_multidb_json.txt" />
+    <None Remove="Resources\serialized_multidb_xml.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources\CreateTestTablesScript.sql" />
+    <EmbeddedResource Include="Resources\dbconfig-doubledb.cfg" />
     <EmbeddedResource Include="Resources\LoggingTable.sql" />
     <EmbeddedResource Include="Resources\MultiDb_WithQueryRowData.xml" />
     <EmbeddedResource Include="Resources\sbx_package_tester.sbx" />
+    <EmbeddedResource Include="Resources\serialized_multidb_json.txt" />
+    <EmbeddedResource Include="Resources\serialized_multidb_xml.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.1" />

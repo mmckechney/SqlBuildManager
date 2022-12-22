@@ -8,11 +8,13 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using SqlSync.DbInformation;
 using SqlSync.Connection;
+using System.Linq;
+
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class MultiDbConfig : UserControl
     {
-        private DbOverrideSequence sequence = null;
+        private List<ServerData> serverData = null;
         private DatabaseItem defaultDatabase;
 
         /// <summary>
@@ -24,27 +26,20 @@ namespace SqlSync.SqlBuild.MultiDb
             set { defaultDatabase = value; }
         }
 
-        private DatabaseList databaseList = new DatabaseList();
+       private Dictionary<int?, DatabaseOverride> databaseOverrideSequence;
 
-        public DatabaseList DatabaseList
-        {
-            get { return databaseList; }
-            set { databaseList = value; }
-        }
-        private Dictionary<string, DatabaseOverride> databaseOverrideSequence;
-
-        public Dictionary<string, DatabaseOverride> DatabaseOverrideSequence
+        public Dictionary<int?, DatabaseOverride> DatabaseOverrideSequence
         {
             get
             {
 
-                databaseOverrideSequence = new Dictionary<string, DatabaseOverride>();
+                databaseOverrideSequence = new Dictionary<int?, DatabaseOverride>();
                 for (int i = 0; i < this.flowDbContainer.Controls.Count; i++)
                 {
                     if (this.flowDbContainer.Controls[i] is MultiDbOverrideSequence)
                     {
                         MultiDbOverrideSequence tmp = (MultiDbOverrideSequence)this.flowDbContainer.Controls[i];
-                        if (tmp.Sequence.Length > 0)
+                        if (tmp.Sequence.HasValue && tmp.Sequence.Value > 0)
                             this.databaseOverrideSequence.Add(tmp.Sequence, new DatabaseOverride() { DefaultDbTarget = this.defaultDatabase.DatabaseName, OverrideDbTarget = tmp.DatabaseName, QueryRowData = tmp.QueryRowData });
                     }
                 }
@@ -54,16 +49,15 @@ namespace SqlSync.SqlBuild.MultiDb
         }
 
 
-        public MultiDbConfig(DatabaseItem defaultDatabase, DatabaseList databases)
+        public MultiDbConfig(DatabaseItem defaultDatabase)
             : this()
         {
-            this.databaseList = databases;
             this.defaultDatabase = defaultDatabase;
         }
-        public MultiDbConfig(DatabaseItem defaultDatabase, DatabaseList databases, DbOverrideSequence sequence)
-            : this(defaultDatabase, databases)
+        public MultiDbConfig(DatabaseItem defaultDatabase, List<ServerData> lstSrvData)
+            : this(defaultDatabase)
         {
-            this.sequence = sequence;
+            this.serverData = lstSrvData;
         }
         public MultiDbConfig()
         {
@@ -83,27 +77,33 @@ namespace SqlSync.SqlBuild.MultiDb
 
 
             //XCombine the list of databases from the server list with the list of Db's from the configuration
-            List<string> configOverrides = null; ;
-            if(sequence != null)
-                configOverrides = sequence.GetOverrideDatabaseNameList();
+            List<string> configOverrides = new List<string>();
+            List<DatabaseItem> databaseList = new List<DatabaseItem>();
+            if (serverData != null)
+            {
+
+                serverData.ForEach(s => configOverrides.AddRange(s.Overrides.GetOverrideDatabaseNameList()));
+                serverData.ForEach(s => databaseList.Add(new DatabaseItem() { DatabaseName = s.Overrides[0].OverrideDbTarget, SequenceId = s.SequenceId }));
+            }
             DatabaseList lstCombined = new DatabaseList();
-            lstCombined.AddManualList(configOverrides); //adds Db's as "Manually Entered"
-            lstCombined.AddRangeUnique(this.databaseList); //adds the range but ensures no duplicates
+            lstCombined.AddManualList(configOverrides.Distinct().ToList()); //adds Db's as "Manually Entered"
+            lstCombined.AddRangeUnique(databaseList); //adds the range but ensures no duplicates
             lstCombined.Sort(new DatabaseListComparer());
 
             for (int i = 0; i < lstCombined.Count; i++)
             {
                 MultiDbOverrideSequence tmp;
-                if(sequence != null)
-                {
-                    tmp = new MultiDbOverrideSequence(lstCombined[i].DatabaseName, 
-                        sequence.GetSequenceId(this.defaultDatabase.DatabaseName,lstCombined[i].DatabaseName), 
-                        sequence.GetQueryRowData(this.defaultDatabase.DatabaseName,lstCombined[i].DatabaseName), lstCombined[i].IsManuallyEntered);
-                }
-                else
-                {
-                    tmp = new MultiDbOverrideSequence(lstCombined[i].DatabaseName,lstCombined[i].IsManuallyEntered);
-                }
+                //if(sequence != null)
+                //{
+                //    var index = configOverrides.IndexOf(lstCombined[i].DatabaseName) > -1 ? configOverrides.IndexOf(lstCombined[i].DatabaseName).ToString() : "";
+                //    tmp = new MultiDbOverrideSequence(lstCombined[i].DatabaseName,
+                //        index, 
+                //        sequence.GetQueryRowData(this.defaultDatabase.DatabaseName,lstCombined[i].DatabaseName), lstCombined[i].IsManuallyEntered);
+                //}
+                //else
+                //{
+                    tmp = new MultiDbOverrideSequence(lstCombined[i].DatabaseName, lstCombined[i].SequenceId,new List<QueryRowItem>(), lstCombined[i].IsManuallyEntered);
+                //}
                 this.flowDbContainer.Controls.Add(tmp);
                 tmp.ValueChanged += new EventHandler(tmp_ValueChanged);
                 tmp.AutoSequencePattern += new AutoSequencePatternEventHandler(tmp_AutoSequencePattern);
@@ -113,8 +113,8 @@ namespace SqlSync.SqlBuild.MultiDb
         void tmp_AutoSequencePattern(object sender, AutoSequencePatternEventArgs e)
         {
             string pattern = e.Pattern;
-            double start = e.Start;
-            double increment = e.Increment;
+            int start = e.Start;
+            int increment = e.Increment;
 
             Regex dbMatch = new Regex(pattern, RegexOptions.IgnoreCase);
             foreach (Control ctrl in this.flowDbContainer.Controls)
@@ -124,7 +124,7 @@ namespace SqlSync.SqlBuild.MultiDb
                     MultiDbOverrideSequence tmp = (MultiDbOverrideSequence)ctrl;
                     if (dbMatch.Match(tmp.DatabaseName).Success)
                     {
-                        tmp.Sequence = start.ToString();
+                        tmp.Sequence = start;
                         start += increment;
                     }
                 }

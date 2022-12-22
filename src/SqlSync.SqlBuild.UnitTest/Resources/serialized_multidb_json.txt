@@ -1,0 +1,69 @@
+[
+  {
+    "ServerName": "ServerA",
+    "Overrides": [
+      {
+        "DefaultDbTarget": "default1",
+        "OverrideDbTarget": "override1"
+      }
+    ]
+  },
+  {
+    "ServerName": "ServerA",
+    "Overrides": [
+      {
+        "DefaultDbTarget": "default2",
+        "OverrideDbTarget": "override2"
+      }
+    ]
+  },
+  {
+    "ServerName": "ServerA",
+    "Overrides": [
+      {
+        "DefaultDbTarget": "default0",
+        "OverrideDbTarget": "override0"
+      }
+    ]
+  },
+  {
+    "ServerName": "ServerA",
+    "Overrides": [
+      {
+        "DefaultDbTarget": "defaultX",
+        "OverrideDbTarget": "overrideX"
+      },
+      {
+        "DefaultDbTarget": "defaultY",
+        "OverrideDbTarget": "overrideY"
+      }
+    ]
+  },
+  {
+    "ServerName": "ServerB",
+    "Overrides": [
+      {
+        "DefaultDbTarget": "default6",
+        "OverrideDbTarget": "override6"
+      }
+    ]
+  },
+  {
+    "ServerName": "ServerB",
+    "Overrides": [
+      {
+        "DefaultDbTarget": "default7",
+        "OverrideDbTarget": "override7"
+      }
+    ]
+  },
+  {
+    "ServerName": "ServerB",
+    "Overrides": [
+      {
+        "DefaultDbTarget": "default5",
+        "OverrideDbTarget": "override5"
+      }
+    ]
+  }
+]

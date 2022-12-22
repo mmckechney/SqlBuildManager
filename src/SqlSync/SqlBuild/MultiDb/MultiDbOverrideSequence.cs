@@ -17,22 +17,29 @@ namespace SqlSync.SqlBuild.MultiDb
             get { return databaseName; }
             set { databaseName = value; }
         }
-        private string sequence = string.Empty;
+        private int? sequence = null;
 
-        public string Sequence
+        public int? Sequence
         {
             get
             {
-                if (this.txtSequence != null)
-                    return this.txtSequence.Text;
+                if (!string.IsNullOrWhiteSpace(this.txtSequence.Text))
+                {
+                    int.TryParse(this.txtSequence.Text, out int val);
+                    return val;
+                }
                 else
-                    return string.Empty;
+                {
+                    return null;
+                }
             }
             set
             {
-                if (this.txtSequence != null)
-                    this.txtSequence.Text = value;
-                sequence = value;
+                if(value.HasValue)
+                {
+                    this.txtSequence.Text = value.ToString();
+                    sequence = value;
+                }
             }
         }
         private bool isManualEntry;
@@ -69,10 +76,10 @@ namespace SqlSync.SqlBuild.MultiDb
 
             }
         }
-        public MultiDbOverrideSequence(string databaseName, string sequenceId, List<QueryRowItem> queryRowData, bool isManualEntry)
+        public MultiDbOverrideSequence(string databaseName, int? sequenceId, List<QueryRowItem> queryRowData, bool isManualEntry)
             : this(databaseName, isManualEntry)
         {
-            this.txtSequence.Text = sequenceId;
+            this.txtSequence.Text = (sequenceId.HasValue) ? sequenceId.Value.ToString() : string.Empty;
             this.queryRowData = queryRowData;
         }
 
@@ -99,9 +106,9 @@ namespace SqlSync.SqlBuild.MultiDb
     public class AutoSequencePatternEventArgs : EventArgs
     {
         public readonly string Pattern;
-        public readonly double Start;
-        public readonly double Increment;
-        public AutoSequencePatternEventArgs(string pattern, double start, double increment)
+        public readonly int Start;
+        public readonly int Increment;
+        public AutoSequencePatternEventArgs(string pattern, int start, int increment)
         {
             this.Pattern = pattern;
             this.Start = start;

@@ -72,7 +72,10 @@ namespace SqlSync.DbInformation
             {
                 DatabaseItem tmp = this.Find(databases[i].DatabaseName);
                 if (tmp != null)
+                {
                     tmp.IsManuallyEntered = databases[i].IsManuallyEntered;
+                    tmp.SequenceId = databases[i].SequenceId;
+                }
                 else
                 {
                     this.Add(databases[i]);
