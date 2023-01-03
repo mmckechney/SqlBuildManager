@@ -55,23 +55,20 @@ namespace SqlBuildManager.Enterprise
 
         internal static EnterpriseConfiguration LoadEnterpriseConfiguration()
         {
-            if(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"] != null &&
+            if (System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"] != null &&
                 System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"].Length > 0)
             {
-                return LoadEnterpriseConfiguration(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"]);
+                var cfg = LoadEnterpriseConfiguration(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"]);
+                if (cfg != null)
+                {
+                    return cfg;
+                }
             }
-            else if (File.Exists(@"I:\mmckechney\Sql Build Manager\Enterprise\EnterpriseConfiguration.xml"))
-            {
-                return
-                    LoadEnterpriseConfiguration(
-                        @"I:\mmckechney\Sql Build Manager\Enterprise\EnterpriseConfiguration.xml");
-            }
-            else
-            {
-                return LoadEnterpriseConfiguration(@"https://raw.githubusercontent.com/mmckechney/SqlBuildManager/master/src/SqlBuildManager.Enterprise/EnterpriseConfiguration.xml");
-            }
-
+            return LoadEnterpriseConfiguration(@"https://raw.githubusercontent.com/mmckechney/SqlBuildManager/master/src/SqlBuildManager.Enterprise/EnterpriseConfiguration.xml");
         }
+
+
+        
         public static EnterpriseConfiguration LoadEnterpriseConfiguration(string configPath)
         {
             string localConfigPath = Path.Combine(SqlBuildManager.Logging.Configure.AppDataPath, "EnterpriseConfiguration.xml");

@@ -1,5 +1,7 @@
 ﻿using SqlBuildManager.Enterprise;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
+
 namespace SqlBuildManager.Enterprise.UnitTest
 {
     
@@ -33,6 +35,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
             string configPath = System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"];
+            configPath = Path.GetFullPath(configPath);
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.LoadEnterpriseConfiguration(configPath);
             Assert.AreEqual(1, actual.TableWatch.Length);
