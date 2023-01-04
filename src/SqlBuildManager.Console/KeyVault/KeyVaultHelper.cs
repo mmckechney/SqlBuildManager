@@ -1,21 +1,13 @@
-﻿using Azure.Core;
-using Azure.Identity;
-using Microsoft.Extensions.Configuration;
+﻿using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
+using Polly;
+using SqlBuildManager.Console.Aad;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Shared;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Azure.Security.KeyVault.Secrets;
-using Azure.Security.KeyVault;
-using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
-using SqlBuildManager.Console.CommandLine;
 using System.Linq;
-using Polly;
-using Azure.Messaging.ServiceBus.Administration;
-using SqlBuildManager.Console.Aad;
-using SqlBuildManager.Console.Shared;
 
 namespace SqlBuildManager.Console.KeyVault
 {
@@ -36,14 +28,14 @@ namespace SqlBuildManager.Console.KeyVault
         internal static SecretClient SecretClient(string keyVaultName)
         {
 
-            if(_secretClient == null)
+            if (_secretClient == null)
             {
                 var cred = AadHelper.TokenCredential;
                 string keyVaultUrl = $"https://{keyVaultName}.vault.azure.net/";
                 _secretClient = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: cred);
             }
             return _secretClient;
-         
+
         }
 
         public static string GetSecret(string keyVaultName, string secretName)
@@ -51,15 +43,15 @@ namespace SqlBuildManager.Console.KeyVault
             try
             {
                 var pollyRetrySecrets = Policy.Handle<Azure.Identity.AuthenticationFailedException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
-                var secret =  pollyRetrySecrets.Execute(() => KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName));
+                var secret = pollyRetrySecrets.Execute(() => KeyVaultHelper.SecretClient(keyVaultName).GetSecret(secretName));
                 return secret.Value.Value;
             }
-            catch(Azure.RequestFailedException rfe)
+            catch (Azure.RequestFailedException rfe)
             {
                 log.LogWarning($"Unable to get secret '{secretName}' from vault {keyVaultName}: [RequestFailedException] {rfe.ErrorCode}");
                 return null;
             }
-            catch(AuthenticationFailedException afe)
+            catch (AuthenticationFailedException afe)
             {
                 log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: [AuthenticationFailedException] {afe.Message}");
                 return null;
@@ -90,12 +82,12 @@ namespace SqlBuildManager.Console.KeyVault
             }
         }
         public static List<string> SaveSecrets(CommandLineArgs cmdLine)
-        { 
+        {
             var keys = new List<string>();
             var kvName = cmdLine.ConnectionArgs.KeyVaultName;
 
             if (ConnectionValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
-            { 
+            {
                 keys.Add(SaveSecret(kvName, KeyVaultHelper.EventHubConnectionString, cmdLine.ConnectionArgs.EventHubConnectionString));
             }
 
@@ -103,7 +95,7 @@ namespace SqlBuildManager.Console.KeyVault
             {
                 keys.Add(SaveSecret(kvName, KeyVaultHelper.ServiceBusTopicConnectionString, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString));
             }
-               
+
             keys.Add(SaveSecret(kvName, KeyVaultHelper.StorageAccountKey, cmdLine.ConnectionArgs.StorageAccountKey));
             keys.Add(SaveSecret(kvName, KeyVaultHelper.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountName));
             keys.Add(SaveSecret(kvName, KeyVaultHelper.UserName, cmdLine.AuthenticationArgs.UserName));
@@ -114,13 +106,13 @@ namespace SqlBuildManager.Console.KeyVault
             return keys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
 
         }
-        public static (bool,CommandLineArgs) GetSecrets(CommandLineArgs cmdLine)
+        public static (bool, CommandLineArgs) GetSecrets(CommandLineArgs cmdLine)
         {
-            if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
                 log.LogInformation("No Key Vault name supplied. Unable to retrieve secrets");
-                return (true,cmdLine);
-            }    
+                return (true, cmdLine);
+            }
             var retrieved = new List<string>();
             log.LogInformation($"Retrieving secrets from KeyVault: {cmdLine.ConnectionArgs.KeyVaultName}");
             var keys = new List<string>();
@@ -133,14 +125,14 @@ namespace SqlBuildManager.Console.KeyVault
                 cmdLine.StorageAccountKey = tmp;
                 retrieved.Add(KeyVaultHelper.StorageAccountKey);
             }
-            else 
+            else
             {
                 //short circuit. Storage key is always needed.
-                return (false,cmdLine); 
-            } 
+                return (false, cmdLine);
+            }
 
             tmp = GetSecret(kvName, KeyVaultHelper.EventHubConnectionString);
-            if(!string.IsNullOrWhiteSpace(tmp))
+            if (!string.IsNullOrWhiteSpace(tmp))
             {
                 cmdLine.EventHubConnection = tmp;
                 retrieved.Add(KeyVaultHelper.EventHubConnectionString);
@@ -197,7 +189,7 @@ namespace SqlBuildManager.Console.KeyVault
             if (retrieved.Count > 0)
             {
                 log.LogInformation($"Retrieved secrets from Key Vault: {string.Join(", ", retrieved)}");
-                return (true,cmdLine);
+                return (true, cmdLine);
             }
             else
             {
@@ -205,7 +197,7 @@ namespace SqlBuildManager.Console.KeyVault
                 return (false, cmdLine);
             }
 
-            
+
 
         }
     }

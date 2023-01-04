@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace SqlSync
@@ -13,18 +9,18 @@ namespace SqlSync
         //internal System.Security.Principal.WindowsImpersonationContext impersonatedUser = null;
         VersionData verData = null;
         bool isBreaking;
-        Size startSize = new Size(0,0);
+        Size startSize = new Size(0, 0);
         public NewVersion(VersionData verData, bool isBreaking) //, System.Security.Principal.WindowsImpersonationContext impersonatedUser)
         {
             InitializeComponent();
             //this.impersonatedUser = impersonatedUser;
             this.verData = verData;
             this.isBreaking = isBreaking;
-            
+
         }
         private void NewVersion_Load(object sender, EventArgs e)
         {
-            startSize = this.pnlTop.Size;
+            startSize = pnlTop.Size;
             if (verData.LatestVersion != null)
                 lblLatestVersionVal.Text = verData.LatestVersion.ToString();
             else
@@ -62,21 +58,22 @@ If this persists, please alert the contact person below for assistance.";
 Please install the new version as soon as possible.";
             }
 
-            if(verData.YourVersion < verData.LatestVersion)
+            if (verData.YourVersion < verData.LatestVersion)
             {
                 lblLatestVersionVal.ForeColor = Color.Green;
                 lblYourVersionVal.ForeColor = Color.Red;
             }
-            this.lblCurrentLogin.Text = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+            lblCurrentLogin.Text = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
         }
 
         private void lnkUpdatePath_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            try{
+            try
+            {
 
-                System.Diagnostics.Process.Start(@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",lnkUpdatePath.Text);
+                System.Diagnostics.Process.Start(@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe", lnkUpdatePath.Text);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 System.Windows.Forms.MessageBox.Show(ex.Message);
             }
@@ -90,15 +87,15 @@ Please install the new version as soon as possible.";
 
         private void lblSqlBuildManager_Click(object sender, EventArgs e)
         {
-          
-			if((int)Control.ModifierKeys == (int)Keys.Control + (int)Keys.Shift)
-			{
-                if (this.pnlTop.Size.Height == startSize.Height)
-                    this.pnlTop.Size = new Size(this.pnlTop.Width, this.groupBox1.Height + 60);
-                else
-                    this.pnlTop.Size = this.startSize; 
 
-			}
+            if ((int)Control.ModifierKeys == (int)Keys.Control + (int)Keys.Shift)
+            {
+                if (pnlTop.Size.Height == startSize.Height)
+                    pnlTop.Size = new Size(pnlTop.Width, groupBox1.Height + 60);
+                else
+                    pnlTop.Size = startSize;
+
+            }
 
         }
 
@@ -126,15 +123,15 @@ Please install the new version as soon as possible.";
         //    this.lblCurrentLogin.Text = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
         //}
 
- 
-
-  
 
 
 
 
-       
 
-        
+
+
+
+
+
     }
 }

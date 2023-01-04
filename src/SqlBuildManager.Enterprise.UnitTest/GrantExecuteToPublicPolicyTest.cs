@@ -1,9 +1,9 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for GrantExecutToPublicPolicyTest and is intended
     ///to contain all GrantExecutToPublicPolicyTest Unit Tests
@@ -32,7 +32,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            GrantExecuteToPublicPolicy target = new GrantExecuteToPublicPolicy(); 
+            GrantExecuteToPublicPolicy target = new GrantExecuteToPublicPolicy();
             string actual;
             actual = target.ShortDescription;
             Assert.AreEqual("Check for GRANT .. TO [public]", actual);
@@ -44,7 +44,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LongDescriptionTest()
         {
-            GrantExecuteToPublicPolicy target = new GrantExecuteToPublicPolicy(); 
+            GrantExecuteToPublicPolicy target = new GrantExecuteToPublicPolicy();
             string actual;
             actual = target.LongDescription;
             Assert.AreEqual("Checks that scripts do not GRANT any privileges to the [public] group", actual);
@@ -59,8 +59,8 @@ namespace SqlBuildManager.Enterprise.UnitTest
             GrantExecuteToPublicPolicy target = new GrantExecuteToPublicPolicy();
             string script = UnitTest.Properties.Resources.NonPublicGrant;
             string message = string.Empty;
-            string messageExpected = string.Empty; 
-            bool expected = true; 
+            string messageExpected = string.Empty;
+            bool expected = true;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
@@ -104,6 +104,6 @@ namespace SqlBuildManager.Enterprise.UnitTest
             Assert.AreEqual(expected, actual);
         }
 
-        
+
     }
 }

@@ -1,12 +1,11 @@
-using System;
-
-using System.Windows.Forms;
-using System.Diagnostics;
-using System.Collections;
 using Microsoft.Win32;
+using System;
+using System.Collections;
+using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Forms;
 
 // MRI list manager.
 //
@@ -93,12 +92,12 @@ namespace SqlSync.MRU
         void OpenMRUFile(string fileName);
     }
 
-	/// <summary>
-	/// MRU manager - manages Most Recently Used Files list
-	/// for Windows Form application.
-	/// </summary>
-	public class MRUManager
-	{
+    /// <summary>
+    /// MRU manager - manages Most Recently Used Files list
+    /// for Windows Form application.
+    /// </summary>
+    public class MRUManager
+    {
         #region Members
 
         private Form ownerForm;                 // owner form
@@ -130,21 +129,21 @@ namespace SqlSync.MRU
         //    DWORD dwFlags
         //    );
 
-        [DllImport("shlwapi.dll", CharSet = CharSet.Auto)]    
+        [DllImport("shlwapi.dll", CharSet = CharSet.Auto)]
         private static extern bool PathCompactPathEx(
-            StringBuilder pszOut, 
+            StringBuilder pszOut,
             string pszPath,
-            int cchMax, 
-            int reserved); 
-        
+            int cchMax,
+            int reserved);
+
         #endregion
 
         #region Constructor
 
-		public MRUManager()
-		{
+        public MRUManager()
+        {
             mruList = new ArrayList();
-		}
+        }
 
         #endregion
 
@@ -161,7 +160,7 @@ namespace SqlSync.MRU
             {
                 maxDisplayLength = value;
 
-                if ( maxDisplayLength < 10 )
+                if (maxDisplayLength < 10)
                     maxDisplayLength = 10;
             }
 
@@ -182,10 +181,10 @@ namespace SqlSync.MRU
             {
                 maxNumberOfFiles = value;
 
-                if ( maxNumberOfFiles < 1 )
+                if (maxNumberOfFiles < 1)
                     maxNumberOfFiles = 1;
 
-                if ( mruList.Count > maxNumberOfFiles )
+                if (mruList.Count > maxNumberOfFiles)
                     mruList.RemoveRange(maxNumberOfFiles - 1, mruList.Count - maxNumberOfFiles);
             }
 
@@ -230,11 +229,11 @@ namespace SqlSync.MRU
         public void Initialize(Form owner, ToolStripMenuItem parentMenu, ToolStripMenuItem recentItemsMnu, string regPath)
         {
             // keep reference to owner form
-            this.ownerForm = owner;
-            this.mruParent = parentMenu;
+            ownerForm = owner;
+            mruParent = parentMenu;
 
             // check if owner form implements IMRUClient interface
-            if ( ! ( owner is IMRUClient ) )
+            if (!(owner is IMRUClient))
             {
                 throw new Exception(
                     "MRUManager: Owner form doesn't implement IMRUClient interface");
@@ -252,7 +251,7 @@ namespace SqlSync.MRU
             //{
             //}
 
-            if ( this.mruParent == null )
+            if (mruParent == null)
             {
                 throw new Exception(
                     "MRUManager: Cannot find parent of MRU menu item");
@@ -260,17 +259,17 @@ namespace SqlSync.MRU
 
             // keep Registry path adding MRU key to it
             registryPath = regPath;
-            if ( registryPath.EndsWith("\\") )
+            if (registryPath.EndsWith("\\"))
                 registryPath += "MRU";
             else
                 registryPath += "\\MRU";
-            
+
 
             // keep current directory in the time of initialization
             currentDirectory = Directory.GetCurrentDirectory();
 
             // subscribe to MRU parent Popup event
-            this.mruParent.Click += new EventHandler(this.OnMRUParentPopup);
+            mruParent.Click += new EventHandler(OnMRUParentPopup);
 
             // subscribe to owner form Closing event
             ownerForm.Closing += new System.ComponentModel.CancelEventHandler(OnOwnerClosing);
@@ -290,7 +289,7 @@ namespace SqlSync.MRU
             Remove(file);
 
             // if array has maximum length, remove last element
-            if ( mruList.Count == maxNumberOfFiles )
+            if (mruList.Count == maxNumberOfFiles)
                 mruList.RemoveAt(maxNumberOfFiles - 1);
 
             // add new file name to the start of array
@@ -308,9 +307,9 @@ namespace SqlSync.MRU
 
             IEnumerator myEnumerator = mruList.GetEnumerator();
 
-            while ( myEnumerator.MoveNext() )
+            while (myEnumerator.MoveNext())
             {
-                if ( (string)myEnumerator.Current == file )
+                if ((string)myEnumerator.Current == file)
                 {
                     mruList.RemoveAt(i);
                     return;
@@ -332,13 +331,13 @@ namespace SqlSync.MRU
         private void OnMRUParentPopup(object sender, EventArgs e)
         {
             // remove all children
-            if ( menuItemMRU.HasDropDownItems )
+            if (menuItemMRU.HasDropDownItems)
             {
                 menuItemMRU.DropDownItems.Clear();
             }
 
             // Disable menu item if MRU list is empty
-            if ( mruList.Count == 0 )
+            if (mruList.Count == 0)
             {
                 menuItemMRU.Enabled = false;
                 return;
@@ -351,9 +350,9 @@ namespace SqlSync.MRU
 
             IEnumerator myEnumerator = mruList.GetEnumerator();
 
-            while ( myEnumerator.MoveNext() )
+            while (myEnumerator.MoveNext())
             {
-                item = new ToolStripMenuItem(GetDisplayName((string)myEnumerator.Current),null,this.OnMRUClicked);
+                item = new ToolStripMenuItem(GetDisplayName((string)myEnumerator.Current), null, OnMRUClicked);
                 item.Tag = (string)myEnumerator.Current;
                 item.ToolTipText = (string)myEnumerator.Current;
                 menuItemMRU.DropDownItems.Add(item);
@@ -372,20 +371,20 @@ namespace SqlSync.MRU
             try
             {
                 // cast sender object to ToolStripMenuItem
-                ToolStripMenuItem item = (ToolStripMenuItem) sender;
+                ToolStripMenuItem item = (ToolStripMenuItem)sender;
 
-                if ( item != null )
+                if (item != null)
                 {
                     // Get file name from list using item index
                     s = item.Tag.ToString();
                     // call owner's OpenMRUFile function
-                    if ( s.Length > 0 )
+                    if (s.Length > 0)
                     {
                         ((IMRUClient)ownerForm).OpenMRUFile(s);
                     }
                 }
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 Trace.WriteLine("Exception in OnMRUClicked: " + ex.Message);
             }
@@ -404,16 +403,16 @@ namespace SqlSync.MRU
             {
                 RegistryKey key = Registry.CurrentUser.CreateSubKey(registryPath);
 
-                if ( key != null )
+                if (key != null)
                 {
                     n = mruList.Count;
 
-                    for ( i = 0; i < maxNumberOfFiles; i++ )
+                    for (i = 0; i < maxNumberOfFiles; i++)
                     {
                         key.DeleteValue(regEntryName + i.ToString(), false);
                     }
 
-                    for ( i = 0; i < n; i++ )
+                    for (i = 0; i < n; i++)
                     {
                         key.SetValue(regEntryName + i.ToString(), mruList[i]);
                     }
@@ -445,19 +444,19 @@ namespace SqlSync.MRU
 
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(registryPath);
 
-                if ( key != null )
+                if (key != null)
                 {
-                    for ( int i = 0; i < maxNumberOfFiles; i++ )
+                    for (int i = 0; i < maxNumberOfFiles; i++)
                     {
                         sKey = regEntryName + i.ToString();
 
                         s = (string)key.GetValue(sKey, "");
 
-                        if ( s.Length == 0 )
+                        if (s.Length == 0)
                             break;
 
-						if(File.Exists(s))
-							mruList.Add(s);
+                        if (File.Exists(s))
+                            mruList.Add(s);
                     }
                 }
             }
@@ -477,7 +476,7 @@ namespace SqlSync.MRU
             // if file is in current directory, show only file name
             FileInfo fileInfo = new FileInfo(fullName);
 
-            if ( fileInfo.DirectoryName == currentDirectory )
+            if (fileInfo.DirectoryName == currentDirectory)
                 return GetShortDisplayName(fileInfo.Name, maxDisplayLength);
 
             return GetShortDisplayName(fullName, maxDisplayLength);
@@ -516,5 +515,5 @@ namespace SqlSync.MRU
 
         #endregion
 
-	}
+    }
 }

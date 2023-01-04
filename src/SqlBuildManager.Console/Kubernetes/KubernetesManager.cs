@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.SqlServer.Management.HadrModel;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Kubernetes.Yaml;
@@ -7,8 +6,6 @@ using SqlBuildManager.Console.Shared;
 using SqlSync.Connection;
 using System;
 using System.IO;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 
@@ -26,7 +23,7 @@ namespace SqlBuildManager.Console.Kubernetes
             {
                 //these are required and should fail of not there...
                 args.BuildFileName = File.ReadAllText("/etc/runtime/PackageName");
-                log.LogDebug($"sbmName= { args.BuildFileName}");
+                log.LogDebug($"sbmName= {args.BuildFileName}");
 
                 args.BatchJobName = File.ReadAllText("/etc/runtime/JobName");
                 log.LogDebug($"storageContainerName= {args.BatchArgs.BatchJobName}");
@@ -35,7 +32,7 @@ namespace SqlBuildManager.Console.Kubernetes
             {
                 log.LogError($"Unable to read runtime parameters: {ex.Message}");
                 log.LogWarning("The runtime variables for running a container/pod worker have not been set. They should be set as a Configmap mounted to /etc/runtime");
-                return (false,args);
+                return (false, args);
             }
 
             if (File.Exists("/etc/runtime/DacpacName"))
@@ -46,7 +43,7 @@ namespace SqlBuildManager.Console.Kubernetes
 
             if (File.Exists("/etc/runtime/Concurrency"))
             {
-                if(int.TryParse(File.ReadAllText("/etc/runtime/Concurrency"), out int val))
+                if (int.TryParse(File.ReadAllText("/etc/runtime/Concurrency"), out int val))
                 {
                     args.Concurrency = val;
                 }
@@ -55,7 +52,7 @@ namespace SqlBuildManager.Console.Kubernetes
 
             if (File.Exists("/etc/runtime/ConcurrencyType"))
             {
-                if(Enum.TryParse<ConcurrencyType>(File.ReadAllText("/etc/runtime/ConcurrencyType"), out ConcurrencyType ct))
+                if (Enum.TryParse<ConcurrencyType>(File.ReadAllText("/etc/runtime/ConcurrencyType"), out ConcurrencyType ct))
                 {
                     args.ConcurrencyType = ct;
                 }
@@ -133,7 +130,7 @@ namespace SqlBuildManager.Console.Kubernetes
         internal static bool CleanUpKubernetesResource(bool secretsExist, string k8jobName = "")
         {
             if (!string.IsNullOrWhiteSpace(k8jobName))
-            { 
+            {
                 MonitorForPodComplete(k8jobName);
             }
             var returnCode = 0;
@@ -143,7 +140,7 @@ namespace SqlBuildManager.Console.Kubernetes
                 returnCode += KubectlProcess.DeleteKubernetesResource(SecretYaml.Kind, SecretYaml.Name, KubernetesManager.SbmNamespace);
             }
             returnCode += KubectlProcess.DeleteKubernetesResource(ConfigmapYaml.Kind, ConfigmapYaml.k8ConfigMapName, KubernetesManager.SbmNamespace);
-           return returnCode == 0;
+            return returnCode == 0;
         }
 
         internal static bool MonitorForPodStart(string k8Jobname)
@@ -269,7 +266,7 @@ namespace SqlBuildManager.Console.Kubernetes
         }
 
         #region Dynamic Yaml Generation
-           
+
         internal static string GenerateJobYaml(CommandLineArgs args)
         {
             bool hasKeyVault = !string.IsNullOrWhiteSpace(args.ConnectionArgs.KeyVaultName);
@@ -277,21 +274,21 @@ namespace SqlBuildManager.Console.Kubernetes
             string k8jobname = KubernetesJobName(args);
             string k8ConfigMapName = KubernetesConfigmapName(args);
             string k8SecretsName = KubernetesSecretsName(args);
-            string k8SecretsProviderName= KubernetesSecretProviderClassName(args);
-            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName,k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer,args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, hasKeyVault, useMangedIdenty, args.IdentityArgs.ServiceAccountName);
+            string k8SecretsProviderName = KubernetesSecretProviderClassName(args);
+            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName, k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer, args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, hasKeyVault, useMangedIdenty, args.IdentityArgs.ServiceAccountName);
             var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
             var jobYaml = serializer.Serialize(yml);
 
 
             return jobYaml;
 
-        } 
+        }
         internal static string GenerateSecretsYaml(CommandLineArgs args)
         {
             bool secretAdded = false;
             string k8SecretsName = KubernetesSecretsName(args);
             var yml = new Yaml.SecretYaml(k8SecretsName);
-           
+
 
             if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.EventHubConnectionString))
             {
@@ -338,8 +335,8 @@ namespace SqlBuildManager.Console.Kubernetes
                 return string.Empty;
             }
 
-            
-          
+
+
 
         }
 
@@ -347,8 +344,8 @@ namespace SqlBuildManager.Console.Kubernetes
         {
             string k8jobname = KubernetesJobName(args);
             string k8ConfigMapName = KubernetesConfigmapName(args);
-            
-            
+
+
             var yml = new Yaml.ConfigmapYaml(k8ConfigMapName);
             yml.data.DacpacName = Path.GetFileName(args.DacPacArgs.PlatinumDacpac);
             yml.data.PackageName = Path.GetFileName(args.BuildFileName);
@@ -358,12 +355,12 @@ namespace SqlBuildManager.Console.Kubernetes
             yml.data.ConcurrencyType = args.ConcurrencyType.ToString();
             yml.data.AuthType = args.AuthenticationArgs.AuthenticationType.ToString();
             yml.data.KeyVaultName = args.ConnectionArgs.KeyVaultName;
-            
-            if(!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && !ConnectionValidator.IsServiceBusConnectionString( args.ConnectionArgs.ServiceBusTopicConnectionString))
+
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && !ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString;
             }
-            if(!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && !ConnectionValidator.IsEventHubConnectionString(args.ConnectionArgs.EventHubConnectionString))
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && !ConnectionValidator.IsEventHubConnectionString(args.ConnectionArgs.EventHubConnectionString))
             {
                 yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString;
             }
@@ -372,7 +369,7 @@ namespace SqlBuildManager.Console.Kubernetes
             {
                 yml.data.StorageAccountName = args.ConnectionArgs.StorageAccountName;
             }
-            
+
             var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
             var yamlString = serializer.Serialize(yml);
 
@@ -443,7 +440,7 @@ namespace SqlBuildManager.Console.Kubernetes
 
         private static CommandLineArgs GetArgumentsFromSecretsFile(string filename, CommandLineArgs args)
         {
-            if(args == null)
+            if (args == null)
             {
                 args = new CommandLineArgs();
             }
@@ -452,7 +449,7 @@ namespace SqlBuildManager.Console.Kubernetes
             {
                 var tmp = GetValueFromSecrets(filename, "UserName");
                 if (!string.IsNullOrWhiteSpace(tmp)) args.UserName = tmp;
-                
+
                 tmp = GetValueFromSecrets(filename, "Password");
                 if (!string.IsNullOrWhiteSpace(tmp)) args.Password = tmp;
 
@@ -468,7 +465,7 @@ namespace SqlBuildManager.Console.Kubernetes
                 tmp = GetValueFromSecrets(filename, "StorageAccountName");
                 if (!string.IsNullOrWhiteSpace(tmp)) args.StorageAccountName = tmp;
             }
-            
+
 
             return args;
 
@@ -476,7 +473,7 @@ namespace SqlBuildManager.Console.Kubernetes
 
         internal static (bool, CommandLineArgs) ReadOpaqueSecrets(CommandLineArgs args)
         {
-            if(args == null)
+            if (args == null)
             {
                 args = new CommandLineArgs();
             }
@@ -501,7 +498,7 @@ namespace SqlBuildManager.Console.Kubernetes
                     log.LogDebug($"storageaccountkey= {args.ConnectionArgs.StorageAccountKey}");
                 }
 
-                if(args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
+                if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
                 {
                     args.Password = File.ReadAllText("/etc/sbm/Password");
                     log.LogDebug($"password= {args.AuthenticationArgs.Password}");
@@ -510,13 +507,13 @@ namespace SqlBuildManager.Console.Kubernetes
                     log.LogDebug($"username= {args.AuthenticationArgs.UserName}");
                 }
 
-                return (true,args);
+                return (true, args);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 log.LogError($"Unable to read secrets: {ex.Message}");
                 log.LogWarning("The secrets needed for running a container/pod worker have not been set.They should be set as secrets mounted to /etc/sbm");
-                return (false,args);
+                return (false, args);
             }
         }
         private static CommandLineArgs GetArgumentsFromConfigMapFile(string filename, CommandLineArgs args)
@@ -530,7 +527,7 @@ namespace SqlBuildManager.Console.Kubernetes
             if (!string.IsNullOrWhiteSpace(tmp)) args.BuildFileName = tmp;
 
 
-            tmp  = GetValueFromConfigMapstring(filename, "JobName");
+            tmp = GetValueFromConfigMapstring(filename, "JobName");
             if (!string.IsNullOrWhiteSpace(tmp)) args.JobName = tmp;
 
 

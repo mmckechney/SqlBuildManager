@@ -11,7 +11,7 @@ namespace SqlBuildManager.Console.ExternalTest
 {
     class DatabaseHelper
     {
-        internal static (string,string) ExtractServerAndDbFromLine(string overrideLine)
+        internal static (string, string) ExtractServerAndDbFromLine(string overrideLine)
         {
             string server = overrideLine.Split(":")[0];
             string database = overrideLine.Split(":")[1].Split(",")[1];
@@ -56,7 +56,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 Password = cmdLine.AuthenticationArgs.Password,
             };
 
-            foreach(var line in overrideLines)
+            foreach (var line in overrideLines)
             {
                 (server, database) = ExtractServerAndDbFromLine(line);
                 connStr.DataSource = server;
@@ -71,7 +71,8 @@ namespace SqlBuildManager.Console.ExternalTest
                         cmd.ExecuteNonQuery();
                         conn.Close();
                     }
-                }catch(Exception exe)
+                }
+                catch (Exception exe)
                 {
                     throw new Exception($"Unable to create random table in {server}: {database}\r\n{exe.ToString()}");
                 }

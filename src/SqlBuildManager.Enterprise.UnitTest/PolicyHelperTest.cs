@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
+using SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using SqlBuildManager.Enterprise.Policy;
 using System.Linq;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for PolicyHelperTest and is intended
     ///to contain all PolicyHelperTest Unit Tests
@@ -74,10 +74,10 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void GetPoliciesTest_GetStandardIScriptPolicy()
         {
             EnterpriseConfigHelper.EnterpriseConfig = new EnterpriseConfiguration();
-            List<IScriptPolicy> actual; 
+            List<IScriptPolicy> actual;
             actual = PolicyHelper.GetPolicies();
-            Assert.IsTrue(actual.Count == 9, "Expected 9 policies and got "+actual.Count.ToString());
-            Assert.IsTrue(actual[0] is GrantExecutePolicy, "Expected GrantExecutePolicy got "+actual[0].GetType().ToString());
+            Assert.IsTrue(actual.Count == 9, "Expected 9 policies and got " + actual.Count.ToString());
+            Assert.IsTrue(actual[0] is GrantExecutePolicy, "Expected GrantExecutePolicy got " + actual[0].GetType().ToString());
             Assert.IsTrue(actual[1] is GrantExecuteToPublicPolicy, "Expected GrantExecuteToPublicPolicy got " + actual[0].GetType().ToString());
             Assert.IsTrue(actual[2] is WithNoLockPolicy, "Expected WithNoLockPolicy got " + actual[0].GetType().ToString());
             Assert.IsTrue(actual[3] is ReRunablePolicy, "Expected ReRunablePolicy got " + actual[0].GetType().ToString());
@@ -94,7 +94,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void GetPoliciesTest_AddDynamicIScriptPolicies()
         {
             EnterpriseConfiguration cfg = new EnterpriseConfiguration();
-           
+
             ScriptPolicy pol1 = new ScriptPolicy();
             pol1.PolicyId = PolicyIdKey.WithNoLockPolicy;
             pol1.Enforce = true;
@@ -109,7 +109,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<IScriptPolicy> actual;
             actual = PolicyHelper.GetPolicies();
 
-            Assert.IsTrue(actual.Count == 2, "Expected 2 policies but got "+actual.Count.ToString());
+            Assert.IsTrue(actual.Count == 2, "Expected 2 policies but got " + actual.Count.ToString());
             Assert.IsTrue(actual[0] is WithNoLockPolicy);
             Assert.IsTrue(actual[1] is GrantExecutePolicy);
 
@@ -135,7 +135,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<IScriptPolicy> actual;
             actual = PolicyHelper.GetPolicies();
 
-            Assert.IsTrue(actual.Count == 1,"Expected 1 policy but got "+actual.Count.ToString());
+            Assert.IsTrue(actual.Count == 1, "Expected 1 policy but got " + actual.Count.ToString());
             Assert.IsTrue(actual[0] is GrantExecutePolicy);
 
 
@@ -165,7 +165,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<IScriptPolicy> actual;
             actual = PolicyHelper.GetPolicies();
 
-            Assert.IsTrue(actual.Count == 2,"Expected 2 policies but got "+actual.Count.ToString());
+            Assert.IsTrue(actual.Count == 2, "Expected 2 policies but got " + actual.Count.ToString());
             Assert.IsTrue(actual[0] is StoredProcParameterPolicy);
             Assert.IsTrue(actual[1] is StoredProcParameterPolicy);
 
@@ -181,7 +181,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             Script actual;
 
             actual = new PolicyHelper().ValidateScriptAgainstPolicies(script);
-            Assert.IsNull(actual,"ScriptViolations object should be null for scripts with no violations.");
+            Assert.IsNull(actual, "ScriptViolations object should be null for scripts with no violations.");
         }
 
         [TestMethod]
@@ -207,8 +207,8 @@ namespace SqlBuildManager.Enterprise.UnitTest
             EnterpriseConfigHelper.EnterpriseConfig = null;
             string script = Properties.Resources.PolicyHelper_NoViolations;
             script = script.Replace("<<date>>", DateTime.Now.ToString("MM/dd/yyyy"));
-            List<KeyValuePair<string,string>> scripts = new List<KeyValuePair<string,string>>();
-            scripts.Add(new KeyValuePair<string,string>("TestScript",script));
+            List<KeyValuePair<string, string>> scripts = new List<KeyValuePair<string, string>>();
+            scripts.Add(new KeyValuePair<string, string>("TestScript", script));
             Package actual;
 
             actual = new PolicyHelper().ValidateScriptsAgainstPolicies(scripts);
@@ -224,7 +224,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<KeyValuePair<string, string>> scripts = new List<KeyValuePair<string, string>>();
             scripts.Add(new KeyValuePair<string, string>("TestScript", script));
             Package actual;
-      
+
             actual = new PolicyHelper().ValidateScriptsAgainstPolicies(scripts);
             Assert.IsNotNull(actual, "ScriptViolations object should not be null for scripts with violations");
             Assert.AreEqual(1, actual.Count);
@@ -240,19 +240,19 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string script = Properties.Resources.PolicyHelper_NoViolations;
             script = script.Replace("<<date>>", DateTime.Now.ToString("MM/dd/yyyy"));
             string fileName = string.Empty;
-            Script  actual;
+            Script actual;
 
             try
             {
                 fileName = Path.GetTempFileName();
-                File.WriteAllText(fileName,script);
+                File.WriteAllText(fileName, script);
 
                 actual = new PolicyHelper().ValidateFileAgainstPolicies(fileName);
                 Assert.IsNull(actual, "ScriptViolations object should be null for scripts with no violations.");
             }
             finally
             {
-                if(File.Exists(fileName))
+                if (File.Exists(fileName))
                     File.Delete(fileName);
             }
         }
@@ -364,8 +364,8 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string script = Properties.Resources.PolicyHelper_WithViolations;
             string targetDatabase = "TestDb";
             IScriptPolicyWithArguments policy = new StoredProcParameterPolicy();
-            policy.Arguments.Add(new IScriptPolicyArgument(){Name= "Schema", Value = "dbo"});
-            policy.Arguments.Add(new IScriptPolicyArgument(){Name="Parameter", Value ="@MissingParameter"});
+            policy.Arguments.Add(new IScriptPolicyArgument() { Name = "Schema", Value = "dbo" });
+            policy.Arguments.Add(new IScriptPolicyArgument() { Name = "Parameter", Value = "@MissingParameter" });
             policy.Arguments.Add(new IScriptPolicyArgument() { Name = "TargetDatabase", Value = "TestDb" });
 
             Violation actual;

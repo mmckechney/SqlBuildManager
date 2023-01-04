@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace SqlSync
@@ -24,54 +19,54 @@ namespace SqlSync
 
         private void CustomInitializeComponent()
         {
-            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.cutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            cutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
             // 
             // mnuCopyPaste
             // 
-            this.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.cutToolStripMenuItem,
-            this.copyToolStripMenuItem,
-            this.pasteToolStripMenuItem});
-            this.Name = "mnuCopyPaste";
-            this.Size = new System.Drawing.Size(153, 92);
-            this.Opening += new System.ComponentModel.CancelEventHandler(this.mnuCopyPaste_Opening);
+            Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            cutToolStripMenuItem,
+            copyToolStripMenuItem,
+            pasteToolStripMenuItem});
+            Name = "mnuCopyPaste";
+            Size = new System.Drawing.Size(153, 92);
+            Opening += new System.ComponentModel.CancelEventHandler(mnuCopyPaste_Opening);
             // 
 
 
             // 
             // copyToolStripMenuItem
             // 
-            this.copyToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Copy;
-            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.copyToolStripMenuItem.Text = "Copy";
-            this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
+            copyToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Copy;
+            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            copyToolStripMenuItem.Text = "Copy";
+            copyToolStripMenuItem.Click += new System.EventHandler(copyToolStripMenuItem_Click);
             // 
             // pasteToolStripMenuItem
             // 
-            this.pasteToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Paste;
-            this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
-            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.pasteToolStripMenuItem.Text = "Paste";
-            this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
+            pasteToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Paste;
+            pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
+            pasteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            pasteToolStripMenuItem.Text = "Paste";
+            pasteToolStripMenuItem.Click += new System.EventHandler(pasteToolStripMenuItem_Click);
             // 
             // cutToolStripMenuItem
             // 
-            this.cutToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Cut_2;
-            this.cutToolStripMenuItem.Name = "cutToolStripMenuItem";
-            this.cutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.cutToolStripMenuItem.Text = "Cut";
-            this.cutToolStripMenuItem.Click += new System.EventHandler(this.cutToolStripMenuItem_Click);
+            cutToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Cut_2;
+            cutToolStripMenuItem.Name = "cutToolStripMenuItem";
+            cutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            cutToolStripMenuItem.Text = "Cut";
+            cutToolStripMenuItem.Click += new System.EventHandler(cutToolStripMenuItem_Click);
         }
 
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.SourceControl is TextBoxBase)
+            if (SourceControl is TextBoxBase)
             {
-                TextBoxBase txtBox = (TextBoxBase)this.SourceControl;
+                TextBoxBase txtBox = (TextBoxBase)SourceControl;
                 if (txtBox.SelectedText.Length > 0)
                     Clipboard.SetText(txtBox.SelectedText);
 
@@ -80,9 +75,9 @@ namespace SqlSync
 
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.SourceControl is TextBoxBase)
+            if (SourceControl is TextBoxBase)
             {
-                TextBoxBase txtBox = (TextBoxBase)this.SourceControl;
+                TextBoxBase txtBox = (TextBoxBase)SourceControl;
                 string value = Clipboard.GetText();
 
                 int currentLocation = txtBox.SelectionStart;
@@ -101,9 +96,9 @@ namespace SqlSync
 
         private void cutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.SourceControl is TextBoxBase)
+            if (SourceControl is TextBoxBase)
             {
-                TextBoxBase txtBox = (TextBoxBase)this.SourceControl;
+                TextBoxBase txtBox = (TextBoxBase)SourceControl;
                 string cutPiece = txtBox.SelectedText;
                 Clipboard.SetText(cutPiece);
 
@@ -118,9 +113,9 @@ namespace SqlSync
 
         private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
         {
-            if (this.SourceControl is TextBoxBase)
+            if (SourceControl is TextBoxBase)
             {
-                TextBoxBase txtBox = (TextBoxBase)this.SourceControl;
+                TextBoxBase txtBox = (TextBoxBase)SourceControl;
                 if (txtBox.SelectedText.Length == 0)
                 {
                     cutToolStripMenuItem.Enabled = false;
@@ -136,9 +131,9 @@ namespace SqlSync
 
         private void mnuCopyPaste_Opening(object sender, CancelEventArgs e)
         {
-            if (this.SourceControl is TextBoxBase)
+            if (SourceControl is TextBoxBase)
             {
-                TextBoxBase txtBox = (TextBoxBase)this.SourceControl;
+                TextBoxBase txtBox = (TextBoxBase)SourceControl;
                 if (txtBox.SelectedText.Length == 0)
                 {
                     cutToolStripMenuItem.Enabled = false;

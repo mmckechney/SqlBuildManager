@@ -1,9 +1,8 @@
-﻿using SqlSync.SqlBuild;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SqlSync.SqlBuild.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ScriptBatchCollectionTest and is intended
     ///to contain all ScriptBatchCollectionTest Unit Tests

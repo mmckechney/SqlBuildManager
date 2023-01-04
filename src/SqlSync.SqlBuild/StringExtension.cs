@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 namespace SqlSync.SqlBuild
 {
     public static class StringExtension
@@ -28,7 +24,7 @@ namespace SqlSync.SqlBuild
         {
             Regex regNewLine = new Regex("(?<!\r)\n", RegexOptions.IgnoreCase);
             val = regNewLine.Replace(val, "\r\n");
-            
+
             return val;
         }
     }

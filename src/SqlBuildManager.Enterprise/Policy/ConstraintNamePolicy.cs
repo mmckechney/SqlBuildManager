@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class ConstraintNamePolicy : p.IScriptPolicy
@@ -31,8 +30,8 @@ namespace SqlBuildManager.Enterprise.Policy
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
         {

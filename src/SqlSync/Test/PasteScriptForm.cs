@@ -1,9 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace SqlSync.Test
@@ -28,7 +23,7 @@ namespace SqlSync.Test
             set
             {
                 scriptText = value;
-                this.rtbScript.Text = value;
+                rtbScript.Text = value;
             }
         }
         private string[] bulkScripts = new string[0];
@@ -40,34 +35,34 @@ namespace SqlSync.Test
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.Cancel;
-            this.Close();
+            DialogResult = DialogResult.Cancel;
+            Close();
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            if (this.isBulkAdd)
+            if (isBulkAdd)
             {
-                this.DialogResult = DialogResult.OK;
-                this.bulkScripts = rtbScript.Lines;
-                this.Close();
+                DialogResult = DialogResult.OK;
+                bulkScripts = rtbScript.Lines;
+                Close();
             }
             else
             {
-                this.DialogResult = DialogResult.OK;
-                this.scriptText = rtbScript.Text;
-                this.Close();
+                DialogResult = DialogResult.OK;
+                scriptText = rtbScript.Text;
+                Close();
             }
         }
 
         private void PasteScriptForm_Load(object sender, EventArgs e)
         {
-            if (this.isBulkAdd)
+            if (isBulkAdd)
             {
-                this.Text = "Bulk Add from Stored Procedure Execution Scripts";
-                this.lblScript.Text = "Paste Execution scripts, 1 per line:";
-                this.Height = 550;
-                this.Width = 800;
+                Text = "Bulk Add from Stored Procedure Execution Scripts";
+                lblScript.Text = "Paste Execution scripts, 1 per line:";
+                Height = 550;
+                Width = 800;
             }
         }
     }

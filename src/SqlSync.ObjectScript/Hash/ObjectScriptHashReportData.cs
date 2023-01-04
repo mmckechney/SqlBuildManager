@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SqlSync.ObjectScript.Hash
 {
@@ -8,14 +7,14 @@ namespace SqlSync.ObjectScript.Hash
     {
         public void ResetComparisonValues()
         {
-            foreach (ObjectScriptHashData data in this.databaseData)
+            foreach (ObjectScriptHashData data in databaseData)
             {
                 data.ResetComparisonValues();
             }
         }
         public ObjectScriptHashReportData()
         {
-            this.databaseData = new List<ObjectScriptHashData>();
+            databaseData = new List<ObjectScriptHashData>();
         }
         List<ObjectScriptHashData> databaseData;
 

@@ -1,11 +1,10 @@
-﻿using SqlSync.DbInformation;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 
 namespace SqlSync.DbInformation.Dependent.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for InfoHelperTest and is intended
     ///to contain all InfoHelperTest Unit Tests

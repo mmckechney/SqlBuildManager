@@ -1,5 +1,3 @@
-using System;
-
 namespace SqlSync.SprocTest.Configuration
 {
     public partial class Parameter
@@ -14,6 +12,6 @@ namespace SqlSync.SprocTest.Configuration
             set { hasDerivedParameterMatch = value; }
         }
 
-        
+
     }
 }

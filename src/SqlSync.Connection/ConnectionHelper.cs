@@ -1,13 +1,13 @@
-using System;
 using Microsoft.Data.SqlClient;
-using System.Data.Common;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
 namespace SqlSync.Connection
 {
-	/// <summary>
-	/// Summary description for ConnectionHelper.
-	/// </summary>
+    /// <summary>
+    /// Summary description for ConnectionHelper.
+    /// </summary>
     public class ConnectionHelper
     {
         public static string ConnectCryptoKey
@@ -17,7 +17,7 @@ namespace SqlSync.Connection
                 return String.Format("ewrwecwt9-3467u435bgQ{0}@#Q1569[';./?#%4witg9uv-$#!@&)(_(#!@$30r0fasdap;{0}aw56-049q3", System.Environment.UserName);
             }
         }
-      
+
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static string appName = "Sql Build Manager v{0} [{1}];";
         static ConnectionHelper()
@@ -135,13 +135,15 @@ namespace SqlSync.Connection
 
         public static bool TestDatabaseConnection(string dbName, string serverName, string username, string password, AuthenticationType authType, int scriptTimeOut)
         {
-            return TestDatabaseConnection(new ConnectionData() {
+            return TestDatabaseConnection(new ConnectionData()
+            {
                 DatabaseName = dbName,
                 ScriptTimeout = scriptTimeOut,
                 SQLServerName = serverName,
                 UserId = username,
                 Password = password,
-                AuthenticationType = authType});
+                AuthenticationType = authType
+            });
         }
         public static bool TestDatabaseConnection(ConnectionData connData)
         {

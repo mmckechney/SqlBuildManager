@@ -1,13 +1,11 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using SqlSync.DbInformation;
-using System.Globalization;
-using System.Text;
-using SqlSync.ObjectScript;
 using SqlSync.Connection;
+using SqlSync.DbInformation;
+using SqlSync.ObjectScript;
+using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
 
 namespace SqlSync.Validate
 {
@@ -78,280 +76,280 @@ namespace SqlSync.Validate
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ObjectValidation));
-            this.label2 = new System.Windows.Forms.Label();
-            this.ddDatabaseList = new System.Windows.Forms.ComboBox();
-            this.statusBar1 = new System.Windows.Forms.StatusStrip();
-            this.statStatus = new System.Windows.Forms.ToolStripStatusLabel();
-            this.btnValidate = new System.Windows.Forms.Button();
-            this.lstResults = new System.Windows.Forms.ListView();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
-            this.mnuCopy = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuCopyInvalid = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuViewObjectScript = new System.Windows.Forms.ToolStripMenuItem();
-            this.pnlWarning = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.bgworker = new System.ComponentModel.BackgroundWorker();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.actionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.changeSqlServerConnectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.settingsControl1 = new SqlSync.SettingsControl();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.pnlWarning.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.menuStrip1.SuspendLayout();
-            this.SuspendLayout();
+            label2 = new System.Windows.Forms.Label();
+            ddDatabaseList = new System.Windows.Forms.ComboBox();
+            statusBar1 = new System.Windows.Forms.StatusStrip();
+            statStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            btnValidate = new System.Windows.Forms.Button();
+            lstResults = new System.Windows.Forms.ListView();
+            columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            columnHeader2 = new System.Windows.Forms.ColumnHeader();
+            columnHeader3 = new System.Windows.Forms.ColumnHeader();
+            columnHeader4 = new System.Windows.Forms.ColumnHeader();
+            contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
+            mnuCopy = new System.Windows.Forms.ToolStripMenuItem();
+            mnuCopyInvalid = new System.Windows.Forms.ToolStripMenuItem();
+            menuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            mnuViewObjectScript = new System.Windows.Forms.ToolStripMenuItem();
+            pnlWarning = new System.Windows.Forms.Panel();
+            label1 = new System.Windows.Forms.Label();
+            pictureBox1 = new System.Windows.Forms.PictureBox();
+            bgworker = new System.ComponentModel.BackgroundWorker();
+            btnCancel = new System.Windows.Forms.Button();
+            menuStrip1 = new System.Windows.Forms.MenuStrip();
+            actionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            changeSqlServerConnectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            settingsControl1 = new SqlSync.SettingsControl();
+            toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            pnlWarning.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(pictureBox1)).BeginInit();
+            menuStrip1.SuspendLayout();
+            SuspendLayout();
             // 
             // label2
             // 
-            this.label2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(12, 93);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(112, 16);
-            this.label2.TabIndex = 19;
-            this.label2.Text = "Select Database:";
+            label2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            label2.Location = new System.Drawing.Point(12, 93);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(112, 16);
+            label2.TabIndex = 19;
+            label2.Text = "Select Database:";
             // 
             // ddDatabaseList
             // 
-            this.ddDatabaseList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ddDatabaseList.Location = new System.Drawing.Point(13, 112);
-            this.ddDatabaseList.Name = "ddDatabaseList";
-            this.ddDatabaseList.Size = new System.Drawing.Size(176, 21);
-            this.ddDatabaseList.TabIndex = 18;
+            ddDatabaseList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            ddDatabaseList.Location = new System.Drawing.Point(13, 112);
+            ddDatabaseList.Name = "ddDatabaseList";
+            ddDatabaseList.Size = new System.Drawing.Size(176, 21);
+            ddDatabaseList.TabIndex = 18;
             // 
             // statusBar1
             // 
-            this.statusBar1.Location = new System.Drawing.Point(0, 427);
-            this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
-            this.statStatus});
+            statusBar1.Location = new System.Drawing.Point(0, 427);
+            statusBar1.Name = "statusBar1";
+            statusBar1.Items.AddRange(new System.Windows.Forms.ToolStripStatusLabel[] {
+            statStatus});
             //this.statusBar1.ShowPanels = true;
-            this.statusBar1.Size = new System.Drawing.Size(910, 22);
-            this.statusBar1.TabIndex = 21;
-            this.statusBar1.Text = "statusBar1";
+            statusBar1.Size = new System.Drawing.Size(910, 22);
+            statusBar1.TabIndex = 21;
+            statusBar1.Text = "statusBar1";
             // 
             // statStatus
             // 
-            this.statStatus.AutoSize = true;
-            this.statStatus.Spring = true;
-            this.statStatus.Name = "statStatus";
-            this.statStatus.Text = "Ready";
-            this.statStatus.Width = 893;
+            statStatus.AutoSize = true;
+            statStatus.Spring = true;
+            statStatus.Name = "statStatus";
+            statStatus.Text = "Ready";
+            statStatus.Width = 893;
             // 
             // btnValidate
             // 
-            this.btnValidate.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnValidate.Location = new System.Drawing.Point(201, 111);
-            this.btnValidate.Name = "btnValidate";
-            this.btnValidate.Size = new System.Drawing.Size(112, 23);
-            this.btnValidate.TabIndex = 23;
-            this.btnValidate.Text = "Validate Objects";
-            this.btnValidate.Click += new System.EventHandler(this.btnValidate_Click);
+            btnValidate.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            btnValidate.Location = new System.Drawing.Point(201, 111);
+            btnValidate.Name = "btnValidate";
+            btnValidate.Size = new System.Drawing.Size(112, 23);
+            btnValidate.TabIndex = 23;
+            btnValidate.Text = "Validate Objects";
+            btnValidate.Click += new System.EventHandler(btnValidate_Click);
             // 
             // lstResults
             // 
-            this.lstResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            lstResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.lstResults.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3,
-            this.columnHeader4});
-            this.lstResults.ContextMenuStrip = this.contextMenu1;
-            this.lstResults.FullRowSelect = true;
-            this.lstResults.GridLines = true;
-            this.lstResults.Location = new System.Drawing.Point(8, 141);
-            this.lstResults.Name = "lstResults";
-            this.lstResults.Size = new System.Drawing.Size(886, 280);
-            this.lstResults.TabIndex = 24;
-            this.lstResults.UseCompatibleStateImageBehavior = false;
-            this.lstResults.View = System.Windows.Forms.View.Details;
-            this.lstResults.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lstResults_ColumnClick);
+            lstResults.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            columnHeader1,
+            columnHeader2,
+            columnHeader3,
+            columnHeader4});
+            lstResults.ContextMenuStrip = contextMenu1;
+            lstResults.FullRowSelect = true;
+            lstResults.GridLines = true;
+            lstResults.Location = new System.Drawing.Point(8, 141);
+            lstResults.Name = "lstResults";
+            lstResults.Size = new System.Drawing.Size(886, 280);
+            lstResults.TabIndex = 24;
+            lstResults.UseCompatibleStateImageBehavior = false;
+            lstResults.View = System.Windows.Forms.View.Details;
+            lstResults.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(lstResults_ColumnClick);
             // 
             // columnHeader1
             // 
-            this.columnHeader1.Text = "Object Name";
-            this.columnHeader1.Width = 303;
+            columnHeader1.Text = "Object Name";
+            columnHeader1.Width = 303;
             // 
             // columnHeader2
             // 
-            this.columnHeader2.Text = "Type";
-            this.columnHeader2.Width = 43;
+            columnHeader2.Text = "Type";
+            columnHeader2.Width = 43;
             // 
             // columnHeader3
             // 
-            this.columnHeader3.Text = "Results";
-            this.columnHeader3.Width = 407;
+            columnHeader3.Text = "Results";
+            columnHeader3.Width = 407;
             // 
             // columnHeader4
             // 
-            this.columnHeader4.Text = "Status Type";
-            this.columnHeader4.Width = 106;
+            columnHeader4.Text = "Status Type";
+            columnHeader4.Width = 106;
             // 
             // contextMenu1
             // 
-            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
-            this.mnuCopy,
-            this.mnuCopyInvalid,
-            this.menuItem2,
-            this.mnuViewObjectScript});
+            contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
+            mnuCopy,
+            mnuCopyInvalid,
+            menuItem2,
+            mnuViewObjectScript});
             // 
             // mnuCopy
             // 
-           // this.mnuCopy.Index = 0;
-            this.mnuCopy.ShortcutKeys = System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C;
-            this.mnuCopy.Text = "Copy";
-            this.mnuCopy.Click += new System.EventHandler(this.mnuCopy_Click);
+            // this.mnuCopy.Index = 0;
+            mnuCopy.ShortcutKeys = System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C;
+            mnuCopy.Text = "Copy";
+            mnuCopy.Click += new System.EventHandler(mnuCopy_Click);
             // 
             // mnuCopyInvalid
             // 
-           // this.mnuCopyInvalid.Index = 1;
-            this.mnuCopyInvalid.Text = "Copy Invalid Objects";
-            this.mnuCopyInvalid.Click += new System.EventHandler(this.mnuCopyInvalid_Click);
+            // this.mnuCopyInvalid.Index = 1;
+            mnuCopyInvalid.Text = "Copy Invalid Objects";
+            mnuCopyInvalid.Click += new System.EventHandler(mnuCopyInvalid_Click);
             // 
             // menuItem2
             // 
             //this.menuItem2.Index = 2;
-            this.menuItem2.Text = "-";
+            menuItem2.Text = "-";
             // 
             // mnuViewObjectScript
             // 
             //this.mnuViewObjectScript.Index = 3;
-            this.mnuViewObjectScript.Text = "View Object Script";
-            this.mnuViewObjectScript.Click += new System.EventHandler(this.mnuViewObjectScript_Click);
+            mnuViewObjectScript.Text = "View Object Script";
+            mnuViewObjectScript.Click += new System.EventHandler(mnuViewObjectScript_Click);
             // 
             // pnlWarning
             // 
-            this.pnlWarning.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlWarning.BackColor = System.Drawing.Color.White;
-            this.pnlWarning.Controls.Add(this.label1);
-            this.pnlWarning.Controls.Add(this.pictureBox1);
-            this.pnlWarning.Location = new System.Drawing.Point(421, 89);
-            this.pnlWarning.Name = "pnlWarning";
-            this.pnlWarning.Size = new System.Drawing.Size(324, 46);
-            this.pnlWarning.TabIndex = 26;
-            this.pnlWarning.Visible = false;
+            pnlWarning.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            pnlWarning.BackColor = System.Drawing.Color.White;
+            pnlWarning.Controls.Add(label1);
+            pnlWarning.Controls.Add(pictureBox1);
+            pnlWarning.Location = new System.Drawing.Point(421, 89);
+            pnlWarning.Name = "pnlWarning";
+            pnlWarning.Size = new System.Drawing.Size(324, 46);
+            pnlWarning.TabIndex = 26;
+            pnlWarning.Visible = false;
             // 
             // label1
             // 
-            this.label1.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(52, 12);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(270, 23);
-            this.label1.TabIndex = 26;
-            this.label1.Text = "Warning! Invalid Objects Detected.";
+            label1.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            label1.Location = new System.Drawing.Point(52, 12);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(270, 23);
+            label1.TabIndex = 26;
+            label1.Text = "Warning! Invalid Objects Detected.";
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(4, 2);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(44, 40);
-            this.pictureBox1.TabIndex = 25;
-            this.pictureBox1.TabStop = false;
+            pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            pictureBox1.Location = new System.Drawing.Point(4, 2);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new System.Drawing.Size(44, 40);
+            pictureBox1.TabIndex = 25;
+            pictureBox1.TabStop = false;
             // 
             // bgworker
             // 
-            this.bgworker.WorkerReportsProgress = true;
-            this.bgworker.WorkerSupportsCancellation = true;
-            this.bgworker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgworker_DoWork);
-            this.bgworker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgworker_RunWorkerCompleted);
-            this.bgworker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgworker_ProgressChanged);
+            bgworker.WorkerReportsProgress = true;
+            bgworker.WorkerSupportsCancellation = true;
+            bgworker.DoWork += new System.ComponentModel.DoWorkEventHandler(bgworker_DoWork);
+            bgworker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(bgworker_RunWorkerCompleted);
+            bgworker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(bgworker_ProgressChanged);
             // 
             // btnCancel
             // 
-            this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnCancel.Location = new System.Drawing.Point(319, 110);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(70, 23);
-            this.btnCancel.TabIndex = 27;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            btnCancel.Location = new System.Drawing.Point(319, 110);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new System.Drawing.Size(70, 23);
+            btnCancel.TabIndex = 27;
+            btnCancel.Text = "Cancel";
+            btnCancel.Click += new System.EventHandler(btnCancel_Click);
             // 
             // menuStrip1
             // 
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.actionToolStripMenuItem,
-            this.toolStripMenuItem1});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(910, 24);
-            this.menuStrip1.TabIndex = 28;
-            this.menuStrip1.Text = "menuStrip1";
+            menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            actionToolStripMenuItem,
+            toolStripMenuItem1});
+            menuStrip1.Location = new System.Drawing.Point(0, 0);
+            menuStrip1.Name = "menuStrip1";
+            menuStrip1.Size = new System.Drawing.Size(910, 24);
+            menuStrip1.TabIndex = 28;
+            menuStrip1.Text = "menuStrip1";
             // 
             // actionToolStripMenuItem
             // 
-            this.actionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.changeSqlServerConnectionToolStripMenuItem});
-            this.actionToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Execute;
-            this.actionToolStripMenuItem.Name = "actionToolStripMenuItem";
-            this.actionToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
-            this.actionToolStripMenuItem.Text = "Action";
+            actionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            changeSqlServerConnectionToolStripMenuItem});
+            actionToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Execute;
+            actionToolStripMenuItem.Name = "actionToolStripMenuItem";
+            actionToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
+            actionToolStripMenuItem.Text = "Action";
             // 
             // changeSqlServerConnectionToolStripMenuItem
             // 
-            this.changeSqlServerConnectionToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Server1;
-            this.changeSqlServerConnectionToolStripMenuItem.Name = "changeSqlServerConnectionToolStripMenuItem";
-            this.changeSqlServerConnectionToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
-            this.changeSqlServerConnectionToolStripMenuItem.Text = "Change Sql Server Connection";
-            this.changeSqlServerConnectionToolStripMenuItem.Click += new System.EventHandler(this.mnuChangeSqlServer_Click);
+            changeSqlServerConnectionToolStripMenuItem.Image = global::SqlSync.Properties.Resources.Server1;
+            changeSqlServerConnectionToolStripMenuItem.Name = "changeSqlServerConnectionToolStripMenuItem";
+            changeSqlServerConnectionToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            changeSqlServerConnectionToolStripMenuItem.Text = "Change Sql Server Connection";
+            changeSqlServerConnectionToolStripMenuItem.Click += new System.EventHandler(mnuChangeSqlServer_Click);
             // 
             // settingsControl1
             // 
-            this.settingsControl1.BackColor = System.Drawing.Color.White;
-            this.settingsControl1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.settingsControl1.Location = new System.Drawing.Point(0, 24);
-            this.settingsControl1.Name = "settingsControl1";
-            this.settingsControl1.Project = "";
-            this.settingsControl1.ProjectLabelText = "";
-            this.settingsControl1.Server = "";
-            this.settingsControl1.Size = new System.Drawing.Size(910, 54);
-            this.settingsControl1.TabIndex = 20;
-            this.settingsControl1.ServerChanged += new SqlSync.ServerChangedEventHandler(this.settingsControl1_ServerChanged);
+            settingsControl1.BackColor = System.Drawing.Color.White;
+            settingsControl1.Dock = System.Windows.Forms.DockStyle.Top;
+            settingsControl1.Location = new System.Drawing.Point(0, 24);
+            settingsControl1.Name = "settingsControl1";
+            settingsControl1.Project = "";
+            settingsControl1.ProjectLabelText = "";
+            settingsControl1.Server = "";
+            settingsControl1.Size = new System.Drawing.Size(910, 54);
+            settingsControl1.TabIndex = 20;
+            settingsControl1.ServerChanged += new SqlSync.ServerChangedEventHandler(settingsControl1_ServerChanged);
             // 
             // toolStripMenuItem1
             // 
-            this.toolStripMenuItem1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripMenuItem1.Image = global::SqlSync.Properties.Resources.Help_2;
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(28, 20);
-            this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+            toolStripMenuItem1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            toolStripMenuItem1.Image = global::SqlSync.Properties.Resources.Help_2;
+            toolStripMenuItem1.Name = "toolStripMenuItem1";
+            toolStripMenuItem1.Size = new System.Drawing.Size(28, 20);
+            toolStripMenuItem1.Click += new System.EventHandler(toolStripMenuItem1_Click);
             // 
             // ObjectValidation
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(6, 14);
-            this.ClientSize = new System.Drawing.Size(910, 449);
-            this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.pnlWarning);
-            this.Controls.Add(this.lstResults);
-            this.Controls.Add(this.btnValidate);
-            this.Controls.Add(this.statusBar1);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.ddDatabaseList);
-            this.Controls.Add(this.settingsControl1);
-            this.Controls.Add(this.menuStrip1);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.KeyPreview = true;
-            this.MainMenuStrip = this.menuStrip1;
-            this.Name = "ObjectValidation";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Sql Build Manager :: Database Object Validation";
-            this.Load += new System.EventHandler(this.ObjectValidation_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ObjectValidation_KeyDown);
-            this.pnlWarning.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleBaseSize = new System.Drawing.Size(6, 14);
+            ClientSize = new System.Drawing.Size(910, 449);
+            Controls.Add(btnCancel);
+            Controls.Add(pnlWarning);
+            Controls.Add(lstResults);
+            Controls.Add(btnValidate);
+            Controls.Add(statusBar1);
+            Controls.Add(label2);
+            Controls.Add(ddDatabaseList);
+            Controls.Add(settingsControl1);
+            Controls.Add(menuStrip1);
+            Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            KeyPreview = true;
+            MainMenuStrip = menuStrip1;
+            Name = "ObjectValidation";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            Text = "Sql Build Manager :: Database Object Validation";
+            Load += new System.EventHandler(ObjectValidation_Load);
+            KeyDown += new System.Windows.Forms.KeyEventHandler(ObjectValidation_KeyDown);
+            pnlWarning.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(pictureBox1)).EndInit();
+            menuStrip1.ResumeLayout(false);
+            menuStrip1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
 
         }
         #endregion
@@ -361,11 +359,11 @@ namespace SqlSync.Validate
             DialogResult result = frmConnect.ShowDialog();
             if (result == DialogResult.OK)
             {
-                this.connData = frmConnect.SqlConnection;
+                connData = frmConnect.SqlConnection;
                 ddDatabaseList.Items.Clear();
                 for (int i = 0; i < frmConnect.DatabaseList.Count; i++)
                     ddDatabaseList.Items.Add(frmConnect.DatabaseList[i].DatabaseName);
-                this.settingsControl1.Server = this.connData.SQLServerName;
+                settingsControl1.Server = connData.SQLServerName;
             }
         }
 
@@ -374,28 +372,28 @@ namespace SqlSync.Validate
             DatabaseList dbs = SqlSync.DbInformation.InfoHelper.GetDatabaseList(connData);
             for (int i = 0; i < dbs.Count; i++)
                 ddDatabaseList.Items.Add(dbs[i].DatabaseName);
-            this.settingsControl1.Server = this.connData.SQLServerName;
+            settingsControl1.Server = connData.SQLServerName;
         }
 
         private void btnValidate_Click(object sender, System.EventArgs e)
         {
-            this.lstResults.Items.Clear();
-            this.pnlWarning.Visible = false;
-            this.hasValidationErrors = false;
-            this.statStatus.Text = "Validating Objects Data";
-            this.btnValidate.Enabled = false;
-            this.Cursor = Cursors.AppStarting;
+            lstResults.Items.Clear();
+            pnlWarning.Visible = false;
+            hasValidationErrors = false;
+            statStatus.Text = "Validating Objects Data";
+            btnValidate.Enabled = false;
+            Cursor = Cursors.AppStarting;
             try
             {
-                this.connData.DatabaseName = ddDatabaseList.SelectedItem.ToString();
-                bgworker.RunWorkerAsync(this.connData);
+                connData.DatabaseName = ddDatabaseList.SelectedItem.ToString();
+                bgworker.RunWorkerAsync(connData);
             }
             catch (Exception ex)
             {
                 string m = ex.ToString();
-                this.statStatus.Text = "ERROR: Unable to Retrieve Data";
-                this.Cursor = Cursors.Default;
-                this.btnValidate.Enabled = true;
+                statStatus.Text = "ERROR: Unable to Retrieve Data";
+                Cursor = Cursors.Default;
+                btnValidate.Enabled = true;
             }
         }
 
@@ -453,7 +451,7 @@ namespace SqlSync.Validate
 
             ListViewItem item = lstResults.SelectedItems[0];
 
-            SqlSync.ObjectScript.ObjectScriptHelper helper = new ObjectScriptHelper(this.connData);
+            SqlSync.ObjectScript.ObjectScriptHelper helper = new ObjectScriptHelper(connData);
             string script = string.Empty;
             string desc = string.Empty;
             string message;
@@ -482,9 +480,9 @@ namespace SqlSync.Validate
             {
                 ScriptDisplayForm frmDisplay;
                 if (script.Length > 0)
-                    frmDisplay = new ScriptDisplayForm(script, this.connData.SQLServerName, item.SubItems[0].Text);
+                    frmDisplay = new ScriptDisplayForm(script, connData.SQLServerName, item.SubItems[0].Text);
                 else
-                    frmDisplay = new ScriptDisplayForm(message, this.connData.SQLServerName, item.SubItems[0].Text);
+                    frmDisplay = new ScriptDisplayForm(message, connData.SQLServerName, item.SubItems[0].Text);
 
                 frmDisplay.ShowDialog();
             }
@@ -501,7 +499,7 @@ namespace SqlSync.Validate
         private void bgworker_DoWork(object sender, DoWorkEventArgs e)
         {
             SqlSync.ObjectScript.ObjectValidator validator = new SqlSync.ObjectScript.ObjectValidator();
-            validator.Validate(this.connData, sender as BackgroundWorker, e);
+            validator.Validate(connData, sender as BackgroundWorker, e);
 
         }
 
@@ -516,15 +514,15 @@ namespace SqlSync.Validate
                 {
                     case ValidationResultValue.Invalid:
                         item.BackColor = Color.IndianRed;
-                        this.hasValidationErrors = true;
+                        hasValidationErrors = true;
                         break;
                     case ValidationResultValue.Caution:
                         item.BackColor = Color.Yellow;
-                        this.hasValidationErrors = true;
+                        hasValidationErrors = true;
                         break;
                     case ValidationResultValue.CrossDatabaseJoin:
                         item.BackColor = Color.Beige;
-                        this.hasValidationErrors = true;
+                        hasValidationErrors = true;
                         break;
                     case ValidationResultValue.Valid:
                         item.BackColor = Color.White;
@@ -538,56 +536,56 @@ namespace SqlSync.Validate
         {
             if (e.Cancelled == false)
             {
-                this.pnlWarning.Visible = this.hasValidationErrors;
-                this.statStatus.Text = "Complete";
-                this.Cursor = Cursors.Default;
-                this.Invalidate();
+                pnlWarning.Visible = hasValidationErrors;
+                statStatus.Text = "Complete";
+                Cursor = Cursors.Default;
+                Invalidate();
             }
             else
             {
-                this.pnlWarning.Visible = this.hasValidationErrors;
-                this.statStatus.Text = "Cancelled";
-                this.Cursor = Cursors.Default;
-                this.Invalidate();
+                pnlWarning.Visible = hasValidationErrors;
+                statStatus.Text = "Cancelled";
+                Cursor = Cursors.Default;
+                Invalidate();
             }
-            this.btnCancel.Enabled = true;
-            this.btnValidate.Enabled = true;
+            btnCancel.Enabled = true;
+            btnValidate.Enabled = true;
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.btnCancel.Enabled = false;
-            this.bgworker.CancelAsync();
+            btnCancel.Enabled = false;
+            bgworker.CancelAsync();
         }
 
-        private void settingsControl1_ServerChanged(object sender, string serverName,string username, string password, AuthenticationType authType)
+        private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
             Connection.ConnectionData oldConnData = new Connection.ConnectionData();
-            this.connData.Fill(oldConnData);
-            this.Cursor = Cursors.WaitCursor;
+            connData.Fill(oldConnData);
+            Cursor = Cursors.WaitCursor;
 
-            this.connData.SQLServerName = serverName;
+            connData.SQLServerName = serverName;
             if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
             {
-                this.connData.UserId = username;
-                this.connData.Password = password;
+                connData.UserId = username;
+                connData.Password = password;
             }
-            this.connData.AuthenticationType = authType;
-            this.connData.ScriptTimeout = 5;
+            connData.AuthenticationType = authType;
+            connData.ScriptTimeout = 5;
             try
             {
-                DatabaseList dbList = SqlSync.DbInformation.InfoHelper.GetDatabaseList(this.connData);
+                DatabaseList dbList = SqlSync.DbInformation.InfoHelper.GetDatabaseList(connData);
                 //this.LookUpTable_Load(null, EventArgs.Empty);
             }
             catch
             {
                 MessageBox.Show("Error retrieving database list. Is the server running?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                this.connData = oldConnData;
-                this.settingsControl1.Server = oldConnData.SQLServerName;
+                connData = oldConnData;
+                settingsControl1.Server = oldConnData.SQLServerName;
             }
 
 
-            this.Cursor = Cursors.Default;
+            Cursor = Cursors.Default;
         }
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)

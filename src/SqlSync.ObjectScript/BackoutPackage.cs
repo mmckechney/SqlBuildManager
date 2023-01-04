@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
-using System.IO;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Objects;
-using System.ComponentModel;
 using SqlSync.Constants;
 using SqlSync.DbInformation;
-using Microsoft.Extensions.Logging;
+using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Objects;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 namespace SqlSync.ObjectScript
 {
     public class BackoutPackage
@@ -42,8 +42,8 @@ namespace SqlSync.ObjectScript
             SqlBuildFileHelper.InitilizeWorkingDirectory(ref workingDir, ref projectPath, ref projectFileName);
             string message = $"Initialized working directory {workingDir}";
             log.LogDebug(message);
-            if (reportProgress) 
-            { 
+            if (reportProgress)
+            {
                 bg.ReportProgress(-1, "Initialized working directory");
             }
 
@@ -159,7 +159,7 @@ namespace SqlSync.ObjectScript
                                 if (dropNewRoutines)
                                 {
                                     string schema, objName;
-                                    string[] arr = obj.SourceObject.Split(new char[] {'.'});
+                                    string[] arr = obj.SourceObject.Split(new char[] { '.' });
                                     schema = arr[0];
                                     objName = arr[1];
 
@@ -305,7 +305,7 @@ namespace SqlSync.ObjectScript
             //Get object that are also on the target (ie are "existing") -- only these will be updated
             log.LogDebug($"Getting list of objects can be rolled back from {sourceServer}:{sourceDb}");
             List<ObjectUpdates> canUpdate = GetObjectThatCanBeUpdated(initialCanUpdateList, connData, sourceServer, sourceDb);
-            SetBackoutSourceDatabaseAndServer(ref canUpdate,sourceServer,sourceDb);
+            SetBackoutSourceDatabaseAndServer(ref canUpdate, sourceServer, sourceDb);
 
             //Get the scriptable objects that are not found on the target (i.e. are "new") -- these will be dropped
             log.LogDebug($"Getting list of objects can not be rolled back from {sourceServer}:{sourceDb}");
@@ -313,7 +313,7 @@ namespace SqlSync.ObjectScript
 
             //Get the name of the new package
             string backoutPackageName = GetDefaultPackageName(sourceBuildZipFileName);
-          
+
             //Create the package!!
             log.LogDebug($"Creating backout package {backoutPackageName} from source package {sourceBuildZipFileName}");
             success = CreateBackoutPackage(connData, canUpdate, notPresentOnTarget, manualScriptsCanNotUpdate,
@@ -340,7 +340,7 @@ namespace SqlSync.ObjectScript
         /// <returns>Backout package name</returns>
         public static string GetDefaultPackageName(string sourceSbmFullFileName)
         {
-            return Path.Combine(Path.GetDirectoryName(sourceSbmFullFileName) , "Backout_" + Path.GetFileName(sourceSbmFullFileName));
+            return Path.Combine(Path.GetDirectoryName(sourceSbmFullFileName), "Backout_" + Path.GetFileName(sourceSbmFullFileName));
         }
 
         /// <summary>
@@ -352,7 +352,7 @@ namespace SqlSync.ObjectScript
         /// <param name="newServer">The database server name that we are going to check for the presence of these scriptable objects</param>
         /// <param name="newDatabase">The database name that we are going to check for the presence of these scriptable objects</param>
         /// <returns>A List of Objects that are in the master list, but not in the target database (i.e. are "new" objects)</returns>
-        public static List<SqlBuild.Objects.ObjectUpdates> GetObjectsNotPresentTargetDatabase(List<SqlBuild.Objects.ObjectUpdates> masterList, ConnectionData connData, string newServer,string newDatabase)
+        public static List<SqlBuild.Objects.ObjectUpdates> GetObjectsNotPresentTargetDatabase(List<SqlBuild.Objects.ObjectUpdates> masterList, ConnectionData connData, string newServer, string newDatabase)
         {
             List<SqlBuild.Objects.ObjectUpdates> notPresent = new List<SqlBuild.Objects.ObjectUpdates>();
             ConnectionData tmp = new ConnectionData();
@@ -377,7 +377,7 @@ namespace SqlSync.ObjectScript
         public static List<SqlBuild.Objects.ObjectUpdates> GetObjectThatCanBeUpdated(List<SqlBuild.Objects.ObjectUpdates> masterList, ConnectionData connData, string newServer, string newDatabase)
         {
             List<ObjectUpdates> currentTargetCanUpdateList = new List<ObjectUpdates>();
-            List<ObjectUpdates> notPresentOnTarget = BackoutPackage.GetObjectsNotPresentTargetDatabase(masterList,connData,newServer, newDatabase);
+            List<ObjectUpdates> notPresentOnTarget = BackoutPackage.GetObjectsNotPresentTargetDatabase(masterList, connData, newServer, newDatabase);
             if (notPresentOnTarget.Count > 0)
             {
                 var cur = from i in masterList

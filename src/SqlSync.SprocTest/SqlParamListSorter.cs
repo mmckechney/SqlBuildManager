@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using SqlSync.SprocTest.Configuration;
 using System.Data.SqlClient;
 namespace SqlSync.SprocTest
 {
@@ -20,10 +18,10 @@ namespace SqlSync.SprocTest
 
             if (x.Count > y.Count)
                 return 1;
-            
+
             if (x.Count < y.Count)
                 return -1;
-            
+
             if (x.Count == y.Count)
                 return 0;
 

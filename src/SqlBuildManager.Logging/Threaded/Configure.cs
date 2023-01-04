@@ -1,9 +1,4 @@
-﻿
-using System;
-using System.IO;
-using System.Reflection;
-using SqlBuildManager.Logging.Threaded;
-using System.Threading;
+﻿using System.Threading;
 namespace SqlBuildManager.Logging.Threaded
 {
     public class Configure
@@ -23,6 +18,6 @@ namespace SqlBuildManager.Logging.Threaded
                 Thread.Sleep(3000);
             }
         }
-        
+
     }
 }

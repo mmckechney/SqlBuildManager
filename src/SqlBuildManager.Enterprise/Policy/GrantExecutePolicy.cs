@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
-    class GrantExecutePolicy : p.IScriptPolicy    
+    class GrantExecutePolicy : p.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
@@ -31,8 +30,8 @@ namespace SqlBuildManager.Enterprise.Policy
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
         {
@@ -95,7 +94,7 @@ namespace SqlBuildManager.Enterprise.Policy
             catch (Exception exe)
             {
                 message = "Error processing script policy. See application log file for details";
-                log.LogError(exe, message);;
+                log.LogError(exe, message); ;
                 return false;
             }
         }

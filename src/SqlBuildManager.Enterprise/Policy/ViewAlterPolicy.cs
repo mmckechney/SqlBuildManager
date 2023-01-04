@@ -1,10 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
+using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class ViewAlterPolicy : p.IScriptPolicy
@@ -29,8 +26,8 @@ namespace SqlBuildManager.Enterprise.Policy
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
         {

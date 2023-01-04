@@ -1,9 +1,9 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for CommentHeaderPolicyTest and is intended
     ///to contain all CommentHeaderPolicyTest Unit Tests
@@ -150,7 +150,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
 	            **		Change History
 	            *******************************************************************************
 	            **		Date:		Author:		Description:
-	            **		" + System.DateTime.Now.ToString("MM/dd/yyyy")	+@"   Me		    Testing for today
+	            **		" + System.DateTime.Now.ToString("MM/dd/yyyy") + @"   Me		    Testing for today
 	            **		
 	            *******************************************************************************/
 
@@ -234,7 +234,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
                 DELETE FROM dbo.AccrualRules
                 WHERE AccrualTemplateDetailID = @AccrualTEmplateDetailID";
             string message;
-            string messageExpected = "No recent comment found (last entry @ "+System.DateTime.Now.AddDays(-11).ToString("MM/dd/yyyy")+"). Please add a dated comment in mm/dd/yyyy format.";
+            string messageExpected = "No recent comment found (last entry @ " + System.DateTime.Now.AddDays(-11).ToString("MM/dd/yyyy") + "). Please add a dated comment in mm/dd/yyyy format.";
             bool expected = false;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);

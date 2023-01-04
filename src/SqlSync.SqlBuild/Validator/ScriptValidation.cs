@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace SqlSync.SqlBuild.Validator
+﻿namespace SqlSync.SqlBuild.Validator
 {
     public class ScriptSettingValidation
     {
@@ -22,13 +17,13 @@ namespace SqlSync.SqlBuild.Validator
                 return ScriptTimeoutValidationResult.NonIntegerValue;
             }
             return ScriptTimeoutValidationResult.Ok;
-          
+
         }
     }
 
     public enum ScriptTimeoutValidationResult
     {
-        Ok, 
+        Ok,
         TimeOutTooSmall,
         NonIntegerValue
 

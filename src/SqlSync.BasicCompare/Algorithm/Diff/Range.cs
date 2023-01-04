@@ -2,7 +2,6 @@ namespace Algorithm.Diff
 {
     using System;
     using System.Collections;
-    using System.Reflection;
 
     public class Range : IList, ICollection, IEnumerable
     {
@@ -20,7 +19,7 @@ namespace Algorithm.Diff
 
         private void Check()
         {
-            if ((this.count > 0) && (this.list == null))
+            if ((count > 0) && (list == null))
             {
                 throw new InvalidOperationException("This range does not refer to a list with data.");
             }
@@ -28,12 +27,12 @@ namespace Algorithm.Diff
 
         public bool Contains(object obj)
         {
-            return (this.IndexOf(obj) != -1);
+            return (IndexOf(obj) != -1);
         }
 
         public int IndexOf(object obj)
         {
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 if (obj.Equals(this[i]))
                 {
@@ -45,20 +44,20 @@ namespace Algorithm.Diff
 
         void ICollection.CopyTo(Array array, int index)
         {
-            this.Check();
-            for (int i = 0; i < this.Count; i++)
+            Check();
+            for (int i = 0; i < Count; i++)
             {
-                array.SetValue(this[i], (int) (i + index));
+                array.SetValue(this[i], (int)(i + index));
             }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            if ((this.count == 0) && (this.list == null))
+            if ((count == 0) && (list == null))
             {
                 return EmptyList.GetEnumerator();
             }
-            this.Check();
+            Check();
             return new Enumer(this);
         }
 
@@ -91,7 +90,7 @@ namespace Algorithm.Diff
         {
             get
             {
-                return this.count;
+                return count;
             }
         }
 
@@ -99,7 +98,7 @@ namespace Algorithm.Diff
         {
             get
             {
-                return ((this.start + this.count) - 1);
+                return ((start + count) - 1);
             }
         }
 
@@ -107,12 +106,12 @@ namespace Algorithm.Diff
         {
             get
             {
-                this.Check();
-                if ((index < 0) || (index >= this.count))
+                Check();
+                if ((index < 0) || (index >= count))
                 {
                     throw new ArgumentException("index");
                 }
-                return this.list[index + this.start];
+                return list[index + start];
             }
         }
 
@@ -120,7 +119,7 @@ namespace Algorithm.Diff
         {
             get
             {
-                return this.start;
+                return start;
             }
         }
 
@@ -180,20 +179,20 @@ namespace Algorithm.Diff
 
             public bool MoveNext()
             {
-                this.index++;
-                return (this.index < this.list.Count);
+                index++;
+                return (index < list.Count);
             }
 
             public void Reset()
             {
-                this.index = -1;
+                index = -1;
             }
 
             public object Current
             {
                 get
                 {
-                    return this.list[this.index];
+                    return list[index];
                 }
             }
         }

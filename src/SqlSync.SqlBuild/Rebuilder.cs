@@ -1,12 +1,11 @@
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using SqlSync.DbInformation;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using SqlSync.Connection;
-using Microsoft.Data.SqlClient;
 using System.Data;
 using System.IO;
-using SqlSync.DbInformation;
-using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
     public class Rebuilder
@@ -27,7 +26,7 @@ namespace SqlSync.SqlBuild
         internal static List<RebuilderData> RetreiveBuildData(ConnectionData dbConnData, string buildFileHash,
                                                               DateTime commitDate)
         {
-;
+            ;
             string sql =
                 @"SELECT ScriptFileName, ScriptId, Sequence,ScriptText, '' as [database], Tag FROM SqlBuild_Logging 
                     WHERE BuildProjectHash = @BuildFileHash AND CommitDate = @CommitDate
@@ -70,14 +69,14 @@ namespace SqlSync.SqlBuild
                     ORDER BY Sequence ";
 
             List<RebuilderData> data = new List<RebuilderData>();
-            string[] dbs = this.commitData.Database.Split(';');
+            string[] dbs = commitData.Database.Split(';');
             for (int i = 0; i < dbs.Length; i++)
             {
-                this.connData.DatabaseName = dbs[i];
-                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(this.connData);
+                connData.DatabaseName = dbs[i];
+                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
                 SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@BuildFileName", this.commitData.BuildFileName);
-                cmd.Parameters.AddWithValue("@CommitDate", this.commitData.CommitDate);
+                cmd.Parameters.AddWithValue("@BuildFileName", commitData.BuildFileName);
+                cmd.Parameters.AddWithValue("@CommitDate", commitData.CommitDate);
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                 {
@@ -95,10 +94,10 @@ namespace SqlSync.SqlBuild
                     conn.Close();
                 }
             }
-            this.connData.DatabaseName = startinDb;
+            connData.DatabaseName = startinDb;
 
             return data;
-            
+
         }
         internal static bool RebuildBuildManagerFile(int defaultTimeout, string buildFileName, List<RebuilderData> rebuildData)
         {
@@ -107,10 +106,10 @@ namespace SqlSync.SqlBuild
             try
             {
                 string projFileName = Path.Combine(tempPath, SqlSync.SqlBuild.XmlFileNames.MainProjectFile);
-                
+
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
-                    File.WriteAllText( Path.Combine(tempPath , rebuildData[i].ScriptFileName), rebuildData[i].ScriptText);
+                    File.WriteAllText(Path.Combine(tempPath, rebuildData[i].ScriptFileName), rebuildData[i].ScriptText);
                 }
 
                 SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
@@ -121,7 +120,7 @@ namespace SqlSync.SqlBuild
                     return false;
                 }
 
-                if(!ZipHelper.UnpackZipPackage(tempPath, buildFileName,false))
+                if (!ZipHelper.UnpackZipPackage(tempPath, buildFileName, false))
                 {
                     return false;
                 }
@@ -159,59 +158,59 @@ namespace SqlSync.SqlBuild
         public bool RebuildBuildManagerFile(int defaultTimeout)
         {
             List<RebuilderData> rebuildData = RetreiveBuildData();
-            return RebuildBuildManagerFile(defaultTimeout, this.newBuildFileName, rebuildData);
+            return RebuildBuildManagerFile(defaultTimeout, newBuildFileName, rebuildData);
         }
 
         #region .: Discovery Methods :.
         public static List<CommittedBuildData> GetCommitedBuildList(ConnectionData connData, DatabaseList dbList)
         {
-           
-                string startingDb = connData.DatabaseName;
-                string sql = @"SELECT BuildFileName, count(ScriptFileName) as ScriptCount, commitDate, '' as [database] 
+
+            string startingDb = connData.DatabaseName;
+            string sql = @"SELECT BuildFileName, count(ScriptFileName) as ScriptCount, commitDate, '' as [database] 
                     FROM SqlBuild_Logging GROUP BY BuildFileName,commitDate ORDER BY commitDate DESC";
 
-                List<CommittedBuildData> data = new List<CommittedBuildData>();
-                for (int i = 0; i < dbList.Count; i++)
-                {
-                    if (dbList[i].IsManuallyEntered)
-                        continue;
+            List<CommittedBuildData> data = new List<CommittedBuildData>();
+            for (int i = 0; i < dbList.Count; i++)
+            {
+                if (dbList[i].IsManuallyEntered)
+                    continue;
 
-                    connData.DatabaseName = dbList[i].DatabaseName;
-                    SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
-                    try
+                connData.DatabaseName = dbList[i].DatabaseName;
+                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+                try
+                {
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                     {
-                        SqlCommand cmd = new SqlCommand(sql, conn);
-                        conn.Open();
-                        using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+                        bool filled;
+                        while (!reader.IsClosed)
                         {
-                            bool filled;
-                            while (!reader.IsClosed)
+                            CommittedBuildData dat = new CommittedBuildData();
+                            filled = dat.Fill(reader, false);
+                            if (filled)
                             {
-                                CommittedBuildData dat = new CommittedBuildData();
-                                filled = dat.Fill(reader, false);
-                                if (filled)
-                                {
-                                    dat.Database = dbList[i].DatabaseName;
-                                    data.Add(dat);
-                                }
+                                dat.Database = dbList[i].DatabaseName;
+                                data.Add(dat);
                             }
-                            conn.Close();
                         }
-                    }
-                    catch (SqlException)
-                    {
-                        //ignore
-                    }
-                    catch (Exception)
-                    {
-                        return new List<CommittedBuildData>();
-                    }
-                    finally
-                    {
-                        connData.DatabaseName = startingDb;
+                        conn.Close();
                     }
                 }
-                return MergeServerResults(data); ;
+                catch (SqlException)
+                {
+                    //ignore
+                }
+                catch (Exception)
+                {
+                    return new List<CommittedBuildData>();
+                }
+                finally
+                {
+                    connData.DatabaseName = startingDb;
+                }
+            }
+            return MergeServerResults(data); ;
 
         }
         public static List<CommittedBuildData> GetCommitedBuildList(ConnectionData connData, string databaseName)

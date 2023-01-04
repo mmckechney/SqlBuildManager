@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using SqlBuildManager.ScriptHandling;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using SqlBuildManager.ScriptHandling;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
-    class QualifiedNamesPolicy : p.IScriptPolicy  
+    class QualifiedNamesPolicy : p.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
@@ -31,8 +30,8 @@ namespace SqlBuildManager.Enterprise.Policy
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
         {
@@ -93,7 +92,7 @@ namespace SqlBuildManager.Enterprise.Policy
                             string regString = "(WITH *" + sub.Trim().Replace(")", "\\)").Replace("(", "\\(") + @"\s*\()";
                             try
                             {
-                               
+
                                 Regex regCTE = new Regex(regString); //Check for a Common Table Entity (CTE) declaration for this item. If it is declared as a CTE, don't fail the check, otherwise, fail it.
 
                                 if (regCTE.Matches(script).Count == 0)
@@ -111,7 +110,7 @@ namespace SqlBuildManager.Enterprise.Policy
                                 int line = PolicyHelper.GetLineNumber(rawScript, start);
                                 log.LogWarning(exe, $"Error validating QualifiedNamesPolicy. Issue on line {line.ToString()}. Problem with generated RegularExpression:  {regString}");
                                 message = "Error running Qualified Named Policy. This script will need to be manually checked. (See log file for details)";
-                                    return false;
+                                return false;
                             }
                         }
 

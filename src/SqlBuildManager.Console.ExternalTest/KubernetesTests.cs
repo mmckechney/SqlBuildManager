@@ -26,10 +26,10 @@ namespace SqlBuildManager.Console.ExternalTest
         public void ConfigureProcessInfo()
         {
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<KubernetesTests>("SqlBuildManager.Console.log", @"C:\temp");
-            this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+            settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
 
-            System.Console.SetOut(new StringWriter(this.ConsoleOutput));    // Associate StringBuilder with StdOut
-            this.ConsoleOutput.Clear();    // Clear text from any previous text runs
+            System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
+            ConsoleOutput.Clear();    // Clear text from any previous text runs
         }
         [TestCleanup]
         public void CleanUp()
@@ -69,7 +69,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 {
                 "k8s", "run",
                 "--settingsfile", settingsFile,
-                "--settingsfilekey", this.settingsFileKeyPath,
+                "--settingsfilekey", settingsFileKeyPath,
                 "--jobname", jobName,
                 "--override", overrideFile,
                 "--packagename", sbmFileName,
@@ -82,17 +82,17 @@ namespace SqlBuildManager.Console.ExternalTest
                 var val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 result = val.Result;
-                
+
                 Assert.AreEqual(0, result);
 
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -129,7 +129,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 {
                 "k8s", "run",
                 "--settingsfile", settingsFile,
-                "--settingsfilekey", this.settingsFileKeyPath,
+                "--settingsfilekey", settingsFileKeyPath,
                 "--jobname", jobName,
                 "--override", overrideFile,
                 "--packagename", sbmFileName,
@@ -148,13 +148,13 @@ namespace SqlBuildManager.Console.ExternalTest
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {(dbCount -2).ToString().PadLeft(5, '0')}"));
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Errors:        {(2).ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {(dbCount - 2).ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Errors:        {(2).ToString().PadLeft(5, '0')}"));
 
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -192,7 +192,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 {
                 "k8s", "run",
                 "--settingsfile", settingsFile,
-                "--settingsfilekey", this.settingsFileKeyPath,
+                "--settingsfilekey", settingsFileKeyPath,
                 "--jobname", jobName,
                 "--override", overrideFile,
                 "--packagename", sbmFileName,
@@ -211,11 +211,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -230,7 +230,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 var prc = new ProcessHelper();
 
-                var settingsFileKeyString = File.ReadAllText(this.settingsFileKeyPath);
+                var settingsFileKeyString = File.ReadAllText(settingsFileKeyPath);
                 var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
                 if (!File.Exists(sbmFileName))
                 {
@@ -258,7 +258,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 //
                 var cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile) };
-                cmdLine.SettingsFileKey = this.settingsFileKeyPath;
+                cmdLine.SettingsFileKey = settingsFileKeyPath;
                 (bool decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
                 cmdLine.AuthenticationType = SqlSync.Connection.AuthenticationType.Password;
                 if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
@@ -281,7 +281,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 {
                 "k8s", "run",
                 "--settingsfile", settingsFile,
-                "--settingsfilekey", this.settingsFileKeyPath,
+                "--settingsfilekey", settingsFileKeyPath,
                 "--jobname", jobName,
                 "--override", overrideFile,
                 "--platinumdacpac", dacpacName,
@@ -294,20 +294,20 @@ namespace SqlBuildManager.Console.ExternalTest
                 var val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 var result = val.Result;
-                
+
                 Assert.AreEqual(0, result);
 
 
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
-            
+
 
         }
 
@@ -321,7 +321,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 var prc = new ProcessHelper();
                 settingsFile = Path.GetFullPath(settingsFile);
-                var cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile), SettingsFileKey = this.settingsFileKeyPath };
+                var cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile), SettingsFileKey = settingsFileKeyPath };
                 (var x, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
                 if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
                 {
@@ -442,11 +442,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.IsTrue(logFileContents.Contains("DACPAC created") || logFileContents.Contains("Dacpac Databases In Sync"), "A DACPAC should have been used for the build");
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
         }
 
@@ -461,7 +461,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 var prc = new ProcessHelper();
                 settingsFile = Path.GetFullPath(settingsFile);
-                var cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile), SettingsFileKey = this.settingsFileKeyPath };
+                var cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile), SettingsFileKey = settingsFileKeyPath };
                 (var x, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
                 if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
                 {
@@ -586,7 +586,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.AreEqual(0, result);
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"), "Should have committed to {db");
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"), "Should have committed to {db");
 
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
                 Assert.IsTrue(logFileContents.Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
@@ -594,7 +594,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
 

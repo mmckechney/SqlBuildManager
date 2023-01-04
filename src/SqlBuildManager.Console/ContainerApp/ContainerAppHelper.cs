@@ -44,7 +44,7 @@ namespace SqlBuildManager.Console.ContainerApp
                 else
                 {
                     log.LogError("Container App deployment failed. Unable to proceed.");
-                }    
+                }
                 return success;
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace SqlBuildManager.Console.ContainerApp
             }
         }
 
-    
+
 
         private static string GetParametersString(CommandLineArgs cmdLine)
         {
@@ -78,13 +78,14 @@ namespace SqlBuildManager.Console.ContainerApp
                 parms.Password = new Password() { Value = cmdLine.AuthenticationArgs.Password };
                 parms.StorageAccountKey = new StorageAccountKey() { Value = cmdLine.ConnectionArgs.StorageAccountKey };
                 parms.Username = new Username() { Value = cmdLine.AuthenticationArgs.UserName };
-                
-            }else
+
+            }
+            else
             {
                 parms.KeyVaultName = new KeyVaultName() { Value = cmdLine.ConnectionArgs.KeyVaultName };
             }
 
-            if(!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
+            if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
             {
                 parms.IdentityName = new IdentityName() { Value = cmdLine.IdentityArgs.IdentityName };
             }
@@ -123,7 +124,7 @@ namespace SqlBuildManager.Console.ContainerApp
             {
                 WriteIndented = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-                
+
             });
             return jsonText;
 
@@ -146,7 +147,7 @@ namespace SqlBuildManager.Console.ContainerApp
             var sb = new StringBuilder("--environment-variables ");
             sb.Append($"Sbm_JobName=\"{cmdLine.JobName}\",");
             sb.Append($"Sbm_PackageName=\"{Path.GetFileName(cmdLine.BuildFileName)}\",");
-           // sb.Append($"Sbm_DacpacName=,");
+            // sb.Append($"Sbm_DacpacName=,");
             sb.Append($"Sbm_Concurrency=\"{cmdLine.Concurrency.ToString()}\",");
             sb.Append($"Sbm_ConcurrencyType=\"{cmdLine.ConcurrencyType.ToString()}\",");
             sb.Append($"Sbm_StorageAccountKey=secretref:storageaccountkey,");
@@ -168,7 +169,7 @@ namespace SqlBuildManager.Console.ContainerApp
             string template;
 
             //Pick the proper template
-            if(!cmdLine.ContainerAppArgs.EnvironmentVariablesOnly)
+            if (!cmdLine.ContainerAppArgs.EnvironmentVariablesOnly)
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
                 {
@@ -181,17 +182,18 @@ namespace SqlBuildManager.Console.ContainerApp
             }
             else
             {
-                template =  File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_env_arm_template.json"));
+                template = File.ReadAllText(Path.Combine(pathToTemplates, "containerapp_env_arm_template.json"));
             }
 
             //Add Container Registry information if provided
-            if(!string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
                 {
                     var registrySnippit = File.ReadAllText(Path.Combine(pathToTemplates, "registries-pw.json"));
                     template = template.Replace("\"registriesplaceholder\"", registrySnippit);
-                }else
+                }
+                else
                 {
                     var registrySnippit = File.ReadAllText(Path.Combine(pathToTemplates, "registries-identity.json"));
                     template = template.Replace("\"registriesplaceholder\"", registrySnippit);
@@ -203,9 +205,9 @@ namespace SqlBuildManager.Console.ContainerApp
             }
 
             return template;
-        }    
-           
-        
+        }
+
+
 
         internal static void SetEnvVariablesForTest(CommandLineArgs cmdLine)
         {

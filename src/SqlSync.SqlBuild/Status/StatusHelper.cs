@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+﻿using SqlSync.Connection;
+using SqlSync.Constants;
 using SqlSync.DbInformation;
 using SqlSync.DbInformation.ChangeDates;
-using SqlSync.Connection;
-using SqlSync.Constants;
+using System;
+using System.Collections.Generic;
+using System.IO;
 namespace SqlSync.SqlBuild.Status
 {
     public class StatusHelper
     {
-        public static ScriptStatusType DetermineScriptRunStatus(SqlSyncBuildData.ScriptRow row, ConnectionData connData, string projectFilePath, bool checkForChanges, List<DatabaseOverride> overrides,  out DateTime commitDate, out DateTime serverChangeDate)
+        public static ScriptStatusType DetermineScriptRunStatus(SqlSyncBuildData.ScriptRow row, ConnectionData connData, string projectFilePath, bool checkForChanges, List<DatabaseOverride> overrides, out DateTime commitDate, out DateTime serverChangeDate)
         {
             string targetDatabase = ConnectionHelper.GetTargetDatabase(row.Database, overrides);
 
@@ -114,7 +113,7 @@ namespace SqlSync.SqlBuild.Status
                                 return ScriptStatusType.ServerChange; // magnifying glass
 
                             //if the serverChangeDate here is MinValue, it means that the routine is not in this DB, therefore, we need to set as not run.
-                            if (serverChangeDate == DateTime.MinValue) 
+                            if (serverChangeDate == DateTime.MinValue)
                                 return ScriptStatusType.NotRun; //"gray server icon"
                         }
                         return ScriptStatusType.UpToDate; //green "OK"

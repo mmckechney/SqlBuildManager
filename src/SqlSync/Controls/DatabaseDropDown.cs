@@ -1,9 +1,4 @@
-using System;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Diagnostics;
 using SqlSync.DbInformation;
-using System.Text;
 
 namespace SqlSync
 {
@@ -18,17 +13,17 @@ namespace SqlSync
             set { databaseList = value; }
         }
 
-        public DatabaseDropDown() 
+        public DatabaseDropDown()
         {
             //this.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
         }
         public void SetData(DatabaseList databaseList)
         {
-            this.SetData(databaseList, "");
+            SetData(databaseList, "");
         }
         public void SetData(DatabaseList databaseList, string inputDatabase)
         {
-            this.Items.Clear();
+            Items.Clear();
             this.databaseList = databaseList;
             databaseList.Sort(new DatabaseListComparer());
             this.inputDatabase = inputDatabase;
@@ -37,12 +32,12 @@ namespace SqlSync
             {
 
                 if (databaseList[i].IsManuallyEntered)
-                    this.Items.Add(databaseList[i].DatabaseName + "*");
+                    Items.Add(databaseList[i].DatabaseName + "*");
                 else
-                    this.Items.Add(databaseList[i].DatabaseName);
+                    Items.Add(databaseList[i].DatabaseName);
 
-                if (inputDatabase != null && databaseList[i].DatabaseName.ToLower().Trim() == inputDatabase.ToLower().Trim()) 
-                    this.SelectedIndex = i;
+                if (inputDatabase != null && databaseList[i].DatabaseName.ToLower().Trim() == inputDatabase.ToLower().Trim())
+                    SelectedIndex = i;
             }
 
         }
@@ -50,29 +45,29 @@ namespace SqlSync
         {
             get
             {
-                if (this.SelectedItem == null)
+                if (SelectedItem == null)
                     return string.Empty;
 
-                if (this.SelectedItem.ToString().EndsWith("*"))
-                    return this.SelectedItem.ToString().Substring(0, this.SelectedItem.ToString().Length - 1);
+                if (SelectedItem.ToString().EndsWith("*"))
+                    return SelectedItem.ToString().Substring(0, SelectedItem.ToString().Length - 1);
 
-                return this.SelectedItem.ToString();
+                return SelectedItem.ToString();
 
             }
             set
             {
                 string val;
-                for (int i = 0; i < this.Items.Count; i++)
+                for (int i = 0; i < Items.Count; i++)
                 {
 
-                    if (this.Items[i].ToString().Trim().EndsWith("*"))
-                        val = this.Items[i].ToString().Trim().Substring(0, this.Items[i].ToString().Length - 1).ToLower();
+                    if (Items[i].ToString().Trim().EndsWith("*"))
+                        val = Items[i].ToString().Trim().Substring(0, Items[i].ToString().Length - 1).ToLower();
                     else
-                        val = this.Items[i].ToString().ToLower();
+                        val = Items[i].ToString().ToLower();
 
                     if (value.Trim().ToLower() == val)
                     {
-                        this.SelectedIndex = i;
+                        SelectedIndex = i;
                         break;
                     }
 

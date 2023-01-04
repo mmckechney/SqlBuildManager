@@ -35,7 +35,7 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
         #region Additional test attributes
-        
+
         // 
         //You can use the following additional attributes as you write your tests:
         //
@@ -76,7 +76,7 @@ namespace SqlBuildManager.Console.UnitTest
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
             string[] errorMessages = null;
-            int expected = -99; 
+            int expected = -99;
             int actual;
             actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
             Assert.AreEqual(0, errorMessages.Length);
@@ -164,7 +164,7 @@ namespace SqlBuildManager.Console.UnitTest
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].LastIndexOf("Missing Build file. The build file specified:") > -1);
             Assert.AreEqual(expected, actual);
-            
+
         }
 
         /// <summary>
@@ -173,8 +173,8 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void ValidateCommonCommandLineArgsTest_BadOverrideSetting()
         {
-            if(!File.Exists(@"C:\temp\multicfg.BadExt"))
-                File.WriteAllText(@"C:\temp\multicfg.BadExt","hi");
+            if (!File.Exists(@"C:\temp\multicfg.BadExt"))
+                File.WriteAllText(@"C:\temp\multicfg.BadExt", "hi");
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.RootLoggingPath = @"C\temp";
             cmdLine.Transactional = true;
@@ -186,7 +186,7 @@ namespace SqlBuildManager.Console.UnitTest
             int expected = (int)ExecutionReturn.InvalidOverrideFlag;
             int actual;
             actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
-            
+
             Assert.AreEqual(2, errorMessages.Length);
             Assert.IsTrue(errorMessages[0].LastIndexOf("The '--override' setting file value must be") > -1);
             Assert.AreEqual(expected, actual);
@@ -200,7 +200,7 @@ namespace SqlBuildManager.Console.UnitTest
                 catch
                 { }
             }
-                
+
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace SqlBuildManager.Console.UnitTest
             Assert.AreEqual(expected, actual);
         }
 
-         /// <summary>
+        /// <summary>
         ///A test for ValidateCommonCommandLineArgs
         ///</summary>
         [TestMethod()]
@@ -249,7 +249,8 @@ namespace SqlBuildManager.Console.UnitTest
                 actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
                 Assert.AreEqual(0, errorMessages.Length);
                 Assert.AreEqual(expected, actual);
-            }finally
+            }
+            finally
             {
                 if (File.Exists(multFile)) File.Delete(multFile);
             }
@@ -264,7 +265,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateAndLoadMultiDbDataTest_MissingMultiDbFile()
         {
             string multiDbOverrideSettingFileName = @"C:\temp\test_not_here.multidb";
-            MultiDbData multiData = null; 
+            MultiDbData multiData = null;
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.NullMultiDbConfig;
             int actual;
@@ -314,7 +315,7 @@ namespace SqlBuildManager.Console.UnitTest
 
         }
 
-         /// <summary>
+        /// <summary>
         ///A test for ValidateAndLoadMultiDbData
         ///</summary>
         [TestMethod()]
@@ -322,7 +323,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             string cfgContents = @"Server1\Instance_1:Default,MyDatabaseOverride";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
-            File.WriteAllText(multiDbOverrideSettingFileName,cfgContents);
+            File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
             MultiDbData multiData = null;
             string[] errorMessages = null;
             int expected = 0;
@@ -362,7 +363,7 @@ namespace SqlBuildManager.Console.UnitTest
 
         //}
 
-        
+
         #endregion
 
 

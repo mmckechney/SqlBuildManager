@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using SqlSync.ObjectScript;
-using SqlSync.Connection;
+﻿using SqlSync.Connection;
 namespace SqlSync.ObjectScript.Hash
 {
     public class HashCollectionRunner
@@ -27,33 +23,33 @@ namespace SqlSync.ObjectScript.Hash
         {
             this.databaseName = databaseName;
             this.serverName = serverName;
-         }
+        }
 
         public void CollectHashes()
         {
-            if(this.HashCollectionRunnerUpdate != null)
-               HashCollectionRunnerUpdate(this,new HashCollectionRunnerUpdateEventArgs(this.serverName,this.databaseName,"Starting"));
+            if (HashCollectionRunnerUpdate != null)
+                HashCollectionRunnerUpdate(this, new HashCollectionRunnerUpdateEventArgs(serverName, databaseName, "Starting"));
 
             ConnectionData connData = new ConnectionData(serverName, databaseName);
             ObjectScriptHelper helper = new ObjectScriptHelper(connData);
             helper.HashScriptingEvent += new ObjectScriptHelper.HashScriptingEventHandler(helper_HashScriptingEvent);
-            this.hashData = helper.GetDatabaseObjectHashes();
+            hashData = helper.GetDatabaseObjectHashes();
             if (hashData != null)
             {
-                this.hashData.IsBaseLine = isBaseLine;
+                hashData.IsBaseLine = isBaseLine;
             }
             else
             {
                 hashData = new ObjectScriptHashData();
             }
-            this.hashData.Database = this.databaseName;
-            this.hashData.Server = this.serverName;
+            hashData.Database = databaseName;
+            hashData.Server = serverName;
         }
 
         void helper_HashScriptingEvent(object sender, HashScriptingEventArgs e)
         {
-            if (this.HashCollectionRunnerUpdate != null)
-                HashCollectionRunnerUpdate(this, new HashCollectionRunnerUpdateEventArgs(this.serverName, this.databaseName, e.Message));
+            if (HashCollectionRunnerUpdate != null)
+                HashCollectionRunnerUpdate(this, new HashCollectionRunnerUpdateEventArgs(serverName, databaseName, e.Message));
 
         }
         public event HashCollectionRunnerUpdateEventHandler HashCollectionRunnerUpdate;
@@ -66,9 +62,9 @@ namespace SqlSync.ObjectScript.Hash
         public readonly string Message;
         public HashCollectionRunnerUpdateEventArgs(string server, string database, string message)
         {
-            this.Server = server;
-            this.Database = database;
-            this.Message = message;
+            Server = server;
+            Database = database;
+            Message = message;
         }
     }
 }

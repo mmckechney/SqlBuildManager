@@ -1,11 +1,10 @@
-﻿using SqlBuildManager.Enterprise.Feature;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlBuildManager.Enterprise;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Feature;
 using System.Collections.Generic;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for FeatureAccessHelperTest and is intended
     ///to contain all FeatureAccessHelperTest Unit Tests
@@ -15,7 +14,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
     {
 
 
-       
+
         /// <summary>
         ///A test for IsFeatureEnabled
         ///</summary>
@@ -25,7 +24,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string featureKey = string.Empty;
             string loginId = "TestId";
             FeatureAccess[] accessCfg = new FeatureAccess[0];
-            bool expected = false; 
+            bool expected = false;
             bool actual;
             actual = FeatureAccessHelper.IsFeatureEnabled(featureKey, loginId, new List<string>(), accessCfg);
             Assert.AreEqual(expected, actual);
@@ -88,7 +87,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             FeatureAccess cfg = new FeatureAccess();
             cfg.FeatureId = featureKey;
             cfg.Enabled = true;
-            FeatureAccess[] accessCfg = new FeatureAccess[] {cfg };
+            FeatureAccess[] accessCfg = new FeatureAccess[] { cfg };
 
             bool expected = true;
             bool actual;
@@ -162,7 +161,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
 
             bool expected = false;
             bool actual;
-            actual = FeatureAccessHelper.IsFeatureEnabled(featureKey, loginId,adGroups , accessCfg);
+            actual = FeatureAccessHelper.IsFeatureEnabled(featureKey, loginId, adGroups, accessCfg);
             Assert.AreEqual(expected, actual);
         }
 

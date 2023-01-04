@@ -1,14 +1,10 @@
+using SqlSync.Connection;
+using SqlSync.DbInformation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using SqlSync.SqlBuild;
-using SqlSync.Connection;
-using SqlSync.DbInformation;
 using System.IO;
+using System.Windows.Forms;
 namespace SqlSync.SqlBuild
 {
     public partial class RebuildForm : Form
@@ -19,7 +15,7 @@ namespace SqlSync.SqlBuild
         private DatabaseList dbList;
         public RebuildForm(Connection.ConnectionData connData, DatabaseList databaseList)
         {
-            this.dbList = databaseList;
+            dbList = databaseList;
             this.connData = connData;
             InitializeComponent();
             ddDatabases.Items.AddRange(databaseList.ToArray());
@@ -27,76 +23,76 @@ namespace SqlSync.SqlBuild
 
         private void RebuildForm_Load(object sender, EventArgs e)
         {
-            this.settingsControl1.Server = this.connData.SQLServerName;
-            this.Show();
+            settingsControl1.Server = connData.SQLServerName;
+            Show();
 
             bgWorker.RunWorkerAsync();
-            
+
         }
 
         private void changeSqlServerConnectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-			ConnectionForm frmConnect = new ConnectionForm("Build File Reconstructor");
-			DialogResult result = frmConnect.ShowDialog();
-			if(result == DialogResult.OK)
-			{
-                this.connData = frmConnect.SqlConnection;
-				this.settingsControl1.Server = this.connData.SQLServerName;
+            ConnectionForm frmConnect = new ConnectionForm("Build File Reconstructor");
+            DialogResult result = frmConnect.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                connData = frmConnect.SqlConnection;
+                settingsControl1.Server = connData.SQLServerName;
 
-                this.dbList = frmConnect.DatabaseList;
+                dbList = frmConnect.DatabaseList;
                 ddDatabases.Items.Clear();
                 ddDatabases.Items.AddRange(dbList.ToArray());
 
                 //bgWorker.RunWorkerAsync();
 
-			}
+            }
         }
 
         private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
             Connection.ConnectionData oldConnData = new Connection.ConnectionData();
-            this.connData.Fill(oldConnData);
-            this.Cursor = Cursors.WaitCursor;
+            connData.Fill(oldConnData);
+            Cursor = Cursors.WaitCursor;
 
-            this.connData.SQLServerName = serverName;
+            connData.SQLServerName = serverName;
             if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
             {
-                this.connData.UserId = username;
-                this.connData.Password = password;
+                connData.UserId = username;
+                connData.Password = password;
             }
-            this.connData.AuthenticationType = authType;
-            this.connData.ScriptTimeout = 5;
+            connData.AuthenticationType = authType;
+            connData.ScriptTimeout = 5;
 
             try
             {
-                dbList = SqlSync.DbInformation.InfoHelper.GetDatabaseList(this.connData);
+                dbList = SqlSync.DbInformation.InfoHelper.GetDatabaseList(connData);
 
                 ddDatabases.Items.Clear();
                 ddDatabases.Items.AddRange(dbList.ToArray());
 
-               // bgWorker.RunWorkerAsync();
+                // bgWorker.RunWorkerAsync();
             }
             catch
             {
                 MessageBox.Show("Error retrieving database list. Is the server running?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                this.connData = oldConnData;
-                this.settingsControl1.Server = oldConnData.SQLServerName;
+                connData = oldConnData;
+                settingsControl1.Server = oldConnData.SQLServerName;
             }
-            this.Cursor = Cursors.Default;
+            Cursor = Cursors.Default;
         }
 
         private void rebuildFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (lstBuildFiles.SelectedItems.Count == 0)
                 return;
-            
+
             CommittedBuildData dat = (CommittedBuildData)lstBuildFiles.SelectedItems[0].Tag;
 
             openFileDialog1.FileName = Path.GetFileNameWithoutExtension(dat.BuildFileName) + ".sbm";
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                this.Cursor = Cursors.WaitCursor;
-                Rebuilder blrd = new Rebuilder(this.connData, dat,openFileDialog1.FileName);
+                Cursor = Cursors.WaitCursor;
+                Rebuilder blrd = new Rebuilder(connData, dat, openFileDialog1.FileName);
                 if (blrd.RebuildBuildManagerFile(SqlSync.Properties.Settings.Default.DefaultMinimumScriptTimeout))
                 {
                     if (DialogResult.Yes == MessageBox.Show("Reconstruction Complete. Open New Build File?", "Finished", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
@@ -108,24 +104,25 @@ namespace SqlSync.SqlBuild
                             prc.StartInfo.FileName = me;
                             prc.StartInfo.Arguments = openFileDialog1.FileName;
                             prc.Start();
-                        }catch(Exception exe)
+                        }
+                        catch (Exception exe)
                         {
                             MessageBox.Show($"Oops..something went wrong. Please try to open the file manually.{Environment.NewLine}{exe.Message}");
                         }
                     }
                 }
-                this.Cursor = Cursors.Default;
+                Cursor = Cursors.Default;
             }
         }
 
-         private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker bgW = (BackgroundWorker)sender;
             bgW.ReportProgress(0, "Clearing List");
-            bgW.ReportProgress(10,"Retrieving Build file list from server");
-            List<CommittedBuildData> bldData = SqlBuild.Rebuilder.GetCommitedBuildList(this.connData, this.selectedDatabase);
+            bgW.ReportProgress(10, "Retrieving Build file list from server");
+            List<CommittedBuildData> bldData = SqlBuild.Rebuilder.GetCommitedBuildList(connData, selectedDatabase);
             e.Result = bldData;
-           
+
         }
 
         private void bgWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -134,8 +131,8 @@ namespace SqlSync.SqlBuild
             {
                 statBar.Style = ProgressBarStyle.Marquee;
                 statBar.MarqueeAnimationSpeed = 200;
-                this.Cursor = Cursors.AppStarting;
-                this.lstBuildFiles.Items.Clear();
+                Cursor = Cursors.AppStarting;
+                lstBuildFiles.Items.Clear();
             }
             else
                 statGeneral.Text = e.UserState.ToString();
@@ -152,12 +149,12 @@ namespace SqlSync.SqlBuild
                 lstBuildFiles.Items.Add(item);
             }
 
-            this.listSorter.CurrentColumn = 2;
-            this.listSorter.Sort = SortOrder.Descending;
+            listSorter.CurrentColumn = 2;
+            listSorter.Sort = SortOrder.Descending;
             lstBuildFiles.ListViewItemSorter = listSorter;
             lstBuildFiles.Sort();
 
-            this.Cursor = Cursors.Default;
+            Cursor = Cursors.Default;
             statGeneral.Text = "Ready.";
             statBar.Style = ProgressBarStyle.Blocks;
             statBar.Value = 0;
@@ -185,8 +182,8 @@ namespace SqlSync.SqlBuild
 
         private void btnGetList_Click(object sender, EventArgs e)
         {
-            this.selectedDatabase = (ddDatabases.SelectedItem == null)? "" : ddDatabases.SelectedItem.ToString();
-            if (this.selectedDatabase.Length == 0)
+            selectedDatabase = (ddDatabases.SelectedItem == null) ? "" : ddDatabases.SelectedItem.ToString();
+            if (selectedDatabase.Length == 0)
             {
                 MessageBox.Show("Please select a database to retrieve list from", "Please make selection", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
@@ -196,9 +193,9 @@ namespace SqlSync.SqlBuild
 
         private void ddDatabases_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            this.selectedDatabase = ddDatabases.SelectedItem.ToString();
+            selectedDatabase = ddDatabases.SelectedItem.ToString();
         }
 
-       
+
     }
 }

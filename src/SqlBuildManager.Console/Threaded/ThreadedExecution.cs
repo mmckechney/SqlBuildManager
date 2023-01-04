@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using ehm = SqlBuildManager.Console.Events.EventManager;
 namespace SqlBuildManager.Console.Threaded
 {
-    public class ThreadedExecution 
+    public class ThreadedExecution
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static ILogger logEventHub;
@@ -111,7 +111,7 @@ namespace SqlBuildManager.Console.Threaded
 
         public ThreadedExecution(CommandLineArgs cmd)
         {
-            this.cmdLine = cmd;
+            cmdLine = cmd;
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace SqlBuildManager.Console.Threaded
 
 
             //Load multi-db data. Won't be used for a queue run unless we have a platinum DACPAC that will need this to create the SBM file
-            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) || 
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) ||
                 (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac) && !string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName)))
             {
                 int tmpValReturn = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
@@ -192,10 +192,10 @@ namespace SqlBuildManager.Console.Threaded
                 else
                 {
                     //Set the number of allowed retries...
-                    this.multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;
+                    multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;
                     //Set Trial
-                    this.multiData.RunAsTrial = cmdLine.Trial;
-                    this.multiData.BuildRevision = cmdLine.BuildRevision;
+                    multiData.RunAsTrial = cmdLine.Trial;
+                    multiData.BuildRevision = cmdLine.BuildRevision;
                     log.LogInformation($"Sourcing targets from target override file with Concurrency Type: {cmdLine.ConcurrencyType} and Concurency setting: {cmdLine.Concurrency}");
                     return ExecuteFromOverrideFile(ThreadedExecution.buildZipFileName, cmdLine.DacPacArgs.PlatinumDacpac, multiData, cmdLine.RootLoggingPath, cmdLine.Description, System.Environment.UserName, cmdLine.DacPacArgs.ForceCustomDacPac, cmdLine.Concurrency, cmdLine.ConcurrencyType);
                 }
@@ -205,9 +205,9 @@ namespace SqlBuildManager.Console.Threaded
                 //Really only needed when running unit tests, but still a good idea.
                 ResetStaticValues();
 
-                if(this.qManager != null)
+                if (qManager != null)
                 {
-                    this.qManager.Dispose();
+                    qManager.Dispose();
                 }
             }
         }
@@ -227,7 +227,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     startTime = DateTime.Now;
                     log.LogInformation($"Starting Threaded processing at {startTime.ToString()}");
- 
+
                     var concurrencyBuckets = Concurrency.ConcurrencyByType(multiData, concurrency, concurrencyType);
                     targetTotal = concurrencyBuckets.Sum(c => c.Count());
                     foreach (var bucket in concurrencyBuckets)
@@ -253,7 +253,7 @@ namespace SqlBuildManager.Console.Threaded
                 WriteToLog(finalMsg);
 
                 WriteToLog(new LogMsg() { LogType = LogType.SuccessDatabases });
-                if (this.hasError)
+                if (hasError)
                 {
                     WriteToLog(new LogMsg() { LogType = LogType.FailureDatabases });
                     finalMsg.Message = "Finishing with Errors";
@@ -275,20 +275,20 @@ namespace SqlBuildManager.Console.Threaded
                 return (int)ExecutionReturn.NullBuildData;
 
             }
-           
+
         }
         private async Task<int> ExecuteFromQueue(CommandLineArgs cmdLine, string buildRequestedBy, string storageContainerName)
         {
-            this.qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
+            qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             bool messagesSinceLastLoop = true;
             int noMessagesCounter = 0;
             //Container apps should poll continually... they will be managed by the Keda triggers
             bool runContinually = (cmdLine.ContainerAppArgs != null && cmdLine.ContainerAppArgs.RunningAsContainerApp);
-            while(true)
+            while (true)
             {
                 var messages = await qManager.GetDatabaseTargetFromQueue(cmdLine.Concurrency, cmdLine.ConcurrencyType);
-               
-                if(messages.Count == 0)
+
+                if (messages.Count == 0)
                 {
                     if (cmdLine.RunningAsContainer)
                     {
@@ -300,7 +300,7 @@ namespace SqlBuildManager.Console.Threaded
                         }
                         else
                         {
-                            if(noMessagesCounter == 4 && !runContinually)
+                            if (noMessagesCounter == 4 && !runContinually)
                             {
                                 log.LogInformation("No messages found in Service Bus Topic after 4 retries. Terminating Container.");
                                 break;
@@ -320,7 +320,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     messagesSinceLastLoop = true;
                     var tasks = new List<Task<int>>();
-                    foreach(var message in messages)
+                    foreach (var message in messages)
                     {
                         var target = message.As<TargetMessage>();
                         ThreadedRunner runner = new ThreadedRunner(target.ServerName, target.DbOverrideSequence, cmdLine, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
@@ -329,8 +329,8 @@ namespace SqlBuildManager.Console.Threaded
                         tasks.Add(ProcessThreadedBuildWithQueue(runner, message));
                     }
                     Task.WaitAll(tasks.ToArray());
-                   
-                  
+
+
                 }
             }
             return queueReturnValue;
@@ -427,7 +427,7 @@ namespace SqlBuildManager.Console.Threaded
                 else
                 {
                     //Load up the batched scripts into a shared object so that we can conserve memory
-                    ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, this.projectFilePath);
+                    ThreadedExecution.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedExecution.buildData, projectFilePath);
                 }
 
             }
@@ -437,7 +437,7 @@ namespace SqlBuildManager.Console.Threaded
 
         private async Task<int> ProcessConcurrencyBucket(IEnumerable<(string, List<DatabaseOverride>)> bucket, bool forceCustomDacpac)
         {
-            foreach( (string server, List<DatabaseOverride> ovr) in bucket)
+            foreach ((string server, List<DatabaseOverride> ovr) in bucket)
             {
                 ThreadedRunner runner = new ThreadedRunner(server, ovr, cmdLine, buildRequestedBy, forceCustomDacpac);
                 var msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, RunId = ThreadedExecution.RunID, Message = "Queuing up thread", LogType = LogType.Message };
@@ -452,16 +452,16 @@ namespace SqlBuildManager.Console.Threaded
 
             RunnerReturn tmp;
             Enum.TryParse<RunnerReturn>(retVal.ToString(), out tmp);
-            switch(tmp)
+            switch (tmp)
             {
                 case RunnerReturn.SuccessWithTrialRolledBack:
                 case RunnerReturn.BuildCommitted:
                 case RunnerReturn.CommittedWithCustomDacpac:
                 case RunnerReturn.DacpacDatabasesInSync:
-                    await this.qManager.CompleteMessage(message);
+                    await qManager.CompleteMessage(message);
                     return 0;
                 default:
-                    await this.qManager.DeadletterMessage(message);
+                    await qManager.DeadletterMessage(message);
                     queueReturnValue += 1;
                     return 1;
 
@@ -504,7 +504,7 @@ namespace SqlBuildManager.Console.Threaded
                         msg.LogType = LogType.Error;
                         WriteToLog(msg);
                         WriteToLog(new LogMsg() { LogType = LogType.FailureDatabases, Message = cfgString });
-                        this.hasError = true;
+                        hasError = true;
                         break;
                 }
 
@@ -522,7 +522,7 @@ namespace SqlBuildManager.Console.Threaded
             }
             return returnVal;
         }
-        
+
         private int ExtractAndLoadBuildFile(string sqlBuildProjectFileName, out SqlSyncBuildData buildData)
         {
             log.LogInformation($"Extracting build file '{sqlBuildProjectFileName}' to working directory '{ThreadedExecution.WorkingDirectory}'");
@@ -532,7 +532,7 @@ namespace SqlBuildManager.Console.Threaded
             Directory.CreateDirectory(ThreadedExecution.WorkingDirectory);
 
             string result;
-            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sqlBuildProjectFileName, ref ThreadedExecution.workingDirectory, ref this.projectFilePath, ref ThreadedExecution.projectFileName, false, true, out result))
+            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sqlBuildProjectFileName, ref ThreadedExecution.workingDirectory, ref projectFilePath, ref ThreadedExecution.projectFileName, false, true, out result))
             {
                 var msg = new LogMsg()
                 {
@@ -614,7 +614,7 @@ namespace SqlBuildManager.Console.Threaded
             {
                 (string namespacename, string ehName) = ehm.GetEventHubNamespaceAndName(cmdLine.ConnectionArgs.EventHubConnectionString);
                 log.LogInformation($"Using Managed Identity '{cmdLine.IdentityArgs.ClientId}' for Event Logging");
-                logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, namespacename,ehName,cmdLine.IdentityArgs.ClientId);
+                logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, namespacename, ehName, cmdLine.IdentityArgs.ClientId);
             }
             logRuntime = SqlBuildManager.Logging.Threaded.RuntimeLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
 
@@ -624,12 +624,12 @@ namespace SqlBuildManager.Console.Threaded
             logCommitRun = SqlBuildManager.Logging.Threaded.CommitLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
             logErrorRun = SqlBuildManager.Logging.Threaded.ErrorLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
 
-            this.theadedLoggingInitiated = true;
+            theadedLoggingInitiated = true;
         }
         private void WriteToLog(LogMsg msg)
         {
             msg.JobName = cmdLine.JobName;
-            if(!theadedLoggingInitiated)
+            if (!theadedLoggingInitiated)
             {
                 InitThreadedLogging();
             }

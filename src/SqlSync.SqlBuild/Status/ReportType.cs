@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SqlSync.SqlBuild.Status
+﻿namespace SqlSync.SqlBuild.Status
 {
     public enum ReportType
     {

@@ -1,15 +1,11 @@
-﻿using SqlSync.ObjectScript;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 using SqlSync.ObjectScript.Hash;
-using System;
-using System.Collections.Specialized;
-using System.Text;
 
 namespace SqlSync.ObjectScript.Dependent.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ObjectScriptHelperTest and is intended
     ///to contain all ObjectScriptHelperTest Unit Tests
@@ -76,7 +72,7 @@ namespace SqlSync.ObjectScript.Dependent.UnitTest
         {
             Initialization init = new Initialization();
             ConnectionData data = init.connData;
-            ObjectScriptHelper target = new ObjectScriptHelper(data); 
+            ObjectScriptHelper target = new ObjectScriptHelper(data);
             ObjectScriptHashData actual;
             actual = target.GetDatabaseObjectHashes();
             Assert.IsNotNull(actual);

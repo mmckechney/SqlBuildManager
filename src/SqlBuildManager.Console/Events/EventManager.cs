@@ -20,11 +20,11 @@ namespace SqlBuildManager.Console.Events
         private string eventHubconnectionString = "";
         private string storageContainerName = "";
         private string storageAccountName = "";
-        private string storageAccountKey= "";
+        private string storageAccountKey = "";
         private string jobName = "";
         private string consumerGroup = EventHubConsumerClient.DefaultConsumerGroupName;
         private DateTime utcMonitorStart = DateTime.UtcNow;
-        
+
 
         private int databaseCommitMessages = 0;
         private int databaseErrorMessages = 0;
@@ -43,7 +43,7 @@ namespace SqlBuildManager.Console.Events
         {
             Interlocked.Increment(ref eventsScanned);
         }
-        public bool StreamEvents { get;set; } = false;
+        public bool StreamEvents { get; set; } = false;
 
         public EventManager(string eventHubconnectionString, string storageAccountName, string storageAccountKey, string storageContainerName, string jobName)
         {
@@ -61,7 +61,7 @@ namespace SqlBuildManager.Console.Events
             {
                 if (_blobClient == null)
                 {
-                    _blobClient = cs.StorageManager.GetBlobContainerClient(this.storageAccountName, this.storageAccountKey, "eventhubcheckpoint");
+                    _blobClient = cs.StorageManager.GetBlobContainerClient(storageAccountName, storageAccountKey, "eventhubcheckpoint");
                 }
                 return _blobClient;
             }
@@ -77,12 +77,12 @@ namespace SqlBuildManager.Console.Events
                 {
                     if (ConnectionValidator.IsEventHubConnectionString(eventHubconnectionString))
                     {
-                        _eventClient = new EventProcessorClient(this.BlobClient, consumerGroup, eventHubconnectionString);
+                        _eventClient = new EventProcessorClient(BlobClient, consumerGroup, eventHubconnectionString);
                     }
                     else
                     {
                         (string namespaceName, string hubName) = GetEventHubNamespaceAndName(eventHubconnectionString);
-                        _eventClient = new EventProcessorClient(this.BlobClient, consumerGroup, namespaceName, hubName, Aad.AadHelper.TokenCredential);
+                        _eventClient = new EventProcessorClient(BlobClient, consumerGroup, namespaceName, hubName, Aad.AadHelper.TokenCredential);
                     }
 
                     _eventClient.ProcessEventAsync += ProcessEventHandler;
@@ -98,7 +98,7 @@ namespace SqlBuildManager.Console.Events
         {
             string namespaceName = "";
             string hubName = "";
-            
+
             try
             {
                 var split = input.Split("|");
@@ -115,16 +115,16 @@ namespace SqlBuildManager.Console.Events
                 log.LogInformation($"Using EventHub Namespace: {namespaceName} with Event Hub name: {hubName}");
                 return (namespaceName, hubName);
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError($"Unable to parse EventHub info: {exe.Message}");
                 return ("", "");
             }
 
         }
-        public (int, int,int) GetCommitErrorAndScannedCounts()
+        public (int, int, int) GetCommitErrorAndScannedCounts()
         {
-            return (this.databaseCommitMessages, this.databaseErrorMessages, this.eventsScanned);
+            return (databaseCommitMessages, databaseErrorMessages, eventsScanned);
         }
 
         private Task InitializeEventHandler(PartitionInitializingEventArgs args)
@@ -136,7 +136,7 @@ namespace SqlBuildManager.Console.Events
                     return Task.CompletedTask;
                 }
 
-               log.LogDebug($"Initialize EventHub partition: { args.PartitionId } from EnqueueTime {utcMonitorStart}");
+                log.LogDebug($"Initialize EventHub partition: {args.PartitionId} from EnqueueTime {utcMonitorStart}");
 
                 // If no checkpoint was found, start processing events enqueued now -5 minutes or in the future.
                 // This should be the case -- rely on timestamp, not a checkpoint to ensure nothing is missed across multiple instances
@@ -154,10 +154,10 @@ namespace SqlBuildManager.Console.Events
             try
             {
                 // Write details about the error to the console window
-                log.LogError($"\tPartition '{ eventArgs.PartitionId}': an unhandled exception was encountered. This was not expected to happen.");
+                log.LogError($"\tPartition '{eventArgs.PartitionId}': an unhandled exception was encountered. This was not expected to happen.");
                 log.LogError(eventArgs.Exception.Message);
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError($"Failure to process event error args: {exe.Message}");
             }
@@ -168,20 +168,20 @@ namespace SqlBuildManager.Console.Events
         {
             try
             {
-                this.IncrementEventsScanned();
+                IncrementEventsScanned();
                 var msg = JsonSerializer.Deserialize<EventHubMessageFormat>(Encoding.UTF8.GetString(eventArgs.Data.Body.ToArray()));
                 //log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}{msg.Properties.LogMsg.DatabaseName}");
-                if (!string.IsNullOrWhiteSpace(msg.Properties.LogMsg.JobName) && msg.Properties.LogMsg.JobName.ToLower() == this.jobName.ToLower())
+                if (!string.IsNullOrWhiteSpace(msg.Properties.LogMsg.JobName) && msg.Properties.LogMsg.JobName.ToLower() == jobName.ToLower())
                 {
                     switch (msg.Properties.LogMsg.LogType)
                     {
                         case LogType.Commit:
-                            if (this.StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(31)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
-                            this.IncrementDatabaseCommitMessages();
+                            if (StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(31)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
+                            IncrementDatabaseCommitMessages();
                             break;
                         case LogType.Error:
-                            if (this.StreamEvents) log.LogError($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(31)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
-                            this.IncrementDatabaseErrorsMessages();
+                            if (StreamEvents) log.LogError($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(31)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
+                            IncrementDatabaseErrorsMessages();
                             break;
                     }
                 }
@@ -206,11 +206,11 @@ namespace SqlBuildManager.Console.Events
                 {
                     utcMonitorStart = monitorUtcStart.Value;
                 }
-                this.StreamEvents = stream;
+                StreamEvents = stream;
                 // Start the processing
-                return this.EventClient.StartProcessingAsync(cancellationToken);
+                return EventClient.StartProcessingAsync(cancellationToken);
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError($"Error starting Event Processor monitoring: {exe.ToString()}");
                 return Task.CompletedTask;
@@ -220,16 +220,16 @@ namespace SqlBuildManager.Console.Events
 
         public void Dispose()
         {
-            if(this._eventClient != null)
+            if (_eventClient != null)
             {
-                this._eventClient.StopProcessing();
-                this._eventClient.ProcessEventAsync -= ProcessEventHandler;
-                this._eventClient.ProcessErrorAsync -= ProcessErrorHandler;
-                this._eventClient = null;
+                _eventClient.StopProcessing();
+                _eventClient.ProcessEventAsync -= ProcessEventHandler;
+                _eventClient.ProcessErrorAsync -= ProcessErrorHandler;
+                _eventClient = null;
             }
-            if(this._blobClient != null)
+            if (_blobClient != null)
             {
-                this._blobClient = null;
+                _blobClient = null;
             }
         }
     }

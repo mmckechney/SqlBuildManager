@@ -1,14 +1,12 @@
-﻿using SqlBuildManager.ScriptHandling;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Interfaces.ScriptHandling.Tags;
 using System;
 using System.Collections.Generic;
-using SqlBuildManager.Interfaces.ScriptHandling.Tags;
-using SqlSync.SqlBuild;
 using System.IO;
 namespace SqlBuildManager.ScriptHandling.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ScriptTagProcessingTest and is intended
     ///to contain all ScriptTagProcessingTest Unit Tests
@@ -32,7 +30,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
         {
             ScriptTagProcessing target = new ScriptTagProcessing();
             Assert.IsNotNull(target);
-            Assert.IsInstanceOfType(target,typeof(ScriptTagProcessing));
+            Assert.IsInstanceOfType(target, typeof(ScriptTagProcessing));
         }
 
         #region InferScriptTagFromFileContentsTest
@@ -95,7 +93,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             string actual;
             actual = ScriptTagProcessing.InferScriptTagFromFileName(scriptFileName, regexFormats);
             Assert.AreEqual(expected, actual);
-           
+
         }
         /// <summary>
         ///A test for InferScriptTagFromFileName
@@ -223,7 +221,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
             string actual;
             actual = ScriptTagProcessing.InferScriptTag(scriptPathAndName, scriptContents, regexFormats, source);
             Assert.AreEqual(expected, actual);
- 
+
         }
 
         [TestMethod()]
@@ -371,7 +369,7 @@ P number 1234 content match";
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string scriptName = "CR 343423 Test Script.sql";
             string scriptPath = @"C:\test";
-            string expected = string.Empty; 
+            string expected = string.Empty;
             string actual;
             actual = ScriptTagProcessing.InferScriptTag(source, regexFormats, scriptName, scriptPath);
             Assert.AreEqual(expected, actual);
@@ -382,7 +380,7 @@ P number 1234 content match";
         ///A test for InferScriptTag
         ///</summary>
         [TestMethod()]
-        public void InferScriptTagTest_TagInferenceFromScriptText ()
+        public void InferScriptTagTest_TagInferenceFromScriptText()
         {
             TagInferenceSource source = TagInferenceSource.ScriptText;
             List<string> regexFormats = ScriptTagProcessingTest.regex;

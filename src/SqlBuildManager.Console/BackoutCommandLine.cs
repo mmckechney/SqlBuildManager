@@ -8,8 +8,8 @@ namespace SqlBuildManager.Console
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         internal static string CreateBackoutPackage(CommandLineArgs cmdLine)
         {
-            
-            if(string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
+
+            if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.LogError("--PackageName argument is required when creating a backout package");
             }
@@ -20,7 +20,7 @@ namespace SqlBuildManager.Console
                 return string.Empty;
             }
 
-            ConnectionData connectionData = new ConnectionData(cmdLine.Server,cmdLine.Database);
+            ConnectionData connectionData = new ConnectionData(cmdLine.Server, cmdLine.Database);
             if (cmdLine.AuthenticationArgs.Password.Length > 0)
                 connectionData.Password = cmdLine.AuthenticationArgs.Password;
             if (cmdLine.AuthenticationArgs.UserName.Length > 0)

@@ -1,11 +1,10 @@
-﻿using SqlBuildManager.Enterprise.Notification;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlBuildManager.Enterprise;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Notification;
 using System.Collections.Generic;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for TableWatchTest and is intended
     ///to contain all TableWatchTest Unit Tests
@@ -27,8 +26,8 @@ namespace SqlBuildManager.Enterprise.UnitTest
             Notify b = new Notify();
             n.EMail = "help@sqlbuildmanager.com";
             tmp.Notify = new Notify[2];
-            tmp.Notify[0]= n;
-            tmp.Notify[1]= b;
+            tmp.Notify[0] = n;
+            tmp.Notify[1] = b;
             tmp.Table = new Table[2];
             Table t = new Table();
             t.Name = "SqlBuild_Logging";
@@ -38,7 +37,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             tmp.Table[1] = a;
             cfg.TableWatch = new TableWatch[1];
             cfg.TableWatch[0] = tmp;
-            
+
             EnterpriseConfigHelper.EnterpriseConfig = cfg;
 
         }
@@ -54,8 +53,8 @@ namespace SqlBuildManager.Enterprise.UnitTest
         dbo.SqlBuild_Logging ALTER COLUMN test BIT
 
 ";
-            List<TableWatch> matches = null; 
-            bool expected = false; 
+            List<TableWatch> matches = null;
+            bool expected = false;
             bool actual;
             actual = SqlBuildManager.Enterprise.Notification.TableWatchNotification.CheckForTableWatch(script, out matches);
             Assert.IsNotNull(actual);

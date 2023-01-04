@@ -1,14 +1,12 @@
-﻿using SqlSync.Connection;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using Microsoft.Data.SqlClient;
 using System;
-using static System.Net.Mime.MediaTypeNames;
+using System.Collections.Generic;
 
 namespace SqlSync.Connection.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ConnectionHelperTest and is intended
     ///to contain all ConnectionHelperTest Unit Tests
@@ -158,8 +156,8 @@ namespace SqlSync.Connection.UnitTest
             Assert.IsNotNull(actual);
             Assert.AreEqual(expected, actual.ConnectionString);
             Assert.AreEqual(System.Data.ConnectionState.Closed, actual.State);
-            Assert.AreEqual("myserver",actual.DataSource);
-           
+            Assert.AreEqual("myserver", actual.DataSource);
+
         }
 
         /// <summary>
@@ -214,7 +212,7 @@ namespace SqlSync.Connection.UnitTest
             string actual = ConnectionHelper.GetTargetDatabase("", overrides);
             Assert.AreEqual("override1", actual);
 
-           
+
         }
         /// <summary>
         ///A test for GetTargetDatabase
@@ -276,7 +274,7 @@ namespace SqlSync.Connection.UnitTest
             overrides.Add(new DatabaseOverride("default4", "default4"));
             overrides.Add(new DatabaseOverride("MixedCASE", "override5"));
 
-            bool expected = true; 
+            bool expected = true;
             bool actual;
             actual = ConnectionHelper.ValidateDatabaseOverrides(overrides);
             Assert.AreEqual(expected, actual);
@@ -331,7 +329,7 @@ namespace SqlSync.Connection.UnitTest
             Assert.AreEqual(expected, actual);
         }
 
-        
+
         /// <summary>
         ///A test for TestDatabaseConnection
         ///</summary>
@@ -347,7 +345,7 @@ namespace SqlSync.Connection.UnitTest
             Assert.AreEqual(expected, actual);
         }
 
-       
+
         /// <summary>
         ///A test for TestDatabaseConnection
         ///</summary>

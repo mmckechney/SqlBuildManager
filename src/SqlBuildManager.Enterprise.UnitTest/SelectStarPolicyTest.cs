@@ -1,11 +1,11 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using System.Collections.Generic;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for SelectStarPolicyTest and is intended
     ///to contain all SelectStarPolicyTest Unit Tests
@@ -31,7 +31,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            
+
             string actual;
             actual = target.ShortDescription;
             Assert.AreEqual("SELECT *", actual);
@@ -43,7 +43,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void PolicyIdTest()
         {
-            
+
             string actual;
             actual = target.PolicyId;
             Assert.AreEqual("SelectStarPolicy", actual);
@@ -55,7 +55,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LongDescriptionTest()
         {
-           
+
             string actual;
             actual = target.LongDescription;
             Assert.AreEqual("Checks that no queries in the script use \"SELECT *\" but rather explicitly lists columns", actual);
@@ -67,16 +67,16 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void SelectStarPolicy_CheckPolicyTest_PassNoSelectStar()
         {
-           
+
             string script = @"SELECT e.[EmployeeID], e.[ManagerID], c.[FirstName], c.[LastName], 0 -- Get the initial list of Employees for Manager n
 	        FROM [HumanResources].[Employee] e 
 	            INNER JOIN [Person].[Contact] c 
 	            ON e.[ContactID] = c.[ContactID]
 	        WHERE [ManagerID] = @ManagerID
 ";
-            string message = string.Empty; 
-            string messageExpected = string.Empty; 
-            bool expected = true; 
+            string message = string.Empty;
+            string messageExpected = string.Empty;
+            bool expected = true;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
@@ -125,8 +125,8 @@ BEGIN
         [TestMethod()]
         public void SelectStarPolicy_CheckPolicyTest_FailComboSelectStarSysAndSelectStar()
         {
-           
-           
+
+
             string script = @"
 SELECT * FROM dbo.MyTable
 
@@ -149,7 +149,7 @@ BEGIN
 	        WHERE [ManagerID] = @ManagerID";
 
             string message = string.Empty;
-            string messageExpected = "A SELECT using \"*\" was found on line 2. Please remove this wildcard and use explicit column names"; 
+            string messageExpected = "A SELECT using \"*\" was found on line 2. Please remove this wildcard and use explicit column names";
             bool expected = false;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
@@ -164,8 +164,8 @@ BEGIN
         [TestMethod()]
         public void SelectStarPolicy_CheckPolicyTest_FailSelectStar()
         {
-           
-               string script = @"SELECT * FROM MyTable";
+
+            string script = @"SELECT * FROM MyTable";
 
             string message = string.Empty;
             string messageExpected = "A SELECT using \"*\" was found on line 1. Please remove this wildcard and use explicit column names";

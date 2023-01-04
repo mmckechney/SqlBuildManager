@@ -1,9 +1,9 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for QualifiedNamesPolicyTest and is intended
     ///to contain all QualifiedNamesPolicyTest Unit Tests
@@ -31,7 +31,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            QualifiedNamesPolicy target = new QualifiedNamesPolicy(); 
+            QualifiedNamesPolicy target = new QualifiedNamesPolicy();
             string actual;
             actual = target.ShortDescription;
             Assert.AreEqual("Qualified Names (beta)", actual);
@@ -43,7 +43,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LongDescriptionTest()
         {
-            QualifiedNamesPolicy target = new QualifiedNamesPolicy(); 
+            QualifiedNamesPolicy target = new QualifiedNamesPolicy();
             string actual;
             actual = target.LongDescription;
             Assert.AreEqual("Checks that object references are fully qualified (<schema>.<object name>) - in beta", actual);
@@ -1172,6 +1172,6 @@ But this SELECT me  FROM test WHERE should fail
 
         }
 
-       
+
     }
 }

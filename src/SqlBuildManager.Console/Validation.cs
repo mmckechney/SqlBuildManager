@@ -33,7 +33,7 @@ namespace SqlBuildManager.Console
             //Validate that if username or password is specified, then both are
             if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
-                if(string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+                if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
                     error = "The --username and --password arguments must be used together in command line of --settingsfile Json.";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
@@ -180,7 +180,7 @@ namespace SqlBuildManager.Console
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName)) //should have already seen if this was required up above
-            { 
+            {
                 if (cmdLine.MultiDbRunConfigFileName.EndsWith(".sql", StringComparison.InvariantCultureIgnoreCase))
                 {
 
@@ -225,7 +225,7 @@ namespace SqlBuildManager.Console
             multiData = null;
             string extension = Path.GetExtension(multiDbOverrideSettingFileName).ToLowerInvariant();
 
-            switch(extension)
+            switch (extension)
             {
                 case ".multidb":
                     multiData = MultiDbHelper.DeserializeMultiDbConfiguration(multiDbOverrideSettingFileName);
@@ -234,7 +234,7 @@ namespace SqlBuildManager.Console
                     multiData = MultiDbHelper.CreateMultiDbConfigFromQueryFile(multiDbOverrideSettingFileName, out message);
                     break;
                 case ".sql":
-                    if(cmdLine != null)
+                    if (cmdLine != null)
                     {
                         ConnectionData connData = new ConnectionData()
                         {
@@ -260,12 +260,12 @@ namespace SqlBuildManager.Console
             //    multiData = MultiDbHelper.CreateMultiDbConfigFromQueryFile(multiDbOverrideSettingFileName, out message);
             //else if (multiDbOverrideSettingFileName.EndsWith(".cfg", StringComparison.InvariantCultureIgnoreCase))
             //    multiData = MultiDbHelper.ImportMultiDbTextConfig(multiDbOverrideSettingFileName);
-           
+
 
             if (multiData == null || multiData.Count() == 0)
             {
                 error = "Unable to read in configuration file " + multiDbOverrideSettingFileName + ((message.Length > 0) ? " :: " + message : "");
-                errorMessages =  new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullMultiDbConfig };
+                errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullMultiDbConfig };
                 log.LogError(error);
                 return (int)ExecutionReturn.NullMultiDbConfig;
             }
@@ -375,7 +375,7 @@ namespace SqlBuildManager.Console
             }
 
             (int ret, string msg) = ValidateBatchjobName(cmdLine.BatchArgs.BatchJobName);
-            if(ret != 0)
+            if (ret != 0)
             {
                 messages.Add(msg);
                 returnVal = ret;
@@ -391,7 +391,7 @@ namespace SqlBuildManager.Console
             {
                 if (batchJobName.Length < 3 || batchJobName.Length > 41 || !Regex.IsMatch(batchJobName, @"^[a-z0-9]+(-[a-z0-9]+)*$"))
                 {
-                    return(-888, $"The value for --jobname must be: lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'{Environment.NewLine}\tThis requirement is because the job name is also the storage container name and needs to accomodate a timestamp: https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Containers--Blobs--and-Metadata");
+                    return (-888, $"The value for --jobname must be: lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'{Environment.NewLine}\tThis requirement is because the job name is also the storage container name and needs to accomodate a timestamp: https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Containers--Blobs--and-Metadata");
                 }
             }
             return (0, "");
@@ -529,18 +529,18 @@ namespace SqlBuildManager.Console
             {
                 messages.Add("--aciname is required in command line or --settingsfile");
             }
-            if(string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup))
+            if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup))
             {
                 messages.Add("--resourcegroup is required in command line or --settingsfile");
             }
-            if(string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
+            if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
             {
                 messages.Add("--identityname is required in command line or --settingsfile");
             }
-            if(cmdLine.AciArgs.ContainerCount == 0)
+            if (cmdLine.AciArgs.ContainerCount == 0)
             {
                 messages.Add("--containercount is required in command line or --settingsfile");
-              }
+            }
 
             if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.ImageTag))
             {
@@ -556,7 +556,7 @@ namespace SqlBuildManager.Console
             {
                 messages.Add("--storageaccountname is required in command line or --settingsfile");
             }
-            
+
             if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
             {
                 messages.Add("--storageaccountkey is required in command line or --settingsfile if a Managed Identity is not included");
@@ -604,6 +604,6 @@ namespace SqlBuildManager.Console
             return messages;
         }
 
-        
+
     }
 }

@@ -18,9 +18,9 @@ namespace SqlBuildManager.Console
 
             DatabaseDiffer differ = new DatabaseDiffer();
             var history = differ.GetDatabaseHistoryDifference(cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server, cmdLine.Database);
-             //= GetDatabaseRunHistoryDifference(cmdLine);
-            string header = String.Format("{0} Package differences found between Gold:[{1}].[{2}] and Target:[{3}].[{4}]\r\n", history.BuildFileHistory.Count(),cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server,cmdLine.Database);
-            if(history.BuildFileHistory.Any())
+            //= GetDatabaseRunHistoryDifference(cmdLine);
+            string header = String.Format("{0} Package differences found between Gold:[{1}].[{2}] and Target:[{3}].[{4}]\r\n", history.BuildFileHistory.Count(), cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server, cmdLine.Database);
+            if (history.BuildFileHistory.Any())
                 return header + history.ToString();
             else
             {
@@ -30,7 +30,7 @@ namespace SqlBuildManager.Console
         }
         public static DatabaseRunHistory GetDatabaseRunHistoryDifference(CommandLineArgs cmdLine)
         {
-            if(cmdLine == null)
+            if (cmdLine == null)
             {
                 return null;
             }
@@ -48,11 +48,11 @@ namespace SqlBuildManager.Console
                 return false;
             }
 
-             DatabaseSyncer dbSync = new DatabaseSyncer();
-             dbSync.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(dbSync_SyncronizationInfoEvent);
-            
+            DatabaseSyncer dbSync = new DatabaseSyncer();
+            dbSync.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(dbSync_SyncronizationInfoEvent);
+
             return dbSync.SyncronizeDatabases(cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server,
-                                       cmdLine.Database,cmdLine.ContinueOnFailure);
+                                       cmdLine.Database, cmdLine.ContinueOnFailure);
 
         }
 
@@ -90,6 +90,6 @@ namespace SqlBuildManager.Console
             return cmdLine;
         }
 
-        
+
     }
 }

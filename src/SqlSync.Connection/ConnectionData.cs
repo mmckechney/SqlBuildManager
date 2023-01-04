@@ -1,118 +1,142 @@
 
-namespace SqlSync.Connection {
+namespace SqlSync.Connection
+{
     using System;
-    
-    
+
+
     [Serializable()]
-    public partial class ConnectionData {
-        
+    public partial class ConnectionData
+    {
+
         private string _SQLServerName = string.Empty;
-        
+
         private string _DatabaseName = string.Empty;
-        
+
         private string _Password = string.Empty;
-        
+
         private string _UserId = string.Empty;
-        
+
         private string _StartingDirectory = string.Empty;
-        
+
         private AuthenticationType authType = AuthenticationType.Password;
-        
+
         private int _ScriptTimeout = 20;
-        
-        public ConnectionData() {
-        
+
+        public ConnectionData()
+        {
+
         }
 
         public ConnectionData(string serverName, string databaseName) : this()
         {
-            this._SQLServerName = serverName;
-            this._DatabaseName = databaseName;
+            _SQLServerName = serverName;
+            _DatabaseName = databaseName;
             authType = AuthenticationType.Windows;
         }
 
-        public virtual string SQLServerName {
-            get {
-                return this._SQLServerName;
+        public virtual string SQLServerName
+        {
+            get
+            {
+                return _SQLServerName;
             }
-            set {
-                this._SQLServerName = value;
-            }
-        }
-        
-        public virtual string DatabaseName {
-            get {
-                return this._DatabaseName;
-            }
-            set {
-                this._DatabaseName = value;
+            set
+            {
+                _SQLServerName = value;
             }
         }
-        
-        public virtual string Password {
-            get {
-                return this._Password;
+
+        public virtual string DatabaseName
+        {
+            get
+            {
+                return _DatabaseName;
             }
-            set {
-                this._Password = value;
-            }
-        }
-        
-        public virtual string UserId {
-            get {
-                return this._UserId;
-            }
-            set {
-                this._UserId = value;
+            set
+            {
+                _DatabaseName = value;
             }
         }
-        
-        public virtual string StartingDirectory {
-            get {
-                return this._StartingDirectory;
+
+        public virtual string Password
+        {
+            get
+            {
+                return _Password;
             }
-            set {
-                this._StartingDirectory = value;
+            set
+            {
+                _Password = value;
             }
         }
-        
+
+        public virtual string UserId
+        {
+            get
+            {
+                return _UserId;
+            }
+            set
+            {
+                _UserId = value;
+            }
+        }
+
+        public virtual string StartingDirectory
+        {
+            get
+            {
+                return _StartingDirectory;
+            }
+            set
+            {
+                _StartingDirectory = value;
+            }
+        }
+
         public virtual AuthenticationType AuthenticationType
         {
             get
             {
-                return this.authType;
+                return authType;
             }
             set
             {
-                this.authType = value;
+                authType = value;
             }
         }
-        
-        public virtual int ScriptTimeout {
-            get {
-                return this._ScriptTimeout;
+
+        public virtual int ScriptTimeout
+        {
+            get
+            {
+                return _ScriptTimeout;
             }
-            set {
-                this._ScriptTimeout = value;
+            set
+            {
+                _ScriptTimeout = value;
             }
         }
-        
-        public virtual ConnectionData Fill(ConnectionData dataClass) {
-            try {
-                this.SQLServerName = dataClass.SQLServerName;
-                this.DatabaseName = dataClass.DatabaseName;
-                this.Password = dataClass.Password;
-                this.UserId = dataClass.UserId;
-                this.StartingDirectory = dataClass.StartingDirectory;
-                this.authType = dataClass.authType;
-                this.ScriptTimeout = dataClass.ScriptTimeout;
+
+        public virtual ConnectionData Fill(ConnectionData dataClass)
+        {
+            try
+            {
+                SQLServerName = dataClass.SQLServerName;
+                DatabaseName = dataClass.DatabaseName;
+                Password = dataClass.Password;
+                UserId = dataClass.UserId;
+                StartingDirectory = dataClass.StartingDirectory;
+                authType = dataClass.authType;
+                ScriptTimeout = dataClass.ScriptTimeout;
                 return this;
             }
-            catch (System.Exception ex) {
+            catch (System.Exception ex)
+            {
                 throw new System.ApplicationException("Error in the Auto-Generated: ConnectionData.Fill(ConnectionData) Method", ex);
             }
         }
-        
-        
+
+
     }
 }

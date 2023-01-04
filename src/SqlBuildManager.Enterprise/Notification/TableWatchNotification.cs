@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 namespace SqlBuildManager.Enterprise.Notification
 {
-    public class TableWatchNotification 
+    public class TableWatchNotification
     {
-        
+
         public TableWatchNotification()
         {
         }
@@ -20,7 +18,7 @@ namespace SqlBuildManager.Enterprise.Notification
                 return true;
 
             string baseRegexPattern = @"(\bALTER\b\s*\bTABLE\b\s+.{0,10}<<name>>)|(\bDROP\b\s*\bTABLE\b\s+.{0,10}<<name>>)";
-            
+
             SqlBuildManager.Enterprise.TableWatch[] watches = EnterpriseConfigHelper.EnterpriseConfig.TableWatch;
             for (int i = 0; i < watches.Length; i++)
             {
@@ -30,10 +28,10 @@ namespace SqlBuildManager.Enterprise.Notification
                 bool added = false;
                 for (int j = 0; j < watches[i].Table.Length; j++)
                 {
-                    Regex regTable = new Regex(baseRegexPattern.Replace("<<name>>",watches[i].Table[j].Name), RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                    Regex regTable = new Regex(baseRegexPattern.Replace("<<name>>", watches[i].Table[j].Name), RegexOptions.IgnoreCase | RegexOptions.Singleline);
                     if (regTable.Match(script).Success)
                     {
-                        if(!tmp.FoundTables.Contains(watches[i].Table[j].Name))
+                        if (!tmp.FoundTables.Contains(watches[i].Table[j].Name))
                             tmp.FoundTables.Add(watches[i].Table[j].Name);
                         if (!added)
                         {
@@ -55,6 +53,6 @@ namespace SqlBuildManager.Enterprise.Notification
                 return false;
             }
         }
-        
+
     }
 }

@@ -1,18 +1,17 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Xml.Serialization;
 namespace SqlSync.SqlBuild.Status
 {
     [Serializable()]
-    public class ServerStatusDataCollection 
+    public class ServerStatusDataCollection
     {
         [XmlElement("BuildFileNameShort")]
         public string BuildFileNameShort
         {
-            get { return this.buildFileNameShort; }
-            set { this.buildFileNameShort = value; }
+            get { return buildFileNameShort; }
+            set { buildFileNameShort = value; }
         }
         string buildFileNameShort = string.Empty;
         string buildFileNameFull = string.Empty;
@@ -36,8 +35,8 @@ namespace SqlSync.SqlBuild.Status
             set { serverDict = value; }
         }
 
-       
-        internal ServerStatusDataCollection() 
+
+        internal ServerStatusDataCollection()
         {
         }
 
@@ -59,13 +58,13 @@ namespace SqlSync.SqlBuild.Status
 
             }
         }
-        
+
     }
 
     [Serializable()]
     public class StatusDataCollection : List<ScriptStatusData>
     {
-         
+
     }
 
     public class ServerDictionary : StatusDictionary<Databases>

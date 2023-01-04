@@ -1,16 +1,11 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Data;
-using System.Collections.Specialized;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.IO;
-using SqlSync.Connection;
-using SqlSync.SqlBuild;
 using System.Linq;
-using Microsoft.Win32;
-using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
     public class UtilityHelper
@@ -23,7 +18,7 @@ namespace SqlSync.SqlBuild
             string homePath = SqlBuildManager.Logging.Configure.AppDataPath;
             List<string> recentDbs = new List<string>();
 
-            if (System.IO.File.Exists(Path.Combine( homePath ,ConfigFileName)))
+            if (System.IO.File.Exists(Path.Combine(homePath, ConfigFileName)))
             {
                 try
                 {
@@ -71,7 +66,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.LogError(exe,"Error updating Recent Server List");
+                log.LogError(exe, "Error updating Recent Server List");
             }
 
 
@@ -87,7 +82,7 @@ namespace SqlSync.SqlBuild
                     var r = row.First();
                     if (!string.IsNullOrWhiteSpace(r.UserName))
                     {
-                       
+
                         (s, username) = Cryptography.DecryptText(r.UserName, ConnectionHelper.ConnectCryptoKey, "UserName");
                     }
                     else
@@ -133,12 +128,12 @@ namespace SqlSync.SqlBuild
                 if (!anchor.StartsWith("#")) anchor = "#" + anchor;
             }
             System.Diagnostics.Process prc = new Process();
-             prc.StartInfo.UseShellExecute = true;
+            prc.StartInfo.UseShellExecute = true;
             prc.StartInfo.FileName = $"https://github.com/mmckechney/SqlBuildManager/blob/master/docs/SqlBuildManagerManual.md{anchor}"; // Utility.DefaultBrowser;
-  
+
             prc.Start();
         }
 
-      
+
     }
 }

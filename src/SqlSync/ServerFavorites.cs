@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
 using System.IO;
 
 namespace SqlSync
@@ -26,8 +19,8 @@ namespace SqlSync
         {
             get
             {
-                if (this.SelectedItem != null)
-                    return this.SelectedItem.ToString();
+                if (SelectedItem != null)
+                    return SelectedItem.ToString();
                 else
                     return "";
             }
@@ -35,7 +28,7 @@ namespace SqlSync
 
         public void InitServers(bool forceRefresh)
         {
-            if (this.Items.Count != 0 && !forceRefresh)
+            if (Items.Count != 0 && !forceRefresh)
                 return;
 
             string homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -61,8 +54,8 @@ namespace SqlSync
 
             //    }
             //}
-            this.Items.AddRange(recentDbs);
+            Items.AddRange(recentDbs);
         }
-               
+
     }
 }

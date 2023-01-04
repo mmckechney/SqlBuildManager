@@ -1,19 +1,12 @@
-﻿using Microsoft.SqlServer.Management.Smo;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SqlBuildManager.Console.Shared
+﻿namespace SqlBuildManager.Console.Shared
 {
     public class ConnectionValidator
     {
         public static bool IsEventHubConnectionString(string input)
         {
             string lc = input.ToLower();
-            if(lc.StartsWith("endpoint") && lc.Contains("sharedaccesskeyname") && lc.Contains("sharedaccesskey"))
-                {
+            if (lc.StartsWith("endpoint") && lc.Contains("sharedaccesskeyname") && lc.Contains("sharedaccesskey"))
+            {
                 return true;
             }
             else
@@ -38,7 +31,7 @@ namespace SqlBuildManager.Console.Shared
             {
                 return false;
             }
-           
+
         }
     }
 }

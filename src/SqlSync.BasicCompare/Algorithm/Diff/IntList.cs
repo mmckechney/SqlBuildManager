@@ -1,7 +1,6 @@
 namespace Algorithm.Diff
 {
     using System;
-    using System.Reflection;
 
     internal class IntList
     {
@@ -11,25 +10,25 @@ namespace Algorithm.Diff
 
         public int Add(int value)
         {
-            if (this._items.Length <= this._size)
+            if (_items.Length <= _size)
             {
-                this.EnsureCapacity(this._size + 1);
+                EnsureCapacity(_size + 1);
             }
-            this._items[this._size] = value;
-            return this._size++;
+            _items[_size] = value;
+            return _size++;
         }
 
         public virtual void Clear()
         {
-            Array.Clear(this._items, 0, this._size);
-            this._size = 0;
+            Array.Clear(_items, 0, _size);
+            _size = 0;
         }
 
         private void EnsureCapacity(int count)
         {
-            if (count > this._items.Length)
+            if (count > _items.Length)
             {
-                int num = this._items.Length << 1;
+                int num = _items.Length << 1;
                 if (num == 0)
                 {
                     num = 0x10;
@@ -39,28 +38,28 @@ namespace Algorithm.Diff
                     num = num << 1;
                 }
                 int[] destinationArray = new int[num];
-                Array.Copy(this._items, 0, destinationArray, 0, this._items.Length);
-                this._items = destinationArray;
+                Array.Copy(_items, 0, destinationArray, 0, _items.Length);
+                _items = destinationArray;
             }
         }
 
         public virtual void RemoveAt(int index)
         {
-            if ((index < 0) || (index >= this._size))
+            if ((index < 0) || (index >= _size))
             {
                 throw new ArgumentOutOfRangeException("index", index, "Less than 0 or more than list count.");
             }
-            this.Shift(index, -1);
-            this._size--;
+            Shift(index, -1);
+            _size--;
         }
 
         public void Reverse()
         {
-            for (int i = 0; i <= (this.Count / 2); i++)
+            for (int i = 0; i <= (Count / 2); i++)
             {
                 int num2 = this[i];
-                this[i] = this[(this.Count - i) - 1];
-                this[(this.Count - i) - 1] = num2;
+                this[i] = this[(Count - i) - 1];
+                this[(Count - i) - 1] = num2;
             }
         }
 
@@ -68,27 +67,27 @@ namespace Algorithm.Diff
         {
             if (count > 0)
             {
-                if ((this._size + count) > this._items.Length)
+                if ((_size + count) > _items.Length)
                 {
-                    int num = (this._items.Length > 0) ? (this._items.Length << 1) : 1;
-                    while (num < (this._size + count))
+                    int num = (_items.Length > 0) ? (_items.Length << 1) : 1;
+                    while (num < (_size + count))
                     {
                         num = num << 1;
                     }
                     int[] destinationArray = new int[num];
-                    Array.Copy(this._items, 0, destinationArray, 0, index);
-                    Array.Copy(this._items, index, destinationArray, index + count, this._size - index);
-                    this._items = destinationArray;
+                    Array.Copy(_items, 0, destinationArray, 0, index);
+                    Array.Copy(_items, index, destinationArray, index + count, _size - index);
+                    _items = destinationArray;
                 }
                 else
                 {
-                    Array.Copy(this._items, index, this._items, index + count, this._size - index);
+                    Array.Copy(_items, index, _items, index + count, _size - index);
                 }
             }
             else if (count < 0)
             {
                 int sourceIndex = index - count;
-                Array.Copy(this._items, sourceIndex, this._items, index, this._size - sourceIndex);
+                Array.Copy(_items, sourceIndex, _items, index, _size - sourceIndex);
             }
         }
 
@@ -96,7 +95,7 @@ namespace Algorithm.Diff
         {
             get
             {
-                return this._size;
+                return _size;
             }
         }
 
@@ -104,11 +103,11 @@ namespace Algorithm.Diff
         {
             get
             {
-                return this._items[index];
+                return _items[index];
             }
             set
             {
-                this._items[index] = value;
+                _items[index] = value;
             }
         }
     }

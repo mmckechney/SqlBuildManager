@@ -3,14 +3,10 @@ using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using ydn = YamlDotNet.Serialization;
-using SqlSync.Connection;
-using System.Diagnostics;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -21,7 +17,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class AciTests
     {
- 
+
         private string settingsFileKeyPath;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
@@ -30,11 +26,11 @@ namespace SqlBuildManager.Console.ExternalTest
         {
 
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<AciTests>("SqlBuildManager.Console.log", @"C:\temp");
-            this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+            settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
 
-            System.Console.SetOut(new StringWriter(this.ConsoleOutput));    // Associate StringBuilder with StdOut
-            this.ConsoleOutput.Clear();    // Clear text from any previous text runs
-           
+            System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
+            ConsoleOutput.Clear();    // Clear text from any previous text runs
+
 
         }
         [TestCleanup]
@@ -43,7 +39,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-   
+
 
         [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
@@ -192,11 +188,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }

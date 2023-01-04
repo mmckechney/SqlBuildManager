@@ -172,10 +172,10 @@ namespace SqlBuildManager.Console.UnitTest
             }
 
         }
-        [DataRow(88,91,  new int[] { 170, 26, 159, 252, 249, 268, 225, 253, 255, 151, 37, 235, 179, 259, 189, 88, 130, 58, 115, 85, 266, 65, 204, 27, 103, 72, 90, 258, 170, 163, 217, 196, 267, 137, 282, 171, 244, 280, 199, 190, 114, 238, 175, 178, 268, 258, 131, 220, 101, 187, 263, 58, 27, 78, 108, 131, 110, 158, 174, 203, 203, 256, 108, 118, 223, 130, 257, 67, 265, 43, 132, 138, 147, 213, 259, 54, 178, 52, 47, 133, 229, 159, 182, 272, 188, 184, 194, 215, 55, 177, 87 } )] //Actual 86
+        [DataRow(88, 91, new int[] { 170, 26, 159, 252, 249, 268, 225, 253, 255, 151, 37, 235, 179, 259, 189, 88, 130, 58, 115, 85, 266, 65, 204, 27, 103, 72, 90, 258, 170, 163, 217, 196, 267, 137, 282, 171, 244, 280, 199, 190, 114, 238, 175, 178, 268, 258, 131, 220, 101, 187, 263, 58, 27, 78, 108, 131, 110, 158, 174, 203, 203, 256, 108, 118, 223, 130, 257, 67, 265, 43, 132, 138, 147, 213, 259, 54, 178, 52, 47, 133, 229, 159, 182, 272, 188, 184, 194, 215, 55, 177, 87 })] //Actual 86
         [DataRow(80, 81, new int[] { 185, 159, 72, 186, 41, 39, 101, 74, 75, 177, 27, 151, 243, 22, 48, 64, 141, 123, 102, 24, 38, 166, 19, 57, 26, 148, 23, 56, 97, 171, 138, 49, 29, 240, 84, 246, 58, 243, 151, 45, 170, 125, 174, 251, 225, 219, 199, 116, 135, 60, 248, 245, 79, 186, 93, 29, 150, 25, 169, 156, 26, 55, 240, 167, 49, 242, 132, 13, 201, 65, 16, 162, 235, 66, 117, 176, 256, 31, 95, 71, 213 })]
         [DataRow(39, 47, new int[] { 175, 179, 203, 92, 153, 230, 154, 166, 247, 213, 39, 207, 192, 208, 42, 211, 212, 35, 282, 66, 82, 45, 94, 72, 124, 212, 118, 235, 263, 138, 30, 239, 99, 271, 114, 189, 25, 80, 31, 217, 255, 192, 81, 40, 84, 244, 178 })] //Actual:<38>
-        [DataRow( 3,  8, new int[] { 92, 225, 126, 135, 266, 186, 280, 115 })]
+        [DataRow(3, 8, new int[] { 92, 225, 126, 135, 266, 186, 280, 115 })]
         [DataRow(26, 27, new int[] { 554, 436, 194, 441, 382, 440, 337, 242, 85, 449, 513, 426, 475, 151, 507, 460, 138, 425, 529, 120, 262, 117, 123, 391, 344, 260, 119 })] //Actual:<23>
         [DataRow(32, 38, new int[] { 218, 532, 396, 63, 227, 207, 185, 106, 556, 453, 528, 476, 512, 395, 73, 487, 121, 75, 450, 560, 456, 199, 488, 413, 311, 439, 132, 405, 448, 238, 266, 101, 368, 84, 133, 171, 31, 276 })] //Actual:<30>
         [DataRow(48, 52, new int[] { 155, 365, 406, 341, 92, 116, 294, 268, 495, 239, 260, 250, 214, 101, 190, 212, 319, 277, 137, 316, 199, 428, 198, 353, 166, 408, 239, 45, 71, 458, 231, 140, 129, 117, 451, 211, 168, 320, 378, 448, 337, 161, 149, 99, 178, 198, 43, 151, 131, 211, 407, 361 })] // Actual:<46>.
@@ -200,11 +200,11 @@ namespace SqlBuildManager.Console.UnitTest
                 var idealBucket = Math.Ceiling((double)flattened.Sum(c => c.Count()) / (double)targetBuckets);
                 int maxBucket = flattened.Where(c => c.Count() <= idealBucket).Max(c => c.Count()); //exclude the buckets that were already above the ideal
                 int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2) + 1].Count();
-                
+
                 string message = $"Buckets: {targetBuckets}; Servers: {serverCount}; Matrix: {string.Join(",", dbsPerServer)}";
                 Assert.AreEqual(targetBuckets, buckets.Count(), message);
                 Assert.IsTrue(buckets.Max(c => c.Count()) < maxBucket + idealBucket + (idealBucket * 1.2), message);
-  
+
 
                 var str = Concurrency.ConvertBucketsToConfigLines(buckets);
 
@@ -277,7 +277,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             string tmpFile = string.Empty;
             MultiDbData multiData;
-           
+
             try
             {
                 (tmpFile, multiData) = GetMultiDbData();
@@ -300,7 +300,7 @@ namespace SqlBuildManager.Console.UnitTest
         [DataTestMethod]
         public void DbOverrideSimpleBatchTest(int concurrencyCount)
         {
-            
+
             string tmpFile = string.Empty;
             MultiDbData multiData;
 
@@ -309,13 +309,13 @@ namespace SqlBuildManager.Console.UnitTest
                 (tmpFile, multiData) = GetMultiDbData();
                 var flattened = Concurrency.FlattenOverride(multiData);
                 int totalRowCount = flattened.Count();
-                double expectedChunks = Math.Ceiling((double)totalRowCount /(double) concurrencyCount);
+                double expectedChunks = Math.Ceiling((double)totalRowCount / (double)concurrencyCount);
                 int lastBatchSize = totalRowCount;
-              
+
                 var output = Concurrency.ConcurrencyByInt(multiData, concurrencyCount);
-                Assert.IsTrue(expectedChunks <= output[0].Count() && output[0].Count() >= expectedChunks-1);
+                Assert.IsTrue(expectedChunks <= output[0].Count() && output[0].Count() >= expectedChunks - 1);
                 Assert.AreEqual(concurrencyCount, output.Count());
-               // Assert.AreEqual(lastBatchSize, output.Last().Count());
+                // Assert.AreEqual(lastBatchSize, output.Last().Count());
             }
             finally
             {
@@ -372,7 +372,7 @@ namespace SqlBuildManager.Console.UnitTest
             }
         }
 
-        [DataRow(2,10,225,48)]
+        [DataRow(2, 10, 225, 48)]
         [DataRow(5, 25, 90, 16)]
         [DataRow(10, 50, 45, 6)]
         [DataRow(20, 100, 23, 1)]
@@ -478,7 +478,7 @@ namespace SqlBuildManager.Console.UnitTest
                 else
                 {
                     Assert.IsTrue(chunked.First().Count() <= max); //chunks should not be larger that the mathematical ceiling
-                    Assert.IsTrue(chunked.Skip(numberOfChunks/2).First().Count() <= max); //grab one near the middle
+                    Assert.IsTrue(chunked.Skip(numberOfChunks / 2).First().Count() <= max); //grab one near the middle
                     Assert.IsTrue(chunked.Last().Count() <= max * 1.2); //last is not be larger than max
                 }
 

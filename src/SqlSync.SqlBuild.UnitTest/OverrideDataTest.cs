@@ -1,12 +1,10 @@
-﻿using SqlSync.SqlBuild;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.DbInformation;
-using System.Collections.Generic;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
+using System.Collections.Generic;
 namespace SqlSync.SqlBuild.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for OverrideDataTest and is intended
     ///to contain all OverrideDataTest Unit Tests
@@ -72,7 +70,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void TargetDatabaseOverridesTest()
         {
             List<DatabaseOverride> expected = new List<DatabaseOverride>();
-            expected.Add(new DatabaseOverride("default1","override1"));
+            expected.Add(new DatabaseOverride("default1", "override1"));
             expected.Add(new DatabaseOverride("default2", "override2"));
             List<DatabaseOverride> actual;
             OverrideData.TargetDatabaseOverrides = expected;
@@ -80,7 +78,7 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(expected, actual);
         }
 
-        
+
 
         /// <summary>
         ///A test for OverrideData Constructor

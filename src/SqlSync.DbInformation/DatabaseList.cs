@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SqlSync.DbInformation
 {
 
-    public class DatabaseList :  System.Collections.Generic.List<DatabaseItem>
+    public class DatabaseList : System.Collections.Generic.List<DatabaseItem>
     {
         public DatabaseList() : base()
         {
@@ -70,7 +68,7 @@ namespace SqlSync.DbInformation
 
             for (int i = 0; i < databases.Count; i++)
             {
-                DatabaseItem tmp = this.Find(databases[i].DatabaseName);
+                DatabaseItem tmp = Find(databases[i].DatabaseName);
                 if (tmp != null)
                 {
                     tmp.IsManuallyEntered = databases[i].IsManuallyEntered;
@@ -78,13 +76,13 @@ namespace SqlSync.DbInformation
                 }
                 else
                 {
-                    this.Add(databases[i]);
+                    Add(databases[i]);
                 }
             }
         }
         public DatabaseItem Find(string databaseName)
         {
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 if (this[i].DatabaseName.ToLower() == databaseName.ToLower())
                     return this[i];
@@ -93,9 +91,9 @@ namespace SqlSync.DbInformation
         }
         public bool IsAllManuallyEntered()
         {
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
-                if(this[i].IsManuallyEntered == false)
+                if (this[i].IsManuallyEntered == false)
                     return false;
             }
             return true;

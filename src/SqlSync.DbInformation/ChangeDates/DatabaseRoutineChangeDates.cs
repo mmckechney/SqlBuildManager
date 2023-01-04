@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SqlSync.DbInformation.ChangeDates
 {
@@ -26,7 +25,7 @@ namespace SqlSync.DbInformation.ChangeDates
         Dictionary<string, Databases> serverCollection;
         public Servers()
         {
-            this.serverCollection = new Dictionary<string, Databases>();
+            serverCollection = new Dictionary<string, Databases>();
         }
 
         public Dictionary<string, Databases> ServerCollection
@@ -86,7 +85,7 @@ namespace SqlSync.DbInformation.ChangeDates
 
             }
         }
-       
+
 
 
     }

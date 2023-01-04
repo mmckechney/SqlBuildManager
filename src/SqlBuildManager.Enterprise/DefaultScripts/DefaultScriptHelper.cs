@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.Extensions.Logging;
 using SqlSync.SqlBuild;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using sb = SqlSync.SqlBuild.DefaultScripts;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.DefaultScripts
 {
     public class DefaultScriptHelper
@@ -65,7 +64,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             }
             catch (Exception exe)
             {
-                log.LogError(exe,$"Unable to deserialize the DefaultScriptRegistry object XML file at {filePath}");
+                log.LogError(exe, $"Unable to deserialize the DefaultScriptRegistry object XML file at {filePath}");
             }
             return registry;
         }
@@ -74,13 +73,13 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
         {
             if (!File.Exists(localFilePath))
             {
-                log.LogInformation($"Unable to validate local default script. File does not exist at {localFilePath}" );
+                log.LogInformation($"Unable to validate local default script. File does not exist at {localFilePath}");
                 return false;
             }
 
             if (!File.Exists(enterpriseFilePath))
             {
-                log.LogWarning($"Unable to validate enterprise default script. File does not exist at {enterpriseFilePath}" );
+                log.LogWarning($"Unable to validate enterprise default script. File does not exist at {enterpriseFilePath}");
                 return true;
             }
 
@@ -92,7 +91,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             }
             catch (Exception exe)
             {
-                log.LogError(exe, $"Unable to get file hash on local default script: {localFilePath}" );
+                log.LogError(exe, $"Unable to get file hash on local default script: {localFilePath}");
             }
 
 
@@ -145,7 +144,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 log.LogDebug($"Copied enterprise file to local path:  '{enterpriseFilePath}' --> '{localFilePath}'");
                 return true;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError(exe, $"Unable to move enterprise file '{enterpriseFilePath}' to local file '{localFilePath}");
                 return false;
@@ -155,11 +154,11 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
         {
             try
             {
-                if(defaultScriptRegs == null || groupMemberships == null)
+                if (defaultScriptRegs == null || groupMemberships == null)
                     return null;
 
-                var myDefaults = from defReg in defaultScriptRegs 
-                                 join grp in groupMemberships on defReg.ApplyToGroup.ToLower() equals grp.ToLower() 
+                var myDefaults = from defReg in defaultScriptRegs
+                                 join grp in groupMemberships on defReg.ApplyToGroup.ToLower() equals grp.ToLower()
                                  select new { defReg, grp };
 
                 if (myDefaults.Count() == 0)

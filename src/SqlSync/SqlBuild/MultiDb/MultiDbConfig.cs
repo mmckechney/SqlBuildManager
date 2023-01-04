@@ -1,14 +1,11 @@
-﻿using System;
+﻿using SqlSync.Connection;
+using SqlSync.DbInformation;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using SqlSync.DbInformation;
-using SqlSync.Connection;
-using System.Linq;
 
 namespace SqlSync.SqlBuild.MultiDb
 {
@@ -26,7 +23,7 @@ namespace SqlSync.SqlBuild.MultiDb
             set { defaultDatabase = value; }
         }
 
-       private Dictionary<int?, DatabaseOverride> databaseOverrideSequence;
+        private Dictionary<int?, DatabaseOverride> databaseOverrideSequence;
 
         public Dictionary<int?, DatabaseOverride> DatabaseOverrideSequence
         {
@@ -34,18 +31,18 @@ namespace SqlSync.SqlBuild.MultiDb
             {
 
                 databaseOverrideSequence = new Dictionary<int?, DatabaseOverride>();
-                for (int i = 0; i < this.flowDbContainer.Controls.Count; i++)
+                for (int i = 0; i < flowDbContainer.Controls.Count; i++)
                 {
-                    if (this.flowDbContainer.Controls[i] is MultiDbOverrideSequence)
+                    if (flowDbContainer.Controls[i] is MultiDbOverrideSequence)
                     {
-                        MultiDbOverrideSequence tmp = (MultiDbOverrideSequence)this.flowDbContainer.Controls[i];
+                        MultiDbOverrideSequence tmp = (MultiDbOverrideSequence)flowDbContainer.Controls[i];
                         if (tmp.Sequence.HasValue && tmp.Sequence.Value > 0)
-                            this.databaseOverrideSequence.Add(tmp.Sequence, new DatabaseOverride() { DefaultDbTarget = this.defaultDatabase.DatabaseName, OverrideDbTarget = tmp.DatabaseName, QueryRowData = tmp.QueryRowData });
+                            databaseOverrideSequence.Add(tmp.Sequence, new DatabaseOverride() { DefaultDbTarget = defaultDatabase.DatabaseName, OverrideDbTarget = tmp.DatabaseName, QueryRowData = tmp.QueryRowData });
                     }
                 }
-                return this.databaseOverrideSequence;
+                return databaseOverrideSequence;
             }
-       
+
         }
 
 
@@ -57,7 +54,7 @@ namespace SqlSync.SqlBuild.MultiDb
         public MultiDbConfig(DatabaseItem defaultDatabase, List<ServerData> lstSrvData)
             : this(defaultDatabase)
         {
-            this.serverData = lstSrvData;
+            serverData = lstSrvData;
         }
         public MultiDbConfig()
         {
@@ -66,12 +63,12 @@ namespace SqlSync.SqlBuild.MultiDb
         public void DataBind()
         {
             //Set the text of the default database name
-            this.lblConfigDb.Text = this.defaultDatabase.DatabaseName;
-            toolTip1.SetToolTip(this.lblConfigDb, this.defaultDatabase.DatabaseName);
-            if (this.defaultDatabase.IsManuallyEntered)
+            lblConfigDb.Text = defaultDatabase.DatabaseName;
+            toolTip1.SetToolTip(lblConfigDb, defaultDatabase.DatabaseName);
+            if (defaultDatabase.IsManuallyEntered)
             {
-                this.lblConfigDb.ForeColor = Color.Red;
-                toolTip1.SetToolTip(this.lblConfigDb, this.defaultDatabase.DatabaseName +"\r\nWARNING!\r\nThis database was found in the configuration file but NOT in the current Build Manager File.\r\nThis override run setting will be ignored unless fixed.");
+                lblConfigDb.ForeColor = Color.Red;
+                toolTip1.SetToolTip(lblConfigDb, defaultDatabase.DatabaseName + "\r\nWARNING!\r\nThis database was found in the configuration file but NOT in the current Build Manager File.\r\nThis override run setting will be ignored unless fixed.");
 
             }
 
@@ -102,9 +99,9 @@ namespace SqlSync.SqlBuild.MultiDb
                 //}
                 //else
                 //{
-                    tmp = new MultiDbOverrideSequence(lstCombined[i].DatabaseName, lstCombined[i].SequenceId,new List<QueryRowItem>(), lstCombined[i].IsManuallyEntered);
+                tmp = new MultiDbOverrideSequence(lstCombined[i].DatabaseName, lstCombined[i].SequenceId, new List<QueryRowItem>(), lstCombined[i].IsManuallyEntered);
                 //}
-                this.flowDbContainer.Controls.Add(tmp);
+                flowDbContainer.Controls.Add(tmp);
                 tmp.ValueChanged += new EventHandler(tmp_ValueChanged);
                 tmp.AutoSequencePattern += new AutoSequencePatternEventHandler(tmp_AutoSequencePattern);
             }
@@ -117,7 +114,7 @@ namespace SqlSync.SqlBuild.MultiDb
             int increment = e.Increment;
 
             Regex dbMatch = new Regex(pattern, RegexOptions.IgnoreCase);
-            foreach (Control ctrl in this.flowDbContainer.Controls)
+            foreach (Control ctrl in flowDbContainer.Controls)
             {
                 if (ctrl is MultiDbOverrideSequence)
                 {
@@ -135,8 +132,8 @@ namespace SqlSync.SqlBuild.MultiDb
 
         void tmp_ValueChanged(object sender, EventArgs e)
         {
-            if (this.ValueChanged != null)
-                this.ValueChanged(this, EventArgs.Empty);
+            if (ValueChanged != null)
+                ValueChanged(this, EventArgs.Empty);
         }
 
         public event EventHandler ValueChanged;

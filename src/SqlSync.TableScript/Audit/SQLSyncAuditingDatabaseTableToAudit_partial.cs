@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 namespace SqlSync.TableScript.Audit
 {
     public partial class SQLSyncAuditingDatabaseTableToAudit : IAuditInfo
@@ -18,11 +15,11 @@ namespace SqlSync.TableScript.Audit
         {
             get
             {
-                return this._HasAuditTable;
+                return _HasAuditTable;
             }
             set
             {
-                this._HasAuditTable = value;
+                _HasAuditTable = value;
             }
         }
 
@@ -31,11 +28,11 @@ namespace SqlSync.TableScript.Audit
         {
             get
             {
-                return this._HasAuditUpdateTrigger;
+                return _HasAuditUpdateTrigger;
             }
             set
             {
-                this._HasAuditUpdateTrigger = value;
+                _HasAuditUpdateTrigger = value;
             }
         }
 
@@ -44,11 +41,11 @@ namespace SqlSync.TableScript.Audit
         {
             get
             {
-                return this._HasAuditInsertTrigger;
+                return _HasAuditInsertTrigger;
             }
             set
             {
-                this._HasAuditInsertTrigger = value;
+                _HasAuditInsertTrigger = value;
             }
         }
 
@@ -57,11 +54,11 @@ namespace SqlSync.TableScript.Audit
         {
             get
             {
-                return this._HasAuditDeleteTrigger;
+                return _HasAuditDeleteTrigger;
             }
             set
             {
-                this._HasAuditDeleteTrigger = value;
+                _HasAuditDeleteTrigger = value;
             }
         }
 
@@ -70,11 +67,11 @@ namespace SqlSync.TableScript.Audit
         {
             get
             {
-                return this.Name;
+                return Name;
             }
             set
             {
-                this.Name = value;
+                Name = value;
             }
         }
     }

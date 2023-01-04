@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace SqlSync.SqlBuild.Objects
+﻿namespace SqlSync.SqlBuild.Objects
 {
-    public class UpdatedObject 
+    public class UpdatedObject
     {
         public string ScriptName
         {
@@ -19,9 +14,9 @@ namespace SqlSync.SqlBuild.Objects
         }
         public UpdatedObject(string scriptName, string scriptContents)
         {
-            this.ScriptContents = scriptContents;
-            this.ScriptName = scriptName;
+            ScriptContents = scriptContents;
+            ScriptName = scriptName;
         }
-        
+
     }
 }

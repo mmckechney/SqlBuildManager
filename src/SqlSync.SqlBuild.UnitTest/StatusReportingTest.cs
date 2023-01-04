@@ -1,12 +1,9 @@
-﻿using SqlSync.SqlBuild.Status;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for StatusReportingTest and is intended
     ///to contain all StatusReportingTest Unit Tests

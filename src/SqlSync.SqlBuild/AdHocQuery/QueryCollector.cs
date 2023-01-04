@@ -1,17 +1,15 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Status;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Xml;
-using System.Xml.Serialization;
 using System.Xml.XPath;
 using System.Xml.Xsl;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Status;
-using Microsoft.Extensions.Logging;
-using System.Reflection;
 namespace SqlSync.SqlBuild.AdHocQuery
 {
     public class QueryCollector
@@ -35,11 +33,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
         {
             this.multiDbData = multiDbData;
             this.connData = connData;
-            
+
         }
         private QueryCollector()
         {
-         
+
         }
         /// <summary>
         /// Main method that coordinates the collection of data from each target database
@@ -51,17 +49,17 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="scriptTimeout">SQL timeout per connection</param>
         public bool GetQueryResults(ref BackgroundWorker bgWorker, string fileName, ReportType reportType, string query, int scriptTimeout)
         {
-            this.resultsFilePath = Path.Combine(Path.GetDirectoryName(fileName), Guid.NewGuid().ToString());
+            resultsFilePath = Path.Combine(Path.GetDirectoryName(fileName), Guid.NewGuid().ToString());
 
             try
             {
-                DirectoryInfo inf = new DirectoryInfo(this.resultsFilePath);
+                DirectoryInfo inf = new DirectoryInfo(resultsFilePath);
                 inf.Create();
                 inf.Attributes = FileAttributes.Hidden;
             }
             catch (Exception exe)
             {
-                string message = String.Format("Unable to create working temp directory at {0}: {1}", this.resultsFilePath, exe.Message);
+                string message = String.Format("Unable to create working temp directory at {0}: {1}", resultsFilePath, exe.Message);
                 log.LogError(exe, message);
                 if (bgWorker != null && bgWorker.WorkerReportsProgress)
                 {
@@ -87,7 +85,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                     {
                         QueryCollector.SyncObj.WorkingRunners++;
                     }
-                    QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, this.resultsFilePath, scriptTimeout, this.connData);
+                    QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, resultsFilePath, scriptTimeout, connData);
                     runner.QueryCollectionRunnerUpdate += new QueryCollectionRunner.QueryCollectionRunnerUpdateEventHandler(runner_HashCollectionRunnerUpdate);
                     runners.Add(runner);
                     System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedHashCollection, runner);
@@ -117,7 +115,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             {
                 queryResultFiles.Add(runner.ResultsTempFile);
             }
-            
+
 
             if (bgWorker != null && bgWorker.WorkerReportsProgress)
             {
@@ -138,7 +136,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
             if (bgWorker != null && bgWorker.WorkerReportsProgress)
             {
-                this.bgWorker.ReportProgress(0, e);
+                bgWorker.ReportProgress(0, e);
             }
         }
         /// <summary>
@@ -154,7 +152,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (Exception exe)
             {
-                log.LogError ($"Error with QueryCollectionRunner{Environment.NewLine}{exe.ToString()}");
+                log.LogError($"Error with QueryCollectionRunner{Environment.NewLine}{exe.ToString()}");
             }
             finally
             {
@@ -231,13 +229,13 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 if (File.Exists(tmpCombined))
                     File.Delete(tmpCombined);
 
-                if (Directory.Exists(this.resultsFilePath))
-                    Directory.Delete(this.resultsFilePath, true);
+                if (Directory.Exists(resultsFilePath))
+                    Directory.Delete(resultsFilePath, true);
 
-                foreach (QueryCollectionRunner runner in this.runners)
+                foreach (QueryCollectionRunner runner in runners)
                     runner.Dispose();
 
-                this.runners = null;
+                runners = null;
             }
         }
         /// <summary>
@@ -247,7 +245,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <returns>The name of the combined raw data temporary file created for further report processing</returns>
         private string CombineQueryResultsFiles(List<string> queryResultFiles)
         {
-            string tmpCombined = this.resultsFilePath + String.Format("Combined-{0}.txt", Guid.NewGuid().ToString());
+            string tmpCombined = resultsFilePath + String.Format("Combined-{0}.txt", Guid.NewGuid().ToString());
             try
             {
                 string tmpLine = null;
@@ -295,7 +293,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             {
                 if (queryResultsFiles.Count == 1)
                 {
-                    if(File.Exists(fileName))
+                    if (File.Exists(fileName))
                         File.Delete(fileName);
 
                     File.Move(queryResultsFiles[0], fileName);
@@ -332,7 +330,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 log.LogError($"Error in CreateCombinedCsvFile{Environment.NewLine}{exe.ToString()}");
                 return false;
             }
-        
+
         }
 
         public void GetBuildValidationResults(ref BackgroundWorker bgWorker, string fileName, string checkValue, ReportType reportType, BuildValidationType validationType, int scriptTimeout)
@@ -344,17 +342,17 @@ GROUP BY {0}, {1}, CommitDate ORDER BY CommitDate DESC";
             switch (validationType)
             {
                 case BuildValidationType.BuildFileName:
-                    script = string.Format(scriptFormat, "BuildFileName", "BuildProjectHash",checkValue);
+                    script = string.Format(scriptFormat, "BuildFileName", "BuildProjectHash", checkValue);
                     break;
                 case BuildValidationType.IndividualScriptHash:
-                    script = string.Format(scriptFormat, "ScriptFileHash", "ScriptFileName",checkValue);
+                    script = string.Format(scriptFormat, "ScriptFileHash", "ScriptFileName", checkValue);
                     break;
                 case BuildValidationType.IndividualScriptName:
-                    script = string.Format(scriptFormat, "ScriptFileName", "ScriptFileHash",checkValue);
+                    script = string.Format(scriptFormat, "ScriptFileName", "ScriptFileHash", checkValue);
                     break;
                 case BuildValidationType.BuildFileHash:
                 default:
-                    script = string.Format(scriptFormat, "BuildProjectHash", "BuildFileName",checkValue);
+                    script = string.Format(scriptFormat, "BuildProjectHash", "BuildFileName", checkValue);
                     break;
             }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SqlSync.SprocTest
 {
@@ -85,7 +84,7 @@ namespace SqlSync.SprocTest
             set { results = value; }
         }
 
-       
+
 
     }
 }

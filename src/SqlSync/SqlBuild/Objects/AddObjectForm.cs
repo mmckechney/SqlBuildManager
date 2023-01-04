@@ -1,42 +1,39 @@
+using SqlSync.BuildHistory;
+using SqlSync.Connection;
+using SqlSync.DbInformation;
 using System;
-using System.Drawing;
-using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
-using SqlSync.DbInformation;
-using SqlSync.Connection;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using SqlSync.BuildHistory;
 namespace SqlSync.SqlBuild.Objects
 {
-	/// <summary>
-	/// Summary description for AddObjectForm.
-	/// </summary>
-	public class AddObjectForm : System.Windows.Forms.Form
-	{
-       
+    /// <summary>
+    /// Summary description for AddObjectForm.
+    /// </summary>
+    public class AddObjectForm : System.Windows.Forms.Form
+    {
+
         private SqlSync.ColumnSorter listSorter = new ColumnSorter();
-		protected System.Windows.Forms.ColumnHeader columnHeader1;
-		protected System.Windows.Forms.ColumnHeader columnHeader3;
-		protected System.Windows.Forms.ColumnHeader columnHeader4;
-		protected System.Windows.Forms.Button btnCancel;
-		protected System.Windows.Forms.Button btnUpdate;
+        protected System.Windows.Forms.ColumnHeader columnHeader1;
+        protected System.Windows.Forms.ColumnHeader columnHeader3;
+        protected System.Windows.Forms.ColumnHeader columnHeader4;
+        protected System.Windows.Forms.Button btnCancel;
+        protected System.Windows.Forms.Button btnUpdate;
         private List<ObjectData> objData;
-		private string objectType;
+        private string objectType;
         private string description;
-		private ConnectionData connData;
+        private ConnectionData connData;
         private List<ObjectData> selectedObjects = new List<ObjectData>();
         public List<ObjectData> SelectedObjects
-		{
-			get
-			{
-				return this.selectedObjects;
-			}
-		}
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
+        {
+            get
+            {
+                return selectedObjects;
+            }
+        }
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
         protected System.Windows.Forms.ListView lstAdds;
         private ContextMenuStrip contextMenuStrip1;
         private ToolStripMenuItem previewObjectScriptToolStripMenuItem;
@@ -49,253 +46,253 @@ namespace SqlSync.SqlBuild.Objects
         private ToolTip toolTip1;
         private IContainer components;
 
-		public AddObjectForm(List<ObjectData> objData, string description, string objectType, ConnectionData connData)
-		{
-			//
-			// Required for Windows Form Designer support
-			//
-			InitializeComponent();
+        public AddObjectForm(List<ObjectData> objData, string description, string objectType, ConnectionData connData)
+        {
+            //
+            // Required for Windows Form Designer support
+            //
+            InitializeComponent();
 
-			this.objData = objData;
-			this.connData = connData;
+            this.objData = objData;
+            this.connData = connData;
             this.description = description;
-			this.objectType = objectType;
-		}
+            this.objectType = objectType;
+        }
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
-            this.components = new System.ComponentModel.Container();
+        #region Windows Form Designer generated code
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddObjectForm));
-            this.lstAdds = new System.Windows.Forms.ListView();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.previewObjectScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.btnUpdate = new System.Windows.Forms.Button();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.statGeneral = new System.Windows.Forms.ToolStripStatusLabel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtFind = new System.Windows.Forms.TextBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.contextMenuStrip1.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
-            this.SuspendLayout();
+            lstAdds = new System.Windows.Forms.ListView();
+            columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            columnHeader3 = new System.Windows.Forms.ColumnHeader();
+            columnHeader4 = new System.Windows.Forms.ColumnHeader();
+            contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
+            previewObjectScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            viewObjectsSqlBuildHistoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            btnCancel = new System.Windows.Forms.Button();
+            btnUpdate = new System.Windows.Forms.Button();
+            statusStrip1 = new System.Windows.Forms.StatusStrip();
+            statGeneral = new System.Windows.Forms.ToolStripStatusLabel();
+            label1 = new System.Windows.Forms.Label();
+            txtFind = new System.Windows.Forms.TextBox();
+            toolTip1 = new System.Windows.Forms.ToolTip(components);
+            contextMenuStrip1.SuspendLayout();
+            statusStrip1.SuspendLayout();
+            SuspendLayout();
             // 
             // lstAdds
             // 
-            this.lstAdds.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            lstAdds.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lstAdds.CheckBoxes = true;
-            this.lstAdds.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader3,
-            this.columnHeader4});
-            this.lstAdds.ContextMenuStrip = this.contextMenuStrip1;
-            this.lstAdds.FullRowSelect = true;
-            this.lstAdds.GridLines = true;
-            this.lstAdds.HideSelection = false;
-            this.lstAdds.Location = new System.Drawing.Point(19, 20);
-            this.lstAdds.Name = "lstAdds";
-            this.lstAdds.Size = new System.Drawing.Size(618, 425);
-            this.lstAdds.TabIndex = 2;
-            this.lstAdds.UseCompatibleStateImageBehavior = false;
-            this.lstAdds.View = System.Windows.Forms.View.Details;
-            this.lstAdds.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lstAdds_ColumnClick);
+            lstAdds.CheckBoxes = true;
+            lstAdds.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            columnHeader1,
+            columnHeader3,
+            columnHeader4});
+            lstAdds.ContextMenuStrip = contextMenuStrip1;
+            lstAdds.FullRowSelect = true;
+            lstAdds.GridLines = true;
+            lstAdds.HideSelection = false;
+            lstAdds.Location = new System.Drawing.Point(19, 20);
+            lstAdds.Name = "lstAdds";
+            lstAdds.Size = new System.Drawing.Size(618, 425);
+            lstAdds.TabIndex = 2;
+            lstAdds.UseCompatibleStateImageBehavior = false;
+            lstAdds.View = System.Windows.Forms.View.Details;
+            lstAdds.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(lstAdds_ColumnClick);
             // 
             // columnHeader1
             // 
-            this.columnHeader1.Text = "Object Name";
-            this.columnHeader1.Width = 273;
+            columnHeader1.Text = "Object Name";
+            columnHeader1.Width = 273;
             // 
             // columnHeader3
             // 
-            this.columnHeader3.Text = "Altered Date";
-            this.columnHeader3.Width = 178;
+            columnHeader3.Text = "Altered Date";
+            columnHeader3.Width = 178;
             // 
             // columnHeader4
             // 
-            this.columnHeader4.Text = "Created Date";
-            this.columnHeader4.Width = 155;
+            columnHeader4.Text = "Created Date";
+            columnHeader4.Width = 155;
             // 
             // contextMenuStrip1
             // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.previewObjectScriptToolStripMenuItem,
-            this.toolStripSeparator1,
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(377, 54);
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            previewObjectScriptToolStripMenuItem,
+            toolStripSeparator1,
+            viewObjectsSqlBuildHistoryToolStripMenuItem});
+            contextMenuStrip1.Name = "contextMenuStrip1";
+            contextMenuStrip1.Size = new System.Drawing.Size(377, 54);
             // 
             // previewObjectScriptToolStripMenuItem
             // 
-            this.previewObjectScriptToolStripMenuItem.Name = "previewObjectScriptToolStripMenuItem";
-            this.previewObjectScriptToolStripMenuItem.Size = new System.Drawing.Size(376, 22);
-            this.previewObjectScriptToolStripMenuItem.Text = "Preview Object Script";
-            this.previewObjectScriptToolStripMenuItem.Click += new System.EventHandler(this.previewObjectScriptToolStripMenuItem_Click);
+            previewObjectScriptToolStripMenuItem.Name = "previewObjectScriptToolStripMenuItem";
+            previewObjectScriptToolStripMenuItem.Size = new System.Drawing.Size(376, 22);
+            previewObjectScriptToolStripMenuItem.Text = "Preview Object Script";
+            previewObjectScriptToolStripMenuItem.Click += new System.EventHandler(previewObjectScriptToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(373, 6);
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(373, 6);
             // 
             // viewObjectsSqlBuildHistoryToolStripMenuItem
             // 
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Name = "viewObjectsSqlBuildHistoryToolStripMenuItem";
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Size = new System.Drawing.Size(376, 22);
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Text = "View Object\'s change history as run by Sql Build Manager";
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.ToolTipText = "If a database object has been updated in the past via the Sql Build Manager tool," +
+            viewObjectsSqlBuildHistoryToolStripMenuItem.Name = "viewObjectsSqlBuildHistoryToolStripMenuItem";
+            viewObjectsSqlBuildHistoryToolStripMenuItem.Size = new System.Drawing.Size(376, 22);
+            viewObjectsSqlBuildHistoryToolStripMenuItem.Text = "View Object\'s change history as run by Sql Build Manager";
+            viewObjectsSqlBuildHistoryToolStripMenuItem.ToolTipText = "If a database object has been updated in the past via the Sql Build Manager tool," +
     " this will show you the history and allow you to compare versions.";
-            this.viewObjectsSqlBuildHistoryToolStripMenuItem.Click += new System.EventHandler(this.viewObjectsSqlBuildHistoryToolStripMenuItem_Click);
+            viewObjectsSqlBuildHistoryToolStripMenuItem.Click += new System.EventHandler(viewObjectsSqlBuildHistoryToolStripMenuItem_Click);
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnCancel.Location = new System.Drawing.Point(343, 487);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(134, 28);
-            this.btnCancel.TabIndex = 6;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            btnCancel.Location = new System.Drawing.Point(343, 487);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new System.Drawing.Size(134, 28);
+            btnCancel.TabIndex = 6;
+            btnCancel.Text = "Cancel";
+            btnCancel.Click += new System.EventHandler(btnCancel_Click);
             // 
             // btnUpdate
             // 
-            this.btnUpdate.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnUpdate.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnUpdate.Location = new System.Drawing.Point(180, 487);
-            this.btnUpdate.Name = "btnUpdate";
-            this.btnUpdate.Size = new System.Drawing.Size(153, 28);
-            this.btnUpdate.TabIndex = 5;
-            this.btnUpdate.Text = "Add Checked Files";
-            this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
+            btnUpdate.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            btnUpdate.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            btnUpdate.Location = new System.Drawing.Point(180, 487);
+            btnUpdate.Name = "btnUpdate";
+            btnUpdate.Size = new System.Drawing.Size(153, 28);
+            btnUpdate.TabIndex = 5;
+            btnUpdate.Text = "Add Checked Files";
+            btnUpdate.Click += new System.EventHandler(btnUpdate_Click);
             // 
             // statusStrip1
             // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.statGeneral});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 525);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(656, 22);
-            this.statusStrip1.TabIndex = 7;
-            this.statusStrip1.Text = "statusStrip1";
+            statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            statGeneral});
+            statusStrip1.Location = new System.Drawing.Point(0, 525);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new System.Drawing.Size(656, 22);
+            statusStrip1.TabIndex = 7;
+            statusStrip1.Text = "statusStrip1";
             // 
             // statGeneral
             // 
-            this.statGeneral.Name = "statGeneral";
-            this.statGeneral.Size = new System.Drawing.Size(641, 17);
-            this.statGeneral.Spring = true;
-            this.statGeneral.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            statGeneral.Name = "statGeneral";
+            statGeneral.Size = new System.Drawing.Size(641, 17);
+            statGeneral.Spring = true;
+            statGeneral.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label1
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(19, 454);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(36, 15);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Filter:";
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(19, 454);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(36, 15);
+            label1.TabIndex = 8;
+            label1.Text = "Filter:";
             // 
             // txtFind
             // 
-            this.txtFind.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            txtFind.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtFind.Location = new System.Drawing.Point(60, 449);
-            this.txtFind.Name = "txtFind";
-            this.txtFind.Size = new System.Drawing.Size(577, 23);
-            this.txtFind.TabIndex = 9;
-            this.txtFind.TextChanged += new System.EventHandler(this.txtFind_TextChanged);
+            txtFind.Location = new System.Drawing.Point(60, 449);
+            txtFind.Name = "txtFind";
+            txtFind.Size = new System.Drawing.Size(577, 23);
+            txtFind.TabIndex = 9;
+            txtFind.TextChanged += new System.EventHandler(txtFind_TextChanged);
             // 
             // AddObjectForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
-            this.ClientSize = new System.Drawing.Size(656, 547);
-            this.Controls.Add(this.txtFind);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.btnUpdate);
-            this.Controls.Add(this.lstAdds);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.KeyPreview = true;
-            this.Name = "AddObjectForm";
-            this.Text = "Add New {0} Scripts From {1}.{2}";
-            this.Load += new System.EventHandler(this.AddObjectForm_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.AddObjectForm_KeyDown);
-            this.contextMenuStrip1.ResumeLayout(false);
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleBaseSize = new System.Drawing.Size(6, 16);
+            ClientSize = new System.Drawing.Size(656, 547);
+            Controls.Add(txtFind);
+            Controls.Add(label1);
+            Controls.Add(statusStrip1);
+            Controls.Add(btnCancel);
+            Controls.Add(btnUpdate);
+            Controls.Add(lstAdds);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+            Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            KeyPreview = true;
+            Name = "AddObjectForm";
+            Text = "Add New {0} Scripts From {1}.{2}";
+            Load += new System.EventHandler(AddObjectForm_Load);
+            KeyDown += new System.Windows.Forms.KeyEventHandler(AddObjectForm_KeyDown);
+            contextMenuStrip1.ResumeLayout(false);
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void AddObjectForm_Load(object sender, System.EventArgs e)
-		{
-            this.Text = String.Format(this.Text, this.description, this.connData.SQLServerName, this.connData.DatabaseName);
+        private void AddObjectForm_Load(object sender, System.EventArgs e)
+        {
+            Text = String.Format(Text, description, connData.SQLServerName, connData.DatabaseName);
             listSorter.IncludeNonSchemaSortOption = true;
-         
-            
-			for(int i=0;i<this.objData.Count;i++)
-			{
-                AddItemToList(this.objData[i]);
-			}
-            statGeneral.Text = "Total Objects Listed: " + this.objData.Count.ToString();
 
-           
-		}
 
-		private void btnUpdate_Click(object sender, System.EventArgs e)
-		{
-            for (int i = 0; i < this.lstAdds.CheckedItems.Count; i++)
-                this.selectedObjects.Add((ObjectData)this.lstAdds.CheckedItems[i].Tag);
+            for (int i = 0; i < objData.Count; i++)
+            {
+                AddItemToList(objData[i]);
+            }
+            statGeneral.Text = "Total Objects Listed: " + objData.Count.ToString();
 
-			this.DialogResult = DialogResult.OK;
-			this.Close();
-		}
 
-		private void btnCancel_Click(object sender, System.EventArgs e)
-		{
-			this.DialogResult = DialogResult.Cancel;
-			this.Close();
-		}
+        }
 
-		private void AddObjectForm_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
-		{
-			if(e.KeyCode == Keys.Escape)
-			{
-				this.DialogResult = DialogResult.Cancel;
-				this.Close();
-			}
-		}
+        private void btnUpdate_Click(object sender, System.EventArgs e)
+        {
+            for (int i = 0; i < lstAdds.CheckedItems.Count; i++)
+                selectedObjects.Add((ObjectData)lstAdds.CheckedItems[i].Tag);
+
+            DialogResult = DialogResult.OK;
+            Close();
+        }
+
+        private void btnCancel_Click(object sender, System.EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
+
+        private void AddObjectForm_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                DialogResult = DialogResult.Cancel;
+                Close();
+            }
+        }
 
         private void previewObjectScriptToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -306,25 +303,25 @@ namespace SqlSync.SqlBuild.Objects
             ObjectData objData = (ObjectData)item.Tag;
             string message;
             string script = GetScriptPreviewText(objData, out message);
-           
+
             if (script.Length > 0 || message.Length > 0)
             {
                 ScriptDisplayForm frmDisplay;
-                if(script.Length > 0)
-                    frmDisplay = new ScriptDisplayForm(script, this.connData.SQLServerName, item.SubItems[0].Text);
+                if (script.Length > 0)
+                    frmDisplay = new ScriptDisplayForm(script, connData.SQLServerName, item.SubItems[0].Text);
                 else
-                    frmDisplay = new ScriptDisplayForm(message, this.connData.SQLServerName, item.SubItems[0].Text);
+                    frmDisplay = new ScriptDisplayForm(message, connData.SQLServerName, item.SubItems[0].Text);
 
                 frmDisplay.ShowDialog();
             }
         }
         private string GetScriptPreviewText(ObjectData objData, out string message)
         {
-            SqlSync.ObjectScript.ObjectScriptHelper helper = new SqlSync.ObjectScript.ObjectScriptHelper(this.connData, SqlSync.Properties.Settings.Default.ScriptAsAlter, SqlSync.Properties.Settings.Default.ScriptPermissions, SqlSync.Properties.Settings.Default.ScriptPkWithTables);
+            SqlSync.ObjectScript.ObjectScriptHelper helper = new SqlSync.ObjectScript.ObjectScriptHelper(connData, SqlSync.Properties.Settings.Default.ScriptAsAlter, SqlSync.Properties.Settings.Default.ScriptPermissions, SqlSync.Properties.Settings.Default.ScriptPkWithTables);
             string script = string.Empty;
             string desc = string.Empty;
-            
-            switch (this.objectType)
+
+            switch (objectType)
             {
                 case SqlSync.Constants.DbObjectType.View:
                     helper.ScriptDatabaseObject(SqlSync.Constants.DbObjectType.View, objData.ObjectName, objData.SchemaOwner, ref script, ref desc, out message);
@@ -366,32 +363,32 @@ namespace SqlSync.SqlBuild.Objects
         {
             if (txtFind.Text.Length > 0)
             {
-                if (this.lstAdds.Groups.Count == 0)
+                if (lstAdds.Groups.Count == 0)
                 {
                     ListViewGroup grpFiltered = new ListViewGroup("Filtered");
                     grpFiltered.Header = "Filtered";
                     grpFiltered.HeaderAlignment = HorizontalAlignment.Left;
                     lstAdds.Groups.Add(grpFiltered);
 
-                    ListViewGroup grpObjectScripts = new ListViewGroup(this.description + " Objects");
-                    grpObjectScripts.Header = this.description + " Objects";
+                    ListViewGroup grpObjectScripts = new ListViewGroup(description + " Objects");
+                    grpObjectScripts.Header = description + " Objects";
                     grpObjectScripts.HeaderAlignment = HorizontalAlignment.Left;
                     lstAdds.Groups.Add(grpObjectScripts);
                 }
 
-                for (int i = 0; i < this.lstAdds.Items.Count; i++)
+                for (int i = 0; i < lstAdds.Items.Count; i++)
                 {
-                    if (this.lstAdds.Items[i].SubItems[0].Text.IndexOf(txtFind.Text, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
-                        this.lstAdds.Items[i].Group = this.lstAdds.Groups[0];
+                    if (lstAdds.Items[i].SubItems[0].Text.IndexOf(txtFind.Text, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                        lstAdds.Items[i].Group = lstAdds.Groups[0];
                     else
-                        this.lstAdds.Items[i].Group = this.lstAdds.Groups[1];  
+                        lstAdds.Items[i].Group = lstAdds.Groups[1];
                 }
             }
             else
             {
                 lstAdds.Groups.Clear();
             }
-           
+
         }
 
         private void AddItemToList(ObjectData objectData)
@@ -399,7 +396,7 @@ namespace SqlSync.SqlBuild.Objects
             ListViewItem item = new ListViewItem(new string[] { objectData.SchemaOwner + "." + objectData.ObjectName, objectData.StrAlteredDate, objectData.StrCreateDate });
             item.Tag = objectData;
             //item.Group = this.lstAdds.Groups[1]; 
-            this.lstAdds.Items.Add(item);
+            lstAdds.Items.Add(item);
         }
 
         private void viewObjectsSqlBuildHistoryToolStripMenuItem_Click(object sender, EventArgs e)
@@ -416,17 +413,17 @@ namespace SqlSync.SqlBuild.Objects
             {
                 if (script.Length > 0)
                 {
-                    string fileName = String.Format("{0}.{1}{2}", objData.SchemaOwner, objData.ObjectName, this.objectType);
-                    ScriptRunHistoryForm frmHist = new ScriptRunHistoryForm(connData, this.connData.DatabaseName, fileName, script, "");
+                    string fileName = String.Format("{0}.{1}{2}", objData.SchemaOwner, objData.ObjectName, objectType);
+                    ScriptRunHistoryForm frmHist = new ScriptRunHistoryForm(connData, connData.DatabaseName, fileName, script, "");
                     frmHist.ShowDialog();
                     frmHist.Dispose();
                 }
                 else
                 {
                     MessageBox.Show(message, "Unable to script object", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }  
+                }
 
             }
         }
-	}
+    }
 }

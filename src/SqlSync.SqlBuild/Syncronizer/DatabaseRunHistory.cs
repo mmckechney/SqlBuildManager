@@ -1,58 +1,65 @@
-﻿using System.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-namespace SqlSync.SqlBuild.Syncronizer {
+using System.Linq;
+namespace SqlSync.SqlBuild.Syncronizer
+{
 
 
-    public partial class DatabaseRunHistory {
-        
+    public partial class DatabaseRunHistory
+    {
+
         private List<BuildFileHistory> buildFileHistoryField = new List<BuildFileHistory>();
-        
 
-        public List<BuildFileHistory> BuildFileHistory {
-            get {
-                return this.buildFileHistoryField;
+
+        public List<BuildFileHistory> BuildFileHistory
+        {
+            get
+            {
+                return buildFileHistoryField;
             }
-            set {
-                this.buildFileHistoryField = value;
+            set
+            {
+                buildFileHistoryField = value;
             }
         }
         public override string ToString()
         {
-           if (this.BuildFileHistory.Any())
-           {
-               var result =
-                   this.BuildFileHistory.Select(
-                       h =>
-                       h.BuildFileHash + "\t" + h.CommitDate.ToString("yyyy-MM-dd HH:mm:ss.FFF") + "\t" +
-                       h.BuildFileName)
-                       .Aggregate((a, b) => a + "\r\n" + b);
+            if (BuildFileHistory.Any())
+            {
+                var result =
+                    BuildFileHistory.Select(
+                        h =>
+                        h.BuildFileHash + "\t" + h.CommitDate.ToString("yyyy-MM-dd HH:mm:ss.FFF") + "\t" +
+                        h.BuildFileName)
+                        .Aggregate((a, b) => a + "\r\n" + b);
 
-               return result;
-           }
-           else
-           {
-               return "No History Retrieved";
-           }
+                return result;
+            }
+            else
+            {
+                return "No History Retrieved";
+            }
         }
     }
-    
-       public partial class BuildFileHistory {
-        
+
+    public partial class BuildFileHistory
+    {
+
         //private List<ScriptHistory> scriptHistoryField = new List<ScriptHistory>();
-        
+
         private string buildFileNameField;
-        
+
         private string buildFileHashField;
-        
+
         private System.DateTime commitDateField;
-        
-        public BuildFileHistory() {
-            this.buildFileNameField = "";
-            this.buildFileHashField = "";
-            this.commitDateField = DateTime.MinValue;
+
+        public BuildFileHistory()
+        {
+            buildFileNameField = "";
+            buildFileHashField = "";
+            commitDateField = DateTime.MinValue;
         }
-        
+
         //public List<ScriptHistory>  ScriptHistory {
         //    get {
         //        return this.scriptHistoryField;
@@ -61,53 +68,62 @@ namespace SqlSync.SqlBuild.Syncronizer {
         //        this.scriptHistoryField = value;
         //    }
         //}
-        
-        public string BuildFileName {
-            get {
-                return this.buildFileNameField;
+
+        public string BuildFileName
+        {
+            get
+            {
+                return buildFileNameField;
             }
-            set {
-                this.buildFileNameField = value;
-            }
-        }
-        
-        public string BuildFileHash {
-            get {
-                return this.buildFileHashField;
-            }
-            set {
-                this.buildFileHashField = value;
+            set
+            {
+                buildFileNameField = value;
             }
         }
-        
-        public System.DateTime CommitDate {
-            get {
-                return this.commitDateField;
+
+        public string BuildFileHash
+        {
+            get
+            {
+                return buildFileHashField;
             }
-            set {
-                this.commitDateField = value;
+            set
+            {
+                buildFileHashField = value;
+            }
+        }
+
+        public System.DateTime CommitDate
+        {
+            get
+            {
+                return commitDateField;
+            }
+            set
+            {
+                commitDateField = value;
             }
         }
     }
-    
+
 
     //public partial class ScriptHistory {
-        
+
     //    private string scriptNameField;
-        
+
     //    private string scriptHashField;
-        
+
     //    private int sequenceField;
-        
+
     //    private string scriptIdField;
-        
+
     //    public ScriptHistory() {
     //        this.scriptNameField = "";
     //        this.scriptHashField = "";
     //        this.sequenceField = -1;
     //        this.scriptIdField = "";
     //    }
-        
+
     //    public string ScriptName {
     //        get {
     //            return this.scriptNameField;
@@ -116,7 +132,7 @@ namespace SqlSync.SqlBuild.Syncronizer {
     //            this.scriptNameField = value;
     //        }
     //    }
-        
+
     //    public string ScriptHash {
     //        get {
     //            return this.scriptHashField;
@@ -125,7 +141,7 @@ namespace SqlSync.SqlBuild.Syncronizer {
     //            this.scriptHashField = value;
     //        }
     //    }
-        
+
     //    public int Sequence {
     //        get {
     //            return this.sequenceField;
@@ -134,7 +150,7 @@ namespace SqlSync.SqlBuild.Syncronizer {
     //            this.sequenceField = value;
     //        }
     //    }
-        
+
     //    public string ScriptId {
     //        get {
     //            return this.scriptIdField;

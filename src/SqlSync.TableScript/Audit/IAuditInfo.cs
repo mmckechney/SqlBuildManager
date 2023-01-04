@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SqlSync.TableScript.Audit
+﻿namespace SqlSync.TableScript.Audit
 {
     public interface IAuditInfo
     {

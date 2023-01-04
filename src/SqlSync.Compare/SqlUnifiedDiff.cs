@@ -1,44 +1,43 @@
-using System;
-using SqlSync.SqlBuild;
 using Algorithm.Diff;
-using System.IO;
+using SqlSync.SqlBuild;
+using System;
 using System.Collections;
-using System.Collections.Specialized;
-using System.Text;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 namespace SqlSync.Compare
 {
-	/// <summary>
-	/// Summary description for UnifiedDiff.
-	/// </summary>
-	public class SqlUnifiedDiff
-	{
-		private string extractPathLeftFile;
-		private string extractPathRightFile;
-		public SqlUnifiedDiff()
-		{
-			
-		}
-
-        public void GetUnifiedDiff(ref SqlSync.SqlBuild.SqlSyncBuildData leftBuildData,string leftTempFilePath, string rightBuildZipPath, out List<FileCompareResults> onlyInLeft, out List<FileCompareResults> onlyInRight, out List<FileCompareResults> modified, out string rightFileTempDirectory)
+    /// <summary>
+    /// Summary description for UnifiedDiff.
+    /// </summary>
+    public class SqlUnifiedDiff
+    {
+        private string extractPathLeftFile;
+        private string extractPathRightFile;
+        public SqlUnifiedDiff()
         {
-            this.extractPathLeftFile = leftTempFilePath;
+
+        }
+
+        public void GetUnifiedDiff(ref SqlSync.SqlBuild.SqlSyncBuildData leftBuildData, string leftTempFilePath, string rightBuildZipPath, out List<FileCompareResults> onlyInLeft, out List<FileCompareResults> onlyInRight, out List<FileCompareResults> modified, out string rightFileTempDirectory)
+        {
+            extractPathLeftFile = leftTempFilePath;
             string tmpDir = System.IO.Path.GetTempPath();
-            this.extractPathRightFile = tmpDir + @"SqlsyncCompare-" + System.Guid.NewGuid().ToString().Replace("-", "");
-            Directory.CreateDirectory(this.extractPathRightFile);
-            rightFileTempDirectory = this.extractPathRightFile;
-            ZipHelper.UnpackZipPackage(this.extractPathRightFile, rightBuildZipPath,false);
+            extractPathRightFile = tmpDir + @"SqlsyncCompare-" + System.Guid.NewGuid().ToString().Replace("-", "");
+            Directory.CreateDirectory(extractPathRightFile);
+            rightFileTempDirectory = extractPathRightFile;
+            ZipHelper.UnpackZipPackage(extractPathRightFile, rightBuildZipPath, false);
             SqlSync.SqlBuild.SqlSyncBuildData rightBuildData = new SqlSyncBuildData();
-            rightBuildData.ReadXml(Path.Combine(this.extractPathRightFile, XmlFileNames.MainProjectFile));
+            rightBuildData.ReadXml(Path.Combine(extractPathRightFile, XmlFileNames.MainProjectFile));
             //TODO: wrap load failure. 
 
             List<FileCompareResults> filesOnlyInLeft = GetFileListDiff(leftBuildData, rightBuildData, true);
             List<FileCompareResults> filesOnlyInRight = GetFileListDiff(rightBuildData, leftBuildData, false);
             List<FileCompareResults> commonFiles = GetCommonFileList(leftBuildData, rightBuildData);
 
-            modified = ProcessUnifiedDiff(this.extractPathLeftFile, this.extractPathRightFile, commonFiles);
-            onlyInRight = GetFileContents(this.extractPathRightFile, filesOnlyInRight);
-            onlyInLeft = GetFileContents(this.extractPathLeftFile, filesOnlyInLeft);
+            modified = ProcessUnifiedDiff(extractPathLeftFile, extractPathRightFile, commonFiles);
+            onlyInRight = GetFileContents(extractPathRightFile, filesOnlyInRight);
+            onlyInLeft = GetFileContents(extractPathLeftFile, filesOnlyInLeft);
 
         }
         public List<FileCompareResults> GetFileContents(string basePath, List<FileCompareResults> fileList)
@@ -48,8 +47,8 @@ namespace SqlSync.Compare
             List<FileCompareResults> tmpLst = new List<FileCompareResults>();
             for (int i = 0; i < fileList.Count; i++)
             {
-                string leftFullPath = (fileList[i].LeftScriptRow != null)? Path.Combine(basePath , fileList[i].LeftScriptRow.FileName) : "";
-                string rightFullPath  = (fileList[i].RightScriptRow != null) ? Path.Combine(basePath, fileList[i].RightScriptRow.FileName) : "";
+                string leftFullPath = (fileList[i].LeftScriptRow != null) ? Path.Combine(basePath, fileList[i].LeftScriptRow.FileName) : "";
+                string rightFullPath = (fileList[i].RightScriptRow != null) ? Path.Combine(basePath, fileList[i].RightScriptRow.FileName) : "";
 
                 if (fileList[i].LeftScriptRow != null && File.Exists(leftFullPath))
                 {
@@ -66,10 +65,10 @@ namespace SqlSync.Compare
             return tmpLst;
         }
 
-       
 
-		
-        
+
+
+
         private List<FileCompareResults> ProcessUnifiedDiff(string leftPath, string rightPath, List<FileCompareResults> commonFiles)
         {
 
@@ -83,7 +82,7 @@ namespace SqlSync.Compare
                 StringBuilder sb = new StringBuilder();
                 StringWriter sw = new StringWriter(sb);
                 fileName = commonFiles[j].LeftScriptRow.FileName;
-                leftFile = Path.Combine(leftPath , fileName);
+                leftFile = Path.Combine(leftPath, fileName);
                 rightFile = Path.Combine(rightPath, fileName);
                 commonFiles[j].LeftScriptPath = leftFile;
                 commonFiles[j].RightScriptPath = rightFile;
@@ -100,7 +99,7 @@ namespace SqlSync.Compare
             StringWriter sw = new StringWriter(sb);
             string leftFile = fileData.LeftScriptPath;
             string rightFile = fileData.RightScriptPath;
-             string[] leftContents = new string[0];
+            string[] leftContents = new string[0];
             string[] rightContents = new string[0];
             if (File.Exists(rightFile))
             {
@@ -138,28 +137,28 @@ namespace SqlSync.Compare
             //Clean-up
             try
             {
-                if (Directory.Exists(this.extractPathLeftFile) && cleanLeftFile)
-                    Directory.Delete(this.extractPathLeftFile, true);
+                if (Directory.Exists(extractPathLeftFile) && cleanLeftFile)
+                    Directory.Delete(extractPathLeftFile, true);
 
-                if (Directory.Exists(this.extractPathRightFile) && cleanRightFile)
-                    Directory.Delete(this.extractPathRightFile, true);
+                if (Directory.Exists(extractPathRightFile) && cleanRightFile)
+                    Directory.Delete(extractPathRightFile, true);
             }
             catch { }
 
         }
-		
-        #region .: File List Processing :.
-		private Hashtable GetFileList(string dir)
-		{
-			Hashtable fileDic = new Hashtable();
-			string[] files = Directory.GetFiles(dir);
-			for(int i=0;i<files.Length;i++)
-				if(!files[i].ToLower().EndsWith(".log") && !files[i].ToLower().EndsWith(".xml"))
-					fileDic.Add(Path.GetFileName(files[i]),files[i]);
 
-			return fileDic;
-		}
-     
+        #region .: File List Processing :.
+        private Hashtable GetFileList(string dir)
+        {
+            Hashtable fileDic = new Hashtable();
+            string[] files = Directory.GetFiles(dir);
+            for (int i = 0; i < files.Length; i++)
+                if (!files[i].ToLower().EndsWith(".log") && !files[i].ToLower().EndsWith(".xml"))
+                    fileDic.Add(Path.GetFileName(files[i]), files[i]);
+
+            return fileDic;
+        }
+
         private List<FileCompareResults> GetFileListDiff(SqlSyncBuildData master, SqlSyncBuildData child, bool masterIsLeftFile)
         {
             bool foundScript = false;
@@ -212,9 +211,9 @@ namespace SqlSync.Compare
             }
             return results;
         }
-        
 
-		#endregion
-		
-	}
+
+        #endregion
+
+    }
 }

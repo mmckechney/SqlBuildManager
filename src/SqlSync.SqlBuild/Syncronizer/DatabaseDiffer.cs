@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using Microsoft.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using SqlSync.Connection;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using System;
+using System.Data;
+using System.Linq;
 
 namespace SqlSync.SqlBuild.Syncronizer
 {
@@ -40,7 +38,7 @@ namespace SqlSync.SqlBuild.Syncronizer
 
             //Get the most recent time that the two databases were in sync (ie had the same package run against it)
             var lastSyncDate = DateTime.MinValue;
-            
+
             if (toUpdate.Any() && golden.Any())
             {
                 var matchingHistory = golden.Where(g => toUpdate.Any(t => t.BuildFileHash == g.BuildFileHash));
@@ -88,11 +86,11 @@ namespace SqlSync.SqlBuild.Syncronizer
                     {
 
                         history.BuildFileHistory.Add(new BuildFileHistory()
-                            {
-                                BuildFileHash = reader["BuildProjectHash"].ToString(),
-                                BuildFileName = reader["BuildFileName"].ToString(),
-                                CommitDate = (DateTime) reader["CommitDate"]
-                            });
+                        {
+                            BuildFileHash = reader["BuildProjectHash"].ToString(),
+                            BuildFileName = reader["BuildFileName"].ToString(),
+                            CommitDate = (DateTime)reader["CommitDate"]
+                        });
 
 
                     }
@@ -140,10 +138,10 @@ namespace SqlSync.SqlBuild.Syncronizer
                     {
 
                         history.BuildFileHistory.Add(new BuildFileHistory()
-                            {
-                                BuildFileHash = reader["BuildProjectHash"].ToString(),
-                                CommitDate = (DateTime) reader["CommitDate"]
-                            });
+                        {
+                            BuildFileHash = reader["BuildProjectHash"].ToString(),
+                            CommitDate = (DateTime)reader["CommitDate"]
+                        });
 
 
                     }
@@ -178,7 +176,7 @@ namespace SqlSync.SqlBuild.Syncronizer
             }
             catch (Exception exe)
             {
-                log.LogError(exe,$"Unable to get build history for {dbConnData.SQLServerName}.{dbConnData.DatabaseName}");
+                log.LogError(exe, $"Unable to get build history for {dbConnData.SQLServerName}.{dbConnData.DatabaseName}");
             }
             return history;
         }

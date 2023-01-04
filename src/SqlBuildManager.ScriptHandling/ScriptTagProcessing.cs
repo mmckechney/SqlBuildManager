@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using SqlSync.SqlBuild;
+﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.ScriptHandling.Tags;
+using SqlSync.SqlBuild;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 namespace SqlBuildManager.ScriptHandling
 {
     public class ScriptTagProcessing
@@ -21,7 +19,7 @@ namespace SqlBuildManager.ScriptHandling
         /// <param name="regexFormats">The Regex formats that will be used to try to extract script tags</param>
         /// <param name="source">The enum designating where to get the tag from</param>
         /// <returns>Boolean as to whether the inference worked</returns>
-        public static bool InferScriptTags(ref SqlSyncBuildData buildData, string projectPath,  List<string> regexFormats, TagInferenceSource source)
+        public static bool InferScriptTags(ref SqlSyncBuildData buildData, string projectPath, List<string> regexFormats, TagInferenceSource source)
         {
             bool atLeastOneUpdated = false;
             string tmpTag = string.Empty;
@@ -85,14 +83,14 @@ namespace SqlBuildManager.ScriptHandling
                             tmpLastMatch = contentMatch;
                     }
                 }
-               
+
             }
             if (tmpLastMatch == null)
                 return string.Empty;
             else
                 return CleanTag(tmpLastMatch.Value);
         }
-        
+
         /// <summary>
         /// Gets a script tag from the text of the script or from the path name
         /// </summary>
@@ -113,7 +111,7 @@ namespace SqlBuildManager.ScriptHandling
             string fileContentTag = InferScriptTagFromFileContents(scriptContents, regexFormats);
 
             string fileNameTag = InferScriptTagFromFileName(scriptPathAndName, regexFormats);
-           
+
 
             //Not able to get anything...
             if (fileContentTag.Length == 0 && fileNameTag.Length == 0)
@@ -129,7 +127,7 @@ namespace SqlBuildManager.ScriptHandling
             {
                 if (fileContentTag.Length > 0)
                     return fileContentTag;
-                else if(fileNameTag.Length > 0)
+                else if (fileNameTag.Length > 0)
                     return fileNameTag;
             }
 
@@ -140,7 +138,7 @@ namespace SqlBuildManager.ScriptHandling
                 else if (fileContentTag.Length > 0)
                     return fileContentTag;
             }
-           
+
             return string.Empty;
         }
         /// <summary>
@@ -153,10 +151,10 @@ namespace SqlBuildManager.ScriptHandling
         /// <returns>The extracted script tag or empty string if not found</returns>
         public static string InferScriptTag(TagInferenceSource source, List<string> regexFormats, string scriptName, string scriptPath)
         {
-            log.LogDebug($"InferScriptTag: TagInferenceSource for {scriptName} is {Enum.GetName(typeof(TagInferenceSource),source)}");
+            log.LogDebug($"InferScriptTag: TagInferenceSource for {scriptName} is {Enum.GetName(typeof(TagInferenceSource), source)}");
             if (source == TagInferenceSource.None)
                 return string.Empty;
- 
+
             if (regexFormats == null)
             {
                 log.LogWarning($"InferScriptTag: RegularExpression formats is null when processing {scriptName}");
@@ -169,7 +167,7 @@ namespace SqlBuildManager.ScriptHandling
 
                 string tmpTag;
 
-                 //Do this easier check first to avoid opening the file is possible...
+                //Do this easier check first to avoid opening the file is possible...
                 if (source == TagInferenceSource.ScriptName || source == TagInferenceSource.NameOverText)
                 {
                     tmpTag = InferScriptTagFromFileName(scriptName, regexFormats);
@@ -179,17 +177,17 @@ namespace SqlBuildManager.ScriptHandling
                     }
 
                 }
-               
-                    
+
+
                 //If we get here, we will need to get the file contents...
-                if (!File.Exists(Path.Combine(scriptPath , scriptName)))
+                if (!File.Exists(Path.Combine(scriptPath, scriptName)))
                 {
                     log.LogWarning($"Unable to find file for Script Tag Inference for file {scriptName} in path {scriptPath}");
                     return string.Empty;
                 }
 
                 string contents = File.ReadAllText(Path.Combine(scriptPath, scriptName));
-                tmpTag = InferScriptTag(scriptName,contents, regexFormats, source);
+                tmpTag = InferScriptTag(scriptName, contents, regexFormats, source);
                 if (tmpTag.Length > 0)
                 {
                     return tmpTag;
@@ -202,6 +200,6 @@ namespace SqlBuildManager.ScriptHandling
             }
             return string.Empty;
         }
-#endregion
+        #endregion
     }
 }

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+﻿using SqlSync.Connection;
 using SqlSync.ObjectScript.Hash;
 using SqlSync.SqlBuild.Status;
-using SqlSync.Connection;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class ObjectComparisonReportForm : SqlSync.SqlBuild.MultiDb.StatusReportForm
@@ -30,8 +27,8 @@ namespace SqlSync.SqlBuild.MultiDb
         protected override void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             KeyValuePair<ReportType, string> args = (KeyValuePair<ReportType, string>)e.Argument;
-            this.collector = new HashCollector(this.multiDbData);
-            this.rawReportData = collector.GetObjectHashes(ref this.bgWorker, args.Value, args.Key,this.scriptThreaded);
+            collector = new HashCollector(multiDbData);
+            rawReportData = collector.GetObjectHashes(ref bgWorker, args.Value, args.Key, scriptThreaded);
             e.Result = rawReportData;
 
             bgWorker.ReportProgress(0, "Generating report output");
@@ -44,7 +41,7 @@ namespace SqlSync.SqlBuild.MultiDb
             if (e.UserState is HashCollectionRunnerUpdateEventArgs)
             {
                 HashCollectionRunnerUpdateEventArgs arg = (HashCollectionRunnerUpdateEventArgs)e.UserState;
-                foreach (ListViewItem item in this.lstDbStatus.Items)
+                foreach (ListViewItem item in lstDbStatus.Items)
                 {
                     if (item.SubItems[0].Text == arg.Server && item.SubItems[1].Text == arg.Database)
                     {
@@ -60,7 +57,7 @@ namespace SqlSync.SqlBuild.MultiDb
 
         private void bgWorker_RunWorkerCompleted_1(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (this.collector != null && this.rawReportData != null)
+            if (collector != null && rawReportData != null)
             {
                 btnAnalysis.Enabled = true;
             }
@@ -68,14 +65,14 @@ namespace SqlSync.SqlBuild.MultiDb
 
         private void btnAnalysis_Click(object sender, EventArgs e)
         {
-            ObjectComparisonAnalysisForm frmAn = new ObjectComparisonAnalysisForm(this.rawReportData);
+            ObjectComparisonAnalysisForm frmAn = new ObjectComparisonAnalysisForm(rawReportData);
             frmAn.Show();
 
         }
 
         private void chkScriptThreaded_CheckedChanged(object sender, EventArgs e)
         {
-            this.scriptThreaded = chkScriptThreaded.Checked;
+            scriptThreaded = chkScriptThreaded.Checked;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -83,6 +80,6 @@ namespace SqlSync.SqlBuild.MultiDb
             SqlSync.SqlBuild.UtilityHelper.OpenManual("ObjectComparisonReport");
         }
 
-      
+
     }
 }

@@ -1,12 +1,10 @@
 ﻿using Azure.Core;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Rest;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-using Microsoft.Extensions.Caching.Memory;
+using System.Threading.Tasks;
 namespace SqlBuildManager.Console.Batch
 {
     /// <summary>

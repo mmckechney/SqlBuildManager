@@ -1,42 +1,38 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using UrielGuy.SyntaxHighlighting;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using SqlSync.DbInformation;
-using System.Text;
-using SqlBuildManager.ScriptHandling;
-using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Enterprise;
 using SqlBuildManager.Enterprise.Notification;
+using SqlBuildManager.Enterprise.Policy;
+using SqlBuildManager.ScriptHandling;
 using SqlSync.Constants;
-using System.Threading.Tasks;
+using SqlSync.DbInformation;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 namespace SqlSync.SqlBuild
 {
-	/// <summary>
-	/// Summary description for AddScriptTextForm.
-	/// </summary>
-	public class AddScriptTextForm : System.Windows.Forms.Form
-	{
-        
+    /// <summary>
+    /// Summary description for AddScriptTextForm.
+    /// </summary>
+    public class AddScriptTextForm : System.Windows.Forms.Form
+    {
+
         List<string> tagList = new List<string>();
-		private System.Drawing.Color oddColor = System.Drawing.Color.Black;
-		private System.Drawing.Color evenColor = System.Drawing.Color.Blue;
-		private string fullFilePath = string.Empty;
-		private System.Windows.Forms.TextBox txtScriptName;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Button btnOK;
-		private System.Windows.Forms.Button button2;
-		private string sqlText = string.Empty;
+        private System.Drawing.Color oddColor = System.Drawing.Color.Black;
+        private System.Drawing.Color evenColor = System.Drawing.Color.Blue;
+        private string fullFilePath = string.Empty;
+        private System.Windows.Forms.TextBox txtScriptName;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btnOK;
+        private System.Windows.Forms.Button button2;
+        private string sqlText = string.Empty;
         private string sqlName = string.Empty;
-		private SqlBuild.Utility.SqlSyncUtilityRegistry utilRegistry = null;
-		private UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox rtbSqlScript;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.Panel panel1;
+        private SqlBuild.Utility.SqlSyncUtilityRegistry utilRegistry = null;
+        private UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox rtbSqlScript;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Panel panel1;
         private SqlSyncBuildData.ScriptRow scriptCfgRow = null;
         private bool allowEdit = true;
 
@@ -57,11 +53,11 @@ namespace SqlSync.SqlBuild
             get { return scriptCfgRow; }
             set { scriptCfgRow = value; }
         }
-		private string fileHash = string.Empty;
-		private System.Windows.Forms.Label lblHash;
-		private System.Windows.Forms.TextBox txtScriptId;
-		private System.Windows.Forms.TextBox txtFileHash;
-		private System.Windows.Forms.Panel panel2;
+        private string fileHash = string.Empty;
+        private System.Windows.Forms.Label lblHash;
+        private System.Windows.Forms.TextBox txtScriptId;
+        private System.Windows.Forms.TextBox txtFileHash;
+        private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.ToolTip toolTip1;
         private Label lblAddDate;
         private Label label10;
@@ -76,7 +72,7 @@ namespace SqlSync.SqlBuild
         private Splitter splitter1;
         private Panel panel4;
         private ScriptConfigCtrl scriptConfigCtrl1;
-		private System.ComponentModel.IContainer components;
+        private System.ComponentModel.IContainer components;
         private DatabaseList databaseList;
         private Label lblHighlightLimit;
         private FinderCtrl finderCtrl1;
@@ -92,20 +88,20 @@ namespace SqlSync.SqlBuild
         private Panel panel5;
         //private Controls.CodeReviewControl codeReviewControl1;
         private SqlSyncBuildData buildData;
-		public string SqlText
-		{
-			get
-			{
-				return this.sqlText;
-			}
-		}
-		public string SqlName
-		{
-			get
-			{
-				return this.sqlName;
-			}
-		}
+        public string SqlText
+        {
+            get
+            {
+                return sqlText;
+            }
+        }
+        public string SqlName
+        {
+            get
+            {
+                return sqlName;
+            }
+        }
         private AddScriptTextForm()
         {
             InitializeComponent();
@@ -116,17 +112,17 @@ namespace SqlSync.SqlBuild
         /// <param name="scriptCfgRow"></param>
         /// <param name="utilRegistry"></param>
         /// <param name="databaseList"></param>
-        public AddScriptTextForm(ref SqlSyncBuildData buildData, ref SqlSyncBuildData.ScriptRow scriptCfgRow, SqlBuild.Utility.SqlSyncUtilityRegistry utilRegistry, DatabaseList databaseList,List<string> tagList, bool scriptTagRequired)
-		{
-			//
-			// Required for Windows Form Designer support
-			//
-			InitializeComponent();
-            this.utilRegistry = utilRegistry; 
-            this.scriptConfigCtrl1.ShowFull = true;
+        public AddScriptTextForm(ref SqlSyncBuildData buildData, ref SqlSyncBuildData.ScriptRow scriptCfgRow, SqlBuild.Utility.SqlSyncUtilityRegistry utilRegistry, DatabaseList databaseList, List<string> tagList, bool scriptTagRequired)
+        {
+            //
+            // Required for Windows Form Designer support
+            //
+            InitializeComponent();
+            this.utilRegistry = utilRegistry;
+            scriptConfigCtrl1.ShowFull = true;
             this.scriptCfgRow = scriptCfgRow;
             this.databaseList = databaseList;
-            this.scriptConfigCtrl1.ShowHighlightColor();
+            scriptConfigCtrl1.ShowHighlightColor();
             this.tagList = tagList;
             this.scriptTagRequired = scriptTagRequired;
             this.buildData = buildData;
@@ -141,587 +137,587 @@ namespace SqlSync.SqlBuild
         /// <param name="fileHash"></param>
         /// <param name="databaseList"></param>
         public AddScriptTextForm(ref SqlSyncBuildData buildData, string shortFileName, string fullFilePath, SqlBuild.Utility.SqlSyncUtilityRegistry utilRegistry, ref SqlSyncBuildData.ScriptRow scriptCfgRow, string fileHash, DatabaseList databaseList, List<string> tagList, bool scriptTagRequired, bool allowEdit)
-		{
-			InitializeComponent();
-			this.utilRegistry = utilRegistry;
-			this.txtScriptName.Text = shortFileName;
-			this.txtScriptName.Enabled = false;
-            this.scriptConfigCtrl1.ShowFull = false;
-			this.Text = "Edit Sql Script Text";
-			this.fullFilePath = fullFilePath;
+        {
+            InitializeComponent();
+            this.utilRegistry = utilRegistry;
+            txtScriptName.Text = shortFileName;
+            txtScriptName.Enabled = false;
+            scriptConfigCtrl1.ShowFull = false;
+            Text = "Edit Sql Script Text";
+            this.fullFilePath = fullFilePath;
             this.scriptCfgRow = scriptCfgRow;
-			this.fileHash = fileHash;
+            this.fileHash = fileHash;
             this.databaseList = databaseList;
             this.tagList = tagList;
             this.scriptTagRequired = scriptTagRequired;
             this.allowEdit = allowEdit;
             this.buildData = buildData;
-		}
+        }
         public AddScriptTextForm(ref SqlSyncBuildData buildData, string shortFileName, string fullFilePath)
-		{
-			InitializeComponent();
-            this.scriptConfigCtrl1.Visible = false;
-			this.txtScriptName.Text = shortFileName;
-			this.txtScriptName.Enabled = false;
-			this.Text = "Import File Preview";
-			this.fullFilePath = fullFilePath;
-			this.cutCopyPastecontextMenuStrip1.Items.Clear();
-			this.btnOK.Enabled = false;
+        {
+            InitializeComponent();
+            scriptConfigCtrl1.Visible = false;
+            txtScriptName.Text = shortFileName;
+            txtScriptName.Enabled = false;
+            Text = "Import File Preview";
+            this.fullFilePath = fullFilePath;
+            cutCopyPastecontextMenuStrip1.Items.Clear();
+            btnOK.Enabled = false;
             this.buildData = buildData;
-		}
-	
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        }
 
-		#region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
-            this.components = new System.ComponentModel.Container();
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            components = new System.ComponentModel.Container();
             UrielGuy.SyntaxHighlighting.HighLightDescriptorCollection highLightDescriptorCollection1 = new UrielGuy.SyntaxHighlighting.HighLightDescriptorCollection();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddScriptTextForm));
-            this.txtScriptName = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.btnOK = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
-            this.lblHash = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.txtScriptId = new System.Windows.Forms.TextBox();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.txtFileHash = new System.Windows.Forms.TextBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.lblAddDate = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.lblModBy = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.lblAddedBy = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.lblModDate = new System.Windows.Forms.Label();
-            this.panel3 = new System.Windows.Forms.Panel();
-            this.scriptConfigCtrl1 = new SqlSync.SqlBuild.ScriptConfigCtrl();
-            this.splitter1 = new System.Windows.Forms.Splitter();
-            this.panel4 = new System.Windows.Forms.Panel();
-            this.rtbSqlScript = new UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox();
-            this.cutCopyPastecontextMenuStrip1 = new SqlSync.CutCopyPasteContextMenuStrip();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.panel5 = new System.Windows.Forms.Panel();
-            this.label5 = new System.Windows.Forms.Label();
-            this.lnkRunPolicyChecks = new System.Windows.Forms.LinkLabel();
-            this.lblCharacterNumber = new System.Windows.Forms.Label();
-            this.lblHighlightLimit = new System.Windows.Forms.Label();
-            this.lblLineNumber = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.finderCtrl1 = new SqlSync.FinderCtrl();
-            this.panel1.SuspendLayout();
-            this.panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.tableLayoutPanel1.SuspendLayout();
-            this.panel3.SuspendLayout();
-            this.panel4.SuspendLayout();
-            this.cutCopyPastecontextMenuStrip1.SuspendLayout();
-            this.panel5.SuspendLayout();
-            this.SuspendLayout();
+            txtScriptName = new System.Windows.Forms.TextBox();
+            label1 = new System.Windows.Forms.Label();
+            label2 = new System.Windows.Forms.Label();
+            btnOK = new System.Windows.Forms.Button();
+            button2 = new System.Windows.Forms.Button();
+            label4 = new System.Windows.Forms.Label();
+            lblHash = new System.Windows.Forms.Label();
+            panel1 = new System.Windows.Forms.Panel();
+            txtScriptId = new System.Windows.Forms.TextBox();
+            panel2 = new System.Windows.Forms.Panel();
+            txtFileHash = new System.Windows.Forms.TextBox();
+            toolTip1 = new System.Windows.Forms.ToolTip(components);
+            pictureBox1 = new System.Windows.Forms.PictureBox();
+            lblAddDate = new System.Windows.Forms.Label();
+            label10 = new System.Windows.Forms.Label();
+            label9 = new System.Windows.Forms.Label();
+            lblModBy = new System.Windows.Forms.Label();
+            label6 = new System.Windows.Forms.Label();
+            lblAddedBy = new System.Windows.Forms.Label();
+            label7 = new System.Windows.Forms.Label();
+            tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            lblModDate = new System.Windows.Forms.Label();
+            panel3 = new System.Windows.Forms.Panel();
+            scriptConfigCtrl1 = new SqlSync.SqlBuild.ScriptConfigCtrl();
+            splitter1 = new System.Windows.Forms.Splitter();
+            panel4 = new System.Windows.Forms.Panel();
+            rtbSqlScript = new UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox();
+            cutCopyPastecontextMenuStrip1 = new SqlSync.CutCopyPasteContextMenuStrip();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            panel5 = new System.Windows.Forms.Panel();
+            label5 = new System.Windows.Forms.Label();
+            lnkRunPolicyChecks = new System.Windows.Forms.LinkLabel();
+            lblCharacterNumber = new System.Windows.Forms.Label();
+            lblHighlightLimit = new System.Windows.Forms.Label();
+            lblLineNumber = new System.Windows.Forms.Label();
+            label3 = new System.Windows.Forms.Label();
+            finderCtrl1 = new SqlSync.FinderCtrl();
+            panel1.SuspendLayout();
+            panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(pictureBox1)).BeginInit();
+            tableLayoutPanel1.SuspendLayout();
+            panel3.SuspendLayout();
+            panel4.SuspendLayout();
+            cutCopyPastecontextMenuStrip1.SuspendLayout();
+            panel5.SuspendLayout();
+            SuspendLayout();
             // 
             // txtScriptName
             // 
-            this.txtScriptName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            txtScriptName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtScriptName.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.txtScriptName.Location = new System.Drawing.Point(5, 19);
-            this.txtScriptName.Name = "txtScriptName";
-            this.txtScriptName.Size = new System.Drawing.Size(1196, 21);
-            this.txtScriptName.TabIndex = 0;
+            txtScriptName.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            txtScriptName.Location = new System.Drawing.Point(5, 19);
+            txtScriptName.Name = "txtScriptName";
+            txtScriptName.Size = new System.Drawing.Size(1196, 21);
+            txtScriptName.TabIndex = 0;
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(3, 3);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(120, 16);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Script Name <F1>:";
+            label1.Location = new System.Drawing.Point(3, 3);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(120, 16);
+            label1.TabIndex = 2;
+            label1.Text = "Script Name <F1>:";
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(12, 116);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(100, 16);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Sql Script:";
+            label2.Location = new System.Drawing.Point(12, 116);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(100, 16);
+            label2.TabIndex = 3;
+            label2.Text = "Sql Script:";
             // 
             // btnOK
             // 
-            this.btnOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnOK.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnOK.Location = new System.Drawing.Point(493, 7);
-            this.btnOK.Name = "btnOK";
-            this.btnOK.Size = new System.Drawing.Size(75, 23);
-            this.btnOK.TabIndex = 1;
-            this.btnOK.Text = "Save";
-            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+            btnOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            btnOK.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            btnOK.Location = new System.Drawing.Point(493, 7);
+            btnOK.Name = "btnOK";
+            btnOK.Size = new System.Drawing.Size(75, 23);
+            btnOK.TabIndex = 1;
+            btnOK.Text = "Save";
+            btnOK.Click += new System.EventHandler(btnOK_Click);
             // 
             // button2
             // 
-            this.button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button2.Location = new System.Drawing.Point(581, 7);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Cancel";
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            button2.Location = new System.Drawing.Point(581, 7);
+            button2.Name = "button2";
+            button2.Size = new System.Drawing.Size(75, 23);
+            button2.TabIndex = 2;
+            button2.Text = "Cancel";
+            button2.Click += new System.EventHandler(button2_Click);
             // 
             // label4
             // 
-            this.label4.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label4.Location = new System.Drawing.Point(3, 3);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(76, 14);
-            this.label4.TabIndex = 4;
-            this.label4.Text = "Script Id:";
+            label4.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label4.Location = new System.Drawing.Point(3, 3);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(76, 14);
+            label4.TabIndex = 4;
+            label4.Text = "Script Id:";
             // 
             // lblHash
             // 
-            this.lblHash.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblHash.Location = new System.Drawing.Point(3, 6);
-            this.lblHash.Name = "lblHash";
-            this.lblHash.Size = new System.Drawing.Size(81, 16);
-            this.lblHash.TabIndex = 5;
-            this.lblHash.Text = "SHA1 Hash:";
+            lblHash.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            lblHash.Location = new System.Drawing.Point(3, 6);
+            lblHash.Name = "lblHash";
+            lblHash.Size = new System.Drawing.Size(81, 16);
+            lblHash.TabIndex = 5;
+            lblHash.Text = "SHA1 Hash:";
             // 
             // panel1
             // 
-            this.panel1.BackColor = System.Drawing.Color.White;
-            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.txtScriptId);
-            this.panel1.Controls.Add(this.label4);
-            this.panel1.Controls.Add(this.panel2);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 653);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1206, 24);
-            this.panel1.TabIndex = 7;
+            panel1.BackColor = System.Drawing.Color.White;
+            panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel1.Controls.Add(txtScriptId);
+            panel1.Controls.Add(label4);
+            panel1.Controls.Add(panel2);
+            panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            panel1.Location = new System.Drawing.Point(0, 653);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(1206, 24);
+            panel1.TabIndex = 7;
             // 
             // txtScriptId
             // 
-            this.txtScriptId.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtScriptId.Location = new System.Drawing.Point(79, 3);
-            this.txtScriptId.Name = "txtScriptId";
-            this.txtScriptId.Size = new System.Drawing.Size(344, 14);
-            this.txtScriptId.TabIndex = 6;
-            this.txtScriptId.TabStop = false;
+            txtScriptId.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            txtScriptId.Location = new System.Drawing.Point(79, 3);
+            txtScriptId.Name = "txtScriptId";
+            txtScriptId.Size = new System.Drawing.Size(344, 14);
+            txtScriptId.TabIndex = 6;
+            txtScriptId.TabStop = false;
             // 
             // panel2
             // 
-            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel2.Controls.Add(this.lblHash);
-            this.panel2.Controls.Add(this.txtFileHash);
-            this.panel2.Location = new System.Drawing.Point(429, -3);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(794, 33);
-            this.panel2.TabIndex = 7;
+            panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel2.Controls.Add(lblHash);
+            panel2.Controls.Add(txtFileHash);
+            panel2.Location = new System.Drawing.Point(429, -3);
+            panel2.Name = "panel2";
+            panel2.Size = new System.Drawing.Size(794, 33);
+            panel2.TabIndex = 7;
             // 
             // txtFileHash
             // 
-            this.txtFileHash.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtFileHash.Location = new System.Drawing.Point(84, 7);
-            this.txtFileHash.Name = "txtFileHash";
-            this.txtFileHash.Size = new System.Drawing.Size(354, 14);
-            this.txtFileHash.TabIndex = 7;
-            this.txtFileHash.TabStop = false;
+            txtFileHash.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            txtFileHash.Location = new System.Drawing.Point(84, 7);
+            txtFileHash.Name = "txtFileHash";
+            txtFileHash.Size = new System.Drawing.Size(354, 14);
+            txtFileHash.TabIndex = 7;
+            txtFileHash.TabStop = false;
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox1.Location = new System.Drawing.Point(1185, 2);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(21, 16);
-            this.pictureBox1.TabIndex = 3;
-            this.pictureBox1.TabStop = false;
-            this.toolTip1.SetToolTip(this.pictureBox1, "Click for Help");
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            pictureBox1.Location = new System.Drawing.Point(1185, 2);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new System.Drawing.Size(21, 16);
+            pictureBox1.TabIndex = 3;
+            pictureBox1.TabStop = false;
+            toolTip1.SetToolTip(pictureBox1, "Click for Help");
+            pictureBox1.Click += new System.EventHandler(pictureBox1_Click);
             // 
             // lblAddDate
             // 
-            this.lblAddDate.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            lblAddDate.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblAddDate.Location = new System.Drawing.Point(262, 1);
-            this.lblAddDate.Name = "lblAddDate";
-            this.lblAddDate.Size = new System.Drawing.Size(165, 22);
-            this.lblAddDate.TabIndex = 20;
-            this.lblAddDate.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lblAddDate.Location = new System.Drawing.Point(262, 1);
+            lblAddDate.Name = "lblAddDate";
+            lblAddDate.Size = new System.Drawing.Size(165, 22);
+            lblAddDate.TabIndex = 20;
+            lblAddDate.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label10
             // 
-            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            label10.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label10.Location = new System.Drawing.Point(626, 1);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(96, 22);
-            this.label10.TabIndex = 19;
-            this.label10.Text = "Last Mod Date:";
-            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label10.Location = new System.Drawing.Point(626, 1);
+            label10.Name = "label10";
+            label10.Size = new System.Drawing.Size(96, 22);
+            label10.TabIndex = 19;
+            label10.Text = "Last Mod Date:";
+            label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label9
             // 
-            this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            label9.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label9.Location = new System.Drawing.Point(186, 1);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(69, 22);
-            this.label9.TabIndex = 18;
-            this.label9.Text = "Add Date:";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label9.Location = new System.Drawing.Point(186, 1);
+            label9.Name = "label9";
+            label9.Size = new System.Drawing.Size(69, 22);
+            label9.TabIndex = 18;
+            label9.Text = "Add Date:";
+            label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblModBy
             // 
-            this.lblModBy.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            lblModBy.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblModBy.Location = new System.Drawing.Point(527, 1);
-            this.lblModBy.Name = "lblModBy";
-            this.lblModBy.Size = new System.Drawing.Size(92, 22);
-            this.lblModBy.TabIndex = 17;
-            this.lblModBy.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lblModBy.Location = new System.Drawing.Point(527, 1);
+            lblModBy.Name = "lblModBy";
+            lblModBy.Size = new System.Drawing.Size(92, 22);
+            lblModBy.TabIndex = 17;
+            lblModBy.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label6
             // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            label6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label6.Location = new System.Drawing.Point(434, 1);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(86, 22);
-            this.label6.TabIndex = 16;
-            this.label6.Text = "Last Mod By:";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label6.Location = new System.Drawing.Point(434, 1);
+            label6.Name = "label6";
+            label6.Size = new System.Drawing.Size(86, 22);
+            label6.TabIndex = 16;
+            label6.Text = "Last Mod By:";
+            label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblAddedBy
             // 
-            this.lblAddedBy.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            lblAddedBy.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblAddedBy.Location = new System.Drawing.Point(77, 1);
-            this.lblAddedBy.Name = "lblAddedBy";
-            this.lblAddedBy.Size = new System.Drawing.Size(102, 22);
-            this.lblAddedBy.TabIndex = 15;
-            this.lblAddedBy.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lblAddedBy.Location = new System.Drawing.Point(77, 1);
+            lblAddedBy.Name = "lblAddedBy";
+            lblAddedBy.Size = new System.Drawing.Size(102, 22);
+            lblAddedBy.TabIndex = 15;
+            lblAddedBy.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label7
             // 
-            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            label7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label7.Location = new System.Drawing.Point(4, 1);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(66, 22);
-            this.label7.TabIndex = 14;
-            this.label7.Text = "Added By:";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label7.Location = new System.Drawing.Point(4, 1);
+            label7.Name = "label7";
+            label7.Size = new System.Drawing.Size(66, 22);
+            label7.TabIndex = 14;
+            label7.Text = "Added By:";
+            label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.BackColor = System.Drawing.Color.White;
-            this.tableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
-            this.tableLayoutPanel1.ColumnCount = 8;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 72F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 108F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 75F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 171F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 92F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 98F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 102F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 510F));
-            this.tableLayoutPanel1.Controls.Add(this.lblModDate, 7, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label10, 6, 0);
-            this.tableLayoutPanel1.Controls.Add(this.lblAddDate, 3, 0);
-            this.tableLayoutPanel1.Controls.Add(this.lblModBy, 5, 0);
-            this.tableLayoutPanel1.Controls.Add(this.lblAddedBy, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label9, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label6, 4, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label7, 0, 0);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 629);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(8, 3, 3, 3);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 1;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1206, 24);
-            this.tableLayoutPanel1.TabIndex = 18;
+            tableLayoutPanel1.BackColor = System.Drawing.Color.White;
+            tableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            tableLayoutPanel1.ColumnCount = 8;
+            tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 72F));
+            tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 108F));
+            tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 75F));
+            tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 171F));
+            tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 92F));
+            tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 98F));
+            tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 102F));
+            tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 510F));
+            tableLayoutPanel1.Controls.Add(lblModDate, 7, 0);
+            tableLayoutPanel1.Controls.Add(label10, 6, 0);
+            tableLayoutPanel1.Controls.Add(lblAddDate, 3, 0);
+            tableLayoutPanel1.Controls.Add(lblModBy, 5, 0);
+            tableLayoutPanel1.Controls.Add(lblAddedBy, 1, 0);
+            tableLayoutPanel1.Controls.Add(label9, 2, 0);
+            tableLayoutPanel1.Controls.Add(label6, 4, 0);
+            tableLayoutPanel1.Controls.Add(label7, 0, 0);
+            tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            tableLayoutPanel1.Location = new System.Drawing.Point(0, 629);
+            tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(8, 3, 3, 3);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 1;
+            tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            tableLayoutPanel1.Size = new System.Drawing.Size(1206, 24);
+            tableLayoutPanel1.TabIndex = 18;
             // 
             // lblModDate
             // 
-            this.lblModDate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            lblModDate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblModDate.Location = new System.Drawing.Point(729, 1);
-            this.lblModDate.Name = "lblModDate";
-            this.lblModDate.Size = new System.Drawing.Size(145, 22);
-            this.lblModDate.TabIndex = 21;
-            this.lblModDate.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lblModDate.Location = new System.Drawing.Point(729, 1);
+            lblModDate.Name = "lblModDate";
+            lblModDate.Size = new System.Drawing.Size(145, 22);
+            lblModDate.TabIndex = 21;
+            lblModDate.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // panel3
             // 
-            this.panel3.AutoSize = true;
-            this.panel3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.panel3.Controls.Add(this.pictureBox1);
-            this.panel3.Controls.Add(this.scriptConfigCtrl1);
-            this.panel3.Controls.Add(this.txtScriptName);
-            this.panel3.Controls.Add(this.label1);
-            this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel3.Location = new System.Drawing.Point(0, 0);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1206, 154);
-            this.panel3.TabIndex = 19;
+            panel3.AutoSize = true;
+            panel3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            panel3.Controls.Add(pictureBox1);
+            panel3.Controls.Add(scriptConfigCtrl1);
+            panel3.Controls.Add(txtScriptName);
+            panel3.Controls.Add(label1);
+            panel3.Dock = System.Windows.Forms.DockStyle.Top;
+            panel3.Location = new System.Drawing.Point(0, 0);
+            panel3.Name = "panel3";
+            panel3.Size = new System.Drawing.Size(1206, 154);
+            panel3.TabIndex = 19;
             // 
             // scriptConfigCtrl1
             // 
-            this.scriptConfigCtrl1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            scriptConfigCtrl1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.scriptConfigCtrl1.BackColor = System.Drawing.SystemColors.Control;
-            this.scriptConfigCtrl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.scriptConfigCtrl1.BuildSequenceChanged = false;
-            this.scriptConfigCtrl1.DatabaseList = null;
-            this.scriptConfigCtrl1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.scriptConfigCtrl1.HasChanged = false;
-            this.scriptConfigCtrl1.Location = new System.Drawing.Point(5, 43);
-            this.scriptConfigCtrl1.Margin = new System.Windows.Forms.Padding(0);
-            this.scriptConfigCtrl1.Name = "scriptConfigCtrl1";
-            this.scriptConfigCtrl1.ShowFull = false;
-            this.scriptConfigCtrl1.Size = new System.Drawing.Size(1207, 111);
-            this.scriptConfigCtrl1.TabIndex = 1;
+            scriptConfigCtrl1.BackColor = System.Drawing.SystemColors.Control;
+            scriptConfigCtrl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            scriptConfigCtrl1.BuildSequenceChanged = false;
+            scriptConfigCtrl1.DatabaseList = null;
+            scriptConfigCtrl1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            scriptConfigCtrl1.HasChanged = false;
+            scriptConfigCtrl1.Location = new System.Drawing.Point(5, 43);
+            scriptConfigCtrl1.Margin = new System.Windows.Forms.Padding(0);
+            scriptConfigCtrl1.Name = "scriptConfigCtrl1";
+            scriptConfigCtrl1.ShowFull = false;
+            scriptConfigCtrl1.Size = new System.Drawing.Size(1207, 111);
+            scriptConfigCtrl1.TabIndex = 1;
             // 
             // splitter1
             // 
-            this.splitter1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.splitter1.Location = new System.Drawing.Point(0, 154);
-            this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(1206, 3);
-            this.splitter1.TabIndex = 20;
-            this.splitter1.TabStop = false;
+            splitter1.Dock = System.Windows.Forms.DockStyle.Top;
+            splitter1.Location = new System.Drawing.Point(0, 154);
+            splitter1.Name = "splitter1";
+            splitter1.Size = new System.Drawing.Size(1206, 3);
+            splitter1.TabIndex = 20;
+            splitter1.TabStop = false;
             // 
             // panel4
             // 
-            this.panel4.Controls.Add(this.rtbSqlScript);
-            this.panel4.Controls.Add(this.panel5);
-            this.panel4.Controls.Add(this.finderCtrl1);
-            this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel4.Location = new System.Drawing.Point(0, 157);
-            this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(1206, 472);
-            this.panel4.TabIndex = 21;
+            panel4.Controls.Add(rtbSqlScript);
+            panel4.Controls.Add(panel5);
+            panel4.Controls.Add(finderCtrl1);
+            panel4.Dock = System.Windows.Forms.DockStyle.Fill;
+            panel4.Location = new System.Drawing.Point(0, 157);
+            panel4.Name = "panel4";
+            panel4.Size = new System.Drawing.Size(1206, 472);
+            panel4.TabIndex = 21;
             // 
             // rtbSqlScript
             // 
-            this.rtbSqlScript.AcceptsTab = true;
-            this.rtbSqlScript.CaseSensitive = false;
-            this.rtbSqlScript.ContextMenuStrip = this.cutCopyPastecontextMenuStrip1;
-            this.rtbSqlScript.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbSqlScript.FilterAutoComplete = true;
-            this.rtbSqlScript.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.rtbSqlScript.HighlightDescriptors = highLightDescriptorCollection1;
-            this.rtbSqlScript.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
-            this.rtbSqlScript.Location = new System.Drawing.Point(0, 0);
-            this.rtbSqlScript.MaxUndoRedoSteps = 50;
-            this.rtbSqlScript.Name = "rtbSqlScript";
-            this.rtbSqlScript.Size = new System.Drawing.Size(1206, 405);
-            this.rtbSqlScript.SuspendHighlighting = false;
-            this.rtbSqlScript.TabIndex = 0;
-            this.rtbSqlScript.Text = "";
-            this.rtbSqlScript.WordWrap = false;
-            this.rtbSqlScript.SelectionChanged += new System.EventHandler(this.rtbSqlScript_SelectionChanged);
-            this.rtbSqlScript.TextChanged += new System.EventHandler(this.rtbSqlScript_TextChanged);
-            this.rtbSqlScript.KeyUp += new System.Windows.Forms.KeyEventHandler(this.rtbSqlScript_KeyUp);
-            this.rtbSqlScript.MouseUp += new System.Windows.Forms.MouseEventHandler(this.rtbSqlScript_MouseUp);
+            rtbSqlScript.AcceptsTab = true;
+            rtbSqlScript.CaseSensitive = false;
+            rtbSqlScript.ContextMenuStrip = cutCopyPastecontextMenuStrip1;
+            rtbSqlScript.Dock = System.Windows.Forms.DockStyle.Fill;
+            rtbSqlScript.FilterAutoComplete = true;
+            rtbSqlScript.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            rtbSqlScript.HighlightDescriptors = highLightDescriptorCollection1;
+            rtbSqlScript.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
+            rtbSqlScript.Location = new System.Drawing.Point(0, 0);
+            rtbSqlScript.MaxUndoRedoSteps = 50;
+            rtbSqlScript.Name = "rtbSqlScript";
+            rtbSqlScript.Size = new System.Drawing.Size(1206, 405);
+            rtbSqlScript.SuspendHighlighting = false;
+            rtbSqlScript.TabIndex = 0;
+            rtbSqlScript.Text = "";
+            rtbSqlScript.WordWrap = false;
+            rtbSqlScript.SelectionChanged += new System.EventHandler(rtbSqlScript_SelectionChanged);
+            rtbSqlScript.TextChanged += new System.EventHandler(rtbSqlScript_TextChanged);
+            rtbSqlScript.KeyUp += new System.Windows.Forms.KeyEventHandler(rtbSqlScript_KeyUp);
+            rtbSqlScript.MouseUp += new System.Windows.Forms.MouseEventHandler(rtbSqlScript_MouseUp);
             // 
             // cutCopyPastecontextMenuStrip1
             // 
-            this.cutCopyPastecontextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripSeparator1});
-            this.cutCopyPastecontextMenuStrip1.Name = "mnuCopyPaste";
-            this.cutCopyPastecontextMenuStrip1.Size = new System.Drawing.Size(103, 76);
+            cutCopyPastecontextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            toolStripSeparator1});
+            cutCopyPastecontextMenuStrip1.Name = "mnuCopyPaste";
+            cutCopyPastecontextMenuStrip1.Size = new System.Drawing.Size(103, 76);
             // 
             // toolStripSeparator1
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(99, 6);
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(99, 6);
             // 
             // panel5
             // 
-            this.panel5.Controls.Add(this.label5);
-            this.panel5.Controls.Add(this.btnOK);
-            this.panel5.Controls.Add(this.lnkRunPolicyChecks);
-            this.panel5.Controls.Add(this.button2);
-            this.panel5.Controls.Add(this.lblCharacterNumber);
-            this.panel5.Controls.Add(this.lblHighlightLimit);
-            this.panel5.Controls.Add(this.lblLineNumber);
-            this.panel5.Controls.Add(this.label3);
-            this.panel5.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel5.Location = new System.Drawing.Point(0, 405);
-            this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(1206, 37);
-            this.panel5.TabIndex = 10;
+            panel5.Controls.Add(label5);
+            panel5.Controls.Add(btnOK);
+            panel5.Controls.Add(lnkRunPolicyChecks);
+            panel5.Controls.Add(button2);
+            panel5.Controls.Add(lblCharacterNumber);
+            panel5.Controls.Add(lblHighlightLimit);
+            panel5.Controls.Add(lblLineNumber);
+            panel5.Controls.Add(label3);
+            panel5.Dock = System.Windows.Forms.DockStyle.Bottom;
+            panel5.Location = new System.Drawing.Point(0, 405);
+            panel5.Name = "panel5";
+            panel5.Size = new System.Drawing.Size(1206, 37);
+            panel5.TabIndex = 10;
             // 
             // label5
             // 
-            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(1115, 12);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(69, 13);
-            this.label5.TabIndex = 6;
-            this.label5.Text = "Character:";
+            label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            label5.AutoSize = true;
+            label5.Location = new System.Drawing.Point(1115, 12);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(69, 13);
+            label5.TabIndex = 6;
+            label5.Text = "Character:";
             // 
             // lnkRunPolicyChecks
             // 
-            this.lnkRunPolicyChecks.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.lnkRunPolicyChecks.AutoSize = true;
-            this.lnkRunPolicyChecks.Location = new System.Drawing.Point(930, 12);
-            this.lnkRunPolicyChecks.Name = "lnkRunPolicyChecks";
-            this.lnkRunPolicyChecks.Size = new System.Drawing.Size(122, 13);
-            this.lnkRunPolicyChecks.TabIndex = 9;
-            this.lnkRunPolicyChecks.TabStop = true;
-            this.lnkRunPolicyChecks.Text = "[Run Policy Checks]";
-            this.lnkRunPolicyChecks.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkRunPolicyChecks_LinkClicked);
+            lnkRunPolicyChecks.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            lnkRunPolicyChecks.AutoSize = true;
+            lnkRunPolicyChecks.Location = new System.Drawing.Point(930, 12);
+            lnkRunPolicyChecks.Name = "lnkRunPolicyChecks";
+            lnkRunPolicyChecks.Size = new System.Drawing.Size(122, 13);
+            lnkRunPolicyChecks.TabIndex = 9;
+            lnkRunPolicyChecks.TabStop = true;
+            lnkRunPolicyChecks.Text = "[Run Policy Checks]";
+            lnkRunPolicyChecks.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(lnkRunPolicyChecks_LinkClicked);
             // 
             // lblCharacterNumber
             // 
-            this.lblCharacterNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCharacterNumber.AutoSize = true;
-            this.lblCharacterNumber.Location = new System.Drawing.Point(1180, 12);
-            this.lblCharacterNumber.Name = "lblCharacterNumber";
-            this.lblCharacterNumber.Size = new System.Drawing.Size(14, 13);
-            this.lblCharacterNumber.TabIndex = 8;
-            this.lblCharacterNumber.Text = "0";
+            lblCharacterNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            lblCharacterNumber.AutoSize = true;
+            lblCharacterNumber.Location = new System.Drawing.Point(1180, 12);
+            lblCharacterNumber.Name = "lblCharacterNumber";
+            lblCharacterNumber.Size = new System.Drawing.Size(14, 13);
+            lblCharacterNumber.TabIndex = 8;
+            lblCharacterNumber.Text = "0";
             // 
             // lblHighlightLimit
             // 
-            this.lblHighlightLimit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblHighlightLimit.AutoSize = true;
-            this.lblHighlightLimit.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lblHighlightLimit.ForeColor = System.Drawing.Color.Firebrick;
-            this.lblHighlightLimit.Location = new System.Drawing.Point(4, 7);
-            this.lblHighlightLimit.Name = "lblHighlightLimit";
-            this.lblHighlightLimit.Size = new System.Drawing.Size(283, 24);
-            this.lblHighlightLimit.TabIndex = 3;
-            this.lblHighlightLimit.Text = "Due to the length of this script, SQL syntax highlighting\r\nhas been suspended to " +
+            lblHighlightLimit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            lblHighlightLimit.AutoSize = true;
+            lblHighlightLimit.Font = new System.Drawing.Font("Verdana", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            lblHighlightLimit.ForeColor = System.Drawing.Color.Firebrick;
+            lblHighlightLimit.Location = new System.Drawing.Point(4, 7);
+            lblHighlightLimit.Name = "lblHighlightLimit";
+            lblHighlightLimit.Size = new System.Drawing.Size(283, 24);
+            lblHighlightLimit.TabIndex = 3;
+            lblHighlightLimit.Text = "Due to the length of this script, SQL syntax highlighting\r\nhas been suspended to " +
     "improve performance.";
-            this.lblHighlightLimit.Visible = false;
+            lblHighlightLimit.Visible = false;
             // 
             // lblLineNumber
             // 
-            this.lblLineNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblLineNumber.AutoSize = true;
-            this.lblLineNumber.Location = new System.Drawing.Point(1090, 12);
-            this.lblLineNumber.Name = "lblLineNumber";
-            this.lblLineNumber.Size = new System.Drawing.Size(14, 13);
-            this.lblLineNumber.TabIndex = 7;
-            this.lblLineNumber.Text = "0";
+            lblLineNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            lblLineNumber.AutoSize = true;
+            lblLineNumber.Location = new System.Drawing.Point(1090, 12);
+            lblLineNumber.Name = "lblLineNumber";
+            lblLineNumber.Size = new System.Drawing.Size(14, 13);
+            lblLineNumber.TabIndex = 7;
+            lblLineNumber.Text = "0";
             // 
             // label3
             // 
-            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(1058, 12);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 13);
-            this.label3.TabIndex = 5;
-            this.label3.Text = "Line:";
+            label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(1058, 12);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(35, 13);
+            label3.TabIndex = 5;
+            label3.Text = "Line:";
             // 
             // finderCtrl1
             // 
-            this.finderCtrl1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.finderCtrl1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.finderCtrl1.Location = new System.Drawing.Point(0, 442);
-            this.finderCtrl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.finderCtrl1.Name = "finderCtrl1";
-            this.finderCtrl1.Size = new System.Drawing.Size(1206, 30);
-            this.finderCtrl1.TabIndex = 4;
+            finderCtrl1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            finderCtrl1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            finderCtrl1.Location = new System.Drawing.Point(0, 442);
+            finderCtrl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            finderCtrl1.Name = "finderCtrl1";
+            finderCtrl1.Size = new System.Drawing.Size(1206, 30);
+            finderCtrl1.TabIndex = 4;
             // 
             // AddScriptTextForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.AutoSize = true;
-            this.CancelButton = this.button2;
-            this.ClientSize = new System.Drawing.Size(1206, 677);
-            this.Controls.Add(this.panel4);
-            this.Controls.Add(this.splitter1);
-            this.Controls.Add(this.panel3);
-            this.Controls.Add(this.tableLayoutPanel1);
-            this.Controls.Add(this.panel1);
-            this.Controls.Add(this.label2);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.KeyPreview = true;
-            this.Name = "AddScriptTextForm";
-            this.Text = "Add SQL Script Text ";
-            this.Load += new System.EventHandler(this.AddScriptTextForm_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.AddScriptTextForm_KeyDown);
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.panel3.ResumeLayout(false);
-            this.panel3.PerformLayout();
-            this.panel4.ResumeLayout(false);
-            this.cutCopyPastecontextMenuStrip1.ResumeLayout(false);
-            this.panel5.ResumeLayout(false);
-            this.panel5.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            AutoSize = true;
+            CancelButton = button2;
+            ClientSize = new System.Drawing.Size(1206, 677);
+            Controls.Add(panel4);
+            Controls.Add(splitter1);
+            Controls.Add(panel3);
+            Controls.Add(tableLayoutPanel1);
+            Controls.Add(panel1);
+            Controls.Add(label2);
+            Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+            Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            KeyPreview = true;
+            Name = "AddScriptTextForm";
+            Text = "Add SQL Script Text ";
+            Load += new System.EventHandler(AddScriptTextForm_Load);
+            KeyDown += new System.Windows.Forms.KeyEventHandler(AddScriptTextForm_KeyDown);
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            panel2.ResumeLayout(false);
+            panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(pictureBox1)).EndInit();
+            tableLayoutPanel1.ResumeLayout(false);
+            panel3.ResumeLayout(false);
+            panel3.PerformLayout();
+            panel4.ResumeLayout(false);
+            cutCopyPastecontextMenuStrip1.ResumeLayout(false);
+            panel5.ResumeLayout(false);
+            panel5.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
 
-		}
-		#endregion
+        }
+        #endregion
 
         private void btnOK_Click(object sender, System.EventArgs e)
         {
-            if (this.txtScriptName.Text.Length == 0)
+            if (txtScriptName.Text.Length == 0)
             {
                 MessageBox.Show("Please enter a script name", "Script Name Needed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                this.txtScriptName.Focus();
+                txtScriptName.Focus();
                 return;
             }
 
-            if (this.rtbSqlScript.Text.Length == 0)
+            if (rtbSqlScript.Text.Length == 0)
             {
                 MessageBox.Show("Please enter a SQL script", "Script Needed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                this.rtbSqlScript.Focus();
+                rtbSqlScript.Focus();
                 return;
             }
 
-            if (!this.scriptConfigCtrl1.ValidateValues(rtbSqlScript.Text, txtScriptName.Text))
+            if (!scriptConfigCtrl1.ValidateValues(rtbSqlScript.Text, txtScriptName.Text))
                 return;
 
             if (DialogResult.Yes == RunPolicyChecks(true))
@@ -739,16 +735,16 @@ namespace SqlSync.SqlBuild
             }
 
 
-            if (this.scriptCfgRow.FileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
-                this.scriptCfgRow.FileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
-                this.scriptCfgRow.FileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
-                this.scriptCfgRow.StripTransactionText = false;
+            if (scriptCfgRow.FileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
+                scriptCfgRow.FileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
+                scriptCfgRow.FileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
+                scriptCfgRow.StripTransactionText = false;
 
 
             Regex useStmt = new Regex("^\\s*use\\s+\\S+", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-            if (useStmt.Match(this.rtbSqlScript.Text).Success)
+            if (useStmt.Match(rtbSqlScript.Text).Success)
             {
-                string msg = "A database \"USE\" statement was found in your SQL:\r\n\r\n" + useStmt.Match(this.rtbSqlScript.Text).Value.Trim() + "\r\n\r\n" +
+                string msg = "A database \"USE\" statement was found in your SQL:\r\n\r\n" + useStmt.Match(rtbSqlScript.Text).Value.Trim() + "\r\n\r\n" +
                 "This statement will be stripped out of the file!\r\nTo change your target database, use the \"Target DB\" list on the script form.\r\n\r\n" +
                 "Click \"OK\" to save the script, minus the \"USE\" statement.\r\nClick \"Cancel\" to edit the script.";
                 if (DialogResult.Cancel == MessageBox.Show(msg, "USE Statement detected", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning))
@@ -757,89 +753,89 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    this.rtbSqlScript.Text = this.rtbSqlScript.Text.Replace(useStmt.Match(this.rtbSqlScript.Text).Value, string.Empty);
+                    rtbSqlScript.Text = rtbSqlScript.Text.Replace(useStmt.Match(rtbSqlScript.Text).Value, string.Empty);
                 }
             }
 
 
-           // this.codeReviewControl1.SaveData(this.rtbSqlScript.Text);
-            
+            // this.codeReviewControl1.SaveData(this.rtbSqlScript.Text);
 
-            this.scriptConfigCtrl1.UpdateScriptConfigValues();
-            this.sqlName = txtScriptName.Text;
-            this.sqlText = rtbSqlScript.Text;
-            this.DialogResult = DialogResult.OK;
-            this.configurationChanged = this.scriptConfigCtrl1.HasChanged;
-            this.buildSequenceChanged = this.scriptConfigCtrl1.BuildSequenceChanged;
+
+            scriptConfigCtrl1.UpdateScriptConfigValues();
+            sqlName = txtScriptName.Text;
+            sqlText = rtbSqlScript.Text;
+            DialogResult = DialogResult.OK;
+            configurationChanged = scriptConfigCtrl1.HasChanged;
+            buildSequenceChanged = scriptConfigCtrl1.BuildSequenceChanged;
 
             //if (this.codeReviewControl1.HasChanges)
             //    this.configurationChanged = true;
 
-            this.Close();
+            Close();
         }
 
-		private void button2_Click(object sender, System.EventArgs e)
-		{
-			this.DialogResult = DialogResult.Cancel;
-			this.Close();
-		}
+        private void button2_Click(object sender, System.EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
 
-		private void AddScriptTextForm_Load(object sender, System.EventArgs e)
-		{
-            if (this.txtScriptName.Text.Length > 0)
-                this.scriptConfigCtrl1.ParentFileName = this.txtScriptName.Text;
+        private void AddScriptTextForm_Load(object sender, System.EventArgs e)
+        {
+            if (txtScriptName.Text.Length > 0)
+                scriptConfigCtrl1.ParentFileName = txtScriptName.Text;
 
-            this.txtScriptName.TextChanged  += new EventHandler(txtScriptName_TextChanged);
-            this.finderCtrl1.AddControlToSearch(this.rtbSqlScript);
-			this.rtbSqlScript.FilterAutoComplete = true;
-            txtScriptId.Text = this.scriptCfgRow.ScriptId;
-			txtFileHash.Text = this.fileHash;
-            lblAddedBy.Text = this.scriptCfgRow.AddedBy;
-            lblModBy.Text = this.scriptCfgRow.ModifiedBy;
-            lblAddDate.Text = (this.scriptCfgRow.IsDateAddedNull()) ? "" : this.scriptCfgRow.DateAdded.ToString();
-            lblModDate.Text = (this.scriptCfgRow.IsDateModifiedNull() || this.scriptCfgRow.DateModified == DateTime.MinValue) ? "" : this.scriptCfgRow.DateModified.ToString();
+            txtScriptName.TextChanged += new EventHandler(txtScriptName_TextChanged);
+            finderCtrl1.AddControlToSearch(rtbSqlScript);
+            rtbSqlScript.FilterAutoComplete = true;
+            txtScriptId.Text = scriptCfgRow.ScriptId;
+            txtFileHash.Text = fileHash;
+            lblAddedBy.Text = scriptCfgRow.AddedBy;
+            lblModBy.Text = scriptCfgRow.ModifiedBy;
+            lblAddDate.Text = (scriptCfgRow.IsDateAddedNull()) ? "" : scriptCfgRow.DateAdded.ToString();
+            lblModDate.Text = (scriptCfgRow.IsDateModifiedNull() || scriptCfgRow.DateModified == DateTime.MinValue) ? "" : scriptCfgRow.DateModified.ToString();
 
-            if (this.scriptConfigCtrl1.Visible)
-                this.scriptConfigCtrl1.SetConfigData(ref this.scriptCfgRow, this.databaseList,this.tagList,this.scriptTagRequired);
+            if (scriptConfigCtrl1.Visible)
+                scriptConfigCtrl1.SetConfigData(ref scriptCfgRow, databaseList, tagList, scriptTagRequired);
 
-			if(this.fullFilePath.Length > 0)
-			{
-				string[] batch = SqlBuildHelper.ReadBatchFromScriptFile(this.fullFilePath,false,true);
-				string full = String.Join("",batch);
-				this.rtbSqlScript.AppendText(full);
-				this.rtbSqlScript.Select(0,0);
-			}
-            this.rtbSqlScript.AcceptsTab = true;
-    
-			if(this.utilRegistry != null)
-			{
+            if (fullFilePath.Length > 0)
+            {
+                string[] batch = SqlBuildHelper.ReadBatchFromScriptFile(fullFilePath, false, true);
+                string full = String.Join("", batch);
+                rtbSqlScript.AppendText(full);
+                rtbSqlScript.Select(0, 0);
+            }
+            rtbSqlScript.AcceptsTab = true;
+
+            if (utilRegistry != null)
+            {
                 List<ToolStripItem> list = new List<ToolStripItem>();
-                for (int i = 0; i < this.utilRegistry.Items.Length; i++)
-                    list.Add(SetUtilityRegistry(this.utilRegistry.Items[i]));
-					
-				if(list.Count > 0)
-					for(int i=0;i<list.Count;i++)
-                        this.cutCopyPastecontextMenuStrip1.Items.Add(list[i]);
-    		}
+                for (int i = 0; i < utilRegistry.Items.Length; i++)
+                    list.Add(SetUtilityRegistry(utilRegistry.Items[i]));
+
+                if (list.Count > 0)
+                    for (int i = 0; i < list.Count; i++)
+                        cutCopyPastecontextMenuStrip1.Items.Add(list[i]);
+            }
 
             ToolStripMenuItem mnuOptimizeWithNoLock = new ToolStripMenuItem("Optimize SELECT : Add \"WITH (NOLOCK)\" Directive", null, mnuOptimizeWithNoLock_Click);
-            this.cutCopyPastecontextMenuStrip1.Items.Add(new ToolStripSeparator());
-            this.cutCopyPastecontextMenuStrip1.Items.Add(mnuOptimizeWithNoLock);
+            cutCopyPastecontextMenuStrip1.Items.Add(new ToolStripSeparator());
+            cutCopyPastecontextMenuStrip1.Items.Add(mnuOptimizeWithNoLock);
 
             ToolStripMenuItem mnuConvertToAlter = new ToolStripMenuItem("Convert to ALTER COLUMN", null, mnuConvertToAlter_Click);
-            this.cutCopyPastecontextMenuStrip1.Items.Add(new ToolStripSeparator());
-            this.cutCopyPastecontextMenuStrip1.Items.Add(mnuConvertToAlter);
+            cutCopyPastecontextMenuStrip1.Items.Add(new ToolStripSeparator());
+            cutCopyPastecontextMenuStrip1.Items.Add(mnuConvertToAlter);
 
-            ToolStripMenuItem mnuResyncTable= new ToolStripMenuItem("Transform to resync TABLE", null, mnuTransformtoResyncTable_Click);
-            this.cutCopyPastecontextMenuStrip1.Items.Add(mnuResyncTable);
+            ToolStripMenuItem mnuResyncTable = new ToolStripMenuItem("Transform to resync TABLE", null, mnuTransformtoResyncTable_Click);
+            cutCopyPastecontextMenuStrip1.Items.Add(mnuResyncTable);
 
 
-			this.toolTip1.SetToolTip(label1,"Click <F1> to insert Selected Sql Script text as Script Name\r\nClick <Shift><F1> to append to Script Name");
+            toolTip1.SetToolTip(label1, "Click <F1> to insert Selected Sql Script text as Script Name\r\nClick <Shift><F1> to append to Script Name");
 
-            if (this.scriptConfigCtrl1.ShowFull == false)
+            if (scriptConfigCtrl1.ShowFull == false)
                 rtbSqlScript.Select();
 
-            if (!this.allowEdit)
+            if (!allowEdit)
                 btnOK.Enabled = false;
 
             //if (EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig == null || !EnterpriseConfigHelper.EnterpriseConfig.CodeReviewConfig.Enabled)
@@ -854,248 +850,249 @@ namespace SqlSync.SqlBuild
             //    string lastEditor = this.scriptCfgRow.ModifiedBy.Length == 0 ? this.scriptCfgRow.AddedBy : this.scriptCfgRow.ModifiedBy;
             //    this.codeReviewControl1.BindData(ref this.buildData, ref this.scriptCfgRow, this.rtbSqlScript.Text, lastEditor);
             //}
-		}
+        }
 
         void txtScriptName_TextChanged(object sender, EventArgs e)
         {
-            this.scriptConfigCtrl1.ParentFileName = txtScriptName.Text;
+            scriptConfigCtrl1.ParentFileName = txtScriptName.Text;
         }
 
-        private ToolStripItem  SetUtilityRegistry(object utilityRegItem)
-		{
-			if(utilityRegItem.GetType() == typeof(Utility.Replace))
-			{
-				Utility.Replace replace = (Utility.Replace)utilityRegItem;
-				string text = replace.OldString +"-->"+replace.NewString;
-				return new ToolStripMenuItem(text,null,new System.EventHandler(mnuReplaceandHighlight_Click));
-			}
-			else if(utilityRegItem.GetType() == typeof(Utility.SubMenu))
-			{
-				Utility.SubMenu sub = (Utility.SubMenu)utilityRegItem;
+        private ToolStripItem SetUtilityRegistry(object utilityRegItem)
+        {
+            if (utilityRegItem.GetType() == typeof(Utility.Replace))
+            {
+                Utility.Replace replace = (Utility.Replace)utilityRegItem;
+                string text = replace.OldString + "-->" + replace.NewString;
+                return new ToolStripMenuItem(text, null, new System.EventHandler(mnuReplaceandHighlight_Click));
+            }
+            else if (utilityRegItem.GetType() == typeof(Utility.SubMenu))
+            {
+                Utility.SubMenu sub = (Utility.SubMenu)utilityRegItem;
                 ToolStripItem item;
                 if (sub.Name == "-")
                     item = new ToolStripSeparator();
                 else
                     item = new ToolStripMenuItem(sub.Name);
 
-				if(sub.Items == null) return item;
+                if (sub.Items == null) return item;
 
                 for (int i = 0; i < sub.Items.Length; i++)
                 {
                     ((ToolStripMenuItem)item).DropDownItems.Add(SetUtilityRegistry(sub.Items[i]));
                 }
-				
-				return item;
-			}
-			else if(utilityRegItem.GetType() == typeof(Utility.UtilityQuery))
-			{
-				Utility.UtilityQuery util = (Utility.UtilityQuery)utilityRegItem;
+
+                return item;
+            }
+            else if (utilityRegItem.GetType() == typeof(Utility.UtilityQuery))
+            {
+                Utility.UtilityQuery util = (Utility.UtilityQuery)utilityRegItem;
                 return new ToolStripMenuItem(util.Description, null, new System.EventHandler(mnuUtilityQueryInsert_Click));
-			}
+            }
             return new ToolStripSeparator();
         }
 
-		private void lnkProcessBatch_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
-		{
-			int batchNumber = 0;
-			string[] lines = this.rtbSqlScript.Lines;
-			this.rtbSqlScript.Clear();
-			for(int i=0;i<lines.Length;i++)
-			{
-				if(batchNumber % 2 == 0)
-					this.rtbSqlScript.SelectionColor = this.evenColor;
-				else
-					this.rtbSqlScript.SelectionColor = this.oddColor;
-				
-				this.rtbSqlScript.AppendText(lines[i]+"\r\n");
-				if(lines[i].Trim() == BatchParsing.Delimiter)
-					batchNumber++;
-			}
+        private void lnkProcessBatch_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
+        {
+            int batchNumber = 0;
+            string[] lines = rtbSqlScript.Lines;
+            rtbSqlScript.Clear();
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (batchNumber % 2 == 0)
+                    rtbSqlScript.SelectionColor = evenColor;
+                else
+                    rtbSqlScript.SelectionColor = oddColor;
 
-		}
+                rtbSqlScript.AppendText(lines[i] + "\r\n");
+                if (lines[i].Trim() == BatchParsing.Delimiter)
+                    batchNumber++;
+            }
 
-		private void mnuReplaceandHighlight_Click(object sender, System.EventArgs e)
-		{
+        }
+
+        private void mnuReplaceandHighlight_Click(object sender, System.EventArgs e)
+        {
             string text = ((ToolStripItem)sender).Text;
-			int arrowLoc = text.IndexOf("-->");
-			string old = text.Substring(0,arrowLoc);
-			string newStr = text.Substring(arrowLoc+3);
-			ReplaceAndHighlightString(old,newStr);
-		}
+            int arrowLoc = text.IndexOf("-->");
+            string old = text.Substring(0, arrowLoc);
+            string newStr = text.Substring(arrowLoc + 3);
+            ReplaceAndHighlightString(old, newStr);
+        }
 
-		private void mnuUtilityQueryInsert_Click(object sender, System.EventArgs e)
-		{
-			string text = ((ToolStripItem)sender).Text;
-			if(this.utilRegistry != null)
-			{
-				string fileName = string.Empty;
-				for(int i=0;i<this.utilRegistry.Items.Length;i++)
-				{
-					fileName = GetUtilityQueryFileName(text, this.utilRegistry.Items[i]);
-					if(fileName != string.Empty)
-						break;
-				}
-				if(fileName != null && fileName != string.Empty)
-					InsertUtilityQuery(fileName, text);
+        private void mnuUtilityQueryInsert_Click(object sender, System.EventArgs e)
+        {
+            string text = ((ToolStripItem)sender).Text;
+            if (utilRegistry != null)
+            {
+                string fileName = string.Empty;
+                for (int i = 0; i < utilRegistry.Items.Length; i++)
+                {
+                    fileName = GetUtilityQueryFileName(text, utilRegistry.Items[i]);
+                    if (fileName != string.Empty)
+                        break;
+                }
+                if (fileName != null && fileName != string.Empty)
+                    InsertUtilityQuery(fileName, text);
 
-			}
-		}
-		private string GetUtilityQueryFileName(string menuText,object registryItem)
-		{
-			if(registryItem.GetType() ==  typeof(Utility.UtilityQuery) &&
-				((Utility.UtilityQuery)registryItem).Description == menuText)
-			{
-				return ((Utility.UtilityQuery)registryItem).FileName;
-			}
-			else if(registryItem.GetType() ==  typeof(Utility.SubMenu))
-			{
-				string fName = string.Empty;
-				Utility.SubMenu sub = (Utility.SubMenu)registryItem;
-				if(sub.Items == null) return fName;
+            }
+        }
+        private string GetUtilityQueryFileName(string menuText, object registryItem)
+        {
+            if (registryItem.GetType() == typeof(Utility.UtilityQuery) &&
+                ((Utility.UtilityQuery)registryItem).Description == menuText)
+            {
+                return ((Utility.UtilityQuery)registryItem).FileName;
+            }
+            else if (registryItem.GetType() == typeof(Utility.SubMenu))
+            {
+                string fName = string.Empty;
+                Utility.SubMenu sub = (Utility.SubMenu)registryItem;
+                if (sub.Items == null) return fName;
 
-				for(int i=0;i<sub.Items.Length;i++)
-				{
-					fName = GetUtilityQueryFileName(menuText,sub.Items[i]);
-					if(fName != string.Empty)
-						return fName;
-				}
-			}
-			return string.Empty;
+                for (int i = 0; i < sub.Items.Length; i++)
+                {
+                    fName = GetUtilityQueryFileName(menuText, sub.Items[i]);
+                    if (fName != string.Empty)
+                        return fName;
+                }
+            }
+            return string.Empty;
 
-		}
-		private void InsertUtilityQuery(string fileLocation, string title)
-		{
-			if(System.IO.File.Exists(fileLocation) == false)
-			{
-				MessageBox.Show("Unable to locate utility file at:\r\n"+fileLocation);
-				return;
-			}
+        }
+        private void InsertUtilityQuery(string fileLocation, string title)
+        {
+            if (System.IO.File.Exists(fileLocation) == false)
+            {
+                MessageBox.Show("Unable to locate utility file at:\r\n" + fileLocation);
+                return;
+            }
 
-			string query = string.Empty;
-			using(System.IO.StreamReader sr = System.IO.File.OpenText(fileLocation))
-			{
-				query = sr.ReadToEnd();
-			}
+            string query = string.Empty;
+            using (System.IO.StreamReader sr = System.IO.File.OpenText(fileLocation))
+            {
+                query = sr.ReadToEnd();
+            }
 
             //automatic inserts...
-            Regex regToday = new Regex(@"<\[today\]>",RegexOptions.IgnoreCase);
+            Regex regToday = new Regex(@"<\[today\]>", RegexOptions.IgnoreCase);
             query = regToday.Replace(query, DateTime.Now.ToString("MM/dd/yyyy"));
 
-            Regex regScriptName = new Regex(@"<\[script_name\]>",RegexOptions.IgnoreCase);
-            query = regScriptName.Replace(query, this.txtScriptName.Text);
+            Regex regScriptName = new Regex(@"<\[script_name\]>", RegexOptions.IgnoreCase);
+            query = regScriptName.Replace(query, txtScriptName.Text);
 
-            Regex regAuthor = new Regex(@"<\[author\]>",RegexOptions.IgnoreCase);
+            Regex regAuthor = new Regex(@"<\[author\]>", RegexOptions.IgnoreCase);
             query = regAuthor.Replace(query, System.Environment.UserName);
 
 
             //manual inserts
-			Regex check = new Regex("<<[A-Za-z0-9 ]{1,}>>");
-			MatchCollection matches = check.Matches(query);
-			if(matches.Count > 0)
-			{
-				ArrayList keys = new ArrayList();
-				for(int i=0;i<matches.Count;i++)
-				{
-					if(keys.Contains(matches[i].Value) == false)
-						keys.Add(matches[i].Value);
-				}
-				string[] arrKey = new string[keys.Count];
-				keys.CopyTo(arrKey);
+            Regex check = new Regex("<<[A-Za-z0-9 ]{1,}>>");
+            MatchCollection matches = check.Matches(query);
+            if (matches.Count > 0)
+            {
+                ArrayList keys = new ArrayList();
+                for (int i = 0; i < matches.Count; i++)
+                {
+                    if (keys.Contains(matches[i].Value) == false)
+                        keys.Add(matches[i].Value);
+                }
+                string[] arrKey = new string[keys.Count];
+                keys.CopyTo(arrKey);
                 string inputText = string.Empty;
-                if (this.rtbSqlScript.SelectedText.Length > 0)
-                    inputText = this.rtbSqlScript.SelectedText;
+                if (rtbSqlScript.SelectedText.Length > 0)
+                    inputText = rtbSqlScript.SelectedText;
 
-				UtilityReplacement frmRepl = new UtilityReplacement(arrKey,title,inputText);
-				frmRepl.ShowDialog();
+                UtilityReplacement frmRepl = new UtilityReplacement(arrKey, title, inputText);
+                frmRepl.ShowDialog();
 
-				if(frmRepl.DialogResult == DialogResult.OK)
-				{
-					for(int i=0;i<arrKey.Length;i++)
-						query = query.Replace(arrKey[i],frmRepl.Replacements[arrKey[i]]);
-				}else
-					query = string.Empty;
-			}
+                if (frmRepl.DialogResult == DialogResult.OK)
+                {
+                    for (int i = 0; i < arrKey.Length; i++)
+                        query = query.Replace(arrKey[i], frmRepl.Replacements[arrKey[i]]);
+                }
+                else
+                    query = string.Empty;
+            }
 
             if (query.Length == 0)
                 return;
 
-			//Add the default title if applicable
-			Regex regTitle = new Regex(@"\$\{[Tt][Ii][Tt][Ll][Ee]: (.*?)\}");
-			MatchCollection queryTitle = regTitle.Matches(query);
+            //Add the default title if applicable
+            Regex regTitle = new Regex(@"\$\{[Tt][Ii][Tt][Ll][Ee]: (.*?)\}");
+            MatchCollection queryTitle = regTitle.Matches(query);
             Regex regRemoveTitle = new Regex(@"\$\{[Tt][Ii][Tt][Ll][Ee]:");
             MatchCollection remTitle = regRemoveTitle.Matches(query);
 
-            if(this.txtScriptName.Text.Length == 0)
-			{
-				if(queryTitle.Count > 0)
-				{
-					this.txtScriptName.Text = queryTitle[0].Value.Replace(remTitle[0].Value,"").Replace("}","").Trim();
-					query = query.Replace(queryTitle[0].Value,"").TrimStart();
-				}
-			}
-			else
-			{
-				for(int i=0;i<queryTitle.Count;i++)
+            if (txtScriptName.Text.Length == 0)
+            {
+                if (queryTitle.Count > 0)
+                {
+                    txtScriptName.Text = queryTitle[0].Value.Replace(remTitle[0].Value, "").Replace("}", "").Trim();
                     query = query.Replace(queryTitle[0].Value, "").TrimStart();
-			}
+                }
+            }
+            else
+            {
+                for (int i = 0; i < queryTitle.Count; i++)
+                    query = query.Replace(queryTitle[0].Value, "").TrimStart();
+            }
 
-			int selectionStart = this.rtbSqlScript.SelectionStart;
-			int trueLength = query.Replace("\n","").Length;
-			this.rtbSqlScript.SelectedText = query;
-			this.rtbSqlScript.Select(selectionStart,trueLength);
-			this.rtbSqlScript.SelectionColor = Color.Orange;
-			this.rtbSqlScript.Select(selectionStart+query.Length,0);
+            int selectionStart = rtbSqlScript.SelectionStart;
+            int trueLength = query.Replace("\n", "").Length;
+            rtbSqlScript.SelectedText = query;
+            rtbSqlScript.Select(selectionStart, trueLength);
+            rtbSqlScript.SelectionColor = Color.Orange;
+            rtbSqlScript.Select(selectionStart + query.Length, 0);
 
-		}
-		private void ReplaceAndHighlightString(string oldString, string newString)
-		{
-			int selectionStart = this.rtbSqlScript.SelectionStart;
-			string replaceVal = this.rtbSqlScript.SelectedText.Replace(oldString,newString);
-			replaceVal = replaceVal.Replace(oldString.ToLower(),newString);
-			this.rtbSqlScript.SelectedText = replaceVal;
+        }
+        private void ReplaceAndHighlightString(string oldString, string newString)
+        {
+            int selectionStart = rtbSqlScript.SelectionStart;
+            string replaceVal = rtbSqlScript.SelectedText.Replace(oldString, newString);
+            replaceVal = replaceVal.Replace(oldString.ToLower(), newString);
+            rtbSqlScript.SelectedText = replaceVal;
 
-			bool foundNewString = true;
-			int findIndex = 0;
-			int newStringLength = newString.Length;
-			while(foundNewString)
-			{
-				int start = replaceVal.IndexOf(newString,findIndex);
-				if(start > -1)
-				{
-					this.rtbSqlScript.Select(selectionStart+start,newStringLength);
-					this.rtbSqlScript.SelectionColor = Color.Purple;
-					findIndex = start+1;
-				}
-				else
-				{
-					foundNewString = false;
-				}
-			}
-			this.rtbSqlScript.Select(selectionStart+replaceVal.Length,0);
-		}
+            bool foundNewString = true;
+            int findIndex = 0;
+            int newStringLength = newString.Length;
+            while (foundNewString)
+            {
+                int start = replaceVal.IndexOf(newString, findIndex);
+                if (start > -1)
+                {
+                    rtbSqlScript.Select(selectionStart + start, newStringLength);
+                    rtbSqlScript.SelectionColor = Color.Purple;
+                    findIndex = start + 1;
+                }
+                else
+                {
+                    foundNewString = false;
+                }
+            }
+            rtbSqlScript.Select(selectionStart + replaceVal.Length, 0);
+        }
 
-		
-		/// <summary>
-		/// Captures a paste function and looks for RegEx (TABLE [A-Za-z0-9\[\] _]{1,}) 
-		/// to paste in a default script name
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void rtbSqlScript_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
-		{
+
+        /// <summary>
+        /// Captures a paste function and looks for RegEx (TABLE [A-Za-z0-9\[\] _]{1,}) 
+        /// to paste in a default script name
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void rtbSqlScript_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
             SetLineAndCharacterNumber();
-			if(e.KeyCode == Keys.V && e.Modifiers == Keys.Control && txtScriptName.Text.Length == 0)
-			{
-				Regex table = new Regex(@"TABLE [A-Za-z0-9\[\] _]{1,}");
-				Match found = table.Match(this.rtbSqlScript.Text,0);
-				if(found != null && found.Value.Length > 0)
-				{
-					txtScriptName.Text = found.Value.Replace("TABLE [","").Replace("]","");
-				}
-			}
+            if (e.KeyCode == Keys.V && e.Modifiers == Keys.Control && txtScriptName.Text.Length == 0)
+            {
+                Regex table = new Regex(@"TABLE [A-Za-z0-9\[\] _]{1,}");
+                Match found = table.Match(rtbSqlScript.Text, 0);
+                if (found != null && found.Value.Length > 0)
+                {
+                    txtScriptName.Text = found.Value.Replace("TABLE [", "").Replace("]", "");
+                }
+            }
 
             SearchForAutoScriptingPattern();
-		}
+        }
 
 
         private void mnuOptimizeWithNoLock_Click(object sender, EventArgs e)
@@ -1112,8 +1109,8 @@ namespace SqlSync.SqlBuild
             else
                 rtbSqlScript.Text = processed;
         }
-		private void mnuConvertToAlter_Click(object sender, EventArgs e)
-		{
+        private void mnuConvertToAlter_Click(object sender, EventArgs e)
+        {
             string changedScript;
             string rawScript = rtbSqlScript.SelectedText;
             string tableName, schema;
@@ -1130,12 +1127,12 @@ namespace SqlSync.SqlBuild
                     return;
                 }
             }
-            ScriptWrapping.TransformCreateTableToAlterColumn(rawScript,schema, tableName,out changedScript);
+            ScriptWrapping.TransformCreateTableToAlterColumn(rawScript, schema, tableName, out changedScript);
             rtbSqlScript.SelectedText = changedScript;
 
-		}
+        }
         private void mnuTransformtoResyncTable_Click(object sender, EventArgs e)
-		{
+        {
             if (DialogResult.Yes == MessageBox.Show("This will generate a script to remove all columns not referenced in the highlighted text.\r\nAre you sure you want to continue?", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
             {
                 string rawScript = rtbSqlScript.SelectedText;
@@ -1147,44 +1144,44 @@ namespace SqlSync.SqlBuild
                     return;
                 }
                 else
-                    rtbSqlScript.SelectedText =  ScriptWrapping.TransformCreateTableToResyncTable(rawScript, schema, tableName);
+                    rtbSqlScript.SelectedText = ScriptWrapping.TransformCreateTableToResyncTable(rawScript, schema, tableName);
             }
-		}
+        }
 
-		private void AddScriptTextForm_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
-		{
-            
-            if (this.rtbSqlScript.SelectedText == string.Empty)
+        private void AddScriptTextForm_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+
+            if (rtbSqlScript.SelectedText == string.Empty)
                 return;
 
-            switch(e.KeyCode)
+            switch (e.KeyCode)
             {
                 case Keys.F1:
-    		        char[] nonPrintable = new char[]{'\r','\n','\t'};
-			        string selection = this.rtbSqlScript.SelectedText.Trim();
-			        if(selection.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) > -1 ||
-				        selection.IndexOfAny(nonPrintable) > -1)
-			        {
-				        MessageBox.Show("Selection contains invalid file name characters. Paste Failed","Invalid Characters Found",MessageBoxButtons.OK,MessageBoxIcon.Error);
-				        return;
-			        }
+                    char[] nonPrintable = new char[] { '\r', '\n', '\t' };
+                    string selection = rtbSqlScript.SelectedText.Trim();
+                    if (selection.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) > -1 ||
+                        selection.IndexOfAny(nonPrintable) > -1)
+                    {
+                        MessageBox.Show("Selection contains invalid file name characters. Paste Failed", "Invalid Characters Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
 
-			        if(e.Modifiers == Keys.Shift)
-				        this.txtScriptName.Text += " "+this.rtbSqlScript.SelectedText.Trim();
-			        else
-				        this.txtScriptName.Text = this.rtbSqlScript.SelectedText.Trim();
+                    if (e.Modifiers == Keys.Shift)
+                        txtScriptName.Text += " " + rtbSqlScript.SelectedText.Trim();
+                    else
+                        txtScriptName.Text = rtbSqlScript.SelectedText.Trim();
                     break;
                 case Keys.F12:
-                    string val = ProcessAutomaticProcessing(this.rtbSqlScript.SelectedText.Trim());
+                    string val = ProcessAutomaticProcessing(rtbSqlScript.SelectedText.Trim());
                     if (val.Length > 0)
-                        this.rtbSqlScript.SelectedText = val;
+                        rtbSqlScript.SelectedText = val;
                     break;
-			}
+            }
         }
 
         #region .: Automated Processing of Scripts :.
 
-        
+
         /// <summary>
         /// Regex for CREATE <any> INDEX
         /// </summary>
@@ -1199,7 +1196,8 @@ namespace SqlSync.SqlBuild
         private static Regex findAlterTableAdd = new Regex(@"\bALTER\b.*\bTABLE .*\s*ADD", RegexOptions.IgnoreCase);
         private void SearchForAutoScriptingPattern()
         {
-            try{
+            try
+            {
 
                 if (rtbSqlScript.SelectedText.Length == 0)
                 {
@@ -1230,7 +1228,7 @@ namespace SqlSync.SqlBuild
                     return;
                 }
             }
-            catch{}
+            catch { }
         }
         /// <summary>
         /// Detect if there is a matching regex available...
@@ -1261,7 +1259,7 @@ namespace SqlSync.SqlBuild
                     return FormatAlterColumnHandling(rawScript);
 
                 //Regex for ALTER TABLE <any> ADD
-                if (findAlterTableAdd.Match(rawScript).Success) 
+                if (findAlterTableAdd.Match(rawScript).Success)
                     return FormatAddColumnHandling(rawScript);
             }
             return string.Empty;
@@ -1382,10 +1380,10 @@ namespace SqlSync.SqlBuild
 
         private void SetLineAndCharacterNumber()
         {
-            int lineStartIndex = this.rtbSqlScript.GetFirstCharIndexOfCurrentLine();
-            int lineNumber = this.rtbSqlScript.GetLineFromCharIndex(lineStartIndex)+1;
-            int absoluteCharNumber = this.rtbSqlScript.SelectionStart;
-            int localCharNumber = absoluteCharNumber - lineStartIndex+1;
+            int lineStartIndex = rtbSqlScript.GetFirstCharIndexOfCurrentLine();
+            int lineNumber = rtbSqlScript.GetLineFromCharIndex(lineStartIndex) + 1;
+            int absoluteCharNumber = rtbSqlScript.SelectionStart;
+            int localCharNumber = absoluteCharNumber - lineStartIndex + 1;
 
             lblLineNumber.Text = lineNumber.ToString();
             lblCharacterNumber.Text = localCharNumber.ToString();
@@ -1394,10 +1392,10 @@ namespace SqlSync.SqlBuild
         {
             //If the script is too long, the active SQL highlighting is a huge performance hit.
             //Turn it off instead.
-            if (this.rtbSqlScript.Text.Length > 50000)
+            if (rtbSqlScript.Text.Length > 50000)
             {
-                this.rtbSqlScript.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.None;
-                this.lblHighlightLimit.Visible = true;
+                rtbSqlScript.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.None;
+                lblHighlightLimit.Visible = true;
             }
         }
 
@@ -1422,7 +1420,7 @@ namespace SqlSync.SqlBuild
             Script violations = policyHelp.ValidateScriptAgainstPolicies(rtbSqlScript.Text, scriptConfigCtrl1.SelectedDatabase);
             if (violations != null && violations.Count > 0)
             {
-                violations.ScriptName = this.txtScriptName.Text;
+                violations.ScriptName = txtScriptName.Text;
                 return new Policy.PolicyViolationForm(violations, includeSaveButtons).ShowDialog();
 
             }
@@ -1430,11 +1428,11 @@ namespace SqlSync.SqlBuild
             {
                 if (!includeSaveButtons)
                     MessageBox.Show("No policy violations found", "Looking Good!", MessageBoxButtons.OK);
-      
+
                 return DialogResult.No;
             }
         }
 
-       
+
     }
 }

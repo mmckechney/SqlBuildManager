@@ -1,13 +1,7 @@
 ﻿using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.SqlServer.Management.HadrModel;
-using Microsoft.SqlServer.Management.Smo;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.Aad
 {
@@ -64,7 +58,7 @@ namespace SqlBuildManager.Console.Aad
                             log.LogInformation("Creating DefaultAzureCredential, no ManagedIdentityClientId specified");
                             _tokenCred = new DefaultAzureCredential();
                         }
-                        
+
                     }
                     else
                     {
@@ -75,7 +69,7 @@ namespace SqlBuildManager.Console.Aad
                             cliOpts.TenantId = AadHelper.TenantId;
                             pwshOpts.TenantId = AadHelper.TenantId;
                         }
-                        
+
                         _tokenCred = new ChainedTokenCredential(new AzureCliCredential(cliOpts), new ManagedIdentityCredential(ManagedIdentityClientId = AadHelper.ManagedIdentityClientId), new AzurePowerShellCredential(pwshOpts));
                         log.LogInformation($"Creating ChainedTokenCredential with ManagedIdentityClientId of: '{AadHelper.ManagedIdentityClientId}'");
                     }
@@ -84,6 +78,6 @@ namespace SqlBuildManager.Console.Aad
             }
         }
 
-        
+
     }
 }

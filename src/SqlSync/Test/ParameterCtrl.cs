@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
 using System.Data;
-using System.Text;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace SqlSync.Test
@@ -33,11 +30,11 @@ namespace SqlSync.Test
         {
             get
             {
-                return this.txtParameterValue.Text;
+                return txtParameterValue.Text;
             }
             set
             {
-                this.txtParameterValue.Text = value;
+                txtParameterValue.Text = value;
             }
         }
         public SqlSync.SprocTest.ParameterStatus ParameterStatus
@@ -62,8 +59,8 @@ namespace SqlSync.Test
             set
             {
                 param = value;
-                this.txtParameterValue.Text = param.Value;
-                this.lblParameterName.Text = param.Name;
+                txtParameterValue.Text = param.Value;
+                lblParameterName.Text = param.Name;
             }
         }
         public ParameterCtrl()
@@ -73,38 +70,38 @@ namespace SqlSync.Test
         public ParameterCtrl(string name)
         {
             InitializeComponent();
-            this.lblParameterName.Text = name;
+            lblParameterName.Text = name;
         }
         public ParameterCtrl(ref SqlSync.SprocTest.Configuration.Parameter param)
         {
             InitializeComponent();
             this.param = param;
         }
-       
+
 
         private void ParameterCtrl_Load(object sender, EventArgs e)
         {
-            if (this.param != null)
+            if (param != null)
             {
-                this.txtParameterValue.Text = param.Value;
-                this.lblParameterName.Text = param.Name;
-                this.chkUseQuery.Checked = param.UseAsQuery;
+                txtParameterValue.Text = param.Value;
+                lblParameterName.Text = param.Name;
+                chkUseQuery.Checked = param.UseAsQuery;
             }
 
             switch (parameterStatus)
             {
                 case SqlSync.SprocTest.ParameterStatus.NotInDatabase:
-                    this.lblParameterName.ForeColor = Color.Red;
-                    this.txtParameterValue.BackColor = Color.Tomato;
-                    this.btnRemove.Visible = true;
+                    lblParameterName.ForeColor = Color.Red;
+                    txtParameterValue.BackColor = Color.Tomato;
+                    btnRemove.Visible = true;
                     break;
                 case SqlSync.SprocTest.ParameterStatus.NotInTestCase:
-                    this.lblParameterName.ForeColor = Color.Blue;
-                    this.txtParameterValue.BackColor = Color.PowderBlue;
+                    lblParameterName.ForeColor = Color.Blue;
+                    txtParameterValue.BackColor = Color.PowderBlue;
                     break;
             }
 
-            switch (this.DbType)
+            switch (DbType)
             {
                 case SqlDbType.Char:
                 case SqlDbType.NChar:
@@ -112,10 +109,10 @@ namespace SqlSync.Test
                 case SqlDbType.NText:
                 case SqlDbType.Text:
                 case SqlDbType.VarChar:
-                    toolTip1.SetToolTip(this.lblParameterName, "Type: " + this.dbType.ToString() + "(" + this.dbLength.ToString() + ")");
+                    toolTip1.SetToolTip(lblParameterName, "Type: " + dbType.ToString() + "(" + dbLength.ToString() + ")");
                     break;
                 default:
-                    toolTip1.SetToolTip(this.lblParameterName, "Type: " + this.dbType.ToString());
+                    toolTip1.SetToolTip(lblParameterName, "Type: " + dbType.ToString());
                     break;
             }
         }
@@ -124,10 +121,10 @@ namespace SqlSync.Test
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if(DialogResult.Yes == MessageBox.Show("Are you sure you want to remove the parameter?","Confirm Delete",MessageBoxButtons.YesNo,MessageBoxIcon.Question))
+            if (DialogResult.Yes == MessageBox.Show("Are you sure you want to remove the parameter?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
             {
-                if(RemoveParameter != null)
-                    RemoveParameter(this,EventArgs.Empty);
+                if (RemoveParameter != null)
+                    RemoveParameter(this, EventArgs.Empty);
             }
         }
 

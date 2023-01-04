@@ -14,23 +14,23 @@ namespace SqlSync.SqlBuild
     /// Summary description for SqlBuildFileHelper.
     /// </summary>
     public class SqlBuildFileHelper
-	{
+    {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public const string FileMissing = "File Missing";
         public const string Sha1HashError = "SHA1 Hash Error";
         public static string DefaultScriptXmlFile = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Default Scripts", "DefaultScriptRegistry.xml");
-		public SqlBuildFileHelper()
-		{
-			
-		}
+        public SqlBuildFileHelper()
+        {
+
+        }
         #region .: Loading Zip and Project Files :.
-        public static bool ValidateAgainstSchema(string fileName,out string validationErrorMessage)
-		{
+        public static bool ValidateAgainstSchema(string fileName, out string validationErrorMessage)
+        {
             //Going to obsolete this....
             validationErrorMessage = string.Empty;
             return true;
 
-		}
+        }
         public static bool ExtractSqlBuildZipFile(string fileName, ref string workingDirectory, ref string projectFilePath, ref string projectFileName, out string result)
         {
             return ExtractSqlBuildZipFile(fileName, ref workingDirectory, ref projectFilePath, ref projectFileName, true, false, out result);
@@ -82,7 +82,7 @@ namespace SqlSync.SqlBuild
                     else
                     {
                         SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDirectory);
-                        result = "Unable to validate the schema for: "+ mainProjectFilePath;
+                        result = "Unable to validate the schema for: " + mainProjectFilePath;
                         log.LogError($"ExtractSqlBuildZipFile error: {result}");
                         return false;
                     }
@@ -104,12 +104,12 @@ namespace SqlSync.SqlBuild
                     }
 
                     SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDirectory);
-                    result = "Unable to validate the schema for any XML file in "+ workingDirectory;
+                    result = "Unable to validate the schema for any XML file in " + workingDirectory;
                     log.LogError($"ExtractSqlBuildZipFile error: {result}");
                     return false;
                 }
 
-           }
+            }
             catch (Exception exe)
             {
                 result = exe.Message;
@@ -149,7 +149,7 @@ namespace SqlSync.SqlBuild
                         successfulLoad = false;
                     }
                 }
-                catch(Exception exe)
+                catch (Exception exe)
                 {
                     log.LogError(exe, "Unable to load Sql Project file");
                     successfulLoad = false;
@@ -178,12 +178,12 @@ namespace SqlSync.SqlBuild
             {
                 ExtractSqlBuildZipFile(sbmFileName, ref tempWorkingDir, ref projectFilePath, ref projectFileName, out result);
                 LoadSqlBuildProjectFile(out buildData, projectFileName, false);
-                if(buildData != null)
+                if (buildData != null)
                 {
-                   var targets =  buildData.Script.Select(s => s.Database).Distinct();
-                   if(targets != null && targets.Count() > 0)
+                    var targets = buildData.Script.Select(s => s.Database).Distinct();
+                    if (targets != null && targets.Count() > 0)
                     {
-                        foreach(var t in targets)
+                        foreach (var t in targets)
                         {
                             if (!string.IsNullOrWhiteSpace(suppliedDbName))
                             {
@@ -204,7 +204,7 @@ namespace SqlSync.SqlBuild
             }
             finally
             {
-                if(Directory.Exists(tempWorkingDir))
+                if (Directory.Exists(tempWorkingDir))
                 {
                     Directory.Delete(tempWorkingDir, true);
                 }
@@ -237,11 +237,11 @@ namespace SqlSync.SqlBuild
             //Add the project file 
             alFiles.Add(XmlFileNames.MainProjectFile);
 
-            
+
             if (includeHistoryAndLogs)
             {
                 //Add the history file
-                if (File.Exists( Path.Combine(projFilePath, XmlFileNames.HistoryFile)))
+                if (File.Exists(Path.Combine(projFilePath, XmlFileNames.HistoryFile)))
                 {
                     alFiles.Add(XmlFileNames.HistoryFile);
                 }
@@ -260,7 +260,7 @@ namespace SqlSync.SqlBuild
             bool val = ZipHelper.CreateZipPackage(fileList, projFilePath, zipFileName);
             return val;
         }
-         /// <summary>
+        /// <summary>
         /// Minimize the size of the package by cleaing out the logs and the code review items..
         /// </summary>
         /// <param name="fileName"></param>
@@ -278,7 +278,7 @@ namespace SqlSync.SqlBuild
         public static byte[] CleanProjectFileForRemoteExecution(string fileName, out SqlSyncBuildData cleanedBuildData)
         {
             cleanedBuildData = new SqlSyncBuildData();
-            if(!File.Exists(fileName))
+            if (!File.Exists(fileName))
                 return new byte[0];
 
             string tmpDir = string.Empty;
@@ -294,7 +294,7 @@ namespace SqlSync.SqlBuild
                 File.Copy(fileName, tmpZipFullName);
 
                 string result;
-                if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName,false, false, out result))
+                if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName, false, false, out result))
                 {
                     LoadSqlBuildProjectFile(out cleanedBuildData, tmpProjectFileName, false);
                     cleanedBuildData.CodeReview.Rows.Clear();
@@ -346,11 +346,11 @@ namespace SqlSync.SqlBuild
         }
 
 
-		public static void SaveSqlBuildProjectFile(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
-		{
-			buildData.WriteXml(projFileName);
-			PackageProjectFileIntoZip(buildData,Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs);
-		}
+        public static void SaveSqlBuildProjectFile(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
+        {
+            buildData.WriteXml(projFileName);
+            PackageProjectFileIntoZip(buildData, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs);
+        }
 
         public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout, bool includeHistoryAndLogs = true)
         {
@@ -364,7 +364,7 @@ namespace SqlSync.SqlBuild
                 return false;
             }
             string directory = Path.GetDirectoryName(buildFileName);
-            if(string.IsNullOrWhiteSpace(directory))
+            if (string.IsNullOrWhiteSpace(directory))
             {
                 directory = System.IO.Directory.GetCurrentDirectory();
             }
@@ -409,7 +409,7 @@ namespace SqlSync.SqlBuild
 
                 return true;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError(exe, "Unable to package scripts");
                 return false;
@@ -483,7 +483,7 @@ namespace SqlSync.SqlBuild
                     log.LogWarning("Can't package SBX file into SBM package - SBX file name is empty");
                     return false;
                 }
-                
+
                 if (File.Exists(sbmProjectFileName))
                 {
                     log.LogWarning($"Deleting a pre-existing SBM file: {sbmProjectFileName}");
@@ -497,7 +497,7 @@ namespace SqlSync.SqlBuild
                     log.LogError($"Problem loading SBX file: {sbxBuildControlFileName}. ");
                     return false;
                 }
-              
+
                 bool copied = false;
                 string path = Path.GetDirectoryName(sbxBuildControlFileName);
                 string mainProjectFileFullPath = Path.Combine(path, XmlFileNames.MainProjectFile);
@@ -513,7 +513,7 @@ namespace SqlSync.SqlBuild
 
                 //Copy the SBX to the main project file name
                 File.Copy(sbxBuildControlFileName, mainProjectFileFullPath, true);
-               
+
                 //Validate that all of the script files are present...
                 foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
                 {
@@ -549,9 +549,9 @@ namespace SqlSync.SqlBuild
                 return false;
             }
 
-            
+
         }
-        
+
         #endregion
 
         #region .: Add / Remove scripts from build :.
@@ -673,11 +673,11 @@ namespace SqlSync.SqlBuild
             if (File.Exists(newLocalFile))
             {
                 bool isReadOnly = ((new FileInfo(newLocalFile).Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly);
-                if ( (DefaultScriptCopyAction.OverwriteExisting == copyAction) && !isReadOnly)
+                if ((DefaultScriptCopyAction.OverwriteExisting == copyAction) && !isReadOnly)
                 {
                     File.Copy(fullScriptPath, newLocalFile, true);
                 }
-                else if ( (File.ReadAllText(newLocalFile) != File.ReadAllText(fullScriptPath)) && 
+                else if ((File.ReadAllText(newLocalFile) != File.ReadAllText(fullScriptPath)) &&
                                 (copyAction != DefaultScriptCopyAction.LeaveExisting))
                 {
                     if (isReadOnly)
@@ -717,75 +717,75 @@ namespace SqlSync.SqlBuild
 
         #region .: Object/ Populate Script Update settings :.
         public static SqlBuild.CodeTable.ScriptUpdates[] GetFileDataForCodeTableUpdates(ref SqlSyncBuildData buildData, string projFileName)
-		{
-			if(buildData == null)
-				return null;
-			
-			ArrayList scriptFiles = new ArrayList();
-			foreach(SqlBuild.SqlSyncBuildData.ScriptRow row in buildData.Script)
-			{
-				//Find the ".pop" populate scripts
-				if(Path.GetExtension(row.FileName).ToLower() != SqlSync.Constants.DbObjectType.PopulateScript.ToLower())
-					continue;
+        {
+            if (buildData == null)
+                return null;
 
-				SqlBuild.CodeTable.ScriptUpdates obj = GetFileDataForCodeTableUpdates(row.FileName,projFileName);
-				if(obj != null)
+            ArrayList scriptFiles = new ArrayList();
+            foreach (SqlBuild.SqlSyncBuildData.ScriptRow row in buildData.Script)
+            {
+                //Find the ".pop" populate scripts
+                if (Path.GetExtension(row.FileName).ToLower() != SqlSync.Constants.DbObjectType.PopulateScript.ToLower())
+                    continue;
+
+                SqlBuild.CodeTable.ScriptUpdates obj = GetFileDataForCodeTableUpdates(row.FileName, projFileName);
+                if (obj != null)
                     scriptFiles.Add(obj);
- 			}
+            }
 
-			SqlBuild.CodeTable.ScriptUpdates[] updates = new SqlSync.SqlBuild.CodeTable.ScriptUpdates[scriptFiles.Count];
-			scriptFiles.CopyTo(updates);
-			return updates;
-		}
-		public static SqlBuild.CodeTable.ScriptUpdates GetFileDataForCodeTableUpdates(string baseFileName, string projFileName)
-		{
-			string line = string.Empty;
+            SqlBuild.CodeTable.ScriptUpdates[] updates = new SqlSync.SqlBuild.CodeTable.ScriptUpdates[scriptFiles.Count];
+            scriptFiles.CopyTo(updates);
+            return updates;
+        }
+        public static SqlBuild.CodeTable.ScriptUpdates GetFileDataForCodeTableUpdates(string baseFileName, string projFileName)
+        {
+            string line = string.Empty;
 
             //Open the populate script file
             string localFile = Path.Combine(Path.GetDirectoryName(projFileName), Path.GetFileName(baseFileName));
-			if(File.Exists(localFile) == false)
-				return null;
+            if (File.Exists(localFile) == false)
+                return null;
 
-			SqlBuild.CodeTable.ScriptUpdates codeTableUpdate = new SqlSync.SqlBuild.CodeTable.ScriptUpdates();
-			codeTableUpdate.ShortFileName = baseFileName;
+            SqlBuild.CodeTable.ScriptUpdates codeTableUpdate = new SqlSync.SqlBuild.CodeTable.ScriptUpdates();
+            codeTableUpdate.ShortFileName = baseFileName;
 
-			using(StreamReader sr = File.OpenText(localFile))
-			{
-				bool keepReading = true;
-				while((line = sr.ReadLine()) != null && keepReading == true)
-				{
-					if(line.Trim().StartsWith("Source Server:"))
-						codeTableUpdate.SourceServer = line.Replace("Source Server:","").Trim();
+            using (StreamReader sr = File.OpenText(localFile))
+            {
+                bool keepReading = true;
+                while ((line = sr.ReadLine()) != null && keepReading == true)
+                {
+                    if (line.Trim().StartsWith("Source Server:"))
+                        codeTableUpdate.SourceServer = line.Replace("Source Server:", "").Trim();
 
-					if(line.Trim().StartsWith("Source Db:"))
-						codeTableUpdate.SourceDatabase = line.Replace("Source Db:","").Trim();
+                    if (line.Trim().StartsWith("Source Db:"))
+                        codeTableUpdate.SourceDatabase = line.Replace("Source Db:", "").Trim();
 
-					if(line.Trim().StartsWith("Table Scripted:"))
-						codeTableUpdate.SourceTable = line.Replace("Table Scripted:","").Trim();
-						
-					if(line.Trim().StartsWith("Key Check Columns:"))
-						codeTableUpdate.KeyCheckColumns = line.Replace("Key Check Columns:","").Trim();
+                    if (line.Trim().StartsWith("Table Scripted:"))
+                        codeTableUpdate.SourceTable = line.Replace("Table Scripted:", "").Trim();
 
-					//This is a multi-line element
-					if(line.Trim().StartsWith("Query Used:"))
-					{
-						string queryLine = string.Empty;
-						string fullquery = string.Empty;
-						while((queryLine = sr.ReadLine().Trim()) != "*/")
-						{
-							fullquery += queryLine+ System.Environment.NewLine;
-						}
-						codeTableUpdate.Query = fullquery;
-						keepReading = false;
-					}
-				}
-				sr.Close();
-			}
-			return codeTableUpdate;
-		}
+                    if (line.Trim().StartsWith("Key Check Columns:"))
+                        codeTableUpdate.KeyCheckColumns = line.Replace("Key Check Columns:", "").Trim();
+
+                    //This is a multi-line element
+                    if (line.Trim().StartsWith("Query Used:"))
+                    {
+                        string queryLine = string.Empty;
+                        string fullquery = string.Empty;
+                        while ((queryLine = sr.ReadLine().Trim()) != "*/")
+                        {
+                            fullquery += queryLine + System.Environment.NewLine;
+                        }
+                        codeTableUpdate.Query = fullquery;
+                        keepReading = false;
+                    }
+                }
+                sr.Close();
+            }
+            return codeTableUpdate;
+        }
 
         public static SqlBuild.Objects.ObjectUpdates[] GetFileDataForObjectUpdates(ref SqlSyncBuildData buildData, string projFileName)
-		{
+        {
             List<SqlBuild.Objects.ObjectUpdates> canUpdate;
             List<string> canNotUpdate;
 
@@ -794,8 +794,8 @@ namespace SqlSync.SqlBuild
                 return canUpdate.ToArray();
             else
                 return null;
-		}
-        public static void GetFileDataForObjectUpdates(ref SqlSyncBuildData buildData, string projFileName, out List<SqlBuild.Objects.ObjectUpdates> canUpdate, out  List<string> canNotUpdate)
+        }
+        public static void GetFileDataForObjectUpdates(ref SqlSyncBuildData buildData, string projFileName, out List<SqlBuild.Objects.ObjectUpdates> canUpdate, out List<string> canNotUpdate)
         {
             if (buildData == null)
             {
@@ -829,37 +829,37 @@ namespace SqlSync.SqlBuild
 
         }
         public static SqlBuild.Objects.ObjectUpdates GetFileDataForObjectUpdates(string baseFilename, string projFileName)
-		{
-			string line = string.Empty;
+        {
+            string line = string.Empty;
             //Open the populate script file
             string localFile = Path.Combine(Path.GetDirectoryName(projFileName), Path.GetFileName(baseFilename));
-			if(File.Exists(localFile) == false)
-				return null;
+            if (File.Exists(localFile) == false)
+                return null;
 
-			SqlBuild.Objects.ObjectUpdates objectUpdate = new SqlBuild.Objects.ObjectUpdates();
-			objectUpdate.ShortFileName = baseFilename;
+            SqlBuild.Objects.ObjectUpdates objectUpdate = new SqlBuild.Objects.ObjectUpdates();
+            objectUpdate.ShortFileName = baseFilename;
 
-			using(StreamReader sr = File.OpenText(localFile))
-			{
-				
-				bool keepReading = true;
-				while((line = sr.ReadLine()) != null && keepReading == true)
-				{
-					if(line.Trim().StartsWith("Source Server:"))
-						objectUpdate.SourceServer = line.Replace("Source Server:","").Trim();
+            using (StreamReader sr = File.OpenText(localFile))
+            {
+
+                bool keepReading = true;
+                while ((line = sr.ReadLine()) != null && keepReading == true)
+                {
+                    if (line.Trim().StartsWith("Source Server:"))
+                        objectUpdate.SourceServer = line.Replace("Source Server:", "").Trim();
 
                     if (line.Trim().StartsWith("Source Db:"))
                     {
                         objectUpdate.SourceDatabase = line.Replace("Source Db:", "").Trim();
                     }
 
-					if(line.Trim().StartsWith("Object Scripted:"))
-						objectUpdate.SourceObject = line.Replace("Object Scripted:","").Trim();
-						
-					if(line.Trim().StartsWith("Object Type:"))
-					{
-						objectUpdate.ObjectType = line.Replace("Object Type:","").Trim();
-					}
+                    if (line.Trim().StartsWith("Object Scripted:"))
+                        objectUpdate.SourceObject = line.Replace("Object Scripted:", "").Trim();
+
+                    if (line.Trim().StartsWith("Object Type:"))
+                    {
+                        objectUpdate.ObjectType = line.Replace("Object Type:", "").Trim();
+                    }
                     if (line.Trim().StartsWith("Include Permissions:"))
                     {
                         objectUpdate.IncludePermissions = Boolean.Parse(line.Replace("Include Permissions:", "").Trim());
@@ -874,32 +874,33 @@ namespace SqlSync.SqlBuild
                     }
                     if (line.Trim().StartsWith("*/"))
                         keepReading = false;
-				}
-				sr.Close();
-			}
-			return objectUpdate;
-		}
-		
-		#endregion
+                }
+                sr.Close();
+            }
+            return objectUpdate;
+        }
+
+        #endregion
 
         #region .: Log File Handling :.
         public static bool ArchiveLogFiles(string[] logFileName, string basePath, string destinationArchiveName)
-		{
-			if( ZipHelper.AppendZipPackage(logFileName,basePath,destinationArchiveName,false))
-			{
-				for(int i=0;i<logFileName.Length;i++)
-				{
-					try
-					{
+        {
+            if (ZipHelper.AppendZipPackage(logFileName, basePath, destinationArchiveName, false))
+            {
+                for (int i = 0; i < logFileName.Length; i++)
+                {
+                    try
+                    {
                         File.Delete(Path.Combine(basePath, logFileName[i]));
-					}
-					catch{}
-				}
-				return true;
-			}else
-				return false;
+                    }
+                    catch { }
+                }
+                return true;
+            }
+            else
+                return false;
 
-		}
+        }
         public static Int64 GetTotalLogFilesSize(string projFilePath)
         {
             Int64 sum = 0;
@@ -915,62 +916,62 @@ namespace SqlSync.SqlBuild
 
         #region .: SHA1 Hashing related :.
 
-	    public static string CalculateSha1HashFromPackage(string buildPackageName)
-	    {
-	        SqlSyncBuildData buildData = null;
+        public static string CalculateSha1HashFromPackage(string buildPackageName)
+        {
+            SqlSyncBuildData buildData = null;
 
-	        if (String.IsNullOrEmpty(buildPackageName))
-	            return string.Empty;
+            if (String.IsNullOrEmpty(buildPackageName))
+                return string.Empty;
 
-	        string projFileName = string.Empty;
-	        string projectFilePath = string.Empty;
-	        string workingDirectory = string.Empty;
+            string projFileName = string.Empty;
+            string projectFilePath = string.Empty;
+            string workingDirectory = string.Empty;
 
-	        string extension = Path.GetExtension(buildPackageName).ToLower();
-	        switch ((extension))
-	        {
-	            case ".sbm":
-	                string result;
-	                ExtractSqlBuildZipFile(buildPackageName, ref workingDirectory, ref projectFilePath,
-	                                       ref projFileName,
-	                                       out result);
-	                LoadSqlBuildProjectFile(out buildData, projFileName, false);
-	                break;
-	            case ".sbx":
-	                projectFilePath = Path.GetDirectoryName(buildPackageName);
-	                LoadSqlBuildProjectFile(out buildData, buildPackageName, false);
-	                break;
-	            default:
-	                return string.Empty;
-	        }
+            string extension = Path.GetExtension(buildPackageName).ToLower();
+            switch ((extension))
+            {
+                case ".sbm":
+                    string result;
+                    ExtractSqlBuildZipFile(buildPackageName, ref workingDirectory, ref projectFilePath,
+                                           ref projFileName,
+                                           out result);
+                    LoadSqlBuildProjectFile(out buildData, projFileName, false);
+                    break;
+                case ".sbx":
+                    projectFilePath = Path.GetDirectoryName(buildPackageName);
+                    LoadSqlBuildProjectFile(out buildData, buildPackageName, false);
+                    break;
+                default:
+                    return string.Empty;
+            }
 
-	        if (buildData != null)
-	        {
-	            string hash = CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, buildData);
-	            if (extension == ".sbm")
-	                CleanUpAndDeleteWorkingDirectory(projectFilePath);
+            if (buildData != null)
+            {
+                string hash = CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, buildData);
+                if (extension == ".sbm")
+                    CleanUpAndDeleteWorkingDirectory(projectFilePath);
 
-	            return hash;
+                return hash;
 
-	        }
-	        else
-	        {
-	            return string.Empty;
-	        }
-	    }
-
-
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
 
 
-	    /// <summary>
+
+
+        /// <summary>
         /// Calculated the SHA1 hash of the script package. Takes the build order into account 
         /// </summary>
         /// <param name="projectFileExtractionPath">Path where all of the script files are to be founw</param>
         /// <param name="buildData">The SqlSyncBuildData build config data the contains the script names and build order</param>
         /// <returns></returns>
         public static string CalculateBuildPackageSHA1SignatureFromPath(string projectFileExtractionPath, SqlSyncBuildData buildData)
-	    {
-	        
+        {
+
             if (buildData != null && !string.IsNullOrEmpty((projectFileExtractionPath)))
             {
 
@@ -990,7 +991,7 @@ namespace SqlSync.SqlBuild
 
                 string strHashData = GetSHA1Hash(sb.ToString());
                 return strHashData;
-                
+
             }
             else
             {
@@ -998,7 +999,7 @@ namespace SqlSync.SqlBuild
             }
 
         }
-      
+
         /// <summary>
         /// Used to calculate the hash of the build package via the collection of batched scripts.
         /// The batch should have accounted for execution run order and the strip transactions as per SqlBuildHelper.LoadAndBatchSqlScripts()
@@ -1018,20 +1019,20 @@ namespace SqlSync.SqlBuild
             string strHashData = GetSHA1Hash(sb.ToString());
             return strHashData;
         }
-       
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="pathName"></param>
         /// <param name="fileHash">Hash for the file itself. This takes into account creation times, etc. Needed for backward compataibility</param>
         /// <param name="textHash">Hash for just the file contents. This is the better hash to use</param>
-		public static void GetSHA1Hash(string pathName, out string fileHash, out string textHash,bool stripTransactions)
-		{
-			string strHashData = "";
+        public static void GetSHA1Hash(string pathName, out string fileHash, out string textHash, bool stripTransactions)
+        {
+            string strHashData = "";
 
-			byte[] arrbytHashValue;
+            byte[] arrbytHashValue;
 
-           var oSHA1Hasher = System.Security.Cryptography.SHA1.Create();
+            var oSHA1Hasher = System.Security.Cryptography.SHA1.Create();
 
 
             try
@@ -1067,8 +1068,8 @@ namespace SqlSync.SqlBuild
                 textHash = SqlBuildFileHelper.Sha1HashError;
             }
 
-			//return(strResult);
-		}
+            //return(strResult);
+        }
 
         public static string JoinBatchedScripts(string[] batchedScripts)
         {
@@ -1106,99 +1107,99 @@ namespace SqlSync.SqlBuild
         {
             var oSHA1Hasher = System.Security.Cryptography.SHA1.Create();
 
-            byte[] textBytes =  new ASCIIEncoding().GetBytes(textContents);
+            byte[] textBytes = new ASCIIEncoding().GetBytes(textContents);
             byte[] arrbytHashValue = oSHA1Hasher.ComputeHash(textBytes);
             string textHash = System.BitConverter.ToString(arrbytHashValue);
-            textHash =  textHash.Replace("-", "");
+            textHash = textHash.Replace("-", "");
             return textHash;
         }
         #endregion
 
         #region .: Renumbering/ Resorting :.
-        public static bool RenumberBuildSequence(ref SqlSyncBuildData buildData,string projectFileName,string buildZipFileName)
-		{
-			return RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName,(int)ResequenceIgnore.StartNumber);
-		}
-		internal static bool RenumberBuildSequence(ref SqlSyncBuildData buildData,string projectFileName,string buildZipFileName, int renumberIgnoreStart)
-		{
-			try
-			{
-				buildData.Script.AcceptChanges();
-				DataView view = buildData.Script.DefaultView;
-				view.Sort = buildData.Script.BuildOrderColumn.ColumnName +" ASC";
-				view.RowFilter = buildData.Script.BuildOrderColumn.ColumnName +" < "+renumberIgnoreStart.ToString();
-				view.RowStateFilter = DataViewRowState.OriginalRows;
-				for(int i=0;i<view.Count;i++)
-				{
-					((SqlSyncBuildData.ScriptRow)view[i].Row).BuildOrder = i+1;
-				}
-				view.Table.AcceptChanges();
-				SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData,projectFileName, buildZipFileName);
-				return true;
-			}
-			catch(Exception e)
-			{
-				string error = e.ToString();
-				return false;
-			}
+        public static bool RenumberBuildSequence(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
+        {
+            return RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName, (int)ResequenceIgnore.StartNumber);
+        }
+        internal static bool RenumberBuildSequence(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName, int renumberIgnoreStart)
+        {
+            try
+            {
+                buildData.Script.AcceptChanges();
+                DataView view = buildData.Script.DefaultView;
+                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
+                view.RowFilter = buildData.Script.BuildOrderColumn.ColumnName + " < " + renumberIgnoreStart.ToString();
+                view.RowStateFilter = DataViewRowState.OriginalRows;
+                for (int i = 0; i < view.Count; i++)
+                {
+                    ((SqlSyncBuildData.ScriptRow)view[i].Row).BuildOrder = i + 1;
+                }
+                view.Table.AcceptChanges();
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projectFileName, buildZipFileName);
+                return true;
+            }
+            catch (Exception e)
+            {
+                string error = e.ToString();
+                return false;
+            }
 
-		}
-		public static bool ResortBuildByFileType(ref SqlSyncBuildData buildData, string projectFileName,string buildZipFileName)
-		{
+        }
+        public static bool ResortBuildByFileType(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
+        {
 
-			// first move out the "reserve" items (renumber starting at 20000)
-			buildData.Script.AcceptChanges();
-			int reservedIndex = 20000;
-			DataView reserved =  buildData.Script.DefaultView;
-			reserved.RowFilter = buildData.Script.BuildOrderColumn.ColumnName +" >= "+((int)ResequenceIgnore.StartNumber).ToString();
-			reserved.Sort = buildData.Script.BuildOrderColumn.ColumnName +" ASC";
-			reserved.RowStateFilter = DataViewRowState.OriginalRows;
-			for(int i=0;i<reserved.Count;i++)
-				((SqlSyncBuildData.ScriptRow)reserved[i].Row).BuildOrder = reservedIndex++;
-			reserved.Table.AcceptChanges();
-			buildData.AcceptChanges();
-			
-			//renumber the standard items
-			string generalFilter = buildData.Script.FileNameColumn.ColumnName +" LIKE '%{0}' AND "+ buildData.Script.BuildOrderColumn.ColumnName+"< 20000";
-			string notLikeFilter = " "+buildData.Script.FileNameColumn.ColumnName +" NOT LIKE '%{0}' AND";
-			System.Text.StringBuilder sbNotLike = new System.Text.StringBuilder();
-			for(int i=0;i<ResortBuildType.SortOrder.Length;i++)
-			{
-				string extension = "."+ResortBuildType.SortOrder[i];
-				sbNotLike.Append(string.Format(notLikeFilter,extension));
-				
-				DataView general =  buildData.Script.DefaultView;
-				general.RowFilter = string.Format(generalFilter,extension);
-				general.Sort = buildData.Script.BuildOrderColumn.ColumnName +" ASC";
-				general.RowStateFilter = DataViewRowState.OriginalRows;
+            // first move out the "reserve" items (renumber starting at 20000)
+            buildData.Script.AcceptChanges();
+            int reservedIndex = 20000;
+            DataView reserved = buildData.Script.DefaultView;
+            reserved.RowFilter = buildData.Script.BuildOrderColumn.ColumnName + " >= " + ((int)ResequenceIgnore.StartNumber).ToString();
+            reserved.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
+            reserved.RowStateFilter = DataViewRowState.OriginalRows;
+            for (int i = 0; i < reserved.Count; i++)
+                ((SqlSyncBuildData.ScriptRow)reserved[i].Row).BuildOrder = reservedIndex++;
+            reserved.Table.AcceptChanges();
+            buildData.AcceptChanges();
 
-				for(int j=0;j<general.Count;j++)
-					((SqlSyncBuildData.ScriptRow)general[j].Row).BuildOrder = (1000 *(i+1))+j;
+            //renumber the standard items
+            string generalFilter = buildData.Script.FileNameColumn.ColumnName + " LIKE '%{0}' AND " + buildData.Script.BuildOrderColumn.ColumnName + "< 20000";
+            string notLikeFilter = " " + buildData.Script.FileNameColumn.ColumnName + " NOT LIKE '%{0}' AND";
+            System.Text.StringBuilder sbNotLike = new System.Text.StringBuilder();
+            for (int i = 0; i < ResortBuildType.SortOrder.Length; i++)
+            {
+                string extension = "." + ResortBuildType.SortOrder[i];
+                sbNotLike.Append(string.Format(notLikeFilter, extension));
 
-				general.Table.AcceptChanges();
-			}
-			
+                DataView general = buildData.Script.DefaultView;
+                general.RowFilter = string.Format(generalFilter, extension);
+                general.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
+                general.RowStateFilter = DataViewRowState.OriginalRows;
 
-			//Take any of the remaining items
-			sbNotLike.Length = sbNotLike.Length - 3;
-			int leftOverStart = 19000;
-			DataView leftOver =  buildData.Script.DefaultView;
-			leftOver.RowFilter = sbNotLike.ToString();
-			leftOver.Sort = buildData.Script.BuildOrderColumn.ColumnName +" ASC";
-			leftOver.RowStateFilter = DataViewRowState.OriginalRows;
-			for(int i=0;i<leftOver.Count;i++)
-				((SqlSyncBuildData.ScriptRow)leftOver[i].Row).BuildOrder = leftOverStart++;
+                for (int j = 0; j < general.Count; j++)
+                    ((SqlSyncBuildData.ScriptRow)general[j].Row).BuildOrder = (1000 * (i + 1)) + j;
 
-			buildData.Script.AcceptChanges();
-			SaveSqlBuildProjectFile(ref buildData,projectFileName,buildZipFileName);
+                general.Table.AcceptChanges();
+            }
 
-			RenumberBuildSequence(ref buildData,projectFileName,buildZipFileName,19999);
-			RenumberBuildSequence(ref buildData,projectFileName,buildZipFileName);
-			return true;
-		}
+
+            //Take any of the remaining items
+            sbNotLike.Length = sbNotLike.Length - 3;
+            int leftOverStart = 19000;
+            DataView leftOver = buildData.Script.DefaultView;
+            leftOver.RowFilter = sbNotLike.ToString();
+            leftOver.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
+            leftOver.RowStateFilter = DataViewRowState.OriginalRows;
+            for (int i = 0; i < leftOver.Count; i++)
+                ((SqlSyncBuildData.ScriptRow)leftOver[i].Row).BuildOrder = leftOverStart++;
+
+            buildData.Script.AcceptChanges();
+            SaveSqlBuildProjectFile(ref buildData, projectFileName, buildZipFileName);
+
+            RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName, 19999);
+            RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName);
+            return true;
+        }
         #endregion
 
-     
+
 
         public static bool ScriptRequiresBuildDescription(string scriptContents)
         {
@@ -1229,46 +1230,46 @@ namespace SqlSync.SqlBuild
 
         #region .: Updating from Legacy code :.
         public static void ConvertLegacyProjectHistory(ref SqlSyncBuildData buildData, string projFilePath, string zipFileName)
-		{
-			if(buildData.Builds.Count == 0 || buildData.Build.Count == 0)
-				return;
+        {
+            if (buildData.Builds.Count == 0 || buildData.Build.Count == 0)
+                return;
 
-			string buildHistoryXmlFileName = Path.Combine(projFilePath, XmlFileNames.HistoryFile);
-			if(File.Exists(buildHistoryXmlFileName))
-				return;
-		
-			//Save project file as the history file
-			buildData.WriteXml(buildHistoryXmlFileName);
+            string buildHistoryXmlFileName = Path.Combine(projFilePath, XmlFileNames.HistoryFile);
+            if (File.Exists(buildHistoryXmlFileName))
+                return;
 
-			//Load up as new data object
-			SqlSyncBuildData buildHistData = new SqlSyncBuildData();
-			buildHistData.ReadXml(buildHistoryXmlFileName);
+            //Save project file as the history file
+            buildData.WriteXml(buildHistoryXmlFileName);
 
-			//Remove the committed scripts element
-			for(int i=0;i<buildHistData.CommittedScript.Count;i++)
-			{
-				buildHistData.CommittedScript[i].Delete();
-				buildHistData.AcceptChanges();
-			}
+            //Load up as new data object
+            SqlSyncBuildData buildHistData = new SqlSyncBuildData();
+            buildHistData.ReadXml(buildHistoryXmlFileName);
 
-			//remove the build data element
-			for(int i=0;i<buildHistData.Scripts.Count;i++)
-			{
-				buildHistData.Scripts[i].Delete();
-				buildHistData.AcceptChanges();
-			}
-			buildHistData.WriteXml(buildHistoryXmlFileName);
+            //Remove the committed scripts element
+            for (int i = 0; i < buildHistData.CommittedScript.Count; i++)
+            {
+                buildHistData.CommittedScript[i].Delete();
+                buildHistData.AcceptChanges();
+            }
 
-			for(int i=0;i<buildData.Builds.Count;i++)
-			{
-				buildData.Builds[i].Delete();
-				buildData.AcceptChanges();
-			}
+            //remove the build data element
+            for (int i = 0; i < buildHistData.Scripts.Count; i++)
+            {
+                buildHistData.Scripts[i].Delete();
+                buildHistData.AcceptChanges();
+            }
+            buildHistData.WriteXml(buildHistoryXmlFileName);
 
-			PackageProjectFileIntoZip(buildData,projFilePath,zipFileName);
+            for (int i = 0; i < buildData.Builds.Count; i++)
+            {
+                buildData.Builds[i].Delete();
+                buildData.AcceptChanges();
+            }
 
-			
-		}
+            PackageProjectFileIntoZip(buildData, projFilePath, zipFileName);
+
+
+        }
         public static bool UpdateObsoleteXmlNamespace(string fileName)
         {
             log.LogDebug($"Updating XmlNamespace from legacy file '{fileName}'");
@@ -1298,97 +1299,97 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Copying scripts out to plain files :.
-        public static bool CopyIndividualScriptsToFolder(ref SqlSyncBuildData buildData, string destinationFolder, string projectFilePath,bool includeUSE,bool includeSequence)
-		{
-			if(buildData.Script == null || buildData.Script.Count == 0)
-				return false;
+        public static bool CopyIndividualScriptsToFolder(ref SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence)
+        {
+            if (buildData.Script == null || buildData.Script.Count == 0)
+                return false;
 
-			StringBuilder sb = new StringBuilder();
-			string[] batch;
-			string fileName = string.Empty;
-			
-			try
-			{
-				DataView view =  buildData.Script.DefaultView;
-				view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-				for(int i=0;i<view.Count;i++)
-				{
-					SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
-					if(!File.Exists( Path.Combine(projectFilePath, row.FileName)))
-						continue;
+            StringBuilder sb = new StringBuilder();
+            string[] batch;
+            string fileName = string.Empty;
 
-					if(includeUSE)
-						sb.Append("USE "+row.Database+"\r\nGO\r\n");
+            try
+            {
+                DataView view = buildData.Script.DefaultView;
+                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
+                for (int i = 0; i < view.Count; i++)
+                {
+                    SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
+                    if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
+                        continue;
 
-					batch = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText,true);
-					for(int j=0;j<batch.Length;j++)
-						sb.Append(batch[j]+"\r\n");
-	
-					if(includeSequence)
-						fileName = Path.Combine(destinationFolder, (i+1).ToString().PadLeft(3,'0')+" "+row.FileName);
-					else
-						fileName = Path.Combine(destinationFolder, row.FileName);
+                    if (includeUSE)
+                        sb.Append("USE " + row.Database + "\r\nGO\r\n");
 
-					
-					using(StreamWriter sw = File.CreateText(fileName))
-					{
-						sw.WriteLine(sb.ToString());
-						sw.Flush();
-						sw.Close();
-					}
-					sb.Length = 0;
-				}
-				return true;
-			}
-			catch(Exception e)
-			{
+                    batch = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true);
+                    for (int j = 0; j < batch.Length; j++)
+                        sb.Append(batch[j] + "\r\n");
+
+                    if (includeSequence)
+                        fileName = Path.Combine(destinationFolder, (i + 1).ToString().PadLeft(3, '0') + " " + row.FileName);
+                    else
+                        fileName = Path.Combine(destinationFolder, row.FileName);
+
+
+                    using (StreamWriter sw = File.CreateText(fileName))
+                    {
+                        sw.WriteLine(sb.ToString());
+                        sw.Flush();
+                        sw.Close();
+                    }
+                    sb.Length = 0;
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
                 log.LogError(e, $"Unable to export script {fileName} to destination folder {destinationFolder}");
-				return false;
-			}
-		}
-		public static bool CopyScriptsToSingleFile(ref SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE)
-		{
-			if(buildData.Script == null || buildData.Script.Count == 0)
-				return false;
+                return false;
+            }
+        }
+        public static bool CopyScriptsToSingleFile(ref SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE)
+        {
+            if (buildData.Script == null || buildData.Script.Count == 0)
+                return false;
 
-			StringBuilder sb = new StringBuilder();
-			string[] batch;
-		
-			try
-			{
-				sb.Append("-- Scripts Consolidated from: "+ Path.GetFileName(buildFileName)+"\r\n");
-				DataView view =  buildData.Script.DefaultView;
-				view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-				for(int i=0;i<view.Count;i++)
-				{
-					SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
-					if(!File.Exists( Path.Combine(projectFilePath, row.FileName)))
-						continue;
+            StringBuilder sb = new StringBuilder();
+            string[] batch;
 
-					sb.Append("\r\n-- Source File: "+row.FileName+"\r\n");
-					if(includeUSE)
-						sb.Append("USE "+row.Database+"\r\nGO\r\n");
-					batch = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText,true);
-					for(int j=0;j<batch.Length;j++)
-						sb.Append(batch[j]+"\r\n");
-				}
+            try
+            {
+                sb.Append("-- Scripts Consolidated from: " + Path.GetFileName(buildFileName) + "\r\n");
+                DataView view = buildData.Script.DefaultView;
+                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
+                for (int i = 0; i < view.Count; i++)
+                {
+                    SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
+                    if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
+                        continue;
 
-					
-				using(StreamWriter sw = File.CreateText(destinationFile))
-				{
-					sw.WriteLine(sb.ToString());
-					sw.Flush();
-					sw.Close();
-				}
-				sb.Length = 0;
-				return true;
-			}
-			catch(Exception e)
-			{
-				string debug = e.ToString();
-				return false;
-			}
-		}
+                    sb.Append("\r\n-- Source File: " + row.FileName + "\r\n");
+                    if (includeUSE)
+                        sb.Append("USE " + row.Database + "\r\nGO\r\n");
+                    batch = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true);
+                    for (int j = 0; j < batch.Length; j++)
+                        sb.Append(batch[j] + "\r\n");
+                }
+
+
+                using (StreamWriter sw = File.CreateText(destinationFile))
+                {
+                    sw.WriteLine(sb.ToString());
+                    sw.Flush();
+                    sw.Close();
+                }
+                sb.Length = 0;
+                return true;
+            }
+            catch (Exception e)
+            {
+                string debug = e.ToString();
+                return false;
+            }
+        }
         #endregion
 
         //public static double ImportSqlScriptFile
@@ -1415,16 +1416,16 @@ namespace SqlSync.SqlBuild
                     row.BuildOrder = startBuildNumber + increment;
                     list.Add(row.FileName);
                     buildData.Script.ImportRow(row);
-                    if (File.Exists( Path.Combine(projectFilePath, row.FileName)))
+                    if (File.Exists(Path.Combine(projectFilePath, row.FileName)))
                         File.Delete(Path.Combine(projectFilePath, row.FileName));
                     try
                     {
                         File.Copy(Path.Combine(importWorkingDirectory, row.FileName), Path.Combine(projectFilePath, row.FileName));
                     }
-                    catch(Exception)
+                    catch (Exception)
                     {
                         System.Threading.Thread.Sleep(200);
-                        File.Copy(Path.Combine(importWorkingDirectory,row.FileName), Path.Combine(projectFilePath, row.FileName));
+                        File.Copy(Path.Combine(importWorkingDirectory, row.FileName), Path.Combine(projectFilePath, row.FileName));
                     }
                     increment++;
                 }
@@ -1460,7 +1461,7 @@ namespace SqlSync.SqlBuild
                 buildData.RejectChanges();
             }
 
-        
+
 
             addedFileNames = new string[0];
             return -1;
@@ -1481,11 +1482,11 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        public static List<double>  GetInsertedIndexValues(double floorIndex, double ceilingIndex, int insertCount)
+        public static List<double> GetInsertedIndexValues(double floorIndex, double ceilingIndex, int insertCount)
         {
             List<double> insertIndexes = new List<double>();
             //Get the closest integer values if possible...
-            if(Math.Ceiling(floorIndex) < Math.Floor(ceilingIndex))
+            if (Math.Ceiling(floorIndex) < Math.Floor(ceilingIndex))
             {
                 floorIndex = Math.Ceiling(floorIndex);
                 ceilingIndex = Math.Floor(ceilingIndex);
@@ -1499,43 +1500,43 @@ namespace SqlSync.SqlBuild
 
                 return insertIndexes;
             }
-            
+
             //Can we use simple tenth values?
-            if(floorIndex + Convert.ToDouble(insertCount)*0.1 < ceilingIndex)
+            if (floorIndex + Convert.ToDouble(insertCount) * 0.1 < ceilingIndex)
             {
                 for (double i = 1; i <= insertCount; i++)
-                    insertIndexes.Add(floorIndex + i/10.0);
+                    insertIndexes.Add(floorIndex + i / 10.0);
 
                 return insertIndexes;
             }
 
             //Can't use whole values, so let's do some math!!
-            double step = (ceilingIndex - floorIndex) / (insertCount+2);
+            double step = (ceilingIndex - floorIndex) / (insertCount + 2);
             for (double i = 1; i <= insertCount; i++)
             {
-                double tmp = Math.Round(floorIndex + (i * step),2);
+                double tmp = Math.Round(floorIndex + (i * step), 2);
                 insertIndexes.Add(tmp);
             }
 
             return insertIndexes;
         }
-       
+
         #region .: Files/Path Initilization Methods :.
         public static bool CleanUpAndDeleteWorkingDirectory(string workingDir)
-		{
-			try
-			{
-                if(Directory.Exists(workingDir))
+        {
+            try
+            {
+                if (Directory.Exists(workingDir))
                     Directory.Delete(workingDir, true);
-				return true;
-			}
-			catch(Exception exe)
-			{
+                return true;
+            }
+            catch (Exception exe)
+            {
                 log.LogWarning(exe, $"Unable to clean up working directory '{workingDir}'");
-				return false;
-			}
-		}
-        public static bool InitilizeWorkingDirectory(ref string workingDirectory,ref string projectFilePath, ref string projectFileName)
+                return false;
+            }
+        }
+        public static bool InitilizeWorkingDirectory(ref string workingDirectory, ref string projectFilePath, ref string projectFileName)
         {
             try
             {
@@ -1550,7 +1551,7 @@ namespace SqlSync.SqlBuild
 
                 if (projectFileName != null && projectFileName.Length > 0)
                     projectFileName = Path.Combine(workingDirectory, Path.GetFileName(projectFileName));
-                
+
                 if (!Directory.Exists(workingDirectory))
                     Directory.CreateDirectory(workingDirectory);
 
@@ -1558,14 +1559,14 @@ namespace SqlSync.SqlBuild
 
                 return true;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
-                log.LogWarning(exe, $"Unable to clean up working directory '{workingDirectory}'" );
+                log.LogWarning(exe, $"Unable to clean up working directory '{workingDirectory}'");
                 return false;
             }
         }
         #endregion
 
-       
+
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 namespace SqlBuildManager.ScriptHandling
 {
@@ -19,12 +18,12 @@ namespace SqlBuildManager.ScriptHandling
         /// <param name="tableName">Name of the table used in the ALTERs</param>
         /// <param name="changedScript">The transformed script</param>
         /// <returns>String list of columns that were found and transformed</returns>
-        public static List<string> TransformCreateTableToAlterColumn(string rawScript,string schema, string tableName, out string changedScript)
+        public static List<string> TransformCreateTableToAlterColumn(string rawScript, string schema, string tableName, out string changedScript)
         {
             List<string> columnList = new List<string>();
             if (string.IsNullOrEmpty(tableName))
             {
-                changedScript=  rawScript;
+                changedScript = rawScript;
                 return columnList;
             }
 
@@ -34,7 +33,7 @@ namespace SqlBuildManager.ScriptHandling
                 return columnList;
             }
 
-           
+
             changedScript = "";
             string columnName = string.Empty;
             string[] lines = rawScript.Trim().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -48,7 +47,7 @@ namespace SqlBuildManager.ScriptHandling
             //objectName value match 
             Regex objectName = new Regex(@"[A-Za-z0-9_\[\]]{1,}");
 
-           
+
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
             string alter = "ALTER TABLE [" + schema + "].[" + tableName + "] ALTER COLUMN ";
             string addCol = "ALTER TABLE [" + schema + "].[" + tableName + "] ADD ";
@@ -71,7 +70,7 @@ namespace SqlBuildManager.ScriptHandling
                         else
                             colLine = lines[i].Trim();
 
-                        sb.Append("IF EXISTS(SELECT 1 FROM information_schema.columns WHERE TABLE_NAME = '" + tableName + "' AND TABLE_SCHEMA = '"+ schema + "' AND COLUMN_NAME = '" + columnName + "')\r\n");
+                        sb.Append("IF EXISTS(SELECT 1 FROM information_schema.columns WHERE TABLE_NAME = '" + tableName + "' AND TABLE_SCHEMA = '" + schema + "' AND COLUMN_NAME = '" + columnName + "')\r\n");
 
                         sb.Append("\t" + alter + colLine);
                         sb.Append("\r\nELSE\r\n");
@@ -132,7 +131,7 @@ namespace SqlBuildManager.ScriptHandling
             sqlList.Append("\tFETCH NEXT FROM curFK INTO @FK\r\n");
             sqlList.Append("\tWHILE @@FETCH_STATUS = 0\r\n");
             sqlList.Append("\tBEGIN\r\n");
-            sqlList.Append("\t\tSET @sql = 'IF EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE WHERE CONSTRAINT_NAME = '''+@FK+''') ALTER TABLE [" +schema +"].[" + tableName + "] DROP CONSTRAINT ' +@FK\r\n");
+            sqlList.Append("\t\tSET @sql = 'IF EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE WHERE CONSTRAINT_NAME = '''+@FK+''') ALTER TABLE [" + schema + "].[" + tableName + "] DROP CONSTRAINT ' +@FK\r\n");
             sqlList.Append("\t\tPRINT @sql\r\n");
             sqlList.Append("\t\tEXEC(@sql)\r\n");
             sqlList.Append("\t\tFETCH NEXT FROM curFK INTO @FK\r\n");
@@ -163,8 +162,8 @@ namespace SqlBuildManager.ScriptHandling
         public static void ExtractTableNameFromScript(string rawScript, out string schema, out string tableName)
         {
             schema = "dbo";
-            Regex regFindTable = new Regex(@"\bTABLE\b [A-Za-z0-9\[\]\._]{1,}",RegexOptions.IgnoreCase);
-            Regex regTable = new Regex(@"\bTABLE\b",RegexOptions.IgnoreCase);
+            Regex regFindTable = new Regex(@"\bTABLE\b [A-Za-z0-9\[\]\._]{1,}", RegexOptions.IgnoreCase);
+            Regex regTable = new Regex(@"\bTABLE\b", RegexOptions.IgnoreCase);
             if (regFindTable.Match(rawScript).Success)
             {
                 string tmp = regFindTable.Match(rawScript).Value;

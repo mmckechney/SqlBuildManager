@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.IO;
-using System.Xml.Serialization;
-using Microsoft.Extensions.Logging;
 using System.Net.Http;
+using System.Text;
+using System.Xml.Serialization;
 namespace SqlSync.Connection
 {
     public class RegisteredServerHelper
@@ -76,7 +74,7 @@ namespace SqlSync.Connection
             string serverFileContents = string.Empty;
             try
             {
-                if(RegisteredServerHelper.RegisteredServerFileName.ToLower().StartsWith("http"))
+                if (RegisteredServerHelper.RegisteredServerFileName.ToLower().StartsWith("http"))
                 {
                     var httpClient = new HttpClient();
                     serverFileContents = httpClient.GetStringAsync(RegisteredServerHelper.RegisteredServerFileName).GetAwaiter().GetResult();
@@ -95,7 +93,7 @@ namespace SqlSync.Connection
                     File.WriteAllText(localRegisteredServerPath, serverFileContents);
                 }
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError(exe, $"Unable to load Registered Servers file at {RegisteredServerHelper.RegisteredServerFileName}");
             }
@@ -122,7 +120,7 @@ namespace SqlSync.Connection
                         return (RegisteredServers)tmp;
                 }
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError("Error deserializing registered server contents", exe);
             }
@@ -157,7 +155,7 @@ namespace SqlSync.Connection
                     if (tw != null)
                         tw.Close();
                 }
-                return true;    
+                return true;
             }
             catch (System.UnauthorizedAccessException exe)
             {

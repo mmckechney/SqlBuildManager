@@ -1,12 +1,11 @@
-﻿using SqlSync.SqlBuild.MultiDb;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.DbInformation;
-using System.Collections.Generic;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.MultiDb;
+using System.Collections.Generic;
 namespace SqlSync.SqlBuild.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for DbOverrideSequenceTest and is intended
     ///to contain all DbOverrideSequenceTest Unit Tests
@@ -94,7 +93,7 @@ namespace SqlSync.SqlBuild.UnitTest
         //    Assert.IsTrue("3" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"3\", returned " + enumer.Current.Key.ToString());
         //    enumer.MoveNext();
         //    Assert.IsTrue("4" == enumer.Current.Key.ToString(), "Sorting of DbOverride sequence failed. Expected \"4\", returned " + enumer.Current.Key.ToString());
-     
+
         //}
         /// <summary>
         ///A test for Sort

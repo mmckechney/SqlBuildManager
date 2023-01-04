@@ -4,7 +4,6 @@ namespace Algorithm.Diff
     using System.Collections;
     using System.Globalization;
     using System.IO;
-    using System.Runtime.InteropServices;
     using System.Text;
 
     public class Diff : IDiff, IEnumerable
@@ -21,12 +20,12 @@ namespace Algorithm.Diff
 
         public Diff(IList left, IList right, IEqualityComparer hashcoder)
         {
-            this.cdif = null;
+            cdif = null;
             this.left = left;
             this.right = right;
-           // this.comparer = comparer;
+            // this.comparer = comparer;
             this.hashcoder = hashcoder;
-            this.init();
+            init();
         }
 
         public Diff(string leftFile, string rightFile, bool caseSensitive, bool compareWhitespace) :
@@ -34,11 +33,11 @@ namespace Algorithm.Diff
         {
         }
 
-        public Diff(string[] left, string[] right, bool caseSensitive, bool compareWhitespace) : 
-            this(StripWhitespace(left, !compareWhitespace), StripWhitespace(right, !compareWhitespace), caseSensitive ? (IEqualityComparer)StringComparer.Create(CultureInfo.InvariantCulture, false) : (IEqualityComparer) StringComparer.Create(CultureInfo.InvariantCulture,true))
+        public Diff(string[] left, string[] right, bool caseSensitive, bool compareWhitespace) :
+            this(StripWhitespace(left, !compareWhitespace), StripWhitespace(right, !compareWhitespace), caseSensitive ? (IEqualityComparer)StringComparer.Create(CultureInfo.InvariantCulture, false) : (IEqualityComparer)StringComparer.Create(CultureInfo.InvariantCulture, true))
         {
-            this.leftRaw = left;
-            this.rightRaw = right;
+            leftRaw = left;
+            rightRaw = right;
         }
 
         private IntList _longestCommonSubsequence(IList a, IList b)
@@ -51,25 +50,25 @@ namespace Algorithm.Diff
             {
                 list.Add(-1);
             }
-            if (!this.IsPrepared(out bMatches))
+            if (!IsPrepared(out bMatches))
             {
                 int start = 0;
                 int end = b.Count - 1;
-                while (((num <= num2) && (start <= end)) && this.compare(a[num], b[start]))
+                while (((num <= num2) && (start <= end)) && compare(a[num], b[start]))
                 {
                     list[num++] = start++;
                 }
-                while (((num <= num2) && (start <= end)) && this.compare(a[num2], b[end]))
+                while (((num <= num2) && (start <= end)) && compare(a[num2], b[end]))
                 {
                     list[num2--] = end--;
                 }
-                bMatches = this._withPositionsOfInInterval(b, start, end);
+                bMatches = _withPositionsOfInInterval(b, start, end);
             }
             IntList array = new IntList();
             ArrayList list3 = new ArrayList();
             for (int j = num; j <= num2; j++)
             {
-                IntList list4 = (IntList) bMatches[a[j]];
+                IntList list4 = (IntList)bMatches[a[j]];
                 if (list4 != null)
                 {
                     int high = 0;
@@ -82,11 +81,11 @@ namespace Algorithm.Diff
                         }
                         else
                         {
-                            high = this._replaceNextLargerWith(array, num9, high);
+                            high = _replaceNextLargerWith(array, num9, high);
                         }
                         if (high != -1)
                         {
-                            Trio trio = new Trio((high > 0) ? ((Trio) list3[high - 1]) : null, j, num9);
+                            Trio trio = new Trio((high > 0) ? ((Trio)list3[high - 1]) : null, j, num9);
                             if (high == list3.Count)
                             {
                                 list3.Add(trio);
@@ -101,7 +100,7 @@ namespace Algorithm.Diff
             }
             if (array.Count > 0)
             {
-                for (Trio trio2 = (Trio) list3[array.Count - 1]; trio2 != null; trio2 = trio2.a)
+                for (Trio trio2 = (Trio)list3[array.Count - 1]; trio2 != null; trio2 = trio2.a)
                 {
                     list[trio2.b] = trio2.c;
                 }
@@ -144,13 +143,13 @@ namespace Algorithm.Diff
 
         private Hashtable _withPositionsOfInInterval(IList aCollection, int start, int end)
         {
-            Hashtable hashtable = new Hashtable(this.hashcoder);
+            Hashtable hashtable = new Hashtable(hashcoder);
             for (int i = start; i <= end; i++)
             {
                 object key = aCollection[i];
                 if (hashtable.ContainsKey(key))
                 {
-                    ((IntList) hashtable[key]).Add(i);
+                    ((IntList)hashtable[key]).Add(i);
                 }
                 else
                 {
@@ -170,7 +169,7 @@ namespace Algorithm.Diff
         {
             IntList am;
             IntList bm;
-            this.LCSidx(a, b, out am, out bm);
+            LCSidx(a, b, out am, out bm);
             IntList list3 = new IntList();
             int num = 0;
             int num2 = 0;
@@ -206,12 +205,12 @@ namespace Algorithm.Diff
 
         private bool compare(object a, object b)
         {
-            return this.hashcoder.Equals(a, b);
+            return hashcoder.Equals(a, b);
             //if (this.comparer == null)
             //{
             //    return a.Equals(b);
             //}
-           
+
             //return (this.comparer.Compare(a, b) == 0);
         }
 
@@ -241,20 +240,20 @@ namespace Algorithm.Diff
                     rightData[rs++] = hunk2.Right[i];
                 }
             }
-            return new Patch((Patch.Hunk[]) list.ToArray(typeof(Patch.Hunk)));
+            return new Patch((Patch.Hunk[])list.ToArray(typeof(Patch.Hunk)));
         }
 
         private void init()
         {
-            this.cdif = this.compact_diff(this.left, this.right);
-            this._Same = true;
-            if ((this.cdif[2] == 0) && (this.cdif[3] == 0))
+            cdif = compact_diff(left, right);
+            _Same = true;
+            if ((cdif[2] == 0) && (cdif[3] == 0))
             {
-                this._Same = false;
-                this.cdif.RemoveAt(0);
-                this.cdif.RemoveAt(0);
+                _Same = false;
+                cdif.RemoveAt(0);
+                cdif.RemoveAt(0);
             }
-            this._End = (1 + this.cdif.Count) / 2;
+            _End = (1 + cdif.Count) / 2;
         }
 
         private bool IsPrepared(out Hashtable bMatches)
@@ -265,7 +264,7 @@ namespace Algorithm.Diff
 
         private void LCSidx(IList a, IList b, out IntList am, out IntList bm)
         {
-            IntList list = this._longestCommonSubsequence(a, b);
+            IntList list = _longestCommonSubsequence(a, b);
             am = new IntList();
             for (int i = 0; i < list.Count; i++)
             {
@@ -305,7 +304,7 @@ namespace Algorithm.Diff
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            if (this.cdif == null)
+            if (cdif == null)
             {
                 throw new InvalidOperationException("No comparison has been performed.");
             }
@@ -323,7 +322,7 @@ namespace Algorithm.Diff
         {
             get
             {
-                return this.left;
+                return left;
             }
         }
 
@@ -331,7 +330,7 @@ namespace Algorithm.Diff
         {
             get
             {
-                return this.right;
+                return right;
             }
         }
 
@@ -344,12 +343,12 @@ namespace Algorithm.Diff
             public Enumerator(Algorithm.Diff.Diff diff)
             {
                 this.diff = diff;
-                this.Reset();
+                Reset();
             }
 
             private void _ChkPos()
             {
-                if (this._Pos == 0)
+                if (_Pos == 0)
                 {
                     throw new InvalidOperationException("Position is reset.");
                 }
@@ -357,46 +356,46 @@ namespace Algorithm.Diff
 
             private Algorithm.Diff.Diff.Hunk gethunk()
             {
-                this._ChkPos();
-                int num5 = 1 + this._Off;
-                int num6 = 2 + this._Off;
-                int num = this.diff.cdif[num5 - 2];
-                int num2 = this.diff.cdif[num5] - 1;
-                int num3 = this.diff.cdif[num6 - 2];
-                int num4 = this.diff.cdif[num6] - 1;
-                return new Algorithm.Diff.Diff.Hunk(this.diff.leftRaw, this.diff.rightRaw, num, num2, num3, num4, this.same());
+                _ChkPos();
+                int num5 = 1 + _Off;
+                int num6 = 2 + _Off;
+                int num = diff.cdif[num5 - 2];
+                int num2 = diff.cdif[num5] - 1;
+                int num3 = diff.cdif[num6 - 2];
+                int num4 = diff.cdif[num6] - 1;
+                return new Algorithm.Diff.Diff.Hunk(diff.leftRaw, diff.rightRaw, num, num2, num3, num4, same());
             }
 
             public bool MoveNext()
             {
-                return this.next();
+                return next();
             }
 
             private bool next()
             {
-                this.reset(this._Pos + 1);
-                return (this._Pos != -1);
+                reset(_Pos + 1);
+                return (_Pos != -1);
             }
 
             private void reset(int pos)
             {
-                if ((pos < 0) || (this.diff._End <= pos))
+                if ((pos < 0) || (diff._End <= pos))
                 {
                     pos = -1;
                 }
-                this._Pos = pos;
-                this._Off = (2 * pos) - 1;
+                _Pos = pos;
+                _Off = (2 * pos) - 1;
             }
 
             public void Reset()
             {
-                this.reset(0);
+                reset(0);
             }
 
             private bool same()
             {
-                this._ChkPos();
-                if (this.diff._Same != ((1 & this._Pos) != 0))
+                _ChkPos();
+                if (diff._Same != ((1 & _Pos) != 0))
                 {
                     return false;
                 }
@@ -407,8 +406,8 @@ namespace Algorithm.Diff
             {
                 get
                 {
-                    this._ChkPos();
-                    return this.gethunk();
+                    _ChkPos();
+                    return gethunk();
                 }
             }
         }
@@ -440,24 +439,24 @@ namespace Algorithm.Diff
                 {
                     throw new ArgumentException();
                 }
-                return this.Right;
+                return Right;
             }
 
             internal Algorithm.Diff.Diff.Hunk Crop(int shiftstart, int shiftend)
             {
-                return new Algorithm.Diff.Diff.Hunk(this.left, this.right, this.Left.Start + shiftstart, this.Left.End - shiftend, this.Right.Start + shiftstart, this.Right.End - shiftend, this.same);
+                return new Algorithm.Diff.Diff.Hunk(left, right, Left.Start + shiftstart, Left.End - shiftend, Right.Start + shiftstart, Right.End - shiftend, same);
             }
 
             public string DiffString()
             {
-                if ((this.left == null) || (this.right == null))
+                if ((left == null) || (right == null))
                 {
                     throw new InvalidOperationException("This hunk is based on a patch which does not have the compared data.");
                 }
                 StringBuilder builder = new StringBuilder();
-                if (this.Same)
+                if (Same)
                 {
-                    foreach (object obj2 in this.Left)
+                    foreach (object obj2 in Left)
                     {
                         builder.Append(" ");
                         builder.Append(obj2.ToString());
@@ -466,13 +465,13 @@ namespace Algorithm.Diff
                 }
                 else
                 {
-                    foreach (object obj3 in this.Left)
+                    foreach (object obj3 in Left)
                     {
                         builder.Append("<");
                         builder.Append(obj3.ToString());
                         builder.Append("\n");
                     }
-                    foreach (object obj4 in this.Right)
+                    foreach (object obj4 in Right)
                     {
                         builder.Append(">");
                         builder.Append(obj4.ToString());
@@ -485,14 +484,14 @@ namespace Algorithm.Diff
             public override bool Equals(object o)
             {
                 Algorithm.Diff.Diff.Hunk hunk = o as Algorithm.Diff.Diff.Hunk;
-                return ((((this.s1start == hunk.s1start) && (this.s1start == hunk.s1end)) && ((this.s1start == hunk.s2start) && (this.s1start == hunk.s2end))) && (this.same == hunk.same));
+                return ((((s1start == hunk.s1start) && (s1start == hunk.s1end)) && ((s1start == hunk.s2start) && (s1start == hunk.s2end))) && (same == hunk.same));
             }
 
             private Algorithm.Diff.Range get(int seq)
             {
-                int start = (seq == 1) ? this.s1start : this.s2start;
-                int num2 = (seq == 1) ? this.s1end : this.s2end;
-                IList list = (seq == 1) ? this.left : this.right;
+                int start = (seq == 1) ? s1start : s2start;
+                int num2 = (seq == 1) ? s1end : s2end;
+                IList list = (seq == 1) ? left : right;
                 if (num2 < start)
                 {
                     return new Algorithm.Diff.Range(list, start, 0);
@@ -502,7 +501,7 @@ namespace Algorithm.Diff
 
             public override int GetHashCode()
             {
-                return (((this.s1start + this.s1end) + this.s2start) + this.s2end);
+                return (((s1start + s1end) + s2start) + s2end);
             }
 
             public override bool IsSame(int index)
@@ -511,17 +510,17 @@ namespace Algorithm.Diff
                 {
                     throw new ArgumentException();
                 }
-                return this.Same;
+                return Same;
             }
 
             public override Algorithm.Diff.Range Original()
             {
-                return this.Left;
+                return Left;
             }
 
             internal Algorithm.Diff.Diff.Hunk Reverse()
             {
-                return new Algorithm.Diff.Diff.Hunk(this.right, this.left, this.Right.Start, this.Right.End, this.Left.Start, this.Left.End, this.same);
+                return new Algorithm.Diff.Diff.Hunk(right, left, Right.Start, Right.End, Left.Start, Left.End, same);
             }
 
             internal void SetLists(IList left, IList right)
@@ -532,11 +531,11 @@ namespace Algorithm.Diff
 
             public override string ToString()
             {
-                if ((this.left == null) || (this.right == null))
+                if ((left == null) || (right == null))
                 {
                     return base.ToString();
                 }
-                return this.DiffString();
+                return DiffString();
             }
 
             public override int ChangedLists
@@ -559,7 +558,7 @@ namespace Algorithm.Diff
             {
                 get
                 {
-                    return this.get(1);
+                    return get(1);
                 }
             }
 
@@ -567,7 +566,7 @@ namespace Algorithm.Diff
             {
                 get
                 {
-                    return this.get(2);
+                    return get(2);
                 }
             }
 
@@ -575,7 +574,7 @@ namespace Algorithm.Diff
             {
                 get
                 {
-                    return this.same;
+                    return same;
                 }
             }
         }

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Drawing;
 using UrielGuy.SyntaxHighlighting;
-using System.Drawing;
 namespace SqlSync.Highlighting
 {
     public class LogFileSyntax
@@ -51,16 +47,16 @@ namespace SqlSync.Highlighting
 
             for (int i = 0; i < warnLevels.Length; i++)
                 coll.Add(new HighlightDescriptor(warnLevels[i], Color.Orange, null, DescriptorType.Word, DescriptorRecognition.WholeWord, true));
-            
+
             for (int i = 0; i < badLevels.Length; i++)
                 coll.Add(new HighlightDescriptor(badLevels[i], Color.Red, null, DescriptorType.Word, DescriptorRecognition.WholeWord, true));
-           
-           
-            coll.Add(new HighlightDescriptor(@"\[Thread:","]", Color.Gray, null, DescriptorType.ToCloseToken, DescriptorRecognition.RegularExpression, false));
-            coll.Add(new HighlightDescriptor(@"\d\d\d\d-\d\d-\d\d", Color.Gray, null, DescriptorType.Word, DescriptorRecognition.RegularExpression,false));
+
+
+            coll.Add(new HighlightDescriptor(@"\[Thread:", "]", Color.Gray, null, DescriptorType.ToCloseToken, DescriptorRecognition.RegularExpression, false));
+            coll.Add(new HighlightDescriptor(@"\d\d\d\d-\d\d-\d\d", Color.Gray, null, DescriptorType.Word, DescriptorRecognition.RegularExpression, false));
             coll.Add(new HighlightDescriptor(@"\d\d:\d\d:\d\d,\d\d\d", Color.Gray, null, DescriptorType.Word, DescriptorRecognition.RegularExpression, false));
             coll.Add(new HighlightDescriptor(@"(\(\w*\.\w*\))|(\(\w*\.\w*\.\w*\))|(\(\w*\.\w*\.\w*\.\w*\))|(\(\w*\.\w*\.\w*\.\w*\.\w*\))", Color.Gray, null, DescriptorType.Word, DescriptorRecognition.RegularExpression, false));
- 
+
             logFileHighlighting = coll;
         }
     }

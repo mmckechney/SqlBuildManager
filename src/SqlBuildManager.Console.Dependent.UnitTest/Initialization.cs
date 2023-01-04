@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using SqlBuildManager.Console;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
 using System.IO;
-using SqlBuildManager.Console.Threaded;
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     class Initialization : IDisposable
@@ -20,20 +15,20 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         public Initialization()
         {
             tempFiles = new List<string>();
-            Initialization.SqlBuildZipFileName = this.GetTrulyUniqueFile("sbm");
-            Initialization.MultiDbFileName = this.GetTrulyUniqueFile("multidb");
-            Initialization.DbConfigFileName = this.GetTrulyUniqueFile("cfg");
+            Initialization.SqlBuildZipFileName = GetTrulyUniqueFile("sbm");
+            Initialization.MultiDbFileName = GetTrulyUniqueFile("multidb");
+            Initialization.DbConfigFileName = GetTrulyUniqueFile("cfg");
         }
         public static void CleanUp()
         {
-            foreach(string f in tempFiles)
+            foreach (string f in tempFiles)
             {
                 try
                 {
                     File.Delete(f);
                 }
                 catch { }
-                   
+
             }
         }
 

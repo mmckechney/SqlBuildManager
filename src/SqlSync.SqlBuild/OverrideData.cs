@@ -1,10 +1,8 @@
-﻿using System;
+﻿using SqlSync.Connection;
 using System.Collections.Generic;
-using System.Text;
-using SqlSync.Connection;
 namespace SqlSync.SqlBuild
 {
-   public class OverrideData
+    public class OverrideData
     {
         private static List<DatabaseOverride> targetDatabaseOverrides = null;
         public static List<DatabaseOverride> TargetDatabaseOverrides
@@ -24,7 +22,7 @@ namespace SqlSync.SqlBuild
         //            if (OverrideData.targetDatabaseOverrides[z].DefaultDbTarget.ToLower() == defaultDatabase.ToLower())
         //                return OverrideData.targetDatabaseOverrides[z].OverrideDbTarget;
 
-            
+
         //    return defaultDatabase;
         //}
     }

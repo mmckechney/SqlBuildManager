@@ -1,22 +1,20 @@
-﻿using System;
+﻿using MoreLinq;
+using MoreLinq.Extensions;
+using SqlSync.Connection;
+using SqlSync.DbInformation;
+using SqlSync.MRU;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using SqlSync.DbInformation;
 using System.IO;
-using System.Xml.Serialization;
-using SqlSync.MRU;
-using SqlSync.Connection;
 using System.Linq;
-using MoreLinq;
-using MoreLinq.Extensions;
+using System.Windows.Forms;
 
 namespace SqlSync.SqlBuild.MultiDb
 {
-    public partial class MultiDbRunForm : Form, IMRUClient    
+    public partial class MultiDbRunForm : Form, IMRUClient
     {
         bool isTransactional = true;
         SqlSyncBuildData buildData;
@@ -58,12 +56,12 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             InitializeComponent();
         }
-         string server;
+        string server;
         List<string> defaultDatabases;
         DatabaseList databaseList;
         private string buildZipFileName = string.Empty;
 
-        public MultiDbRunForm(ConnectionData connData, List<string> defaultDatabases, DatabaseList databaseList, string buildZipFileName, string projectFilePath,ref SqlSyncBuildData buildData)
+        public MultiDbRunForm(ConnectionData connData, List<string> defaultDatabases, DatabaseList databaseList, string buildZipFileName, string projectFilePath, ref SqlSyncBuildData buildData)
             : this()
         {
             //perform real copy to prevent data slipping back into main form
@@ -71,8 +69,8 @@ namespace SqlSync.SqlBuild.MultiDb
             defaultDatabases.CopyTo(tmp);
             this.defaultDatabases = new List<string>(tmp);
             this.databaseList = databaseList;
-            this.server = connData.SQLServerName;
-            this.DialogResult = DialogResult.Cancel;
+            server = connData.SQLServerName;
+            DialogResult = DialogResult.Cancel;
             this.buildZipFileName = buildZipFileName;
             this.buildData = buildData;
             this.projectFilePath = projectFilePath;
@@ -90,32 +88,32 @@ namespace SqlSync.SqlBuild.MultiDb
                 mdb.AddRange(sequenced);
 
                 runConfiguration = mdb;
-                runConfiguration.RunAsTrial = this.runAsTrial;
-                runConfiguration.IsTransactional = this.isTransactional;
+                runConfiguration.RunAsTrial = runAsTrial;
+                runConfiguration.IsTransactional = isTransactional;
                 return runConfiguration;
             }
         }
 
         private void MultiDbRunForm_Load(object sender, EventArgs e)
         {
-            this.InitMRU();
-            this.lstServers.Items.Clear();
-            this.splitContainer1.Panel2.Controls.Clear();
+            InitMRU();
+            lstServers.Items.Clear();
+            splitContainer1.Panel2.Controls.Clear();
 
-            if (this.buildData == null)
+            if (buildData == null)
             {
                 tryBuildUsingCurrentConfigurationToolStripMenuItem.Enabled = false;
                 runBuildUsingCurrentConfigurationCommitToolStripMenuItem.Enabled = false;
                 runBuildUsingCurrentConfigurationWithoutTransactionsToolStripMenuItem.Enabled = false;
             }
 
-            this.AddNewServerItem(this.server, this.databaseList);
+            AddNewServerItem(server, databaseList);
             //LoadDatabaseData(this.server, this.databaseList);
         }
 
         private void PopulateServerList(List<ServerData> srvData)
         {
-            this.lstServers.Items.Clear();
+            lstServers.Items.Clear();
 
             var split = srvData.GroupBy(s => s.ServerName).ToList();
 
@@ -130,88 +128,88 @@ namespace SqlSync.SqlBuild.MultiDb
 
         void pg_ValueChanged(object sender, EventArgs e)
         {
-            this.ValuesChanged = true;
+            ValuesChanged = true;
         }
 
-        void pg_ServerRemoved(object sender, string newServerName,string username, string password, AuthenticationType authType)
+        void pg_ServerRemoved(object sender, string newServerName, string username, string password, AuthenticationType authType)
         {
             foreach (ListViewItem item in lstServers.Items)
             {
                 if (item.Text == newServerName)
                 {
                     lstServers.Items.Remove(item);
-                     this.ValuesChanged = true;
+                    ValuesChanged = true;
                     break;
                 }
             }
-            this.splitContainer1.Panel2.Controls.Remove((Control)sender);
+            splitContainer1.Panel2.Controls.Remove((Control)sender);
         }
 
-      
-      private void addAnotherServerToolStripMenuItem_Click(object sender, EventArgs e)
+
+        private void addAnotherServerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ConnectionForm frmConnect = new ConnectionForm("Multi-Database Config");
-            if(DialogResult.OK == frmConnect.ShowDialog())
+            if (DialogResult.OK == frmConnect.ShowDialog())
             {
-                this.AddNewServerItem(frmConnect.SqlConnection.SQLServerName, frmConnect.DatabaseList);
+                AddNewServerItem(frmConnect.SqlConnection.SQLServerName, frmConnect.DatabaseList);
             }
-           
+
         }
 
         private void runBuildUsingCurrentConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.runConfiguration = GetServerDataCollection();
-            if (this.runConfiguration == null)
+            runConfiguration = GetServerDataCollection();
+            if (runConfiguration == null)
                 return;
 
 
-            if (!MultiDbHelper.ValidateMultiDatabaseData(this.runConfiguration))
+            if (!MultiDbHelper.ValidateMultiDatabaseData(runConfiguration))
             {
                 MessageBox.Show("One or more scripts is missing a default or target override database setting.\r\nRun has been halted. Please correct the error and try again", "Missing Database setting", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            if (this.runConfiguration.Count == 1 && this.runConfiguration[0].Overrides.Count == 0)
+            if (runConfiguration.Count == 1 && runConfiguration[0].Overrides.Count == 0)
             {
                 MessageBox.Show("Please configure a run order for at least one database item", "Unable to run", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            this.runConfiguration.RunAsTrial = true;
-            this.runAsTrial = true;
-            if (this.valuesChanged && ConfirmSave(ConfirmType.Run))
+            runConfiguration.RunAsTrial = true;
+            runAsTrial = true;
+            if (valuesChanged && ConfirmSave(ConfirmType.Run))
             {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                DialogResult = DialogResult.OK;
+                Close();
             }
             else
             {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                DialogResult = DialogResult.OK;
+                Close();
             }
         }
 
         private void runBuildUsingCurrentConfigurationCommitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.runConfiguration = GetServerDataCollection();
-            if (this.runConfiguration == null)
+            runConfiguration = GetServerDataCollection();
+            if (runConfiguration == null)
                 return;
 
-            if (this.runConfiguration.Count == 1 && this.runConfiguration[0].Overrides.Count == 0)
+            if (runConfiguration.Count == 1 && runConfiguration[0].Overrides.Count == 0)
             {
                 MessageBox.Show("Please configure a run order for at least one database item", "Unable to run", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            this.runConfiguration.RunAsTrial = false;
-            this.runAsTrial = false;
-            if (this.valuesChanged && ConfirmSave(ConfirmType.Run))
+            runConfiguration.RunAsTrial = false;
+            runAsTrial = false;
+            if (valuesChanged && ConfirmSave(ConfirmType.Run))
             {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                DialogResult = DialogResult.OK;
+                Close();
             }
             else
             {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                DialogResult = DialogResult.OK;
+                Close();
             }
 
         }
@@ -232,7 +230,7 @@ namespace SqlSync.SqlBuild.MultiDb
 
             }
             DialogResult result = MessageBox.Show(msg, "Save Configuration", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-            if(result == DialogResult.Yes)
+            if (result == DialogResult.Yes)
             {
                 saveConfigurationToolStripMenuItem_Click(null, EventArgs.Empty);
             }
@@ -246,21 +244,21 @@ namespace SqlSync.SqlBuild.MultiDb
             if (null == GetServerDataCollection())
                 return;
 
-             
-            if (this.loadedFileName.Length > 0)
-                saveFileDialog1.FileName = this.loadedFileName;
+
+            if (loadedFileName.Length > 0)
+                saveFileDialog1.FileName = loadedFileName;
 
             if (DialogResult.OK == saveFileDialog1.ShowDialog())
             {
-                
-                MultiDbData data = this.RunConfiguration;
+
+                MultiDbData data = RunConfiguration;
                 MultiDbHelper.SaveMultiDbConfigToFile(saveFileDialog1.FileName, data);
 
-                this.mruManager.Add(saveFileDialog1.FileName);
-                this.loadedFileName = saveFileDialog1.FileName;
+                mruManager.Add(saveFileDialog1.FileName);
+                loadedFileName = saveFileDialog1.FileName;
 
             }
-            this.ValuesChanged = false;
+            ValuesChanged = false;
 
         }
         private MultiDbData GetServerDataCollection()
@@ -269,11 +267,11 @@ namespace SqlSync.SqlBuild.MultiDb
             {
                 SyncFormMultiDbPageData();
                 MultiDbData mult = new MultiDbData();
-                foreach (ListViewItem item in this.lstServers.Items)
+                foreach (ListViewItem item in lstServers.Items)
                 {
                     mult.AddRange((List<ServerData>)item.Tag);
                 }
-            
+
                 return mult;
             }
             catch (Exception)
@@ -289,14 +287,14 @@ namespace SqlSync.SqlBuild.MultiDb
             if (DialogResult.OK == openFileDialog1.ShowDialog())
             {
                 string fileName = openFileDialog1.FileName;
-                this.loadedFileName = fileName;
-                this.mruManager.Add(fileName);
+                loadedFileName = fileName;
+                mruManager.Add(fileName);
                 bgLoadCfg.RunWorkerAsync(fileName);
-                this.ValuesChanged = false;
+                ValuesChanged = false;
             }
             openFileDialog1.Dispose();
         }
-       
+
 
         #region IMRUClient Members
 
@@ -307,20 +305,20 @@ namespace SqlSync.SqlBuild.MultiDb
         }
         private void InitMRU()
         {
-            this.mruManager = new MRUManager();
-            this.mruManager.Initialize(
+            mruManager = new MRUManager();
+            mruManager.Initialize(
                 this,                              // owner form
                 mnuActionMain,
                 mnuFileMRU,                        // Recent Files menu item
                 @"Software\Michael McKechney\Sql Sync\Multi Db Run"); // Registry path to keep MRU list
-            this.mruManager.MaxDisplayNameLength = 40;
+            mruManager.MaxDisplayNameLength = 40;
         }
         #endregion
 
 
         private void MultiDbRunForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (this.ValuesChanged)
+            if (ValuesChanged)
             {
                 ConfirmSave(ConfirmType.CommandLine);
             }
@@ -355,9 +353,9 @@ namespace SqlSync.SqlBuild.MultiDb
                 bg.ReportProgress(0, "Applying configuration... ");
                 int counter = 1;
 
-                bg.ReportProgress(10, "Retrieving database list from " + this.server);
-                ConnectionData tmpC = new ConnectionData().Fill(this.connData);
-                tmpC.SQLServerName = this.server;
+                bg.ReportProgress(10, "Retrieving database list from " + server);
+                ConnectionData tmpC = new ConnectionData().Fill(connData);
+                tmpC.SQLServerName = server;
                 tmpC.DatabaseName = "master";
                 var dbList = InfoHelper.GetDatabaseList(tmpC);
                 foreach (ServerData srv in data)
@@ -365,7 +363,7 @@ namespace SqlSync.SqlBuild.MultiDb
                     srv.SequenceId = counter;
                     counter++;
                     //We need to get the list of databases for this server if it doesn't match the current connection
-                    if (srv.ServerName == this.server)
+                    if (srv.ServerName == server)
                     {
                         var targets = srv.Overrides.Select(o => o.OverrideDbTarget);
                         var match = dbList.Where(d => targets.Contains(d.DatabaseName)).First();
@@ -374,9 +372,9 @@ namespace SqlSync.SqlBuild.MultiDb
                     svrDataList.Add(srv);
                 }
 
-                foreach(var db in dbList)
+                foreach (var db in dbList)
                 {
-                    svrDataList.Add(new ServerData() { ServerName = this.server, Overrides = new DbOverrides() { new DatabaseOverride() { OverrideDbTarget = db.DatabaseName } } });
+                    svrDataList.Add(new ServerData() { ServerName = server, Overrides = new DbOverrides() { new DatabaseOverride() { OverrideDbTarget = db.DatabaseName } } });
                 }
                 e.Result = svrDataList.OrderBy(s => s.Overrides.First().OverrideDbTarget).ToList();
             }
@@ -388,9 +386,9 @@ namespace SqlSync.SqlBuild.MultiDb
 
         private void bgLoadCfg_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            this.Cursor = Cursors.WaitCursor;   
+            Cursor = Cursors.WaitCursor;
 
-            if(e.UserState is string)
+            if (e.UserState is string)
                 statGeneral.Text = e.UserState.ToString();
         }
 
@@ -406,23 +404,23 @@ namespace SqlSync.SqlBuild.MultiDb
                 {
                     MessageBox.Show("No server data loaded. Please check your configuration and try loading again", "No Servers found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     statGeneral.Text = "Unable to load configuration.";
-                    this.splitContainer1.Panel2.Controls.Clear();
-                    this.Cursor = Cursors.Default;
+                    splitContainer1.Panel2.Controls.Clear();
+                    Cursor = Cursors.Default;
                     return;
                 }
 
-                this.splitContainer1.Panel2.Controls.Clear();
-                this.PopulateServerList(lst);
-                this.lstServers.Items[0].Selected = true;
+                splitContainer1.Panel2.Controls.Clear();
+                PopulateServerList(lst);
+                lstServers.Items[0].Selected = true;
             }
 
-            if (this.loadedFileName.Length < 50)
-                statGeneral.Text = this.loadedFileName;
+            if (loadedFileName.Length < 50)
+                statGeneral.Text = loadedFileName;
             else
-                statGeneral.Text = "..." + this.loadedFileName.Substring(this.loadedFileName.Length - 50);
+                statGeneral.Text = "..." + loadedFileName.Substring(loadedFileName.Length - 50);
 
-            this.Cursor = Cursors.Default;
-            this.ValuesChanged = false;
+            Cursor = Cursors.Default;
+            ValuesChanged = false;
         }
 
         enum ConfirmType
@@ -437,17 +435,17 @@ namespace SqlSync.SqlBuild.MultiDb
             if (valuesChanged)
                 ConfirmSave(ConfirmType.CommandLine);
 
-            CommandLineBuilderForm frmCmd = new CommandLineBuilderForm(this.buildZipFileName, this.loadedFileName);
+            CommandLineBuilderForm frmCmd = new CommandLineBuilderForm(buildZipFileName, loadedFileName);
             frmCmd.Show();
         }
 
         private void runBuildUsingCurrentConfigurationWithoutTransactionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.runConfiguration = GetServerDataCollection();
-            if (this.runConfiguration == null)
+            runConfiguration = GetServerDataCollection();
+            if (runConfiguration == null)
                 return;
 
-            if (this.runConfiguration.Count == 1 && this.runConfiguration[0].Overrides.Count == 0)
+            if (runConfiguration.Count == 1 && runConfiguration[0].Overrides.Count == 0)
             {
                 MessageBox.Show("Please configure a run order for at least one database item", "Unable to run", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -459,32 +457,32 @@ namespace SqlSync.SqlBuild.MultiDb
                 return;
             }
 
-            this.runConfiguration.RunAsTrial = false;
-            this.runAsTrial = false;
+            runConfiguration.RunAsTrial = false;
+            runAsTrial = false;
 
-            this.runConfiguration.IsTransactional = false;
-            this.isTransactional = false;
-            if (this.valuesChanged && ConfirmSave(ConfirmType.Run))
+            runConfiguration.IsTransactional = false;
+            isTransactional = false;
+            if (valuesChanged && ConfirmSave(ConfirmType.Run))
             {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                DialogResult = DialogResult.OK;
+                Close();
             }
             else
             {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                DialogResult = DialogResult.OK;
+                Close();
             }
         }
 
         private void generateScriptStatusReportToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MultiDbData multiDbData = GetServerDataCollection();
-            if (this.buildData == null)
+            if (buildData == null)
             {
                 MessageBox.Show("You do not have a Sql Build Project loaded. There's nothing to get status for.\r\nGo back and load an SBM or SBX file and try again.", "Nothing to Check", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return;
             }
-            StatusReportForm frmStat = new StatusReportForm(this.buildData, multiDbData, this.projectFilePath,this.buildZipFileName,this.connData);
+            StatusReportForm frmStat = new StatusReportForm(buildData, multiDbData, projectFilePath, buildZipFileName, connData);
             frmStat.ShowDialog();
 
         }
@@ -493,23 +491,23 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             MultiDbData multiDbData = GetServerDataCollection();
 
-            ObjectComparisonReportForm frmStat = new ObjectComparisonReportForm(multiDbData,this.connData);
+            ObjectComparisonReportForm frmStat = new ObjectComparisonReportForm(multiDbData, connData);
             frmStat.ShowDialog();
 
         }
 
         private void adHocQueryExecutionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-              MultiDbData multiDbData = GetServerDataCollection();
-              AdHocQueryExecution frmAdHoc = new AdHocQueryExecution(multiDbData, this.connData);
-              frmAdHoc.ShowDialog();
+            MultiDbData multiDbData = GetServerDataCollection();
+            AdHocQueryExecution frmAdHoc = new AdHocQueryExecution(multiDbData, connData);
+            frmAdHoc.ShowDialog();
         }
 
         private void createConfigurationViaQueryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                ConfigurationViaQueryForm frmQuery = new ConfigurationViaQueryForm(this.connData, this.databaseList);
+                ConfigurationViaQueryForm frmQuery = new ConfigurationViaQueryForm(connData, databaseList);
                 if (DialogResult.OK == frmQuery.ShowDialog())
                 {
                     if (frmQuery.MultiDbConfig != null)
@@ -537,7 +535,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 return;
 
             SwitchSelectedServer(lstServers.SelectedItems[0].Index);
-          
+
         }
         private void AddNewServerItem(string serverName, DatabaseList dbList)
         {
@@ -545,9 +543,11 @@ namespace SqlSync.SqlBuild.MultiDb
             var lstSrv = new List<ServerData>();
             foreach (var db in dbList)
             {
-                lstSrv.Add(new ServerData() { 
-                    ServerName = serverName, 
-                    Overrides = new DbOverrides() { new DatabaseOverride(this.defaultDatabases[0], db.DatabaseName) } });
+                lstSrv.Add(new ServerData()
+                {
+                    ServerName = serverName,
+                    Overrides = new DbOverrides() { new DatabaseOverride(defaultDatabases[0], db.DatabaseName) }
+                });
             }
             ServerData dat = new ServerData();
             dat.ServerName = serverName;
@@ -560,12 +560,12 @@ namespace SqlSync.SqlBuild.MultiDb
         private void SwitchSelectedServer(int listViewItemIndex)
         {
             //Sync any updated data with the ListView item tag
-            if (this.splitContainer1.Panel2.Controls.Count > 0)
+            if (splitContainer1.Panel2.Controls.Count > 0)
             {
                 SyncFormMultiDbPageData();
-                this.splitContainer1.Panel2.Controls[0].Dispose();
-                this.splitContainer1.Panel2.Controls.Clear();
-                
+                splitContainer1.Panel2.Controls[0].Dispose();
+                splitContainer1.Panel2.Controls.Clear();
+
             }
 
             for (int i = 0; i < lstServers.Items.Count; i++)
@@ -578,19 +578,19 @@ namespace SqlSync.SqlBuild.MultiDb
 
             //Change the MultiDbPage Control
             List<ServerData> dat = (List<ServerData>)lstServers.Items[listViewItemIndex].Tag;
-            MultiDbPage page = new MultiDbPage(dat, this.defaultDatabases);
+            MultiDbPage page = new MultiDbPage(dat, defaultDatabases);
             page.ServerRemoved += new ServerChangedEventHandler(pg_ServerRemoved);
             page.DataBind();
             page.ValueChanged += new EventHandler(pg_ValueChanged);
             page.Dock = DockStyle.Fill;
-            this.splitContainer1.Panel2.Controls.Add(page);
+            splitContainer1.Panel2.Controls.Add(page);
         }
         private void SyncFormMultiDbPageData()
         {
 
-            if (this.splitContainer1.Panel2.Controls[0] is MultiDbPage)
+            if (splitContainer1.Panel2.Controls[0] is MultiDbPage)
             {
-                MultiDbPage current = (MultiDbPage)this.splitContainer1.Panel2.Controls[0];
+                MultiDbPage current = (MultiDbPage)splitContainer1.Panel2.Controls[0];
                 foreach (ListViewItem item in lstServers.Items)
                 {
                     if (item.Text == current.ServerName)
@@ -605,7 +605,7 @@ namespace SqlSync.SqlBuild.MultiDb
         private void buildValidationReportToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MultiDbData multiDbData = GetServerDataCollection();
-            BuildValidationForm fbmBldValid = new BuildValidationForm(multiDbData,this.connData);
+            BuildValidationForm fbmBldValid = new BuildValidationForm(multiDbData, connData);
             fbmBldValid.ShowDialog();
         }
 

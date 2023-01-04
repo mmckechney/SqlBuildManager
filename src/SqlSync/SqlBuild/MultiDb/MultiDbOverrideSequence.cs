@@ -1,11 +1,8 @@
-﻿using System;
+﻿using SqlSync.Connection;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
-using SqlSync.Connection;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class MultiDbOverrideSequence : UserControl
@@ -23,9 +20,9 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(this.txtSequence.Text))
+                if (!string.IsNullOrWhiteSpace(txtSequence.Text))
                 {
-                    int.TryParse(this.txtSequence.Text, out int val);
+                    int.TryParse(txtSequence.Text, out int val);
                     return val;
                 }
                 else
@@ -35,9 +32,9 @@ namespace SqlSync.SqlBuild.MultiDb
             }
             set
             {
-                if(value.HasValue)
+                if (value.HasValue)
                 {
-                    this.txtSequence.Text = value.ToString();
+                    txtSequence.Text = value.ToString();
                     sequence = value;
                 }
             }
@@ -61,43 +58,43 @@ namespace SqlSync.SqlBuild.MultiDb
         private MultiDbOverrideSequence()
         {
             InitializeComponent();
-            this.txtSequence.TextChanged += new EventHandler(txtSequence_TextChanged);
+            txtSequence.TextChanged += new EventHandler(txtSequence_TextChanged);
 
         }
         public MultiDbOverrideSequence(string databaseName, bool isManualEntry) : this()
         {
             this.isManualEntry = isManualEntry;
             this.databaseName = databaseName;
-            this.lblDatabase.Text = this.databaseName;
+            lblDatabase.Text = this.databaseName;
             if (this.isManualEntry)
             {
-                this.lblDatabase.ForeColor = Color.Red;
-                toolTip1.SetToolTip(this.lblDatabase, "WARNING!\r\nThis database was found in the configuration file but NOT on the target server.\r\nThis override run setting will be ignored unless fixed.");
+                lblDatabase.ForeColor = Color.Red;
+                toolTip1.SetToolTip(lblDatabase, "WARNING!\r\nThis database was found in the configuration file but NOT on the target server.\r\nThis override run setting will be ignored unless fixed.");
 
             }
         }
         public MultiDbOverrideSequence(string databaseName, int? sequenceId, List<QueryRowItem> queryRowData, bool isManualEntry)
             : this(databaseName, isManualEntry)
         {
-            this.txtSequence.Text = (sequenceId.HasValue) ? sequenceId.Value.ToString() : string.Empty;
+            txtSequence.Text = (sequenceId.HasValue) ? sequenceId.Value.ToString() : string.Empty;
             this.queryRowData = queryRowData;
         }
 
         void mnuAutoSequence_Click(object sender, System.EventArgs e)
         {
-            MultiDbAutoSequence frmAuto = new MultiDbAutoSequence(this.databaseName);
+            MultiDbAutoSequence frmAuto = new MultiDbAutoSequence(databaseName);
             if (DialogResult.OK == frmAuto.ShowDialog())
             {
                 string pattern = frmAuto.Pattern;
-                if (this.AutoSequencePattern != null)
-                    this.AutoSequencePattern(this, new AutoSequencePatternEventArgs(pattern, frmAuto.Start, frmAuto.Increment));
+                if (AutoSequencePattern != null)
+                    AutoSequencePattern(this, new AutoSequencePatternEventArgs(pattern, frmAuto.Start, frmAuto.Increment));
             }
             frmAuto.Dispose();
         }
         void txtSequence_TextChanged(object sender, EventArgs e)
         {
-            if (this.ValueChanged != null)
-                this.ValueChanged(this, EventArgs.Empty);
+            if (ValueChanged != null)
+                ValueChanged(this, EventArgs.Empty);
         }
         public event EventHandler ValueChanged;
         public event AutoSequencePatternEventHandler AutoSequencePattern;
@@ -110,9 +107,9 @@ namespace SqlSync.SqlBuild.MultiDb
         public readonly int Increment;
         public AutoSequencePatternEventArgs(string pattern, int start, int increment)
         {
-            this.Pattern = pattern;
-            this.Start = start;
-            this.Increment = increment;
+            Pattern = pattern;
+            Start = start;
+            Increment = increment;
         }
     }
 }

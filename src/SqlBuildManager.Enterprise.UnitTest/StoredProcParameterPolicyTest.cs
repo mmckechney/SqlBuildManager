@@ -1,11 +1,11 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using System.Collections.Generic;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for StoredProcParameterPolicyTest and is intended
     ///to contain all StoredProcParameterPolicyTest Unit Tests
@@ -15,7 +15,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
     {
 
 
-       
+
 
         /// <summary>
         ///A test for ShortDescription
@@ -23,7 +23,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            StoredProcParameterPolicy target = new StoredProcParameterPolicy(); 
+            StoredProcParameterPolicy target = new StoredProcParameterPolicy();
             string actual;
             actual = target.ShortDescription;
             Assert.AreEqual("Stored Proc Parameter", actual);
@@ -48,7 +48,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void ShortDescriptionTest_WithParameterAndSchema()
         {
             StoredProcParameterPolicy target = new StoredProcParameterPolicy();
-            target.Arguments.Add( new IScriptPolicyArgument() { Name = "Parameter", Value = "@Test" });
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "Parameter", Value = "@Test" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "Schema", Value = "abc" });
             string actual;
             actual = target.ShortDescription;
@@ -61,7 +61,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void PolicyIdTest()
         {
-            StoredProcParameterPolicy target = new StoredProcParameterPolicy(); 
+            StoredProcParameterPolicy target = new StoredProcParameterPolicy();
             string actual;
             actual = target.PolicyId;
             Assert.AreEqual("StoredProcParameterPolicy", actual);
@@ -73,7 +73,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LongDescriptionTest()
         {
-            StoredProcParameterPolicy target = new StoredProcParameterPolicy(); 
+            StoredProcParameterPolicy target = new StoredProcParameterPolicy();
             string actual;
             actual = target.LongDescription;
             Assert.AreEqual("Makes certain that new stored procs have the proper default parameters", actual);
@@ -101,7 +101,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void StoredProcParameterPolicy_CheckPolicyTest_PassWithParameterAndType()
         {
-            
+
             StoredProcParameterPolicy target = new StoredProcParameterPolicy();
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "Schema", Value = "HumanResources" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "Parameter", Value = "@EmployeeID" });
@@ -126,7 +126,7 @@ BEGIN
 	";
             string message = string.Empty;
             string messageExpected = string.Empty;
-            bool expected = true; 
+            bool expected = true;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
@@ -245,7 +245,7 @@ BEGIN
             StoredProcParameterPolicy target = new StoredProcParameterPolicy();
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "Schema", Value = "HumanResources" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "Parameter", Value = "@EmployeeID" });
-            target.Arguments.Add(new IScriptPolicyArgument() { Name = "SqlType", Value = "int" }); 
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "SqlType", Value = "int" });
             string script = @"EXEC dbo.sp_executesql @statement = N'
 	CREATE PROCEDURE [HumanResources].[uspUpdateEmployeeHireInfo]
 	    @EmployeeID int, 
@@ -282,7 +282,7 @@ BEGIN
 
             StoredProcParameterPolicy target = new StoredProcParameterPolicy();
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "Parameter", Value = "@EmployeeID" });
-            target.Arguments.Add(new IScriptPolicyArgument() { Name = "SqlType", Value = "int" }); 
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "SqlType", Value = "int" });
             string script = @"It just doesn't matter";
             string message = string.Empty;
             string messageExpected = "Missing \"Schema\" argument in setup. Please check your Enterprise configuration";
@@ -303,7 +303,7 @@ BEGIN
 
             StoredProcParameterPolicy target = new StoredProcParameterPolicy();
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "Schema", Value = "HumanResources" });
-            target.Arguments.Add(new IScriptPolicyArgument() { Name = "SqlType", Value = "int" }); 
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "SqlType", Value = "int" });
 
             string script = @"It just doesn't matter";
             string message = string.Empty;
@@ -345,7 +345,7 @@ BEGIN
             StoredProcParameterPolicy target = new StoredProcParameterPolicy();
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "Schema", Value = "HumanResources" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "SqlType", Value = "int" });
-            target.Arguments.Add(new IScriptPolicyArgument() { Name = "Parameter", Value = "@EpicFail" }); 
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "Parameter", Value = "@EpicFail" });
 
             string script = @"EXEC dbo.sp_executesql @statement = N'
 	CREATE PROCEDURE [HumanResources].[uspUpdateEmployeeHireInfo]

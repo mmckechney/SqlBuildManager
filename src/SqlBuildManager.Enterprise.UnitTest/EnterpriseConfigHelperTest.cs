@@ -1,11 +1,10 @@
-﻿using SqlBuildManager.Enterprise;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for EnterpriseConfigHelperTest and is intended
     ///to contain all EnterpriseConfigHelperTest Unit Tests

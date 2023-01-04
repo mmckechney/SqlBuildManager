@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace SqlBuildManager.Interfaces.ScriptHandling.Policy
+﻿namespace SqlBuildManager.Interfaces.ScriptHandling.Policy
 {
     /// <summary>
     /// Use this interface for policies that can have multiple instances loaded at a time.

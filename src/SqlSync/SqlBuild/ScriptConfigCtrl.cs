@@ -1,17 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
+using SqlBuildManager.Enterprise;
+using SqlBuildManager.Interfaces.ScriptHandling.Tags;
+using SqlBuildManager.ScriptHandling;
+using SqlSync.Constants;
 using SqlSync.DbInformation;
 using SqlSync.SqlBuild.Validator;
-using SqlBuildManager.ScriptHandling;
-using SqlBuildManager.Interfaces.ScriptHandling.Tags;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
 using System.Linq;
-using SqlSync.Constants;
-using SqlBuildManager.Enterprise;
+using System.Windows.Forms;
 namespace SqlSync.SqlBuild
 {
     public partial class ScriptConfigCtrl : UserControl
@@ -30,7 +28,7 @@ namespace SqlSync.SqlBuild
         {
             set
             {
-                this.parentFileName = value;
+                parentFileName = value;
             }
         }
         private DefaultScripts.DefaultScript defaultScript = null;
@@ -41,14 +39,14 @@ namespace SqlSync.SqlBuild
             get { return databaseList; }
             set { databaseList = value; }
         }
-        
+
         public void ShowHighlightColor()
         {
-            this.ddDatabaseList.BackColor = highlightColor;
+            ddDatabaseList.BackColor = highlightColor;
         }
         public void HideToggleImage()
         {
-            this.picToggle.Visible = false;
+            picToggle.Visible = false;
         }
         public bool HasChanged
         {
@@ -67,7 +65,7 @@ namespace SqlSync.SqlBuild
             get { return showFull; }
             set
             {
-                showFull = value; 
+                showFull = value;
                 picToggle_Click(null, EventArgs.Empty);
             }
         }
@@ -87,8 +85,8 @@ namespace SqlSync.SqlBuild
                 txtScriptTimeout.Text = SqlSync.Properties.Settings.Default.DefaultMinimumScriptTimeout.ToString();
 
             ddInfer.SelectedIndex = 0;
-            
-  
+
+
         }
         //public ScriptConfigCtrl(ref SqlSyncBuildData.ScriptRow scriptConfig, string[] databaseList)
         //{
@@ -107,7 +105,7 @@ namespace SqlSync.SqlBuild
         }
         public void SetDefaultScriptData(ref DefaultScripts.DefaultScript defaultScript)
         {
-            this.tagRequired = false;
+            tagRequired = false;
             this.defaultScript = defaultScript;
             SetUp();
 
@@ -116,12 +114,12 @@ namespace SqlSync.SqlBuild
         {
 
             string dbName = (scriptConfig != null) ? scriptConfig.Database : string.Empty;
-            this.ddDatabaseList.SetData(this.databaseList, dbName);
+            ddDatabaseList.SetData(databaseList, dbName);
 
-            for (int i = 0; i < this.tagList.Count; i++)
+            for (int i = 0; i < tagList.Count; i++)
             {
-                cbTag.Items.Add(this.tagList[i]);
-                if (scriptConfig != null && this.tagList[i].Trim().ToLower() == scriptConfig.Tag.Trim().ToLower()) cbTag.SelectedIndex = i;
+                cbTag.Items.Add(tagList[i]);
+                if (scriptConfig != null && tagList[i].Trim().ToLower() == scriptConfig.Tag.Trim().ToLower()) cbTag.SelectedIndex = i;
             }
             if (scriptConfig != null)
             {
@@ -133,9 +131,9 @@ namespace SqlSync.SqlBuild
                 chkAllowMultipleRuns.Checked = scriptConfig.AllowMultipleRuns;
                 chkRollBackBuild.Checked = scriptConfig.CausesBuildFailure;
                 chkRollBackScript.Checked = scriptConfig.RollBackOnError;
-                if (this.scriptConfig.FileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
-                    this.scriptConfig.FileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
-                    this.scriptConfig.FileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
+                if (scriptConfig.FileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
+                    scriptConfig.FileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
+                    scriptConfig.FileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
                 {
                     chkStripTransactions.Checked = false;
                     chkStripTransactions.Enabled = false;
@@ -143,7 +141,7 @@ namespace SqlSync.SqlBuild
                     if (scriptConfig.StripTransactionText == true)
                     {
                         scriptConfig.StripTransactionText = false;
-                        this.hasChanged = true;
+                        hasChanged = true;
                     }
                 }
                 else
@@ -152,7 +150,7 @@ namespace SqlSync.SqlBuild
 
             if (defaultScript != null)
             {
-                this.ddDatabaseList.SetData(this.databaseList, defaultScript.DatabaseName);
+                ddDatabaseList.SetData(databaseList, defaultScript.DatabaseName);
 
                 txtBuildOrder.Text = defaultScript.BuildOrder.ToString();
                 rtbDescription.Text = defaultScript.Description;
@@ -168,18 +166,18 @@ namespace SqlSync.SqlBuild
             }
 
 
-            this.cbTag.SelectedValueChanged += new EventHandler(SetDirtyFlag);
-            this.cbTag.TextChanged += new EventHandler(SetDirtyFlag);
-            this.ddDatabaseList.SelectionChangeCommitted += new EventHandler(SetDirtyFlag);
-            this.rtbDescription.TextChanged += new System.EventHandler(SetDirtyFlag);
-            this.chkRollBackBuild.CheckedChanged += new System.EventHandler(SetDirtyFlag);
-            this.chkRollBackScript.CheckedChanged += new System.EventHandler(SetDirtyFlag);
-            this.chkStripTransactions.CheckedChanged += new System.EventHandler(SetDirtyFlag);
-            this.chkAllowMultipleRuns.CheckedChanged += new System.EventHandler(SetDirtyFlag);
-            this.txtBuildOrder.TextChanged += new System.EventHandler(SetDirtyFlag);
-            this.txtScriptTimeout.TextChanged += new System.EventHandler(SetDirtyFlag);
+            cbTag.SelectedValueChanged += new EventHandler(SetDirtyFlag);
+            cbTag.TextChanged += new EventHandler(SetDirtyFlag);
+            ddDatabaseList.SelectionChangeCommitted += new EventHandler(SetDirtyFlag);
+            rtbDescription.TextChanged += new System.EventHandler(SetDirtyFlag);
+            chkRollBackBuild.CheckedChanged += new System.EventHandler(SetDirtyFlag);
+            chkRollBackScript.CheckedChanged += new System.EventHandler(SetDirtyFlag);
+            chkStripTransactions.CheckedChanged += new System.EventHandler(SetDirtyFlag);
+            chkAllowMultipleRuns.CheckedChanged += new System.EventHandler(SetDirtyFlag);
+            txtBuildOrder.TextChanged += new System.EventHandler(SetDirtyFlag);
+            txtScriptTimeout.TextChanged += new System.EventHandler(SetDirtyFlag);
 
-            int minValue = EnterpriseConfigHelper.GetMinumumScriptTimeout(this.parentFileName, SqlSync.Properties.Settings.Default.DefaultMinimumScriptTimeout);
+            int minValue = EnterpriseConfigHelper.GetMinumumScriptTimeout(parentFileName, SqlSync.Properties.Settings.Default.DefaultMinimumScriptTimeout);
             int val;
             if (int.TryParse(txtScriptTimeout.Text, out val))
             {
@@ -194,7 +192,7 @@ namespace SqlSync.SqlBuild
 
         public void UpdateDefaultScriptValues()
         {
-            if (this.defaultScript == null)
+            if (defaultScript == null)
                 return;
 
             defaultScript.DatabaseName = ddDatabaseList.SelectedDatabase;
@@ -205,7 +203,7 @@ namespace SqlSync.SqlBuild
             defaultScript.RollBackBuild = chkRollBackBuild.Checked;
             defaultScript.RollBackScript = chkRollBackScript.Checked;
             defaultScript.StripTransactions = chkStripTransactions.Checked;
-            defaultScript.ScriptTag = (cbTag.Text != null)? cbTag.Text : "";
+            defaultScript.ScriptTag = (cbTag.Text != null) ? cbTag.Text : "";
         }
         public void UpdateScriptConfigValues()
         {
@@ -224,32 +222,32 @@ namespace SqlSync.SqlBuild
         private void picToggle_Click(object sender, EventArgs e)
         {
             if (sender is System.Windows.Forms.PictureBox)
-                this.showFull = !this.showFull;
+                showFull = !showFull;
 
             if (showFull)
             {
-                this.Height = fullSize;
-                this.picToggle.Image = global::SqlSync.Properties.Resources.downarrow_white;
+                Height = fullSize;
+                picToggle.Image = global::SqlSync.Properties.Resources.downarrow_white;
             }
             else
             {
-                this.Height = collapsedSize;
-                this.picToggle.Image = global::SqlSync.Properties.Resources.uparrow_white;
+                Height = collapsedSize;
+                picToggle.Image = global::SqlSync.Properties.Resources.uparrow_white;
             }
-            
-           
+
+
         }
 
 
         #region Change Event Handlers
         private void SetDirtyFlag(object sender, EventArgs e)
         {
-            this.hasChanged = true;
+            hasChanged = true;
             if (sender is TextBox && ((TextBox)sender).Equals(txtBuildOrder))
-                this.buildSequenceChanged = true;
+                buildSequenceChanged = true;
 
-            if (this.DataChanged != null)
-                this.DataChanged(this, EventArgs.Empty);
+            if (DataChanged != null)
+                DataChanged(this, EventArgs.Empty);
 
         }
         #endregion
@@ -257,7 +255,7 @@ namespace SqlSync.SqlBuild
 
         private void txtScriptTimeout_Leave(object sender, System.EventArgs e)
         {
-            int minValue = EnterpriseConfigHelper.GetMinumumScriptTimeout(this.parentFileName, SqlSync.Properties.Settings.Default.DefaultMinimumScriptTimeout);
+            int minValue = EnterpriseConfigHelper.GetMinumumScriptTimeout(parentFileName, SqlSync.Properties.Settings.Default.DefaultMinimumScriptTimeout);
             ScriptTimeoutValidationResult result = ScriptSettingValidation.CheckScriptTimeoutValue(txtScriptTimeout.Text, minValue);
             switch (result)
             {
@@ -269,21 +267,21 @@ namespace SqlSync.SqlBuild
 
                     break;
                 case ScriptTimeoutValidationResult.NonIntegerValue:
-                     MessageBox.Show("The Script Timeout value must be a valid 32 bit integer", "Bad Timeout value", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("The Script Timeout value must be a valid 32 bit integer", "Bad Timeout value", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     txtScriptTimeout.Focus();
                     break;
             }
-       
+
         }
 
         private void chkStripTransactions_CheckedChanged(object sender, EventArgs e)
         {
-            if (this.scriptConfig == null)
+            if (scriptConfig == null)
                 return;
 
-            if (this.scriptConfig.FileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
-                this.scriptConfig.FileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
-                this.scriptConfig.FileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
+            if (scriptConfig.FileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
+                scriptConfig.FileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
+                scriptConfig.FileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
                 return;
             if (chkStripTransactions.Checked == false)
             {
@@ -309,7 +307,7 @@ namespace SqlSync.SqlBuild
 
         public bool ValidateValues(string scriptContents, string scriptName)
         {
-            int minValue = EnterpriseConfigHelper.GetMinumumScriptTimeout(this.parentFileName, SqlSync.Properties.Settings.Default.DefaultMinimumScriptTimeout);
+            int minValue = EnterpriseConfigHelper.GetMinumumScriptTimeout(parentFileName, SqlSync.Properties.Settings.Default.DefaultMinimumScriptTimeout);
             if (ScriptSettingValidation.CheckScriptTimeoutValue(txtScriptTimeout.Text, minValue)
                 != ScriptTimeoutValidationResult.Ok)
             {
@@ -347,7 +345,7 @@ namespace SqlSync.SqlBuild
                 return false;
             }
 
-            if (this.tagRequired && cbTag.Text.Length == 0 && cbTag.SelectedValue == null)
+            if (tagRequired && cbTag.Text.Length == 0 && cbTag.SelectedValue == null)
             {
                 bool alertOnTag = true;
                 if (ddInfer.Text != null && ddInfer.Text.ToString() != "None")
@@ -372,14 +370,14 @@ namespace SqlSync.SqlBuild
                     }
                     List<string> regex = new List<string>(SqlSync.Properties.Settings.Default.TagInferenceRegexList.Cast<string>());
                     string tag = ScriptTagProcessing.InferScriptTag(scriptName, scriptContents, regex, source);
-                    if(tag.Length > 0)
+                    if (tag.Length > 0)
                     {
                         cbTag.Text = tag;
                         alertOnTag = false;
                     }
                 }
 
-                if(alertOnTag)
+                if (alertOnTag)
                 {
                     string message = "A Target Database, Build Sequence number and Tag are required";
 
@@ -397,7 +395,7 @@ namespace SqlSync.SqlBuild
         private void txtBuildOrder_Leave(object sender, EventArgs e)
         {
             double rslt;
-            if (!Double.TryParse(txtBuildOrder.Text,out rslt))
+            if (!Double.TryParse(txtBuildOrder.Text, out rslt))
             {
                 MessageBox.Show("The build order value must be a valid decimal value", "Incorrect Input", MessageBoxButtons.OK, MessageBoxIcon.Error);
 

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+﻿using SqlSync.Connection;
+using System;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using System.IO;
-using SqlSync;
-using SqlSync.Connection;
 
 namespace SqlSync.SqlBuild
 {
@@ -20,51 +15,51 @@ namespace SqlSync.SqlBuild
         {
             InitializeComponent();
         }
-        public CommandLineBuilderForm(string sbmProjectFile) :this()
+        public CommandLineBuilderForm(string sbmProjectFile) : this()
         {
-            this.tmpSbm = string.IsNullOrEmpty(sbmProjectFile) ? string.Empty : sbmProjectFile;
+            tmpSbm = string.IsNullOrEmpty(sbmProjectFile) ? string.Empty : sbmProjectFile;
         }
         public CommandLineBuilderForm(string sbmProjectFile, string multiDbFileName) : this(sbmProjectFile)
         {
-            this.tmpMultiDb = string.IsNullOrEmpty(multiDbFileName) ? string.Empty : multiDbFileName;
+            tmpMultiDb = string.IsNullOrEmpty(multiDbFileName) ? string.Empty : multiDbFileName;
         }
         private void btnLoggingPath_Click(object sender, EventArgs e)
         {
 
-            this.folderBrowserDialog1.Description = "Root Logging Path";
-            if(DialogResult.OK == this.folderBrowserDialog1.ShowDialog())
+            folderBrowserDialog1.Description = "Root Logging Path";
+            if (DialogResult.OK == folderBrowserDialog1.ShowDialog())
             {
-                this.txtRootLoggingPath.Text = this.folderBrowserDialog1.SelectedPath;
+                txtRootLoggingPath.Text = folderBrowserDialog1.SelectedPath;
             }
-            this.folderBrowserDialog1.Dispose();
+            folderBrowserDialog1.Dispose();
         }
 
         private void btnOpenSbm_Click(object sender, EventArgs e)
         {
-            if (DialogResult.OK == this.fileSbm.ShowDialog())
+            if (DialogResult.OK == fileSbm.ShowDialog())
             {
-                this.txtSbmFile.Text = this.fileSbm.FileName;
+                txtSbmFile.Text = fileSbm.FileName;
             }
-            this.fileSbm.Dispose();
+            fileSbm.Dispose();
         }
 
         private void btnScriptSrcDir_Click(object sender, EventArgs e)
         {
-            this.folderBrowserDialog1.Description = "Script Source Directory (for loose scripts)";
-            if (DialogResult.OK == this.folderBrowserDialog1.ShowDialog())
+            folderBrowserDialog1.Description = "Script Source Directory (for loose scripts)";
+            if (DialogResult.OK == folderBrowserDialog1.ShowDialog())
             {
-                this.txtScriptSrcDir.Text = this.folderBrowserDialog1.SelectedPath;
+                txtScriptSrcDir.Text = folderBrowserDialog1.SelectedPath;
             }
-            this.folderBrowserDialog1.Dispose();
+            folderBrowserDialog1.Dispose();
         }
 
         private void btnMultDbCfg_Click(object sender, EventArgs e)
         {
-            if (DialogResult.OK == this.fileOverride.ShowDialog())
+            if (DialogResult.OK == fileOverride.ShowDialog())
             {
-                this.txtOverride.Text = this.fileOverride.FileName;
+                txtOverride.Text = fileOverride.FileName;
             }
-            this.fileOverride.Dispose();
+            fileOverride.Dispose();
         }
 
         private void txtSbmFile_TextChanged(object sender, EventArgs e)
@@ -102,7 +97,7 @@ namespace SqlSync.SqlBuild
             StringBuilder sb = new StringBuilder();
 
             sb.Append("\"" + exePath + "\" ");
-            this.sbmExeName = sb.ToString();
+            sbmExeName = sb.ToString();
             sb.Append("/trial=\"" + chkRunTrial.Checked.ToString() + "\" ");
 
             if (chkRunThreaded.Checked)
@@ -143,7 +138,7 @@ namespace SqlSync.SqlBuild
                 return;
             }
 
-            if(!string.IsNullOrWhiteSpace(txtUserName.Text))
+            if (!string.IsNullOrWhiteSpace(txtUserName.Text))
             {
                 sb.Append("/username=\"" + txtUserName.Text + "\" ");
             }
@@ -190,7 +185,7 @@ namespace SqlSync.SqlBuild
                 sb.Append("/transactional=false ");
 
             int allowedTimeoutRetries = 0;
-            if (!Int32.TryParse(txtAllowedTimeoutRetries.Text,out allowedTimeoutRetries))
+            if (!Int32.TryParse(txtAllowedTimeoutRetries.Text, out allowedTimeoutRetries))
             {
                 MessageBox.Show("The \"Allowed Script Timeout Retry Count\" value must be an integer ", "Configuration error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -225,7 +220,7 @@ namespace SqlSync.SqlBuild
 
         private void CommandLineBuilderForm_Load(object sender, EventArgs e)
         {
-            if(tmpSbm.Length > 0)
+            if (tmpSbm.Length > 0)
                 txtSbmFile.Text = tmpSbm;
 
             if (tmpMultiDb.Length > 0)
@@ -255,11 +250,11 @@ namespace SqlSync.SqlBuild
 
         private void btnExecute_Click(object sender, EventArgs e)
         {
-            
+
             System.Diagnostics.Process prc = new System.Diagnostics.Process();
-            prc.StartInfo.FileName = this.sbmExeName.Replace('"',' ').Trim();
-            prc.StartInfo.Arguments = rtbCommandLine.Text.Replace(this.sbmExeName, "");
-           // prc.StartInfo.Arguments =  rtbCommandLine.Text;
+            prc.StartInfo.FileName = sbmExeName.Replace('"', ' ').Trim();
+            prc.StartInfo.Arguments = rtbCommandLine.Text.Replace(sbmExeName, "");
+            // prc.StartInfo.Arguments =  rtbCommandLine.Text;
             prc.StartInfo.RedirectStandardOutput = true;
             prc.StartInfo.RedirectStandardError = true;
             prc.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
@@ -269,8 +264,8 @@ namespace SqlSync.SqlBuild
             rtbOutput.Text = prc.StandardOutput.ReadToEnd() + "\r\n";
             rtbOutput.Text += prc.StandardError.ReadToEnd();
             pnlOutput.Enabled = true;
-            if (this.txtRootLoggingPath.Text.Length == 0)
-                this.btnOpenFolder.Enabled = false;
+            if (txtRootLoggingPath.Text.Length == 0)
+                btnOpenFolder.Enabled = false;
         }
 
         private void rtbCommandLine_TextChanged(object sender, EventArgs e)
@@ -285,24 +280,24 @@ namespace SqlSync.SqlBuild
         {
             System.Diagnostics.Process prc = new System.Diagnostics.Process();
             prc.StartInfo.FileName = "explorer";
-            prc.StartInfo.Arguments = this.txtRootLoggingPath.Text;
+            prc.StartInfo.Arguments = txtRootLoggingPath.Text;
             prc.Start();
         }
 
         private void chkNoTransaction_CheckedChanged(object sender, EventArgs e)
         {
-            if (this.chkNotTransactional.Checked)
+            if (chkNotTransactional.Checked)
             {
                 string message = "WARNING!\r\nBy checking this box, you are disabling the transaction handling of Sql Build Manager.\r\nIn the event of a script failure, your scripts will NOT be rolled back\r\nand your databases will be left in an inconsistent state!\r\n\r\nAre you certain you want this checked?";
                 if (DialogResult.No == MessageBox.Show(message, "Are you sure you want this?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2))
                 {
-                    this.chkNotTransactional.Checked = false;
+                    chkNotTransactional.Checked = false;
                     return;
                 }
 
                 if (chkRunTrial.Checked)
                 {
-                    this.chkNotTransactional.Checked = false;
+                    chkNotTransactional.Checked = false;
                     message = "You can not have a Trial run without transactions! Please uncheck the \"Run As Trial\" checkbox then re-check the transaction box";
                     MessageBox.Show(message, "Invalid Build/Transaction combination", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;

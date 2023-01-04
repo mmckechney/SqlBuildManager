@@ -1,7 +1,5 @@
 ﻿using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
 using System.IO;
-using SqlBuildManager.Console.Threaded;
 namespace SqlBuildManager.Console.Threaded
 {
     class LogMsg
@@ -22,15 +20,15 @@ namespace SqlBuildManager.Console.Threaded
         {
             get
             {
-                if (this.runId == string.Empty && !string.IsNullOrWhiteSpace(ThreadedExecution.RunID))
+                if (runId == string.Empty && !string.IsNullOrWhiteSpace(ThreadedExecution.RunID))
                 {
-                    this.runId = ThreadedExecution.RunID;
+                    runId = ThreadedExecution.RunID;
                 }
-                return this.runId;
+                return runId;
             }
             set
             {
-                this.runId = value;
+                runId = value;
             }
         }
 
@@ -38,11 +36,11 @@ namespace SqlBuildManager.Console.Threaded
         {
             get
             {
-                return this.logType;
+                return logType;
             }
             set
             {
-                this.logType = value;
+                logType = value;
             }
         }
 
@@ -50,15 +48,15 @@ namespace SqlBuildManager.Console.Threaded
         {
             get
             {
-                if (this.sourceDacPac == string.Empty && !string.IsNullOrWhiteSpace(ThreadedExecution.PlatinumDacPacFileName))
+                if (sourceDacPac == string.Empty && !string.IsNullOrWhiteSpace(ThreadedExecution.PlatinumDacPacFileName))
                 {
-                    this.sourceDacPac = Path.GetFileName(ThreadedExecution.PlatinumDacPacFileName);
+                    sourceDacPac = Path.GetFileName(ThreadedExecution.PlatinumDacPacFileName);
                 }
-                return this.sourceDacPac;
+                return sourceDacPac;
             }
             set
             {
-                this.sourceDacPac = Path.GetFileName(value);
+                sourceDacPac = Path.GetFileName(value);
             }
         }
 

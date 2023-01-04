@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 
 ///  Code courtesy of Paul Welter @ http://weblogs.asp.net/pwelter34/archive/2006/05/03/444961.aspx
@@ -71,16 +69,16 @@ namespace SqlSync.SqlBuild.Status
             while (reader.NodeType != System.Xml.XmlNodeType.EndElement)
             {
 
-                reader.ReadStartElement(this.itemName);
-                reader.ReadStartElement(this.keyName);
+                reader.ReadStartElement(itemName);
+                reader.ReadStartElement(keyName);
                 string key = (string)keySerializer.Deserialize(reader);
-                reader.ReadStartElement(this.valueName);
+                reader.ReadStartElement(valueName);
 
                 TValue value = (TValue)valueSerializer.Deserialize(reader);
 
                 reader.ReadEndElement();
 
-                this.Add(key, value);
+                Add(key, value);
 
                 reader.ReadEndElement();
                 reader.MoveToContent();
@@ -100,10 +98,10 @@ namespace SqlSync.SqlBuild.Status
 
 
 
-            foreach (string key in this.Keys)
+            foreach (string key in Keys)
             {
 
-                writer.WriteStartElement(this.itemName);
+                writer.WriteStartElement(itemName);
                 writer.WriteAttributeString("Name", key);
 
                 TValue value = this[key];
@@ -117,7 +115,7 @@ namespace SqlSync.SqlBuild.Status
 
     }
 
-        #endregion
+    #endregion
 
 }
 

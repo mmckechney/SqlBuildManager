@@ -1,13 +1,11 @@
-﻿using System;
+﻿using SqlSync.DbInformation;
+using SqlSync.SqlBuild.DefaultScripts;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using SqlSync.SqlBuild.DefaultScripts;
 using System.IO;
-using SqlSync.DbInformation;
+using System.Windows.Forms;
 namespace SqlSync.SqlBuild.Default_Scripts
 {
     public partial class DefaultScriptMaintenanceForm : Form
@@ -22,21 +20,21 @@ namespace SqlSync.SqlBuild.Default_Scripts
             InitializeComponent();
         }
 
-        public DefaultScriptMaintenanceForm(DatabaseList dbList) :this()
+        public DefaultScriptMaintenanceForm(DatabaseList dbList) : this()
         {
             this.dbList = dbList;
         }
         private void DefaultScriptMaintenanceForm_Load(object sender, EventArgs e)
         {
 
-            this.executablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            this.defaultScriptPath = Path.Combine(executablePath ,"Default Scripts");
-            this.defaultScriptXmlFile = Path.Combine(defaultScriptPath ,"DefaultScriptRegistry.xml");
+            executablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            defaultScriptPath = Path.Combine(executablePath, "Default Scripts");
+            defaultScriptXmlFile = Path.Combine(defaultScriptPath, "DefaultScriptRegistry.xml");
 
-            this.lnkScriptPath.Text = this.defaultScriptPath;
-            
-            this.scriptConfigCtrl1.DatabaseList = this.dbList;
-            this.scriptConfigCtrl1.DataChanged += new EventHandler(scriptConfigCtrl1_DataChanged);
+            lnkScriptPath.Text = defaultScriptPath;
+
+            scriptConfigCtrl1.DatabaseList = dbList;
+            scriptConfigCtrl1.DataChanged += new EventHandler(scriptConfigCtrl1_DataChanged);
 
             if (File.Exists(defaultScriptXmlFile) == false)
             {
@@ -48,23 +46,23 @@ namespace SqlSync.SqlBuild.Default_Scripts
             {
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(DefaultScripts.DefaultScriptRegistry));
                 object obj = serializer.Deserialize(sr);
-                this.registry = (DefaultScripts.DefaultScriptRegistry)obj;
+                registry = (DefaultScripts.DefaultScriptRegistry)obj;
                 sr.Close();
             }
 
-           if(registry == null)
-               registry = new DefaultScriptRegistry();
+            if (registry == null)
+                registry = new DefaultScriptRegistry();
 
-           if (this.registry.Items == null)
-               this.registry.Items = new DefaultScript[0];
+            if (registry.Items == null)
+                registry.Items = new DefaultScript[0];
 
-           this.BindListView();
-            
+            BindListView();
+
         }
 
         void scriptConfigCtrl1_DataChanged(object sender, EventArgs e)
         {
-            this.btnSave.Text = "Save Changes";
+            btnSave.Text = "Save Changes";
         }
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
@@ -79,7 +77,7 @@ namespace SqlSync.SqlBuild.Default_Scripts
             {
                 if (item.Selected == false)
                     item.BackColor = Color.White;
-              
+
             }
             DefaultScript script = (DefaultScript)lstScripts.SelectedItems[0].Tag;
             lstScripts.SelectedItems[0].BackColor = Color.LightGray;
@@ -100,7 +98,7 @@ namespace SqlSync.SqlBuild.Default_Scripts
             try
             {
                 string shortName = Path.GetFileName(fileName);
-                File.Copy(fileName, Path.Combine(this.defaultScriptPath, shortName), true);
+                File.Copy(fileName, Path.Combine(defaultScriptPath, shortName), true);
                 return true;
             }
             catch
@@ -112,7 +110,7 @@ namespace SqlSync.SqlBuild.Default_Scripts
         private void BindListView()
         {
             lstScripts.Items.Clear();
-            if (this.registry.Items == null)
+            if (registry.Items == null)
                 return;
             foreach (DefaultScript script in registry.Items)
             {
@@ -124,20 +122,20 @@ namespace SqlSync.SqlBuild.Default_Scripts
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (this.btnSave.Text == "Save Changes")
+            if (btnSave.Text == "Save Changes")
             {
-                if (this.scriptConfigCtrl1.ValidateValues("",""))
+                if (scriptConfigCtrl1.ValidateValues("", ""))
                 {
-                    this.scriptConfigCtrl1.UpdateDefaultScriptValues();
-                    this.SaveDefaultRegistry();
-                    this.BindListView();
-                    this.btnSave.Text = "Close";
-                    this.statGeneral.Text = "Configuration saved.";
+                    scriptConfigCtrl1.UpdateDefaultScriptValues();
+                    SaveDefaultRegistry();
+                    BindListView();
+                    btnSave.Text = "Close";
+                    statGeneral.Text = "Configuration saved.";
                 }
             }
             else
             {
-                this.Close();
+                Close();
             }
         }
         private void SaveDefaultRegistry()
@@ -147,7 +145,7 @@ namespace SqlSync.SqlBuild.Default_Scripts
             using (StreamWriter sw = new StreamWriter(defaultScriptXmlFile, false))
             {
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(DefaultScripts.DefaultScriptRegistry));
-                serializer.Serialize(sw, this.registry);
+                serializer.Serialize(sw, registry);
                 sw.Close();
             }
 
@@ -160,7 +158,7 @@ namespace SqlSync.SqlBuild.Default_Scripts
 
         private void bgLoadScript_DoWork(object sender, DoWorkEventArgs e)
         {
-            
+
             string fileName = e.Argument.ToString();
             e.Result = fileName;
             if (!CopyScript(fileName))
@@ -183,13 +181,13 @@ namespace SqlSync.SqlBuild.Default_Scripts
             }
             else
             {
-                
+
                 string fileName = e.Result.ToString();
                 DefaultScript script = new DefaultScript();
                 script.ScriptName = Path.GetFileName(fileName);
-                List<DefaultScript> tmpLst = new List<DefaultScript>(this.registry.Items);
+                List<DefaultScript> tmpLst = new List<DefaultScript>(registry.Items);
                 tmpLst.Add(script);
-                this.registry.Items = tmpLst.ToArray();
+                registry.Items = tmpLst.ToArray();
                 BindListView();
                 lstScripts.Items[lstScripts.Items.Count - 1].BackColor = Color.LightGray;
 
@@ -198,23 +196,23 @@ namespace SqlSync.SqlBuild.Default_Scripts
                 progBar.Style = ProgressBarStyle.Blocks;
                 statGeneral.Text = "Script copied, ready to configure and save.";
 
-                this.btnSave.Text = "Save Changes";
+                btnSave.Text = "Save Changes";
             }
         }
 
         private void deleteDefaultScriptToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (lstScripts.SelectedItems.Count == 0 || this.registry.Items == null) 
+            if (lstScripts.SelectedItems.Count == 0 || registry.Items == null)
                 return;
 
             DefaultScript script = (DefaultScript)lstScripts.SelectedItems[0].Tag;
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete '" + script.ScriptName + "' from the default script registry?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
             {
-                List<DefaultScript> tmp = new List<DefaultScript>(this.registry.Items);
+                List<DefaultScript> tmp = new List<DefaultScript>(registry.Items);
                 bool success = tmp.Remove(script);
-                this.registry.Items = tmp.ToArray();
-                this.SaveDefaultRegistry();
-                this.BindListView();
+                registry.Items = tmp.ToArray();
+                SaveDefaultRegistry();
+                BindListView();
             }
         }
     }

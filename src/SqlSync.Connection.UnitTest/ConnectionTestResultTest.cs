@@ -1,11 +1,9 @@
-﻿using SqlSync.Connection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SqlSync.Connection.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ConnectionTestResultTest and is intended
     ///to contain all ConnectionTestResultTest Unit Tests
@@ -87,7 +85,7 @@ namespace SqlSync.Connection.UnitTest
             target.DatabaseName = expected;
             actual = target.DatabaseName;
             Assert.AreEqual(expected, actual);
-         }
+        }
 
         /// <summary>
         ///A test for ServerName
@@ -101,7 +99,7 @@ namespace SqlSync.Connection.UnitTest
             target.ServerName = expected;
             actual = target.ServerName;
             Assert.AreEqual(expected, actual);
-            
+
         }
 
         /// <summary>
@@ -110,13 +108,13 @@ namespace SqlSync.Connection.UnitTest
         [TestMethod()]
         public void SuccessfulTest()
         {
-            ConnectionTestResult target = new ConnectionTestResult(); 
-            bool expected = false; 
+            ConnectionTestResult target = new ConnectionTestResult();
+            bool expected = false;
             bool actual;
             target.Successful = expected;
             actual = target.Successful;
             Assert.AreEqual(expected, actual);
-            
+
         }
     }
 }

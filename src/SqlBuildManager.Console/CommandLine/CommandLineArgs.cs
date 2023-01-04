@@ -4,7 +4,6 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -46,26 +45,26 @@ namespace SqlBuildManager.Console.CommandLine
         {
             get
             {
-                return this.settingsFile;
+                return settingsFile;
             }
             internal set
             {
                 if (File.Exists(value))
                 {
                     CommandLineArgs cmdLine = JsonConvert.DeserializeObject<CommandLineArgs>(File.ReadAllText(value));
-                    this.BatchArgs = cmdLine.BatchArgs;
-                    this.AuthenticationArgs = cmdLine.AuthenticationArgs;
-                    this.ConnectionArgs = cmdLine.ConnectionArgs;
-                    this.IdentityArgs = cmdLine.IdentityArgs;
-                    this.AciArgs = cmdLine.AciArgs;
-                    this.ContainerAppArgs = cmdLine.ContainerAppArgs;
-                    this.ContainerRegistryArgs = cmdLine.ContainerRegistryArgs;
+                    BatchArgs = cmdLine.BatchArgs;
+                    AuthenticationArgs = cmdLine.AuthenticationArgs;
+                    ConnectionArgs = cmdLine.ConnectionArgs;
+                    IdentityArgs = cmdLine.IdentityArgs;
+                    AciArgs = cmdLine.AciArgs;
+                    ContainerAppArgs = cmdLine.ContainerAppArgs;
+                    ContainerRegistryArgs = cmdLine.ContainerRegistryArgs;
 
-                    this.RootLoggingPath = cmdLine.RootLoggingPath;
-                    this.DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
-                    this.TimeoutRetryCount = cmdLine.TimeoutRetryCount;
+                    RootLoggingPath = cmdLine.RootLoggingPath;
+                    DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
+                    TimeoutRetryCount = cmdLine.TimeoutRetryCount;
                 }
-                this.settingsFile = value;
+                settingsFile = value;
             }
         }
         [JsonIgnore]
@@ -73,27 +72,28 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                this.SettingsFile = value.FullName;
+                SettingsFile = value.FullName;
             }
         }
 
         [JsonIgnore]
         public bool AllowObjectDelete { get; set; } = false;
-        public string Override {
+        public string Override
+        {
             set
             {
-                this.OverrideDesignated = true;
+                OverrideDesignated = true;
                 var fileExt = new List<string> { ".multidb", ".cfg", ".multidbq", ".sql" };
                 fileExt.ForEach(ex =>
                 {
-                    if(value.ToLower().Trim().EndsWith(ex))
+                    if (value.ToLower().Trim().EndsWith(ex))
                     {
-                        this.MultiDbRunConfigFileName = value;
+                        MultiDbRunConfigFileName = value;
                     }
                 });
-                if(this.MultiDbRunConfigFileName == string.Empty)
+                if (MultiDbRunConfigFileName == string.Empty)
                 {
-                    this.ManualOverRideSets = value;
+                    ManualOverRideSets = value;
                 }
             }
         }
@@ -141,7 +141,7 @@ namespace SqlBuildManager.Console.CommandLine
             }
             set
             {
-                if(Path.GetExtension(value) == string.Empty)
+                if (Path.GetExtension(value) == string.Empty)
                 {
                     dacpacName = value + ".dacpac";
                 }
@@ -216,7 +216,7 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                if (AuthenticationArgs == null) AuthenticationArgs = new Authentication(); 
+                if (AuthenticationArgs == null) AuthenticationArgs = new Authentication();
                 AuthenticationArgs.Password = value;
             }
         }
@@ -341,7 +341,7 @@ namespace SqlBuildManager.Console.CommandLine
         [Serializable]
         public class Batch
         {
- 
+
             public int BatchNodeCount { get; set; } = 10;
             public string BatchVmSize { get; set; } = null;
             [JsonIgnore]
@@ -415,7 +415,7 @@ namespace SqlBuildManager.Console.CommandLine
         #endregion
 
 
-        public string KeyVaultName { set { this.ConnectionArgs.KeyVaultName = value; } }
+        public string KeyVaultName { set { ConnectionArgs.KeyVaultName = value; } }
         public class Connections
         {
             public string KeyVaultName { get; set; } = string.Empty;
@@ -430,12 +430,12 @@ namespace SqlBuildManager.Console.CommandLine
 
         }
 
-        public string ClientId { set { this.IdentityArgs.ClientId = value; } }
-        public string PrincipalId { set { this.IdentityArgs.PrincipalId = value; } }
-        public string ResourceId { set { this.IdentityArgs.ResourceId = value; } }
-        public string IdentityResourceGroup { set { this.IdentityArgs.ResourceGroup = value; } }
-        public string SubscriptionId { set { this.IdentityArgs.SubscriptionId = value; this.ContainerAppArgs.SubscriptionId = value; } }
-        public string TenantId { set { this.IdentityArgs.TenantId = value; } }
+        public string ClientId { set { IdentityArgs.ClientId = value; } }
+        public string PrincipalId { set { IdentityArgs.PrincipalId = value; } }
+        public string ResourceId { set { IdentityArgs.ResourceId = value; } }
+        public string IdentityResourceGroup { set { IdentityArgs.ResourceGroup = value; } }
+        public string SubscriptionId { set { IdentityArgs.SubscriptionId = value; ContainerAppArgs.SubscriptionId = value; } }
+        public string TenantId { set { IdentityArgs.TenantId = value; } }
 
         public class Identity
         {
@@ -458,14 +458,14 @@ namespace SqlBuildManager.Console.CommandLine
                 set
                 {
                     (string sub, string rg, string name) = Arm.ArmHelper.GetSubRgAndIdentityName(value);
-                    if(sub != null)
+                    if (sub != null)
                     {
                         IdentityName = name;
                         SubscriptionId = sub;
                         ResourceGroup = rg;
 
                     }
-                    this._resourceid = value;
+                    _resourceid = value;
                 }
             }
             public string ResourceGroup { get; set; } = string.Empty;
@@ -475,25 +475,25 @@ namespace SqlBuildManager.Console.CommandLine
             public string ServiceAccountName { get; set; } = string.Empty;
         }
 
-        
-        public string AciName { set { this.AciArgs.AciName = value; } }
-        public string AciResourceGroup { set { this.AciArgs.ResourceGroup = value; } }
-        public int ContainerCount { set { this.AciArgs.ContainerCount = value; } }
-        public string IdentityName { set { this.IdentityArgs.IdentityName = value; } }
+
+        public string AciName { set { AciArgs.AciName = value; } }
+        public string AciResourceGroup { set { AciArgs.ResourceGroup = value; } }
+        public int ContainerCount { set { AciArgs.ContainerCount = value; } }
+        public string IdentityName { set { IdentityArgs.IdentityName = value; } }
         public class Aci
         {
             public string AciName { get; set; } = string.Empty;
             public string ResourceGroup { get; set; } = string.Empty;
             [JsonIgnore]
-            public int ContainerCount{ get; set; } = 10;
-            
+            public int ContainerCount { get; set; } = 10;
+
         }
 
-        public string  EnvironmentName { set { this.ContainerAppArgs.EnvironmentName = value; } }
-        public string Location { set { this.ContainerAppArgs.Location = value; } }
-        public string ResourceGroup { set { this.ContainerAppArgs.ResourceGroup = value; } }
-        public bool EnvironmentVariablesOnly { set { this.ContainerAppArgs.EnvironmentVariablesOnly = value; } }
-        public int MaxContainers { set { this.ContainerAppArgs.MaxContainerCount = value; } }
+        public string EnvironmentName { set { ContainerAppArgs.EnvironmentName = value; } }
+        public string Location { set { ContainerAppArgs.Location = value; } }
+        public string ResourceGroup { set { ContainerAppArgs.ResourceGroup = value; } }
+        public bool EnvironmentVariablesOnly { set { ContainerAppArgs.EnvironmentVariablesOnly = value; } }
+        public int MaxContainers { set { ContainerAppArgs.MaxContainerCount = value; } }
         public class ContainerApp
         {
             public string EnvironmentName { get; set; } = string.Empty;
@@ -507,29 +507,31 @@ namespace SqlBuildManager.Console.CommandLine
             public bool EnvironmentVariablesOnly { get; set; } = false;
         }
 
-        public string RegistryServer { set { this.ContainerRegistryArgs.RegistryServer = value; } }
-        public string ImageName { set { this.ContainerRegistryArgs.ImageName = value; } }
-        public string ImageTag { set { this.ContainerRegistryArgs.ImageTag = value; } }
-        public string RegistryUserName { set { this.ContainerRegistryArgs.RegistryUserName = value; } }
-        public string RegistryPassword { set { this.ContainerRegistryArgs.RegistryPassword = value; } }
+        public string RegistryServer { set { ContainerRegistryArgs.RegistryServer = value; } }
+        public string ImageName { set { ContainerRegistryArgs.ImageName = value; } }
+        public string ImageTag { set { ContainerRegistryArgs.ImageTag = value; } }
+        public string RegistryUserName { set { ContainerRegistryArgs.RegistryUserName = value; } }
+        public string RegistryPassword { set { ContainerRegistryArgs.RegistryPassword = value; } }
 
         public class ContainerRegistry
         {
-            public string RegistryServer {  get; set; } = string.Empty;
+            public string RegistryServer { get; set; } = string.Empty;
 
             private string imageName = string.Empty;
-            public string ImageName { 
+            public string ImageName
+            {
                 set { imageName = value; }
-                get {
+                get
+                {
                     if (string.IsNullOrEmpty(imageName))
                         return "sqlbuildmanager";
                     else
-                        return imageName; 
+                        return imageName;
                 }
-            } 
+            }
             public string ImageTag { get; set; } = string.Empty;
-            public string RegistryUserName  { get; set; } = string.Empty;
-            public string RegistryPassword{ get; set; } = string.Empty;
+            public string RegistryUserName { get; set; } = string.Empty;
+            public string RegistryPassword { get; set; } = string.Empty;
 
         }
 
@@ -547,7 +549,7 @@ namespace SqlBuildManager.Console.CommandLine
             public virtual bool SprocTestDesignated { get; set; } = false;
         }
 
-       
+
         public override string ToString()
         {
             return this.ToStringExtension(StringType.Basic);
@@ -559,8 +561,8 @@ namespace SqlBuildManager.Console.CommandLine
 
         public object Clone()
         {
-            return (CommandLineArgs) this.MemberwiseClone();
+            return (CommandLineArgs)MemberwiseClone();
         }
     }
-      
+
 }

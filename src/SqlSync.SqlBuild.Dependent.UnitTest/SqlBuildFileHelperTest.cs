@@ -1,8 +1,7 @@
-﻿using SqlSync.SqlBuild;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
 
@@ -662,11 +661,11 @@ CREATE TABLE [dbo].[SyncTestTable](
 END
 ";
 
-            string[] arrScripts = SqlBuildHelper.ReadBatchFromScriptText(script,true, false).ToArray();
+            string[] arrScripts = SqlBuildHelper.ReadBatchFromScriptText(script, true, false).ToArray();
             string hashFromArray;
             SqlBuildFileHelper.GetSHA1Hash(arrScripts, out hashFromArray);
             string hashFromString = SqlBuildFileHelper.GetSHA1Hash(script.ClearTrailingCarriageReturn());
-            Assert.AreEqual(hashFromString,hashFromArray);
+            Assert.AreEqual(hashFromString, hashFromArray);
         }
         #endregion
 

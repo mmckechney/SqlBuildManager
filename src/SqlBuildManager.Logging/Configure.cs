@@ -1,8 +1,6 @@
 ﻿
 using System;
 using System.IO;
-using System.Reflection;
-using SqlBuildManager.Logging.Threaded;
 using System.Threading;
 namespace SqlBuildManager.Logging
 {
@@ -24,6 +22,6 @@ namespace SqlBuildManager.Logging
             //Needed to make sure all files are saved and flushed
             Thread.Sleep(1000);
         }
-        
+
     }
 }

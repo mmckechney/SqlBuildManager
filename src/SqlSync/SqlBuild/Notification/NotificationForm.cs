@@ -1,11 +1,8 @@
-﻿using System;
+﻿using SqlBuildManager.Enterprise;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using SqlBuildManager.Enterprise;
 namespace SqlSync.SqlBuild.Notification
 {
     public partial class NotificationForm : Form
@@ -24,17 +21,17 @@ namespace SqlSync.SqlBuild.Notification
 
         private void NotificationForm_Load(object sender, EventArgs e)
         {
-            if (this.watches == null)
+            if (watches == null)
                 return;
 
             int width = 0;
             int height = 0;
             int start = 0;
-            for (int i = 0; i < this.watches.Count; i++)
+            for (int i = 0; i < watches.Count; i++)
             {
-                TableWatchControl ctrl = new TableWatchControl(this.watches[i]);
+                TableWatchControl ctrl = new TableWatchControl(watches[i]);
                 ctrl.Location = new Point(0, start);
-                
+
                 flowMain.Controls.Add(ctrl);
                 //ctrl.Anchor = AnchorStyles.Right;
                 start += ctrl.Height;
@@ -44,15 +41,15 @@ namespace SqlSync.SqlBuild.Notification
                 height += ctrl.Height;
             }
 
-            if (height > this.flowMain.Height)
-                this.Height = 450;
+            if (height > flowMain.Height)
+                Height = 450;
             //this.pnlHelp.Width = width;
-            this.Width = width + 40;
+            Width = width + 40;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)

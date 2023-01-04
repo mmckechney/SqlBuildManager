@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using SqlBuildManager.Interfaces.Console;
+using SqlSync.Connection;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using SqlSync.Connection;
-using System.Data;
-using Microsoft.Extensions.Logging;
-using SqlBuildManager.Interfaces.Console;
 
 namespace SqlSync.SqlBuild.Syncronizer
 {
@@ -31,7 +29,7 @@ namespace SqlSync.SqlBuild.Syncronizer
                 AuthenticationType = AuthenticationType.Windows
             };
 
-            return SyncronizeDatabases(gold, toUpdate,continueOnFailure);
+            return SyncronizeDatabases(gold, toUpdate, continueOnFailure);
         }
         public Boolean SyncronizeDatabases(ConnectionData gold, ConnectionData toUpdate, bool continueOnFailure)
         {
@@ -40,8 +38,8 @@ namespace SqlSync.SqlBuild.Syncronizer
 
             DatabaseRunHistory toBeRun = diff.GetDatabaseHistoryDifference(gold, toUpdate);
 
-            PushInfo(string.Format("{0} database packages found to run on {1}.{2}", toBeRun.BuildFileHistory.Count,toUpdate.SQLServerName, toUpdate.DatabaseName));
-            
+            PushInfo(string.Format("{0} database packages found to run on {1}.{2}", toBeRun.BuildFileHistory.Count, toUpdate.SQLServerName, toUpdate.DatabaseName));
+
             if (toBeRun.BuildFileHistory.Count == 0) //already in sync
                 return true;
 
@@ -70,7 +68,7 @@ namespace SqlSync.SqlBuild.Syncronizer
             }
 
             bool syncronized = ProcessSyncronizationPackages(rebuiltPackages, toUpdate, false, continueOnFailure);
-            
+
             if (syncronized)
             {
                 PushInfo(string.Format("Syncronized database {0}.{1} to source {2}.{3}", toUpdate.SQLServerName,
@@ -81,10 +79,10 @@ namespace SqlSync.SqlBuild.Syncronizer
                 PushInfo(string.Format("Syncronize failed to {0}.{1} from source {2}.{3}. See log for details.", toUpdate.SQLServerName,
                                        toUpdate.DatabaseName, gold.SQLServerName, gold.DatabaseName));
             }
-             ProcessDirectoryCleanup(tempPath);
-            
+            ProcessDirectoryCleanup(tempPath);
+
             return syncronized;
-            
+
         }
 
         private bool ProcessSyncronizationPackages(IEnumerable<string> sbmPackages, ConnectionData toUpdate, bool runAsTrial, bool continueOnFailure)
@@ -124,35 +122,35 @@ namespace SqlSync.SqlBuild.Syncronizer
 
                 List<DatabaseOverride> lstOverride = new List<DatabaseOverride>();
                 lstOverride.Add(new DatabaseOverride()
-                    {
-                        DefaultDbTarget = "placeholder",
-                        OverrideDbTarget = toUpdate.DatabaseName,
-                    });
+                {
+                    DefaultDbTarget = "placeholder",
+                    OverrideDbTarget = toUpdate.DatabaseName,
+                });
 
                 //Set the run meta-data
                 SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData()
-                    {
-                        BuildData = buildData,
-                        BuildType = BuildType.Other,
-                        BuildDescription = new Random().Next(int.MinValue, int.MaxValue).ToString(),
-                        //assign random build description
-                        StartIndex = -1000, //make sure start a the beginning
-                        ProjectFileName = projFileName,
-                        IsTrial = runAsTrial,
-                        BuildFileName = sbmPackageName,
-                        IsTransactional = true,
-                        TargetDatabaseOverrides = lstOverride 
-                    };
+                {
+                    BuildData = buildData,
+                    BuildType = BuildType.Other,
+                    BuildDescription = new Random().Next(int.MinValue, int.MaxValue).ToString(),
+                    //assign random build description
+                    StartIndex = -1000, //make sure start a the beginning
+                    ProjectFileName = projFileName,
+                    IsTrial = runAsTrial,
+                    BuildFileName = sbmPackageName,
+                    IsTransactional = true,
+                    TargetDatabaseOverrides = lstOverride
+                };
 
                 //Execute the package
                 SqlBuildHelper helper = new SqlBuildHelper(toUpdate, false, string.Empty, runData.IsTransactional);
                 helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
                 helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
                 BackgroundWorker bg = new BackgroundWorker()
-                    {
-                        WorkerReportsProgress = true,
-                        WorkerSupportsCancellation = true
-                    };
+                {
+                    WorkerReportsProgress = true,
+                    WorkerSupportsCancellation = true
+                };
                 DoWorkEventArgs e = new DoWorkEventArgs(null);
 
                 PushInfo(string.Format("Applying {0}", Path.GetFileName(sbmPackageName)));
@@ -187,20 +185,20 @@ namespace SqlSync.SqlBuild.Syncronizer
 
         private void ProcessDirectoryCleanup(string tempPath)
         {
-            if(Directory.Exists(tempPath))
-                Directory.Delete(tempPath,true);
+            if (Directory.Exists(tempPath))
+                Directory.Delete(tempPath, true);
         }
 
         private void PushInfo(string message)
         {
-            if(SyncronizationInfoEvent != null)
+            if (SyncronizationInfoEvent != null)
                 SyncronizationInfoEvent(message);
 
         }
         public delegate void SyncronizationInfoEventHandler(string message);
         public event SyncronizationInfoEventHandler SyncronizationInfoEvent;
 
-        private void helper_BuildCommittedEvent(object sender,RunnerReturn rr )
+        private void helper_BuildCommittedEvent(object sender, RunnerReturn rr)
         {
             lastBuildSuccessful = true;
         }
@@ -210,7 +208,7 @@ namespace SqlSync.SqlBuild.Syncronizer
             lastBuildSuccessful = false;
         }
 
-       
+
     }
-    
+
 }

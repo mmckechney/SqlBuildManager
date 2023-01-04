@@ -1,7 +1,6 @@
-﻿using System;
+﻿using SqlSync.Connection;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using SqlSync.Connection;
 namespace SqlSync.SqlBuild.Status
 {
     class StatusReportRunner
@@ -21,7 +20,7 @@ namespace SqlSync.SqlBuild.Status
             get { return baseDatabase; }
             set { baseDatabase = value; }
         }
-        
+
         List<DatabaseOverride> dbOverrides;
         private StatusDataCollection status = new StatusDataCollection();
         private string projectFilePath;
@@ -47,25 +46,25 @@ namespace SqlSync.SqlBuild.Status
             foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
             {
                 databaseName = ConnectionHelper.GetTargetDatabase(row.Database, dbOverrides);
-                
+
                 if (baseDatabase == null)
                     baseDatabase = databaseName;
 
                 ScriptStatusData dat = new ScriptStatusData();
-                connData = new SqlSync.Connection.ConnectionData(this.serverName, databaseName);
+                connData = new SqlSync.Connection.ConnectionData(serverName, databaseName);
 
-                ScriptStatusType stat =  StatusHelper.DetermineScriptRunStatus(row, connData, this.projectFilePath, true, dbOverrides, out commitDate, out serverChangeDate);
+                ScriptStatusType stat = StatusHelper.DetermineScriptRunStatus(row, connData, projectFilePath, true, dbOverrides, out commitDate, out serverChangeDate);
                 dat.Fill(row);
                 dat.DatabaseName = databaseName;
-                dat.ServerName = this.serverName;
+                dat.ServerName = serverName;
                 dat.ServerChangeDate = serverChangeDate;
                 dat.LastCommitDate = commitDate;
                 dat.ScriptStatus = stat;
 
-                this.status.Add(dat);
+                status.Add(dat);
 
             }
         }
-       
+
     }
 }

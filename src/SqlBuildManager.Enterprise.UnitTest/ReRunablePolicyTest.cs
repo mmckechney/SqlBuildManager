@@ -1,9 +1,9 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ReRunablePolicyTest and is intended
     ///to contain all ReRunablePolicyTest Unit Tests
@@ -52,7 +52,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            ReRunablePolicy target = new ReRunablePolicy(); 
+            ReRunablePolicy target = new ReRunablePolicy();
             string actual;
             actual = target.ShortDescription;
             string expected = "Re-runable scripts";
@@ -65,7 +65,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LongDescriptionTest()
         {
-            ReRunablePolicy target = new ReRunablePolicy(); 
+            ReRunablePolicy target = new ReRunablePolicy();
             string actual;
             actual = target.LongDescription;
             string expected = "Checks that scripts contain \"IF EXISTS\" or \"IF NOT EXISTS\" checks so they are potentially re-runable";
@@ -90,9 +90,9 @@ BEGIN
    PRINT 'Updated Row 1'
 END
 ";
-            string message = string.Empty; 
-            string messageExpected = string.Empty; 
-            bool expected = true; 
+            string message = string.Empty;
+            string messageExpected = string.Empty;
+            bool expected = true;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);

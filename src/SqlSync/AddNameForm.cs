@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace SqlSync
@@ -16,7 +10,7 @@ namespace SqlSync
         {
             get
             {
-                return this.textValue;
+                return textValue;
             }
         }
         public GetTextValueForm()
@@ -25,20 +19,20 @@ namespace SqlSync
         }
         public GetTextValueForm(string title) : this()
         {
-            this.Text = title;
+            Text = title;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            this.textValue = txtValue.Text;
-            this.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.Close();
+            textValue = txtValue.Text;
+            DialogResult = System.Windows.Forms.DialogResult.OK;
+            Close();
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Close();
+            DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            Close();
         }
     }
 }

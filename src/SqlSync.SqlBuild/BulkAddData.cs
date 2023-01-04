@@ -1,19 +1,16 @@
-﻿using System;
+﻿using SqlBuildManager.Interfaces.ScriptHandling.Tags;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SqlBuildManager.Interfaces.ScriptHandling.Tags;
 namespace SqlSync.SqlBuild
 {
     public class BulkAddData
     {
         public BulkAddData()
         {
-            this.FileList = new List<string>();
-            this.PreSetDatabase = string.Empty;
-            this.DeleteOriginalFiles = false;
-            this.CreateNewEntriesForPreExisting = false;
-            this.LastBuildNumber = 0.0;           
+            FileList = new List<string>();
+            PreSetDatabase = string.Empty;
+            DeleteOriginalFiles = false;
+            CreateNewEntriesForPreExisting = false;
+            LastBuildNumber = 0.0;
         }
         public List<string> FileList
         {
@@ -88,6 +85,6 @@ namespace SqlSync.SqlBuild
             get;
             set;
         }
-        
+
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 
 ///  Code courtesy of Paul Welter @ http://weblogs.asp.net/pwelter34/archive/2006/05/03/444961.aspx
@@ -14,7 +12,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
     public class ResultsDictionary : Dictionary<string, string>, IXmlSerializable
     {
 
-        
+
         private string itemName = "item";
 
         public string ItemName
@@ -50,10 +48,10 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
             XmlSerializer valueSerializer = new XmlSerializer(typeof(string));
 
-            foreach (string key in this.Keys)
+            foreach (string key in Keys)
             {
 
-                writer.WriteStartElement(this.itemName);
+                writer.WriteStartElement(itemName);
                 writer.WriteAttributeString("Name", key);
                 writer.WriteAttributeString("Value", this[key]);
                 writer.WriteEndElement();
@@ -64,10 +62,10 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
     }
 
-    
 
-        #endregion
-  
+
+    #endregion
+
 }
 
 

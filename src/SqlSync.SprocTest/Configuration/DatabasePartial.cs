@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.IO;
 using System.Xml.Serialization;
 namespace SqlSync.SprocTest.Configuration
 {
@@ -28,8 +27,8 @@ namespace SqlSync.SprocTest.Configuration
             try
             {
                 List<StoredProcedure> spColl = new List<StoredProcedure>();
-                if (this.StoredProcedure != null)
-                    spColl.AddRange(this.StoredProcedure);
+                if (StoredProcedure != null)
+                    spColl.AddRange(StoredProcedure);
 
                 bool exclude = false;
                 for (int i = 0; i < storedProcNames.Length; i++)
@@ -52,8 +51,8 @@ namespace SqlSync.SprocTest.Configuration
                     }
 
                 }
-                this.StoredProcedure = null;
-                this.StoredProcedure = spColl.ToArray();
+                StoredProcedure = null;
+                StoredProcedure = spColl.ToArray();
             }
             catch
             {
@@ -70,17 +69,17 @@ namespace SqlSync.SprocTest.Configuration
         public bool RemoveStoredProcedures(KeyValuePair<string, string>[] storedProcs)
         {
             bool found = false;
-            if (this.StoredProcedure == null)
+            if (StoredProcedure == null)
                 return true;
 
-            for (int i = 0; i < this.StoredProcedure.Length; i++)
+            for (int i = 0; i < StoredProcedure.Length; i++)
             {
                 for (int j = 0; j < storedProcs.Length; j++)
                 {
-                    if (storedProcs[j].Key.Trim().ToLower() == this.StoredProcedure[i].Name.Trim().ToLower() &&
-                       storedProcs[j].Value.Trim().ToLower() == this.StoredProcedure[i].ID.Trim().ToLower())
+                    if (storedProcs[j].Key.Trim().ToLower() == StoredProcedure[i].Name.Trim().ToLower() &&
+                       storedProcs[j].Value.Trim().ToLower() == StoredProcedure[i].ID.Trim().ToLower())
                     {
-                        this.StoredProcedure[i] = null;
+                        StoredProcedure[i] = null;
                         found = true;
                         break;
                     }
@@ -88,12 +87,12 @@ namespace SqlSync.SprocTest.Configuration
             }
 
             List<StoredProcedure> tmp = new List<StoredProcedure>();
-            for (int i = 0; i < this.StoredProcedure.Length; i++)
-                if (this.StoredProcedure[i] != null)
-                    tmp.Add(this.StoredProcedure[i]);
+            for (int i = 0; i < StoredProcedure.Length; i++)
+                if (StoredProcedure[i] != null)
+                    tmp.Add(StoredProcedure[i]);
 
-            this.StoredProcedure = null;
-            this.StoredProcedure = tmp.ToArray();
+            StoredProcedure = null;
+            StoredProcedure = tmp.ToArray();
 
             return found;
 
@@ -104,18 +103,18 @@ namespace SqlSync.SprocTest.Configuration
             try
             {
                 //Try to add the SP.. if it already exists, it won't duplicate
-                if (!AddNewStoredProcedure(storedProcedureName)) 
-                        return false;
+                if (!AddNewStoredProcedure(storedProcedureName))
+                    return false;
 
-                for (int i = 0; i < this.StoredProcedure.Length; i++)
+                for (int i = 0; i < StoredProcedure.Length; i++)
                 {
-                    if (this.StoredProcedure[i].Name.ToLower() == storedProcedureName.ToLower())
+                    if (StoredProcedure[i].Name.ToLower() == storedProcedureName.ToLower())
                     {
                         List<TestCase> tc = new List<TestCase>();
-                        if (this.StoredProcedure[i].TestCase != null)
-                            tc.AddRange(this.StoredProcedure[i].TestCase);
+                        if (StoredProcedure[i].TestCase != null)
+                            tc.AddRange(StoredProcedure[i].TestCase);
                         tc.Add(newTestcase);
-                        this.StoredProcedure[i].TestCase = tc.ToArray();
+                        StoredProcedure[i].TestCase = tc.ToArray();
                     }
                 }
             }
@@ -133,7 +132,7 @@ namespace SqlSync.SprocTest.Configuration
             tc.TestCaseId = Guid.NewGuid().ToString();
             tc.Parameter = new Parameter[paramKeyValuePairs.Count];
             int i = 0;
-            foreach(KeyValuePair<string,string> pair in paramKeyValuePairs)
+            foreach (KeyValuePair<string, string> pair in paramKeyValuePairs)
             {
                 tc.Parameter[i] = new Parameter();
                 tc.Parameter[i].Name = pair.Key;
@@ -155,24 +154,24 @@ namespace SqlSync.SprocTest.Configuration
         }
         public bool ModifyExistingTestCase(string storedProcedureName, TestCase modifiedTestCase)
         {
-            if (this.StoredProcedure == null)
+            if (StoredProcedure == null)
             {
-                if(!AddNewStoredProcedures(new string[] { storedProcedureName }))
+                if (!AddNewStoredProcedures(new string[] { storedProcedureName }))
                     return false;
 
-                if (!AddNewTestCase(storedProcedureName, modifiedTestCase)) 
+                if (!AddNewTestCase(storedProcedureName, modifiedTestCase))
                     return false;
             }
             else
             {
                 bool found = false;
-                for (int i = 0; i < this.StoredProcedure.Length; i++)
+                for (int i = 0; i < StoredProcedure.Length; i++)
                 {
-                    if (this.StoredProcedure[i].Name.ToLower() == storedProcedureName.ToLower())
+                    if (StoredProcedure[i].Name.ToLower() == storedProcedureName.ToLower())
                     {
                         List<TestCase> tc = new List<TestCase>();
-                        if (this.StoredProcedure[i].TestCase != null)
-                            tc.AddRange(this.StoredProcedure[i].TestCase);
+                        if (StoredProcedure[i].TestCase != null)
+                            tc.AddRange(StoredProcedure[i].TestCase);
 
                         for (int j = 0; j < tc.Count; j++)
                         {
@@ -186,7 +185,7 @@ namespace SqlSync.SprocTest.Configuration
 
                         if (found)
                         {
-                            this.StoredProcedure[i].TestCase = tc.ToArray();
+                            StoredProcedure[i].TestCase = tc.ToArray();
                             break;
                         }
                     }
@@ -200,21 +199,21 @@ namespace SqlSync.SprocTest.Configuration
             bool found = false;
             if (sp != null)
             {
-                if(sp.TestCase != null)
-                for (int j = 0; j < sp.TestCase.Length; j++)
-                {
-                                if (sp.TestCase[j].TestCaseId == testCaseToRemove.TestCaseId)
-                                {
-                                    sp.TestCase[j] = null;
-                                    found = true;
-                                    break;
-                                }
-                }
+                if (sp.TestCase != null)
+                    for (int j = 0; j < sp.TestCase.Length; j++)
+                    {
+                        if (sp.TestCase[j].TestCaseId == testCaseToRemove.TestCaseId)
+                        {
+                            sp.TestCase[j] = null;
+                            found = true;
+                            break;
+                        }
+                    }
             }
-            if(found)
+            if (found)
             {
                 List<TestCase> tc = new List<TestCase>();
-                for (int i = 0; i < sp.TestCase.Length;i++ )
+                for (int i = 0; i < sp.TestCase.Length; i++)
                     if (sp.TestCase[i] != null)
                         tc.Add(sp.TestCase[i]);
 
@@ -224,11 +223,11 @@ namespace SqlSync.SprocTest.Configuration
         private StoredProcedure GetStoredProcedureByName(string storedProcName)
         {
 
-            for (int i = 0; i < this.StoredProcedure.Length; i++)
+            for (int i = 0; i < StoredProcedure.Length; i++)
             {
-                if (storedProcName.ToLower() == this.StoredProcedure[i].Name.ToLower())
+                if (storedProcName.ToLower() == StoredProcedure[i].Name.ToLower())
                 {
-                    return this.StoredProcedure[i];
+                    return StoredProcedure[i];
                 }
 
             }
@@ -260,12 +259,12 @@ namespace SqlSync.SprocTest.Configuration
 
         public bool Import(Database importCfg)
         {
-            if(importCfg.StoredProcedure == null)
+            if (importCfg.StoredProcedure == null)
                 return false;
 
             List<StoredProcedure> sp = new List<StoredProcedure>();
-            if (this.StoredProcedure != null)
-                sp.AddRange(this.StoredProcedure);
+            if (StoredProcedure != null)
+                sp.AddRange(StoredProcedure);
 
             bool found;
             for (int j = 0; j < importCfg.StoredProcedure.Length; j++)
@@ -287,7 +286,7 @@ namespace SqlSync.SprocTest.Configuration
                 if (!found)
                     sp.Add(importCfg.StoredProcedure[j]);
             }
-            this.StoredProcedure = sp.ToArray();
+            StoredProcedure = sp.ToArray();
             return true;
 
         }
@@ -300,7 +299,7 @@ namespace SqlSync.SprocTest.Configuration
             if (masterSP.TestCase != null)
                 tc.AddRange(masterSP.TestCase);
 
-            
+
             for (int i = 0; i < importSP.TestCase.Length; i++)
             {
                 for (int j = 0; j < tc.Count; j++)
@@ -318,10 +317,10 @@ namespace SqlSync.SprocTest.Configuration
         }
         public void SelectAllTests()
         {
-            if(this.StoredProcedure != null)
-                foreach (StoredProcedure sp in this.StoredProcedure)
+            if (StoredProcedure != null)
+                foreach (StoredProcedure sp in StoredProcedure)
                 {
-                    if(sp.TestCase != null)
+                    if (sp.TestCase != null)
                         foreach (TestCase tc in sp.TestCase)
                         {
                             tc.SelectedForRun = true;

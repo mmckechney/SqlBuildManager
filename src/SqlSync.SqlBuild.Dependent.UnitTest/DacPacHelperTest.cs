@@ -1,7 +1,5 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-using System.Reflection;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     [TestClass]
@@ -10,7 +8,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public void ScriptDacPacDelta_Test()
         {
-            string workingDir = @"C:\temp"; 
+            string workingDir = @"C:\temp";
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
 
@@ -62,7 +60,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllBytes(tarnishedPath, Properties.Resources.TarnishedSchema_simple);
             string buildFileName = Path.GetTempFileName();
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, false, string.Empty,500, false, out buildFileName);
+            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, false, string.Empty, 500, false, out buildFileName);
 
             Assert.IsTrue(result == DacpacDeltasStatus.Success);
             Assert.IsTrue(File.ReadAllBytes(buildFileName).Length > 0);
@@ -123,8 +121,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             Assert.AreEqual(DacpacDeltasStatus.Success, stat);
             Assert.IsTrue(raw.Length > cleaned.Length);
-            Assert.AreNotEqual(raw,cleaned);
-            
+            Assert.AreNotEqual(raw, cleaned);
+
         }
     }
 }

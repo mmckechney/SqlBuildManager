@@ -1,11 +1,10 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ViewAlterPolicyTest and is intended
     ///to contain all ViewAlterPolicyTest Unit Tests
@@ -34,9 +33,9 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             ViewAlterPolicy target = new ViewAlterPolicy();
             string script = "SELECT column from dbo.Table WITH (NOLOCK)";
-            string message = string.Empty; 
-            string messageExpected = string.Empty; 
-            bool expected = true; 
+            string message = string.Empty;
+            string messageExpected = string.Empty;
+            bool expected = true;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
@@ -121,7 +120,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LongDescriptionTest()
         {
-            ViewAlterPolicy target = new ViewAlterPolicy(); 
+            ViewAlterPolicy target = new ViewAlterPolicy();
             string actual;
             actual = target.LongDescription;
             string expected = "Creates a reminder to check for indexes dropped by SQL Server in the ALTER process.";
@@ -146,12 +145,12 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            ViewAlterPolicy target = new ViewAlterPolicy(); 
+            ViewAlterPolicy target = new ViewAlterPolicy();
             string actual;
             actual = target.ShortDescription;
             string expected = "Alter View Reminder";
             Assert.AreEqual(expected, actual);
- 
+
         }
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SqlBuildManager.Interfaces.SourceControl
+﻿namespace SqlBuildManager.Interfaces.SourceControl
 {
     public enum SourceControlStatus
     {
@@ -10,7 +6,7 @@ namespace SqlBuildManager.Interfaces.SourceControl
         CheckedOut,
         Error,
         NotUnderSourceControl,
-        AlreadyPending, 
+        AlreadyPending,
         Unknown
     }
 }

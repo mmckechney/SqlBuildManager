@@ -5,7 +5,6 @@ namespace SqlSync.BasicCompare
     using System;
     using System.Collections;
     using System.IO;
-    using System.Runtime.InteropServices;
     using System.Text;
     using System.Web;
 
@@ -23,7 +22,7 @@ namespace SqlSync.BasicCompare
             }
             StringBuilder builder = new StringBuilder();
             string text = "<A id=#anchor#></A>\r\n<DIV class=modfile>\r\n#fileDesc#\r\n<PRE class=diff>\r\n#prePost#\r\n<SPAN>\r\n#changeLines#\r\n</SPAN></PRE></DIV>\r\n<a href=#pagetop class=toplink>Return to Top</a>";
-            text = text.Replace("#fileDesc#", "<H4>#fileDesc#</H4>".Replace("#fileDesc#", changeType + ": " + fileName)).Replace("#anchor#", this.FileNameAnchor(fileName));
+            text = text.Replace("#fileDesc#", "<H4>#fileDesc#</H4>".Replace("#fileDesc#", changeType + ": " + fileName)).Replace("#anchor#", FileNameAnchor(fileName));
             for (int i = 0; i < textArray.Length; i++)
             {
                 if (textArray[i].StartsWith("---"))
@@ -152,8 +151,8 @@ namespace SqlSync.BasicCompare
             Hashtable added;
             Hashtable removed;
             Hashtable modified;
-            this.GetUnifiedDiff(oldBuildFile, newBuildFile, out added, out removed, out modified);
-            string text = this.HTMLTransformDiff(added, removed, modified);
+            GetUnifiedDiff(oldBuildFile, newBuildFile, out added, out removed, out modified);
+            string text = HTMLTransformDiff(added, removed, modified);
             if (includeCSS)
             {
                 string fromResources = new ResourceHelper().GetFromResources("SQLSync.Compare.Default.css");
@@ -167,36 +166,36 @@ namespace SqlSync.BasicCompare
             Hashtable added;
             Hashtable removed;
             Hashtable modified;
-            this.GetUnifiedDiff(oldBuildFile, newBuildFile, out added, out removed, out modified);
-            return this.RtfTransformDiff(added, removed, modified);
+            GetUnifiedDiff(oldBuildFile, newBuildFile, out added, out removed, out modified);
+            return RtfTransformDiff(added, removed, modified);
         }
 
         public void GetUnifiedDiff(string oldBuildFile, string newBuildFile, out Hashtable added, out Hashtable removed, out Hashtable modified)
         {
             string tempPath = Path.GetTempPath();
-            this.extractPathOldFile = tempPath + "SqlsyncCompare-" + Guid.NewGuid().ToString().Replace("-", "");
-            Directory.CreateDirectory(this.extractPathOldFile);
-            this.extractPathNewFile = tempPath + "SqlsyncCompare-" + Guid.NewGuid().ToString().Replace("-", "");
-            Directory.CreateDirectory(this.extractPathNewFile);
-            ZipHelper.UnpackZipPackage(this.extractPathOldFile, oldBuildFile, false);
-            ZipHelper.UnpackZipPackage(this.extractPathNewFile, newBuildFile, false);
-            Hashtable child = this.GetFileList(this.extractPathOldFile);
-            Hashtable master = this.GetFileList(this.extractPathNewFile);
-            Hashtable commonFiles = this.GetFileListDiff(master, child);
-            Hashtable fileListDiff = this.GetFileListDiff(child, master);
-            Hashtable commonFileList = this.GetCommonFileList(master, child);
-            modified = this.ProcessUnifiedDiff(this.extractPathOldFile, this.extractPathNewFile, commonFileList);
-            added = this.ProcessUnifiedDiff(this.extractPathOldFile, this.extractPathNewFile, commonFiles);
-            removed = this.ProcessUnifiedDiff(this.extractPathOldFile, this.extractPathNewFile, fileListDiff);
+            extractPathOldFile = tempPath + "SqlsyncCompare-" + Guid.NewGuid().ToString().Replace("-", "");
+            Directory.CreateDirectory(extractPathOldFile);
+            extractPathNewFile = tempPath + "SqlsyncCompare-" + Guid.NewGuid().ToString().Replace("-", "");
+            Directory.CreateDirectory(extractPathNewFile);
+            ZipHelper.UnpackZipPackage(extractPathOldFile, oldBuildFile, false);
+            ZipHelper.UnpackZipPackage(extractPathNewFile, newBuildFile, false);
+            Hashtable child = GetFileList(extractPathOldFile);
+            Hashtable master = GetFileList(extractPathNewFile);
+            Hashtable commonFiles = GetFileListDiff(master, child);
+            Hashtable fileListDiff = GetFileListDiff(child, master);
+            Hashtable commonFileList = GetCommonFileList(master, child);
+            modified = ProcessUnifiedDiff(extractPathOldFile, extractPathNewFile, commonFileList);
+            added = ProcessUnifiedDiff(extractPathOldFile, extractPathNewFile, commonFiles);
+            removed = ProcessUnifiedDiff(extractPathOldFile, extractPathNewFile, fileListDiff);
             try
             {
-                if (Directory.Exists(this.extractPathOldFile))
+                if (Directory.Exists(extractPathOldFile))
                 {
-                    Directory.Delete(this.extractPathOldFile, true);
+                    Directory.Delete(extractPathOldFile, true);
                 }
-                if (Directory.Exists(this.extractPathNewFile))
+                if (Directory.Exists(extractPathNewFile))
                 {
-                    Directory.Delete(this.extractPathNewFile, true);
+                    Directory.Delete(extractPathNewFile, true);
                 }
             }
             catch
@@ -211,19 +210,19 @@ namespace SqlSync.BasicCompare
             IDictionaryEnumerator enumerator = added.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                builder.Append(this.BuildHTMLFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Added").Trim() + "\r\n");
+                builder.Append(BuildHTMLFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Added").Trim() + "\r\n");
             }
             enumerator = modified.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                builder.Append(this.BuildHTMLFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Modified").Trim() + "\r\n");
+                builder.Append(BuildHTMLFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Modified").Trim() + "\r\n");
             }
             enumerator = removed.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                builder.Append(this.BuildHTMLFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Deleted").Trim() + "\r\n");
+                builder.Append(BuildHTMLFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Deleted").Trim() + "\r\n");
             }
-            
+
             return builder.ToString().Trim() + "\r\n</DIV>";
         }
 
@@ -261,17 +260,17 @@ namespace SqlSync.BasicCompare
             IDictionaryEnumerator enumerator = added.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                builder.Append(this.BuildRtfFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Added") + @"\par");
+                builder.Append(BuildRtfFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Added") + @"\par");
             }
             enumerator = modified.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                builder.Append(this.BuildRtfFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Modified") + @"\par");
+                builder.Append(BuildRtfFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Modified") + @"\par");
             }
             enumerator = removed.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                builder.Append(this.BuildRtfFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Deleted") + @"\par");
+                builder.Append(BuildRtfFileDiff(enumerator.Value.ToString(), enumerator.Key.ToString(), "Deleted") + @"\par");
             }
             builder.Append("}");
             return builder.ToString();

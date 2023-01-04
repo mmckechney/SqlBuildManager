@@ -1,11 +1,10 @@
-﻿using SqlBuildManager.ScriptHandling;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 
 namespace SqlBuildManager.ScriptHandling.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ScriptWrappingTest and is intended
     ///to contain all ScriptWrappingTest Unit Tests
@@ -63,7 +62,7 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
         //
         #endregion
 
-  
+
         #region .: ExtractTableNameFromScript Tests :.
         /// <summary>
         ///A test for ExtractTableNameFromScript successful with custom schema
@@ -170,16 +169,16 @@ ELSE
 GO
 
 ";
-#endregion
+            #endregion
 
             List<string> expected = new List<string>();
-            expected.AddRange(new string[]{"ContactID", "NameStyle", "Title", "FirstName","MiddleName" });
+            expected.AddRange(new string[] { "ContactID", "NameStyle", "Title", "FirstName", "MiddleName" });
 
             List<string> actual;
             actual = ScriptWrapping.TransformCreateTableToAlterColumn(rawScript, schema, tableName, out changedScript);
             Assert.AreEqual(changedScriptExpected, changedScript);
-            Assert.AreEqual(string.Join(",",expected.ToArray()), string.Join(",",actual.ToArray()));
-        
+            Assert.AreEqual(string.Join(",", expected.ToArray()), string.Join(",", actual.ToArray()));
+
         }
         /// <summary>
         ///A test for TransformCreateTableToAlterColumn missing table name initiator
@@ -298,7 +297,7 @@ DEALLOCATE curRemove
 GO
 
 ";
-#endregion
+            #endregion
             string actual;
             actual = ScriptWrapping.TransformCreateTableToResyncTable(rawScript, schema, tableName);
             Assert.AreEqual(expected, actual);

@@ -1,14 +1,14 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
-using SqlSync.Connection;
-using System.Text;
-using System.Xml.Serialization;
 using Microsoft.Data.SqlClient;
-using System.Data;
-using System.Text.RegularExpressions;
+using SqlSync.Connection;
 using SqlSync.SprocTest.Configuration;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
+using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 namespace SqlSync.SprocTest
 {
     public class TestManager
@@ -19,7 +19,7 @@ namespace SqlSync.SprocTest
         private TestManager()
         {
         }
-        public TestManager(SprocTest.Configuration.Database cfg, ConnectionData connData) :this()
+        public TestManager(SprocTest.Configuration.Database cfg, ConnectionData connData) : this()
         {
             this.cfg = cfg;
             this.connData = connData;
@@ -27,37 +27,37 @@ namespace SqlSync.SprocTest
         public TestManager(string fileName, string server) : this()
         {
             this.fileName = fileName;
-            this.connData = new ConnectionData();
-            this.connData.SQLServerName = server;
-            this.connData.AuthenticationType = AuthenticationType.Windows;
-            this.connData.ScriptTimeout = 100;
+            connData = new ConnectionData();
+            connData.SQLServerName = server;
+            connData.AuthenticationType = AuthenticationType.Windows;
+            connData.ScriptTimeout = 100;
         }
 
 
         public void StartTests(BackgroundWorker bgWorker, DoWorkEventArgs workArgs)
         {
-            if (this.cfg == null)
-                this.cfg = ReadConfiguration(this.fileName);
+            if (cfg == null)
+                cfg = ReadConfiguration(fileName);
 
-            this.connData.DatabaseName = this.cfg.Name;
-            for (int i = 0; i < this.cfg.StoredProcedure.Length;i++ )
+            connData.DatabaseName = cfg.Name;
+            for (int i = 0; i < cfg.StoredProcedure.Length; i++)
             {
-                if (!TestStoredProcedure(this.cfg.StoredProcedure[i], bgWorker, workArgs))
+                if (!TestStoredProcedure(cfg.StoredProcedure[i], bgWorker, workArgs))
                     break;
             }
         }
 
         private bool TestStoredProcedure(SqlSync.SprocTest.Configuration.StoredProcedure sp, BackgroundWorker bgWorker, DoWorkEventArgs workArgs)
         {
-            SqlConnection conn = Connection.ConnectionHelper.GetConnection(this.connData);
+            SqlConnection conn = Connection.ConnectionHelper.GetConnection(connData);
             if (sp.TestCase == null)
                 return true;
 
             for (int i = 0; i < sp.TestCase.Length; i++)
                 if (sp.TestCase[i].SelectedForRun)
-                    if (!RunTestCase(ref conn, sp.Name, sp.TestCase[i], bgWorker,workArgs))
+                    if (!RunTestCase(ref conn, sp.Name, sp.TestCase[i], bgWorker, workArgs))
                         return false;
-           
+
             return true;
         }
         public bool RunTestCase(ref SqlConnection conn, string spName, TestCase testCase, BackgroundWorker bgWorker, DoWorkEventArgs workArgs)
@@ -65,71 +65,71 @@ namespace SqlSync.SprocTest
             string message = "";
             bool passed = false;
 
-                SqlCommand cmd = new SqlCommand(spName, conn);
-                cmd.CommandType = CommandType.StoredProcedure;
-                string paramMessage;
-                List<List<SqlParameter>> paramCols = GetParameterListsForTest(testCase, ref conn, out paramMessage);
-                if (paramCols == null && paramMessage.Length > 0)
-                {
-                    TestResult args = new TestResult(spName, testCase.Name, paramMessage, false, testCase, "");
-                    bgWorker.ReportProgress(1, args);
-                    return false;
+            SqlCommand cmd = new SqlCommand(spName, conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            string paramMessage;
+            List<List<SqlParameter>> paramCols = GetParameterListsForTest(testCase, ref conn, out paramMessage);
+            if (paramCols == null && paramMessage.Length > 0)
+            {
+                TestResult args = new TestResult(spName, testCase.Name, paramMessage, false, testCase, "");
+                bgWorker.ReportProgress(1, args);
+                return false;
 
-                }
-                if (paramCols.Count == 0)
-                {
-                    TestResult args = new TestResult(spName, testCase.Name, "Unable to retrieve parameter data.", false, testCase, "");
-                    bgWorker.ReportProgress(1, args);
-                    return false;
+            }
+            if (paramCols.Count == 0)
+            {
+                TestResult args = new TestResult(spName, testCase.Name, "Unable to retrieve parameter data.", false, testCase, "");
+                bgWorker.ReportProgress(1, args);
+                return false;
 
-                }
-                for (int i = 0; i < paramCols.Count; i++)
+            }
+            for (int i = 0; i < paramCols.Count; i++)
+            {
+                try
                 {
-                    try
+                    if (bgWorker.CancellationPending)
                     {
-                        if (bgWorker.CancellationPending)
-                        {
-                            workArgs.Cancel = true;
-                            return false;
-                        }
-
-                        cmd.Parameters.Clear();
-                        for (int j = 0; j < paramCols[i].Count; j++)
-                            cmd.Parameters.Add(paramCols[i][j]);
-
-
-                        passed = false;
-
-
-                        switch (testCase.ExecuteType)
-                        {
-                            case SqlSync.SprocTest.Configuration.ExecuteType.NonQuery:
-                                passed = ExecuteNonQueryTest(cmd, testCase.ExpectedResult, out message);
-                                break;
-                            case SqlSync.SprocTest.Configuration.ExecuteType.Scalar:
-                                passed = ExecuteScalarTest(cmd, testCase.ExpectedResult, out message);
-                                break;
-                            case SqlSync.SprocTest.Configuration.ExecuteType.ReturnData:
-                            default:
-                                passed = ExecuteDataSetTest(cmd, testCase.ExpectedResult, out message);
-                                break;
-                        }
-
-                        TestResult resultArgs = new TestResult(spName, testCase.Name, message, passed, testCase, GenerateTestSql(spName, paramCols[i], conn.Database));
-                        bgWorker.ReportProgress(1, resultArgs);
-                    }
-                    catch (Exception exe)
-                    {
-                        message = exe.Message;
-                        TestResult resultArgs = new TestResult(spName, testCase.Name, message, false, testCase, GenerateTestSql(spName, paramCols[i], conn.Database));
-                        bgWorker.ReportProgress(1, resultArgs);
+                        workArgs.Cancel = true;
+                        return false;
                     }
 
+                    cmd.Parameters.Clear();
+                    for (int j = 0; j < paramCols[i].Count; j++)
+                        cmd.Parameters.Add(paramCols[i][j]);
+
+
+                    passed = false;
+
+
+                    switch (testCase.ExecuteType)
+                    {
+                        case SqlSync.SprocTest.Configuration.ExecuteType.NonQuery:
+                            passed = ExecuteNonQueryTest(cmd, testCase.ExpectedResult, out message);
+                            break;
+                        case SqlSync.SprocTest.Configuration.ExecuteType.Scalar:
+                            passed = ExecuteScalarTest(cmd, testCase.ExpectedResult, out message);
+                            break;
+                        case SqlSync.SprocTest.Configuration.ExecuteType.ReturnData:
+                        default:
+                            passed = ExecuteDataSetTest(cmd, testCase.ExpectedResult, out message);
+                            break;
+                    }
+
+                    TestResult resultArgs = new TestResult(spName, testCase.Name, message, passed, testCase, GenerateTestSql(spName, paramCols[i], conn.Database));
+                    bgWorker.ReportProgress(1, resultArgs);
                 }
+                catch (Exception exe)
+                {
+                    message = exe.Message;
+                    TestResult resultArgs = new TestResult(spName, testCase.Name, message, false, testCase, GenerateTestSql(spName, paramCols[i], conn.Database));
+                    bgWorker.ReportProgress(1, resultArgs);
+                }
+
+            }
             return true;
 
         }
-        
+
         #region .: Parameter Generation :.
         private List<List<SqlParameter>> GetParameterListsForTest(TestCase tC, ref SqlConnection conn, out string message)
         {
@@ -194,7 +194,7 @@ namespace SqlSync.SprocTest
 
             //It's easier if you get the longest arrays first...
             SqlParamListSorter sorter = new SqlParamListSorter();
-            paramList.Sort((IComparer<List<SqlParameter>>) sorter);
+            paramList.Sort((IComparer<List<SqlParameter>>)sorter);
             paramList.Reverse();
 
             if (paramList.Count >= 2)
@@ -278,9 +278,9 @@ namespace SqlSync.SprocTest
             }
         }
         #endregion
-        
+
         #region .: Execution Methods :.
-        private bool ExecuteDataSetTest(SqlCommand cmd, SqlSync.SprocTest.Configuration.ExpectedResult expected,out string message)
+        private bool ExecuteDataSetTest(SqlCommand cmd, SqlSync.SprocTest.Configuration.ExpectedResult expected, out string message)
         {
             message = "";
             List<string> messages = new List<string>();
@@ -288,8 +288,8 @@ namespace SqlSync.SprocTest
             bool outputPassed = true;
             bool rowCountPass = true;
             bool columnCountPass = true;
-            
-           
+
+
             try
             {
                 SqlDataAdapter adapt = new SqlDataAdapter(cmd);
@@ -311,7 +311,7 @@ namespace SqlSync.SprocTest
                     messages.Add(countMessage);
 
                     string columnMessage;
-                    columnCountPass = CheckColumnCount(ds.Tables[0], expected,out columnMessage);
+                    columnCountPass = CheckColumnCount(ds.Tables[0], expected, out columnMessage);
                     messages.Add(columnMessage);
 
 
@@ -330,11 +330,11 @@ namespace SqlSync.SprocTest
 
                             //Row should be set in a non-developer centric 1 based value, vs. developer 0 based value
                             int row = (expected.OutputResult[i].RowNumberSpecified) ? expected.OutputResult[i].RowNumber : 1;
-                            if (row == 0) row = 1; 
+                            if (row == 0) row = 1;
                             try
                             {
 
-                                if (!CheckOutputValue(ds.Tables[0].Rows[row-1], expected.OutputResult[i], row, out outputMessage))
+                                if (!CheckOutputValue(ds.Tables[0].Rows[row - 1], expected.OutputResult[i], row, out outputMessage))
                                     outputPassed = false;
                                 messages.Add(outputMessage);
                             }
@@ -367,10 +367,10 @@ namespace SqlSync.SprocTest
                 passed = false;
 
             }
-       
+
             return passed;
         }
-        private bool ExecuteNonQueryTest(SqlCommand cmd, SqlSync.SprocTest.Configuration.ExpectedResult expected,out string message)
+        private bool ExecuteNonQueryTest(SqlCommand cmd, SqlSync.SprocTest.Configuration.ExpectedResult expected, out string message)
         {
 
             bool passed = true;
@@ -425,7 +425,7 @@ namespace SqlSync.SprocTest
                 {
                     if (val == null || expected.OutputResult[0].Value.ToString().Trim().ToLower() != val.ToString().Trim().ToLower())
                     {
-                        message = "Invalid Value Returned for Scalar. Expected: '" + expected.OutputResult[0].Value + "', Retrieved: '" + ((val == null) ? "NULL" : val.ToString())+"'";
+                        message = "Invalid Value Returned for Scalar. Expected: '" + expected.OutputResult[0].Value + "', Retrieved: '" + ((val == null) ? "NULL" : val.ToString()) + "'";
                         passed = false;
                     }
                     else
@@ -469,7 +469,7 @@ namespace SqlSync.SprocTest
         //            {
         //                while (reader.Read())
         //                {
-                            
+
         //                    if (x == 0)
         //                    {
         //                        columnCountPassed = CheckColumnCount(reader.FieldCount, expected, out columnMessage);
@@ -560,7 +560,7 @@ namespace SqlSync.SprocTest
                 case ResultType.PKViolation:
                     if (exe.Message.IndexOf("Primary Key", 0, StringComparison.CurrentCultureIgnoreCase) >= 0)
                     {
-                        message = "Primary Key Violation Expected. "+exe.Message;
+                        message = "Primary Key Violation Expected. " + exe.Message;
                         return true;
                     }
                     else
@@ -569,14 +569,14 @@ namespace SqlSync.SprocTest
                 case ResultType.FKViolation:
                     if (exe.Message.IndexOf("Foreign Key", 0, StringComparison.CurrentCultureIgnoreCase) >= 0)
                     {
-                        message = "Foreign Key Violation Expected. "+exe.Message;
+                        message = "Foreign Key Violation Expected. " + exe.Message;
                         return true;
                     }
                     else
                         return false;
-          
+
                 case ResultType.GenericSqlException:
-                    message = "SqlException Expected. "+exe.Message;
+                    message = "SqlException Expected. " + exe.Message;
                     return true;
                 case ResultType.Success:
                 default:
@@ -594,7 +594,7 @@ namespace SqlSync.SprocTest
 
                 switch (expected.RowCountOperator)
                 {
-                   
+
                     case SqlSync.SprocTest.Configuration.RowCountOperator.GreaterThan:
                         if (rows <= expected.RowCount)
                         {
@@ -628,16 +628,16 @@ namespace SqlSync.SprocTest
             }
             return passed;
         }
-        private bool CheckColumnCount(int columnCount,SqlSync.SprocTest.Configuration.ExpectedResult expected, out string message)
+        private bool CheckColumnCount(int columnCount, SqlSync.SprocTest.Configuration.ExpectedResult expected, out string message)
         {
-            if(expected.ColumnCountSpecified == false)
+            if (expected.ColumnCountSpecified == false)
             {
                 message = "";
                 return true;
             }
-            if(columnCount != expected.ColumnCount)
+            if (columnCount != expected.ColumnCount)
             {
-                message = "Invalid Column Count. Expected "+expected.ColumnCount+", Retrieved "+columnCount;
+                message = "Invalid Column Count. Expected " + expected.ColumnCount + ", Retrieved " + columnCount;
                 return false;
             }
             else
@@ -646,44 +646,44 @@ namespace SqlSync.SprocTest
                 return true;
             }
         }
-        private bool CheckColumnCount(DataTable tbl,SqlSync.SprocTest.Configuration.ExpectedResult expected, out string message)
+        private bool CheckColumnCount(DataTable tbl, SqlSync.SprocTest.Configuration.ExpectedResult expected, out string message)
         {
-            return CheckColumnCount(tbl.Columns.Count,expected,out message);
+            return CheckColumnCount(tbl.Columns.Count, expected, out message);
         }
-        private bool CheckOutputValue(DataRow row, SqlSync.SprocTest.Configuration.OutputResult output,int rowNum, out string message)
+        private bool CheckOutputValue(DataRow row, SqlSync.SprocTest.Configuration.OutputResult output, int rowNum, out string message)
         {
             message = "";
             bool passed = true;
-                try
+            try
+            {
+                int colNumber;
+                if (int.TryParse(output.ColumnName, out colNumber))
                 {
-                    int colNumber;
-                    if (int.TryParse(output.ColumnName, out colNumber))
+                    if (row[colNumber].ToString().ToLower().Trim() != output.Value.ToString().ToLower().Trim())
                     {
-                        if (row[colNumber].ToString().ToLower().Trim() != output.Value.ToString().ToLower().Trim())
-                        {
-                            message = "Invalid Value Returned for Column #" + output.ColumnName + ", Row# " + rowNum + ". Expected '" + output.Value.ToString() + "', Retrieved '" + row[output.ColumnName].ToString()+"'";
-                            passed = false;
-                        }
-                    }
-                    else if(row[output.ColumnName].ToString().ToLower().Trim() != output.Value.ToString().ToLower().Trim())
-                    {
-                        message = "Invalid Value Returned for Column " + output.ColumnName + ", Row# " + rowNum + ". Expected '" + output.Value.ToString() + "', Retrieved '" + row[output.ColumnName].ToString() + "'";
+                        message = "Invalid Value Returned for Column #" + output.ColumnName + ", Row# " + rowNum + ". Expected '" + output.Value.ToString() + "', Retrieved '" + row[output.ColumnName].ToString() + "'";
                         passed = false;
                     }
                 }
-                catch(SqlException exe)
+                else if (row[output.ColumnName].ToString().ToLower().Trim() != output.Value.ToString().ToLower().Trim())
                 {
-                    message = "Sql Error Eetrieving expect column " + output.ColumnName + ". " + exe.Message + " Line Number:" + exe.LineNumber.ToString() + " Error Code:" + exe.ErrorCode.ToString();
+                    message = "Invalid Value Returned for Column " + output.ColumnName + ", Row# " + rowNum + ". Expected '" + output.Value.ToString() + "', Retrieved '" + row[output.ColumnName].ToString() + "'";
                     passed = false;
                 }
-                catch(Exception ex)
-                {
-                   message = "Error Eetrieving expect column "+output.ColumnName+". "+ex.ToString();
-                   passed = false;
+            }
+            catch (SqlException exe)
+            {
+                message = "Sql Error Eetrieving expect column " + output.ColumnName + ". " + exe.Message + " Line Number:" + exe.LineNumber.ToString() + " Error Code:" + exe.ErrorCode.ToString();
+                passed = false;
+            }
+            catch (Exception ex)
+            {
+                message = "Error Eetrieving expect column " + output.ColumnName + ". " + ex.ToString();
+                passed = false;
 
-                }
-            if(passed)
-                message = "Value Check Passed. Column: " + output.ColumnName + ", Row# " + rowNum + ". Expected '" + output.Value.ToString() + "', Retrieved '" + row[output.ColumnName].ToString()+"'";
+            }
+            if (passed)
+                message = "Value Check Passed. Column: " + output.ColumnName + ", Row# " + rowNum + ". Expected '" + output.Value.ToString() + "', Retrieved '" + row[output.ColumnName].ToString() + "'";
 
             return passed;
         }
@@ -732,11 +732,11 @@ namespace SqlSync.SprocTest
                 }
                 catch (Exception exe)
                 {
-                    throw new ApplicationException("Unable to deserialize the test configuration file at: " + fileName +"\r\n"+exe.ToString());
+                    throw new ApplicationException("Unable to deserialize the test configuration file at: " + fileName + "\r\n" + exe.ToString());
                 }
 
             }
-            if(cfg == null)
+            if (cfg == null)
                 throw new ApplicationException("Unable to deserialize the test configuration file at: " + fileName);
 
             cfg.FileName = fileName;
@@ -764,24 +764,24 @@ namespace SqlSync.SprocTest
                 for (int i = 0; i < spParams.Count; i++)
                     paramNames.Add(spParams[i].ParameterName);
 
-            parameterValues = ParseParameterValuesFromScript(storedProcName, paramNames, script);   
+            parameterValues = ParseParameterValuesFromScript(storedProcName, paramNames, script);
 
         }
         public static Dictionary<string, string> ParseParameterValuesFromScript(string sprocName, List<string> parameterNames, string script)
         {
             Dictionary<string, string> paramValues = new Dictionary<string, string>();
-            Regex regExec = new Regex("exec",RegexOptions.IgnoreCase);
-            Regex regSP = new Regex(sprocName,RegexOptions.IgnoreCase);
+            Regex regExec = new Regex("exec", RegexOptions.IgnoreCase);
+            Regex regSP = new Regex(sprocName, RegexOptions.IgnoreCase);
             script = script.Trim();
-            
+
             ///Remove any exec directive
-            Match execMtch =  regExec.Match(script,0,5);
-            if(execMtch.Success)
+            Match execMtch = regExec.Match(script, 0, 5);
+            if (execMtch.Success)
                 script = script.Substring(execMtch.Length);
 
             //Remove the sproc name
             Match spMatch = regSP.Match(script);
-            if(spMatch.Success)
+            if (spMatch.Success)
                 script = regSP.Replace(script, "", 1, 0);
 
             script = script.Trim();
@@ -796,21 +796,21 @@ namespace SqlSync.SprocTest
                 for (int i = 0; i < keyVal.Length; i++)
                 {
                     string[] split = keyVal[i].Split(new char[] { '=' }, 2, StringSplitOptions.None);
-                    if(split.Length == 2)
+                    if (split.Length == 2)
                     {
                         split[1].Trim();
-                        if(split[1].StartsWith("'"))
+                        if (split[1].StartsWith("'"))
                             split[1] = split[1].Substring(1);
-                        if(split[1].EndsWith("'"))
-                            split[1] = split[1].Substring(0,split[1].Length-1);
+                        if (split[1].EndsWith("'"))
+                            split[1] = split[1].Substring(0, split[1].Length - 1);
 
-                        paramValues.Add(split[0].Trim(),split[1]);
+                        paramValues.Add(split[0].Trim(), split[1]);
                     }
                 }
                 for (int i = 0; i < parameterNames.Count; i++)
                 {
-                    if(!paramValues.ContainsKey(parameterNames[i]))
-                        paramValues.Add(parameterNames[i],"NULL");
+                    if (!paramValues.ContainsKey(parameterNames[i]))
+                        paramValues.Add(parameterNames[i], "NULL");
                 }
             }
             else
@@ -818,7 +818,7 @@ namespace SqlSync.SprocTest
                 string[] vals = script.Split(',');
                 for (int i = 0; i < parameterNames.Count; i++)
                 {
-                    if (vals.Length >= i+1)
+                    if (vals.Length >= i + 1)
                     {
                         if (vals[i].StartsWith("'"))
                             vals[i] = vals[i].Substring(1);
@@ -835,8 +835,8 @@ namespace SqlSync.SprocTest
         }
         public static string GenerateTestSql(string storedProcedureName, string databaseName, Configuration.TestCase testCase)
         {
-            System.Text.StringBuilder sb = new StringBuilder("exec " + databaseName+"."+storedProcedureName + " ");
-            if(testCase.Parameter != null)
+            System.Text.StringBuilder sb = new StringBuilder("exec " + databaseName + "." + storedProcedureName + " ");
+            if (testCase.Parameter != null)
             {
                 for (int i = 0; i < testCase.Parameter.Length; i++)
                 {
@@ -853,8 +853,8 @@ namespace SqlSync.SprocTest
         }
         private static string GenerateTestSql(string storedProcedureName, List<SqlParameter> paramList, string databaseName)
         {
-            System.Text.StringBuilder sb = new StringBuilder("exec " + databaseName + "."+storedProcedureName + " ");
-{
+            System.Text.StringBuilder sb = new StringBuilder("exec " + databaseName + "." + storedProcedureName + " ");
+            {
                 for (int i = 0; i < paramList.Count; i++)
                 {
                     sb.Append(paramList[i].ParameterName + "=");
@@ -911,9 +911,9 @@ namespace SqlSync.SprocTest
             }
 
 
-       
 
-   
+
+
         }
 
         #region .: Event and Handler :.
@@ -927,12 +927,12 @@ namespace SqlSync.SprocTest
             public string ExecutedSql;
             public TestResult(string storedProcedureName, string testCaseName, string statusMessage, bool passed, TestCase TestCase, string executedSql)
             {
-                this.StoredProcedureName = storedProcedureName;
-                this.TestCaseName = testCaseName;
-                this.StatusMessage = statusMessage;
-                this.Passed = passed;
+                StoredProcedureName = storedProcedureName;
+                TestCaseName = testCaseName;
+                StatusMessage = statusMessage;
+                Passed = passed;
                 this.TestCase = TestCase;
-                this.ExecutedSql = executedSql;
+                ExecutedSql = executedSql;
             }
             /// <summary>
             /// Needed for serialization

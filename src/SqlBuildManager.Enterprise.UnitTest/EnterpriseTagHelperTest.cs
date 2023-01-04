@@ -1,13 +1,11 @@
-﻿using SqlBuildManager.Enterprise.Tag;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using SqlBuildManager.Enterprise;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Tag;
 using System.Collections.Generic;
 
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for EnterpriseTagHelperTest and is intended
     ///to contain all EnterpriseTagHelperTest Unit Tests
@@ -24,9 +22,9 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<string> regexValues = new List<string>() { @"\bCR *-*#* *\d{3,10}", @"\bCR *-*#* *\d{3,10}" };
             standardRegexValues = regexValues;
 
-            ApplyToGroup[] applyToGroup = new ApplyToGroup[] { 
+            ApplyToGroup[] applyToGroup = new ApplyToGroup[] {
                 new ApplyToGroup(){ GroupName="MyGroup1"},
-                new ApplyToGroup(){GroupName = "MyGroup2"}  
+                new ApplyToGroup(){GroupName = "MyGroup2"}
             };
             TagRegex[] tagRegex = new TagRegex[] {
                 new TagRegex(){ RegexValue= regexValues[0]},
@@ -37,7 +35,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
 
 
         }
-        
+
 
         /// <summary>
         ///A test for GetEnterpriseTagRegexValues
@@ -52,7 +50,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
             Assert.AreEqual(expected[0], actual[0]);
             Assert.AreEqual(expected[1], actual[1]);
-            
+
         }
 
         /// <summary>
@@ -110,7 +108,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<string> actual;
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
             Assert.IsNull(actual);
-            
+
         }
 
         /// <summary>

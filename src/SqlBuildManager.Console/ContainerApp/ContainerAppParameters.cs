@@ -1,10 +1,4 @@
-﻿using SqlBuildManager.Enterprise;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace SqlBuildManager.Console.ContainerApp.Internal
 {
@@ -149,13 +143,13 @@ namespace SqlBuildManager.Console.ContainerApp.Internal
     }
 
     public class RegistryServer
-    { 
+    {
         [JsonPropertyName("value")]
         public string Value { get; set; }
     }
 
     public class RegistryUserName
-{
+    {
         [JsonPropertyName("value")]
         public string Value { get; set; }
     }

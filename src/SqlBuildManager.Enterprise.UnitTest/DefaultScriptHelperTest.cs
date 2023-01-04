@@ -1,14 +1,13 @@
-﻿using SqlBuildManager.Enterprise.DefaultScripts;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using SqlBuildManager.Enterprise;
-using System.Collections.Generic;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.DefaultScripts;
 using SqlSync.SqlBuild.DefaultScripts;
+using System;
+using System.Collections.Generic;
 using System.IO;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for DefaultScriptHelperTest and is intended
     ///to contain all DefaultScriptHelperTest Unit Tests
@@ -26,30 +25,30 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestInitialize()]
         public void MyTestInitialize()
         {
-            this.fileOne = Path.GetTempFileName();
-            File.WriteAllText(this.fileOne, "This is this it - the contents of file 1");
+            fileOne = Path.GetTempFileName();
+            File.WriteAllText(fileOne, "This is this it - the contents of file 1");
 
-            this.fileTwo = Path.GetTempFileName();
-            File.WriteAllText(this.fileTwo, "This is this it - the contents of file 2");
+            fileTwo = Path.GetTempFileName();
+            File.WriteAllText(fileTwo, "This is this it - the contents of file 2");
 
-            this.fileThree = Path.GetTempFileName();
-            File.WriteAllText(this.fileThree, "This is this it - the contents of file 3");
+            fileThree = Path.GetTempFileName();
+            File.WriteAllText(fileThree, "This is this it - the contents of file 3");
         }
 
         [TestCleanup()]
         public void MyTestCleanup()
         {
-            if(File.Exists(this.fileOne))
-                File.Delete(this.fileOne);
+            if (File.Exists(fileOne))
+                File.Delete(fileOne);
 
 
-            if (File.Exists(this.fileTwo))
-                File.Delete(this.fileTwo);
+            if (File.Exists(fileTwo))
+                File.Delete(fileTwo);
 
-            if (File.Exists(this.fileThree))
-                File.Delete(this.fileThree);
+            if (File.Exists(fileThree))
+                File.Delete(fileThree);
         }
-      
+
         #endregion
 
 
@@ -73,9 +72,9 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void CopyEnterpriseToLocalTest_EnterpriseFileDoesntExist()
         {
-            string localFilePath = this.fileOne;
+            string localFilePath = fileOne;
             string enterpriseFilePath = @"C:\thisfileshouldnotexist";
-            bool expected = false; 
+            bool expected = false;
             bool actual;
             actual = DefaultScriptHelper.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
@@ -88,8 +87,8 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void CopyEnterpriseToLocalTest_LocalFileExists()
         {
-            string localFilePath = this.fileOne;
-            string enterpriseFilePath = this.fileTwo;
+            string localFilePath = fileOne;
+            string enterpriseFilePath = fileTwo;
             bool expected = true;
             bool actual;
             actual = DefaultScriptHelper.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
@@ -103,7 +102,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void CopyEnterpriseToLocalTest_EnterpriseFileNotSet()
         {
-            string localFilePath = this.fileOne;
+            string localFilePath = fileOne;
             string enterpriseFilePath = "";
             bool expected = false;
             bool actual;
@@ -119,7 +118,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void CopyEnterpriseToLocalTest_LocalFileNotSet()
         {
             string localFilePath = "";
-            string enterpriseFilePath = this.fileTwo;
+            string enterpriseFilePath = fileTwo;
             bool expected = false;
             bool actual;
             actual = DefaultScriptHelper.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
@@ -138,25 +137,25 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "MyGroup";
-            srFile1.FileName = Path.GetFileName(this.fileOne);
-            srFile1.Path = Path.GetDirectoryName(this.fileOne);
+            srFile1.FileName = Path.GetFileName(fileOne);
+            srFile1.Path = Path.GetDirectoryName(fileOne);
 
             DefaultScriptRegistryFile srFile2 = new DefaultScriptRegistryFile();
             srFile2.ApplyToGroup = "NotMyGroup";
-            srFile2.FileName = Path.GetFileName(this.fileTwo);
-            srFile2.Path = Path.GetDirectoryName(this.fileTwo);
+            srFile2.FileName = Path.GetFileName(fileTwo);
+            srFile2.Path = Path.GetDirectoryName(fileTwo);
 
             List<DefaultScriptRegistryFile> defaultScriptRegs = new List<DefaultScriptRegistryFile>();
             defaultScriptRegs.Add(srFile1);
             defaultScriptRegs.Add(srFile2);
 
-            List<string> groupMemberships = new List<string>(new string[] {  "Group1", "Group2", "MyGroup" });
- 
+            List<string> groupMemberships = new List<string>(new string[] { "Group1", "Group2", "MyGroup" });
+
             DefaultScriptRegistryFile actual;
             actual = DefaultScriptHelper.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
             Assert.IsNotNull(actual);
             Assert.IsInstanceOfType(actual, typeof(DefaultScriptRegistryFile));
-            Assert.AreEqual(Path.GetFileName(this.fileOne), actual.FileName);
+            Assert.AreEqual(Path.GetFileName(fileOne), actual.FileName);
         }
 
         /// <summary>
@@ -168,18 +167,18 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "MyGroup";
-            srFile1.FileName = Path.GetFileName(this.fileOne);
-            srFile1.Path = Path.GetDirectoryName(this.fileOne);
+            srFile1.FileName = Path.GetFileName(fileOne);
+            srFile1.Path = Path.GetDirectoryName(fileOne);
 
             DefaultScriptRegistryFile srFile2 = new DefaultScriptRegistryFile();
             srFile2.ApplyToGroup = "NotMyGroup";
-            srFile2.FileName = Path.GetFileName(this.fileTwo);
-            srFile2.Path = Path.GetDirectoryName(this.fileTwo);
+            srFile2.FileName = Path.GetFileName(fileTwo);
+            srFile2.Path = Path.GetDirectoryName(fileTwo);
 
             List<DefaultScriptRegistryFile> defaultScriptRegs = new List<DefaultScriptRegistryFile>();
             defaultScriptRegs.Add(srFile2);
             defaultScriptRegs.Add(srFile1);
-            
+
 
             List<string> groupMemberships = new List<string>(new string[] { "MyGroup", "Group1", "Group2" });
 
@@ -187,7 +186,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             actual = DefaultScriptHelper.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
             Assert.IsNotNull(actual);
             Assert.IsInstanceOfType(actual, typeof(DefaultScriptRegistryFile));
-            Assert.AreEqual(Path.GetFileName(this.fileOne), actual.FileName);
+            Assert.AreEqual(Path.GetFileName(fileOne), actual.FileName);
         }
 
         /// <summary>
@@ -199,18 +198,18 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "ReallyNotMyGroup";
-            srFile1.FileName = Path.GetFileName(this.fileOne);
-            srFile1.Path = Path.GetDirectoryName(this.fileOne);
+            srFile1.FileName = Path.GetFileName(fileOne);
+            srFile1.Path = Path.GetDirectoryName(fileOne);
 
             DefaultScriptRegistryFile srFile2 = new DefaultScriptRegistryFile();
             srFile2.ApplyToGroup = "NotMyGroup";
-            srFile2.FileName = Path.GetFileName(this.fileTwo);
-            srFile2.Path = Path.GetDirectoryName(this.fileTwo);
+            srFile2.FileName = Path.GetFileName(fileTwo);
+            srFile2.Path = Path.GetDirectoryName(fileTwo);
 
             List<DefaultScriptRegistryFile> defaultScriptRegs = new List<DefaultScriptRegistryFile>();
             defaultScriptRegs.Add(srFile1);
             defaultScriptRegs.Add(srFile2);
-            
+
             List<string> groupMemberships = new List<string>(new string[] { "MyGroup", "Group1", "Group2" });
 
             DefaultScriptRegistryFile actual;
@@ -246,13 +245,13 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "ReallyNotMyGroup";
-            srFile1.FileName = Path.GetFileName(this.fileOne);
-            srFile1.Path = Path.GetDirectoryName(this.fileOne);
+            srFile1.FileName = Path.GetFileName(fileOne);
+            srFile1.Path = Path.GetDirectoryName(fileOne);
 
             DefaultScriptRegistryFile srFile2 = new DefaultScriptRegistryFile();
             srFile2.ApplyToGroup = "NotMyGroup";
-            srFile2.FileName = Path.GetFileName(this.fileTwo);
-            srFile2.Path = Path.GetDirectoryName(this.fileTwo);
+            srFile2.FileName = Path.GetFileName(fileTwo);
+            srFile2.Path = Path.GetDirectoryName(fileTwo);
 
             List<DefaultScriptRegistryFile> defaultScriptRegs = new List<DefaultScriptRegistryFile>();
             defaultScriptRegs.Add(srFile1);
@@ -275,13 +274,13 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "ReallyNotMyGroup";
-            srFile1.FileName = Path.GetFileName(this.fileOne);
-            srFile1.Path = Path.GetDirectoryName(this.fileOne);
+            srFile1.FileName = Path.GetFileName(fileOne);
+            srFile1.Path = Path.GetDirectoryName(fileOne);
 
             DefaultScriptRegistryFile srFile2 = new DefaultScriptRegistryFile();
             srFile2.ApplyToGroup = "NotMyGroup";
-            srFile2.FileName = Path.GetFileName(this.fileTwo);
-            srFile2.Path = Path.GetDirectoryName(this.fileTwo);
+            srFile2.FileName = Path.GetFileName(fileTwo);
+            srFile2.Path = Path.GetDirectoryName(fileTwo);
 
             List<DefaultScriptRegistryFile> defaultScriptRegs = new List<DefaultScriptRegistryFile>();
             defaultScriptRegs.Add(srFile1);
@@ -307,7 +306,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             string filePath = Path.GetTempFileName();
             File.WriteAllText(filePath, Properties.Resources.DefaultScriptRegistry);
- 
+
             DefaultScriptRegistry actual;
             actual = DefaultScriptHelper.GetEnterpriseRegistrySetting(filePath);
             File.Delete(filePath);
@@ -338,7 +337,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void GetEnterpriseRegistrySettingTest_InvalidFile()
         {
-            string filePath = this.fileOne;
+            string filePath = fileOne;
 
             DefaultScriptRegistry actual;
             actual = DefaultScriptHelper.GetEnterpriseRegistrySetting(filePath);
@@ -352,29 +351,29 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void SetEnterpriseDefaultScriptsTest_Successful()
         {
-            SqlSync.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = this.fileThree;
+            SqlSync.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = fileThree;
 
-             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
+            DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "MyGroup";
-            File.WriteAllText(this.fileOne, String.Format(Properties.Resources.DefaultScriptRegistryWithToken, this.fileOne));
-            srFile1.FileName = Path.GetFileName(this.fileOne);
-            srFile1.Path = Path.GetDirectoryName(this.fileOne);
+            File.WriteAllText(fileOne, String.Format(Properties.Resources.DefaultScriptRegistryWithToken, fileOne));
+            srFile1.FileName = Path.GetFileName(fileOne);
+            srFile1.Path = Path.GetDirectoryName(fileOne);
 
             DefaultScriptRegistryFile srFile2 = new DefaultScriptRegistryFile();
             srFile2.ApplyToGroup = "NotMyGroup";
-            srFile2.FileName = Path.GetFileName(this.fileTwo);
-            srFile2.Path = Path.GetDirectoryName(this.fileTwo);
+            srFile2.FileName = Path.GetFileName(fileTwo);
+            srFile2.Path = Path.GetDirectoryName(fileTwo);
 
             List<DefaultScriptRegistryFile> defaultScriptRegs = new List<DefaultScriptRegistryFile>();
             defaultScriptRegs.Add(srFile1);
             defaultScriptRegs.Add(srFile2);
 
-            List<string> groupMemberships = new List<string>(new string[] {  "Group1", "Group2", "MyGroup" });
-            bool expected = true; 
+            List<string> groupMemberships = new List<string>(new string[] { "Group1", "Group2", "MyGroup" });
+            bool expected = true;
             bool actual;
             actual = DefaultScriptHelper.SetEnterpriseDefaultScripts(defaultScriptRegs, groupMemberships);
             Assert.AreEqual(expected, actual);
- 
+
         }
 
         /// <summary>
@@ -383,18 +382,18 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void SetEnterpriseDefaultScriptsTest_NoMatchingScriptRegistryFile()
         {
-            SqlSync.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = this.fileThree;
+            SqlSync.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = fileThree;
 
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "ReallyNotMyGroup";
-            File.WriteAllText(this.fileOne, String.Format(Properties.Resources.DefaultScriptRegistryWithToken, this.fileOne));
-            srFile1.FileName = Path.GetFileName(this.fileOne);
-            srFile1.Path = Path.GetDirectoryName(this.fileOne);
+            File.WriteAllText(fileOne, String.Format(Properties.Resources.DefaultScriptRegistryWithToken, fileOne));
+            srFile1.FileName = Path.GetFileName(fileOne);
+            srFile1.Path = Path.GetDirectoryName(fileOne);
 
             DefaultScriptRegistryFile srFile2 = new DefaultScriptRegistryFile();
             srFile2.ApplyToGroup = "NotMyGroup";
-            srFile2.FileName = Path.GetFileName(this.fileTwo);
-            srFile2.Path = Path.GetDirectoryName(this.fileTwo);
+            srFile2.FileName = Path.GetFileName(fileTwo);
+            srFile2.Path = Path.GetDirectoryName(fileTwo);
 
             List<DefaultScriptRegistryFile> defaultScriptRegs = new List<DefaultScriptRegistryFile>();
             defaultScriptRegs.Add(srFile1);
@@ -414,20 +413,20 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void SetEnterpriseDefaultScriptsTest_NoItemsScriptRegistryFile()
         {
-            SqlSync.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = this.fileThree;
+            SqlSync.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = fileThree;
 
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "MyGroup";
-            File.WriteAllText(this.fileOne, "<?xml version=\"1.0\" encoding=\"utf-8\" ?><DefaultScriptRegistry xmlns=\"http://schemas.mckechney.com/DefaultScriptRegistry.xsd\"></DefaultScriptRegistry>");
-            
-            
-            srFile1.FileName = Path.GetFileName(this.fileOne);
-            srFile1.Path = Path.GetDirectoryName(this.fileOne);
+            File.WriteAllText(fileOne, "<?xml version=\"1.0\" encoding=\"utf-8\" ?><DefaultScriptRegistry xmlns=\"http://schemas.mckechney.com/DefaultScriptRegistry.xsd\"></DefaultScriptRegistry>");
+
+
+            srFile1.FileName = Path.GetFileName(fileOne);
+            srFile1.Path = Path.GetDirectoryName(fileOne);
 
             DefaultScriptRegistryFile srFile2 = new DefaultScriptRegistryFile();
             srFile2.ApplyToGroup = "NotMyGroup";
-            srFile2.FileName = Path.GetFileName(this.fileTwo);
-            srFile2.Path = Path.GetDirectoryName(this.fileTwo);
+            srFile2.FileName = Path.GetFileName(fileTwo);
+            srFile2.Path = Path.GetDirectoryName(fileTwo);
 
             List<DefaultScriptRegistryFile> defaultScriptRegs = new List<DefaultScriptRegistryFile>();
             defaultScriptRegs.Add(srFile1);
@@ -450,12 +449,12 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void ValidateLocalToEnterpriseTest_LocalFileDoesntExist()
         {
             string localFilePath = @"C:\thisfileshouldnotexist";
-            string enterpriseFilePath = this.fileTwo;
+            string enterpriseFilePath = fileTwo;
             bool expected = false;
             bool actual;
             actual = DefaultScriptHelper.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
             Assert.AreEqual(expected, actual);
-   
+
         }
 
         /// <summary>
@@ -465,7 +464,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void ValidateLocalToEnterpriseTest_EnterpriseFileDoesntExist()
         {
-            string localFilePath = this.fileOne;
+            string localFilePath = fileOne;
             string enterpriseFilePath = @"C:\thisfileshouldnotexist";
             bool expected = true;
             bool actual;
@@ -481,8 +480,8 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void ValidateLocalToEnterpriseTest_FilesMatch()
         {
-            string localFilePath = this.fileOne;
-            string enterpriseFilePath = this.fileOne;
+            string localFilePath = fileOne;
+            string enterpriseFilePath = fileOne;
             bool expected = true;
             bool actual;
             actual = DefaultScriptHelper.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);
@@ -497,8 +496,8 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void ValidateLocalToEnterpriseTest_FilesDontMatch()
         {
-            string localFilePath = this.fileOne;
-            string enterpriseFilePath = this.fileTwo;
+            string localFilePath = fileOne;
+            string enterpriseFilePath = fileTwo;
             bool expected = false;
             bool actual;
             actual = DefaultScriptHelper.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);

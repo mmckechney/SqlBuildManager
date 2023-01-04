@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Azure.Messaging.ServiceBus;
 using System.Collections.Generic;
 using System.Text;
-using Azure.Messaging.ServiceBus;
 using System.Text.Json;
 namespace SqlBuildManager.Console.Queue
 {

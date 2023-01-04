@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace SqlBuildManager.Console.Aci.Arm
 {
-     public class CurrentState
+    public class CurrentState
     {
         [JsonPropertyName("state")]
         public string State { get; set; }

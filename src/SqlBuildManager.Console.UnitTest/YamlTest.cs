@@ -1,7 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.MultiDb;
 using System.Diagnostics;
 using System.IO;
 namespace SqlBuildManager.Console.UnitTest
@@ -46,7 +44,7 @@ namespace SqlBuildManager.Console.UnitTest
             cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
             cmdLine.ServiceAccountName = "sbm000federatedid-name";
             string yml = Kubernetes.KubernetesManager.GenerateJobYaml(cmdLine);
-            
+
             Trace.WriteLine(yml);
             Assert.IsTrue(true);
         }

@@ -1,21 +1,17 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
-using SqlSync.DbInformation;
-using SqlSync.SqlBuild;
-using System.Reflection;
-using SqlSync.SqlBuild.MultiDb;
-using System;
-using Microsoft.Data.SqlClient;
-using System.IO;
 using SqlSync.SqlBuild.SqlLogging;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.IO;
 
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for SqlBuildHelperTest and is intended
     ///to contain all SqlBuildHelperTest Unit Tests
@@ -23,7 +19,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     [TestClass()]
     public class SqlBuildHelperTest
     {
-        
+
         private static List<Initialization> initColl;
 
         [ClassInitialize()]
@@ -75,7 +71,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
             actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
-            
+
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -111,7 +107,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual("RolledBack",actual.FinalStatus );
+            Assert.AreEqual("RolledBack", actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -144,12 +140,12 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual("RolledBack",actual.FinalStatus);
+            Assert.AreEqual("RolledBack", actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
-            Assert.IsTrue(0 == sqlLoggingCount, String.Format("Invalid SqlBuild_Logging Count: {0}. {1}",sqlLoggingCount.ToString(), Initialization.MissingDatabaseErrorMessage));
+            Assert.IsTrue(0 == sqlLoggingCount, String.Format("Invalid SqlBuild_Logging Count: {0}. {1}", sqlLoggingCount.ToString(), Initialization.MissingDatabaseErrorMessage));
             Assert.IsTrue(0 == testTableCount, String.Format("Invalid TransactionTest Count: {0}. {1}", testTableCount.ToString(), Initialization.MissingDatabaseErrorMessage));
         }
         /// <summary>
@@ -178,13 +174,13 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual("RolledBack",actual.FinalStatus);
+            Assert.AreEqual("RolledBack", actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
-            Assert.IsTrue(0 == sqlLoggingCount, String.Format("Invalid SqlBuild_Logging Count: {0}. {1}",sqlLoggingCount.ToString(), Initialization.MissingDatabaseErrorMessage));
-            Assert.IsTrue(0 == testTableCount, String.Format("Invalid TransactionTest Count:  {0}. {1}",testTableCount.ToString(), Initialization.MissingDatabaseErrorMessage));
+            Assert.IsTrue(0 == sqlLoggingCount, String.Format("Invalid SqlBuild_Logging Count: {0}. {1}", sqlLoggingCount.ToString(), Initialization.MissingDatabaseErrorMessage));
+            Assert.IsTrue(0 == testTableCount, String.Format("Invalid TransactionTest Count:  {0}. {1}", testTableCount.ToString(), Initialization.MissingDatabaseErrorMessage));
         }
         /// <summary>
         ///A test for RunBuildScripts
@@ -212,7 +208,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed,actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -230,7 +226,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             //Create the build package...
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            init.AddPreRunScript(ref buildData,false);
+            init.AddPreRunScript(ref buildData, false);
             DataView view = buildData.Script.DefaultView;
 
             bool isMultiDbRun = false;
@@ -249,7 +245,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
 
-            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByScriptId(0,buildData.Script[0].ScriptId);
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByScriptId(0, buildData.Script[0].ScriptId);
             int testTableCount = init.GetTestTableRowCount(0);
             Assert.IsTrue(1 == sqlLoggingCount, "Invalid SqlBuild_Logging Count: " + sqlLoggingCount.ToString());
             Assert.IsTrue(0 == testTableCount, "Invalid TransactionTest Count: " + testTableCount.ToString());
@@ -283,7 +279,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual("RolledBack",actual.FinalStatus);
+            Assert.AreEqual("RolledBack", actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -489,10 +485,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Set the script only flag
-            sbh.runScriptOnly =  true;
+            sbh.runScriptOnly = true;
             //Execute the run...
             actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
-           
+
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -596,7 +592,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = target.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed,actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -665,7 +661,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual("FailedNoTransaction",actual.FinalStatus );
+            Assert.AreEqual("FailedNoTransaction", actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -800,7 +796,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             string defaultDatabase = "MyTestDatabase";
             string expected = defaultDatabase;
             string actual;
-            actual =helper.GetTargetDatabase(defaultDatabase);
+            actual = helper.GetTargetDatabase(defaultDatabase);
             Assert.AreEqual(expected, actual);
         }
 
@@ -945,15 +941,15 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null; 
-            SqlSyncBuildData.BuildRow myBuild = null; 
+            DataView filteredScripts = null;
+            SqlSyncBuildData.BuildRow myBuild = null;
             target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(1, filteredScripts.Count);
             Assert.AreEqual("BuildOrder >=0", filteredScripts.RowFilter);
             Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
             Assert.AreEqual(serverName, myBuild.ServerName);
-            
+
         }
 
         /// <summary>
@@ -972,15 +968,15 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null; 
-            SqlSyncBuildData.BuildRow myBuild = null; 
+            DataView filteredScripts = null;
+            SqlSyncBuildData.BuildRow myBuild = null;
             target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(1, filteredScripts.Count);
             Assert.AreEqual("BuildOrder >=0", filteredScripts.RowFilter);
             Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
             Assert.AreEqual(serverName, myBuild.ServerName);
-            
+
 
         }
 
@@ -1061,8 +1057,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null; 
-            SqlSyncBuildData.BuildRow myBuild = null; 
+            DataView filteredScripts = null;
+            SqlSyncBuildData.BuildRow myBuild = null;
             target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(null, filteredScripts);
@@ -1085,8 +1081,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = true;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null; 
-            SqlSyncBuildData.BuildRow myBuild = null; 
+            DataView filteredScripts = null;
+            SqlSyncBuildData.BuildRow myBuild = null;
             target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(null, filteredScripts);
@@ -1166,7 +1162,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_SingleServer()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
@@ -1199,7 +1195,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_UseStaticOverride()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
@@ -1242,7 +1238,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [TestMethod()]
         public void GetScriptRunLogTest()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             init.InsertPreRunScriptEntry();
 
             Guid scriptId = new Guid(init.PreRunScriptGuid);
@@ -1264,7 +1260,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [ExpectedException(typeof(ApplicationException))]
         public void GetScriptRunLogTest_ExpectException()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
 
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             ConnectionData connData = init.connData;
@@ -1283,7 +1279,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [ExpectedException(typeof(NullReferenceException))]
         public void SqlBuildHelper_ScriptLogWriteEventTest_ExpectException()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
@@ -1300,7 +1296,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void SqlBuildHelper_ScriptLogWriteEventTest_CreateScriptLogFile()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
@@ -1335,7 +1331,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void SqlBuildHelper_ScriptLogWriteEventTest_EnterExceptionHandling()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
@@ -1367,7 +1363,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void SqlBuildHelper_ScriptLogWriteEventTest_NonTransactional()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
@@ -1393,7 +1389,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void CommitBuildTest_NonTransactional()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
@@ -1410,7 +1406,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void CommitBuildTest_TransactionFailure()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
@@ -1427,7 +1423,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void CommitBuildTest_ClosedConnectionFailure()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
@@ -1449,7 +1445,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void RollbackBuildTest_NonTransactional()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
@@ -1464,7 +1460,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void RollbackBuildTest_TransactionFailure()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
@@ -1481,7 +1477,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void RollbackBuildTest_ClosedConnectionFailure()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
@@ -1546,7 +1542,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             //Set the build description
             helper.buildDescription = "TestDescription";
             //Set the build file name
-            helper.buildFileName =  null;
+            helper.buildFileName = null;
 
             string actual = helper.PerformScriptTokenReplacement(script);
             Assert.AreEqual(expected, actual);
@@ -1574,7 +1570,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             //Set the build description
             helper.buildDescription = null;
             //Set the build file name
-            helper.buildFileName ="TestBuildFile.sbm";
+            helper.buildFileName = "TestBuildFile.sbm";
 
             string actual = helper.PerformScriptTokenReplacement(script);
             Assert.AreEqual(expected, actual);
@@ -1594,7 +1590,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData.ScriptDataTable actual = null;
             actual = SqlBuildHelper.GetScriptSourceTable(buildData);
 
-            Assert.IsInstanceOfType(actual,typeof(SqlSyncBuildData.ScriptDataTable));
+            Assert.IsInstanceOfType(actual, typeof(SqlSyncBuildData.ScriptDataTable));
             Assert.IsTrue(1 == actual.Rows.Count);
             Assert.AreEqual(actual[0].ScriptId, buildData.Script[0].ScriptId);
             Assert.AreEqual(actual[0].FileName, buildData.Script[0].FileName);
@@ -1624,7 +1620,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetBlockingSqlLogTest()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             init.AddPreRunScript(ref buildData, false);
@@ -1636,7 +1632,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             connData.ServerName = init.serverName;
             connData.Transaction = null;
 
-            BuildConnectData connDataExpected = connData; 
+            BuildConnectData connDataExpected = connData;
             bool actual;
 
             try
@@ -1652,7 +1648,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             }
             finally
             {
-                if (connData.Connection.State == ConnectionState.Open) 
+                if (connData.Connection.State == ConnectionState.Open)
                     connData.Connection.Close();
             }
 
@@ -1669,7 +1665,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [TestMethod()]
         public void HasBlockingSqlLogTest()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             init.InsertPreRunScriptEntry();
             ConnectionData cData = init.connData;
             Guid scriptId = new Guid(init.PreRunScriptGuid);
@@ -1679,7 +1675,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string scriptTextHash;
             string scriptTextHashExpected = "1E725D850DF0954D04A7C12F7C2B663A0A132EE6";
             DateTime commitDate; //Don't test, this will vary by test server.
-            bool expected = true; 
+            bool expected = true;
             bool actual;
             actual = SqlBuildHelper.HasBlockingSqlLog(scriptId, cData, databaseName, out scriptHash, out scriptTextHash, out commitDate);
             Assert.AreEqual(scriptHashExpected, scriptHash);
@@ -1696,7 +1692,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [TestMethod()]
         public void HasBlockingSqlLogTest_InvalidDbName()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             ConnectionData cData = init.connData;
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             string databaseName = init.connData.DatabaseName;
@@ -1704,7 +1700,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string scriptTextHash;
             DateTime commitDate; //Don't test, this will vary by test server.
             bool actual;
-         
+
             actual = SqlBuildHelper.HasBlockingSqlLog(scriptId, cData, "invalidDatabaseName", out scriptHash, out scriptTextHash, out commitDate);
             Assert.AreEqual("", scriptHash);
             Assert.AreEqual("", scriptTextHash);
@@ -1722,7 +1718,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void LogTableExistsTest()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             SqlConnection conn = ConnectionHelper.GetConnection(init.connData);
@@ -1748,7 +1744,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [TestMethod()]
         public void ClearScriptBlocksTest()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddInsertScript(ref buildData, true);
 
@@ -1760,7 +1756,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
-            string[] scripts = new string[]{Guid.NewGuid().ToString(),buildData.Script[0].ScriptId};
+            string[] scripts = new string[] { Guid.NewGuid().ToString(), buildData.Script[0].ScriptId };
             ClearScriptData scrData = new ClearScriptData(scripts, buildData, init.projectFileName, init.projectFileName);
             BackgroundWorker bgWorker = new BackgroundWorker();
             bgWorker.WorkerReportsProgress = true;
@@ -1776,9 +1772,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void RecordCommittedScriptsTest()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-          
+
             Guid scriptID = Guid.NewGuid();
             string hash = "WETRWEW@#$@$WEQW#$#R";
             CommittedScript script = new CommittedScript(scriptID, hash, 20, "My script text", "TAGID", init.serverName, init.testDatabaseNames[0]);
@@ -1802,10 +1798,10 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException),"The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
+        [ExpectedException(typeof(ArgumentException), "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
         public void SaveBuildDataSetTest_NullProjectFileName()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = null;
@@ -1817,10 +1813,10 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException),"The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
+        [ExpectedException(typeof(ArgumentException), "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
         public void SaveBuildDataSetTest_EmptyProjectFileName()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = string.Empty;
@@ -1835,7 +1831,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [ExpectedException(typeof(ArgumentException), "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.")]
         public void SaveBuildDataSetTest_NullBuildHistoryName()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = null;
@@ -1849,13 +1845,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [ExpectedException(typeof(ArgumentException), "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.")]
         public void SaveBuildDataSetTest_EmptyBuildHistoryName()
         {
-            Initialization init = this.GetInitializationObject();
+            Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = string.Empty;
             target.SaveBuildDataSet(false);
         }
-#endregion
+        #endregion
 
 
         #region ReadBatchFromScriptTextTest - old methods
@@ -1865,7 +1861,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [TestMethod()]
         public void ReadBatchFromScriptTextTest_SimplePass()
         {
-            bool stripTransaction = false; 
+            bool stripTransaction = false;
             bool maintainBatchDelimiter = false;
             string[] scriptLines = new string[]{
                 "This is line 1",
@@ -1876,7 +1872,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string[] actual;
             actual = SqlBuildHelper.ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
-            Assert.AreEqual(2, actual.Length,"Expected 2 lines, got "+actual.Length.ToString());
+            Assert.AreEqual(2, actual.Length, "Expected 2 lines, got " + actual.Length.ToString());
             Assert.IsTrue(actual[0].IndexOf("GO") == -1, "Expected the \"GO\" delimiter to be absent");
             Assert.IsTrue(actual[0].IndexOf("2") > -1);
             Assert.IsTrue(actual[1].IndexOf("4") > -1);
@@ -1914,7 +1910,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 "BEGIN TRAN",
                 "ROLLBACK TRANSACTION",
                 "ROLLBACK TRAN",
-                "GO", 
+                "GO",
                 "COMMIT TRANSACTION",
                 "COMMIT TRAN",
                 "COMMIT",
@@ -1927,7 +1923,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Assert.AreEqual(2, actual.Length);
             Assert.IsTrue(actual[0].Trim().Length == 0);
             Assert.IsTrue(actual[1].Trim().Length == 0);
-           
+
         }
         /// <summary>
         ///A test for ReadBatchFromScriptText
@@ -1942,7 +1938,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 "BEGIN TRAN",
                 "ROLLBACK TRANSACTION",
                 "ROLLBACK TRAN",
-                "GO", 
+                "GO",
                 "COMMIT TRANSACTION",
                 "COMMIT TRAN",
                 "COMMIT",
@@ -1959,7 +1955,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
         }
         #endregion
-        
+
         #region ReadBatchFromScriptTextTest - new methods
 
         /// <summary>
@@ -1981,7 +1977,7 @@ SELECT * FROM MyTable
             actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(1, actual.Count);
             //Expect that the last \r\n is trimmed from the script
-            Assert.AreEqual(scriptContents.Substring(0,scriptContents.Length-2), actual[0]);
+            Assert.AreEqual(scriptContents.Substring(0, scriptContents.Length - 2), actual[0]);
 
         }
         /// <summary>
@@ -1997,9 +1993,9 @@ SELECT * FROM YourTable
   GO
 SELECT * FROM TheirTable";
 
-            bool stripTransaction = false; 
-            bool maintainBatchDelimiter = false; 
- 
+            bool stripTransaction = false;
+            bool maintainBatchDelimiter = false;
+
             List<string> actual;
             actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
@@ -2388,7 +2384,7 @@ SELECT * FROM MyTable";
             Assert.AreEqual(actual2[0], actual1[0]);
 
         }
- 
+
         [TestMethod()]
         public void ReadBatchFromScriptTextTest_CompareWithMaintainDelimiter()
         {
@@ -2634,7 +2630,7 @@ SELECT * FROM TheirTable";
 
             string[] actual2;
             actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            
+
             //We expect a GO in it's own line of a bulk comment will result in differences
             Assert.IsTrue(actual1.Count == 3);
             Assert.IsTrue(actual2.Length == 4);
@@ -2921,15 +2917,15 @@ GO
 
             Assert.AreEqual(actual2[0], actual1[0]);
             Assert.AreEqual(actual2[1], actual1[1]);
-         
+
         }
 
-        
+
         [TestMethod()]
         public void ReadBatchFromScriptTextTest_ComparePackageFilesRemoveDelimiter()
         {
-            string[] paths = new string[] { 
-                @"C:\SqlBuildManager_Tests\", 
+            string[] paths = new string[] {
+                @"C:\SqlBuildManager_Tests\",
                 @"C:\SqlBuildManager_Tests1\",
                 @"C:\SqlBuildManager_Tests2\",
                 @"C:\SqlBuildManager_Tests3\",
@@ -2946,7 +2942,7 @@ GO
 
                 string[] files = Directory.GetFiles(path);
                 Console.WriteLine(String.Format("Comparing {0} files", files.Length));
-                
+
                 foreach (string file in files)
                 {
 
@@ -3326,6 +3322,6 @@ from the list?";
 
 
 
-        
+
     }
 }

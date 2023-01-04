@@ -45,8 +45,8 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         public static string k8jobname { get; private set; } = "sqlbuildmanager";
         [YamlIgnore()]
         public static string Kind { get { return "Job"; } }
-       
-        
+
+
         [YamlMember(Order = 1)]
         public string apiVersion { get { return "batch/v1"; } }
         [YamlMember(Order = 2)]
@@ -65,7 +65,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         {
             template = new JobTemplate(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
         }
- 
+
         [YamlMember(Order = 1)]
         public string parallelism { get { return "2"; } }
         [YamlMember(Order = 2)]
@@ -73,10 +73,10 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
     }
     public class JobTemplate
     {
-        
+
         public JobTemplate(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName)
         {
-            metadata =  new Dictionary<string, object>
+            metadata = new Dictionary<string, object>
             {
                 {"labels",  new Dictionary<string, string>
                     {
@@ -133,7 +133,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         public Containers[] containers;
 
         [YamlMember(Order = 4)]
-        public string restartPolicy { get => "Never";  }
+        public string restartPolicy { get => "Never"; }
 
         [YamlMember(Order = 5)]
         public Dictionary<string, object>[] volumes;
@@ -146,12 +146,12 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
             Containers.k8jobname = k8jobname;
         }
         [YamlMember(Order = 1)]
-        public string name { get => k8jobname;  }
+        public string name { get => k8jobname; }
         [YamlMember(Order = 2)]
         public string image { get; internal set; }
         [YamlMember(Order = 3)]
-        public string imagePullPolicy { get => "Always";  }
-        
+        public string imagePullPolicy { get => "Always"; }
+
         [YamlMember(Order = 5)]
         public Dictionary<string, object> resources = new Dictionary<string, object>
         {

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.ComponentModel;
 using System.Runtime.Serialization;
-using System.ComponentModel;
-using System.Reflection;
 
 namespace SqlBuildManager.Interfaces.Console
 {
@@ -26,7 +22,7 @@ namespace SqlBuildManager.Interfaces.Console
         [Description("Package Creation Error")]
         PackageCreationError = 87600
     }
-    
+
 
     [DataContract()]
     public enum ExecutionReturn

@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 namespace SqlSync
 {
     public partial class FinderCtrl : UserControl
@@ -14,13 +11,13 @@ namespace SqlSync
         private MatchCollection[] lastMatches = new MatchCollection[0];
         public void AddControlToSearch(RichTextBox rtb)
         {
-            this.controlsToSearch.Add(rtb);
-            this.lastMatches = new MatchCollection[this.controlsToSearch.Count];
+            controlsToSearch.Add(rtb);
+            lastMatches = new MatchCollection[controlsToSearch.Count];
         }
 
         Regex regExp = null;
         int lastCollectionIndex = -1;
-        
+
         private int lastFindStartIndex = 0;
         private int lastFindLength = 0;
 
@@ -30,12 +27,12 @@ namespace SqlSync
         }
         public FinderCtrl(RichTextBox controlToSearch) : this()
         {
-            this.controlsToSearch.Add(controlToSearch);
+            controlsToSearch.Add(controlToSearch);
         }
         public FinderCtrl(List<RichTextBox> controlsToSearch) : this()
         {
             this.controlsToSearch = controlsToSearch;
-            this.lastMatches = new MatchCollection[this.controlsToSearch.Count];
+            lastMatches = new MatchCollection[this.controlsToSearch.Count];
         }
 
         private void txtFind_TextChanged(object sender, EventArgs e)
@@ -46,28 +43,28 @@ namespace SqlSync
                 lastCollectionIndex = 0;
                 SetSelectedFind(null);
             }
-            
+
         }
         private void PopulateMatchCollection()
         {
-            if(!chkMatchCase.Checked)
-                regExp = new Regex(txtFind.Text,RegexOptions.IgnoreCase);
+            if (!chkMatchCase.Checked)
+                regExp = new Regex(txtFind.Text, RegexOptions.IgnoreCase);
             else
                 regExp = new Regex(txtFind.Text, RegexOptions.None);
 
-            this.lastMatches = new MatchCollection[this.controlsToSearch.Count];
-            for (int i = 0; i < this.controlsToSearch.Count  ; i++)
+            lastMatches = new MatchCollection[controlsToSearch.Count];
+            for (int i = 0; i < controlsToSearch.Count; i++)
             {
-                lastMatches[i] = regExp.Matches(this.controlsToSearch[i].Text);
+                lastMatches[i] = regExp.Matches(controlsToSearch[i].Text);
             }
         }
         private bool SetSelectedFind(Nullable<bool> forward)
         {
             bool found = false;
-            for (int i = 0; i < this.lastMatches.Length; i++)
+            for (int i = 0; i < lastMatches.Length; i++)
             {
- 
-                int currentCaretLocation = this.controlsToSearch[i].SelectionStart;
+
+                int currentCaretLocation = controlsToSearch[i].SelectionStart;
                 if (lastMatches[i] != null && lastMatches[i].Count > 0) //lastCollectionIndex && lastCollectionIndex > -1)
                 {
                     if (forward.HasValue == false || forward.Value == true)
@@ -89,7 +86,7 @@ namespace SqlSync
                     else
                     {
                         currentCaretLocation--;
-                        for (int j = lastMatches[i].Count-1; j >= 0; j--)
+                        for (int j = lastMatches[i].Count - 1; j >= 0; j--)
                         {
                             if (lastMatches[i][j].Success && lastMatches[i][j].Index < currentCaretLocation)
                             {
@@ -106,8 +103,8 @@ namespace SqlSync
                         //Clear the last highlighting
                         ClearHighlighting(i);
 
-                        if (this.controlsToSearch[i] is UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)
-                            ((UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)this.controlsToSearch[i]).SuspendHighlighting = true;
+                        if (controlsToSearch[i] is UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)
+                            ((UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)controlsToSearch[i]).SuspendHighlighting = true;
 
                         //Set the next highlighting
                         controlsToSearch[i].Select(lastFindStartIndex, lastFindLength);
@@ -133,7 +130,7 @@ namespace SqlSync
         private void btnNext_Click(object sender, EventArgs e)
         {
             lastCollectionIndex++;
-            if(!SetSelectedFind(true))
+            if (!SetSelectedFind(true))
                 lastCollectionIndex--;
         }
 
@@ -146,17 +143,17 @@ namespace SqlSync
 
         private void FinderCtrl_Leave(object sender, EventArgs e)
         {
-            for (int i = 0; i < this.controlsToSearch.Count; i++)
+            for (int i = 0; i < controlsToSearch.Count; i++)
             {
                 ClearHighlighting(i);
 
-                if (this.controlsToSearch[i] is UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox && 
-                    ((UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)this.controlsToSearch[i]).HighlightType != Highlighting.SyntaxHightlightType.None)
-                    ((UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)this.controlsToSearch[i]).SuspendHighlighting = false;
+                if (controlsToSearch[i] is UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox &&
+                    ((UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)controlsToSearch[i]).HighlightType != Highlighting.SyntaxHightlightType.None)
+                    ((UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)controlsToSearch[i]).SuspendHighlighting = false;
 
-                this.lastCollectionIndex = -1;
-                this.lastFindStartIndex = 0;
-                this.lastFindLength = 0;
+                lastCollectionIndex = -1;
+                lastFindStartIndex = 0;
+                lastFindLength = 0;
             }
 
 
@@ -169,21 +166,21 @@ namespace SqlSync
 
         private void txtLineNumber_TextChanged(object sender, EventArgs e)
         {
-            int lineNumber; 
-            if(Int32.TryParse(txtLineNumber.Text,out lineNumber))
+            int lineNumber;
+            if (Int32.TryParse(txtLineNumber.Text, out lineNumber))
             {
-                for (int i = 0; i < this.controlsToSearch.Count; i++)
+                for (int i = 0; i < controlsToSearch.Count; i++)
                 {
-                    
-                    if (this.controlsToSearch[i] is RichTextBox)
+
+                    if (controlsToSearch[i] is RichTextBox)
                     {
-                       if (lineNumber >= 1 && this.controlsToSearch[i].Lines.Length > lineNumber)
+                        if (lineNumber >= 1 && controlsToSearch[i].Lines.Length > lineNumber)
                         {
                             int start = 0;
                             int location = 0;
 
                             Regex regNewLine = new Regex("\n");
-                            MatchCollection matches = regNewLine.Matches(this.controlsToSearch[i].Text);
+                            MatchCollection matches = regNewLine.Matches(controlsToSearch[i].Text);
                             if (matches.Count > lineNumber)
                             {
                                 location = matches[lineNumber - 1].Index;
@@ -192,28 +189,28 @@ namespace SqlSync
                                 else
                                     start = 0;
                             }
-                            if ((lineNumber - 1) == this.controlsToSearch[i].GetLineFromCharIndex(location))
+                            if ((lineNumber - 1) == controlsToSearch[i].GetLineFromCharIndex(location))
                             {
                                 ClearHighlighting(i);
 
-                                if (this.controlsToSearch[i] is UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)
-                                    ((UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)this.controlsToSearch[i]).SuspendHighlighting = true;
+                                if (controlsToSearch[i] is UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)
+                                    ((UrielGuy.SyntaxHighlighting.SyntaxHighlightingTextBox)controlsToSearch[i]).SuspendHighlighting = true;
 
-                                this.controlsToSearch[i].Select(start, location - start);
+                                controlsToSearch[i].Select(start, location - start);
                             }
                         }
                         else
                         {
-                            this.controlsToSearch[i].Select(this.controlsToSearch[i].Text.Length - 1, 0);
+                            controlsToSearch[i].Select(controlsToSearch[i].Text.Length - 1, 0);
                         }
-                        this.controlsToSearch[i].SelectionBackColor = Color.LawnGreen;
-                        this.controlsToSearch[i].ScrollToCaret();
+                        controlsToSearch[i].SelectionBackColor = Color.LawnGreen;
+                        controlsToSearch[i].ScrollToCaret();
 
                     }
                 }
             }
         }
     }
-    
+
 
 }

@@ -1,26 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SqlSync.ObjectScript.Hash
+﻿namespace SqlSync.ObjectScript.Hash
 {
     public class ObjectScriptHashData
     {
         public void ResetComparisonValues()
         {
-            this.storedProcedures.ResetComparisonValues();
-            this.tables.ResetComparisonValues();
-            this.views.ResetComparisonValues();
-            this.functions.ResetComparisonValues();
-            this.keysAndIndexes.ResetComparisonValues();
-            this.logins.ResetComparisonValues();
-            this.roles.ResetComparisonValues();
-            this.schemas.ResetComparisonValues();
-            this.users.ResetComparisonValues();
+            storedProcedures.ResetComparisonValues();
+            tables.ResetComparisonValues();
+            views.ResetComparisonValues();
+            functions.ResetComparisonValues();
+            keysAndIndexes.ResetComparisonValues();
+            logins.ResetComparisonValues();
+            roles.ResetComparisonValues();
+            schemas.ResetComparisonValues();
+            users.ResetComparisonValues();
         }
         public override string ToString()
         {
-            return this.server + "." + this.database;
+            return server + "." + database;
         }
         private bool isBaseLine;
 

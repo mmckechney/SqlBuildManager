@@ -1,5 +1,4 @@
-﻿using Microsoft.SqlServer.TransactSql.ScriptDom;
-using MoreLinq;
+﻿using MoreLinq;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
@@ -13,7 +12,7 @@ namespace SqlBuildManager.Console.Threaded
     {
         public static List<IEnumerable<(string, List<DatabaseOverride>)>> ConcurrencyByType(MultiDbData multiData, int concurrency, ConcurrencyType concurrencyType)
         {
-            switch(concurrencyType)
+            switch (concurrencyType)
             {
                 case ConcurrencyType.Server:
                     return ConcurrencyByServer(multiData);
@@ -47,16 +46,16 @@ namespace SqlBuildManager.Console.Threaded
         {
             List<IEnumerable<(string, List<DatabaseOverride>)>> tmp = new List<IEnumerable<(string, List<DatabaseOverride>)>>();
             var serverGroup = multiData.GroupBy(m => m.ServerName);
-            foreach ( var s in serverGroup)
+            foreach (var s in serverGroup)
             {
                 var lstSrv = new List<(string, List<DatabaseOverride>)>();
                 foreach (var o in s)
                 {
-                    lstSrv.Add( (o.ServerName, o.Overrides.Select(d => d).ToList()));
+                    lstSrv.Add((o.ServerName, o.Overrides.Select(d => d).ToList()));
                 }
                 tmp.Add(lstSrv);
             }
-    
+
             return tmp;
         }
 
@@ -71,9 +70,9 @@ namespace SqlBuildManager.Console.Threaded
         {
             List<IEnumerable<(string, List<DatabaseOverride>)>> tmp = new List<IEnumerable<(string, List<DatabaseOverride>)>>();
             var serverChunks = ConcurrencyByServer(multiData);
-            foreach(var sC in serverChunks)
+            foreach (var sC in serverChunks)
             {
-               
+
                 var subChunks = sC.SplitIntoChunks(concurrency);
                 tmp.AddRange(subChunks);
             }
@@ -135,9 +134,9 @@ namespace SqlBuildManager.Console.Threaded
                     }
 
                     //If doing this combining would put us under the number of buckets needed, then add individual buckets to the desired count and let the clean up take care of the rest.
-                    if(consolidated.Count + buckets.Count - nextTmp.Count < fixedBucketCount)
+                    if (consolidated.Count + buckets.Count - nextTmp.Count < fixedBucketCount)
                     {
-                        while(consolidated.Count() < fixedBucketCount && buckets.Count != 0)
+                        while (consolidated.Count() < fixedBucketCount && buckets.Count != 0)
                         {
                             consolidated.Add(buckets.First());
                             buckets.RemoveAt(0);
@@ -157,7 +156,7 @@ namespace SqlBuildManager.Console.Threaded
                     consolidated.Add(tmp);
 
                     //if any further grouping will result in too few buckets, then add the remaining buckets individually
-                    if(consolidated.Count() + buckets.Count() == fixedBucketCount && buckets.Count() > 0)
+                    if (consolidated.Count() + buckets.Count() == fixedBucketCount && buckets.Count() > 0)
                     {
                         buckets.ForEach(b => consolidated.Add(b));
                         buckets.Clear();
@@ -204,7 +203,7 @@ namespace SqlBuildManager.Console.Threaded
         public static List<string[]> ConvertBucketsToConfigLines(List<IEnumerable<(string, List<DatabaseOverride>)>> buckets)
         {
             List<string[]> bucketStrings = new List<string[]>();
-            foreach(var bucket in buckets)
+            foreach (var bucket in buckets)
             {
                 var tmp = new List<string>();
                 foreach (var sub in bucket)

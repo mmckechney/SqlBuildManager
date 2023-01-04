@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 
 ///  Code courtesy of Paul Welter @ http://weblogs.asp.net/pwelter34/archive/2006/05/03/444961.aspx
@@ -20,7 +18,7 @@ namespace SqlSync.SqlBuild
             get { return keyName; }
             set { keyName = value; }
         }
-        private string valueName ="value";
+        private string valueName = "value";
 
         public string ValueName
         {
@@ -79,11 +77,11 @@ namespace SqlSync.SqlBuild
             while (reader.NodeType != System.Xml.XmlNodeType.EndElement)
             {
 
-                reader.ReadStartElement(this.itemName);
+                reader.ReadStartElement(itemName);
 
 
 
-                reader.ReadStartElement(this.keyName);
+                reader.ReadStartElement(keyName);
 
                 TKey key = (TKey)keySerializer.Deserialize(reader);
 
@@ -91,7 +89,7 @@ namespace SqlSync.SqlBuild
 
 
 
-                reader.ReadStartElement(this.valueName);
+                reader.ReadStartElement(valueName);
 
                 TValue value = (TValue)valueSerializer.Deserialize(reader);
 
@@ -99,7 +97,7 @@ namespace SqlSync.SqlBuild
 
 
 
-                this.Add(key, value);
+                Add(key, value);
 
 
 
@@ -124,14 +122,14 @@ namespace SqlSync.SqlBuild
 
 
 
-            foreach (TKey key in this.Keys)
+            foreach (TKey key in Keys)
             {
 
-                writer.WriteStartElement(this.itemName);
+                writer.WriteStartElement(itemName);
 
 
 
-                writer.WriteStartElement(this.keyName);
+                writer.WriteStartElement(keyName);
 
                 keySerializer.Serialize(writer, key);
 
@@ -139,7 +137,7 @@ namespace SqlSync.SqlBuild
 
 
 
-                writer.WriteStartElement(this.valueName);
+                writer.WriteStartElement(valueName);
 
                 TValue value = this[key];
 

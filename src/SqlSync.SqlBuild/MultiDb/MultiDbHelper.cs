@@ -29,7 +29,7 @@ namespace SqlSync.SqlBuild.MultiDb
                         data = (MultiDbData)tmp;
                 }
             }
-            catch 
+            catch
             {
                 try
                 {
@@ -49,7 +49,7 @@ namespace SqlSync.SqlBuild.MultiDb
 
         public static MultiDbData ImportMultiDbTextConfig(string fileName)
         {
-            if(File.Exists(fileName))
+            if (File.Exists(fileName))
             {
                 string[] contents = File.ReadAllLines(fileName);
                 return ImportMultiDbTextConfig(contents);
@@ -58,7 +58,7 @@ namespace SqlSync.SqlBuild.MultiDb
             {
                 log.LogError($"The specified database override configuration file '{fileName}' does not exist");
             }
-            
+
             return null;
         }
 
@@ -93,7 +93,7 @@ namespace SqlSync.SqlBuild.MultiDb
             MultiDbData cfg = new MultiDbData();
             for (int i = 0; i < fileContents.Length; i++)
             {
-                
+
                 string line = fileContents[i];
 
                 //Skip empty lines...
@@ -120,8 +120,8 @@ namespace SqlSync.SqlBuild.MultiDb
 
                     string[] over = arrDb[j].Split(',');
                     DatabaseOverride ovr;
-                    if(over.Length > 1)
-                        ovr= new DatabaseOverride(over[0].Trim().Replace("'",""), over[1].Trim());
+                    if (over.Length > 1)
+                        ovr = new DatabaseOverride(over[0].Trim().Replace("'", ""), over[1].Trim());
                     else
                         ovr = new DatabaseOverride("", over[0].Trim());
 
@@ -172,7 +172,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 {
                     var ser = new ServerData();
                     ser.ServerName = row[0].ToString().Trim();
-                    
+
                     DatabaseOverride ovr;
                     if (tbl.Columns.Count == 2)
                     {
@@ -193,7 +193,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 log.LogInformation($"Found {dbs} target databases across {multi.Count()} target servers");
                 return multi;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 message = exe.Message;
                 return null;
@@ -256,7 +256,7 @@ namespace SqlSync.SqlBuild.MultiDb
             {
                 return false;
             }
-        
+
         }
 
         public static MultiDbQueryConfig LoadMultiDbQueryConfiguration(string fileName)
@@ -282,20 +282,20 @@ namespace SqlSync.SqlBuild.MultiDb
         public static bool ValidateMultiDatabaseData(MultiDbData dbData)
         {
             //for (int i = 0; i < dbData.Count; i++)
-            foreach(var svr in dbData)
+            foreach (var svr in dbData)
             {
                 if (svr.Overrides == null)
                     return false;
 
-            
+
                 if (!ConnectionHelper.ValidateDatabaseOverrides(svr.Overrides))
                     return false;
-       
+
             }
             return true;
         }
 
-        
+
     }
     public class MultiDbConfigurationException : Exception
     {

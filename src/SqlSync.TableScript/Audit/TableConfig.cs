@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace SqlSync.TableScript.Audit
 {
     public class TableConfig
@@ -13,12 +9,12 @@ namespace SqlSync.TableScript.Audit
         }
         public TableConfig(string tableName, SQLSyncAuditingDatabaseTableToAudit configData)
         {
-            this.TableName = tableName;
-            this.ConfigData = configData;
+            TableName = tableName;
+            ConfigData = configData;
         }
         public override string ToString()
         {
-            return this.TableName;
+            return TableName;
         }
 
 

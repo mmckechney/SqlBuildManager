@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 
 ///  Code courtesy of Paul Welter @ http://weblogs.asp.net/pwelter34/archive/2006/05/03/444961.aspx
@@ -16,7 +14,7 @@ namespace SqlSync.ObjectScript.Hash
 
         public void ResetComparisonValues()
         {
-            foreach (HashSet set in this.Values)
+            foreach (HashSet set in Values)
             {
                 set.ComparisonValue = "Added";
             }
@@ -56,10 +54,10 @@ namespace SqlSync.ObjectScript.Hash
 
             XmlSerializer valueSerializer = new XmlSerializer(typeof(string));
 
-            foreach (string key in this.Keys)
+            foreach (string key in Keys)
             {
 
-                writer.WriteStartElement(this.itemName);
+                writer.WriteStartElement(itemName);
                 writer.WriteAttributeString("Name", key);
                 writer.WriteAttributeString("HashValue", this[key].HashValue);
                 writer.WriteAttributeString("ComparisonValue", this[key].ComparisonValue);
@@ -71,9 +69,9 @@ namespace SqlSync.ObjectScript.Hash
 
     }
 
-    
 
-        #endregion
+
+    #endregion
     public class HashSet
     {
         public HashSet(string hashValue, string comparisonValue)

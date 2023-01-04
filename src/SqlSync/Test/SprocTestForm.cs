@@ -1,16 +1,14 @@
+using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using SqlSync.SprocTest;
+using SqlSync.SprocTest.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
 using System.Xml.Serialization;
-using SqlSync.SprocTest;
-using SqlSync.SprocTest.Configuration;
-using  SqlSync.Connection;
-using Microsoft.Extensions.Logging;
 namespace SqlSync.Test
 {
     public partial class SprocTestForm : Form
@@ -38,7 +36,7 @@ namespace SqlSync.Test
         {
             this.cfg = cfg;
             this.connData = connData;
-            this.configurationFileName = configFileName;
+            configurationFileName = configFileName;
         }
         //private TestCase testCase = null;
         List<string> procsTested = new List<string>();
@@ -57,8 +55,8 @@ namespace SqlSync.Test
 
         private void SprocTestForm_Load(object sender, EventArgs e)
         {
-            if (this.logFileName.Length > 0)
-                this.WindowState = FormWindowState.Minimized;
+            if (logFileName.Length > 0)
+                WindowState = FormWindowState.Minimized;
 
             bgTestRunner.RunWorkerAsync();
         }
@@ -66,14 +64,14 @@ namespace SqlSync.Test
         private void bgTestRunner_DoWork(object sender, DoWorkEventArgs e)
         {
             testResults.StartTime = DateTime.Now;
-            testResults.TargetServer = this.connData.SQLServerName;
-            testResults.TargetDatabase = this.connData.DatabaseName;
-            testResults.TestConfigurationFile = this.configurationFileName;
-            if(this.cfg.StoredProcedure != null)
-                testResults.StoredProceduresTested = this.cfg.StoredProcedure.Length;
+            testResults.TargetServer = connData.SQLServerName;
+            testResults.TargetDatabase = connData.DatabaseName;
+            testResults.TestConfigurationFile = configurationFileName;
+            if (cfg.StoredProcedure != null)
+                testResults.StoredProceduresTested = cfg.StoredProcedure.Length;
 
             ((BackgroundWorker)sender).ReportProgress(-1);
-            TestManager mgr = new TestManager(this.cfg, this.connData);
+            TestManager mgr = new TestManager(cfg, connData);
             mgr.StartTests(sender as BackgroundWorker, e);
 
         }
@@ -84,12 +82,12 @@ namespace SqlSync.Test
             {
                 statGeneral.Text = "Running Tests";
                 statProgressBar.Style = ProgressBarStyle.Marquee;
-                this.testCasesRun = 0;
+                testCasesRun = 0;
             }
             else if (e.UserState != null && e.UserState is TestManager.TestResult)
             {
-                this.testResults.TestCasesRun++;
-                this.testCasesRun++;
+                testResults.TestCasesRun++;
+                testCasesRun++;
                 TestManager.TestResult args = (TestManager.TestResult)e.UserState;
                 testResults.Results.Add(args);
                 ListViewItem item = new ListViewItem(new string[] { args.Passed.ToString(), args.StoredProcedureName, args.TestCaseName, args.StatusMessage.Trim().Replace('\r', ':').Replace('\n', ' ') });
@@ -97,14 +95,14 @@ namespace SqlSync.Test
                 if (args.Passed == false)
                 {
                     item.BackColor = Color.Tomato;
-                    this.testResults.FailedTests++;
+                    testResults.FailedTests++;
                     testsFailed++;
                     statFailed.Text = "Failed: " + testsFailed.ToString();
 
                 }
                 else
                 {
-                    this.testResults.PassedTests++;
+                    testResults.PassedTests++;
                     testsPassed++;
                     statPassed.Text = "Passed: " + testsPassed.ToString();
                 }
@@ -116,24 +114,24 @@ namespace SqlSync.Test
                 }
 
                 listView1.Items.Insert(0, item);
-                statTestCaseRunCount.Text = "Test Cases Run: " + this.testCasesRun.ToString();
+                statTestCaseRunCount.Text = "Test Cases Run: " + testCasesRun.ToString();
             }
         }
 
         private void bgTestRunner_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            this.testResults.EndTime = DateTime.Now;
+            testResults.EndTime = DateTime.Now;
             if (e.Cancelled)
                 statGeneral.Text = "Testing Cancelled";
             else
                 statGeneral.Text = " Testing Complete";
 
             statProgressBar.Style = ProgressBarStyle.Blocks;
-            if (this.logFileName.Length > 0)
+            if (logFileName.Length > 0)
             {
-                SaveTestResults(this.logFileName);
-                log.LogInformation("Stored Procedure Testing Complete.\r\nResults saved to: " + this.logFileName);
-                this.Close();
+                SaveTestResults(logFileName);
+                log.LogInformation("Stored Procedure Testing Complete.\r\nResults saved to: " + logFileName);
+                Close();
             }
             btnCancel.Text = "Close";
         }
@@ -144,7 +142,7 @@ namespace SqlSync.Test
                 using (StreamWriter sw = new StreamWriter(fileName, false))
                 {
                     XmlSerializer xmlS = new XmlSerializer(typeof(SprocTestResults));
-                    xmlS.Serialize(sw, this.testResults);
+                    xmlS.Serialize(sw, testResults);
                     sw.Flush();
                     sw.Close();
                 }
@@ -159,9 +157,9 @@ namespace SqlSync.Test
         private void btnCancel_Click(object sender, EventArgs e)
         {
             if (((Button)sender).Text != "Close")
-                this.bgTestRunner.CancelAsync();
+                bgTestRunner.CancelAsync();
             else
-                this.Close();
+                Close();
         }
         public event TestCaseSelectedEventHandler TestCaseSelected;
 
@@ -179,19 +177,19 @@ namespace SqlSync.Test
 
         private void showExecutedSqlToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.listView1.SelectedItems.Count > 0)
+            if (listView1.SelectedItems.Count > 0)
             {
                 PasteScriptForm frmPaste = new PasteScriptForm();
-                frmPaste.ScriptText = this.listView1.SelectedItems[0].SubItems[4].Text;
+                frmPaste.ScriptText = listView1.SelectedItems[0].SubItems[4].Text;
                 frmPaste.ShowDialog();
             }
         }
 
         private void showDetailedResultsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.listView1.SelectedItems.Count > 0)
+            if (listView1.SelectedItems.Count > 0)
             {
-                ResultsViewForm frmR = new ResultsViewForm(this.listView1.SelectedItems[0].Tag as TestManager.TestResult);
+                ResultsViewForm frmR = new ResultsViewForm(listView1.SelectedItems[0].Tag as TestManager.TestResult);
                 frmR.ShowDialog();
             }
         }
@@ -204,21 +202,21 @@ namespace SqlSync.Test
                 saveFileDialog1.Dispose();
 
                 string result = SaveTestResults(fileName);
-                if(result.Length > 0)
+                if (result.Length > 0)
                     MessageBox.Show("Error saving results.\r\n" + result, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             }
         }
     }
-    public delegate void TestCaseSelectedEventHandler(object sender,TestCaseSelectedArgs args);
+    public delegate void TestCaseSelectedEventHandler(object sender, TestCaseSelectedArgs args);
     public class TestCaseSelectedArgs : EventArgs
     {
         public readonly SqlSync.SprocTest.Configuration.TestCase TestCase;
         public readonly string StoredProcedureName;
         public TestCaseSelectedArgs(string storedProcedureName, SqlSync.SprocTest.Configuration.TestCase testCase)
         {
-            this.StoredProcedureName = storedProcedureName;
-            this.TestCase = testCase;
+            StoredProcedureName = storedProcedureName;
+            TestCase = testCase;
         }
     }
 }

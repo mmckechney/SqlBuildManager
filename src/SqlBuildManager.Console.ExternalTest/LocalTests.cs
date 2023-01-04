@@ -6,8 +6,6 @@ using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -29,17 +27,17 @@ namespace SqlBuildManager.Console.ExternalTest
         {
 
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", @"C:\temp");
-            this.settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-windows.json");
-            this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
-            this.linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
-            this.overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-windows.json");
+            settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+            linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
+            overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
-            this.cmdLine = new CommandLineArgs();
-            this.cmdLine.FileInfoSettingsFile = new FileInfo(this.settingsFilePath);
-            this.cmdLine.SettingsFileKey = this.settingsFileKeyPath;
+            cmdLine = new CommandLineArgs();
+            cmdLine.FileInfoSettingsFile = new FileInfo(settingsFilePath);
+            cmdLine.SettingsFileKey = settingsFileKeyPath;
             bool ds;
-            (ds, this.cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            this.overrideFileContents = File.ReadAllLines(this.overrideFilePath).ToList();
+            (ds, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            overrideFileContents = File.ReadAllLines(overrideFilePath).ToList();
 
 
         }
@@ -53,7 +51,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         string StandardExecutionErrorMessage(string logContents)
         {
-            return logContents + System.Environment.NewLine + $"Please check the {this.cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
+            return logContents + System.Environment.NewLine + $"Please check the {cmdLine.RootLoggingPath}\\SqlBuildManager.Console.Execution.log file to see if you need to add an Azure SQL firewall rule to allow connections.\r\nYou may also need to create your Azure environment - please see the /docs/localbuild.md file for instuctions on executing the script";
         }
 
         private static string GetUniqueJobName()
@@ -115,11 +113,11 @@ namespace SqlBuildManager.Console.ExternalTest
 
             var args = new string[]{
                 "threaded",  "run",
-                "--override", this.overrideFilePath,
+                "--override", overrideFilePath,
                 "--packagename", sbmFileName,
-               "--username", this.cmdLine.AuthenticationArgs.UserName,
-                "--password", this.cmdLine.AuthenticationArgs.Password,
-                 "--rootloggingpath", this.cmdLine.RootLoggingPath
+               "--username", cmdLine.AuthenticationArgs.UserName,
+                "--password", cmdLine.AuthenticationArgs.Password,
+                 "--rootloggingpath", cmdLine.RootLoggingPath
                 };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -131,7 +129,7 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
-            Assert.IsTrue(logFileContents.Contains($"Total number of targets: {this.overrideFileContents.Count()}"), $"Should have run against a {this.overrideFileContents.Count()} databases");
+            Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count()}"), $"Should have run against a {overrideFileContents.Count()} databases");
         }
 
         [TestMethod]
@@ -148,12 +146,12 @@ namespace SqlBuildManager.Console.ExternalTest
 
             var args = new string[]{
                 "build",
-            "--override", this.overrideFileContents[0].Split(":")[1],
+            "--override", overrideFileContents[0].Split(":")[1],
             "--packagename", sbmFileName,
-            "--username", this.cmdLine.AuthenticationArgs.UserName,
-            "--password", this.cmdLine.AuthenticationArgs.Password,
-            "--rootloggingpath", this.cmdLine.RootLoggingPath,
-            "--server", this.overrideFileContents[0].Split(":")[0] };
+            "--username", cmdLine.AuthenticationArgs.UserName,
+            "--password", cmdLine.AuthenticationArgs.Password,
+            "--rootloggingpath", cmdLine.RootLoggingPath,
+            "--server", overrideFileContents[0].Split(":")[0] };
 
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();

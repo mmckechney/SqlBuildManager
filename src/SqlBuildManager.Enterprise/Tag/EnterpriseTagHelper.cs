@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace SqlBuildManager.Enterprise.Tag
 {
@@ -9,9 +7,9 @@ namespace SqlBuildManager.Enterprise.Tag
     {
         public static List<string> GetEnterpriseTagRegexValues(List<ScriptTagInference> inferenceList, List<string> adGroupMembership)
         {
- 
+
             if (inferenceList == null)
-                return null;    
+                return null;
             if (adGroupMembership == null)
                 return null;
 

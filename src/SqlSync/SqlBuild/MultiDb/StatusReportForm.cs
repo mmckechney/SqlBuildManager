@@ -1,16 +1,12 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using SqlSync.ObjectScript.Hash;
+using SqlSync.SqlBuild.Status;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
-using SqlSync.ObjectScript.Hash;
-using SqlSync.SqlBuild.AdHocQuery;
-using SqlSync.SqlBuild.Status;
-using SqlSync.Connection;
-using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class StatusReportForm : Form
@@ -35,22 +31,22 @@ namespace SqlSync.SqlBuild.MultiDb
         public StatusReportForm(SqlSyncBuildData buildData, MultiDb.MultiDbData multiDbData, string projectFilePath, string buildZipFileName, ConnectionData connData)
             : this(multiDbData, connData)
         {
-            
+
             this.buildData = buildData;
             this.buildZipFileName = buildZipFileName;
             this.projectFilePath = projectFilePath;
-            this.ddOutputType.SelectedIndex = 0;
+            ddOutputType.SelectedIndex = 0;
         }
 
         private void StatusReport_Load(object sender, EventArgs e)
         {
-            if (this.multiDbData != null)
+            if (multiDbData != null)
             {
-                this.lblServerCount.Text = this.multiDbData.Count.ToString();
-                foreach (ServerData sData in this.multiDbData)
+                lblServerCount.Text = multiDbData.Count.ToString();
+                foreach (ServerData sData in multiDbData)
                     dbTotal += sData.Overrides.Count;
 
-                this.lblDatabaseCount.Text = dbTotal.ToString();
+                lblDatabaseCount.Text = dbTotal.ToString();
             }
 
         }
@@ -84,22 +80,22 @@ namespace SqlSync.SqlBuild.MultiDb
 
             if (DialogResult.OK == saveOutputFileDialog.ShowDialog())
             {
-                
-                this.fileName = saveOutputFileDialog.FileName;
+
+                fileName = saveOutputFileDialog.FileName;
                 statProgressBar.Style = ProgressBarStyle.Marquee;
                 statGeneral.Text = "Working...";
                 KeyValuePair<ReportType, string> report = new KeyValuePair<ReportType, string>(reportType, fileName);
-                this.bgWorker.RunWorkerAsync(report);
-                this.buildDuration = 0;
-                this.timer1.Start();
+                bgWorker.RunWorkerAsync(report);
+                buildDuration = 0;
+                timer1.Start();
             }
-       }
+        }
 
         protected virtual void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            KeyValuePair<ReportType, string> args  = (KeyValuePair<ReportType, string>)e.Argument;
-            SqlBuild.Status.StatusReporting report = new SqlSync.SqlBuild.Status.StatusReporting(this.buildData, multiDbData, this.projectFilePath,this.buildZipFileName);
-            string xml = report.GetScriptStatus(ref this.bgWorker, args.Value, args.Key);
+            KeyValuePair<ReportType, string> args = (KeyValuePair<ReportType, string>)e.Argument;
+            SqlBuild.Status.StatusReporting report = new SqlSync.SqlBuild.Status.StatusReporting(buildData, multiDbData, projectFilePath, buildZipFileName);
+            string xml = report.GetScriptStatus(ref bgWorker, args.Value, args.Key);
             e.Result = xml;
 
             bgWorker.ReportProgress(0, "Generating report output");
@@ -107,28 +103,28 @@ namespace SqlSync.SqlBuild.MultiDb
 
         protected void bgWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            if(e.UserState is string)
-            {                
-                statDbProcessed.Text = "Databases Processed: " + (this.dbTotal - e.ProgressPercentage).ToString() + " of " + dbTotal.ToString();
+            if (e.UserState is string)
+            {
+                statDbProcessed.Text = "Databases Processed: " + (dbTotal - e.ProgressPercentage).ToString() + " of " + dbTotal.ToString();
             }
         }
 
         protected void bgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            this.timer1.Stop();
+            timer1.Stop();
             statProgressBar.Style = ProgressBarStyle.Blocks;
 
             if (e.Result is string || e.Result is ObjectScriptHashReportData || e.Result is bool)
             {
                 statGeneral.Text = "Report Complete.";
-                if (!File.Exists(this.fileName))
+                if (!File.Exists(fileName))
                 {
                     MessageBox.Show("Oh no!! The report query completed but no report file was generated.\r\nPlease check the Application log file for further details.\r\n\r\n(My guess is that there is an issue with your query)", "No file generated", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
                 else if (DialogResult.Yes == MessageBox.Show("Report file is ready. Do you want to open it now?", "Report Ready", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
                 {
                     System.Diagnostics.Process prc = new System.Diagnostics.Process();
-                    prc.StartInfo.FileName = this.fileName;
+                    prc.StartInfo.FileName = fileName;
                     prc.Start();
                 }
             }
@@ -139,7 +135,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 statGeneral.Text = "Error!!";
 
             }
-            
+
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -153,7 +149,7 @@ namespace SqlSync.SqlBuild.MultiDb
             buildDuration++;
             TimeSpan t = new TimeSpan(0, 0, buildDuration);
             statExecutionTime.Text = "Execution Time - " + t.ToString();
-        
+
         }
     }
 }

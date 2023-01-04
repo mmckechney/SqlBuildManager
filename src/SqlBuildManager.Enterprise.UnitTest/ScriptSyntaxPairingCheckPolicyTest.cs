@@ -1,13 +1,12 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using System.Collections.Generic;
+using System;
 
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ScriptSyntaxPairingCheckPolicyTest and is intended
     ///to contain all ScriptSyntaxPairingCheckPolicyTest Unit Tests
@@ -25,7 +24,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy();
             Assert.IsNotNull(target);
             Assert.IsInstanceOfType(target, typeof(ScriptSyntaxPairingCheckPolicy));
- 
+
         }
 
         #region CheckPolicyTest - standard
@@ -39,10 +38,10 @@ namespace SqlBuildManager.Enterprise.UnitTest
             ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy();
             target.ShortDescription = "My Short Desc";
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "BadName", Value = "" });
-            string script = string.Empty; 
+            string script = string.Empty;
             string message = string.Empty;
-            string messageExpected = String.Format("The ScriptSyntaxPairingCheckPolicy \"{0}\" does not have a {1} argument/value. Unable to process policy.", target.ShortDescription, ScriptSyntaxPairingCheckPolicy.parentRegexKey); ; 
-            bool expected = true; 
+            string messageExpected = String.Format("The ScriptSyntaxPairingCheckPolicy \"{0}\" does not have a {1} argument/value. Unable to process policy.", target.ShortDescription, ScriptSyntaxPairingCheckPolicy.parentRegexKey); ;
+            bool expected = true;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
@@ -167,8 +166,8 @@ and a child regex match";
         {
             ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy();
             target.ShortDescription = "My Short Desc";
-            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ParentRegex", Value = "PARENT" , FailureMessage=""});
-            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = "CHILD" ,FailureMessage="" });
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ParentRegex", Value = "PARENT", FailureMessage = "" });
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = "CHILD", FailureMessage = "" });
             string script = @"This script does have a 
  parent with a 
 -- a child regex match in a comment
@@ -258,7 +257,7 @@ and a child regex match";
         {
             ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy();
             target.ShortDescription = "My Short Desc";
-            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ParentRegex", Value = "PARENT"});
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ParentRegex", Value = "PARENT" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = "CHILD", FailureMessage = "" });
             string script = "This script does have a parent and a chld regex match";
             string message = string.Empty;
@@ -271,7 +270,7 @@ and a child regex match";
             Assert.AreEqual(expected, actual);
         }
 
-       
+
 
         /// <summary>
         ///A test for CheckPolicy
@@ -431,7 +430,7 @@ GO
             target.ShortDescription = "My Short Desc";
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ParentRegex", Value = @"\bALTER\b\s*\bTABLE\b.*\bADD\b\s*\bCONSTRAINT\b.*\bPRIMARY\b\s*\bKEY\b" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bPAD_INDEX\b\s*=\s*\bON\b" });
-            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bSTATISTICS_NORECOMPUTE\b\s*=\s*\bON\b", FailureMessage= @"PRIMARY KEYS require a STATISTICS_NORECOMPUTE = ON setting" });
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bSTATISTICS_NORECOMPUTE\b\s*=\s*\bON\b", FailureMessage = @"PRIMARY KEYS require a STATISTICS_NORECOMPUTE = ON setting" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bSORT_IN_TEMPDB\b\s*=\s*\bOFF\b" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bONLINE\b\s*=\s*\bON\b" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bFILLFACTOR\b\s*=\s*\b90\b" });
@@ -443,7 +442,7 @@ GO
 ;
 ";
             string message = string.Empty;
-            string messageExpected =  @"PRIMARY KEYS require a STATISTICS_NORECOMPUTE = ON setting";
+            string messageExpected = @"PRIMARY KEYS require a STATISTICS_NORECOMPUTE = ON setting";
             bool expected = false;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
@@ -507,7 +506,7 @@ GO
 ;
 ";
             string message = string.Empty;
-            string messageExpected =  @"PRIMARY KEYS require a STATISTICS_NORECOMPUTE = ON setting";
+            string messageExpected = @"PRIMARY KEYS require a STATISTICS_NORECOMPUTE = ON setting";
             bool expected = false;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
@@ -596,7 +595,7 @@ GO
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ParentRegex", Value = @"\bCREATE\b.*\bINDEX\b.*\bON" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bPAD_INDEX\b\s*=\s*\bON\b" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bSTATISTICS_NORECOMPUTE\b\s*=\s*\bON\b" });
-            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bSORT_IN_TEMPDB\b\s*=\s*\bOFF\b" , FailureMessage = @"INDEXES require a SORT_IN_TEMPDB = OFF setting"});
+            target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bSORT_IN_TEMPDB\b\s*=\s*\bOFF\b", FailureMessage = @"INDEXES require a SORT_IN_TEMPDB = OFF setting" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bONLINE\b\s*=\s*\bON\b" });
             target.Arguments.Add(new IScriptPolicyArgument() { Name = "ChildPairRegex", Value = @"\bFILLFACTOR\b\s*=\s*\b90\b" });
             string script = @"CREATE NONCLUSTERED INDEX [mytable_index] ON [dbo].[MyTable] 
@@ -643,8 +642,8 @@ GO
         [TestMethod()]
         public void EnforceTest()
         {
-            ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy(); 
-            bool expected = true; 
+            ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy();
+            bool expected = true;
             bool actual;
             target.Enforce = expected;
             actual = target.Enforce;
@@ -657,7 +656,7 @@ GO
         [TestMethod()]
         public void ErrorMessageTest()
         {
-            ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy(); 
+            ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy();
             string expected = "This is my error message";
             string actual;
             target.ErrorMessage = expected;
@@ -685,7 +684,7 @@ GO
         [TestMethod()]
         public void PolicyIdTest()
         {
-            ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy(); 
+            ScriptSyntaxPairingCheckPolicy target = new ScriptSyntaxPairingCheckPolicy();
             string actual;
             actual = target.PolicyId;
             Assert.AreEqual(PolicyIdKey.ScriptSyntaxPairingCheckPolicy, actual);
@@ -703,7 +702,7 @@ GO
             target.ShortDescription = expected;
             actual = target.ShortDescription;
             Assert.AreEqual(expected, actual);
-   
+
         }
     }
 }

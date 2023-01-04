@@ -14,7 +14,7 @@ namespace SqlSync.Connection
         {
             get
             {
-                if (this.overrideDbTarget.Trim().Length == 0)
+                if (overrideDbTarget.Trim().Length == 0)
                     return DefaultDbTarget;
                 else
                     return overrideDbTarget;
@@ -27,12 +27,12 @@ namespace SqlSync.Connection
         }
         public DatabaseOverride(string defaultDbTarget, string overrideDbTarget)
         {
-            this.DefaultDbTarget = defaultDbTarget;
+            DefaultDbTarget = defaultDbTarget;
             this.overrideDbTarget = overrideDbTarget;
         }
         public override string ToString()
         {
-            return this.DefaultDbTarget + ";"+ this.overrideDbTarget;
+            return DefaultDbTarget + ";" + overrideDbTarget;
         }
         private List<QueryRowItem> queryRowData = new List<QueryRowItem>();
 
@@ -40,9 +40,9 @@ namespace SqlSync.Connection
         public List<QueryRowItem> QueryRowData
         {
             get { return queryRowData; }
-            set { this.queryRowData = value; }
+            set { queryRowData = value; }
         }
-        public void AppendedQueryRowData(object[] dataArray, int startIndex, DataColumnCollection cols )
+        public void AppendedQueryRowData(object[] dataArray, int startIndex, DataColumnCollection cols)
         {
             for (int i = startIndex; i < dataArray.Length; i++)
             {
@@ -60,14 +60,14 @@ namespace SqlSync.Connection
         public string ColumnName
         {
             get { return columnName; }
-            set { this.columnName = value; }
+            set { columnName = value; }
         }
         private string value;
 
         [XmlAttribute()]
         public string Value
         {
-            get { return this.value; }
+            get { return value; }
             set { this.value = value; }
 
         }
@@ -76,7 +76,7 @@ namespace SqlSync.Connection
             this.columnName = columnName.TrimEnd();
             this.value = value.TrimEnd();
         }
-      
+
     }
 
     // Create a node sorter that implements the IComparer interface.

@@ -1,13 +1,12 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.ScriptHandling.Policy;
 using System.Collections.Generic;
 
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ScriptSyntaxCheckPolicyTest and is intended
     ///to contain all ScriptSyntaxCheckPolicyTest Unit Tests
@@ -15,9 +14,9 @@ namespace SqlBuildManager.Enterprise.UnitTest
     [TestClass()]
     public class ScriptSyntaxCheckPolicyTest
     {
-        
-        
-  
+
+
+
 
 
         [ClassInitialize()]
@@ -35,10 +34,10 @@ namespace SqlBuildManager.Enterprise.UnitTest
 
             dropTableArgsNoException.Add(new IScriptPolicyArgument() { Name = "DropTableRegex", Value = @"DROP\s+TABLE" });
 
-  
+
         }
-        
-     
+
+
 
         /// <summary>
         ///A test for ScriptSyntaxCheckPolicy Constructor
@@ -72,7 +71,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             target.ErrorMessage = execAsErrorMessage;
 
             string script = @"SELECT test FROM dbo.MyTable";
-            string message = string.Empty; 
+            string message = string.Empty;
             string messageExpected = string.Empty;
             bool expected = true;
             bool actual;
@@ -186,7 +185,7 @@ GO
             target.ErrorMessage = selectStarAsErrorMessage;
 
             string script = @"SELECT zyx.* FROM vw_MyTestView xyz";
-            string message = string.Empty; 
+            string message = string.Empty;
             string messageExpected = string.Empty;
             bool expected = true;
             bool actual;
@@ -415,10 +414,10 @@ TABLE MyTable
         [TestMethod()]
         public void ErrorMessageTest()
         {
-            string expected = "Here is my error"; 
+            string expected = "Here is my error";
             ScriptSyntaxCheckPolicy target = new ScriptSyntaxCheckPolicy();
             target.ErrorMessage = expected;
-            
+
             string actual;
             actual = target.ErrorMessage;
             Assert.AreEqual(expected, actual);
@@ -444,7 +443,7 @@ TABLE MyTable
         [TestMethod()]
         public void PolicyIdTest()
         {
-            ScriptSyntaxCheckPolicy target = new ScriptSyntaxCheckPolicy(); 
+            ScriptSyntaxCheckPolicy target = new ScriptSyntaxCheckPolicy();
             string actual;
             actual = target.PolicyId;
             Assert.AreEqual(target.PolicyId, actual);
@@ -456,7 +455,7 @@ TABLE MyTable
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            ScriptSyntaxCheckPolicy target = new ScriptSyntaxCheckPolicy(); 
+            ScriptSyntaxCheckPolicy target = new ScriptSyntaxCheckPolicy();
             string expected = "My Short Desc";
             string actual;
             target.ShortDescription = expected;

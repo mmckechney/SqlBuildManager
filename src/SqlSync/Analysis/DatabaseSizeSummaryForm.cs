@@ -1,12 +1,10 @@
+using SqlSync.Connection;
+using SqlSync.DbInformation;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using SqlSync.DbInformation;
-using SqlSync.Connection;
 
 namespace SqlSync.Analysis
 {
@@ -18,81 +16,81 @@ namespace SqlSync.Analysis
             InitializeComponent();
         }
 
-        public DatabaseSizeSummaryForm(Connection.ConnectionData connData) :this()
+        public DatabaseSizeSummaryForm(Connection.ConnectionData connData) : this()
         {
             this.connData = connData;
-            this.Text = String.Format(this.Text, connData.SQLServerName);
+            Text = String.Format(Text, connData.SQLServerName);
         }
 
         private void DatabaseSizeSummaryForm_Load(object sender, EventArgs e)
         {
-            this.settingsControl1.Server = this.connData.SQLServerName;
+            settingsControl1.Server = connData.SQLServerName;
             GetDatabaseSummary();
         }
 
 
- 
+
         private void mnuChangeSqlServer_Click(object sender, System.EventArgs e)
-		{
-			ConnectionForm frmConnect = new ConnectionForm("Sql Build Manager");
-			DialogResult result = frmConnect.ShowDialog();
-			if(result == DialogResult.OK)
-			{
-					this.connData = frmConnect.SqlConnection;
-                    GetDatabaseSummary();
-			}
-		}
+        {
+            ConnectionForm frmConnect = new ConnectionForm("Sql Build Manager");
+            DialogResult result = frmConnect.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                connData = frmConnect.SqlConnection;
+                GetDatabaseSummary();
+            }
+        }
 
         private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
-            string oldServer = this.connData.SQLServerName;
-            this.connData.SQLServerName = this.settingsControl1.Server;
+            string oldServer = connData.SQLServerName;
+            connData.SQLServerName = settingsControl1.Server;
             if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
             {
-                this.connData.UserId = username;
-                this.connData.Password = password;
+                connData.UserId = username;
+                connData.Password = password;
             }
 
-            this.connData.AuthenticationType = authType;
+            connData.AuthenticationType = authType;
             GetDatabaseSummary();
         }
 
         private void getDatabaseDetailsToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
-            ServerSizeSummaryRow row = (ServerSizeSummaryRow)((DataRowView)this.dataGridView1.CurrentRow.DataBoundItem).Row;
-            AnalysisForm frmAnaly = new AnalysisForm(this.connData, row.DatabaseName);
+            ServerSizeSummaryRow row = (ServerSizeSummaryRow)((DataRowView)dataGridView1.CurrentRow.DataBoundItem).Row;
+            AnalysisForm frmAnaly = new AnalysisForm(connData, row.DatabaseName);
             frmAnaly.Show();
         }
 
         private void GetDatabaseSummary()
         {
-            this.Cursor = Cursors.WaitCursor;
-            this.statSizeSum.Text = "Retrieving Server Data...";
-            this.toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
+            Cursor = Cursors.WaitCursor;
+            statSizeSum.Text = "Retrieving Server Data...";
+            toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
             bgWorker.RunWorkerAsync();
         }
         private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            ServerSizeSummary summ = DbInformation.InfoHelper.GetServerDatabaseInfo(this.connData);
+            ServerSizeSummary summ = DbInformation.InfoHelper.GetServerDatabaseInfo(connData);
             e.Result = summ;
         }
 
         private void bgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ServerSizeSummary summ = (ServerSizeSummary)e.Result;
-            this.serverSizeSummary1 = summ;
-            this.serverSizeSummary1.AcceptChanges();
-            this.dataGridView1.DataSource = summ;
+            serverSizeSummary1 = summ;
+            serverSizeSummary1.AcceptChanges();
+            dataGridView1.DataSource = summ;
 
             double sum = 0.0;
             foreach (ServerSizeSummaryRow row in summ)
                 sum = sum + row.DataSize;
 
             statSizeSum.Text = "Total Server Size: " + sum.ToString() + " MB";
-            this.toolStripProgressBar1.Style = ProgressBarStyle.Blocks;
+            toolStripProgressBar1.Style = ProgressBarStyle.Blocks;
 
-            this.Cursor = Cursors.Default;
+            Cursor = Cursors.Default;
 
         }
 
@@ -111,7 +109,7 @@ namespace SqlSync.Analysis
                 ServerSizeSummary size = (ServerSizeSummary)dataGridView1.DataSource;
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("Database Size Summary");
-                sb.AppendLine("Server:\t" + this.connData.SQLServerName);
+                sb.AppendLine("Server:\t" + connData.SQLServerName);
                 foreach (DataGridViewColumn col in dataGridView1.Columns)
                 {
                     sb.Append(col.HeaderText + "\t");
@@ -127,8 +125,8 @@ namespace SqlSync.Analysis
 
             }
         }
-       
-     
-        
+
+
+
     }
 }

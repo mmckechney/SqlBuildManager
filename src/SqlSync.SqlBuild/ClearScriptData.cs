@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace SqlSync.SqlBuild
 {
     public class ClearScriptData
@@ -12,10 +8,10 @@ namespace SqlSync.SqlBuild
         public readonly string BuildZipFileName;
         public ClearScriptData(string[] selectedScriptIds, SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
         {
-            this.SelectedScriptIds = selectedScriptIds;
-            this.BuildData = buildData;
-            this.ProjectFileName = projectFileName;
-            this.BuildZipFileName = buildZipFileName;
+            SelectedScriptIds = selectedScriptIds;
+            BuildData = buildData;
+            ProjectFileName = projectFileName;
+            BuildZipFileName = buildZipFileName;
         }
     }
 }

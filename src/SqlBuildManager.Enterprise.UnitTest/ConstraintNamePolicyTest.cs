@@ -1,9 +1,9 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ConstraintNamePolicyTest and is intended
     ///to contain all ConstraintNamePolicyTest Unit Tests
@@ -188,7 +188,7 @@ REFERENCES [HumanResources].[Employee] ([EmployeeID])
             Assert.AreEqual(expected, actual);
         }
 
-        
+
         #endregion
         /// <summary>
         ///A test for CheckPolicy
@@ -426,7 +426,7 @@ GO
 
         }
 
-        
+
 
 
 

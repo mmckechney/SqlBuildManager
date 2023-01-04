@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using SqlSync.Connection;
+using System.Collections.Generic;
 namespace SqlSync.SqlBuild
 {
     public class SqlBuildRunData

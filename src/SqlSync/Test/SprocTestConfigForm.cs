@@ -1,29 +1,28 @@
+using SqlSync.Connection;
+using SqlSync.DbInformation;
+using SqlSync.SprocTest;
+using SqlSync.SprocTest.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using SqlSync.SprocTest.Configuration;
-using SqlSync.SprocTest;
-using System.IO;
-using SqlSync.DbInformation;
-using SqlSync.Connection;
 
 namespace SqlSync.Test
 {
-    public partial class SprocTestConfigForm : Form, SqlSync.MRU.IMRUClient 
+    public partial class SprocTestConfigForm : Form, SqlSync.MRU.IMRUClient
     {
         private MRU.MRUManager mruManager = null;
         private Font normalFont = new Font("Microsoft Sans Serif", 8);
-        private Font highlightFont = new Font("Microsoft Sans Serif", 8,FontStyle.Italic);
+        private Font highlightFont = new Font("Microsoft Sans Serif", 8, FontStyle.Italic);
         private int totalTestCases = 0;
         private int totalSprocs = 0;
         private int totalSprocNoTest = 0;
         string strTestCases = "Test Cases: {0}";
         string strSprocs = "Stored Procedures: {0}";
-         string strSprocsNoTest = "Stored Procedures without Tests: {0}";
+        string strSprocsNoTest = "Stored Procedures without Tests: {0}";
         TreeNode lastSelectedNode = null;
         SqlSync.SprocTest.Configuration.Database testConfig = null;
         Connection.ConnectionData connData = null;
@@ -33,7 +32,7 @@ namespace SqlSync.Test
         {
             InitializeComponent();
         }
-        public SprocTestConfigForm(Connection.ConnectionData connData): this()
+        public SprocTestConfigForm(Connection.ConnectionData connData) : this()
         {
             this.connData = connData;
         }
@@ -45,37 +44,37 @@ namespace SqlSync.Test
         {
             if (DialogResult.OK == openFileDialog1.ShowDialog())
             {
-                this.configFileName = openFileDialog1.FileName;
-                OpenMRUFile(this.configFileName);
+                configFileName = openFileDialog1.FileName;
+                OpenMRUFile(configFileName);
             }
         }
 
         private void SprocTestConfigForm_Load(object sender, EventArgs e)
         {
-            if (this.connData == null)
+            if (connData == null)
             {
                 ConnectionForm frmConnect = new ConnectionForm("Stored Proc Testing");
                 DialogResult result = frmConnect.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    this.connData = frmConnect.SqlConnection;
+                    connData = frmConnect.SqlConnection;
                 }
                 else
                 {
                     MessageBox.Show("Stored Procedure Testing can not continue without a valid Sql Connection", "Unable to Load", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    this.Close();
+                    Close();
                     Application.Exit();
                 }
             }
 
-            this.settingsControl1.Server = this.connData.SQLServerName;
-            if (this.configFileName.Length > 0)
+            settingsControl1.Server = connData.SQLServerName;
+            if (configFileName.Length > 0)
             {
                 try
                 {
-                    this.settingsControl1.Project = this.configFileName;
-                    testConfig = SqlSync.SprocTest.TestManager.ReadConfiguration(this.configFileName);
-                    this.connData.DatabaseName = testConfig.Name;
+                    settingsControl1.Project = configFileName;
+                    testConfig = SqlSync.SprocTest.TestManager.ReadConfiguration(configFileName);
+                    connData.DatabaseName = testConfig.Name;
                     BindTreeView();
                     pgBar.Style = ProgressBarStyle.Marquee;
                     bgSprocList.RunWorkerAsync();
@@ -87,13 +86,13 @@ namespace SqlSync.Test
 
             }
 
-            this.mruManager = new SqlSync.MRU.MRUManager();
-            this.mruManager.Initialize(
+            mruManager = new SqlSync.MRU.MRUManager();
+            mruManager.Initialize(
                 this,                              // owner form
                 fileToolStripMenuItem,
                 mnuFileMRU,                        // Recent Files menu item
                 @"Software\Michael McKechney\Sql Sync\Stored Proc Testing"); // Registry path to keep MRU list
-            this.mruManager.MaxDisplayNameLength = 40;
+            mruManager.MaxDisplayNameLength = 40;
 
         }
 
@@ -106,22 +105,22 @@ namespace SqlSync.Test
         }
         private void BindTreeView(string selectedSPName)
         {
-            if (this.testConfig == null)
+            if (testConfig == null)
                 return;
 
-            this.treeView1.Nodes.Clear();
-            this.treeView1.SuspendLayout();
-            this.treeView1.Enabled = false;
-            if (this.testConfig.StoredProcedure == null)
+            treeView1.Nodes.Clear();
+            treeView1.SuspendLayout();
+            treeView1.Enabled = false;
+            if (testConfig.StoredProcedure == null)
                 return;
 
             TreeNode selected = null;
-            for (int i = 0; i < this.testConfig.StoredProcedure.Length; i++)
+            for (int i = 0; i < testConfig.StoredProcedure.Length; i++)
             {
-                StoredProcedure sp = this.testConfig.StoredProcedure[i];
+                StoredProcedure sp = testConfig.StoredProcedure[i];
                 if (sp.ID.Length == 0) sp.ID = Guid.NewGuid().ToString();
 
-               
+
                 TreeNode spNode = new TreeNode(sp.Name);
                 if (sp.Name == selectedSPName)
                     selected = spNode;
@@ -144,46 +143,46 @@ namespace SqlSync.Test
                         spNode.Nodes.Add(caseNode);
                     }
                 }
-                this.treeView1.Nodes.Add(spNode);
-          }
+                treeView1.Nodes.Add(spNode);
+            }
 
-          this.treeView1.CheckBoxes = true;
-          this.treeView1.TreeViewNodeSorter = new NodeSorter();
-          //this.treeView1.ExpandAll();
-          this.treeView1.Sort();
+            treeView1.CheckBoxes = true;
+            treeView1.TreeViewNodeSorter = new NodeSorter();
+            //this.treeView1.ExpandAll();
+            treeView1.Sort();
 
-          if (selected != null)
-          {
-              selected.EnsureVisible();
-              this.treeView1.SelectedNode = selected;
-          }
+            if (selected != null)
+            {
+                selected.EnsureVisible();
+                treeView1.SelectedNode = selected;
+            }
 
-          this.treeView1.Enabled = true;
-          this.treeView1.ResumeLayout();
-          this.UpdateStatusCount();
+            treeView1.Enabled = true;
+            treeView1.ResumeLayout();
+            UpdateStatusCount();
         }
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            this.treeView1.ResetText();
-            if (this.lastSelectedNode != null)
+            treeView1.ResetText();
+            if (lastSelectedNode != null)
             {
-                this.lastSelectedNode.ForeColor = Color.Black;
-                this.lastSelectedNode.NodeFont = normalFont;
-                if (this.lastSelectedNode.Parent != null)
+                lastSelectedNode.ForeColor = Color.Black;
+                lastSelectedNode.NodeFont = normalFont;
+                if (lastSelectedNode.Parent != null)
                 {
-                    this.lastSelectedNode.Parent.ForeColor = Color.Black;
-                    this.lastSelectedNode.Parent.NodeFont = normalFont;
+                    lastSelectedNode.Parent.ForeColor = Color.Black;
+                    lastSelectedNode.Parent.NodeFont = normalFont;
 
                 }
             }
-            this.lastSelectedNode = e.Node;
+            lastSelectedNode = e.Node;
 
             if (e.Node.Tag is TestCase)
             {
                 sprocTestConfigCtrl1.Enabled = true;
-                this.lastSelectedNode.ForeColor = Color.Blue;
-                this.lastSelectedNode.NodeFont = highlightFont;
+                lastSelectedNode.ForeColor = Color.Blue;
+                lastSelectedNode.NodeFont = highlightFont;
                 TestCase tCase = (TestCase)treeView1.SelectedNode.Tag;
 
                 if (e.Node.Parent.Tag is StoredProcedure)
@@ -192,12 +191,12 @@ namespace SqlSync.Test
                     StoredProcedure sp = (StoredProcedure)e.Node.Parent.Tag;
                     if (sp.DerivedParameters == null)
                     {
-                        sp.DerivedParameters = DbInformation.InfoHelper.GetStoredProcParameters(sp.Name, this.connData);
+                        sp.DerivedParameters = DbInformation.InfoHelper.GetStoredProcParameters(sp.Name, connData);
                         if (sp.DerivedParameters == null)
                             MessageBox.Show("Caution: Unable to derive a parameter list for the stored procedure.\r\nYou will not be able to add test cases.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
 
-                    sprocTestConfigCtrl1.SetTestCaseData(tCase, sp.DerivedParameters, sp.Name, this.testConfig.Name);
+                    sprocTestConfigCtrl1.SetTestCaseData(tCase, sp.DerivedParameters, sp.Name, testConfig.Name);
                     sprocTestConfigCtrl1.Enabled = true;
                 }
 
@@ -206,11 +205,11 @@ namespace SqlSync.Test
             {
                 e.Node.ForeColor = Color.Blue;
                 e.Node.NodeFont = highlightFont;
-                this.lastSelectedNode = e.Node;
+                lastSelectedNode = e.Node;
                 sprocTestConfigCtrl1.Enabled = false;
             }
         }
-        
+
 
         private void treeView1_AfterCheck(object sender, TreeViewEventArgs e)
         {
@@ -227,7 +226,8 @@ namespace SqlSync.Test
                         e.Node.Nodes[i].Checked = false;
 
                 }
-            }else if(e.Node.Tag is TestCase)
+            }
+            else if (e.Node.Tag is TestCase)
             {
                 if (e.Node.Checked)
                     ((TestCase)e.Node.Tag).SelectedForRun = true;
@@ -239,10 +239,10 @@ namespace SqlSync.Test
         private void sprocTestConfigCtrl1_TestCaseChanged(object sender, TestConfigChangedEventArgs e)
         {
             TreeNode node = null;
-            if (treeView1.SelectedNode == null && this.lastSelectedNode != null)
-                node = this.lastSelectedNode;
+            if (treeView1.SelectedNode == null && lastSelectedNode != null)
+                node = lastSelectedNode;
             else
-                node = this.treeView1.SelectedNode;
+                node = treeView1.SelectedNode;
 
             if (node == null) return;
 
@@ -256,7 +256,7 @@ namespace SqlSync.Test
 
                 if (sp != null)
                 {
-                    if (!this.testConfig.AddNewTestCase(sp.Name, e.TestCaseConfig))
+                    if (!testConfig.AddNewTestCase(sp.Name, e.TestCaseConfig))
                     {
                         MessageBox.Show("Failed to add the new test case.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
@@ -267,7 +267,7 @@ namespace SqlSync.Test
                         newNode.Text = e.TestCaseConfig.Name;
                         newNode.ForeColor = Color.Blue;
                         newNode.NodeFont = highlightFont;
-                        
+
                         if (node.Tag is StoredProcedure)
                         {
                             node.Nodes.Add(newNode);
@@ -282,7 +282,7 @@ namespace SqlSync.Test
                         totalTestCases++;
                         statTestCaseCount.Text = string.Format(strTestCases, totalTestCases.ToString());
                         newNode.EnsureVisible();
-                        this.lastSelectedNode = newNode;
+                        lastSelectedNode = newNode;
                     }
                 }
             }
@@ -296,14 +296,14 @@ namespace SqlSync.Test
                     node.Parent.ForeColor = Color.Blue;
                     node.Parent.NodeFont = highlightFont;
                     StoredProcedure sp = (StoredProcedure)node.Parent.Tag;
-                    this.testConfig.ModifyExistingTestCase(sp.Name, e.TestCaseConfig);
+                    testConfig.ModifyExistingTestCase(sp.Name, e.TestCaseConfig);
                 }
                 node.Text = e.TestCaseConfig.Name;
                 node.EnsureVisible();
 
             }
 
-            this.testConfig.SaveConfiguration(this.configFileName);
+            testConfig.SaveConfiguration(configFileName);
 
 
         }
@@ -312,9 +312,9 @@ namespace SqlSync.Test
         {
             if (sender is BackgroundWorker)
                 ((BackgroundWorker)sender).ReportProgress(-1);
-            this.connData.DatabaseName = this.testConfig.Name;
+            connData.DatabaseName = testConfig.Name;
 
-            List<DbInformation.ObjectData> fullSpList = DbInformation.InfoHelper.GetStoredProcedureList(this.connData);
+            List<DbInformation.ObjectData> fullSpList = DbInformation.InfoHelper.GetStoredProcedureList(connData);
             List<DbInformation.ObjectData> unusedSprocs = new List<DbInformation.ObjectData>();
             bool found;
             if (testConfig.StoredProcedure != null)
@@ -345,30 +345,30 @@ namespace SqlSync.Test
         private void bgSprocList_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Result != null)
-                this.unusedStoredProcList = (List<DbInformation.ObjectData>)e.Result;
+                unusedStoredProcList = (List<DbInformation.ObjectData>)e.Result;
 
-            this.statGeneral.Text = "Ready.";
-            this.Cursor = Cursors.Default;
+            statGeneral.Text = "Ready.";
+            Cursor = Cursors.Default;
             pgBar.Style = ProgressBarStyle.Blocks;
         }
 
         private void bgSprocList_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            this.Cursor = Cursors.AppStarting;
-            this.statGeneral.Text = "Loading list of Stored Procedures...";
+            Cursor = Cursors.AppStarting;
+            statGeneral.Text = "Loading list of Stored Procedures...";
         }
 
 
         private void mnuAddNewStoredProcedure_Click(object sender, EventArgs e)
         {
-            SqlBuild.Objects.AddObjectForm frmAdd = new SqlSync.SqlBuild.Objects.AddObjectForm(this.unusedStoredProcList, SqlSync.Constants.DbScriptDescription.StoredProcedure, SqlSync.Constants.DbObjectType.StoredProcedure, this.connData);
+            SqlBuild.Objects.AddObjectForm frmAdd = new SqlSync.SqlBuild.Objects.AddObjectForm(unusedStoredProcList, SqlSync.Constants.DbScriptDescription.StoredProcedure, SqlSync.Constants.DbObjectType.StoredProcedure, connData);
             if (DialogResult.OK == frmAdd.ShowDialog())
             {
-                if (frmAdd.SelectedObjects.Count> 0)
+                if (frmAdd.SelectedObjects.Count > 0)
                 {
                     string[] spNames = new string[frmAdd.SelectedObjects.Count];
                     for (int i = 0; i < frmAdd.SelectedObjects.Count; i++)
-                        spNames[i] = frmAdd.SelectedObjects[i].SchemaOwner+"."+frmAdd.SelectedObjects[i].ObjectName;
+                        spNames[i] = frmAdd.SelectedObjects[i].SchemaOwner + "." + frmAdd.SelectedObjects[i].ObjectName;
 
                     AddNewStoredProcedures(spNames);
                 }
@@ -380,11 +380,11 @@ namespace SqlSync.Test
         }
         private void AddNewStoredProcedures(string[] storedProcNames)
         {
-            if (!this.testConfig.AddNewStoredProcedures(storedProcNames))
+            if (!testConfig.AddNewStoredProcedures(storedProcNames))
             {
                 MessageBox.Show("Error adding new stored procedures", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            if (!this.testConfig.SaveConfiguration(this.configFileName))
+            if (!testConfig.SaveConfiguration(configFileName))
             {
                 MessageBox.Show("Error saving the configuration file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -462,7 +462,7 @@ namespace SqlSync.Test
 
         private void btnRunTests_Click(object sender, EventArgs e)
         {
-            SprocTestForm frmTest = new SprocTestForm(this.testConfig, this.connData, this.configFileName);
+            SprocTestForm frmTest = new SprocTestForm(testConfig, connData, configFileName);
             frmTest.TestCaseSelected += new TestCaseSelectedEventHandler(frmTest_TestCaseSelected);
             frmTest.Show();
         }
@@ -482,19 +482,19 @@ namespace SqlSync.Test
             string script = "";
             string desc = "";
             string message;
-            if (this.treeView1.SelectedNode == null)
+            if (treeView1.SelectedNode == null)
                 return;
 
             StoredProcedure sp = null;
-            if(this.treeView1.SelectedNode.Tag is StoredProcedure)
-                sp = (StoredProcedure)this.treeView1.SelectedNode.Tag;
-            else if(this.treeView1.SelectedNode.Parent.Tag is StoredProcedure)
-                sp = (StoredProcedure)this.treeView1.SelectedNode.Parent.Tag;
+            if (treeView1.SelectedNode.Tag is StoredProcedure)
+                sp = (StoredProcedure)treeView1.SelectedNode.Tag;
+            else if (treeView1.SelectedNode.Parent.Tag is StoredProcedure)
+                sp = (StoredProcedure)treeView1.SelectedNode.Parent.Tag;
 
             if (sp == null)
                 return;
 
-            SqlSync.ObjectScript.ObjectScriptHelper helper = new SqlSync.ObjectScript.ObjectScriptHelper(this.connData);
+            SqlSync.ObjectScript.ObjectScriptHelper helper = new SqlSync.ObjectScript.ObjectScriptHelper(connData);
             string name = sp.Name;
             string schemaOwner;
             InfoHelper.ExtractNameAndSchema(name, out name, out schemaOwner);
@@ -503,9 +503,9 @@ namespace SqlSync.Test
 
             ScriptDisplayForm frmDisplay;
             if (script.Length > 0)
-                frmDisplay = new ScriptDisplayForm(script, this.connData.SQLServerName, sp.Name);
+                frmDisplay = new ScriptDisplayForm(script, connData.SQLServerName, sp.Name);
             else
-                frmDisplay = new ScriptDisplayForm(message, this.connData.SQLServerName, sp.Name);
+                frmDisplay = new ScriptDisplayForm(message, connData.SQLServerName, sp.Name);
 
             frmDisplay.Show();
         }
@@ -524,12 +524,12 @@ namespace SqlSync.Test
                     StoredProcedure sp = (StoredProcedure)treeView1.SelectedNode.Parent.Tag;
                     if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete the test case \"" + tC.Name + "\" from the Stored Procedure \"" + sp.Name + "\"?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
                     {
-                        this.testConfig.RemovedTestCase(sp.Name, tC);
-                        this.sprocTestConfigCtrl1.Enabled = false;
-                        this.testConfig.SaveConfiguration(this.configFileName);
-                        this.treeView1.Nodes.Remove(node);
+                        testConfig.RemovedTestCase(sp.Name, tC);
+                        sprocTestConfigCtrl1.Enabled = false;
+                        testConfig.SaveConfiguration(configFileName);
+                        treeView1.Nodes.Remove(node);
                         totalTestCases--;
-                        this.statTestCaseCount.Text = String.Format(strTestCases, totalTestCases.ToString());
+                        statTestCaseCount.Text = String.Format(strTestCases, totalTestCases.ToString());
                         //BindTreeView();
                     }
                 }
@@ -558,18 +558,18 @@ namespace SqlSync.Test
             if (sp != null)
                 if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete the stored procedure \"" + sp.Name + "\"\r\n and all of its test cases?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
                 {
-                    this.testConfig.RemoveStoredProcedure(sp.Name,sp.ID);
-                    this.testConfig.SaveConfiguration(this.configFileName);
+                    testConfig.RemoveStoredProcedure(sp.Name, sp.ID);
+                    testConfig.SaveConfiguration(configFileName);
                     if (node.Nodes.Count > 0)
                         totalTestCases = totalTestCases - node.Nodes.Count;
                     else
                         totalSprocNoTest--;
 
                     totalSprocs--;
-                    this.treeView1.Nodes.Remove(node);
+                    treeView1.Nodes.Remove(node);
                     statTestCaseCount.Text = string.Format(strTestCases, totalTestCases.ToString());
                     statSPCount.Text = string.Format(strSprocs, totalSprocs.ToString());
-                    statSPWithoutTests.Text = string.Format(strSprocsNoTest,totalSprocNoTest.ToString());
+                    statSPWithoutTests.Text = string.Format(strSprocsNoTest, totalSprocNoTest.ToString());
                     //this.BindTreeView();
 
                 }
@@ -582,8 +582,8 @@ namespace SqlSync.Test
             {
                 Dictionary<string, string> parameterList;
                 string spName;
-                TestManager.GetConfigurationFromScript(script, this.connData, out spName, out parameterList);
-                this.testConfig.AddNewTestCase(spName, parameterList);
+                TestManager.GetConfigurationFromScript(script, connData, out spName, out parameterList);
+                testConfig.AddNewTestCase(spName, parameterList);
                 return true;
             }
             catch
@@ -614,31 +614,31 @@ namespace SqlSync.Test
 
         private void settingsControl1_ServerChanged(object sender, string serverName, string username, string password, AuthenticationType authType)
         {
-            this.connData.SQLServerName = serverName;
+            connData.SQLServerName = serverName;
             if (!string.IsNullOrWhiteSpace(username) && (!string.IsNullOrWhiteSpace(password)))
             {
-                this.connData.UserId = username;
-                this.connData.Password = password;
+                connData.UserId = username;
+                connData.Password = password;
             }
-            this.connData.AuthenticationType = authType;
+            connData.AuthenticationType = authType;
 
-            if(!bgSprocList.IsBusy)
+            if (!bgSprocList.IsBusy)
                 bgSprocList.RunWorkerAsync();
         }
 
         private void setTargetDatabaseToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.testConfig == null)
+            if (testConfig == null)
             {
                 MessageBox.Show("Please open or create a new configuration first", "Configuration Needed", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return;
             }
             else
             {
-                SetDatabaseForm frmDb = new SetDatabaseForm(DbInformation.InfoHelper.GetDatabaseList(this.connData), this.testConfig.Name);
+                SetDatabaseForm frmDb = new SetDatabaseForm(DbInformation.InfoHelper.GetDatabaseList(connData), testConfig.Name);
                 frmDb.ShowDialog();
-                this.testConfig.Name = frmDb.CurrentDatabase;
-                this.testConfig.SaveConfiguration(this.configFileName);
+                testConfig.Name = frmDb.CurrentDatabase;
+                testConfig.SaveConfiguration(configFileName);
                 bgSprocList.RunWorkerAsync();
             }
 
@@ -665,10 +665,10 @@ namespace SqlSync.Test
             if (importCfg == null)
                 return;
 
-            if (this.testConfig.Import(importCfg))
+            if (testConfig.Import(importCfg))
             {
-               this.testConfig.SaveConfiguration(this.configFileName);
-               BindTreeView();
+                testConfig.SaveConfiguration(configFileName);
+                BindTreeView();
             }
 
 
@@ -676,7 +676,7 @@ namespace SqlSync.Test
 
         private void menuStrip1_MenuActivate(object sender, EventArgs e)
         {
-            if (this.testConfig == null)
+            if (testConfig == null)
             {
                 importTestCasesToolStripMenuItem.Enabled = false;
                 setTargetDatabaseToolStripMenuItem.Enabled = false;
@@ -695,13 +695,13 @@ namespace SqlSync.Test
                 string script = frmScr.ScriptText;
                 Dictionary<string, string> parameterList;
                 string spName;
-                TestManager.GetConfigurationFromScript(script, this.connData, out spName, out parameterList);
-                TestCase tc = this.testConfig.AddNewTestCase(spName, parameterList);
-                this.testConfig.SaveConfiguration(this.configFileName);
+                TestManager.GetConfigurationFromScript(script, connData, out spName, out parameterList);
+                TestCase tc = testConfig.AddNewTestCase(spName, parameterList);
+                testConfig.SaveConfiguration(configFileName);
                 if (tc != null)
                 {
-                    this.testConfig.SaveConfiguration(this.configFileName);
-                    this.BindTreeView();
+                    testConfig.SaveConfiguration(configFileName);
+                    BindTreeView();
 
 
                     TreeNode newNode = FindTreeNode(spName, tc);
@@ -725,14 +725,14 @@ namespace SqlSync.Test
 
                 for (int i = 0; i < scripts.Length; i++)
                 {
-                    if(!AddNewTestCaseFromScript(scripts[i]))
+                    if (!AddNewTestCaseFromScript(scripts[i]))
                     {
                         string err = (scripts[i].Length < 100) ? scripts[1] : scripts[i].Substring(0, 100) + "...";
                         errors.Add(err);
                     }
                 }
-                this.testConfig.SaveConfiguration(this.configFileName);
-                this.BindTreeView();
+                testConfig.SaveConfiguration(configFileName);
+                BindTreeView();
                 if (errors.Count > 0)
                 {
                     StringBuilder sb = new StringBuilder("Unable to generate test cases for:\r\n");
@@ -746,13 +746,13 @@ namespace SqlSync.Test
 
         public void OpenMRUFile(string fileName)
         {
-            this.Cursor = Cursors.WaitCursor;
+            Cursor = Cursors.WaitCursor;
             if (File.Exists(fileName))
             {
                 try
                 {
                     testConfig = SqlSync.SprocTest.TestManager.ReadConfiguration(fileName);
-                    this.connData.DatabaseName = testConfig.Name;
+                    connData.DatabaseName = testConfig.Name;
                 }
                 catch (Exception exe)
                 {
@@ -763,20 +763,20 @@ namespace SqlSync.Test
             else
             {
                 testConfig = new Database();
-                SetDatabaseForm frmDb = new SetDatabaseForm(DbInformation.InfoHelper.GetDatabaseList(this.connData), "");
+                SetDatabaseForm frmDb = new SetDatabaseForm(DbInformation.InfoHelper.GetDatabaseList(connData), "");
                 frmDb.ShowDialog();
-                this.testConfig.Name = frmDb.CurrentDatabase;
-                this.testConfig.SaveConfiguration(this.configFileName);
+                testConfig.Name = frmDb.CurrentDatabase;
+                testConfig.SaveConfiguration(configFileName);
             }
-            this.mruManager.Add(fileName);
+            mruManager.Add(fileName);
 
-            this.settingsControl1.Project = this.configFileName;
+            settingsControl1.Project = configFileName;
             BindTreeView();
 
             while (bgSprocList.IsBusy)
                 System.Threading.Thread.Sleep(100);
 
-            this.Cursor = Cursors.Default;
+            Cursor = Cursors.Default;
             pgBar.Style = ProgressBarStyle.Marquee;
             bgSprocList.RunWorkerAsync();
         }
@@ -784,16 +784,16 @@ namespace SqlSync.Test
         {
             totalSprocs = treeView1.Nodes.Count;
             statSPCount.Text = String.Format(strSprocs, totalSprocs.ToString());
-            
+
             totalTestCases = 0;
             totalSprocNoTest = 0;
 
-            foreach(TreeNode node in treeView1.Nodes)
+            foreach (TreeNode node in treeView1.Nodes)
             {
-                if(node.Nodes.Count == 0)
+                if (node.Nodes.Count == 0)
                     totalSprocNoTest++;
                 else
-                    totalTestCases = totalTestCases+node.Nodes.Count;
+                    totalTestCases = totalTestCases + node.Nodes.Count;
             }
 
             statSPWithoutTests.Text = String.Format(strSprocsNoTest, totalSprocNoTest.ToString());
@@ -804,10 +804,10 @@ namespace SqlSync.Test
         private void mnuAddNewTestCase_Click(object sender, EventArgs e)
         {
             TreeNode node = null;
-            if (treeView1.SelectedNode == null && this.lastSelectedNode != null)
-                node = this.lastSelectedNode;
+            if (treeView1.SelectedNode == null && lastSelectedNode != null)
+                node = lastSelectedNode;
             else
-                node = this.treeView1.SelectedNode;
+                node = treeView1.SelectedNode;
 
             if (node == null) return;
 
@@ -822,8 +822,8 @@ namespace SqlSync.Test
             {
                 if (sp.DerivedParameters == null)
                 {
-                    this.Cursor = Cursors.AppStarting;
-                    this.statGeneral.Text = "Accessing " + sp.Name + " and deriving parameters.";
+                    Cursor = Cursors.AppStarting;
+                    statGeneral.Text = "Accessing " + sp.Name + " and deriving parameters.";
                     pgBar.Style = ProgressBarStyle.Marquee;
                     bgNewTestCase.RunWorkerAsync(sp);
                 }
@@ -839,15 +839,15 @@ namespace SqlSync.Test
         {
             BackgroundWorker bg = (BackgroundWorker)sender;
             StoredProcedure sp = (StoredProcedure)e.Argument;
-            sp.DerivedParameters = DbInformation.InfoHelper.GetStoredProcParameters(sp.Name, this.connData);
+            sp.DerivedParameters = DbInformation.InfoHelper.GetStoredProcParameters(sp.Name, connData);
             e.Result = sp;
 
         }
 
         private void bgNewTestCase_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            this.Cursor = Cursors.Default;
-            this.statGeneral.Text = "Ready.";
+            Cursor = Cursors.Default;
+            statGeneral.Text = "Ready.";
 
             StoredProcedure sp = (StoredProcedure)e.Result;
 
@@ -860,7 +860,7 @@ namespace SqlSync.Test
 
             TestCase t = new TestCase();
             t.TestCaseId = Guid.NewGuid().ToString();
-            sprocTestConfigCtrl1.SetTestCaseData(t, sp.DerivedParameters, sp.Name, this.testConfig.Name, true);
+            sprocTestConfigCtrl1.SetTestCaseData(t, sp.DerivedParameters, sp.Name, testConfig.Name, true);
             sprocTestConfigCtrl1.Enabled = true;
             pgBar.Style = ProgressBarStyle.Blocks;
 
@@ -891,7 +891,7 @@ namespace SqlSync.Test
             TreeNode tx = x as TreeNode;
             TreeNode ty = y as TreeNode;
             return string.Compare(tx.Text, ty.Text);
-           
+
         }
     }
 }

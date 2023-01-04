@@ -1,32 +1,27 @@
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using Polly;
+using SqlBuildManager.Interfaces.Console;
+using SqlSync.Connection;
+using SqlSync.Constants;
+using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.SqlLogging;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using SqlSync.Connection;
-using SqlSync.DbInformation;
-using SqlSync.DbInformation.ChangeDates;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.SqlLogging;
-using SqlSync.Constants;
-using System.Linq;
-using SqlBuildManager.Interfaces.Console;
-using Microsoft.Extensions.Logging;
-using Polly;
-using SqlSync.SqlBuild.Validator;
 
 namespace SqlSync.SqlBuild
 {
-	/// <summary>
-	/// Summary description for SqlBuildHelper.
-	/// </summary>
-	public class SqlBuildHelper
-	{
+    /// <summary>
+    /// Summary description for SqlBuildHelper.
+    /// </summary>
+    public class SqlBuildHelper
+    {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         internal bool isTransactional = true;
         internal List<DatabaseOverride> targetDatabaseOverrides = null;
@@ -36,96 +31,96 @@ namespace SqlSync.SqlBuild
             set { targetDatabaseOverrides = value; }
         }
         internal BackgroundWorker bgWorker;
-		/// <summary>
-		/// Indicator for external callers that an error occurred. Can also subscribe to ScriptingErrorEvent
-		/// </summary>
-		public bool ErrorOccured;
-		/// <summary>
-		/// DataSet holding build configuration data
-		/// </summary>
-		internal SqlSyncBuildData buildData;
-		/// <summary>
-		/// Data collection used to pass connection data
-		/// </summary>
-		private ConnectionData connData;
-		/// <summary>
-		/// 
-		/// </summary>
-		private string buildType;
-		/// <summary>
-		/// User description of the build
-		/// </summary>
-		internal string buildDescription;
-		/// <summary>
-		/// Index where the build should start
-		/// </summary>
-		private double startIndex;
-		/// <summary>
+        /// <summary>
+        /// Indicator for external callers that an error occurred. Can also subscribe to ScriptingErrorEvent
+        /// </summary>
+        public bool ErrorOccured;
+        /// <summary>
+        /// DataSet holding build configuration data
+        /// </summary>
+        internal SqlSyncBuildData buildData;
+        /// <summary>
+        /// Data collection used to pass connection data
+        /// </summary>
+        private ConnectionData connData;
+        /// <summary>
+        /// 
+        /// </summary>
+        private string buildType;
+        /// <summary>
+        /// User description of the build
+        /// </summary>
+        internal string buildDescription;
+        /// <summary>
+        /// Index where the build should start
+        /// </summary>
+        private double startIndex;
+        /// <summary>
         /// Dictionary containing the BuildConnectData objects with the server/database as key
-		/// </summary>
-        private Dictionary<string, BuildConnectData> connectDictionary = new Dictionary<string,BuildConnectData>();
-		/// <summary>
-		/// Name of the Sql Build project (sbm) file
-		/// </summary>
-		internal string projectFileName; 
-		/// <summary>
-		/// Holding string for the last message from Sql server
-		/// </summary>
-		private string lastSqlMessage = string.Empty;
-		/// <summary>
-		/// Path to the Sql Build project (sbm) file
-		/// </summary>
-		private string projectFilePath = string.Empty;
-		/// <summary>
-		/// Current run for 
-		/// </summary>
-		private SqlSyncBuildData.ScriptRunRow myRunRow;
-		/// <summary>
-		/// Flag for determining if this is a trial (rollback)
-		/// </summary>
-		internal bool isTrialBuild = false;
-		/// <summary>
-		/// Name of the file being used to store scripts
-		/// </summary>
-		internal string scriptLogFileName;
-		/// <summary>
-		/// String to hold the Sql event messages
-		/// </summary>
-		private string sqlInfoMessage = string.Empty;
-		/// <summary>
-		/// Index of the current script of the batch
-		/// </summary>
-		private int currentBatchScriptIndex;
-		/// <summary>
-		/// Index of the single script file to run (if single file run)
-		/// </summary>
-		internal double[] runItemIndexes = new double[0];
-		/// <summary>
-		/// Id of the current build
-		/// </summary>
-		private System.Guid currentBuildId = System.Guid.Empty;
-		/// <summary>
-		/// Flag use to set "script only" setting
-		/// </summary>
-		internal bool runScriptOnly = false;
-		/// <summary>
-		/// Name of the build file (.sbm)
-		/// </summary>
-		internal string buildFileName = string.Empty;
-		/// <summary>
-		/// Names of scripts selected in the GUI
-		/// </summary>
-		private string[] selectedScriptIds = null;
-		/// <summary>
-		/// Public accessor to get the GUID of the current build
-		/// </summary>
-		public System.Guid CurrentBuildId
-		{
-			get
-			{
-				return currentBuildId;
-			}
-		}
+        /// </summary>
+        private Dictionary<string, BuildConnectData> connectDictionary = new Dictionary<string, BuildConnectData>();
+        /// <summary>
+        /// Name of the Sql Build project (sbm) file
+        /// </summary>
+        internal string projectFileName;
+        /// <summary>
+        /// Holding string for the last message from Sql server
+        /// </summary>
+        private string lastSqlMessage = string.Empty;
+        /// <summary>
+        /// Path to the Sql Build project (sbm) file
+        /// </summary>
+        private string projectFilePath = string.Empty;
+        /// <summary>
+        /// Current run for 
+        /// </summary>
+        private SqlSyncBuildData.ScriptRunRow myRunRow;
+        /// <summary>
+        /// Flag for determining if this is a trial (rollback)
+        /// </summary>
+        internal bool isTrialBuild = false;
+        /// <summary>
+        /// Name of the file being used to store scripts
+        /// </summary>
+        internal string scriptLogFileName;
+        /// <summary>
+        /// String to hold the Sql event messages
+        /// </summary>
+        private string sqlInfoMessage = string.Empty;
+        /// <summary>
+        /// Index of the current script of the batch
+        /// </summary>
+        private int currentBatchScriptIndex;
+        /// <summary>
+        /// Index of the single script file to run (if single file run)
+        /// </summary>
+        internal double[] runItemIndexes = new double[0];
+        /// <summary>
+        /// Id of the current build
+        /// </summary>
+        private System.Guid currentBuildId = System.Guid.Empty;
+        /// <summary>
+        /// Flag use to set "script only" setting
+        /// </summary>
+        internal bool runScriptOnly = false;
+        /// <summary>
+        /// Name of the build file (.sbm)
+        /// </summary>
+        internal string buildFileName = string.Empty;
+        /// <summary>
+        /// Names of scripts selected in the GUI
+        /// </summary>
+        private string[] selectedScriptIds = null;
+        /// <summary>
+        /// Public accessor to get the GUID of the current build
+        /// </summary>
+        public System.Guid CurrentBuildId
+        {
+            get
+            {
+                return currentBuildId;
+            }
+        }
         /// <summary>
         /// The hash signature of the build package scripts
         /// </summary>
@@ -151,18 +146,18 @@ namespace SqlSync.SqlBuild
         /// </summary>
         private string buildRequestedBy = string.Empty;
 
-		internal string buildHistoryXmlFile = string.Empty;
-		internal SqlSyncBuildData buildHistoryData= null;
+        internal string buildHistoryXmlFile = string.Empty;
+        internal SqlSyncBuildData buildHistoryData = null;
         internal string externalScriptLogFileName = string.Empty;
-		public SqlBuildHelper(ConnectionData data) :this(data, true, string.Empty, true)
-		{
-		}
-        public SqlBuildHelper(ConnectionData data, bool createScriptRunLogFile, string externalScriptLogFileName,bool isTransactional)
+        public SqlBuildHelper(ConnectionData data) : this(data, true, string.Empty, true)
         {
-            this.connData = data;
+        }
+        public SqlBuildHelper(ConnectionData data, bool createScriptRunLogFile, string externalScriptLogFileName, bool isTransactional)
+        {
+            connData = data;
             this.isTransactional = isTransactional;
-            if(createScriptRunLogFile)
-                this.ScriptLogWriteEvent += new ScriptLogWriteEventHandler(SqlBuildHelper_ScriptLogWriteEvent);
+            if (createScriptRunLogFile)
+                ScriptLogWriteEvent += new ScriptLogWriteEventHandler(SqlBuildHelper_ScriptLogWriteEvent);
 
             if (externalScriptLogFileName != null && externalScriptLogFileName.Length > 0)
                 this.externalScriptLogFileName = externalScriptLogFileName;
@@ -183,8 +178,8 @@ namespace SqlSync.SqlBuild
         public void ProcessMultiDbBuild(MultiDbData multiDbRunData, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             this.bgWorker = bgWorker;
-            this.committedScripts.Clear();
-            this.connectDictionary.Clear();
+            committedScripts.Clear();
+            connectDictionary.Clear();
 
             List<SqlSyncBuildData.BuildRow> buildResults = new List<SqlSyncBuildData.BuildRow>();
             foreach (ServerData srvData in multiDbRunData)
@@ -200,19 +195,19 @@ namespace SqlSync.SqlBuild
 
                 runData.StartIndex = 0;
                 runData.ProjectFileName = multiDbRunData.ProjectFileName;
-                runData.IsTrial =multiDbRunData.RunAsTrial;
+                runData.IsTrial = multiDbRunData.RunAsTrial;
                 runData.BuildFileName = multiDbRunData.BuildFileName;
                 runData.TargetDatabaseOverrides = srvData.Overrides;
-                this.targetDatabaseOverrides = srvData.Overrides;
+                targetDatabaseOverrides = srvData.Overrides;
                 SqlSyncBuildData.BuildRow buildResult = ProcessBuild(runData, bgWorker, e, srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
                 buildResults.Add(buildResult);
-                    
-                if(buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
+
+                if (buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
                 {
-                    PerformRunScriptFinalization(true,buildResults,multiDbRunData, bgWorker, ref e);
+                    PerformRunScriptFinalization(true, buildResults, multiDbRunData, bgWorker, ref e);
                     return;
                 }
-                
+
             }
 
             PerformRunScriptFinalization(false, buildResults, multiDbRunData, bgWorker, ref e);
@@ -233,19 +228,19 @@ namespace SqlSync.SqlBuild
         internal SqlSyncBuildData.BuildRow ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
         {
             this.bgWorker = bgWorker;
-            this.ErrorOccured = false;
-            this.buildData = runData.BuildData;
-            this.buildType = runData.BuildType;
-            this.buildDescription = runData.BuildDescription;
-            this.startIndex = runData.StartIndex;
-            this.projectFileName = runData.ProjectFileName;
-            this.projectFilePath = Path.GetDirectoryName(this.projectFileName);
-            this.isTrialBuild = runData.IsTrial;
-            this.runItemIndexes = runData.RunItemIndexes;
-            this.runScriptOnly = runData.RunScriptOnly;
-            this.buildFileName = Path.GetFileName(runData.BuildFileName);
-            this.targetDatabaseOverrides = runData.TargetDatabaseOverrides;
-            this.logToDatabaseName = runData.LogToDatabaseName;
+            ErrorOccured = false;
+            buildData = runData.BuildData;
+            buildType = runData.BuildType;
+            buildDescription = runData.BuildDescription;
+            startIndex = runData.StartIndex;
+            projectFileName = runData.ProjectFileName;
+            projectFilePath = Path.GetDirectoryName(projectFileName);
+            isTrialBuild = runData.IsTrial;
+            runItemIndexes = runData.RunItemIndexes;
+            runScriptOnly = runData.RunScriptOnly;
+            buildFileName = Path.GetFileName(runData.BuildFileName);
+            targetDatabaseOverrides = runData.TargetDatabaseOverrides;
+            logToDatabaseName = runData.LogToDatabaseName;
             int buildRetries = 0;
 
             if (bgWorker != null)
@@ -254,7 +249,7 @@ namespace SqlSync.SqlBuild
             DataView filteredScripts;
             SqlSyncBuildData.BuildRow myBuild;
 
-            PrepareBuildForRun(serverName, isMultiDbRun, scriptBatchColl, ref e, out filteredScripts,out myBuild);
+            PrepareBuildForRun(serverName, isMultiDbRun, scriptBatchColl, ref e, out filteredScripts, out myBuild);
             SqlSyncBuildData.BuildRow buildResults = null;
 
             //Run the build... retry as needed until we exceed the retry count.
@@ -264,7 +259,7 @@ namespace SqlSync.SqlBuild
                 if (buildRetries > 0)
                 {
                     if (ScriptLogWriteEvent != null)
-                        this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
+                        ScriptLogWriteEvent(null, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
 
                 }
                 buildResults = RunBuildScripts(filteredScripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, ref e);
@@ -286,25 +281,25 @@ namespace SqlSync.SqlBuild
                 var database = ((SqlSyncBuildData.ScriptRow)filteredScripts[0].Row).Database;
                 string targetDatabase = GetTargetDatabase(database);
                 log.LogWarning($"Custom dacpac required for {serverName} : {targetDatabase}. Generating file.");
-                var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, this.connData.AuthenticationType, this.connData.UserId, this.connData.Password, projectFilePath, runData.BuildRevision, runData.DefaultScriptTimeout, runData.AllowObjectDelete);
+                var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, connData.AuthenticationType, connData.UserId, connData.Password, projectFilePath, runData.BuildRevision, runData.DefaultScriptTimeout, runData.AllowObjectDelete);
 
-                if(stat == DacpacDeltasStatus.Success)
+                if (stat == DacpacDeltasStatus.Success)
                 {
                     runData.PlatinumDacPacFileName = string.Empty; //Keep this from becoming an infinite loop by taking out the dacpac name
                     log.LogInformation($"Executing custom dacpac on {targetDatabase}");
-                    var dacStat =  ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
-                    if(dacStat.FinalStatus ==  BuildItemStatus.Committed || dacStat.FinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
+                    var dacStat = ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                    if (dacStat.FinalStatus == BuildItemStatus.Committed || dacStat.FinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
                     {
                         dacStat.FinalStatus = BuildItemStatus.CommittedWithCustomDacpac;
-                        if (this.BuildCommittedEvent != null)
-                            this.BuildCommittedEvent(this, RunnerReturn.CommittedWithCustomDacpac);
+                        if (BuildCommittedEvent != null)
+                            BuildCommittedEvent(this, RunnerReturn.CommittedWithCustomDacpac);
                     }
                 }
-                else if(stat == DacpacDeltasStatus.InSync || stat == DacpacDeltasStatus.OnlyPostDeployment) 
+                else if (stat == DacpacDeltasStatus.InSync || stat == DacpacDeltasStatus.OnlyPostDeployment)
                 {
                     buildResults.FinalStatus = BuildItemStatus.AlreadyInSync;
-                    if (this.BuildCommittedEvent != null)
-                        this.BuildCommittedEvent(this, RunnerReturn.DacpacDatabasesInSync);
+                    if (BuildCommittedEvent != null)
+                        BuildCommittedEvent(this, RunnerReturn.DacpacDatabasesInSync);
                 }
 
             }
@@ -332,10 +327,10 @@ namespace SqlSync.SqlBuild
         /// <param name="e"></param>
         public void ProcessBuild(SqlBuildRunData runData, int allowableTimeoutRetries, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
-            this.connectDictionary.Clear();
-            this.committedScripts.Clear();
+            connectDictionary.Clear();
+            committedScripts.Clear();
 
-            this.ProcessBuild(runData, bgWorker, e, this.connData.SQLServerName, false,null, allowableTimeoutRetries);
+            ProcessBuild(runData, bgWorker, e, connData.SQLServerName, false, null, allowableTimeoutRetries);
 
         }
         /// <summary>
@@ -348,46 +343,46 @@ namespace SqlSync.SqlBuild
         /// <param name="scriptBatchColl"></param>
         public void ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, ScriptBatchCollection scriptBatchColl, string buildRequestedBy, int allowableTimeoutRetries)
         {
-            this.connectDictionary.Clear();
-            this.committedScripts.Clear();
+            connectDictionary.Clear();
+            committedScripts.Clear();
             this.buildRequestedBy = buildRequestedBy;
 
-            this.ProcessBuild(runData, bgWorker, e, this.connData.SQLServerName, false, scriptBatchColl, allowableTimeoutRetries);
+            ProcessBuild(runData, bgWorker, e, connData.SQLServerName, false, scriptBatchColl, allowableTimeoutRetries);
         }
         /// <summary>
         /// Sets the parameters for the build run 
         /// </summary>
         /// <param name="workEventArgs"></param>
-        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun,ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
-		{
+        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
+        {
 
             //Make sure the project file is not read-only
-            if (File.Exists(this.projectFileName))
+            if (File.Exists(projectFileName))
             {
-                File.SetAttributes(this.projectFileName, System.IO.FileAttributes.Normal);
+                File.SetAttributes(projectFileName, System.IO.FileAttributes.Normal);
             }
-            if (this.projectFilePath == null && !string.IsNullOrWhiteSpace(this.projectFileName))
+            if (projectFilePath == null && !string.IsNullOrWhiteSpace(projectFileName))
             {
-                this.projectFilePath = Path.GetDirectoryName(this.projectFileName);
+                projectFilePath = Path.GetDirectoryName(projectFileName);
             }
 
-			//Set the file name for the script log
+            //Set the file name for the script log
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
-            this.scriptLogFileName = Path.Combine(this.projectFilePath, "LogFile-" + DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" + DateTime.Now.Day.ToString().PadLeft(2, '0') + " at " + DateTime.Now.Hour.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Minute.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Second.ToString().PadLeft(2, '0') + ".log");
-			
-			//Get a new build row
+            scriptLogFileName = Path.Combine(projectFilePath, "LogFile-" + DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" + DateTime.Now.Day.ToString().PadLeft(2, '0') + " at " + DateTime.Now.Hour.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Minute.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Second.ToString().PadLeft(2, '0') + ".log");
+
+            //Get a new build row
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Generating Build Record"));
 
-            this.buildHistoryXmlFile = Path.Combine(this.projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
-			myBuild = GetNewBuildRow(serverName);
-			myBuild.UserId = System.Environment.UserName;
+            buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
+            myBuild = GetNewBuildRow(serverName);
+            myBuild.UserId = System.Environment.UserName;
 
-			//Read scripting configuration
+            //Read scripting configuration
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Reading Scripting configuration"));
-			SqlSyncBuildData.ScriptDataTable scriptTable = GetScriptSourceTable(this.buildData);
+            SqlSyncBuildData.ScriptDataTable scriptTable = GetScriptSourceTable(buildData);
 
-			if(scriptTable == null)
-			{
+            if (scriptTable == null)
+            {
                 bgWorker.ReportProgress(0, new GeneralStatusEventArgs("ERROR Reading <script> element in config template"));
                 filteredScripts = null;
                 if (isMultiDbRun)
@@ -396,35 +391,35 @@ namespace SqlSync.SqlBuild
                     myBuild.FinalStatus = BuildItemStatus.RolledBack;
 
                 return;
-			}
+            }
 
-			//Get View
+            //Get View
             filteredScripts = scriptTable.DefaultView;
-			//Sort by Build order column
+            //Sort by Build order column
             filteredScripts.Sort = scriptTable.BuildOrderColumn.ColumnName + " ASC ";
-			//Filter by BuildOrder >= start index
-			if(this.runItemIndexes.Length > 0)
-			{
-				//get the values
-				string list = "";
-				for(int i=0;i<this.runItemIndexes.Length;i++)
-					list +=this.runItemIndexes[i].ToString()+",";
-				list = list.Substring(0,list.Length-1);
+            //Filter by BuildOrder >= start index
+            if (runItemIndexes.Length > 0)
+            {
+                //get the values
+                string list = "";
+                for (int i = 0; i < runItemIndexes.Length; i++)
+                    list += runItemIndexes[i].ToString() + ",";
+                list = list.Substring(0, list.Length - 1);
                 filteredScripts.RowFilter = scriptTable.BuildOrderColumn.ColumnName + " IN (" + list + ")";
-			}
-			else
-			{
+            }
+            else
+            {
                 filteredScripts.RowFilter = scriptTable.BuildOrderColumn.ColumnName + " >=" + startIndex.ToString();
-			}
+            }
 
             //Get the build hash value for use in logging to the databae
             if (scriptBatchColl == null)
-                this.buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(this.projectFilePath, this.buildData);
+                buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, buildData);
             else
-                this.buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
+                buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
 
-            log.LogInformation($"Prepared build for run. Build Package hash = {this.buildPackageHash}");
-		}
+            log.LogInformation($"Prepared build for run. Build Package hash = {buildPackageHash}");
+        }
         /// <summary>
         /// Method that performs the splitting of the scripts into their batch and then executes the scripts
         /// </summary>
@@ -432,29 +427,29 @@ namespace SqlSync.SqlBuild
         /// <param name="myBuild">The build row that has been prepared and is used to contain the build history data</param>
         /// <param name="serverName">The name of the server that will be used for the build</param>
         /// <param name="workEventArgs"></param>
-        internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun,  ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
-		{
+        internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
+        {
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Proceeding with Build"));
-            log.LogDebug($"Processing with build for build Package hash = {this.buildPackageHash}");
-			int overallIndex = 0;
-			int runSequence = 0;
-			bool buildFailure = false;
+            log.LogDebug($"Processing with build for build Package hash = {buildPackageHash}");
+            int overallIndex = 0;
+            int runSequence = 0;
+            bool buildFailure = false;
             bool failureDueToScriptTimeout = false;
 
 
-			try
-			{
+            try
+            {
                 if (view == null)
                 {
                     log.LogError("No scripts selected for execution.");
                     throw new ApplicationException("No scripts selected for execution.");
                 }
 
-				for(int i=0;i<view.Count;i++)
-				{
+                for (int i = 0; i < view.Count; i++)
+                {
                     string[] batchScripts = null;
-					//Get the script file row
-					SqlSyncBuildData.ScriptRow myRow = (SqlSyncBuildData.ScriptRow)view[i].Row;
+                    //Get the script file row
+                    SqlSyncBuildData.ScriptRow myRow = (SqlSyncBuildData.ScriptRow)view[i].Row;
                     //Retrieve the pre-batched file contents if available...
                     if (scriptBatchColl != null)
                     {
@@ -462,10 +457,10 @@ namespace SqlSync.SqlBuild
                         if (b != null)
                             batchScripts = b.ScriptBatchContents;
                     }
-                        
+
                     //If not pre-batched script found, read the script file contents as a batch array
                     if (batchScripts == null || batchScripts.Length == 0)
-                        batchScripts = ReadBatchFromScriptFile(Path.Combine(this.projectFilePath, myRow.FileName), myRow.StripTransactionText, false);
+                        batchScripts = ReadBatchFromScriptFile(Path.Combine(projectFilePath, myRow.FileName), myRow.StripTransactionText, false);
 
                     //Check for database override setting...
                     string targetDatabase = GetTargetDatabase(myRow.Database);
@@ -475,7 +470,7 @@ namespace SqlSync.SqlBuild
                     //Send Notification
                     bgWorker.ReportProgress(0, new BuildScriptEventArgs(i + 1,
                             myRow.FileName,
-                            ((isMultiDbRun)? serverName +"."+targetDatabase : targetDatabase),
+                            ((isMultiDbRun) ? serverName + "." + targetDatabase : targetDatabase),
                             myRow.BuildOrder,
                             "Running Script",
                             myRow.ScriptId,
@@ -483,17 +478,17 @@ namespace SqlSync.SqlBuild
                             scriptRunRowId));
 
                     //Create a new ScriptRun row to record build
-                    this.myRunRow = this.buildHistoryData.ScriptRun.NewScriptRunRow();
+                    myRunRow = buildHistoryData.ScriptRun.NewScriptRunRow();
 
                     //Set basic run row values
-                    this.myRunRow.BuildRow = myBuild;
-                    this.myRunRow.Database = targetDatabase;
-                    this.myRunRow.RunOrder = i + 1;
-                    this.myRunRow.RunStart = DateTime.Now;
-                    this.myRunRow.FileName = myRow.FileName;
-                    this.myRunRow.ScriptRunId = scriptRunRowId.ToString();
+                    myRunRow.BuildRow = myBuild;
+                    myRunRow.Database = targetDatabase;
+                    myRunRow.RunOrder = i + 1;
+                    myRunRow.RunStart = DateTime.Now;
+                    myRunRow.FileName = myRow.FileName;
+                    myRunRow.ScriptRunId = scriptRunRowId.ToString();
 
-					//Get the connection objects for the row
+                    //Get the connection objects for the row
                     BuildConnectData cData = null;
                     try
                     {
@@ -502,18 +497,18 @@ namespace SqlSync.SqlBuild
                     catch (Exception e)
                     {
                         log.LogError(e, $"Database connection to {serverName}.{targetDatabase} failed");
-                        this.myRunRow.Results += "Database connection to " + targetDatabase + " failed\r\n" + e.Message;
-                        this.myRunRow.Success = false;
-                       	this.myRunRow.RunEnd = DateTime.Now;
-					    this.buildHistoryData.ScriptRun.AddScriptRunRow(this.myRunRow);
-					    this.buildHistoryData.AcceptChanges();
+                        myRunRow.Results += "Database connection to " + targetDatabase + " failed\r\n" + e.Message;
+                        myRunRow.Success = false;
+                        myRunRow.RunEnd = DateTime.Now;
+                        buildHistoryData.ScriptRun.AddScriptRunRow(myRunRow);
+                        buildHistoryData.AcceptChanges();
 
 
                         //Write the error to the log...
                         if (ScriptLogWriteEvent != null)
-                            this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, "Database connection to " + targetDatabase +" failed", targetDatabase, myRow.FileName, e.Message + "\r\n" + this.sqlInfoMessage));
+                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, "Database connection to " + targetDatabase + " failed", targetDatabase, myRow.FileName, e.Message + "\r\n" + sqlInfoMessage));
                         //Roll back the whole build
-                        this.RollbackBuild();
+                        RollbackBuild();
                         //Send Notification
                         bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
                         //Set build failure flag
@@ -522,55 +517,55 @@ namespace SqlSync.SqlBuild
 
                     }
 
-					//Check to see if this row can be committed multiple times,if not, check for a commited entry
-					if(myRow.AllowMultipleRuns == false)
-					{
-						if(this.buildData.CommittedScript != null)
-						{
+                    //Check to see if this row can be committed multiple times,if not, check for a commited entry
+                    if (myRow.AllowMultipleRuns == false)
+                    {
+                        if (buildData.CommittedScript != null)
+                        {
 
-							bool hasBlockingSqlLog = false;
-							if(cData.HasLoggingTable)
-								hasBlockingSqlLog = GetBlockingSqlLog(new Guid(myRow.ScriptId),ref cData);
+                            bool hasBlockingSqlLog = false;
+                            if (cData.HasLoggingTable)
+                                hasBlockingSqlLog = GetBlockingSqlLog(new Guid(myRow.ScriptId), ref cData);
 
-                            if(hasBlockingSqlLog)
-							{
-                                log.LogInformation($"Skipping pre-run script { myRow.FileName}");
-								//don't allow the script to be run again
+                            if (hasBlockingSqlLog)
+                            {
+                                log.LogInformation($"Skipping pre-run script {myRow.FileName}");
+                                //don't allow the script to be run again
                                 bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Skipped Pre-Run script", TimeSpan.Zero));
-								continue;
-							}
-						}
-					}
+                                continue;
+                            }
+                        }
+                    }
 
 
 
                     string textHash;
                     SqlBuildFileHelper.GetSHA1Hash(batchScripts, out textHash);
-                    this.myRunRow.FileHash = textHash;
+                    myRunRow.FileHash = textHash;
 
-					//Add script Id to the arraylist for use later
-				    string scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts); // String.Join("\r\n"+BatchParsing.Delimiter+"\r\n",batchScripts);
-                    CommittedScript tmpCommmittedScr = new CommittedScript(new Guid(myRow.ScriptId), this.myRunRow.FileHash, runSequence++, scriptText, myRow.Tag,cData.ServerName,cData.DatabaseName);
+                    //Add script Id to the arraylist for use later
+                    string scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts); // String.Join("\r\n"+BatchParsing.Delimiter+"\r\n",batchScripts);
+                    CommittedScript tmpCommmittedScr = new CommittedScript(new Guid(myRow.ScriptId), myRunRow.FileHash, runSequence++, scriptText, myRow.Tag, cData.ServerName, cData.DatabaseName);
 
 
-					//Create a transaction save point
-					string savePointName = myRow.ScriptId.Replace("-","");
-					try
-					{
-                        if(this.isTransactional)
-						    cData.Transaction.Save(savePointName);
-					}
-					catch(Exception mye)
-					{
+                    //Create a transaction save point
+                    string savePointName = myRow.ScriptId.Replace("-", "");
+                    try
+                    {
+                        if (isTransactional)
+                            cData.Transaction.Save(savePointName);
+                    }
+                    catch (Exception mye)
+                    {
                         log.LogWarning(mye, $"Error creating Transaction save point on {serverName}.{targetDatabase} for script {myRow.FileName}");
-					}
+                    }
 
                     DateTime start = DateTime.Now;
-					//Loop through the batch statements
-					for(int x=0;x<batchScripts.Length;x++)
-					{
+                    //Loop through the batch statements
+                    for (int x = 0; x < batchScripts.Length; x++)
+                    {
                         //Check to see if there is a pending cancellation. If so, break out.
-                        if(this.bgWorker.CancellationPending)
+                        if (bgWorker.CancellationPending)
                         {
                             log.LogInformation("Encountered cancellation pending directive. Breaking out of build");
                             workEventArgs.Cancel = true;
@@ -579,101 +574,101 @@ namespace SqlSync.SqlBuild
 
                         //Make any necessary token replacements
                         batchScripts[x] = PerformScriptTokenReplacement(batchScripts[x]);
-						this.currentBatchScriptIndex = x;
-						overallIndex++;
+                        currentBatchScriptIndex = x;
+                        overallIndex++;
 
-						//Create the SqlCommand object - with or without a transaction...
-						SqlCommand cmd;
-                        if (this.isTransactional)
+                        //Create the SqlCommand object - with or without a transaction...
+                        SqlCommand cmd;
+                        if (isTransactional)
                             cmd = new SqlCommand(batchScripts[x], cData.Connection, cData.Transaction);
                         else
                             cmd = new SqlCommand(batchScripts[x], cData.Connection);
 
-						//cmd.CommandTimeout = this.connData.ScriptTimeout;
-						cmd.CommandTimeout = myRow.ScriptTimeOut;
+                        //cmd.CommandTimeout = this.connData.ScriptTimeout;
+                        cmd.CommandTimeout = myRow.ScriptTimeOut;
 
-						//Clear the info message string
-						this.sqlInfoMessage = string.Empty;
+                        //Clear the info message string
+                        sqlInfoMessage = string.Empty;
 
-						//Execute the SqlCommand
-						try
-						{
-							if(this.runScriptOnly)
-							{
-                                if(ScriptLogWriteEvent != null)
-                                    this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, "Scripted"));
-								continue;
-							}
+                        //Execute the SqlCommand
+                        try
+                        {
+                            if (runScriptOnly)
+                            {
+                                if (ScriptLogWriteEvent != null)
+                                    ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, "Scripted"));
+                                continue;
+                            }
 
-							StringBuilder sb = new StringBuilder();
-								using(SqlDataReader reader = cmd.ExecuteReader())
-								{
-									bool more = true;
-									while(more)
-									{
-										sb.Append("Records Affected: "+reader.RecordsAffected.ToString()+"\r\n");
-										while(reader.Read())
-										{
-											for(int j=0;j<reader.FieldCount;j++)
-											{
-												sb.Append(reader[j]);
-												if(j<reader.FieldCount-1)
-													sb.Append("|");
-												else
-													sb.Append("\r\n");
-											}
-										}
-										more = reader.NextResult();
-									}
-									reader.Close();
-								}
-							
+                            StringBuilder sb = new StringBuilder();
+                            using (SqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                bool more = true;
+                                while (more)
+                                {
+                                    sb.Append("Records Affected: " + reader.RecordsAffected.ToString() + "\r\n");
+                                    while (reader.Read())
+                                    {
+                                        for (int j = 0; j < reader.FieldCount; j++)
+                                        {
+                                            sb.Append(reader[j]);
+                                            if (j < reader.FieldCount - 1)
+                                                sb.Append("|");
+                                            else
+                                                sb.Append("\r\n");
+                                        }
+                                    }
+                                    more = reader.NextResult();
+                                }
+                                reader.Close();
+                            }
 
-							//
-							this.myRunRow.Success = true;
-							this.myRunRow.Results += sb.ToString();
-						
-							//Write to the log...
+
+                            //
+                            myRunRow.Success = true;
+                            myRunRow.Results += sb.ToString();
+
+                            //Write to the log...
                             if (ScriptLogWriteEvent != null)
-                                this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, sb.ToString() + this.sqlInfoMessage));
-						
-						}
-						catch(SqlException e)
-						{
-                            if (e.Message.Trim().ToLower().IndexOf("timeout expired.",StringComparison.CurrentCultureIgnoreCase) > -1)
+                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, sb.ToString() + sqlInfoMessage));
+
+                        }
+                        catch (SqlException e)
+                        {
+                            if (e.Message.Trim().ToLower().IndexOf("timeout expired.", StringComparison.CurrentCultureIgnoreCase) > -1)
                             {
                                 log.LogWarning($"Encountered a Timeout exception for script: \"{cmd.CommandText}\"");
                                 failureDueToScriptTimeout = true;
                             }
 
-							StringBuilder sb = new StringBuilder($"Script File: {myRow.FileName}{Environment.NewLine}");
-							foreach(SqlError error in e.Errors)
-							{
-								sb.Append($"Line Number: {error.LineNumber}{Environment.NewLine}");
+                            StringBuilder sb = new StringBuilder($"Script File: {myRow.FileName}{Environment.NewLine}");
+                            foreach (SqlError error in e.Errors)
+                            {
+                                sb.Append($"Line Number: {error.LineNumber}{Environment.NewLine}");
                                 sb.Append($"Error Message: {error.Message}{Environment.NewLine}");
                                 sb.Append($"Offending Script:{Environment.NewLine}{batchScripts[currentBatchScriptIndex]}");
                                 sb.Append("----------------");
 
                                 log.LogError($"Error running script in: {myRow.FileName}");
                                 log.LogError(error.Message);
-							}
-							this.myRunRow.Success = false;
-							this.myRunRow.Results += sb.ToString();
-						    log.LogDebug(e,sb.ToString());
+                            }
+                            myRunRow.Success = false;
+                            myRunRow.Results += sb.ToString();
+                            log.LogDebug(e, sb.ToString());
 
-							//Write the error to the log...
-                            if(ScriptLogWriteEvent != null)
-                                this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, sb.ToString() + this.sqlInfoMessage));
+                            //Write the error to the log...
+                            if (ScriptLogWriteEvent != null)
+                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, sb.ToString() + sqlInfoMessage));
 
                             //Roll back save point?
                             bool zombiedTransaction = false;
-							if(myRow.RollBackOnError)
-							{
+                            if (myRow.RollBackOnError)
+                            {
                                 try
                                 {
                                     DateTime end = DateTime.Now;
                                     TimeSpan span = new TimeSpan(end.Ticks - start.Ticks);
-                                    if (this.isTransactional)
+                                    if (isTransactional)
                                     {
                                         cData.Transaction.Rollback(savePointName);
                                         bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Script Rolled Back", span));
@@ -689,10 +684,10 @@ namespace SqlSync.SqlBuild
                                     foreach (SqlError err in sqle.Errors)
                                         sb.Append(err.Message + "\r\n");
 
-                                    this.myRunRow.Results += sb.ToString();
-                                    if (this.isTransactional)
+                                    myRunRow.Results += sb.ToString();
+                                    if (isTransactional)
                                     {
-                                        this.RollbackBuild();
+                                        RollbackBuild();
                                         bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
 
                                     }
@@ -707,10 +702,10 @@ namespace SqlSync.SqlBuild
                                     sb.Length = 0;
                                     sb.Append(invalExe.Message + Environment.NewLine);
 
-                                    this.myRunRow.Results += sb.ToString();
-                                    if (this.isTransactional && !invalExe.Message.Contains("This SqlTransaction has completed; it is no longer usable."))
+                                    myRunRow.Results += sb.ToString();
+                                    if (isTransactional && !invalExe.Message.Contains("This SqlTransaction has completed; it is no longer usable."))
                                     {
-                                        this.RollbackBuild();
+                                        RollbackBuild();
                                         bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
                                     }
                                     else
@@ -721,29 +716,29 @@ namespace SqlSync.SqlBuild
                                     buildFailure = true;
 
                                 }
-								//Send Notification
-							}
-							else
-							{
-								//Send Notification;
+                                //Send Notification
+                            }
+                            else
+                            {
+                                //Send Notification;
                                 DateTime end = DateTime.Now;
                                 TimeSpan span = new TimeSpan(end.Ticks - start.Ticks);
-                                if(this.isTransactional)
+                                if (isTransactional)
                                     bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Error, Save Point Not Rolled Back", TimeSpan.Zero));
                                 else
                                     bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Error. No Rollback Available.", TimeSpan.Zero));
-                            
-							}
 
-							//Roll back entire build?
-							if(myRow.CausesBuildFailure || buildFailure)
-							{
+                            }
+
+                            //Roll back entire build?
+                            if (myRow.CausesBuildFailure || buildFailure)
+                            {
                                 DateTime end = DateTime.Now;
                                 TimeSpan span = new TimeSpan(end.Ticks - start.Ticks);
-                                if (this.isTransactional && !zombiedTransaction)
+                                if (isTransactional && !zombiedTransaction)
                                 {
                                     //Roll back the whole build
-                                    this.RollbackBuild();
+                                    RollbackBuild();
                                     //Send Notification
                                     bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
                                 }
@@ -752,127 +747,127 @@ namespace SqlSync.SqlBuild
                                     bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Error. No Rollback Available.", TimeSpan.Zero));
                                 }
 
-								//Set build failure flag
-								buildFailure = true;
-							}
-						}
-						if(buildFailure)
-						{
-							this.ErrorOccured = true;
-							break;
-						}
+                                //Set build failure flag
+                                buildFailure = true;
+                            }
+                        }
+                        if (buildFailure)
+                        {
+                            ErrorOccured = true;
+                            break;
+                        }
 
                         //If one of the batch scripts for a file failed, we need to break out and fail the whole file.
                         if (myRow.RollBackOnError && myRunRow.Success == false)
                             break;
-					}
+                    }
                     if (workEventArgs.Cancel)
                     {
                         DateTime end = DateTime.Now;
                         TimeSpan span = new TimeSpan(end.Ticks - start.Ticks);
                         bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
-                        buildFailure = true; 
+                        buildFailure = true;
                     }
-                    else if (this.myRunRow.Success)//Only add to the committed script list if marked successful
+                    else if (myRunRow.Success)//Only add to the committed script list if marked successful
                     {
                         DateTime end = DateTime.Now;
                         TimeSpan span = new TimeSpan(end.Ticks - start.Ticks);
-                        tmpCommmittedScr.RunStart = this.myRunRow.RunStart;
+                        tmpCommmittedScr.RunStart = myRunRow.RunStart;
                         tmpCommmittedScr.RunEnd = DateTime.Now;
                         committedScripts.Add(tmpCommmittedScr);
                         //Send Notification
-                        bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs($"Script Successful against {this.myRunRow.Database}",span));
+                        bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs($"Script Successful against {myRunRow.Database}", span));
 
                     }
 
-					this.myRunRow.RunEnd = DateTime.Now;
-					this.buildHistoryData.ScriptRun.AddScriptRunRow(this.myRunRow);
-					this.buildHistoryData.AcceptChanges();
+                    myRunRow.RunEnd = DateTime.Now;
+                    buildHistoryData.ScriptRun.AddScriptRunRow(myRunRow);
+                    buildHistoryData.AcceptChanges();
 
-					if(buildFailure)
-					{
-						this.ErrorOccured = true;
-						break;
-					}
+                    if (buildFailure)
+                    {
+                        ErrorOccured = true;
+                        break;
+                    }
 
-					if(this.runScriptOnly)
-					{
+                    if (runScriptOnly)
+                    {
                         bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Scripted", TimeSpan.Zero));
-					}
+                    }
 
 
-				}
-			}
-			catch(Exception e)
-			{
+                }
+            }
+            catch (Exception e)
+            {
                 log.LogError(e, "General build failure");
-				this.ErrorOccured = true;
+                ErrorOccured = true;
                 buildFailure = true;
                 bgWorker.ReportProgress(100, e);
-			}
-			finally
-			{
-				this.buildData.AcceptChanges();
-				this.buildHistoryData.AcceptChanges();
-				this.SaveBuildDataSet(false);
-                if (this.ScriptLogWriteEvent != null)
+            }
+            finally
+            {
+                buildData.AcceptChanges();
+                buildHistoryData.AcceptChanges();
+                SaveBuildDataSet(false);
+                if (ScriptLogWriteEvent != null)
                 {
-                    if (this.isTransactional)
+                    if (isTransactional)
                     {
                         if (!buildFailure)
                         {
-                            if (this.isTrialBuild)
+                            if (isTrialBuild)
                             {
-                                this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", "", "-- Trial Run: Complete Transaction with a rollback--", "Scripted"));
+                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", "", "-- Trial Run: Complete Transaction with a rollback--", "Scripted"));
                             }
                             else
                             {
-                                this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "COMMIT TRANSACTION", "", "-- Complete Transaction --", "Scripted"));
+                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "COMMIT TRANSACTION", "", "-- Complete Transaction --", "Scripted"));
                             }
                         }
                         else
-                            this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", "", "-- ERROR: Rollback Transaction --", "Scripted"));
+                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", "", "-- ERROR: Rollback Transaction --", "Scripted"));
                     }
                     else
                     {
                         if (!buildFailure)
                         {
-                            this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", "", "-- Completed: No Transaction Set --", "Scripted"));
+                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", "", "-- Completed: No Transaction Set --", "Scripted"));
                         }
                         else
                         {
-                            this.ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", "", "-- ERROR: No Transaction Set --", "Scripted"));
+                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", "", "-- ERROR: No Transaction Set --", "Scripted"));
                         }
                     }
 
                 }
 
-			}
+            }
 
             if (buildFailure)
             {
-               
+
                 log.LogError("Build failure. Check execution logs for details");
                 if (!isMultiDbRun)
                 {
-                    PerformRunScriptFinalization(buildFailure, myBuild,null, ref workEventArgs);
+                    PerformRunScriptFinalization(buildFailure, myBuild, null, ref workEventArgs);
                 }
                 else
                 {
-                    if (this.isTransactional)
+                    if (isTransactional)
                         myBuild.FinalStatus = BuildItemStatus.PendingRollBack;
                     else
                         myBuild.FinalStatus = BuildItemStatus.FailedNoTransaction;
                 }
 
-                if (this.isTransactional && failureDueToScriptTimeout)
+                if (isTransactional && failureDueToScriptTimeout)
                 {
                     myBuild.FinalStatus = BuildItemStatus.FailedDueToScriptTimeout;
                 }
             }
             else
             {
-                
+
                 if (isMultiDbRun)
                     myBuild.FinalStatus = BuildItemStatus.Pending;
                 else
@@ -881,27 +876,27 @@ namespace SqlSync.SqlBuild
             }
 
             return myBuild;
-		}
+        }
         internal string PerformScriptTokenReplacement(string script)
         {
             if (ScriptTokens.regBuildDescription.Match(script).Success)
             {
-                if (this.buildDescription == null)
-                    this.buildDescription = "";
-                script = ScriptTokens.regBuildDescription.Replace(script,this.buildDescription);
+                if (buildDescription == null)
+                    buildDescription = "";
+                script = ScriptTokens.regBuildDescription.Replace(script, buildDescription);
             }
 
             if (ScriptTokens.regBuildPackageHash.Match(script).Success)
             {
-                if (this.buildPackageHash == null)
-                    this.buildPackageHash = "";
-                script = ScriptTokens.regBuildDescription.Replace(script, this.buildPackageHash);
+                if (buildPackageHash == null)
+                    buildPackageHash = "";
+                script = ScriptTokens.regBuildDescription.Replace(script, buildPackageHash);
             }
 
             if (ScriptTokens.regBuildFileName.Match(script).Success)
             {
-                if (this.buildFileName != null)
-                    script = ScriptTokens.regBuildFileName.Replace(script, this.buildFileName);
+                if (buildFileName != null)
+                    script = ScriptTokens.regBuildFileName.Replace(script, buildFileName);
                 else
                     script = ScriptTokens.regBuildFileName.Replace(script, "sbx file");
             }
@@ -914,41 +909,41 @@ namespace SqlSync.SqlBuild
             tmp.Add(myBuild);
             PerformRunScriptFinalization(buildFailure, tmp, null, bgWorker, ref workEventArgs);
         }
-        internal void PerformRunScriptFinalization(bool buildFailure, List<SqlSyncBuildData.BuildRow> myBuilds,MultiDbData multiDbRunData, BackgroundWorker bgWorker, ref DoWorkEventArgs workEventArgs)
+        internal void PerformRunScriptFinalization(bool buildFailure, List<SqlSyncBuildData.BuildRow> myBuilds, MultiDbData multiDbRunData, BackgroundWorker bgWorker, ref DoWorkEventArgs workEventArgs)
         {
             DateTime end = DateTime.Now;
-            for(int i=0;i<myBuilds.Count;i++)
+            for (int i = 0; i < myBuilds.Count; i++)
                 myBuilds[i].BuildEnd = DateTime.Now;
 
             //Set the stautus in the XML file
             if (buildFailure) //Cancelled is considered a failure too. 
             {
-                this.ErrorOccured = true;
+                ErrorOccured = true;
                 for (int i = 0; i < myBuilds.Count; i++)
                 {
-                    if (this.isTransactional)
+                    if (isTransactional)
                         myBuilds[i].FinalStatus = BuildItemStatus.RolledBack;
                     else
                         myBuilds[i].FinalStatus = BuildItemStatus.FailedNoTransaction;
                 }
 
-                if (!this.isTransactional)
+                if (!isTransactional)
                 {
                     RecordCommittedScripts(committedScripts);
-                    this.LogCommittedScriptsToDatabase(committedScripts, multiDbRunData);
+                    LogCommittedScriptsToDatabase(committedScripts, multiDbRunData);
 
                 }
             }
             else
             {
-                if (!this.isTrialBuild)
+                if (!isTrialBuild)
                 {
-                    if (this.isTransactional)
+                    if (isTransactional)
                     {
-                        if(bgWorker != null)
+                        if (bgWorker != null)
                             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Attempting to Commit Build"));
 
-                        bool commitSuccess = this.CommitBuild();
+                        bool commitSuccess = CommitBuild();
 
                         if (commitSuccess && bgWorker != null)
                             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Commit Successful"));
@@ -959,23 +954,23 @@ namespace SqlSync.SqlBuild
 
                     //Add the committed scriptIds to the commited scripts section
                     RecordCommittedScripts(committedScripts);
-                    this.LogCommittedScriptsToDatabase(committedScripts, multiDbRunData);
+                    LogCommittedScriptsToDatabase(committedScripts, multiDbRunData);
 
 
-                    if (this.BuildCommittedEvent != null)
-                        this.BuildCommittedEvent(this, RunnerReturn.BuildCommitted);
+                    if (BuildCommittedEvent != null)
+                        BuildCommittedEvent(this, RunnerReturn.BuildCommitted);
                 }
                 else
                 {
-                    if (this.isTransactional)
+                    if (isTransactional)
                     {
-                        this.RollbackBuild();
+                        RollbackBuild();
 
                         for (int i = 0; i < myBuilds.Count; i++)
                             myBuilds[i].FinalStatus = BuildItemStatus.TrialRolledBack;
 
-                        if (this.BuildSuccessTrialRolledBackEvent != null)
-                            this.BuildSuccessTrialRolledBackEvent(this, EventArgs.Empty);
+                        if (BuildSuccessTrialRolledBackEvent != null)
+                            BuildSuccessTrialRolledBackEvent(this, EventArgs.Empty);
                     }
                     else //should never really get here, but just in case :-)
                     {
@@ -987,11 +982,11 @@ namespace SqlSync.SqlBuild
 
             if (buildFailure)
             {
-                if (this.BuildErrorRollBackEvent != null)
-                    this.BuildErrorRollBackEvent(this, EventArgs.Empty);
+                if (BuildErrorRollBackEvent != null)
+                    BuildErrorRollBackEvent(this, EventArgs.Empty);
             }
 
-            this.SaveBuildDataSet(true);
+            SaveBuildDataSet(true);
 
 
             //Set final status
@@ -999,26 +994,26 @@ namespace SqlSync.SqlBuild
             {
                 if (workEventArgs.Cancel)
                 {
-                    if (this.isTransactional)
+                    if (isTransactional)
                     {
-                        if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK;
                     }
                     else
                     {
-                        if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION;
 
                     }
                 }
                 else
                 {
-                    if (this.isTransactional)
+                    if (isTransactional)
                     {
                         if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
                     }
-                    else 
+                    else
                     {
                         if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
@@ -1027,23 +1022,23 @@ namespace SqlSync.SqlBuild
             }
             else
             {
-                if (this.runScriptOnly)
+                if (runScriptOnly)
                 {
-                    if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Script Generation Complete"));
+                    if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Script Generation Complete"));
                     workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
                 }
                 else
                 {
-                    if (this.isTrialBuild == false)
+                    if (isTrialBuild == false)
                     {
-                        if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Committed"));
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Committed"));
                         workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
                     }
                     else
                     {
-                        if (this.isTransactional)
+                        if (isTransactional)
                         {
-                            if (bgWorker != null)  bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Rolled back for Trial Build"));
+                            if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Rolled back for Trial Build"));
                             workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
                         }
                         else //should never really get here
@@ -1057,7 +1052,7 @@ namespace SqlSync.SqlBuild
             }
 
             //All connections committed...clear out dictionary
-            this.connectDictionary.Clear();
+            connectDictionary.Clear();
         }
         /// <summary>
         /// Adds the record of the scripts that have been executed into the CommittedScript list.
@@ -1066,47 +1061,47 @@ namespace SqlSync.SqlBuild
         /// <param name="committedScriptIds"></param>
         /// <returns></returns>
         internal bool RecordCommittedScripts(List<CommittedScript> committedScripts)
-		{
+        {
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Scripts to Log"));
-			
-			for(int i=0;i<committedScripts.Count;i++)
-			{
-                this.buildData.CommittedScript.AddCommittedScriptRow(committedScripts[i].ScriptId.ToString(), committedScripts[i].ServerName, DateTime.Now, true, committedScripts[i].FileHash, this.buildData.SqlSyncBuildProject[0]);
-			}
-			return true;
 
-		}
-		
-		public void ClearScriptBlocks(ClearScriptData scrData , BackgroundWorker bgWorker,DoWorkEventArgs e)
-		{
-            this.projectFileName = scrData.ProjectFileName;
-            this.buildData = scrData.BuildData;
-            this.buildFileName = scrData.BuildZipFileName;
-            this.selectedScriptIds = scrData.SelectedScriptIds;
+            for (int i = 0; i < committedScripts.Count; i++)
+            {
+                buildData.CommittedScript.AddCommittedScriptRow(committedScripts[i].ScriptId.ToString(), committedScripts[i].ServerName, DateTime.Now, true, committedScripts[i].FileHash, buildData.SqlSyncBuildProject[0]);
+            }
+            return true;
+
+        }
+
+        public void ClearScriptBlocks(ClearScriptData scrData, BackgroundWorker bgWorker, DoWorkEventArgs e)
+        {
+            projectFileName = scrData.ProjectFileName;
+            buildData = scrData.BuildData;
+            buildFileName = scrData.BuildZipFileName;
+            selectedScriptIds = scrData.SelectedScriptIds;
             this.bgWorker = bgWorker;
 
-			bgWorker.ReportProgress(0,new GeneralStatusEventArgs("Clearing Script Blocks"));
+            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Clearing Script Blocks"));
 
-            this.EnsureLogTablePresence();
+            EnsureLogTablePresence();
 
             SqlCommand cmd = new SqlCommand("UPDATE SqlBuild_Logging SET AllowScriptBlock = 0, AllowBlockUpdateId = @UserId WHERE ScriptId = @ScriptId AND AllowScriptBlock = 1");
             cmd.Parameters.Add("@ScriptId", SqlDbType.UniqueIdentifier);
             cmd.Parameters.AddWithValue("@UserId", System.Environment.UserName);
-            for (int i = 0; i < this.selectedScriptIds.Length; i++)
+            for (int i = 0; i < selectedScriptIds.Length; i++)
             {
-                DataRow[] rows = this.buildData.Script.Select(this.buildData.Script.ScriptIdColumn.ColumnName + "='" + this.selectedScriptIds[i] + "'");
+                DataRow[] rows = buildData.Script.Select(buildData.Script.ScriptIdColumn.ColumnName + "='" + selectedScriptIds[i] + "'");
                 if (rows != null && rows.Length > 0)
                 {
                     SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)rows[0];
                     bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Clearing " + row.FileName));
 
                     //Update local XML Log
-                    DataRow[] commitRows = this.buildData.CommittedScript.Select(
-                        this.buildData.CommittedScript.ServerNameColumn.ColumnName + "='" + this.connData.SQLServerName + "' AND " +
-                        this.buildData.CommittedScript.ScriptIdColumn.ColumnName + "='" + this.selectedScriptIds[i] + "' AND (" +
-                        this.buildData.CommittedScript.AllowScriptBlockColumn.ColumnName + "= 1 OR " +
-                        this.buildData.CommittedScript.AllowScriptBlockColumn.ColumnName + "='true' OR " +
-                        this.buildData.CommittedScript.AllowScriptBlockColumn.ColumnName + " IS NULL)");
+                    DataRow[] commitRows = buildData.CommittedScript.Select(
+                        buildData.CommittedScript.ServerNameColumn.ColumnName + "='" + connData.SQLServerName + "' AND " +
+                        buildData.CommittedScript.ScriptIdColumn.ColumnName + "='" + selectedScriptIds[i] + "' AND (" +
+                        buildData.CommittedScript.AllowScriptBlockColumn.ColumnName + "= 1 OR " +
+                        buildData.CommittedScript.AllowScriptBlockColumn.ColumnName + "='true' OR " +
+                        buildData.CommittedScript.AllowScriptBlockColumn.ColumnName + " IS NULL)");
 
                     if (commitRows != null && commitRows.Length > 0)
                     {
@@ -1114,25 +1109,25 @@ namespace SqlSync.SqlBuild
                         {
                             ((SqlSyncBuildData.CommittedScriptRow)commitRows[j]).AllowScriptBlock = false;
                         }
-                        this.buildData.CommittedScript.AcceptChanges();
+                        buildData.CommittedScript.AcceptChanges();
                     }
 
                     //Update Sql server log
                     string targetDatabase = GetTargetDatabase(row.Database);
-                    BuildConnectData cData = GetConnectionDataClass(this.connData.SQLServerName,targetDatabase);
-                    this.EnsureLogTablePresence();
+                    BuildConnectData cData = GetConnectionDataClass(connData.SQLServerName, targetDatabase);
+                    EnsureLogTablePresence();
                     cmd.Connection = cData.Connection;
                     cmd.Transaction = cData.Transaction;
-                    cmd.Parameters["@ScriptId"].Value = new System.Guid(this.selectedScriptIds[i]);
+                    cmd.Parameters["@ScriptId"].Value = new System.Guid(selectedScriptIds[i]);
                     cmd.ExecuteNonQuery();
                 }
             }
 
-            this.CommitBuild();
-            this.SaveBuildDataSet(true);
+            CommitBuild();
+            SaveBuildDataSet(true);
 
             bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Selected Script Blocks Cleared"));
-		}
+        }
 
         /// <summary>
         /// Gets the database to actually execute against based on the set default and any matching override
@@ -1141,9 +1136,9 @@ namespace SqlSync.SqlBuild
         /// <returns>Actual database to execute against</returns>coo
         internal string GetTargetDatabase(string defaultDatabase)
         {
-            if (this.targetDatabaseOverrides != null)
+            if (targetDatabaseOverrides != null)
             {
-                return ConnectionHelper.GetTargetDatabase(defaultDatabase, this.targetDatabaseOverrides);
+                return ConnectionHelper.GetTargetDatabase(defaultDatabase, targetDatabaseOverrides);
             }
             else if (OverrideData.TargetDatabaseOverrides != null)
             {
@@ -1153,7 +1148,7 @@ namespace SqlSync.SqlBuild
             {
                 return defaultDatabase;
             }
-            
+
         }
         //public static string GetTargetDatabase(string serverName, string defaultDatabase, MultiDbData multiDbRunData)
         //{
@@ -1178,59 +1173,59 @@ namespace SqlSync.SqlBuild
         /// Ensures that the SqlBuild_Logging table exists and that it is setup properly. Self-heals if it is not. 
         /// </summary>
         private void EnsureLogTablePresence()
-		{
-            this.sqlInfoMessage = string.Empty;
-			//Self healing: add the table if needed
+        {
+            sqlInfoMessage = string.Empty;
+            //Self healing: add the table if needed
             SqlCommand createTableCmd = new SqlCommand(Properties.Resources.LoggingTable);
-            Dictionary<string, BuildConnectData>.KeyCollection keys = this.connectDictionary.Keys;
-			foreach(string key in keys)
-			{
-                this.sqlInfoMessage = string.Empty;
-				try
-				{
+            Dictionary<string, BuildConnectData>.KeyCollection keys = connectDictionary.Keys;
+            foreach (string key in keys)
+            {
+                sqlInfoMessage = string.Empty;
+                try
+                {
 
-                    createTableCmd.Connection = ((BuildConnectData)this.connectDictionary[key]).Connection;
-                    
+                    createTableCmd.Connection = ((BuildConnectData)connectDictionary[key]).Connection;
+
                     //If there is an alternate target for logging, check to see if this connection is for that database, if not, skip it.
-                    if (this.logToDatabaseName.Length > 0 && !createTableCmd.Connection.Database.Equals(this.logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
+                    if (logToDatabaseName.Length > 0 && !createTableCmd.Connection.Database.Equals(logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
                         continue;
 
-					if(createTableCmd.Connection.State == ConnectionState.Closed)
-						createTableCmd.Connection.Open();
+                    if (createTableCmd.Connection.State == ConnectionState.Closed)
+                        createTableCmd.Connection.Open();
 
-                    if (((BuildConnectData)this.connectDictionary[key]).Transaction != null)
-                        createTableCmd.Transaction = ((BuildConnectData)this.connectDictionary[key]).Transaction;
+                    if (((BuildConnectData)connectDictionary[key]).Transaction != null)
+                        createTableCmd.Transaction = ((BuildConnectData)connectDictionary[key]).Transaction;
 
-					createTableCmd.ExecuteNonQuery();
-                    log.LogDebug($"EnsureLogTablePresence Table Sql Messages for {createTableCmd.Connection.DataSource}.{ createTableCmd.Connection.Database}:\r\n{this.sqlInfoMessage}");
-				}
-				catch(Exception e)
-				{
-                    log.LogError(e, $"Error ensuring log table presence for {createTableCmd.Connection.DataSource}.{ createTableCmd.Connection.Database}");
-	    		}
-			}
+                    createTableCmd.ExecuteNonQuery();
+                    log.LogDebug($"EnsureLogTablePresence Table Sql Messages for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}:\r\n{sqlInfoMessage}");
+                }
+                catch (Exception e)
+                {
+                    log.LogError(e, $"Error ensuring log table presence for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
+                }
+            }
             //SqlCommand createCommitIndex = new SqlCommand(GetFromResources("SqlSync.SqlBuild.SqlLogging.LoggingTableCommitCheckIndex.sql"));
             SqlCommand createCommitIndex = new SqlCommand(Properties.Resources.LoggingTableCommitCheckIndex);
             foreach (string key in keys)
             {
-                this.sqlInfoMessage = string.Empty;
+                sqlInfoMessage = string.Empty;
                 try
                 {
-                    createCommitIndex.Connection = ((BuildConnectData)this.connectDictionary[key]).Connection;
+                    createCommitIndex.Connection = ((BuildConnectData)connectDictionary[key]).Connection;
 
                     //If there is an alternate target for logging, check to see if this connection is for that database, if not, skip it.
-                    if (this.logToDatabaseName.Length > 0 && !createCommitIndex.Connection.Database.Equals(this.logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
+                    if (logToDatabaseName.Length > 0 && !createCommitIndex.Connection.Database.Equals(logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
                         continue;
 
 
                     if (createCommitIndex.Connection.State == ConnectionState.Closed)
                         createCommitIndex.Connection.Open();
 
-                    if (((BuildConnectData)this.connectDictionary[key]).Transaction != null)
-                        createCommitIndex.Transaction = ((BuildConnectData)this.connectDictionary[key]).Transaction;
+                    if (((BuildConnectData)connectDictionary[key]).Transaction != null)
+                        createCommitIndex.Transaction = ((BuildConnectData)connectDictionary[key]).Transaction;
 
                     createCommitIndex.ExecuteNonQuery();
-                    log.LogDebug($"EnsureLogTablePresence Index Sql Messages for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}:\r\n{this.sqlInfoMessage}");
+                    log.LogDebug($"EnsureLogTablePresence Index Sql Messages for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}:\r\n{sqlInfoMessage}");
 
                 }
                 catch (Exception e)
@@ -1238,10 +1233,10 @@ namespace SqlSync.SqlBuild
                     log.LogError(e, $"Error ensuring log table commit check index for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
                 }
             }
-            log.LogDebug($"sqlInfoMessage value: {this.sqlInfoMessage}");
+            log.LogDebug($"sqlInfoMessage value: {sqlInfoMessage}");
             log.LogDebug("Exiting EnsureLogPresence method");
-            this.sqlInfoMessage = string.Empty;
-		}
+            sqlInfoMessage = string.Empty;
+        }
         /// <summary>
         /// Checks to see that the logging table exists or not.
         /// </summary>
@@ -1273,11 +1268,11 @@ namespace SqlSync.SqlBuild
         /// <param name="multiDbRunData">The MultiDbRun data for the run</param>
         /// <returns>True if the commit was successful</returns>
         private bool LogCommittedScriptsToDatabase(List<CommittedScript> committedScripts, MultiDbData multiDbRunData)
-		{
+        {
             bool returnValue = true;
             //If using an alternate database to log the commits to, we need to initiate the connection objects 
             //so that the EnsureLogTablePresence method catches them and creates the tables as needed.
-			if(this.logToDatabaseName.Length > 0 && this.committedScripts.Count > 0)
+            if (logToDatabaseName.Length > 0 && this.committedScripts.Count > 0)
             {
                 List<string> servers = new List<string>();
                 for (int i = 0; i < this.committedScripts.Count; i++)
@@ -1286,122 +1281,122 @@ namespace SqlSync.SqlBuild
 
                 for (int i = 0; i < servers.Count; i++)
                 {
-                    BuildConnectData tmp = GetConnectionDataClass(servers[i], this.logToDatabaseName);
+                    BuildConnectData tmp = GetConnectionDataClass(servers[i], logToDatabaseName);
                 }
             }
-			this.EnsureLogTablePresence();
+            EnsureLogTablePresence();
 
             //Get date from the server
             DateTime commitDate;
             SqlCommand cmd = null;
-            string oldDb = this.connData.DatabaseName;
-            this.connData.DatabaseName = "master";
+            string oldDb = connData.DatabaseName;
+            connData.DatabaseName = "master";
             try
             {
-                cmd = new SqlCommand("SELECT getdate()", SqlSync.Connection.ConnectionHelper.GetConnection(this.connData));
+                cmd = new SqlCommand("SELECT getdate()", SqlSync.Connection.ConnectionHelper.GetConnection(connData));
                 cmd.Connection.Open();
                 commitDate = (DateTime)cmd.ExecuteScalar();
             }
             catch
             {
                 commitDate = DateTime.Now;
-                log.LogInformation($"Unable to getdate() from server/database {this.connData.SQLServerName}-{this.connData.DatabaseName}");
+                log.LogInformation($"Unable to getdate() from server/database {connData.SQLServerName}-{connData.DatabaseName}");
             }
             finally
             {
                 if (cmd != null && cmd.Connection != null)
                     cmd.Connection.Close();
 
-                this.connData.DatabaseName = oldDb;
+                connData.DatabaseName = oldDb;
             }
 
-			//Add the commited scripts to the log
+            //Add the commited scripts to the log
             SqlCommand logCmd = new SqlCommand(Properties.Resources.LogScript);
-            if(!String.IsNullOrEmpty(this.buildFileName))
-			    logCmd.Parameters.AddWithValue("@BuildFileName",this.buildFileName);
+            if (!String.IsNullOrEmpty(buildFileName))
+                logCmd.Parameters.AddWithValue("@BuildFileName", buildFileName);
             else
-                logCmd.Parameters.AddWithValue("@BuildFileName", Path.GetFileName(this.projectFileName));
+                logCmd.Parameters.AddWithValue("@BuildFileName", Path.GetFileName(projectFileName));
 
             logCmd.Parameters.AddWithValue("@UserId", System.Environment.UserName);
             logCmd.Parameters.AddWithValue("@CommitDate", commitDate);
             logCmd.Parameters.AddWithValue("@RunWithVersion", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
-            logCmd.Parameters.AddWithValue("@BuildProjectHash", this.buildPackageHash);
-            if(this.buildRequestedBy == string.Empty)
+            logCmd.Parameters.AddWithValue("@BuildProjectHash", buildPackageHash);
+            if (buildRequestedBy == string.Empty)
                 logCmd.Parameters.AddWithValue("@BuildRequestedBy", System.Environment.UserDomainName + "\\" + System.Environment.UserName);
             else
-                logCmd.Parameters.AddWithValue("@BuildRequestedBy", this.buildRequestedBy);
+                logCmd.Parameters.AddWithValue("@BuildRequestedBy", buildRequestedBy);
 
-            if(this.buildDescription == null)
-                logCmd.Parameters.AddWithValue("@Description", string.Empty);    
+            if (buildDescription == null)
+                logCmd.Parameters.AddWithValue("@Description", string.Empty);
             else
-                logCmd.Parameters.AddWithValue("@Description", this.buildDescription);  
+                logCmd.Parameters.AddWithValue("@Description", buildDescription);
 
-			logCmd.Parameters.Add("@ScriptFileName",SqlDbType.VarChar);
-			logCmd.Parameters.Add("@ScriptId",SqlDbType.UniqueIdentifier);
-			logCmd.Parameters.Add("@ScriptFileHash",SqlDbType.VarChar);
-			logCmd.Parameters.Add("@Sequence",SqlDbType.Int);
-			logCmd.Parameters.Add("@ScriptText",SqlDbType.Text);
+            logCmd.Parameters.Add("@ScriptFileName", SqlDbType.VarChar);
+            logCmd.Parameters.Add("@ScriptId", SqlDbType.UniqueIdentifier);
+            logCmd.Parameters.Add("@ScriptFileHash", SqlDbType.VarChar);
+            logCmd.Parameters.Add("@Sequence", SqlDbType.Int);
+            logCmd.Parameters.Add("@ScriptText", SqlDbType.Text);
             logCmd.Parameters.Add("@Tag", SqlDbType.VarChar);
             logCmd.Parameters.Add("@TargetDatabase", SqlDbType.VarChar);
             logCmd.Parameters.Add("@ScriptRunStart", SqlDbType.DateTime);
             logCmd.Parameters.Add("@ScriptRunEnd", SqlDbType.DateTime);
-			
-			
-			for(int i=0;i<committedScripts.Count;i++)
-			{
-				try
-				{
 
-					CommittedScript script = committedScripts[i];
-					DataRow[] rows = this.buildData.Script.Select(this.buildData.Script.ScriptIdColumn.ColumnName +" ='"+script.ScriptId.ToString()+"'");
-					if(rows.Length > 0)
-					{
-						SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlBuild.SqlSyncBuildData.ScriptRow)rows[0];
-					
-						bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Script: "+row.FileName));
+
+            for (int i = 0; i < committedScripts.Count; i++)
+            {
+                try
+                {
+
+                    CommittedScript script = committedScripts[i];
+                    DataRow[] rows = buildData.Script.Select(buildData.Script.ScriptIdColumn.ColumnName + " ='" + script.ScriptId.ToString() + "'");
+                    if (rows.Length > 0)
+                    {
+                        SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlBuild.SqlSyncBuildData.ScriptRow)rows[0];
+
+                        bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Script: " + row.FileName));
 
                         BuildConnectData tmpConnDat;
-                        if (this.logToDatabaseName.Length > 0)
-                            tmpConnDat = GetConnectionDataClass(script.ServerName, this.logToDatabaseName);
+                        if (logToDatabaseName.Length > 0)
+                            tmpConnDat = GetConnectionDataClass(script.ServerName, logToDatabaseName);
                         else
                             tmpConnDat = GetConnectionDataClass(script.ServerName, script.DatabaseTarget);
 
                         logCmd.Connection = tmpConnDat.Connection;
-						logCmd.Parameters["@ScriptFileName"].Value = row.FileName;
-						logCmd.Parameters["@ScriptId"].Value = script.ScriptId;
-						logCmd.Parameters["@ScriptFileHash"].Value = script.FileHash;
-						logCmd.Parameters["@Sequence"].Value = script.Sequence;
-						logCmd.Parameters["@ScriptText"].Value = script.ScriptText;
+                        logCmd.Parameters["@ScriptFileName"].Value = row.FileName;
+                        logCmd.Parameters["@ScriptId"].Value = script.ScriptId;
+                        logCmd.Parameters["@ScriptFileHash"].Value = script.FileHash;
+                        logCmd.Parameters["@Sequence"].Value = script.Sequence;
+                        logCmd.Parameters["@ScriptText"].Value = script.ScriptText;
                         logCmd.Parameters["@Tag"].Value = script.Tag;
                         logCmd.Parameters["@TargetDatabase"].Value = script.DatabaseTarget;
                         logCmd.Parameters["@ScriptRunStart"].Value = script.RunStart;
                         logCmd.Parameters["@ScriptRunEnd"].Value = script.RunEnd;
-						if(logCmd.Connection.State == ConnectionState.Closed)
-							logCmd.Connection.Open();
+                        if (logCmd.Connection.State == ConnectionState.Closed)
+                            logCmd.Connection.Open();
 
-						logCmd.ExecuteNonQuery();
-					}
-				}
-				catch(Exception sqlexe)
-				{
+                        logCmd.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception sqlexe)
+                {
                     log.LogError(sqlexe, $"Unable to log full text value for script {logCmd.Parameters["@ScriptFileName"].Value.ToString()}. Inserting \"Error\" instead");
-					try
-					{
-						logCmd.Parameters["@ScriptText"].Value = "Error";
-						if(logCmd.Connection.State == ConnectionState.Closed)
-							logCmd.Connection.Open();
+                    try
+                    {
+                        logCmd.Parameters["@ScriptText"].Value = "Error";
+                        if (logCmd.Connection.State == ConnectionState.Closed)
+                            logCmd.Connection.Open();
 
-						logCmd.ExecuteNonQuery();
-					}
-					catch(Exception exe)
-					{
+                        logCmd.ExecuteNonQuery();
+                    }
+                    catch (Exception exe)
+                    {
                         log.LogError(exe, $"Unable to log commit for script {logCmd.Parameters["@ScriptFileName"].Value.ToString()}.");
                         returnValue = false;
-					}
-				}
-			}
-			return returnValue;
-		}
+                    }
+                }
+            }
+            return returnValue;
+        }
 
         /// <summary>
         /// Checks to see if the specified script has a block against running more than once. If so, returns some data about it
@@ -1413,12 +1408,12 @@ namespace SqlSync.SqlBuild
         /// <param name="scriptTextHash">out string for the hash of the parsed script</param>
         /// <param name="commitDate">out DateTime for the commit date that is blocking the re-run</param>
         /// <returns>True if there is a script block in place</returns>
-        public static bool HasBlockingSqlLog(System.Guid scriptId ,ConnectionData cData,string databaseName, out string scriptHash, out string scriptTextHash,out DateTime commitDate)
-		{
+        public static bool HasBlockingSqlLog(System.Guid scriptId, ConnectionData cData, string databaseName, out string scriptHash, out string scriptTextHash, out DateTime commitDate)
+        {
 
 
-			bool hasBlock = false;
-			scriptHash = string.Empty;
+            bool hasBlock = false;
+            scriptHash = string.Empty;
             scriptTextHash = string.Empty;
             commitDate = DateTime.MinValue;
 
@@ -1428,8 +1423,8 @@ namespace SqlSync.SqlBuild
             }
 
             SqlCommand cmd = new SqlCommand("SELECT AllowScriptBlock,ScriptFileHash,CommitDate,ScriptText FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC");
-			cmd.Parameters.AddWithValue("@ScriptId",scriptId);
-			cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName,cData.SQLServerName,cData.UserId,cData.Password,cData.AuthenticationType,2);
+            cmd.Parameters.AddWithValue("@ScriptId", scriptId);
+            cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, cData.SQLServerName, cData.UserId, cData.Password, cData.AuthenticationType, 2);
             try
             {
                 cmd.Connection.Open();
@@ -1466,19 +1461,19 @@ namespace SqlSync.SqlBuild
                 log.LogWarning(exe, $"Unable to check for blocking SQL for script {scriptId.ToString()} on database {cmd.Connection.DataSource}.{cmd.Connection.Database}");
                 return false;
             }
-			finally
-			{
-				cmd.Connection.Close();
-			}
-		}
-		/// <summary>
-		/// Quick check to see if the specicified script has a block against it.
-		/// </summary>
+            finally
+            {
+                cmd.Connection.Close();
+            }
+        }
+        /// <summary>
+        /// Quick check to see if the specicified script has a block against it.
+        /// </summary>
         /// <param name="scriptId">Guid for the script in question</param>
         /// <param name="connData">The BuildConnectData for the target database</param>
-		/// <returns>True if there is a block</returns>
-        internal bool GetBlockingSqlLog(System.Guid scriptId ,ref BuildConnectData connData)
-		{
+        /// <returns>True if there is a block</returns>
+        internal bool GetBlockingSqlLog(System.Guid scriptId, ref BuildConnectData connData)
+        {
             try
             {
                 SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WHERE ScriptId = @ScriptId AND AllowScriptBlock = 1", connData.Connection, connData.Transaction);
@@ -1493,8 +1488,8 @@ namespace SqlSync.SqlBuild
             {
                 return false;
             }
-		}
-        
+        }
+
         /// <summary>
         /// Returns the build run log for the specified script
         /// </summary>
@@ -1502,24 +1497,24 @@ namespace SqlSync.SqlBuild
         /// <param name="connData">The ConnectionData object for the target database</param>
         /// <returns>ScriptRunLog table containing the history</returns>
         public static ScriptRunLog GetScriptRunLog(System.Guid scriptId, ConnectionData connData)
-		{
-			try
-			{
-				SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC");
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC");
                 ScriptRunLog log = new ScriptRunLog();
-				cmd.Parameters.AddWithValue("@ScriptId",scriptId);
-				cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
-				SqlDataAdapter adapt = new SqlDataAdapter(cmd);
-				DataSet ds = new DataSet();
+                cmd.Parameters.AddWithValue("@ScriptId", scriptId);
+                cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+                SqlDataAdapter adapt = new SqlDataAdapter(cmd);
+                DataSet ds = new DataSet();
                 adapt.Fill(log);
                 return log;
-			}
-			catch(Exception e)
-			{
-                log.LogError(e,$"Unable to retrieve script run log for {scriptId.ToString()} on database {connData.SQLServerName}.{connData.DatabaseName}");
-				throw new ApplicationException("Error retrieving Script Run Log",e);
-			}
-		}
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, $"Unable to retrieve script run log for {scriptId.ToString()} on database {connData.SQLServerName}.{connData.DatabaseName}");
+                throw new ApplicationException("Error retrieving Script Run Log", e);
+            }
+        }
 
         /// <summary>
         /// Returns the build run log for the specified script
@@ -1548,9 +1543,9 @@ namespace SqlSync.SqlBuild
         }
 
 
-		#endregion
+        #endregion
 
-		#region ## Script File Batching & IO Helper Methods ##
+        #region ## Script File Batching & IO Helper Methods ##
         #region New File Batching with Regex - honors text in comments
         public static List<string> ReadBatchFromScriptText(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter)
         {
@@ -1561,7 +1556,7 @@ namespace SqlSync.SqlBuild
 
             //Find the "GO" delimiters that are not commented out or embedded in scripts
             List<KeyValuePair<Match, int>> activeDelimiters = FindActiveBatchDelimiters(scriptContents);
-            if(activeDelimiters.Count == 0)
+            if (activeDelimiters.Count == 0)
             {
                 //A trim hack for backward compatability...
                 //if(!scriptContents.EndsWith("\r\n\r\n"))
@@ -1569,16 +1564,16 @@ namespace SqlSync.SqlBuild
                 list.Add(scriptContents);
                 return list;
             }
-           
-           
+
+
             //Needed when we are going to be removing the batch delimiter text.
             Regex regBackwardEndOfLine = null;
             int previousEndOfLine = 0;
             if (!maintainBatchDelimiter)
                 regBackwardEndOfLine = new Regex(Properties.Resources.RegexEndOfLine, RegexOptions.IgnoreCase | RegexOptions.RightToLeft);
 
-            
-            
+
+
             int startIndex = 0;
             int modStartIndex = 0;
             string scriptSubstring = string.Empty;
@@ -1655,7 +1650,7 @@ namespace SqlSync.SqlBuild
                 list.RemoveAt(list.Count - 1);
 
             //Remove trailing \r\n in the last item...(can't remember why, but the old methods do this so it needs to be done for backward compatability
-            if(scriptContents.Trim().EndsWith("GO",StringComparison.CurrentCultureIgnoreCase))
+            if (scriptContents.Trim().EndsWith("GO", StringComparison.CurrentCultureIgnoreCase))
                 list[list.Count - 1] = list[list.Count - 1].ClearTrailingCarriageReturn();
 
             //Remove transaction references if applicable
@@ -1674,26 +1669,26 @@ namespace SqlSync.SqlBuild
             return list;
 
         }
-        
+
         private static List<KeyValuePair<Match, int>> FindActiveBatchDelimiters(string scriptContents)
         {
-             //Regex for delimiter
-            Regex regDelimiter= new Regex(Properties.Resources.RegexBatchParsingDelimiter, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            //Regex for delimiter
+            Regex regDelimiter = new Regex(Properties.Resources.RegexBatchParsingDelimiter, RegexOptions.IgnoreCase | RegexOptions.Multiline);
             //Regex for seeing if delimiter is the only thing on the line
             Regex regNonWhiteSpace = new Regex(Properties.Resources.RegexNonWhiteSpace, RegexOptions.IgnoreCase);
             Regex regEndOfLine = new Regex(Properties.Resources.RegexEndOfLine, RegexOptions.IgnoreCase);
-  
+
             //First, identify all of the delimiters...
-            MatchCollection collDelimiter =  regDelimiter.Matches(scriptContents);
+            MatchCollection collDelimiter = regDelimiter.Matches(scriptContents);
 
             List<KeyValuePair<Match, int>> activeDelimiters = new List<KeyValuePair<Match, int>>();
-            
-            if(collDelimiter.Count == 0)
+
+            if (collDelimiter.Count == 0)
                 return activeDelimiters;
-                      
+
 
             //Find the delimiters that are "real"
-            
+
             foreach (Match delim in collDelimiter)
             {
                 if (!IsInComment(scriptContents, delim.Index))
@@ -1701,17 +1696,17 @@ namespace SqlSync.SqlBuild
                     //at the end of the string.
                     if (delim.Index + delim.Length == scriptContents.Length)
                     {
-                        activeDelimiters.Add(new KeyValuePair<Match,int>(delim,-1));
+                        activeDelimiters.Add(new KeyValuePair<Match, int>(delim, -1));
                         continue;
                     }
 
 
                     int nextChar = regNonWhiteSpace.Match(scriptContents, delim.Index + delim.Length).Index;
                     int endOfLine = regEndOfLine.Match(scriptContents, delim.Index + delim.Length).Index;
-                    
-                    if(endOfLine < nextChar || nextChar == 0 || endOfLine == 0)
-                        activeDelimiters.Add(new KeyValuePair<Match,int>(delim,endOfLine));
-                        //activeDelimiters.Add(delim);
+
+                    if (endOfLine < nextChar || nextChar == 0 || endOfLine == 0)
+                        activeDelimiters.Add(new KeyValuePair<Match, int>(delim, endOfLine));
+                    //activeDelimiters.Add(delim);
                 }
             }
 
@@ -1748,7 +1743,7 @@ namespace SqlSync.SqlBuild
             script = RegexRemoveIfNotInComments(Properties.Resources.RegexTran, script, options);
             script = RegexRemoveIfNotInComments(Properties.Resources.RegexCommit, script, options);
             script = RegexRemoveIfNotInComments(Properties.Resources.RegexTransactionLevel, script, options);
-          
+
             return script;
         }
         private static string RegexRemoveIfNotInComments(string regexExpression, string script, RegexOptions options)
@@ -1760,7 +1755,7 @@ namespace SqlSync.SqlBuild
                 Match m = regRemoveTag.Match(script, startAt);
                 if (!IsInComment(script, m.Index))
                 {
-                    script = regRemoveTag.Replace(script, "",1, m.Index);
+                    script = regRemoveTag.Replace(script, "", 1, m.Index);
                 }
                 else
                 {
@@ -1769,17 +1764,17 @@ namespace SqlSync.SqlBuild
             }
             return script;
         }
-       
+
         #endregion
 
         #region Old File Batching with string replace
         /// <summary>
-		/// Breaks Sql file into batches
-		/// </summary>
-		/// <param name="fileName">Name of the file to parse</param>
-		/// <param name="stripTransaction">Flag to strip out references to a transaction</param>
-		/// <param name="maintainBatchDelimiter">Flag to keep or remove the batch delimiter ("GO")</param>
-		/// <returns>String array for each command to run in batch</returns>
+        /// Breaks Sql file into batches
+        /// </summary>
+        /// <param name="fileName">Name of the file to parse</param>
+        /// <param name="stripTransaction">Flag to strip out references to a transaction</param>
+        /// <param name="maintainBatchDelimiter">Flag to keep or remove the batch delimiter ("GO")</param>
+        /// <returns>String array for each command to run in batch</returns>
         public static string[] ReadBatchFromScriptFile(string fileName, bool stripTransaction, bool maintainBatchDelimiter)
         {
 
@@ -1798,9 +1793,9 @@ namespace SqlSync.SqlBuild
             string scriptContents = File.ReadAllText(fileName);
             string[] batchNew = ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             return batchNew;
-           
+
         }
-        [Obsolete("This method is only meant for use in backward compatability testing",false)]
+        [Obsolete("This method is only meant for use in backward compatability testing", false)]
         public static string[] ReadBatchFromScript(bool stripTransaction, bool maintainBatchDelimiter, string scriptContents)
         {
             string[] scriptLines = scriptContents.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
@@ -1830,7 +1825,7 @@ namespace SqlSync.SqlBuild
 
                     if (stripTransaction)
                     {
-                        
+
                         currentLine = currentLine.Replace("BEGIN TRANSACTION", "");
                         currentLine = currentLine.Replace("BEGIN TRAN", "");
                         currentLine = currentLine.Replace("ROLLBACK TRANSACTION", "");
@@ -1850,7 +1845,7 @@ namespace SqlSync.SqlBuild
                     }
                     sb.Append(currentLine + "\r\n");
                 }
-                
+
             }
             if (sb.ToString().Trim().Length > 0)
             {
@@ -1864,7 +1859,7 @@ namespace SqlSync.SqlBuild
             }
             return batch;
         }
-       
+
         #endregion
         public static ScriptBatchCollection LoadAndBatchSqlScripts(SqlSyncBuildData buildData, string projectFilePath)
         {
@@ -1886,15 +1881,15 @@ namespace SqlSync.SqlBuild
 
         #region ## SQL Connection Helper Methods ##
         internal BuildConnectData GetConnectionDataClass(string serverName, string databaseName)
-		{
+        {
             try
             {
                 //always Upper case the database name
                 string databaseKey = serverName.ToUpper() + ":" + databaseName.ToUpper();
-                if (this.connectDictionary.ContainsKey(databaseKey) == false)
+                if (connectDictionary.ContainsKey(databaseKey) == false)
                 {
                     BuildConnectData cData = new BuildConnectData();
-                    cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName, this.connData.UserId, this.connData.Password, connData.AuthenticationType, this.connData.ScriptTimeout);
+                    cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout);
 
                     //Add a robust retry policy on database connection opening
                     var pollyConnection = Policy.Handle<SqlException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
@@ -1902,107 +1897,107 @@ namespace SqlSync.SqlBuild
 
                     cData.HasLoggingTable = LogTableExists(cData.Connection);
                     cData.Connection.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
-                    if (!databaseName.Equals(this.logToDatabaseName) && this.isTransactional) //we don't want a transaction for the logging database
+                    if (!databaseName.Equals(logToDatabaseName) && isTransactional) //we don't want a transaction for the logging database
                         cData.Transaction = cData.Connection.BeginTransaction(BuildTransaction.TransactionName);
                     cData.DatabaseName = databaseName;
                     cData.ServerName = serverName;
 
-                    this.connectDictionary.Add(databaseKey, cData);
+                    connectDictionary.Add(databaseKey, cData);
                     return cData;
                 }
                 else
                 {
-                    return (BuildConnectData)this.connectDictionary[databaseKey];
+                    return (BuildConnectData)connectDictionary[databaseKey];
                 }
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError("Error getting connection data for " + serverName + "." + databaseName + " : " + exe.Message);
                 throw;
             }
-		}
-		internal bool CommitBuild()
-		{
+        }
+        internal bool CommitBuild()
+        {
             //If we're not in a transaction, they've already committed.
-            if (!this.isTransactional)
+            if (!isTransactional)
                 return true;
 
-            Dictionary<string, BuildConnectData>.KeyCollection keys = this.connectDictionary.Keys;
-			bool success = true;
+            Dictionary<string, BuildConnectData>.KeyCollection keys = connectDictionary.Keys;
+            bool success = true;
             foreach (string key in keys)
             {
-				try
-				{
+                try
+                {
                     log.LogInformation($"Committing transaction for {key}");
-                    ((BuildConnectData)this.connectDictionary[key]).Transaction.Commit();
-				}
-				catch(Exception e)
-				{
+                    ((BuildConnectData)connectDictionary[key]).Transaction.Commit();
+                }
+                catch (Exception e)
+                {
                     log.LogError(e, $"Error in CommitBuild Transaction.Commit() for database '{key}'");
-					bgWorker.ReportProgress(100, new CommitFailureEventArgs(e.Message));
-					success = false;
-				}
-				try
-				{
+                    bgWorker.ReportProgress(100, new CommitFailureEventArgs(e.Message));
+                    success = false;
+                }
+                try
+                {
                     log.LogDebug($"Closing connection for {key}");
-                    ((BuildConnectData)this.connectDictionary[key]).Connection.Close();
-				}
-				catch(Exception e)
-				{
+                    ((BuildConnectData)connectDictionary[key]).Connection.Close();
+                }
+                catch (Exception e)
+                {
                     log.LogWarning(e, $"Error in CommitBuild Connection.Close() for database '{e}'");
                     bgWorker.ReportProgress(100, new CommitFailureEventArgs(e.Message));
-					success = false;
-				}
-			}
+                    success = false;
+                }
+            }
 
-			return success;
-		}
-		internal bool RollbackBuild()
-		{
+            return success;
+        }
+        internal bool RollbackBuild()
+        {
             //If we're not in a transaction, we can't roll back...
-            if (!this.isTransactional)
+            if (!isTransactional)
             {
                 log.LogWarning("Build is non-transactional. Unable to rollback");
                 return false;
             }
 
-            Dictionary<string, BuildConnectData>.KeyCollection keys = this.connectDictionary.Keys;
+            Dictionary<string, BuildConnectData>.KeyCollection keys = connectDictionary.Keys;
             foreach (string key in keys)
-			{
-				try
-				{
+            {
+                try
+                {
                     log.LogInformation($"Rolling back transaction for {key}");
-                    ((BuildConnectData)this.connectDictionary[key]).Transaction.Rollback();
-				}
-				catch(Exception e)
-				{
+                    ((BuildConnectData)connectDictionary[key]).Transaction.Rollback();
+                }
+                catch (Exception e)
+                {
                     log.LogError($"Error in RollbackBuild Transaction.Rollback() for database '{key}'. {e.Message}");
-				}
-				try
-				{
+                }
+                try
+                {
                     log.LogDebug($"Closing connection for {key}");
-                    ((BuildConnectData)this.connectDictionary[key]).Connection.Close();
-				}
-				catch(Exception e)
-				{
+                    ((BuildConnectData)connectDictionary[key]).Connection.Close();
+                }
+                catch (Exception e)
+                {
                     log.LogError($"Error in RollbackBuild Connection.Close() for database '{key}'. {e.Message}");
-				}
-			}
-           
-			return true;
-		}
-		private void Connection_InfoMessage(object sender, SqlInfoMessageEventArgs e)
-		{
-			StringBuilder messages = new StringBuilder();
-			foreach(SqlError err in e.Errors)
-			{
-				messages.Append(err.Message+"\r\n");
-			}
-			if(this.myRunRow != null)
-				this.myRunRow.Results += messages.ToString();
+                }
+            }
 
-			this.sqlInfoMessage += messages.ToString();
-		}
+            return true;
+        }
+        private void Connection_InfoMessage(object sender, SqlInfoMessageEventArgs e)
+        {
+            StringBuilder messages = new StringBuilder();
+            foreach (SqlError err in e.Errors)
+            {
+                messages.Append(err.Message + "\r\n");
+            }
+            if (myRunRow != null)
+                myRunRow.Results += messages.ToString();
+
+            sqlInfoMessage += messages.ToString();
+        }
         //public bool TestDatabaseConnection(string databaseName)
         //{
         //    BuildConnectData cData = new BuildConnectData();
@@ -2026,48 +2021,48 @@ namespace SqlSync.SqlBuild
 
         //    return false;
         //}
-		#endregion
+        #endregion
 
-		#region ## DataSet Handling Helper Methods ##
-		private SqlSyncBuildData.BuildRow GetNewBuildRow(string serverName)
-		{
-			if(File.Exists(this.buildHistoryXmlFile) == false)
-				this.buildHistoryData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-			else
-			{
-				this.buildHistoryData = new SqlSyncBuildData();
-				this.buildHistoryData.ReadXml(this.buildHistoryXmlFile);
-			}
+        #region ## DataSet Handling Helper Methods ##
+        private SqlSyncBuildData.BuildRow GetNewBuildRow(string serverName)
+        {
+            if (File.Exists(buildHistoryXmlFile) == false)
+                buildHistoryData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            else
+            {
+                buildHistoryData = new SqlSyncBuildData();
+                buildHistoryData.ReadXml(buildHistoryXmlFile);
+            }
 
 
-			//Create a root Project row if needed
-			if(this.buildHistoryData.SqlSyncBuildProject.Rows.Count == 0)
-                this.buildHistoryData.SqlSyncBuildProject.AddSqlSyncBuildProjectRow("", false);
-			
-			SqlSyncBuildData.SqlSyncBuildProjectRow projRow = (SqlSyncBuildData.SqlSyncBuildProjectRow)this.buildHistoryData.SqlSyncBuildProject.Rows[0];
-			
-			//Create a builds row if needed
-			if(this.buildHistoryData.Builds.Rows.Count == 0)
-				this.buildHistoryData.Builds.AddBuildsRow(projRow);
-			
-			SqlSyncBuildData.BuildsRow buildsRow = (SqlSyncBuildData.BuildsRow)this.buildHistoryData.Builds.Rows[0];
+            //Create a root Project row if needed
+            if (buildHistoryData.SqlSyncBuildProject.Rows.Count == 0)
+                buildHistoryData.SqlSyncBuildProject.AddSqlSyncBuildProjectRow("", false);
 
-			//Set build id
-			this.currentBuildId = System.Guid.NewGuid();
+            SqlSyncBuildData.SqlSyncBuildProjectRow projRow = (SqlSyncBuildData.SqlSyncBuildProjectRow)buildHistoryData.SqlSyncBuildProject.Rows[0];
 
-			//Create a build row for the new build
-			SqlSyncBuildData.BuildDataTable buildTable = this.buildHistoryData.Build;
-			SqlSyncBuildData.BuildRow myBuild =  buildTable.NewBuildRow();
-			myBuild.BuildsRow = buildsRow;
-			myBuild.Name = this.buildDescription;
-			myBuild.BuildType = this.buildType;
-			myBuild.BuildStart = DateTime.Now;
-			myBuild.ServerName = serverName;
-			myBuild.BuildId = this.currentBuildId.ToString();
-			
-			buildTable.AddBuildRow(myBuild);
-			return myBuild;
-		}
+            //Create a builds row if needed
+            if (buildHistoryData.Builds.Rows.Count == 0)
+                buildHistoryData.Builds.AddBuildsRow(projRow);
+
+            SqlSyncBuildData.BuildsRow buildsRow = (SqlSyncBuildData.BuildsRow)buildHistoryData.Builds.Rows[0];
+
+            //Set build id
+            currentBuildId = System.Guid.NewGuid();
+
+            //Create a build row for the new build
+            SqlSyncBuildData.BuildDataTable buildTable = buildHistoryData.Build;
+            SqlSyncBuildData.BuildRow myBuild = buildTable.NewBuildRow();
+            myBuild.BuildsRow = buildsRow;
+            myBuild.Name = buildDescription;
+            myBuild.BuildType = buildType;
+            myBuild.BuildStart = DateTime.Now;
+            myBuild.ServerName = serverName;
+            myBuild.BuildId = currentBuildId.ToString();
+
+            buildTable.AddBuildRow(myBuild);
+            return myBuild;
+        }
 
         /// <summary>
         /// Retrieves the ScriptRows from the SqlSyncBuildData object and imports them into a new ScriptDataTable
@@ -2075,7 +2070,7 @@ namespace SqlSync.SqlBuild
         /// </summary>
         /// <returns>SqlSyncBuildData.ScriptDataTable populated with the ScriptRows from the SqlSyncBuildData object</returns>
 		public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(SqlSyncBuildData buildData)
-		{
+        {
             if (buildData == null)
             {
                 log.LogWarning("The SqlSyncBuildData object passed into \"GetScriptSourceTable\" was null. Unable to process build");
@@ -2100,43 +2095,43 @@ namespace SqlSync.SqlBuild
                     return scriptTable;
                 }
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError(exe, "Unable to get script rows from SqlSyncBuildData object");
             }
-			return null;
-		}
-		internal void SaveBuildDataSet(bool fireSavedEvent)
-		{
-			bgWorker.ReportProgress(0,new GeneralStatusEventArgs("Saving Build File Updates"));
+            return null;
+        }
+        internal void SaveBuildDataSet(bool fireSavedEvent)
+        {
+            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Saving Build File Updates"));
 
-            if (this.projectFileName == null || this.projectFileName.Length == 0)
+            if (projectFileName == null || projectFileName.Length == 0)
             {
                 string message = "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.";
                 bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
                 throw new ArgumentException(message);
             }
 
-			this.buildData.WriteXml(this.projectFileName);
+            buildData.WriteXml(projectFileName);
 
 
-            if (this.buildHistoryXmlFile == null || this.buildHistoryXmlFile.Length == 0)
+            if (buildHistoryXmlFile == null || buildHistoryXmlFile.Length == 0)
             {
                 string message = "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.";
                 bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
                 throw new ArgumentException(message);
             }
 
-			if(this.buildHistoryData != null)
-				this.buildHistoryData.WriteXml(this.buildHistoryXmlFile);
+            if (buildHistoryData != null)
+                buildHistoryData.WriteXml(buildHistoryXmlFile);
 
-            if(fireSavedEvent)
-                   bgWorker.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
-		}
-		#endregion
+            if (fireSavedEvent)
+                bgWorker.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
+        }
+        #endregion
 
-		#region ## Events ##
-		//public event GeneralStatusEventHandler GeneralStatusEvent;
+        #region ## Events ##
+        //public event GeneralStatusEventHandler GeneralStatusEvent;
         //public event BuildScriptEventHandler BuildScriptEvent;
         //public event ScriptRunStatusEventHandler ScriptRunStatusEvent;
         //public event ScriptRunProjectFileSavedEventHandler ScriptRunProjectFileSavedEvent;
@@ -2147,7 +2142,7 @@ namespace SqlSync.SqlBuild
         public event EventHandler BuildSuccessTrialRolledBackEvent;
         public event EventHandler BuildErrorRollBackEvent;
         //public event EventHandler BuildProcessingComplete;
-		#endregion
+        #endregion
 
         public static bool IsInComment(string rawScript, int index)
         {
@@ -2171,17 +2166,17 @@ namespace SqlSync.SqlBuild
         }
 
 
-		internal void SqlBuildHelper_ScriptLogWriteEvent(object sender, ScriptLogEventArgs e)
-		{
-            if (this.scriptLogFileName == null)
+        internal void SqlBuildHelper_ScriptLogWriteEvent(object sender, ScriptLogEventArgs e)
+        {
+            if (scriptLogFileName == null)
                 throw new NullReferenceException("Attempting to write to Script Log File, but \"scriptLogFileName\" field value is null");
 
-			if(File.Exists(this.scriptLogFileName) == false || e.InsertStartTransaction)
-			{
-				using(StreamWriter sw = File.AppendText(this.scriptLogFileName))
-				{
-                    sw.WriteLine("-- Start Time: "+ DateTime.Now.ToString() +" --");
-                    if (this.isTransactional)
+            if (File.Exists(scriptLogFileName) == false || e.InsertStartTransaction)
+            {
+                using (StreamWriter sw = File.AppendText(scriptLogFileName))
+                {
+                    sw.WriteLine("-- Start Time: " + DateTime.Now.ToString() + " --");
+                    if (isTransactional)
                     {
                         sw.WriteLine("-- Start Transaction --");
                         sw.WriteLine("BEGIN TRANSACTION");
@@ -2190,26 +2185,26 @@ namespace SqlSync.SqlBuild
                     {
                         sw.WriteLine("-- Executed without a transaction --");
                     }
-				}
-			}
+                }
+            }
 
-           
-			using(StreamWriter sw = File.AppendText(this.scriptLogFileName))
-			{
-				sw.WriteLine("/************************************");
-				sw.WriteLine("Script #"+e.ScriptIndex.ToString()+"; Source File: "+e.SourceFile);
-				sw.WriteLine("Server: "+this.connData.SQLServerName+"; Run On Database:"+e.Database+"  */");
-				if(e.Database.Length > 0)
-					sw.WriteLine("use "+e.Database+"\r\nGO\r\n");
-				sw.WriteLine(e.SqlScript+"\r\nGO\r\n");
-				sw.WriteLine("/*Script #"+e.ScriptIndex.ToString()+" Result: "+e.Results.Trim()+"  */");
-				sw.Flush();
-				sw.Close();
-			}
 
-            if (e.ScriptIndex == -10000 && this.externalScriptLogFileName.Length > 0)
+            using (StreamWriter sw = File.AppendText(scriptLogFileName))
             {
-                using (StreamWriter sw = File.AppendText(this.scriptLogFileName))
+                sw.WriteLine("/************************************");
+                sw.WriteLine("Script #" + e.ScriptIndex.ToString() + "; Source File: " + e.SourceFile);
+                sw.WriteLine("Server: " + connData.SQLServerName + "; Run On Database:" + e.Database + "  */");
+                if (e.Database.Length > 0)
+                    sw.WriteLine("use " + e.Database + "\r\nGO\r\n");
+                sw.WriteLine(e.SqlScript + "\r\nGO\r\n");
+                sw.WriteLine("/*Script #" + e.ScriptIndex.ToString() + " Result: " + e.Results.Trim() + "  */");
+                sw.Flush();
+                sw.Close();
+            }
+
+            if (e.ScriptIndex == -10000 && externalScriptLogFileName.Length > 0)
+            {
+                using (StreamWriter sw = File.AppendText(scriptLogFileName))
                 {
                     sw.WriteLine("-- END Time: " + DateTime.Now.ToString() + " --");
                     sw.Flush();
@@ -2218,42 +2213,42 @@ namespace SqlSync.SqlBuild
 
                 try
                 {
-                    string tmpPath = Path.GetDirectoryName(this.externalScriptLogFileName);
+                    string tmpPath = Path.GetDirectoryName(externalScriptLogFileName);
                     if (!Directory.Exists(tmpPath))
                     {
-                        bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating External Log file directory \"" + tmpPath + "\"" ));
+                        bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating External Log file directory \"" + tmpPath + "\""));
                         Directory.CreateDirectory(tmpPath);
                     }
 
-                    File.Copy(this.scriptLogFileName, this.externalScriptLogFileName,true);
-                    bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Copied log file to \"" + this.externalScriptLogFileName + "\""));
+                    File.Copy(scriptLogFileName, externalScriptLogFileName, true);
+                    bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Copied log file to \"" + externalScriptLogFileName + "\""));
                 }
-                catch(Exception exe)
+                catch (Exception exe)
                 {
-                    bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Error copying results file to " + this.externalScriptLogFileName +"\r\n"+exe.ToString()));
+                    bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Error copying results file to " + externalScriptLogFileName + "\r\n" + exe.ToString()));
                 }
             }
 
-		}
+        }
 
-		public string GetFromResources(string resourceName)
-		{  
-			System.Reflection.Assembly assem = this.GetType().Assembly;   
-			using( System.IO.Stream stream = assem.GetManifestResourceStream(resourceName) )   
-			{
-				try      
-				{ 
-					using( System.IO.StreamReader reader = new StreamReader(stream) )         
-					{
-						return reader.ReadToEnd();         
-					}
-				}     
-				catch(Exception e)      
-				{
-					throw new ApplicationException("Error retrieving from Resources. Tried '" 
-						+ resourceName+"'\r\n"+e.ToString());      
-				}
-			}
-		}
-	}
+        public string GetFromResources(string resourceName)
+        {
+            System.Reflection.Assembly assem = GetType().Assembly;
+            using (System.IO.Stream stream = assem.GetManifestResourceStream(resourceName))
+            {
+                try
+                {
+                    using (System.IO.StreamReader reader = new StreamReader(stream))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new ApplicationException("Error retrieving from Resources. Tried '"
+                        + resourceName + "'\r\n" + e.ToString());
+                }
+            }
+        }
+    }
 }

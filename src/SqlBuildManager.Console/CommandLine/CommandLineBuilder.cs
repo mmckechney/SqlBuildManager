@@ -1,17 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
+using Spectre.Console;
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.CommandLine.Builder;
-using System.CommandLine.Parsing;
+using System.CommandLine.Help;
+using System.CommandLine.Invocation;
 using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
-using System.CommandLine.Help;
-using Spectre.Console;
-using System.Collections.Generic;
-using Microsoft.SqlServer.Management.Smo;
-using SqlBuildManager.Console.Kubernetes;
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -33,12 +31,12 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> directoryOption = new Option<string>(new string[] { "--dir", "--directory" }, "Directory containing 1 or more SBX files to package into SBM zip files") { IsRequired = true };
         private static Option<bool> transactionalOption = new Option<bool>(new string[] { "--transactional" }, () => true, "Whether or not to run with a wrapping transaction (default is true)");
         private static Option<int> timeoutretrycountOption = new Option<int>(new string[] { "--timeoutretrycount" }, "How many retries to attempt if a timeout exception occurs");
-        private static Option<string> golddatabaseOption = new Option<string>(new string[] { "-gd", "--gd","--golddatabase" }, "The \"gold copy\" database that will serve as the model for what the target database should look like") { IsRequired = true };
+        private static Option<string> golddatabaseOption = new Option<string>(new string[] { "-gd", "--gd", "--golddatabase" }, "The \"gold copy\" database that will serve as the model for what the target database should look like") { IsRequired = true };
         private static Option<string> goldserverOption = new Option<string>(new string[] { "-gs", "--goldserver" }, "The server that the \"gold copy\" database can be found") { IsRequired = true };
         private static Option<bool> continueonfailureOption = new Option<bool>(new string[] { "--continueonfailure" }, "Whether or not to continue on the failure of a package (default is false)");
         private static Option<string> platinumdacpacOption = new Option<string>(new string[] { "-pd", "--pd", "--platinumdacpac" }, "Name of the dacpac containing the platinum schema");
         private static Option<FileInfo> platinumdacpacFileInfoOption = new Option<FileInfo>(new string[] { "-pd", "--platinumdacpac" }, "Name of the dacpac containing the platinum schema").ExistingOnly();
-        private static Option<string> targetdacpacOption = new Option<string>(new string[] { "-td","--td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated");
+        private static Option<string> targetdacpacOption = new Option<string>(new string[] { "-td", "--td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated");
         private static Option<bool> forcecustomdacpacOption = new Option<bool>(new string[] { "--forcecustomdacpac" }, "USE WITH CAUTION! This will force the dacpac extraction and creation of custom scripts for EVERY target database! Your execution will take much longer.");
         private static Option<string> platinumdbsourceOption = new Option<string>(new string[] { "--platinumdbsource" }, "Instead of a formally built Platinum Dacpac, target this database as having the desired state schema");
         private static Option<string> platinumserversourceOption = new Option<string>(new string[] { "--platinumserversource" }, "Instead of a formally built Platinum Dacpac, target a database on this server as having the desired state schema");
@@ -64,8 +62,8 @@ namespace SqlBuildManager.Console.CommandLine
 
         private static Option<bool> allowForObjectDeletionOption = new Option<bool>(new string[] { "--allowobjectdelete" }, "Whether or not to script for database object deletion when creating a package from the comparison of two databases or DACPACS");
 
-        private static Option<FileInfo> platinumdacpacSourceOption = new Option<FileInfo>(new string[] { "-pd", "--pd","--platinumdacpac" }, "Name of the dacpac containing the platinum schema") { IsRequired = true }.ExistingOnly();
-        private static Option<FileInfo> targetdacpacSourceOption = new Option<FileInfo>(new string[] { "-td","--td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated") { IsRequired = true }.ExistingOnly();
+        private static Option<FileInfo> platinumdacpacSourceOption = new Option<FileInfo>(new string[] { "-pd", "--pd", "--platinumdacpac" }, "Name of the dacpac containing the platinum schema") { IsRequired = true }.ExistingOnly();
+        private static Option<FileInfo> targetdacpacSourceOption = new Option<FileInfo>(new string[] { "-td", "--td", "--targetdacpac" }, "Name of the dacpac containing the schema of the database to be updated") { IsRequired = true }.ExistingOnly();
 
         private static Option<DirectoryInfo> pathOption = new Option<DirectoryInfo>("--path", "Path to save yaml files").ExistingOnly();
         private static Option<string> prefixOption = new Option<string>(new string[] { "--prefix" }, "Prefix to add to the the yaml file names");
@@ -113,23 +111,23 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> containerAppLocationOption = new Option<string>(new string[] { "-l", "--location" }, "Azure location where Container App environment exists");
         private static Option<string> containerAppResourceGroupOption = new Option<string>(new string[] { "-g", "--resourcegroup" }, "Resource group containing the Container App Environment");
         private static Option<bool> containerAppEnvOnly = new Option<bool>(new string[] { "--env", "--environmentvariablesonly" }, "Deploy using Enviroment Variable only ARM template (vs. using Secrets)") { IsHidden = true };
-        private static Option<int> containerAppMaxContainerCount = new Option<int>(new string[] { "--max", "--maxcontainers" },  "Maximum container count when scaling up");
-        private static Option<bool> containerAppDeleteAppUponCompletion= new Option<bool>(new string[] { "--delete", "--deletewhendone" }, "Delete Container App deployment once job is complete");
+        private static Option<int> containerAppMaxContainerCount = new Option<int>(new string[] { "--max", "--maxcontainers" }, "Maximum container count when scaling up");
+        private static Option<bool> containerAppDeleteAppUponCompletion = new Option<bool>(new string[] { "--delete", "--deletewhendone" }, "Delete Container App deployment once job is complete");
 
         //Batch Options
         private static List<Option> BatchSettingsOptions
-                {
-                    get
-                    {
-                        var list = new List<Option>()
+        {
+            get
+            {
+                var list = new List<Option>()
                         {
 
                             batchjobnameOption,
                             deletebatchjobOption
                         };
-                        return list;
-                    }
-                }
+                return list;
+            }
+        }
         private static Option<string> batchjobnameOption = new Option<string>(new string[] { "--jobname", "--batchjobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed");
         private static Option<bool> deletebatchjobOption = new Option<bool>(new string[] { "--deletebatchjob" }, () => false, "Whether or not to delete the batch job after an execution");
         private static Option<bool> pollbatchpoolstatusOption = new Option<bool>(new string[] { "--poll", "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true) or fire and forget (false)");
@@ -151,7 +149,7 @@ namespace SqlBuildManager.Console.CommandLine
                 return list;
             }
         }
-        private static Option<OsType> batchpoolOsOption = new Option<OsType>(new string[] { "-os","--os", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default");
+        private static Option<OsType> batchpoolOsOption = new Option<OsType>(new string[] { "-os", "--os", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default");
         private static Option<int> batchnodecountOption = new Option<int>(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job");
         private static Option<string> batchvmsizeOption = new Option<string>(new string[] { "--vmsize", "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) ");
         private static Option<string> batchpoolnameOption = new Option<string>(new string[] { "--poolname", "--batchpoolname" }, "Override for the default pool name of \"SqlBuildManagerPool\"");
@@ -196,8 +194,8 @@ namespace SqlBuildManager.Console.CommandLine
                 return list;
             }
         }
-        private static Option<string> keyVaultNameOption = new Option<string>(new string[] { "-kv","--kv", "--keyvaultname" }, "Name of Azure Key Vault to save secrets to/retrieve from. If provided, secrets will be used/saved to settings file or secrets.yaml");
-        private static Option<string> eventhubconnectionOption = new Option<string>(new string[] { "-eh","--eh", "--eventhubconnection" }, "Event Hub connection string for Event Hub logging. If using Managed Identity auth, use '<eventhub namespace>|<eventhub name>'");
+        private static Option<string> keyVaultNameOption = new Option<string>(new string[] { "-kv", "--kv", "--keyvaultname" }, "Name of Azure Key Vault to save secrets to/retrieve from. If provided, secrets will be used/saved to settings file or secrets.yaml");
+        private static Option<string> eventhubconnectionOption = new Option<string>(new string[] { "-eh", "--eh", "--eventhubconnection" }, "Event Hub connection string for Event Hub logging. If using Managed Identity auth, use '<eventhub namespace>|<eventhub name>'");
         private static Option<string> serviceBusconnectionOption = new Option<string>(new string[] { "-sb", "--sb", "--servicebustopicconnection" }, "Service Bus connection string for Service Bus topic distribution. If using Managed Identity auth, just provide the Service Bus Namespace");
         private static Option<string> storageaccountnameOption = new Option<string>(new string[] { "--storageaccountname" }, "Name of Azure storage account associated build");
         private static Option<string> storageaccountkeyOption = new Option<string>(new string[] { "--storageaccountkey" }, "Account Key for the storage account");
@@ -219,7 +217,7 @@ namespace SqlBuildManager.Console.CommandLine
                     resourceIdOption,
                     identityResourceGroupOption,
                     subscriptionIdOption,
-                    identityNameOption, 
+                    identityNameOption,
                     tenantIdOption
                 };
                 return list;
@@ -255,7 +253,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> principalIdOption = new Option<string>("--principalid", "Principal ID for the Azure User Assigned Managed Identity");
         private static Option<string> resourceIdOption = new Option<string>("--resourceid", "Resource ID (full resource path) for the Azure User Assigned Managed Identity");
         private static Option<string> identityResourceGroupOption = new Option<string>(new string[] { "--idrg", "--identityresourcegroup" }, "Resource Group name for the Azure User Assigned Managed Identity");
-        private static Option<string> identityNameOption = new Option<string>(new string[] { "-id","--id", "--identityname" }, "Name of User Assigned Managed identity that will be assigned") { IsRequired = true };
+        private static Option<string> identityNameOption = new Option<string>(new string[] { "-id", "--id", "--identityname" }, "Name of User Assigned Managed identity that will be assigned") { IsRequired = true };
         private static Option<string> subscriptionIdOption = new Option<string>(new string[] { "--subscriptionid" }, "Azure subscription Id for the Azure resources");
         private static Option<string> tenantIdOption = new Option<string>(new string[] { "--tenantid" }, "Azure Active Directory Tenant Id for the Identity");
         private static Option<string> serviceAccountNameOption = new Option<string>(new string[] { "--serviceaccountname", "--serviceaccount" }, "Kubernetes Service Account used for Workload Identity Authentication");
@@ -310,10 +308,10 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     threadedConcurrencyTypeOption,
                     threadedConcurrencyOption
-                    
+
                 };
                 return list;
-                
+
             }
         }
         private static Option<int> threadedConcurrencyOption = new Option<int>(new string[] { "--concurrency" }, "Maximum concurrency for threaded executions");
@@ -333,7 +331,7 @@ namespace SqlBuildManager.Console.CommandLine
 
             }
         }
-        private static Option<int> threadedConcurrencyRequiredTypeOption = new Option<int>(new string[] { "--concurrency" }, "Maximum concurrency for threaded executions") {  IsRequired = true};
+        private static Option<int> threadedConcurrencyRequiredTypeOption = new Option<int>(new string[] { "--concurrency" }, "Maximum concurrency for threaded executions") { IsRequired = true };
         private static Option<ConcurrencyType> threadedConcurrencyRequiredOption = new Option<ConcurrencyType>(new string[] { "--concurrencytype" }, "Type of concurrency, used in conjunction with --concurrency ") { IsRequired = true };
 
 
@@ -388,20 +386,20 @@ namespace SqlBuildManager.Console.CommandLine
         /// Create DACPAC from target database
         /// </summary>
         private static Command dacpacCommand
-                {
-                    get
-                    {
-                        var cmd = new Command("dacpac", "Creates a DACPAC file from the target database")
+        {
+            get
+            {
+                var cmd = new Command("dacpac", "Creates a DACPAC file from the target database")
                         {
                             databaseOption.Copy(true),
                             serverOption.Copy(true),
                             dacpacOutputOption
                         };
-                        DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-                        cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateDacpac);
-                        return cmd;
-                    }
-                }
+                DatabaseAuthArgs.ForEach(o => cmd.Add(o));
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateDacpac);
+                return cmd;
+            }
+        }
 
         #region Local and Threaded Commands
 
@@ -457,7 +455,7 @@ namespace SqlBuildManager.Console.CommandLine
                     platinumdbsourceOption,
                     platinumserversourceOption,
                     timeoutretrycountOption,
-                    defaultscripttimeoutOption, 
+                    defaultscripttimeoutOption,
                     unitTestOption
                 };
                 DatabaseAuthArgs.ForEach(o => cmd.Add(o));
@@ -517,7 +515,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("run", "For updating multiple databases simultaneously using Azure batch services")
                 {
                     overrideOption.Copy(true),
-       
+
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
                     platinumdacpacOption,
@@ -529,7 +527,7 @@ namespace SqlBuildManager.Console.CommandLine
                     new Option<bool>("--monitor", () => false, "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument"),
                     unitTestOption,
                     streamEventsOption,
-                   
+
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
                 BatchSettingsOptions.ForEach(o => cmd.Add(o));
@@ -594,7 +592,7 @@ namespace SqlBuildManager.Console.CommandLine
                     pollbatchpoolstatusOption
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
-                BatchComputeOptions.ForEach(o => {if(o.Name != "deletebatchpool") cmd.Add(o); });
+                BatchComputeOptions.ForEach(o => { if (o.Name != "deletebatchpool") cmd.Add(o); });
                 IdentityArgumentsForBatch.ForEach(o => cmd.Add(o));
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(batchaccountnameOption);
@@ -896,7 +894,7 @@ namespace SqlBuildManager.Console.CommandLine
                     platinumdacpacFileInfoOption,
                     overrideOption,
                     decryptedOption,
-                    forceOption, 
+                    forceOption,
                     allowForObjectDeletionOption
 
                 };
@@ -1123,7 +1121,7 @@ namespace SqlBuildManager.Console.CommandLine
                     overrideOption,
                     platinumdacpacFileInfoOption,
                     aciOutputFileOption,
-                    forceOption, 
+                    forceOption,
                     allowForObjectDeletionOption
 
                 };
@@ -1170,7 +1168,7 @@ namespace SqlBuildManager.Console.CommandLine
                     overrideOption.Copy(false),
                     unitTestOption,
                     streamEventsOption,
-                    new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment"), 
+                    new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment"),
                     allowForObjectDeletionOption
                 };
                 cmd.Add(settingsfileExistingOption);
@@ -1285,7 +1283,7 @@ namespace SqlBuildManager.Console.CommandLine
                 //IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
                 cmd.Add(subscriptionIdOption);
                 cmd.Add(unitTestOption);
-               
+
 
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, bool, bool, bool, bool, bool>(Worker.KubernetesRun);
                 return cmd;
@@ -1319,7 +1317,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, DirectoryInfo, string, FileInfo, FileInfo, bool>(Worker.SaveKubernetesYamlFiles);
                 return cmd;
             }
-           
+
         }
         private static Command kubernetesWorkerCommand
         {
@@ -1372,7 +1370,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.Add(sectionPlaceholderOption);
                 cmd.Add(silentOption);
-                
+
 
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptKubernetesSettings);
                 return cmd;
@@ -1392,10 +1390,10 @@ namespace SqlBuildManager.Console.CommandLine
                     overrideOption,
                     unitTestOption,
                     streamEventsOption,
-                    storageaccountnameOption, 
+                    storageaccountnameOption,
                     storageaccountkeyOption,
                     threadedConcurrencyTypeOption,
-                }) ;
+                });
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(serviceBusconnectionOption);
                 cmd.Add(eventhubconnectionOption);
@@ -1418,7 +1416,7 @@ namespace SqlBuildManager.Console.CommandLine
                     packagenameAsFileToUploadOption,
                     platinumdacpacFileInfoOption,
                     overrideOption,
-                    forceOption, 
+                    forceOption,
                     allowForObjectDeletionOption,
 
                     keyVaultNameOption,
@@ -1428,7 +1426,7 @@ namespace SqlBuildManager.Console.CommandLine
                 });
                 cmd.AddRange(kubernetesYamlFileOptions);
                 cmd.AddRange(DatabaseAuthArgs);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, FileInfo,  bool>(Worker.UploadKubernetesBuildPackage);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, FileInfo, bool>(Worker.UploadKubernetesBuildPackage);
                 return cmd;
             }
         }
@@ -1467,7 +1465,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(kubernetesDequeueTargetsCommand);
                 cmd.Add(KubernetesCreateYamlCommand);
                 cmd.Add(kubernetesWorkerCommand);
-                
+
                 return cmd;
             }
         }
@@ -1484,7 +1482,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(kubernetesDequeueTargetsCommand);
                 cmd.Add(KubernetesCreateYamlCommand);
                 cmd.Add(kubernetesWorkerCommand);
-                
+
                 cmd.IsHidden = true;
                 return cmd;
             }
@@ -1493,7 +1491,7 @@ namespace SqlBuildManager.Console.CommandLine
         #endregion
         public static RootCommand SetUp()
         {
-    
+
             #region Utility Commands
             /****************************************
              * Utility commands 
@@ -1717,90 +1715,90 @@ namespace SqlBuildManager.Console.CommandLine
                        .UseDefaults()
                        .UseHelp(ctx =>
                        {
-                            ctx.HelpBuilder.CustomizeLayout(_ => HelpBuilder.Default
-                                              .GetLayout()
-                                              .Prepend(
-                                                  _ => AnsiConsole.Write(new FigletText("SQL Build Manager"))
-                                              ));
-                            ctx.HelpBuilder.CustomizeSymbol(FirstBuildRunCommand,
-                                firstColumnText: $"** Build Execution Commands:\u0000{Environment.NewLine}{FirstBuildRunCommand.Name}",
-                                secondColumnText: $"\u0000{Environment.NewLine}{FirstBuildRunCommand.Description}");
+                           ctx.HelpBuilder.CustomizeLayout(_ => HelpBuilder.Default
+                                             .GetLayout()
+                                             .Prepend(
+                                                 _ => AnsiConsole.Write(new FigletText("SQL Build Manager"))
+                                             ));
+                           ctx.HelpBuilder.CustomizeSymbol(FirstBuildRunCommand,
+                               firstColumnText: $"** Build Execution Commands:\u0000{Environment.NewLine}{FirstBuildRunCommand.Name}",
+                               secondColumnText: $"\u0000{Environment.NewLine}{FirstBuildRunCommand.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(FirstUtilityCommand,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Build Utility Commands:\u0000{Environment.NewLine}{FirstUtilityCommand.Name}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstUtilityCommand.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(FirstUtilityCommand,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Build Utility Commands:\u0000{Environment.NewLine}{FirstUtilityCommand.Name}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstUtilityCommand.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(FirstPackageManagementCommand,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Package Management Commands:\u0000{Environment.NewLine}{FirstPackageManagementCommand.Name}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstPackageManagementCommand.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(FirstPackageManagementCommand,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Package Management Commands:\u0000{Environment.NewLine}{FirstPackageManagementCommand.Name}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstPackageManagementCommand.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(FirstPackageInformationCommand,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Package Information Commands:\u0000{Environment.NewLine}{FirstPackageInformationCommand.Name}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstPackageInformationCommand.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(FirstPackageInformationCommand,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Package Information Commands:\u0000{Environment.NewLine}{FirstPackageInformationCommand.Name}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstPackageInformationCommand.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(FirstAdditionalCommand,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Additional Commands:\u0000{Environment.NewLine}{FirstAdditionalCommand.Name}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstAdditionalCommand.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(FirstAdditionalCommand,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Additional Commands:\u0000{Environment.NewLine}{FirstAdditionalCommand.Name}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstAdditionalCommand.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(imageTagOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Container Registry Options:\u0000{Environment.NewLine}{OptionString(imageTagOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{imageTagOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(imageTagOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Container Registry Options:\u0000{Environment.NewLine}{OptionString(imageTagOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{imageTagOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(threadedConcurrencyTypeOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Concurrency Options:\u0000{Environment.NewLine}{OptionString(threadedConcurrencyTypeOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{threadedConcurrencyTypeOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(threadedConcurrencyTypeOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Concurrency Options:\u0000{Environment.NewLine}{OptionString(threadedConcurrencyTypeOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{threadedConcurrencyTypeOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(threadedConcurrencyRequiredTypeOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Concurrency Options:\u0000{Environment.NewLine}{OptionString(threadedConcurrencyRequiredTypeOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{threadedConcurrencyRequiredTypeOption.Description}");
-                           
-                            ctx.HelpBuilder.CustomizeSymbol(settingsfileExistingOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Settings File Options:\u0000{Environment.NewLine}{OptionString(settingsfileExistingOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{settingsfileExistingOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(threadedConcurrencyRequiredTypeOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Concurrency Options:\u0000{Environment.NewLine}{OptionString(threadedConcurrencyRequiredTypeOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{threadedConcurrencyRequiredTypeOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(settingsfileNewOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Settings File Options:\u0000{Environment.NewLine}{OptionString(settingsfileNewOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{settingsfileNewOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(settingsfileExistingOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Settings File Options:\u0000{Environment.NewLine}{OptionString(settingsfileExistingOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{settingsfileExistingOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(settingsfileExistingRequiredOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Settings File Options:\u0000{Environment.NewLine}{OptionString(settingsfileExistingRequiredOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{settingsfileExistingRequiredOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(settingsfileNewOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Settings File Options:\u0000{Environment.NewLine}{OptionString(settingsfileNewOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{settingsfileNewOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(usernameOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Database Auth Options:\u0000{Environment.NewLine}{OptionString(usernameOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{usernameOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(settingsfileExistingRequiredOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Settings File Options:\u0000{Environment.NewLine}{OptionString(settingsfileExistingRequiredOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{settingsfileExistingRequiredOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(clientIdOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Identity Options:\u0000{Environment.NewLine}{OptionString(clientIdOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{clientIdOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(usernameOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Database Auth Options:\u0000{Environment.NewLine}{OptionString(usernameOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{usernameOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(serviceAccountNameOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Identity Options:\u0000{Environment.NewLine}{OptionString(serviceAccountNameOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{serviceAccountNameOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(clientIdOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Identity Options:\u0000{Environment.NewLine}{OptionString(clientIdOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{clientIdOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(keyVaultNameOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Connection and Secrets Options:\u0000{Environment.NewLine}{OptionString(keyVaultNameOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{keyVaultNameOption.Description}");
-                          
-                            ctx.HelpBuilder.CustomizeSymbol(batchpoolOsOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Batch Pool Compute Options :\u0000{Environment.NewLine}{OptionString(batchpoolOsOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{batchpoolOsOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(serviceAccountNameOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Identity Options:\u0000{Environment.NewLine}{OptionString(serviceAccountNameOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{serviceAccountNameOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(batchjobnameOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Batch Job Settings Options :\u0000{Environment.NewLine}{OptionString(batchjobnameOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{batchjobnameOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(keyVaultNameOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Connection and Secrets Options:\u0000{Environment.NewLine}{OptionString(keyVaultNameOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{keyVaultNameOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(containerAppEnvironmentOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Container App Deployment Options :\u0000{Environment.NewLine}{OptionString(containerAppEnvironmentOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{containerAppEnvironmentOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(batchpoolOsOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Batch Pool Compute Options :\u0000{Environment.NewLine}{OptionString(batchpoolOsOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{batchpoolOsOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(runtimeFileOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** Kubernetes YAML file Options :\u0000{Environment.NewLine}{OptionString(runtimeFileOption)}",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{runtimeFileOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(batchjobnameOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Batch Job Settings Options :\u0000{Environment.NewLine}{OptionString(batchjobnameOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{batchjobnameOption.Description}");
 
-                            ctx.HelpBuilder.CustomizeSymbol(sectionPlaceholderOption,
-                                firstColumnText: $"\u0000{Environment.NewLine}** General Options:\u0000",
-                                secondColumnText: $"\u0000{Environment.NewLine}\u0000");
+                           ctx.HelpBuilder.CustomizeSymbol(containerAppEnvironmentOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Container App Deployment Options :\u0000{Environment.NewLine}{OptionString(containerAppEnvironmentOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{containerAppEnvironmentOption.Description}");
+
+                           ctx.HelpBuilder.CustomizeSymbol(runtimeFileOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Kubernetes YAML file Options :\u0000{Environment.NewLine}{OptionString(runtimeFileOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{runtimeFileOption.Description}");
+
+                           ctx.HelpBuilder.CustomizeSymbol(sectionPlaceholderOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** General Options:\u0000",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000");
 
                        })
                        .Build();

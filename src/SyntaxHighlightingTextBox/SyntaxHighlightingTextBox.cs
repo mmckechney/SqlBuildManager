@@ -1,22 +1,21 @@
+//using System.Linq;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Windows.Forms;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
-//using System.Linq;
-using Microsoft.Extensions.Logging;
+using System.Windows.Forms;
 //http://www.codeproject.com/cs/miscctrl/SyntaxHighlighting.asp
 namespace UrielGuy.SyntaxHighlighting
 {
-	/// <summary>
-	/// A textbox the does syntax highlighting.
-	/// </summary>
-	public class SyntaxHighlightingTextBox :	System.Windows.Forms.RichTextBox 
-	{
+    /// <summary>
+    /// A textbox the does syntax highlighting.
+    /// </summary>
+    public class SyntaxHighlightingTextBox : System.Windows.Forms.RichTextBox
+    {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private bool suspendHighlighting;
 
@@ -27,179 +26,179 @@ namespace UrielGuy.SyntaxHighlighting
             {
                 suspendHighlighting = value;
                 if (value == true)
-                    this.RefreshHighlighting();
+                    RefreshHighlighting();
 
             }
         }
-		private SqlSync.Highlighting.SyntaxHightlightType highlightType;
-		[Category("Behavior")]
-		public SqlSync.Highlighting.SyntaxHightlightType HighlightType
-		{
-			get
-			{
-				return this.highlightType;
-			}
-			set
-			{
-				this.highlightType = value;
-				switch(this.highlightType)
-				{
-					case SqlSync.Highlighting.SyntaxHightlightType.Sql:
-						this.HighlightDescriptors = SqlSync.Highlighting.SqlSyntax.SqlHighlighting;
-						this.Separators = SqlSync.Highlighting.SqlSyntax.SqlSeparators;
-						break;
+        private SqlSync.Highlighting.SyntaxHightlightType highlightType;
+        [Category("Behavior")]
+        public SqlSync.Highlighting.SyntaxHightlightType HighlightType
+        {
+            get
+            {
+                return highlightType;
+            }
+            set
+            {
+                highlightType = value;
+                switch (highlightType)
+                {
+                    case SqlSync.Highlighting.SyntaxHightlightType.Sql:
+                        HighlightDescriptors = SqlSync.Highlighting.SqlSyntax.SqlHighlighting;
+                        Separators = SqlSync.Highlighting.SqlSyntax.SqlSeparators;
+                        break;
                     case SqlSync.Highlighting.SyntaxHightlightType.LogFile:
-                        this.HighlightDescriptors = SqlSync.Highlighting.LogFileSyntax.LogFileHighlighting;
-                        this.Separators = SqlSync.Highlighting.LogFileSyntax.LogFileSeparators;
+                        HighlightDescriptors = SqlSync.Highlighting.LogFileSyntax.LogFileHighlighting;
+                        Separators = SqlSync.Highlighting.LogFileSyntax.LogFileSeparators;
                         break;
                     case SqlSync.Highlighting.SyntaxHightlightType.None:
                     case SqlSync.Highlighting.SyntaxHightlightType.RemoteServiceLog:
-                        this.suspendHighlighting = true;
+                        suspendHighlighting = true;
                         break;
- 				}
-			}
-		}
-		public SyntaxHighlightingTextBox(SqlSync.Highlighting.SyntaxHightlightType type)
-		{
-			this.HighlightType = type;
+                }
+            }
+        }
+        public SyntaxHighlightingTextBox(SqlSync.Highlighting.SyntaxHightlightType type)
+        {
+            HighlightType = type;
 
             // Otherwise, non-standard links get lost when user starts typing
             // next to a non-standard link
-            this.DetectUrls = false;
-		}
-		public SyntaxHighlightingTextBox()
-		{
-			this.HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
+            DetectUrls = false;
+        }
+        public SyntaxHighlightingTextBox()
+        {
+            HighlightType = SqlSync.Highlighting.SyntaxHightlightType.Sql;
 
             // Otherwise, non-standard links get lost when user starts typing
             // next to a non-standard link
-            this.DetectUrls = false;
-		}
+            DetectUrls = false;
+        }
 
-		#region Members
+        #region Members
 
-		//Members exposed via properties
-		private SeperaratorCollection mSeperators = new SeperaratorCollection();  
-		private HighLightDescriptorCollection mHighlightDescriptors = new HighLightDescriptorCollection();
-		private bool mCaseSesitive = false;
-		private bool mFilterAutoComplete = false;
+        //Members exposed via properties
+        private SeperaratorCollection mSeperators = new SeperaratorCollection();
+        private HighLightDescriptorCollection mHighlightDescriptors = new HighLightDescriptorCollection();
+        private bool mCaseSesitive = false;
+        private bool mFilterAutoComplete = false;
 
-		//Internal use members
-		private bool mAutoCompleteShown = false;
-		private bool mParsing = false;
-		private bool mIgnoreLostFocus = false;
+        //Internal use members
+        private bool mAutoCompleteShown = false;
+        private bool mParsing = false;
+        private bool mIgnoreLostFocus = false;
 
-		private AutoCompleteForm mAutoCompleteForm = new AutoCompleteForm();
+        private AutoCompleteForm mAutoCompleteForm = new AutoCompleteForm();
 
-		//Undo/Redo members
-		private ArrayList mUndoList = new ArrayList();
-		private Stack mRedoStack = new Stack();
-		private bool mIsUndo = false;
-		private UndoRedoInfo mLastInfo = new UndoRedoInfo("", new Win32.POINT(), 0);
-		private int mMaxUndoRedoSteps = 50;
+        //Undo/Redo members
+        private ArrayList mUndoList = new ArrayList();
+        private Stack mRedoStack = new Stack();
+        private bool mIsUndo = false;
+        private UndoRedoInfo mLastInfo = new UndoRedoInfo("", new Win32.POINT(), 0);
+        private int mMaxUndoRedoSteps = 50;
 
-		#endregion
+        #endregion
 
-		#region Properties
-		/// <summary>
-		/// Determines if token recognition is case sensitive.
-		/// </summary>
-		[Category("Behavior")]
-		public bool CaseSensitive 
-		{ 
-			get 
-			{ 
-				return mCaseSesitive; 
-			}
-			set 
-			{ 
-				mCaseSesitive = value;
-			}
-		}
+        #region Properties
+        /// <summary>
+        /// Determines if token recognition is case sensitive.
+        /// </summary>
+        [Category("Behavior")]
+        public bool CaseSensitive
+        {
+            get
+            {
+                return mCaseSesitive;
+            }
+            set
+            {
+                mCaseSesitive = value;
+            }
+        }
 
 
-		/// <summary>
-		/// Sets whether or not to remove items from the Autocomplete window as the user types...
-		/// </summary>
-		[Category("Behavior")]
-		public bool FilterAutoComplete 
-		{
-			get 
-			{
-				return mFilterAutoComplete;
-			}
-			set 
-			{
-				mFilterAutoComplete = value;
-			}
-		}
+        /// <summary>
+        /// Sets whether or not to remove items from the Autocomplete window as the user types...
+        /// </summary>
+        [Category("Behavior")]
+        public bool FilterAutoComplete
+        {
+            get
+            {
+                return mFilterAutoComplete;
+            }
+            set
+            {
+                mFilterAutoComplete = value;
+            }
+        }
 
-		/// <summary>
-		/// Set the maximum amount of Undo/Redo steps.
-		/// </summary>
-		[Category("Behavior")]
-		public int MaxUndoRedoSteps 
-		{
-			get 
-			{
-				return mMaxUndoRedoSteps;
-			}
-			set
-			{
-				mMaxUndoRedoSteps = value;
-			}
-		}
+        /// <summary>
+        /// Set the maximum amount of Undo/Redo steps.
+        /// </summary>
+        [Category("Behavior")]
+        public int MaxUndoRedoSteps
+        {
+            get
+            {
+                return mMaxUndoRedoSteps;
+            }
+            set
+            {
+                mMaxUndoRedoSteps = value;
+            }
+        }
 
-			/// <summary>
-			/// A collection of charecters. a token is every string between two seperators.
-			/// </summary>
-			/// 
-			public SeperaratorCollection Separators 
-		{
-			get 
-			{
-				return mSeperators;
-			}
-				set
-				{
-					this.mSeperators = value;
-				}
-		}
-		
-		/// <summary>
-		/// The collection of highlight descriptors.
-		/// </summary>
-		/// 
-		public HighLightDescriptorCollection HighlightDescriptors 
-		{
-			get 
-			{
-				return mHighlightDescriptors;
-			}
-			set
-			{
-				this.mHighlightDescriptors = value;
-			}
-		}
+        /// <summary>
+        /// A collection of charecters. a token is every string between two seperators.
+        /// </summary>
+        /// 
+        public SeperaratorCollection Separators
+        {
+            get
+            {
+                return mSeperators;
+            }
+            set
+            {
+                mSeperators = value;
+            }
+        }
 
-		#endregion
+        /// <summary>
+        /// The collection of highlight descriptors.
+        /// </summary>
+        /// 
+        public HighLightDescriptorCollection HighlightDescriptors
+        {
+            get
+            {
+                return mHighlightDescriptors;
+            }
+            set
+            {
+                mHighlightDescriptors = value;
+            }
+        }
 
-		public void RefreshHighlighting()
-		{
-			this.OnTextChanged(EventArgs.Empty);
-		}
-		#region Overriden methods
+        #endregion
 
-		/// <summary>
-		/// The on text changed overrided. Here we parse the text into RTF for the highlighting.
-		/// </summary>
-		/// <param name="e"></param>
-		protected override void OnTextChanged(EventArgs e)
-		{
-			string initialText = Text;
+        public void RefreshHighlighting()
+        {
+            OnTextChanged(EventArgs.Empty);
+        }
+        #region Overriden methods
+
+        /// <summary>
+        /// The on text changed overrided. Here we parse the text into RTF for the highlighting.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnTextChanged(EventArgs e)
+        {
+            string initialText = Text;
             try
             {
-                if (this.suspendHighlighting)
+                if (suspendHighlighting)
                     return;
                 if (mParsing) return;
                 mParsing = true;
@@ -210,7 +209,7 @@ namespace UrielGuy.SyntaxHighlighting
                 {
                     mRedoStack.Clear();
                     mUndoList.Insert(0, mLastInfo);
-                    this.LimitUndo();
+                    LimitUndo();
                     mLastInfo = new UndoRedoInfo(Text, GetScrollPos(), SelectionStart);
                 }
 
@@ -279,7 +278,7 @@ namespace UrielGuy.SyntaxHighlighting
                     }
 
                     int tokenCounter = 0;
-                    for (int i = 0; i < line.Length; )
+                    for (int i = 0; i < line.Length;)
                     {
                         char curChar = line[i];
                         if (mSeperators.Contains(curChar))
@@ -389,8 +388,8 @@ namespace UrielGuy.SyntaxHighlighting
                         }
                     }
                 }
-				sb.Append("}");
-				var rtfSTring = sb.ToString();
+                sb.Append("}");
+                var rtfSTring = sb.ToString();
                 base.Rtf = sb.ToString();
 
                 //Restore cursor and scrollbars location.
@@ -415,35 +414,35 @@ namespace UrielGuy.SyntaxHighlighting
             }
             catch (Exception exe)
             {
-                log.LogError(exe, $"Error setting SyntaxHighlighting. Type={this.highlightType.ToString()}");
-				base.Text = initialText;
+                log.LogError(exe, $"Error setting SyntaxHighlighting. Type={highlightType.ToString()}");
+                base.Text = initialText;
 
-			}
-		}
+            }
+        }
 
 
-		protected override void OnVScroll(EventArgs e)
-		{
-			if (mParsing) return;
-			base.OnVScroll (e);
-		}
+        protected override void OnVScroll(EventArgs e)
+        {
+            if (mParsing) return;
+            base.OnVScroll(e);
+        }
 
-		protected override void OnMouseDown(MouseEventArgs e)
-		{
-			HideAutoCompleteForm();
-			base.OnMouseDown (e);
-		}
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            HideAutoCompleteForm();
+            base.OnMouseDown(e);
+        }
 
-		/// <summary>
-		/// Taking care of Keyboard events
-		/// </summary>
-		/// <param name="m"></param>
-		/// <remarks>
-		/// Since even when overriding the OnKeyDown methoed and not calling the base function 
-		/// you don't have full control of the input, I've decided to catch windows messages to handle them.
-		/// </remarks>
-		protected override void WndProc(ref Message m)
-		{
+        /// <summary>
+        /// Taking care of Keyboard events
+        /// </summary>
+        /// <param name="m"></param>
+        /// <remarks>
+        /// Since even when overriding the OnKeyDown methoed and not calling the base function 
+        /// you don't have full control of the input, I've decided to catch windows messages to handle them.
+        /// </remarks>
+        protected override void WndProc(ref Message m)
+        {
             switch (m.Msg)
             {
                 //				case Win32.WM_LBUTTONDBLCLK:
@@ -542,466 +541,466 @@ namespace UrielGuy.SyntaxHighlighting
                     break;
 
             }
-			base.WndProc (ref m);
-		}
+            base.WndProc(ref m);
+        }
 
 
-		/// <summary>
-		/// Hides the AutoComplete form when losing focus on textbox.
-		/// </summary>
-		/// <param name="e"></param>
-		protected override void OnLostFocus(EventArgs e)
-		{
-			if (!mIgnoreLostFocus)
-			{
-				HideAutoCompleteForm();
-			}
-			base.OnLostFocus (e);
-		}
+        /// <summary>
+        /// Hides the AutoComplete form when losing focus on textbox.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnLostFocus(EventArgs e)
+        {
+            if (!mIgnoreLostFocus)
+            {
+                HideAutoCompleteForm();
+            }
+            base.OnLostFocus(e);
+        }
 
 
-		#endregion
+        #endregion
 
-		#region Undo/Redo Code
-		public new bool CanUndo 
-		{
-			get 
-			{
-				return mUndoList.Count > 0;
-			}
-		}
-		public new bool CanRedo
-		{
-			get 
-			{
-				return mRedoStack.Count > 0;
-			}
-		}
+        #region Undo/Redo Code
+        public new bool CanUndo
+        {
+            get
+            {
+                return mUndoList.Count > 0;
+            }
+        }
+        public new bool CanRedo
+        {
+            get
+            {
+                return mRedoStack.Count > 0;
+            }
+        }
 
-		private void LimitUndo()
-		{
-			while (mUndoList.Count > mMaxUndoRedoSteps)
-			{
-				mUndoList.RemoveAt(mMaxUndoRedoSteps);
-			}
-		}
+        private void LimitUndo()
+        {
+            while (mUndoList.Count > mMaxUndoRedoSteps)
+            {
+                mUndoList.RemoveAt(mMaxUndoRedoSteps);
+            }
+        }
 
-		public new void Undo()
-		{
-			if (!CanUndo)
-				return;
-			mIsUndo = true;
-			mRedoStack.Push(new UndoRedoInfo(Text, GetScrollPos(), SelectionStart));
-			UndoRedoInfo info = (UndoRedoInfo)mUndoList[0];
-			mUndoList.RemoveAt(0);
-			Text = info.Text;
-			SelectionStart = info.CursorLocation;
-			SetScrollPos(info.ScrollPos);
-			mLastInfo = info;
-			mIsUndo = false;
-		}
-		public new void Redo()
-		{
-			if (!CanRedo)
-				return;
-			mIsUndo = true;
-			mUndoList.Insert(0,new UndoRedoInfo(Text, GetScrollPos(), SelectionStart));
-			LimitUndo();
-			UndoRedoInfo info = (UndoRedoInfo)mRedoStack.Pop();
-			Text = info.Text;
-			SelectionStart = info.CursorLocation;
-			SetScrollPos(info.ScrollPos);
-			mIsUndo = false;
-		}
+        public new void Undo()
+        {
+            if (!CanUndo)
+                return;
+            mIsUndo = true;
+            mRedoStack.Push(new UndoRedoInfo(Text, GetScrollPos(), SelectionStart));
+            UndoRedoInfo info = (UndoRedoInfo)mUndoList[0];
+            mUndoList.RemoveAt(0);
+            Text = info.Text;
+            SelectionStart = info.CursorLocation;
+            SetScrollPos(info.ScrollPos);
+            mLastInfo = info;
+            mIsUndo = false;
+        }
+        public new void Redo()
+        {
+            if (!CanRedo)
+                return;
+            mIsUndo = true;
+            mUndoList.Insert(0, new UndoRedoInfo(Text, GetScrollPos(), SelectionStart));
+            LimitUndo();
+            UndoRedoInfo info = (UndoRedoInfo)mRedoStack.Pop();
+            Text = info.Text;
+            SelectionStart = info.CursorLocation;
+            SetScrollPos(info.ScrollPos);
+            mIsUndo = false;
+        }
 
-		private class UndoRedoInfo
-		{
-			public UndoRedoInfo(string text, Win32.POINT scrollPos, int cursorLoc)
-			{
-				Text = text;
-				ScrollPos = scrollPos;
-				CursorLocation = cursorLoc;
-			}
-			public readonly Win32.POINT ScrollPos;
-			public readonly int CursorLocation;
-			public readonly string Text;
-		}
-		#endregion
+        private class UndoRedoInfo
+        {
+            public UndoRedoInfo(string text, Win32.POINT scrollPos, int cursorLoc)
+            {
+                Text = text;
+                ScrollPos = scrollPos;
+                CursorLocation = cursorLoc;
+            }
+            public readonly Win32.POINT ScrollPos;
+            public readonly int CursorLocation;
+            public readonly string Text;
+        }
+        #endregion
 
-		#region AutoComplete functions
+        #region AutoComplete functions
 
-		/// <summary>
-		/// Entry point to autocomplete mechanism.
-		/// Tries to complete the current word. if it fails it shows the AutoComplete form.
-		/// </summary>
-		private void CompleteWord()
-		{
-			int curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart, Text.Length - 1))+1;
-			int curTokenEndIndex= Text.IndexOfAny(mSeperators.GetAsCharArray(), SelectionStart);
-			if(curTokenStartIndex > curTokenEndIndex)
-				curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(),Math.Min(SelectionStart-1,Text.Length-1))+1;
-			
-			if (curTokenEndIndex == -1) 
-			{
-				curTokenEndIndex = Text.Length;
-			}
-			string curTokenString = Text.Substring(curTokenStartIndex, Math.Max(curTokenEndIndex - curTokenStartIndex,0)).ToUpper();
-			
-			string token = null;
-			foreach (HighlightDescriptor hd in mHighlightDescriptors)
-			{
-				if (hd.UseForAutoComplete && hd.Token.ToUpper().StartsWith(curTokenString))
-				{
-					if (token == null)
-					{
-						token = hd.Token;
-					}
-					else
-					{
-						token = null;
-						break;
-					}
-				}
-			}
-			if (token == null)
-			{
-				ShowAutoComplete();
-			}
-			else
-			{
-				SelectionStart = curTokenStartIndex;
-				SelectionLength = curTokenEndIndex - curTokenStartIndex;
-				SelectedText = token;
-				SelectionStart = SelectionStart + SelectionLength;
-				SelectionLength = 0;
-			}
-		}
+        /// <summary>
+        /// Entry point to autocomplete mechanism.
+        /// Tries to complete the current word. if it fails it shows the AutoComplete form.
+        /// </summary>
+        private void CompleteWord()
+        {
+            int curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart, Text.Length - 1)) + 1;
+            int curTokenEndIndex = Text.IndexOfAny(mSeperators.GetAsCharArray(), SelectionStart);
+            if (curTokenStartIndex > curTokenEndIndex)
+                curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart - 1, Text.Length - 1)) + 1;
 
-		/// <summary>
-		/// replace the current word of the cursor with the one from the AutoComplete form and closes it.
-		/// </summary>
-		/// <returns>If the operation was succesful</returns>
-		private bool AcceptAutoCompleteItem()
-		{
-			
-			if (mAutoCompleteForm.SelectedItem == null)
-			{
-				return false;
-			}
-			
-			int curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart, Text.Length - 1)) + 1;
-			int curTokenEndIndex= Text.IndexOfAny(mSeperators.GetAsCharArray(), SelectionStart);
-			if(curTokenStartIndex > curTokenEndIndex)
-				curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart-1, Text.Length - 1)) + 1;
-			
-			if (curTokenEndIndex == -1) 
-			{
-				curTokenEndIndex = Text.Length;
-			}
-			SelectionStart = Math.Max(curTokenStartIndex, 0);
-			SelectionLength = Math.Max(0,curTokenEndIndex - curTokenStartIndex);
-			SelectedText = mAutoCompleteForm.SelectedItem;
-			SelectionStart = SelectionStart + SelectionLength;
-			SelectionLength = 0;
-			
-			HideAutoCompleteForm();
-			return true;
-		}
+            if (curTokenEndIndex == -1)
+            {
+                curTokenEndIndex = Text.Length;
+            }
+            string curTokenString = Text.Substring(curTokenStartIndex, Math.Max(curTokenEndIndex - curTokenStartIndex, 0)).ToUpper();
 
+            string token = null;
+            foreach (HighlightDescriptor hd in mHighlightDescriptors)
+            {
+                if (hd.UseForAutoComplete && hd.Token.ToUpper().StartsWith(curTokenString))
+                {
+                    if (token == null)
+                    {
+                        token = hd.Token;
+                    }
+                    else
+                    {
+                        token = null;
+                        break;
+                    }
+                }
+            }
+            if (token == null)
+            {
+                ShowAutoComplete();
+            }
+            else
+            {
+                SelectionStart = curTokenStartIndex;
+                SelectionLength = curTokenEndIndex - curTokenStartIndex;
+                SelectedText = token;
+                SelectionStart = SelectionStart + SelectionLength;
+                SelectionLength = 0;
+            }
+        }
 
+        /// <summary>
+        /// replace the current word of the cursor with the one from the AutoComplete form and closes it.
+        /// </summary>
+        /// <returns>If the operation was succesful</returns>
+        private bool AcceptAutoCompleteItem()
+        {
 
-		/// <summary>
-		/// Finds the and sets the best matching token as the selected item in the AutoCompleteForm.
-		/// </summary>
-		private void SetBestSelectedAutoCompleteItem()
-		{
-			int curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart, Text.Length - 1))+1;
-			int curTokenEndIndex= Text.IndexOfAny(mSeperators.GetAsCharArray(), SelectionStart);
-			if (curTokenEndIndex == -1) 
-			{
-				curTokenEndIndex = Text.Length;
-			}
-			string curTokenString = Text.Substring(curTokenStartIndex, Math.Max(curTokenEndIndex - curTokenStartIndex,0)).ToUpper();
-			
-			if ((mAutoCompleteForm.SelectedItem != null) && 
-				mAutoCompleteForm.SelectedItem.ToUpper().StartsWith(curTokenString))
-			{
-				return;
-			}
+            if (mAutoCompleteForm.SelectedItem == null)
+            {
+                return false;
+            }
 
-			int matchingChars = -1;
-			string bestMatchingToken = null;
+            int curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart, Text.Length - 1)) + 1;
+            int curTokenEndIndex = Text.IndexOfAny(mSeperators.GetAsCharArray(), SelectionStart);
+            if (curTokenStartIndex > curTokenEndIndex)
+                curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart - 1, Text.Length - 1)) + 1;
 
-			foreach (string item in mAutoCompleteForm.Items)
-			{
-				bool isWholeItemMatching = true;
-				for (int i = 0 ; i < Math.Min(item.Length, curTokenString.Length); i++)
-				{
-					if (char.ToUpper(item[i]) != char.ToUpper(curTokenString[i]))
-					{
-						isWholeItemMatching = false;
-						if (i-1 > matchingChars)
-						{
-							matchingChars = i;
-							bestMatchingToken = item;
-							break;
-						}
-					}
-				}
-				if (isWholeItemMatching &&
-					(Math.Min(item.Length, curTokenString.Length) > matchingChars))
-				{
-					matchingChars = Math.Min(item.Length, curTokenString.Length);
-					bestMatchingToken = item;
-				}
-			}
-			
-			if (bestMatchingToken != null)
-			{
-				mAutoCompleteForm.SelectedIndex = mAutoCompleteForm.Items.IndexOf(bestMatchingToken);
-			}
+            if (curTokenEndIndex == -1)
+            {
+                curTokenEndIndex = Text.Length;
+            }
+            SelectionStart = Math.Max(curTokenStartIndex, 0);
+            SelectionLength = Math.Max(0, curTokenEndIndex - curTokenStartIndex);
+            SelectedText = mAutoCompleteForm.SelectedItem;
+            SelectionStart = SelectionStart + SelectionLength;
+            SelectionLength = 0;
+
+            HideAutoCompleteForm();
+            return true;
+        }
 
 
-		}
 
-		/// <summary>
-		/// Sets the items for the AutoComplete form.
-		/// </summary>
-		private void SetAutoCompleteItems()
-		{
-			mAutoCompleteForm.Items.Clear();
-			string filterString = "";
-			if (mFilterAutoComplete)
-			{
-			
-				int filterTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart, Text.Length - 1))+1;
-				int filterTokenEndIndex= Text.IndexOfAny(mSeperators.GetAsCharArray(), SelectionStart);
-				if(filterTokenStartIndex > filterTokenEndIndex)
-					filterTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart-1, Text.Length - 1))+1;
-				if (filterTokenEndIndex == -1) 
-				{
-					filterTokenEndIndex = Text.Length;
-				}
-				if(filterTokenEndIndex - filterTokenStartIndex < 0)
-					return;
+        /// <summary>
+        /// Finds the and sets the best matching token as the selected item in the AutoCompleteForm.
+        /// </summary>
+        private void SetBestSelectedAutoCompleteItem()
+        {
+            int curTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart, Text.Length - 1)) + 1;
+            int curTokenEndIndex = Text.IndexOfAny(mSeperators.GetAsCharArray(), SelectionStart);
+            if (curTokenEndIndex == -1)
+            {
+                curTokenEndIndex = Text.Length;
+            }
+            string curTokenString = Text.Substring(curTokenStartIndex, Math.Max(curTokenEndIndex - curTokenStartIndex, 0)).ToUpper();
 
-				filterString = Text.Substring(filterTokenStartIndex, filterTokenEndIndex - filterTokenStartIndex).ToUpper();
-			}
-		
-			foreach (HighlightDescriptor hd in mHighlightDescriptors)
-			{
-				if (hd.Token.ToUpper().StartsWith(filterString) && hd.UseForAutoComplete)
-				{
-					mAutoCompleteForm.Items.Add(hd.Token);
-				}
-			}
-			mAutoCompleteForm.UpdateView();
-		}
-		
-		/// <summary>
-		/// Sets the size. the size is limited by the MaxSize property in the form itself.
-		/// </summary>
-		private void SetAutoCompleteSize()
-		{
-			mAutoCompleteForm.Height = Math.Min(
-				Math.Max(mAutoCompleteForm.Items.Count, 1) * mAutoCompleteForm.ItemHeight + 4, 
-				mAutoCompleteForm.MaximumSize.Height);
-		}
+            if ((mAutoCompleteForm.SelectedItem != null) &&
+                mAutoCompleteForm.SelectedItem.ToUpper().StartsWith(curTokenString))
+            {
+                return;
+            }
 
-		/// <summary>
-		/// closes the AutoCompleteForm.
-		/// </summary>
-		private void HideAutoCompleteForm()
-		{
-			mAutoCompleteForm.Visible = false;
-			mAutoCompleteShown = false;
-		}
-		
+            int matchingChars = -1;
+            string bestMatchingToken = null;
 
-		/// <summary>
-		/// Sets the location of the AutoComplete form, maiking sure it's on the screen where the cursor is.
-		/// </summary>
-		/// <param name="moveHorizontly">determines wheather or not to move the form horizontly.</param>
-		private void SetAutoCompleteLocation(bool moveHorizontly)
-		{
-			Point cursorLocation = GetPositionFromCharIndex(SelectionStart);
-			Screen screen = Screen.FromPoint(cursorLocation);
-			Point optimalLocation = new Point(PointToScreen(cursorLocation).X-15, (int)(PointToScreen(cursorLocation).Y + Font.Size*2 + 2));
-			Rectangle desiredPlace = new Rectangle(optimalLocation , mAutoCompleteForm.Size);
-			desiredPlace.Width = 152;
-			if (desiredPlace.Left < screen.Bounds.Left) 
-			{
-				desiredPlace.X = screen.Bounds.Left;
-			}
-			if (desiredPlace.Right > screen.Bounds.Right)
-			{
-				desiredPlace.X -= (desiredPlace.Right - screen.Bounds.Right);
-			}
-			if (desiredPlace.Bottom > screen.Bounds.Bottom)
-			{
-				desiredPlace.Y = cursorLocation.Y - 2 - desiredPlace.Height;
-			}
-			if (!moveHorizontly)
-			{
-				desiredPlace.X = mAutoCompleteForm.Left;
-			}
+            foreach (string item in mAutoCompleteForm.Items)
+            {
+                bool isWholeItemMatching = true;
+                for (int i = 0; i < Math.Min(item.Length, curTokenString.Length); i++)
+                {
+                    if (char.ToUpper(item[i]) != char.ToUpper(curTokenString[i]))
+                    {
+                        isWholeItemMatching = false;
+                        if (i - 1 > matchingChars)
+                        {
+                            matchingChars = i;
+                            bestMatchingToken = item;
+                            break;
+                        }
+                    }
+                }
+                if (isWholeItemMatching &&
+                    (Math.Min(item.Length, curTokenString.Length) > matchingChars))
+                {
+                    matchingChars = Math.Min(item.Length, curTokenString.Length);
+                    bestMatchingToken = item;
+                }
+            }
 
-			mAutoCompleteForm.Bounds = desiredPlace;
-		}
+            if (bestMatchingToken != null)
+            {
+                mAutoCompleteForm.SelectedIndex = mAutoCompleteForm.Items.IndexOf(bestMatchingToken);
+            }
 
-		/// <summary>
-		/// Shows the Autocomplete form.
-		/// </summary>
-		public void ShowAutoComplete()
-		{
-			SetAutoCompleteItems();
-			SetAutoCompleteSize();
-			SetAutoCompleteLocation(true);
-			mIgnoreLostFocus = true;
-			mAutoCompleteForm.Visible = true;
-			SetBestSelectedAutoCompleteItem();
-			mAutoCompleteShown = true;
-			Focus();
-			mIgnoreLostFocus = false;
-		}
 
-		#endregion 
+        }
 
-		#region Rtf building helper functions
+        /// <summary>
+        /// Sets the items for the AutoComplete form.
+        /// </summary>
+        private void SetAutoCompleteItems()
+        {
+            mAutoCompleteForm.Items.Clear();
+            string filterString = "";
+            if (mFilterAutoComplete)
+            {
 
-		/// <summary>
-		/// Set color and font to default control settings.
-		/// </summary>
-		/// <param name="sb">the string builder building the RTF</param>
-		/// <param name="colors">colors hashtable</param>
-		/// <param name="fonts">fonts hashtable</param>
-		private void SetDefaultSettings(StringBuilder sb, Hashtable colors, Hashtable fonts)
-		{
-			SetColor(sb, ForeColor, colors);
-			SetFont(sb, Font, fonts);
-			SetFontSize(sb, (int)Font.Size);
-			EndTags(sb);
-		}
+                int filterTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart, Text.Length - 1)) + 1;
+                int filterTokenEndIndex = Text.IndexOfAny(mSeperators.GetAsCharArray(), SelectionStart);
+                if (filterTokenStartIndex > filterTokenEndIndex)
+                    filterTokenStartIndex = Text.LastIndexOfAny(mSeperators.GetAsCharArray(), Math.Min(SelectionStart - 1, Text.Length - 1)) + 1;
+                if (filterTokenEndIndex == -1)
+                {
+                    filterTokenEndIndex = Text.Length;
+                }
+                if (filterTokenEndIndex - filterTokenStartIndex < 0)
+                    return;
 
-		/// <summary>
-		/// Set Color and font to a highlight descriptor settings.
-		/// </summary>
-		/// <param name="sb">the string builder building the RTF</param>
-		/// <param name="hd">the HighlightDescriptor with the font and color settings to apply.</param>
-		/// <param name="colors">colors hashtable</param>
-		/// <param name="fonts">fonts hashtable</param>
-		private void SetDescriptorSettings(StringBuilder sb, HighlightDescriptor hd, Hashtable colors, Hashtable fonts)
-		{
-			SetColor(sb, hd.Color, colors);
-			if (hd.Font != null)
-			{
-				SetFont(sb, hd.Font, fonts);
-				SetFontSize(sb, (int)hd.Font.Size);
-			}
-			EndTags(sb);
+                filterString = Text.Substring(filterTokenStartIndex, filterTokenEndIndex - filterTokenStartIndex).ToUpper();
+            }
 
-		}
-		/// <summary>
-		/// Sets the color to the specified color
-		/// </summary>
-		private void SetColor(StringBuilder sb, Color color, Hashtable colors)
-		{
-			sb.Append(@"\cf").Append(colors[color]);
-		}
-		/// <summary>
-		/// Sets the backgroung color to the specified color.
-		/// </summary>
-		private void SetBackColor(StringBuilder sb, Color color, Hashtable colors)
-		{
-			sb.Append(@"\cb").Append(colors[color]);
-		}
-		/// <summary>
-		/// Sets the font to the specified font.
-		/// </summary>
-		private void SetFont(StringBuilder sb, Font font, Hashtable fonts)
-		{
-			if (font == null) return;
-			sb.Append(@"\f").Append(fonts[font.Name]);
-		}
-		/// <summary>
-		/// Sets the font size to the specified font size.
-		/// </summary>
-		private void SetFontSize(StringBuilder sb, int size)
-		{
-			sb.Append(@"\fs").Append(size*2);
-		}
-		/// <summary>
-		/// Adds a newLine mark to the RTF.
-		/// </summary>
-		private void AddNewLine(StringBuilder sb)
-		{
-			sb.Append("\\par\n");
-		}
+            foreach (HighlightDescriptor hd in mHighlightDescriptors)
+            {
+                if (hd.Token.ToUpper().StartsWith(filterString) && hd.UseForAutoComplete)
+                {
+                    mAutoCompleteForm.Items.Add(hd.Token);
+                }
+            }
+            mAutoCompleteForm.UpdateView();
+        }
 
-		/// <summary>
-		/// Ends a RTF tags section.
-		/// </summary>
-		private void EndTags(StringBuilder sb)
-		{
-			sb.Append(' ');
-		}
+        /// <summary>
+        /// Sets the size. the size is limited by the MaxSize property in the form itself.
+        /// </summary>
+        private void SetAutoCompleteSize()
+        {
+            mAutoCompleteForm.Height = Math.Min(
+                Math.Max(mAutoCompleteForm.Items.Count, 1) * mAutoCompleteForm.ItemHeight + 4,
+                mAutoCompleteForm.MaximumSize.Height);
+        }
 
-		/// <summary>
-		/// Adds a font to the RTF's font table and to the fonts hashtable.
-		/// </summary>
-		/// <param name="sb">The RTF's string builder</param>
-		/// <param name="font">the Font to add</param>
-		/// <param name="counter">a counter, containing the amount of fonts in the table</param>
-		/// <param name="fonts">an hashtable. the key is the font's name. the value is it's index in the table</param>
-		private void AddFontToTable(StringBuilder sb, Font font, ref int counter, Hashtable fonts)
-		{
-	
-			sb.Append(@"\f").Append(counter).Append(@"\fnil\fcharset0").Append(font.Name).Append(";}");
-			fonts.Add(font.Name, counter++);
-		}
+        /// <summary>
+        /// closes the AutoCompleteForm.
+        /// </summary>
+        private void HideAutoCompleteForm()
+        {
+            mAutoCompleteForm.Visible = false;
+            mAutoCompleteShown = false;
+        }
 
-		/// <summary>
-		/// Adds a color to the RTF's color table and to the colors hashtable.
-		/// </summary>
-		/// <param name="sb">The RTF's string builder</param>
-		/// <param name="color">the color to add</param>
-		/// <param name="counter">a counter, containing the amount of colors in the table</param>
-		/// <param name="colors">an hashtable. the key is the color. the value is it's index in the table</param>
-		private void AddColorToTable(StringBuilder sb, Color color, ref int counter, Hashtable colors)
-		{
-	
-			sb.Append(@"\red").Append(color.R).Append(@"\green").Append(color.G).Append(@"\blue")
-				.Append(color.B).Append(";");
-			colors.Add(color, counter++);
-		}
 
-		#endregion
+        /// <summary>
+        /// Sets the location of the AutoComplete form, maiking sure it's on the screen where the cursor is.
+        /// </summary>
+        /// <param name="moveHorizontly">determines wheather or not to move the form horizontly.</param>
+        private void SetAutoCompleteLocation(bool moveHorizontly)
+        {
+            Point cursorLocation = GetPositionFromCharIndex(SelectionStart);
+            Screen screen = Screen.FromPoint(cursorLocation);
+            Point optimalLocation = new Point(PointToScreen(cursorLocation).X - 15, (int)(PointToScreen(cursorLocation).Y + Font.Size * 2 + 2));
+            Rectangle desiredPlace = new Rectangle(optimalLocation, mAutoCompleteForm.Size);
+            desiredPlace.Width = 152;
+            if (desiredPlace.Left < screen.Bounds.Left)
+            {
+                desiredPlace.X = screen.Bounds.Left;
+            }
+            if (desiredPlace.Right > screen.Bounds.Right)
+            {
+                desiredPlace.X -= (desiredPlace.Right - screen.Bounds.Right);
+            }
+            if (desiredPlace.Bottom > screen.Bounds.Bottom)
+            {
+                desiredPlace.Y = cursorLocation.Y - 2 - desiredPlace.Height;
+            }
+            if (!moveHorizontly)
+            {
+                desiredPlace.X = mAutoCompleteForm.Left;
+            }
 
-		#region Scrollbar positions functions
-		/// <summary>
-		/// Sends a win32 message to get the scrollbars' position.
-		/// </summary>
-		/// <returns>a POINT structore containing horizontal and vertical scrollbar position.</returns>
-		private unsafe Win32.POINT GetScrollPos()
-		{
-			Win32.POINT res = new Win32.POINT();
-			IntPtr ptr = new IntPtr(&res);
-			Win32.SendMessage(Handle, Win32.EM_GETSCROLLPOS, 0, ptr);
-			return res;
+            mAutoCompleteForm.Bounds = desiredPlace;
+        }
 
-		}
+        /// <summary>
+        /// Shows the Autocomplete form.
+        /// </summary>
+        public void ShowAutoComplete()
+        {
+            SetAutoCompleteItems();
+            SetAutoCompleteSize();
+            SetAutoCompleteLocation(true);
+            mIgnoreLostFocus = true;
+            mAutoCompleteForm.Visible = true;
+            SetBestSelectedAutoCompleteItem();
+            mAutoCompleteShown = true;
+            Focus();
+            mIgnoreLostFocus = false;
+        }
 
-		/// <summary>
-		/// Sends a win32 message to set scrollbars position.
-		/// </summary>
-		/// <param name="point">a POINT conatining H/Vscrollbar scrollpos.</param>
-		private unsafe void SetScrollPos(Win32.POINT point)
-		{
-			IntPtr ptr = new IntPtr(&point);
-			Win32.SendMessage(Handle, Win32.EM_SETSCROLLPOS, 0, ptr);
+        #endregion
 
-		}
-		#endregion
+        #region Rtf building helper functions
+
+        /// <summary>
+        /// Set color and font to default control settings.
+        /// </summary>
+        /// <param name="sb">the string builder building the RTF</param>
+        /// <param name="colors">colors hashtable</param>
+        /// <param name="fonts">fonts hashtable</param>
+        private void SetDefaultSettings(StringBuilder sb, Hashtable colors, Hashtable fonts)
+        {
+            SetColor(sb, ForeColor, colors);
+            SetFont(sb, Font, fonts);
+            SetFontSize(sb, (int)Font.Size);
+            EndTags(sb);
+        }
+
+        /// <summary>
+        /// Set Color and font to a highlight descriptor settings.
+        /// </summary>
+        /// <param name="sb">the string builder building the RTF</param>
+        /// <param name="hd">the HighlightDescriptor with the font and color settings to apply.</param>
+        /// <param name="colors">colors hashtable</param>
+        /// <param name="fonts">fonts hashtable</param>
+        private void SetDescriptorSettings(StringBuilder sb, HighlightDescriptor hd, Hashtable colors, Hashtable fonts)
+        {
+            SetColor(sb, hd.Color, colors);
+            if (hd.Font != null)
+            {
+                SetFont(sb, hd.Font, fonts);
+                SetFontSize(sb, (int)hd.Font.Size);
+            }
+            EndTags(sb);
+
+        }
+        /// <summary>
+        /// Sets the color to the specified color
+        /// </summary>
+        private void SetColor(StringBuilder sb, Color color, Hashtable colors)
+        {
+            sb.Append(@"\cf").Append(colors[color]);
+        }
+        /// <summary>
+        /// Sets the backgroung color to the specified color.
+        /// </summary>
+        private void SetBackColor(StringBuilder sb, Color color, Hashtable colors)
+        {
+            sb.Append(@"\cb").Append(colors[color]);
+        }
+        /// <summary>
+        /// Sets the font to the specified font.
+        /// </summary>
+        private void SetFont(StringBuilder sb, Font font, Hashtable fonts)
+        {
+            if (font == null) return;
+            sb.Append(@"\f").Append(fonts[font.Name]);
+        }
+        /// <summary>
+        /// Sets the font size to the specified font size.
+        /// </summary>
+        private void SetFontSize(StringBuilder sb, int size)
+        {
+            sb.Append(@"\fs").Append(size * 2);
+        }
+        /// <summary>
+        /// Adds a newLine mark to the RTF.
+        /// </summary>
+        private void AddNewLine(StringBuilder sb)
+        {
+            sb.Append("\\par\n");
+        }
+
+        /// <summary>
+        /// Ends a RTF tags section.
+        /// </summary>
+        private void EndTags(StringBuilder sb)
+        {
+            sb.Append(' ');
+        }
+
+        /// <summary>
+        /// Adds a font to the RTF's font table and to the fonts hashtable.
+        /// </summary>
+        /// <param name="sb">The RTF's string builder</param>
+        /// <param name="font">the Font to add</param>
+        /// <param name="counter">a counter, containing the amount of fonts in the table</param>
+        /// <param name="fonts">an hashtable. the key is the font's name. the value is it's index in the table</param>
+        private void AddFontToTable(StringBuilder sb, Font font, ref int counter, Hashtable fonts)
+        {
+
+            sb.Append(@"\f").Append(counter).Append(@"\fnil\fcharset0").Append(font.Name).Append(";}");
+            fonts.Add(font.Name, counter++);
+        }
+
+        /// <summary>
+        /// Adds a color to the RTF's color table and to the colors hashtable.
+        /// </summary>
+        /// <param name="sb">The RTF's string builder</param>
+        /// <param name="color">the color to add</param>
+        /// <param name="counter">a counter, containing the amount of colors in the table</param>
+        /// <param name="colors">an hashtable. the key is the color. the value is it's index in the table</param>
+        private void AddColorToTable(StringBuilder sb, Color color, ref int counter, Hashtable colors)
+        {
+
+            sb.Append(@"\red").Append(color.R).Append(@"\green").Append(color.G).Append(@"\blue")
+                .Append(color.B).Append(";");
+            colors.Add(color, counter++);
+        }
+
+        #endregion
+
+        #region Scrollbar positions functions
+        /// <summary>
+        /// Sends a win32 message to get the scrollbars' position.
+        /// </summary>
+        /// <returns>a POINT structore containing horizontal and vertical scrollbar position.</returns>
+        private unsafe Win32.POINT GetScrollPos()
+        {
+            Win32.POINT res = new Win32.POINT();
+            IntPtr ptr = new IntPtr(&res);
+            Win32.SendMessage(Handle, Win32.EM_GETSCROLLPOS, 0, ptr);
+            return res;
+
+        }
+
+        /// <summary>
+        /// Sends a win32 message to set scrollbars position.
+        /// </summary>
+        /// <param name="point">a POINT conatining H/Vscrollbar scrollpos.</param>
+        private unsafe void SetScrollPos(Win32.POINT point)
+        {
+            IntPtr ptr = new IntPtr(&point);
+            Win32.SendMessage(Handle, Win32.EM_SETSCROLLPOS, 0, ptr);
+
+        }
+        #endregion
 
         #region Custom Links Courtesty of http://www.codeproject.com/KB/edit/RichTextBoxLinks.aspx
 
@@ -1118,7 +1117,7 @@ namespace UrielGuy.SyntaxHighlighting
         /// <param name="text">Text to be inserted</param>
         public void InsertLink(string text)
         {
-            InsertLink(text, this.SelectionStart);
+            InsertLink(text, SelectionStart);
         }
 
         /// <summary>
@@ -1128,14 +1127,14 @@ namespace UrielGuy.SyntaxHighlighting
         /// <param name="position">Insert position</param>
         public void InsertLink(string text, int position)
         {
-            if (position < 0 || position > this.Text.Length)
+            if (position < 0 || position > Text.Length)
                 throw new ArgumentOutOfRangeException("position");
 
-            this.SelectionStart = position;
-            this.SelectedText = text;
-            this.Select(position, text.Length);
-            this.SetSelectionLink(true);
-            this.Select(position + text.Length, 0);
+            SelectionStart = position;
+            SelectedText = text;
+            Select(position, text.Length);
+            SetSelectionLink(true);
+            Select(position + text.Length, 0);
         }
         /// <summary>
         /// Selects the text at the specified start and length and creates a hyperlink out of it
@@ -1144,13 +1143,13 @@ namespace UrielGuy.SyntaxHighlighting
         /// <param name="length">Lenght of the text to select for the hyperlink</param>
         public void AddLinkAt(int startIndex, int length)
         {
-            if (startIndex < 0 || startIndex > this.Text.Length)
+            if (startIndex < 0 || startIndex > Text.Length)
                 throw new ArgumentOutOfRangeException("position");
 
-            this.SelectionStart = startIndex;
-            this.Select(startIndex, length);
-            this.SetSelectionLink(true);
-            this.Select(startIndex + length, 0);
+            SelectionStart = startIndex;
+            Select(startIndex, length);
+            SetSelectionLink(true);
+            Select(startIndex + length, 0);
         }
         /// <summary>
         /// Selects the text at the specified start and length and adds the specified hyperlink text as the link value
@@ -1160,20 +1159,20 @@ namespace UrielGuy.SyntaxHighlighting
         /// <param name="hyperlink">The hyperlink value</param>
         public void AddLinkAt(int startIndex, int length, string hyperlink)
         {
-            if (startIndex < 0 || startIndex > this.Text.Length)
+            if (startIndex < 0 || startIndex > Text.Length)
                 throw new ArgumentOutOfRangeException("position");
 
-            this.SelectionStart = startIndex;
-            this.Select(startIndex, length);
-            string text = this.SelectedText;
+            SelectionStart = startIndex;
+            Select(startIndex, length);
+            string text = SelectedText;
             //escape out any backslashes
             text = text.Replace(@"\", @"\'5c");
-            this.SelectedRtf = @"{\rtf1\ansi " + text + @"\v #" + hyperlink + @"\v0}";
+            SelectedRtf = @"{\rtf1\ansi " + text + @"\v #" + hyperlink + @"\v0}";
 
             int highlightLength = text.Replace(@"\'5c", "").Length;
-            this.Select(startIndex, highlightLength + hyperlink.Length +2);
-            this.SetSelectionLink(true);
-            this.Select(startIndex + highlightLength + hyperlink.Length, 0);
+            Select(startIndex, highlightLength + hyperlink.Length + 2);
+            SetSelectionLink(true);
+            Select(startIndex + highlightLength + hyperlink.Length, 0);
         }
 
         /// <summary>
@@ -1187,7 +1186,7 @@ namespace UrielGuy.SyntaxHighlighting
         /// <param name="hyperlink">Invisible hyperlink string to be inserted</param>
         public void InsertLink(string text, string hyperlink)
         {
-            InsertLink(text, hyperlink, this.SelectionStart);
+            InsertLink(text, hyperlink, SelectionStart);
         }
 
         /// <summary>
@@ -1201,14 +1200,14 @@ namespace UrielGuy.SyntaxHighlighting
         /// <param name="position">Insert position</param>
         public void InsertLink(string text, string hyperlink, int position)
         {
-            if (position < 0 || position > this.Text.Length)
+            if (position < 0 || position > Text.Length)
                 throw new ArgumentOutOfRangeException("position");
 
-            this.SelectionStart = position;
-            this.SelectedRtf = @"{\rtf1\ansi " + text + @"\v #" + hyperlink + @"\v0}";
-            this.Select(position, text.Length + hyperlink.Length + 1);
-            this.SetSelectionLink(true);
-            this.Select(position + text.Length + hyperlink.Length + 1, 0);
+            SelectionStart = position;
+            SelectedRtf = @"{\rtf1\ansi " + text + @"\v #" + hyperlink + @"\v0}";
+            Select(position, text.Length + hyperlink.Length + 1);
+            SetSelectionLink(true);
+            Select(position + text.Length + hyperlink.Length + 1, 0);
         }
 
         /// <summary>

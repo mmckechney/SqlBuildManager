@@ -1,9 +1,8 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
     public class CommentHeaderPolicy : p.IScriptPolicy
@@ -40,8 +39,8 @@ namespace SqlBuildManager.Enterprise.Policy
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
 
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
@@ -108,7 +107,7 @@ namespace SqlBuildManager.Enterprise.Policy
                             mostRecentEntry = changeDate;
 
                         //found a date with the last day, we're good!
-                        if (changeDate.Date >= DateTime.Now.AddDays(-1 * this.dayThreshold).Date)
+                        if (changeDate.Date >= DateTime.Now.AddDays(-1 * dayThreshold).Date)
                         {
                             message = "";
                             return true;
@@ -125,7 +124,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return false;
             }
             return false;
-            
+
         }
         #endregion
     }

@@ -1,214 +1,212 @@
-using System;
-using System.Drawing;
-using System.Collections;
 using System.ComponentModel;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace SqlSync.SqlBuild
 {
-	/// <summary>
-	/// Summary description for ImportListForm.
-	/// </summary>
-	public class ImportListForm : System.Windows.Forms.Form
-	{
-		private System.Windows.Forms.ColumnHeader columnHeader1;
-		private System.Windows.Forms.ColumnHeader columnHeader2;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Button button2;
-		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.ColumnHeader columnHeader3;
-		private System.Windows.Forms.ListView lstImport;
-		private SqlBuild.SqlSyncBuildData buildData = null;
-		private SqlBuild.SqlSyncBuildData importData = null;
-		private string importTempPath;
-		private System.Windows.Forms.ColumnHeader columnHeader4;
-		private System.Windows.Forms.ContextMenuStrip contextMenu1;
-		private System.Windows.Forms.ToolStripMenuItem mnuView;
+    /// <summary>
+    /// Summary description for ImportListForm.
+    /// </summary>
+    public class ImportListForm : System.Windows.Forms.Form
+    {
+        private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.ListView lstImport;
+        private SqlBuild.SqlSyncBuildData buildData = null;
+        private SqlBuild.SqlSyncBuildData importData = null;
+        private string importTempPath;
+        private System.Windows.Forms.ColumnHeader columnHeader4;
+        private System.Windows.Forms.ContextMenuStrip contextMenu1;
+        private System.Windows.Forms.ToolStripMenuItem mnuView;
         private string[] preSelectedFiles = null;
         private IContainer components;
 
         public SqlSync.SqlBuild.SqlSyncBuildData ImportData
-		{
-			get { return this.importData; }    
-		}
+        {
+            get { return importData; }
+        }
 
-		public ImportListForm(SqlBuild.SqlSyncBuildData importData, string importTempPath, SqlBuild.SqlSyncBuildData buildData, string[] preSelectedFiles)
-		{
-			//
-			// Required for Windows Form Designer support
-			//
-			InitializeComponent();
+        public ImportListForm(SqlBuild.SqlSyncBuildData importData, string importTempPath, SqlBuild.SqlSyncBuildData buildData, string[] preSelectedFiles)
+        {
+            //
+            // Required for Windows Form Designer support
+            //
+            InitializeComponent();
 
-			this.importData = importData;
-			this.buildData = buildData;
-			this.importTempPath = importTempPath;
+            this.importData = importData;
+            this.buildData = buildData;
+            this.importTempPath = importTempPath;
             this.preSelectedFiles = preSelectedFiles;
-		}
+        }
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
-            this.components = new System.ComponentModel.Container();
+        #region Windows Form Designer generated code
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ImportListForm));
-            this.lstImport = new System.Windows.Forms.ListView();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
-            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.mnuView = new System.Windows.Forms.ToolStripMenuItem();
-            this.label1 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
-            this.contextMenu1.SuspendLayout();
-            this.SuspendLayout();
+            lstImport = new System.Windows.Forms.ListView();
+            columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            columnHeader2 = new System.Windows.Forms.ColumnHeader();
+            columnHeader3 = new System.Windows.Forms.ColumnHeader();
+            columnHeader4 = new System.Windows.Forms.ColumnHeader();
+            contextMenu1 = new System.Windows.Forms.ContextMenuStrip(components);
+            mnuView = new System.Windows.Forms.ToolStripMenuItem();
+            label1 = new System.Windows.Forms.Label();
+            button2 = new System.Windows.Forms.Button();
+            button1 = new System.Windows.Forms.Button();
+            contextMenu1.SuspendLayout();
+            SuspendLayout();
             // 
             // lstImport
             // 
-            this.lstImport.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            lstImport.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lstImport.CheckBoxes = true;
-            this.lstImport.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3,
-            this.columnHeader4});
-            this.lstImport.ContextMenuStrip = this.contextMenu1;
-            this.lstImport.GridLines = true;
-            this.lstImport.HideSelection = false;
-            this.lstImport.Location = new System.Drawing.Point(19, 28);
-            this.lstImport.Name = "lstImport";
-            this.lstImport.Size = new System.Drawing.Size(522, 228);
-            this.lstImport.TabIndex = 1;
-            this.lstImport.UseCompatibleStateImageBehavior = false;
-            this.lstImport.View = System.Windows.Forms.View.Details;
+            lstImport.CheckBoxes = true;
+            lstImport.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            columnHeader1,
+            columnHeader2,
+            columnHeader3,
+            columnHeader4});
+            lstImport.ContextMenuStrip = contextMenu1;
+            lstImport.GridLines = true;
+            lstImport.HideSelection = false;
+            lstImport.Location = new System.Drawing.Point(19, 28);
+            lstImport.Name = "lstImport";
+            lstImport.Size = new System.Drawing.Size(522, 228);
+            lstImport.TabIndex = 1;
+            lstImport.UseCompatibleStateImageBehavior = false;
+            lstImport.View = System.Windows.Forms.View.Details;
             // 
             // columnHeader1
             // 
-            this.columnHeader1.Text = "File Name";
-            this.columnHeader1.Width = 381;
+            columnHeader1.Text = "File Name";
+            columnHeader1.Width = 381;
             // 
             // columnHeader2
             // 
-            this.columnHeader2.Text = "Destination Database";
-            this.columnHeader2.Width = 126;
+            columnHeader2.Text = "Destination Database";
+            columnHeader2.Width = 126;
             // 
             // columnHeader3
             // 
-            this.columnHeader3.Text = "Script Id";
-            this.columnHeader3.Width = 0;
+            columnHeader3.Text = "Script Id";
+            columnHeader3.Width = 0;
             // 
             // columnHeader4
             // 
-            this.columnHeader4.Text = "Full Path";
-            this.columnHeader4.Width = 0;
+            columnHeader4.Text = "Full Path";
+            columnHeader4.Width = 0;
             // 
             // contextMenu1
             // 
-            this.contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuView});
-            this.contextMenu1.Name = "contextMenu1";
-            this.contextMenu1.Size = new System.Drawing.Size(121, 26);
+            contextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            mnuView});
+            contextMenu1.Name = "contextMenu1";
+            contextMenu1.Size = new System.Drawing.Size(121, 26);
             // 
             // mnuView
             // 
-            this.mnuView.Name = "mnuView";
-            this.mnuView.Size = new System.Drawing.Size(120, 22);
-            this.mnuView.Text = "View File";
-            this.mnuView.Click += new System.EventHandler(this.mnuView_Click);
+            mnuView.Name = "mnuView";
+            mnuView.Size = new System.Drawing.Size(120, 22);
+            mnuView.Text = "View File";
+            mnuView.Click += new System.EventHandler(mnuView_Click);
             // 
             // label1
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label1.Location = new System.Drawing.Point(19, 256);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(259, 28);
-            this.label1.TabIndex = 10;
-            this.label1.Text = "* Colored items denote pre-existing files";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            label1.Location = new System.Drawing.Point(19, 256);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(259, 28);
+            label1.TabIndex = 10;
+            label1.Text = "* Colored items denote pre-existing files";
+            label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // button2
             // 
-            this.button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button2.Location = new System.Drawing.Point(285, 305);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(134, 28);
-            this.button2.TabIndex = 7;
-            this.button2.Text = "Cancel";
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            button2.Location = new System.Drawing.Point(285, 305);
+            button2.Name = "button2";
+            button2.Size = new System.Drawing.Size(134, 28);
+            button2.TabIndex = 7;
+            button2.Text = "Cancel";
+            button2.Click += new System.EventHandler(button2_Click);
             // 
             // button1
             // 
-            this.button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button1.Location = new System.Drawing.Point(141, 305);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(134, 28);
-            this.button1.TabIndex = 6;
-            this.button1.Text = "Add Checked Files";
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            button1.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            button1.Location = new System.Drawing.Point(141, 305);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(134, 28);
+            button1.TabIndex = 6;
+            button1.Text = "Add Checked Files";
+            button1.Click += new System.EventHandler(button1_Click);
             // 
             // ImportListForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
-            this.ClientSize = new System.Drawing.Size(560, 342);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.lstImport);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "ImportListForm";
-            this.Text = "Import Confirmation";
-            this.Load += new System.EventHandler(this.ImportListForm_Load);
-            this.contextMenu1.ResumeLayout(false);
-            this.ResumeLayout(false);
+            AutoScaleBaseSize = new System.Drawing.Size(6, 16);
+            ClientSize = new System.Drawing.Size(560, 342);
+            Controls.Add(label1);
+            Controls.Add(button2);
+            Controls.Add(button1);
+            Controls.Add(lstImport);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+            Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            Name = "ImportListForm";
+            Text = "Import Confirmation";
+            Load += new System.EventHandler(ImportListForm_Load);
+            contextMenu1.ResumeLayout(false);
+            ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void ImportListForm_Load(object sender, System.EventArgs e)
-		{ 
-			bool foundConflict = false;
+        private void ImportListForm_Load(object sender, System.EventArgs e)
+        {
+            bool foundConflict = false;
             bool selectAllValid;
-            if (this.preSelectedFiles.Length > 0)
+            if (preSelectedFiles.Length > 0)
                 selectAllValid = false;
             else
                 selectAllValid = true;
 
-			System.Data.DataView importView = this.importData.Script.DefaultView;
-			importView.Sort = "BuildOrder ASC";
-			importView.RowStateFilter = System.Data.DataViewRowState.OriginalRows;
+            System.Data.DataView importView = importData.Script.DefaultView;
+            importView.Sort = "BuildOrder ASC";
+            importView.RowStateFilter = System.Data.DataViewRowState.OriginalRows;
 
             for (int i = 0; i < importView.Count; i++)
             {
                 SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)importView[i].Row;
 
-                ListViewItem item = new ListViewItem(new string[] { row.FileName, row.Database, row.ScriptId, System.IO.Path.Combine(this.importTempPath, row.FileName) }) ;
+                ListViewItem item = new ListViewItem(new string[] { row.FileName, row.Database, row.ScriptId, System.IO.Path.Combine(importTempPath, row.FileName) });
                 item.Checked = false;
 
-                if (this.buildData.Script.Select(
+                if (buildData.Script.Select(
                     "ScriptId = '" + row.ScriptId + "' OR " +
                     "FileName = '" + row.FileName + "'").Length > 0)
                 {
@@ -220,9 +218,9 @@ namespace SqlSync.SqlBuild
                     item.Checked = true;
                 else
                 {
-                    for (int j = 0; j < this.preSelectedFiles.Length; j++)
+                    for (int j = 0; j < preSelectedFiles.Length; j++)
                     {
-                        if (this.preSelectedFiles[j].ToLower() == row.FileName.ToLower())
+                        if (preSelectedFiles[j].ToLower() == row.FileName.ToLower())
                         {
                             item.Checked = true;
                             break;
@@ -231,51 +229,51 @@ namespace SqlSync.SqlBuild
                 }
 
 
-                this.lstImport.Items.Add(item);
+                lstImport.Items.Add(item);
             }
 
-			if(foundConflict)
-			{
-				MessageBox.Show("A matching entry was already found. Please review list before accepting.","Please Review List",MessageBoxButtons.OK,MessageBoxIcon.Stop);
-			}
-				
-		}
+            if (foundConflict)
+            {
+                MessageBox.Show("A matching entry was already found. Please review list before accepting.", "Please Review List", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+            }
 
-		private void button1_Click(object sender, System.EventArgs e)
-		{
-			for(int i=0;i<this.lstImport.Items.Count;i++)
-			{
-				if(this.lstImport.Items[i].Checked == false)
-				{
-					System.Data.DataRow[] rows = this.importData.Script.Select("ScriptId ='"+this.lstImport.Items[i].SubItems[2].Text+"'");
-					if(rows.Length > 0)
-						this.importData.Script.Rows.Remove(rows[0]);
-				}
-			}
-			this.importData.AcceptChanges();
+        }
 
-			this.DialogResult = DialogResult.OK;
-			this.Close();
-		}
+        private void button1_Click(object sender, System.EventArgs e)
+        {
+            for (int i = 0; i < lstImport.Items.Count; i++)
+            {
+                if (lstImport.Items[i].Checked == false)
+                {
+                    System.Data.DataRow[] rows = importData.Script.Select("ScriptId ='" + lstImport.Items[i].SubItems[2].Text + "'");
+                    if (rows.Length > 0)
+                        importData.Script.Rows.Remove(rows[0]);
+                }
+            }
+            importData.AcceptChanges();
 
-		private void button2_Click(object sender, System.EventArgs e)
-		{
-			this.DialogResult = DialogResult.Cancel;
-			this.Close();
-		}
+            DialogResult = DialogResult.OK;
+            Close();
+        }
 
-		private void mnuView_Click(object sender, System.EventArgs e)
-		{
-			if(this.lstImport.SelectedItems.Count == 0)
-				return;
+        private void button2_Click(object sender, System.EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
 
-			ListViewItem item = this.lstImport.SelectedItems[0];
+        private void mnuView_Click(object sender, System.EventArgs e)
+        {
+            if (lstImport.SelectedItems.Count == 0)
+                return;
 
-			string name = item.SubItems[0].Text;
-			string fullpath = item.SubItems[3].Text;
-			AddScriptTextForm frmView = new AddScriptTextForm(ref this.importData, name,fullpath);
-			frmView.ShowDialog();
-		}
+            ListViewItem item = lstImport.SelectedItems[0];
 
-	}
+            string name = item.SubItems[0].Text;
+            string fullpath = item.SubItems[3].Text;
+            AddScriptTextForm frmView = new AddScriptTextForm(ref importData, name, fullpath);
+            frmView.ShowDialog();
+        }
+
+    }
 }

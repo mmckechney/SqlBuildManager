@@ -1,9 +1,8 @@
-﻿using SqlBuildManager.Enterprise;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for EnterpriseConfigurationTest and is intended
     ///to contain all EnterpriseConfigurationTest Unit Tests
@@ -13,7 +12,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
     {
 
 
-        
+
 
 
         /// <summary>

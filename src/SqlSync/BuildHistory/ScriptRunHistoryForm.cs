@@ -1,26 +1,25 @@
 using System;
-using System.Drawing;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows.Forms;
 using System.Data;
+using System.Drawing;
+using System.Windows.Forms;
 namespace SqlSync.BuildHistory
 {
-	/// <summary>
-	/// Summary description for PastBuildReviewForm.
-	/// </summary>
-	public class ScriptRunHistoryForm : System.Windows.Forms.Form
+    /// <summary>
+    /// Summary description for PastBuildReviewForm.
+    /// </summary>
+    public class ScriptRunHistoryForm : System.Windows.Forms.Form
     {
         string currentFileText = string.Empty;
         string scriptHash = string.Empty;
-		Connection.ConnectionData connData;
+        Connection.ConnectionData connData;
         Guid scriptId = Guid.Empty;
         string scriptFileName = string.Empty;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.TextBox txtScriptName;
-		private System.Windows.Forms.TextBox txtScriptId;
-		private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtScriptName;
+        private System.Windows.Forms.TextBox txtScriptId;
+        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Panel panel1;
         private DataGridViewTextBoxColumn dataGridTextBoxColumn10;
         private DataGridViewTextBoxColumn dataGridTextBoxColumn9;
@@ -51,14 +50,14 @@ namespace SqlSync.BuildHistory
             this.connData = connData;
             this.connData.DatabaseName = databaseName;
             this.currentFileText = currentFileText;
-            this.scriptHash = scriptHash;       
+            this.scriptHash = scriptHash;
         }
 
         public ScriptRunHistoryForm(Connection.ConnectionData connData, string databaseName, Guid scriptId, string currentFileText, string scriptHash) :
-            this(connData,databaseName,currentFileText,scriptHash)
-		{
-            this.scriptId = scriptId;	   
-		}
+            this(connData, databaseName, currentFileText, scriptHash)
+        {
+            this.scriptId = scriptId;
+        }
 
         public ScriptRunHistoryForm(Connection.ConnectionData connData, string databaseName, string scriptFileName, string currentFileText, string scriptHash) :
             this(connData, databaseName, currentFileText, scriptHash)
@@ -66,394 +65,394 @@ namespace SqlSync.BuildHistory
             this.scriptFileName = scriptFileName;
         }
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
-            this.components = new System.ComponentModel.Container();
+        #region Windows Form Designer generated code
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ScriptRunHistoryForm));
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtScriptName = new System.Windows.Forms.TextBox();
-            this.txtScriptId = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.label3 = new System.Windows.Forms.Label();
-            this.txtScriptHash = new System.Windows.Forms.TextBox();
-            this.dataGridTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.buildFileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.scriptFileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.tagDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.scriptFileHashDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.commitDateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.userIdDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.scriptTextDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.viewScriptAsRunOnServerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.scriptRunLogBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.scriptRunLog1 = new SqlSync.SqlBuild.ScriptRunLog();
-            this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
-            this.contextMenuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.scriptRunLogBindingSource)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.scriptRunLog1)).BeginInit();
-            this.SuspendLayout();
+            label1 = new System.Windows.Forms.Label();
+            txtScriptName = new System.Windows.Forms.TextBox();
+            txtScriptId = new System.Windows.Forms.TextBox();
+            label2 = new System.Windows.Forms.Label();
+            panel1 = new System.Windows.Forms.Panel();
+            label3 = new System.Windows.Forms.Label();
+            txtScriptHash = new System.Windows.Forms.TextBox();
+            dataGridTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            dataGridTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            dataGridTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            dataGridTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            dataGridTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            dataGridTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            dataGridView1 = new System.Windows.Forms.DataGridView();
+            buildFileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            scriptFileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            tagDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            scriptFileHashDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            commitDateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            userIdDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            scriptTextDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
+            viewScriptAsRunOnServerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            scriptRunLogBindingSource = new System.Windows.Forms.BindingSource(components);
+            scriptRunLog1 = new SqlSync.SqlBuild.ScriptRunLog();
+            panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(dataGridView1)).BeginInit();
+            contextMenuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(scriptRunLogBindingSource)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(scriptRunLog1)).BeginInit();
+            SuspendLayout();
             // 
             // label1
             // 
-            this.label1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label1.Location = new System.Drawing.Point(16, 8);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(96, 16);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Script Name:";
+            label1.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label1.Location = new System.Drawing.Point(16, 8);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(96, 16);
+            label1.TabIndex = 1;
+            label1.Text = "Script Name:";
             // 
             // txtScriptName
             // 
-            this.txtScriptName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtScriptName.Location = new System.Drawing.Point(120, 9);
-            this.txtScriptName.Name = "txtScriptName";
-            this.txtScriptName.Size = new System.Drawing.Size(568, 14);
-            this.txtScriptName.TabIndex = 2;
-            this.txtScriptName.TabStop = false;
+            txtScriptName.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            txtScriptName.Location = new System.Drawing.Point(120, 9);
+            txtScriptName.Name = "txtScriptName";
+            txtScriptName.Size = new System.Drawing.Size(568, 14);
+            txtScriptName.TabIndex = 2;
+            txtScriptName.TabStop = false;
             // 
             // txtScriptId
             // 
-            this.txtScriptId.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtScriptId.Location = new System.Drawing.Point(120, 27);
-            this.txtScriptId.Name = "txtScriptId";
-            this.txtScriptId.Size = new System.Drawing.Size(568, 14);
-            this.txtScriptId.TabIndex = 4;
-            this.txtScriptId.TabStop = false;
+            txtScriptId.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            txtScriptId.Location = new System.Drawing.Point(120, 27);
+            txtScriptId.Name = "txtScriptId";
+            txtScriptId.Size = new System.Drawing.Size(568, 14);
+            txtScriptId.TabIndex = 4;
+            txtScriptId.TabStop = false;
             // 
             // label2
             // 
-            this.label2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label2.Location = new System.Drawing.Point(16, 27);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(96, 16);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Script ID:";
+            label2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label2.Location = new System.Drawing.Point(16, 27);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(96, 16);
+            label2.TabIndex = 3;
+            label2.Text = "Script ID:";
             // 
             // panel1
             // 
-            this.panel1.BackColor = System.Drawing.Color.White;
-            this.panel1.Controls.Add(this.label3);
-            this.panel1.Controls.Add(this.txtScriptHash);
-            this.panel1.Controls.Add(this.txtScriptName);
-            this.panel1.Controls.Add(this.label1);
-            this.panel1.Controls.Add(this.label2);
-            this.panel1.Controls.Add(this.txtScriptId);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel1.Location = new System.Drawing.Point(0, 0);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(976, 66);
-            this.panel1.TabIndex = 5;
+            panel1.BackColor = System.Drawing.Color.White;
+            panel1.Controls.Add(label3);
+            panel1.Controls.Add(txtScriptHash);
+            panel1.Controls.Add(txtScriptName);
+            panel1.Controls.Add(label1);
+            panel1.Controls.Add(label2);
+            panel1.Controls.Add(txtScriptId);
+            panel1.Dock = System.Windows.Forms.DockStyle.Top;
+            panel1.Location = new System.Drawing.Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(976, 66);
+            panel1.TabIndex = 5;
             // 
             // label3
             // 
-            this.label3.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label3.Location = new System.Drawing.Point(16, 46);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(96, 16);
-            this.label3.TabIndex = 5;
-            this.label3.Text = "Script Hash:";
+            label3.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label3.Location = new System.Drawing.Point(16, 46);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(96, 16);
+            label3.TabIndex = 5;
+            label3.Text = "Script Hash:";
             // 
             // txtScriptHash
             // 
-            this.txtScriptHash.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtScriptHash.Location = new System.Drawing.Point(120, 46);
-            this.txtScriptHash.Name = "txtScriptHash";
-            this.txtScriptHash.Size = new System.Drawing.Size(568, 14);
-            this.txtScriptHash.TabIndex = 6;
-            this.txtScriptHash.TabStop = false;
+            txtScriptHash.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            txtScriptHash.Location = new System.Drawing.Point(120, 46);
+            txtScriptHash.Name = "txtScriptHash";
+            txtScriptHash.Size = new System.Drawing.Size(568, 14);
+            txtScriptHash.TabIndex = 6;
+            txtScriptHash.TabStop = false;
             // 
             // dataGridTextBoxColumn10
             // 
-            this.dataGridTextBoxColumn10.DataPropertyName = "ScriptText";
-            this.dataGridTextBoxColumn10.HeaderText = "Script Text";
-            this.dataGridTextBoxColumn10.Name = "dataGridTextBoxColumn10";
-            this.dataGridTextBoxColumn10.Width = 75;
+            dataGridTextBoxColumn10.DataPropertyName = "ScriptText";
+            dataGridTextBoxColumn10.HeaderText = "Script Text";
+            dataGridTextBoxColumn10.Name = "dataGridTextBoxColumn10";
+            dataGridTextBoxColumn10.Width = 75;
             // 
             // dataGridTextBoxColumn9
             // 
-            this.dataGridTextBoxColumn9.DataPropertyName = "AllowScriptBlock";
-            this.dataGridTextBoxColumn9.HeaderText = "Blocking?";
-            this.dataGridTextBoxColumn9.Name = "dataGridTextBoxColumn9";
-            this.dataGridTextBoxColumn9.Width = 70;
+            dataGridTextBoxColumn9.DataPropertyName = "AllowScriptBlock";
+            dataGridTextBoxColumn9.HeaderText = "Blocking?";
+            dataGridTextBoxColumn9.Name = "dataGridTextBoxColumn9";
+            dataGridTextBoxColumn9.Width = 70;
             // 
             // dataGridTextBoxColumn3
             // 
-            this.dataGridTextBoxColumn3.DataPropertyName = "BuildFileName";
-            this.dataGridTextBoxColumn3.HeaderText = "Source Build File";
-            this.dataGridTextBoxColumn3.Name = "dataGridTextBoxColumn3";
-            this.dataGridTextBoxColumn3.Width = 245;
+            dataGridTextBoxColumn3.DataPropertyName = "BuildFileName";
+            dataGridTextBoxColumn3.HeaderText = "Source Build File";
+            dataGridTextBoxColumn3.Name = "dataGridTextBoxColumn3";
+            dataGridTextBoxColumn3.Width = 245;
             // 
             // dataGridTextBoxColumn2
             // 
-            this.dataGridTextBoxColumn2.DataPropertyName = "ScriptFileHash";
-            this.dataGridTextBoxColumn2.HeaderText = "Script Hash";
-            this.dataGridTextBoxColumn2.Name = "dataGridTextBoxColumn2";
-            this.dataGridTextBoxColumn2.Width = 305;
+            dataGridTextBoxColumn2.DataPropertyName = "ScriptFileHash";
+            dataGridTextBoxColumn2.HeaderText = "Script Hash";
+            dataGridTextBoxColumn2.Name = "dataGridTextBoxColumn2";
+            dataGridTextBoxColumn2.Width = 305;
             // 
             // dataGridTextBoxColumn7
             // 
-            this.dataGridTextBoxColumn7.DataPropertyName = "UserId";
-            this.dataGridTextBoxColumn7.HeaderText = "Run By";
-            this.dataGridTextBoxColumn7.Name = "dataGridTextBoxColumn7";
-            this.dataGridTextBoxColumn7.Width = 80;
+            dataGridTextBoxColumn7.DataPropertyName = "UserId";
+            dataGridTextBoxColumn7.HeaderText = "Run By";
+            dataGridTextBoxColumn7.Name = "dataGridTextBoxColumn7";
+            dataGridTextBoxColumn7.Width = 80;
             // 
             // dataGridTextBoxColumn1
             // 
-            this.dataGridTextBoxColumn1.DataPropertyName = "CommitDate";
-            this.dataGridTextBoxColumn1.HeaderText = "Commit Date";
-            this.dataGridTextBoxColumn1.Name = "dataGridTextBoxColumn1";
-            this.dataGridTextBoxColumn1.Width = 125;
+            dataGridTextBoxColumn1.DataPropertyName = "CommitDate";
+            dataGridTextBoxColumn1.HeaderText = "Commit Date";
+            dataGridTextBoxColumn1.Name = "dataGridTextBoxColumn1";
+            dataGridTextBoxColumn1.Width = 125;
             // 
             // dataGridView1
             // 
-            this.dataGridView1.AllowUserToAddRows = false;
-            this.dataGridView1.AllowUserToDeleteRows = false;
-            this.dataGridView1.AllowUserToOrderColumns = true;
+            dataGridView1.AllowUserToAddRows = false;
+            dataGridView1.AllowUserToDeleteRows = false;
+            dataGridView1.AllowUserToOrderColumns = true;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.dataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            this.dataGridView1.AutoGenerateColumns = false;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.buildFileNameDataGridViewTextBoxColumn,
-            this.scriptFileNameDataGridViewTextBoxColumn,
-            this.tagDataGridViewTextBoxColumn,
-            this.scriptFileHashDataGridViewTextBoxColumn,
-            this.commitDateDataGridViewTextBoxColumn,
-            this.userIdDataGridViewTextBoxColumn,
-            this.scriptTextDataGridViewTextBoxColumn});
-            this.dataGridView1.ContextMenuStrip = this.contextMenuStrip1;
-            this.dataGridView1.DataSource = this.scriptRunLogBindingSource;
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView1.Location = new System.Drawing.Point(0, 66);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.ReadOnly = true;
-            this.dataGridView1.RowHeadersVisible = false;
-            this.dataGridView1.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.dataGridView1.Size = new System.Drawing.Size(976, 308);
-            this.dataGridView1.TabIndex = 0;
-            this.dataGridView1.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(this.dataGridView1_RowsAdded);
+            dataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridView1.AutoGenerateColumns = false;
+            dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            buildFileNameDataGridViewTextBoxColumn,
+            scriptFileNameDataGridViewTextBoxColumn,
+            tagDataGridViewTextBoxColumn,
+            scriptFileHashDataGridViewTextBoxColumn,
+            commitDateDataGridViewTextBoxColumn,
+            userIdDataGridViewTextBoxColumn,
+            scriptTextDataGridViewTextBoxColumn});
+            dataGridView1.ContextMenuStrip = contextMenuStrip1;
+            dataGridView1.DataSource = scriptRunLogBindingSource;
+            dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            dataGridView1.Location = new System.Drawing.Point(0, 66);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.ReadOnly = true;
+            dataGridView1.RowHeadersVisible = false;
+            dataGridView1.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            dataGridView1.Size = new System.Drawing.Size(976, 308);
+            dataGridView1.TabIndex = 0;
+            dataGridView1.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(dataGridView1_RowsAdded);
             // 
             // buildFileNameDataGridViewTextBoxColumn
             // 
-            this.buildFileNameDataGridViewTextBoxColumn.DataPropertyName = "BuildFileName";
-            this.buildFileNameDataGridViewTextBoxColumn.HeaderText = "Build File Name";
-            this.buildFileNameDataGridViewTextBoxColumn.Name = "buildFileNameDataGridViewTextBoxColumn";
-            this.buildFileNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.buildFileNameDataGridViewTextBoxColumn.Width = 200;
+            buildFileNameDataGridViewTextBoxColumn.DataPropertyName = "BuildFileName";
+            buildFileNameDataGridViewTextBoxColumn.HeaderText = "Build File Name";
+            buildFileNameDataGridViewTextBoxColumn.Name = "buildFileNameDataGridViewTextBoxColumn";
+            buildFileNameDataGridViewTextBoxColumn.ReadOnly = true;
+            buildFileNameDataGridViewTextBoxColumn.Width = 200;
             // 
             // scriptFileNameDataGridViewTextBoxColumn
             // 
-            this.scriptFileNameDataGridViewTextBoxColumn.DataPropertyName = "ScriptFileName";
-            this.scriptFileNameDataGridViewTextBoxColumn.HeaderText = "Script File Name";
-            this.scriptFileNameDataGridViewTextBoxColumn.Name = "scriptFileNameDataGridViewTextBoxColumn";
-            this.scriptFileNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.scriptFileNameDataGridViewTextBoxColumn.Width = 200;
+            scriptFileNameDataGridViewTextBoxColumn.DataPropertyName = "ScriptFileName";
+            scriptFileNameDataGridViewTextBoxColumn.HeaderText = "Script File Name";
+            scriptFileNameDataGridViewTextBoxColumn.Name = "scriptFileNameDataGridViewTextBoxColumn";
+            scriptFileNameDataGridViewTextBoxColumn.ReadOnly = true;
+            scriptFileNameDataGridViewTextBoxColumn.Width = 200;
             // 
             // tagDataGridViewTextBoxColumn
             // 
-            this.tagDataGridViewTextBoxColumn.DataPropertyName = "Tag";
-            this.tagDataGridViewTextBoxColumn.HeaderText = "Tag";
-            this.tagDataGridViewTextBoxColumn.Name = "tagDataGridViewTextBoxColumn";
-            this.tagDataGridViewTextBoxColumn.ReadOnly = true;
-            this.tagDataGridViewTextBoxColumn.Width = 75;
+            tagDataGridViewTextBoxColumn.DataPropertyName = "Tag";
+            tagDataGridViewTextBoxColumn.HeaderText = "Tag";
+            tagDataGridViewTextBoxColumn.Name = "tagDataGridViewTextBoxColumn";
+            tagDataGridViewTextBoxColumn.ReadOnly = true;
+            tagDataGridViewTextBoxColumn.Width = 75;
             // 
             // scriptFileHashDataGridViewTextBoxColumn
             // 
-            this.scriptFileHashDataGridViewTextBoxColumn.DataPropertyName = "ScriptFileHash";
-            this.scriptFileHashDataGridViewTextBoxColumn.HeaderText = "Script Hash";
-            this.scriptFileHashDataGridViewTextBoxColumn.Name = "scriptFileHashDataGridViewTextBoxColumn";
-            this.scriptFileHashDataGridViewTextBoxColumn.ReadOnly = true;
-            this.scriptFileHashDataGridViewTextBoxColumn.Width = 200;
+            scriptFileHashDataGridViewTextBoxColumn.DataPropertyName = "ScriptFileHash";
+            scriptFileHashDataGridViewTextBoxColumn.HeaderText = "Script Hash";
+            scriptFileHashDataGridViewTextBoxColumn.Name = "scriptFileHashDataGridViewTextBoxColumn";
+            scriptFileHashDataGridViewTextBoxColumn.ReadOnly = true;
+            scriptFileHashDataGridViewTextBoxColumn.Width = 200;
             // 
             // commitDateDataGridViewTextBoxColumn
             // 
-            this.commitDateDataGridViewTextBoxColumn.DataPropertyName = "CommitDate";
-            this.commitDateDataGridViewTextBoxColumn.HeaderText = "Commit Date";
-            this.commitDateDataGridViewTextBoxColumn.Name = "commitDateDataGridViewTextBoxColumn";
-            this.commitDateDataGridViewTextBoxColumn.ReadOnly = true;
+            commitDateDataGridViewTextBoxColumn.DataPropertyName = "CommitDate";
+            commitDateDataGridViewTextBoxColumn.HeaderText = "Commit Date";
+            commitDateDataGridViewTextBoxColumn.Name = "commitDateDataGridViewTextBoxColumn";
+            commitDateDataGridViewTextBoxColumn.ReadOnly = true;
             // 
             // userIdDataGridViewTextBoxColumn
             // 
-            this.userIdDataGridViewTextBoxColumn.DataPropertyName = "UserId";
-            this.userIdDataGridViewTextBoxColumn.HeaderText = "User Id";
-            this.userIdDataGridViewTextBoxColumn.Name = "userIdDataGridViewTextBoxColumn";
-            this.userIdDataGridViewTextBoxColumn.ReadOnly = true;
-            this.userIdDataGridViewTextBoxColumn.Width = 80;
+            userIdDataGridViewTextBoxColumn.DataPropertyName = "UserId";
+            userIdDataGridViewTextBoxColumn.HeaderText = "User Id";
+            userIdDataGridViewTextBoxColumn.Name = "userIdDataGridViewTextBoxColumn";
+            userIdDataGridViewTextBoxColumn.ReadOnly = true;
+            userIdDataGridViewTextBoxColumn.Width = 80;
             // 
             // scriptTextDataGridViewTextBoxColumn
             // 
-            this.scriptTextDataGridViewTextBoxColumn.DataPropertyName = "ScriptText";
-            this.scriptTextDataGridViewTextBoxColumn.HeaderText = "Script Text";
-            this.scriptTextDataGridViewTextBoxColumn.Name = "scriptTextDataGridViewTextBoxColumn";
-            this.scriptTextDataGridViewTextBoxColumn.ReadOnly = true;
+            scriptTextDataGridViewTextBoxColumn.DataPropertyName = "ScriptText";
+            scriptTextDataGridViewTextBoxColumn.HeaderText = "Script Text";
+            scriptTextDataGridViewTextBoxColumn.Name = "scriptTextDataGridViewTextBoxColumn";
+            scriptTextDataGridViewTextBoxColumn.ReadOnly = true;
             // 
             // contextMenuStrip1
             // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.viewScriptAsRunOnServerToolStripMenuItem,
-            this.toolStripSeparator1});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(223, 76);
-            this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            viewScriptAsRunOnServerToolStripMenuItem,
+            toolStripSeparator1});
+            contextMenuStrip1.Name = "contextMenuStrip1";
+            contextMenuStrip1.Size = new System.Drawing.Size(223, 76);
+            contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(contextMenuStrip1_Opening);
             // 
             // viewScriptAsRunOnServerToolStripMenuItem
             // 
-            this.viewScriptAsRunOnServerToolStripMenuItem.Name = "viewScriptAsRunOnServerToolStripMenuItem";
-            this.viewScriptAsRunOnServerToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
-            this.viewScriptAsRunOnServerToolStripMenuItem.Text = "View Script as Run on Server";
-            this.viewScriptAsRunOnServerToolStripMenuItem.Click += new System.EventHandler(this.viewScriptAsRunOnServerToolStripMenuItem_Click);
+            viewScriptAsRunOnServerToolStripMenuItem.Name = "viewScriptAsRunOnServerToolStripMenuItem";
+            viewScriptAsRunOnServerToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            viewScriptAsRunOnServerToolStripMenuItem.Text = "View Script as Run on Server";
+            viewScriptAsRunOnServerToolStripMenuItem.Click += new System.EventHandler(viewScriptAsRunOnServerToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(219, 6);
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(219, 6);
             // 
             // scriptRunLogBindingSource
             // 
-            this.scriptRunLogBindingSource.DataSource = typeof(SqlSync.SqlBuild.ScriptRunLog);
+            scriptRunLogBindingSource.DataSource = typeof(SqlSync.SqlBuild.ScriptRunLog);
             // 
             // scriptRunLog1
             // 
-            this.scriptRunLog1.Namespace = "";
-            this.scriptRunLog1.PrimaryKey = new System.Data.DataColumn[0];
-            this.scriptRunLog1.TableName = "ScriptRunLog";
+            scriptRunLog1.Namespace = "";
+            scriptRunLog1.PrimaryKey = new System.Data.DataColumn[0];
+            scriptRunLog1.TableName = "ScriptRunLog";
             // 
             // ScriptRunHistoryForm
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(6, 14);
-            this.ClientSize = new System.Drawing.Size(976, 374);
-            this.Controls.Add(this.dataGridView1);
-            this.Controls.Add(this.panel1);
-            this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.KeyPreview = true;
-            this.Name = "ScriptRunHistoryForm";
-            this.Text = "Script Run History on {0}";
-            this.Load += new System.EventHandler(this.PastBuildReviewForm_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ScriptRunHistoryForm_KeyDown);
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
-            this.contextMenuStrip1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.scriptRunLogBindingSource)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.scriptRunLog1)).EndInit();
-            this.ResumeLayout(false);
+            AutoScaleBaseSize = new System.Drawing.Size(6, 14);
+            ClientSize = new System.Drawing.Size(976, 374);
+            Controls.Add(dataGridView1);
+            Controls.Add(panel1);
+            Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            KeyPreview = true;
+            Name = "ScriptRunHistoryForm";
+            Text = "Script Run History on {0}";
+            Load += new System.EventHandler(PastBuildReviewForm_Load);
+            KeyDown += new System.Windows.Forms.KeyEventHandler(ScriptRunHistoryForm_KeyDown);
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(dataGridView1)).EndInit();
+            contextMenuStrip1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(scriptRunLogBindingSource)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(scriptRunLog1)).EndInit();
+            ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
         private void PastBuildReviewForm_Load(object sender, System.EventArgs e)
         {
-            this.Text = String.Format(this.Text, this.connData.SQLServerName);
+            Text = String.Format(Text, connData.SQLServerName);
 
-            if (this.scriptId != Guid.Empty)
+            if (scriptId != Guid.Empty)
             {
-                this.txtScriptId.Text = this.scriptId.ToString();
+                txtScriptId.Text = scriptId.ToString();
 
                 try
                 {
-                    SqlSync.SqlBuild.ScriptRunLog log = SqlSync.SqlBuild.SqlBuildHelper.GetScriptRunLog(this.scriptId, this.connData);
-                    this.dataGridView1.DataSource = log;
+                    SqlSync.SqlBuild.ScriptRunLog log = SqlSync.SqlBuild.SqlBuildHelper.GetScriptRunLog(scriptId, connData);
+                    dataGridView1.DataSource = log;
                     if (log.Rows.Count > 0)
-                        this.txtScriptName.Text = log[0].ScriptFileName;
+                        txtScriptName.Text = log[0].ScriptFileName;
                     else
-                        this.txtScriptName.Text = "Unable to read from log";
+                        txtScriptName.Text = "Unable to read from log";
                 }
                 catch (Exception exe)
                 {
                     string message = "Unable to retrieve script run log.\r\n" + exe.Message;
                     MessageBox.Show(message, "Error getting log", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    this.txtScriptName.Text = "Unable to read from log";
+                    txtScriptName.Text = "Unable to read from log";
                 }
             }
-            else if (this.scriptFileName != string.Empty)
+            else if (scriptFileName != string.Empty)
             {
-                this.txtScriptId.Text = "N/A";
+                txtScriptId.Text = "N/A";
 
                 try
                 {
-                    SqlSync.SqlBuild.ScriptRunLog log = SqlSync.SqlBuild.SqlBuildHelper.GetObjectRunHistoryLog(this.scriptFileName, this.connData);
-                    this.dataGridView1.DataSource = log;
+                    SqlSync.SqlBuild.ScriptRunLog log = SqlSync.SqlBuild.SqlBuildHelper.GetObjectRunHistoryLog(scriptFileName, connData);
+                    dataGridView1.DataSource = log;
                     if (log.Rows.Count > 0)
-                        this.txtScriptName.Text = log[0].ScriptFileName;
+                        txtScriptName.Text = log[0].ScriptFileName;
                     else
-                        this.txtScriptName.Text = "Unable to read from log";
+                        txtScriptName.Text = "Unable to read from log";
                 }
                 catch (Exception exe)
                 {
                     string message = "Unable to retrieve object run log.\r\n" + exe.Message;
                     MessageBox.Show(message, "Error getting log", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    this.txtScriptName.Text = "Unable to read from log";
+                    txtScriptName.Text = "Unable to read from log";
                 }
             }
-            txtScriptHash.Text = this.scriptHash;
+            txtScriptHash.Text = scriptHash;
 
         }
 
-		private void ScriptRunHistoryForm_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
-		{
-			if(e.KeyCode == Keys.Escape)
-			{
-				e.Handled = true;
-				this.Close();
-			}
-		}
+        private void ScriptRunHistoryForm_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                e.Handled = true;
+                Close();
+            }
+        }
 
         private void viewScriptAsRunOnServerToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            List<DataGridViewRow> selectedRows = GetSelectedRows(this.dataGridView1);
+            List<DataGridViewRow> selectedRows = GetSelectedRows(dataGridView1);
             if (selectedRows.Count != 1)
                 return;
 
             SqlSync.SqlBuild.ScriptRunLogRow row = (SqlSync.SqlBuild.ScriptRunLogRow)((DataRowView)selectedRows[0].DataBoundItem).Row;
-            ScriptDisplayForm frmDisp = new ScriptDisplayForm(row.ScriptText, this.connData.SQLServerName, row.ScriptFileName);
+            ScriptDisplayForm frmDisp = new ScriptDisplayForm(row.ScriptText, connData.SQLServerName, row.ScriptFileName);
             frmDisp.ShowDialog();
             frmDisp.Dispose();
 
         }
         private void dataGridView1_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
-            SqlSync.SqlBuild.ScriptRunLogRow row = (SqlSync.SqlBuild.ScriptRunLogRow)((DataRowView)this.dataGridView1[0,e.RowIndex].OwningRow.DataBoundItem).Row;
-            if (row.ScriptFileHash != this.scriptHash)
+            SqlSync.SqlBuild.ScriptRunLogRow row = (SqlSync.SqlBuild.ScriptRunLogRow)((DataRowView)dataGridView1[0, e.RowIndex].OwningRow.DataBoundItem).Row;
+            if (row.ScriptFileHash != scriptHash)
             {
                 DataGridViewCellStyle style = new DataGridViewCellStyle();
                 style.ForeColor = Color.Red;
                 string colName = ((SqlSync.SqlBuild.ScriptRunLog)row.Table).ScriptFileHashColumn.ColumnName;
-                foreach (DataGridViewColumn col in this.dataGridView1.Columns)
+                foreach (DataGridViewColumn col in dataGridView1.Columns)
                 {
-                    if(col.Name.ToLower().IndexOf(colName.ToLower()) > -1)
+                    if (col.Name.ToLower().IndexOf(colName.ToLower()) > -1)
                     {
-                        this.dataGridView1[col.Name, e.RowIndex].Style = style;
+                        dataGridView1[col.Name, e.RowIndex].Style = style;
                         break;
                     }
                 }
@@ -462,11 +461,11 @@ namespace SqlSync.BuildHistory
 
         private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
         {
-            if (this.dataGridView1.SelectedCells.Count == 0)
+            if (dataGridView1.SelectedCells.Count == 0)
                 return;
 
-            List<DataGridViewRow> selectedRows = GetSelectedRows(this.dataGridView1);
-            
+            List<DataGridViewRow> selectedRows = GetSelectedRows(dataGridView1);
+
             if (selectedRows.Count == 1)
             {
                 viewScriptAsRunOnServerToolStripMenuItem.Enabled = true;
@@ -490,6 +489,6 @@ namespace SqlSync.BuildHistory
             return selectedRows;
         }
 
-		
-	}
+
+    }
 }

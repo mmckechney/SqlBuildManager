@@ -1,7 +1,5 @@
 namespace SqlSync.BasicCompare
 {
-    using System;
-
     public class RtfTemplates
     {
         public const string Added = @"\cf4 #Added#\par";

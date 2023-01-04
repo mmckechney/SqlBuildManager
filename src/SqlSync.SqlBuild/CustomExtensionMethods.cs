@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 namespace SqlSync.SqlBuild
 {
     public static class Extensions
     {
-       
+
         /// <summary>
         /// Splits a <see cref="List{T}"/> into multiple chunks.
         /// </summary>
@@ -28,7 +25,7 @@ namespace SqlSync.SqlBuild
             double maxChunkSize = Math.Ceiling(listCount / dblChunks);
             double minChunkSize = Math.Floor(listCount / dblChunks);
             double chunkSize;
-            if(Math.Ceiling(listCount / maxChunkSize) < numberOfChunks)
+            if (Math.Ceiling(listCount / maxChunkSize) < numberOfChunks)
             {
                 chunkSize = minChunkSize;
             }
@@ -44,8 +41,8 @@ namespace SqlSync.SqlBuild
             {
                 int count = listCount - index > chunkSize ? (int)chunkSize : listCount - index;
                 //If more than half way though and there are more items left than can fit in the remaining chunks -- start spreading them out. 
-               // if(usedChunkCount > numberOfChunks/2 && index > listCount/2 && 
-                if((listCount-(double)index)/(dblChunks - usedChunkCount) > chunkSize)
+                // if(usedChunkCount > numberOfChunks/2 && index > listCount/2 && 
+                if ((listCount - (double)index) / (dblChunks - usedChunkCount) > chunkSize)
                 {
                     count++;
                 }
@@ -59,10 +56,10 @@ namespace SqlSync.SqlBuild
             if (index < listCount)
             {
 
-                 List<T> leftOvers =   list.ToList().GetRange(index, listCount - index);
-                 List<T> lastChunk = retVal[retVal.Count - 1].ToList();
-                 lastChunk.AddRange(leftOvers.AsEnumerable());
-                 retVal[retVal.Count - 1] = lastChunk.AsEnumerable();
+                List<T> leftOvers = list.ToList().GetRange(index, listCount - index);
+                List<T> lastChunk = retVal[retVal.Count - 1].ToList();
+                lastChunk.AddRange(leftOvers.AsEnumerable());
+                retVal[retVal.Count - 1] = lastChunk.AsEnumerable();
             }
 
             return retVal.AsEnumerable();

@@ -1,11 +1,10 @@
-﻿using SqlBuildManager.Enterprise;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for TableWatchTest and is intended
     ///to contain all TableWatchTest Unit Tests
@@ -20,7 +19,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void EmailSubjectTest()
         {
-            TableWatch target = new TableWatch(); 
+            TableWatch target = new TableWatch();
             string expected = "Here is the e-mail subject";
             string actual;
             target.EmailSubject = expected;
@@ -62,7 +61,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void FoundTablesTest()
         {
-            TableWatch target = new TableWatch(); 
+            TableWatch target = new TableWatch();
             List<string> expected = new List<string>();
             expected.Add("Table1");
             expected.Add("Table2");

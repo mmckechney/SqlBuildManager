@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using SqlBuildManager.Interfaces.Console;
+using System;
 using System.Text.Json.Serialization;
-using SqlBuildManager.Interfaces.Console;
 namespace SqlBuildManager.Console.Events
 {
     public class EventHubMessageFormat

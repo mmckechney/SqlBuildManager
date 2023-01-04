@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace SqlSync.SqlBuild
@@ -28,16 +22,16 @@ namespace SqlSync.SqlBuild
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            this.BuildDescription = textBox1.Text;
-            this.DialogResult =DialogResult.OK;
-            this.Close();
+            BuildDescription = textBox1.Text;
+            DialogResult = DialogResult.OK;
+            Close();
 
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Close();
+            DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            Close();
         }
     }
 }

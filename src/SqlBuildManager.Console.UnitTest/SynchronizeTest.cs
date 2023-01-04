@@ -70,13 +70,13 @@ namespace SqlBuildManager.Console.UnitTest
                     "--golddatabase", "SqlbuildTest_SyncTest1",
                     "--goldserver" , "localhost\\sqlexpress"
                 };
-            string expected = string.Empty; 
+            string expected = string.Empty;
             string actual;
 
             var cmdLine = CommandLineBuilder.ParseArguments(args);
- 
+
             actual = Synchronize.GetDatabaseRunHistoryTextDifference(cmdLine);
-            Assert.AreEqual(1, actual.Split(new string[]{"\r\n"},StringSplitOptions.None).Length);
+            Assert.AreEqual(1, actual.Split(new string[] { "\r\n" }, StringSplitOptions.None).Length);
         }
 
         /// <summary>
@@ -85,8 +85,8 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void GetDatabaseRunHistoryDifferenceTest1()
         {
-            CommandLineArgs cmdLine = null; 
-            DatabaseRunHistory expected = null; 
+            CommandLineArgs cmdLine = null;
+            DatabaseRunHistory expected = null;
             DatabaseRunHistory actual;
             actual = Synchronize.GetDatabaseRunHistoryDifference(cmdLine);
             Assert.AreEqual(expected, actual);
@@ -103,9 +103,9 @@ namespace SqlBuildManager.Console.UnitTest
                {
                     "getdifference",
                     "--database" , "SqlbuildTest_SyncTest2"
-                  
+
                };
-            CommandLineArgs expected = null; 
+            CommandLineArgs expected = null;
             (CommandLineArgs actual, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
 
             Assert.AreEqual(expected, actual);

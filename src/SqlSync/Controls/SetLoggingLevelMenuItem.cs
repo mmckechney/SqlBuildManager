@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace SqlSync.Controls
@@ -21,47 +20,47 @@ namespace SqlSync.Controls
         }
         private void CustomInitializeComponent()
         {
-            this.Text = "Set Logging Level";
-            this.Size = new System.Drawing.Size(251, 22);
-            this.DropDownOpening += new EventHandler(SetLoggingLevelMenuItem_DropDownOpening);
+            Text = "Set Logging Level";
+            Size = new System.Drawing.Size(251, 22);
+            DropDownOpening += new EventHandler(SetLoggingLevelMenuItem_DropDownOpening);
 
-            this.dEBUGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.iNFOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.wARNToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.eRRORToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            dEBUGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            iNFOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            wARNToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            eRRORToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
-            this.DropDownItems.AddRange(new ToolStripItem[]{this.dEBUGToolStripMenuItem,
-                this.iNFOToolStripMenuItem,
-                this.wARNToolStripMenuItem,
-                this.eRRORToolStripMenuItem});
+            DropDownItems.AddRange(new ToolStripItem[]{dEBUGToolStripMenuItem,
+                iNFOToolStripMenuItem,
+                wARNToolStripMenuItem,
+                eRRORToolStripMenuItem});
             // 
             // dEBUGToolStripMenuItem
             // 
-            this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
-            this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.dEBUGToolStripMenuItem.Text = "Debug";
-            this.dEBUGToolStripMenuItem.Click += new System.EventHandler(this.mnuLoggingLevel_Click);
+            dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
+            dEBUGToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
+            dEBUGToolStripMenuItem.Text = "Debug";
+            dEBUGToolStripMenuItem.Click += new System.EventHandler(mnuLoggingLevel_Click);
             // 
             // iNFOToolStripMenuItem
             // 
-            this.iNFOToolStripMenuItem.Name = "iNFOToolStripMenuItem";
-            this.iNFOToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.iNFOToolStripMenuItem.Text = "Informnation";
-            this.iNFOToolStripMenuItem.Click += new System.EventHandler(this.mnuLoggingLevel_Click);
+            iNFOToolStripMenuItem.Name = "iNFOToolStripMenuItem";
+            iNFOToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
+            iNFOToolStripMenuItem.Text = "Informnation";
+            iNFOToolStripMenuItem.Click += new System.EventHandler(mnuLoggingLevel_Click);
             // 
             // wARNToolStripMenuItem
             // 
-            this.wARNToolStripMenuItem.Name = "wARNToolStripMenuItem";
-            this.wARNToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.wARNToolStripMenuItem.Text = "Warning";
-            this.wARNToolStripMenuItem.Click += new System.EventHandler(this.mnuLoggingLevel_Click);
+            wARNToolStripMenuItem.Name = "wARNToolStripMenuItem";
+            wARNToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
+            wARNToolStripMenuItem.Text = "Warning";
+            wARNToolStripMenuItem.Click += new System.EventHandler(mnuLoggingLevel_Click);
             // 
             // eRRORToolStripMenuItem
             // 
-            this.eRRORToolStripMenuItem.Name = "eRRORToolStripMenuItem";
-            this.eRRORToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.eRRORToolStripMenuItem.Text = "Error";
-            this.eRRORToolStripMenuItem.Click += new System.EventHandler(this.mnuLoggingLevel_Click);
+            eRRORToolStripMenuItem.Name = "eRRORToolStripMenuItem";
+            eRRORToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
+            eRRORToolStripMenuItem.Text = "Error";
+            eRRORToolStripMenuItem.Click += new System.EventHandler(mnuLoggingLevel_Click);
 
 
         }
@@ -102,13 +101,13 @@ namespace SqlSync.Controls
         }
         private void SetDynamicLoggingLevel(string level)
         {
-            if(!Enum.TryParse<LogLevel>(level, out LogLevel tmp))
+            if (!Enum.TryParse<LogLevel>(level, out LogLevel tmp))
             {
                 tmp = LogLevel.Information;
             }
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(tmp);
-          
-           
+
+
             log.LogInformation($"Logging level set to {tmp.ToString()}");
 
         }

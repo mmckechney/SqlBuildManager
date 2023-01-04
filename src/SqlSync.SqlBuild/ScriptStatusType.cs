@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace SqlSync.SqlBuild
 {
     /// <summary>
@@ -31,5 +27,5 @@ namespace SqlSync.SqlBuild
         Unknown = 99
     }
 
-   
+
 }

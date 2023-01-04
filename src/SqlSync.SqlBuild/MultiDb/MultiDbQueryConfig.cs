@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SqlSync.SqlBuild.MultiDb
 {
     [Serializable()]
-    public class MultiDbQueryConfig 
+    public class MultiDbQueryConfig
     {
         private string sourceServer = string.Empty;
 
@@ -29,14 +27,15 @@ namespace SqlSync.SqlBuild.MultiDb
             set { query = value; }
         }
 
-        public MultiDbQueryConfig(string sourceServer, string database, string query) :this()
+        public MultiDbQueryConfig(string sourceServer, string database, string query) : this()
         {
             this.sourceServer = sourceServer;
             this.database = database;
             this.query = query;
         }
-        public MultiDbQueryConfig()        {
-        
+        public MultiDbQueryConfig()
+        {
+
         }
     }
 }

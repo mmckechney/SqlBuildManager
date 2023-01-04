@@ -19,10 +19,11 @@ namespace SqlBuildManager.Console.Arm
 
         internal static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ArmHelper>();
         private static ArmClient _sbmarmClient = null;
-        private static ArmClient SbmArmClient { 
-            get 
-            { 
-                if(_sbmarmClient == null)
+        private static ArmClient SbmArmClient
+        {
+            get
+            {
+                if (_sbmarmClient == null)
                 {
                     _sbmarmClient = new ArmClient(AadHelper.TokenCredential);
                 }
@@ -46,7 +47,7 @@ namespace SqlBuildManager.Console.Arm
         }
         private static ResourceGroupResource GetResourceGroup(SubscriptionResource sub, string resourceGroupName)
         {
-            ResourceGroupResource rg =  sub.GetResourceGroup(resourceGroupName);
+            ResourceGroupResource rg = sub.GetResourceGroup(resourceGroupName);
             return rg;
         }
         #endregion
@@ -76,7 +77,7 @@ namespace SqlBuildManager.Console.Arm
                 ArmDeploymentResource dep = lro.Value;
                 return true;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError($"Deployment '{deploymentName}' failed. {exe.Message}");
                 return false;
@@ -92,7 +93,7 @@ namespace SqlBuildManager.Console.Arm
                 result.UpdateStatus();
                 Thread.Sleep(1000);
             }
-            if(result.GetRawResponse().Status >= 300)
+            if (result.GetRawResponse().Status >= 300)
             {
                 log.LogError($"Unable to delete resource {resourceId}. {result.GetRawResponse().ReasonPhrase}");
                 return false;
@@ -108,7 +109,7 @@ namespace SqlBuildManager.Console.Arm
             try
             {
                 var res = GetResourceByName(subscriptionId, resourceGroupName, resourceName);
-                if(res != null)
+                if (res != null)
                 {
                     await res.DeleteAsync(WaitUntil.Completed);
                 }
@@ -122,7 +123,7 @@ namespace SqlBuildManager.Console.Arm
             }
         }
 
-        public static async Task<string> GetAciDeploymentDetails(string subscriptionId, string resourceGroupName,string aciName)
+        public static async Task<string> GetAciDeploymentDetails(string subscriptionId, string resourceGroupName, string aciName)
         {
             try
             {
@@ -137,7 +138,8 @@ namespace SqlBuildManager.Console.Arm
                     {
                         var details = returnVal.Content.ReadAsStringAsync();
                         return details.Result;
-                    }else
+                    }
+                    else
                     {
                         log.LogError($"Unable to retrieve the status of ACI deployment {aciName}. Status code: {returnVal.StatusCode}");
                     }
@@ -152,13 +154,14 @@ namespace SqlBuildManager.Console.Arm
         }
 
 
-        internal static (string,string, string) GetSubRgAndIdentityName(string identityResourceId)
+        internal static (string, string, string) GetSubRgAndIdentityName(string identityResourceId)
         {
             try
             {
                 var ri = new ResourceIdentifier(identityResourceId);
                 return (ri.SubscriptionId, ri.ResourceGroupName, ri.Name);
-            }catch
+            }
+            catch
             {
                 return (null, null, null);
             }

@@ -1,13 +1,13 @@
-﻿using SqlSync.SqlBuild.Syncronizer;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlSync.Connection;
+using SqlSync.SqlBuild.Syncronizer;
 using System;
 using System.Linq;
-using SqlSync.Connection;
 
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for DatabaseDifferTest and is intended
     ///to contain all DatabaseDifferTest Unit Tests
@@ -168,19 +168,19 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod(), Ignore("Don't have the setup scripts ready yet")]
         public void GetDatabaseRunHistoryTest_TestCountAndSelection()
         {
-            DatabaseDiffer target = new DatabaseDiffer(); 
+            DatabaseDiffer target = new DatabaseDiffer();
             ConnectionData dbConnData = new ConnectionData()
-                {
-                    DatabaseName = "SqlBuildTest_SyncTest1",
-                    SQLServerName = @"localhost\SQLEXPRESS",
-                    AuthenticationType = AuthenticationType.Windows
-                };
+            {
+                DatabaseName = "SqlBuildTest_SyncTest1",
+                SQLServerName = @"localhost\SQLEXPRESS",
+                AuthenticationType = AuthenticationType.Windows
+            };
 
             DatabaseRunHistory actual;
             actual = target.GetDatabaseRunHistory(dbConnData);
-            Assert.AreEqual(3,actual.BuildFileHistory.Count);
+            Assert.AreEqual(3, actual.BuildFileHistory.Count);
 
-            Assert.AreEqual(DateTime.Parse("2014-07-21 13:58:07.880"), 
+            Assert.AreEqual(DateTime.Parse("2014-07-21 13:58:07.880"),
                 actual.BuildFileHistory.Where(x => x.BuildFileHash == "7651E282160CAF9C92CB923004D94B91181C077E").Select(y => y.CommitDate).FirstOrDefault());
         }
     }

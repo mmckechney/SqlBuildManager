@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 using sb = SqlSync.SqlBuild;
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -18,7 +17,7 @@ namespace SqlBuildManager.Console.CommandLine
         {
             //Don't double in encrypt..
             bool tmp;
-            (tmp,cmdLine) = DecryptSensitiveFields(cmdLine, true); 
+            (tmp, cmdLine) = DecryptSensitiveFields(cmdLine, true);
             string key = GetSettingsFileEncryptionKey(cmdLine);
 
 
@@ -61,17 +60,17 @@ namespace SqlBuildManager.Console.CommandLine
             return cmdLine;
         }
 
-        public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine, bool suppressLog  = false)
+        public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine, bool suppressLog = false)
         {
-            if(cmdLine.Decrypted)
+            if (cmdLine.Decrypted)
             {
                 log.LogInformation("Command line arguments already decrypted.");
                 return (true, cmdLine);
             }
             //Nothing to do if none of the settings came from a settings file!
-            if(string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
+            if (string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
-                return (true,cmdLine);
+                return (true, cmdLine);
             }
             bool consolidated = true;
             bool success;
@@ -85,7 +84,7 @@ namespace SqlBuildManager.Console.CommandLine
 
             if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
             {
-                (success,  cmdLine.AuthenticationArgs.UserName) = sb.Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, key, "--username", suppressLog);
+                (success, cmdLine.AuthenticationArgs.UserName) = sb.Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, key, "--username", suppressLog);
                 consolidated = consolidated & success;
             }
             if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
@@ -111,7 +110,7 @@ namespace SqlBuildManager.Console.CommandLine
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
                 (success, cmdLine.ConnectionArgs.EventHubConnectionString) = sb.Cryptography.DecryptText(cmdLine.ConnectionArgs.EventHubConnectionString, key, "--eventhubconnection", suppressLog);
-               // consolidated = consolidated & success;
+                // consolidated = consolidated & success;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
@@ -120,7 +119,7 @@ namespace SqlBuildManager.Console.CommandLine
             }
 
 
-            if(consolidated)
+            if (consolidated)
             {
                 cmdLine.Decrypted = true;
             }
@@ -132,16 +131,16 @@ namespace SqlBuildManager.Console.CommandLine
         {
             if (!string.IsNullOrWhiteSpace(cmdLine.SettingsFileKey))
             {
-               if(File.Exists(Path.GetFullPath(cmdLine.SettingsFileKey)))
+                if (File.Exists(Path.GetFullPath(cmdLine.SettingsFileKey)))
                 {
                     return File.ReadAllText(cmdLine.SettingsFileKey).Trim();
                 }
-               else
+                else
                 {
                     return cmdLine.SettingsFileKey;
                 }
             }
-           
+
             var ev = Environment.GetEnvironmentVariable(keyEnvronmentVariableName);
             if (!string.IsNullOrWhiteSpace(ev))
             {
@@ -157,26 +156,26 @@ namespace SqlBuildManager.Console.CommandLine
         {
 
 
-            if(!File.Exists(store))
+            if (!File.Exists(store))
             {
                 SetDerivedKey();
             }
             string e = File.ReadAllText(store);
-            (bool success,string pt) = sb.Cryptography.DecryptText(e, kek,"");
+            (bool success, string pt) = sb.Cryptography.DecryptText(e, kek, "");
             return pt;
         }
         private static bool SetDerivedKey()
         {
             string key = GenerateEncryptionKey();
             string wrapped = sb.Cryptography.EncryptText(key, kek);
-            File.WriteAllText(store,wrapped);
+            File.WriteAllText(store, wrapped);
             return true;
         }
         private static string GenerateEncryptionKey()
         {
             var a = Aes.Create();
             a.GenerateKey();
-           var encoded =  Convert.ToBase64String(a.Key);
+            var encoded = Convert.ToBase64String(a.Key);
             return encoded;
         }
     }

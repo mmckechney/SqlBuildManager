@@ -4,9 +4,7 @@ namespace SqlSync.BasicCompare
     using System.Collections;
     using System.Collections.Specialized;
     using System.ComponentModel;
-    using System.Data;
     using System.Data.SqlClient;
-    using System.Drawing;
     using System.Text;
 
     [Serializable, DesignerCategory("Component"), DesignTimeVisible(true), ToolboxItem(true)]
@@ -18,16 +16,16 @@ namespace SqlSync.BasicCompare
 
         public FileDiff()
         {
-            this._validationDict.Add("FileName", false);
-            this._validationDict.Add("UnifiedDiff", false);
+            _validationDict.Add("FileName", false);
+            _validationDict.Add("UnifiedDiff", false);
         }
 
         public virtual bool Fill(FileDiff dataClass)
         {
             try
             {
-                this.FileName = dataClass.FileName;
-                this.UnifiedDiff = dataClass.UnifiedDiff;
+                FileName = dataClass.FileName;
+                UnifiedDiff = dataClass.UnifiedDiff;
             }
             catch (Exception exception)
             {
@@ -40,8 +38,8 @@ namespace SqlSync.BasicCompare
         {
             try
             {
-                this.FileName = (string) Convert.ChangeType(sourceArray.GetValue(0), typeof(string));
-                this.UnifiedDiff = (string) Convert.ChangeType(sourceArray.GetValue(1), typeof(string));
+                FileName = (string)Convert.ChangeType(sourceArray.GetValue(0), typeof(string));
+                UnifiedDiff = (string)Convert.ChangeType(sourceArray.GetValue(1), typeof(string));
             }
             catch (Exception exception)
             {
@@ -56,11 +54,11 @@ namespace SqlSync.BasicCompare
             {
                 if (nameValueColl.GetValues("FileName") != null)
                 {
-                    this.FileName = (string) Convert.ChangeType(nameValueColl.GetValues("FileName")[0], typeof(string));
+                    FileName = (string)Convert.ChangeType(nameValueColl.GetValues("FileName")[0], typeof(string));
                 }
                 if (nameValueColl.GetValues("UnifiedDiff") != null)
                 {
-                    this.UnifiedDiff = (string) Convert.ChangeType(nameValueColl.GetValues("UnifiedDiff")[0], typeof(string));
+                    UnifiedDiff = (string)Convert.ChangeType(nameValueColl.GetValues("UnifiedDiff")[0], typeof(string));
                 }
             }
             catch (Exception exception)
@@ -111,8 +109,8 @@ namespace SqlSync.BasicCompare
             string[] textArray = delimString.Split(new char[] { delimiter });
             try
             {
-                this.FileName = (string) Convert.ChangeType(textArray[0], typeof(string));
-                this.UnifiedDiff = (string) Convert.ChangeType(textArray[1], typeof(string));
+                FileName = (string)Convert.ChangeType(textArray[0], typeof(string));
+                UnifiedDiff = (string)Convert.ChangeType(textArray[1], typeof(string));
             }
             catch (Exception exception)
             {
@@ -127,9 +125,9 @@ namespace SqlSync.BasicCompare
             StringBuilder builder = new StringBuilder();
             try
             {
-                builder.Append(this.StrFileName);
+                builder.Append(StrFileName);
                 builder.Append(delimiter);
-                builder.Append(this.StrUnifiedDiff);
+                builder.Append(StrUnifiedDiff);
                 text = builder.ToString();
             }
             catch (Exception exception)
@@ -145,9 +143,9 @@ namespace SqlSync.BasicCompare
             StringBuilder builder = new StringBuilder();
             try
             {
-                builder.Append(this.FileName.ToString());
+                builder.Append(FileName.ToString());
                 builder.Append(delimiter);
-                builder.Append(this.UnifiedDiff.ToString());
+                builder.Append(UnifiedDiff.ToString());
                 text = builder.ToString();
             }
             catch (Exception exception)
@@ -168,8 +166,8 @@ namespace SqlSync.BasicCompare
             NameValueCollection values = new NameValueCollection();
             try
             {
-                values.Add("FileName", this.FileName.ToString());
-                values.Add("UnifiedDiff", this.UnifiedDiff.ToString());
+                values.Add("FileName", FileName.ToString());
+                values.Add("UnifiedDiff", UnifiedDiff.ToString());
                 values2 = values;
             }
             catch (Exception exception)
@@ -185,8 +183,8 @@ namespace SqlSync.BasicCompare
             string[] textArray = new string[2];
             try
             {
-                textArray[0] = this._FileName.ToString();
-                textArray[1] = this._UnifiedDiff.ToString();
+                textArray[0] = _FileName.ToString();
+                textArray[1] = _UnifiedDiff.ToString();
                 textArray2 = textArray;
             }
             catch (Exception exception)
@@ -199,11 +197,11 @@ namespace SqlSync.BasicCompare
         public virtual string[] Validate()
         {
             ArrayList list = new ArrayList();
-            if (!((bool) Convert.ChangeType(this._validationDict["FileName"], typeof(bool))))
+            if (!((bool)Convert.ChangeType(_validationDict["FileName"], typeof(bool))))
             {
                 list.Add("FileName");
             }
-            if (!((bool) Convert.ChangeType(this._validationDict["UnifiedDiff"], typeof(bool))))
+            if (!((bool)Convert.ChangeType(_validationDict["UnifiedDiff"], typeof(bool))))
             {
                 list.Add("UnifiedDiff");
             }
@@ -220,12 +218,12 @@ namespace SqlSync.BasicCompare
         {
             get
             {
-                return this._FileName;
+                return _FileName;
             }
             set
             {
-                this._FileName = value;
-                this._validationDict["FileName"] = true;
+                _FileName = value;
+                _validationDict["FileName"] = true;
             }
         }
 
@@ -233,7 +231,7 @@ namespace SqlSync.BasicCompare
         {
             get
             {
-                return (this.Validate() == null);
+                return (Validate() == null);
             }
         }
 
@@ -241,7 +239,7 @@ namespace SqlSync.BasicCompare
         {
             get
             {
-                return this._FileName.ToString();
+                return _FileName.ToString();
             }
         }
 
@@ -249,7 +247,7 @@ namespace SqlSync.BasicCompare
         {
             get
             {
-                return this._UnifiedDiff.ToString();
+                return _UnifiedDiff.ToString();
             }
         }
 
@@ -257,12 +255,12 @@ namespace SqlSync.BasicCompare
         {
             get
             {
-                return this._UnifiedDiff;
+                return _UnifiedDiff;
             }
             set
             {
-                this._UnifiedDiff = value;
-                this._validationDict["UnifiedDiff"] = true;
+                _UnifiedDiff = value;
+                _validationDict["UnifiedDiff"] = true;
             }
         }
     }

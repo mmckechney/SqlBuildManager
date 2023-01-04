@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+﻿using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using SqlSync.MRU;
 using SqlSync.SqlBuild.AdHocQuery;
 using SqlSync.SqlBuild.Status;
-using SqlSync.MRU;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using SqlSync.Controls;
 using System.Text.RegularExpressions;
-using SqlSync.Connection;
-using Microsoft.Extensions.Logging;
+using System.Windows.Forms;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class AdHocQueryExecution : SqlSync.SqlBuild.MultiDb.StatusReportForm, IMRUClient
@@ -23,7 +19,7 @@ namespace SqlSync.SqlBuild.MultiDb
         string query = string.Empty;
         //List<QueryResultData> rawReportData;
         int timeOut = 20;
-  
+
         public AdHocQueryExecution(MultiDb.MultiDbData multiDbData, ConnectionData connData)
             : base(multiDbData, connData)
         {
@@ -34,26 +30,26 @@ namespace SqlSync.SqlBuild.MultiDb
             base.ddOutputType.Items.Add("HTML");
             base.ddOutputType.Items.Add("XML");
             base.ddOutputType.SelectedIndex = 0;
-            base.btnGenerate.Click -= new EventHandler(this.btnGenerate_Click);
-            this.btnGenerate.Click -= new EventHandler(this.btnGenerate_Click_1);
+            base.btnGenerate.Click -= new EventHandler(btnGenerate_Click);
+            btnGenerate.Click -= new EventHandler(btnGenerate_Click_1);
 
             //Get this form's click handler to fire first...
-            this.btnGenerate.Click += new EventHandler(this.btnGenerate_Click_1);
+            btnGenerate.Click += new EventHandler(btnGenerate_Click_1);
             //base.btnGenerate.Click += new EventHandler(this.btnGenerate_Click);
         }
 
         protected override void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             KeyValuePair<ReportType, string> args = (KeyValuePair<ReportType, string>)e.Argument;
-            this.collector = new QueryCollector(this.multiDbData, this.connData);
+            collector = new QueryCollector(multiDbData, connData);
             //this.rawReportData = 
             try
             {
-                collector.GetQueryResults(ref this.bgWorker, args.Value, args.Key, this.query, this.timeOut);
+                collector.GetQueryResults(ref bgWorker, args.Value, args.Key, query, timeOut);
                 bgWorker.ReportProgress(0, "Generating report output");
                 e.Result = true; // rawReportData;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 e.Result = exe;
             }
@@ -82,9 +78,9 @@ namespace SqlSync.SqlBuild.MultiDb
 
             base.buildDuration = 0;
             base.timer1.Start();
-            this.query = this.rtbSqlScript.Text;
-            if (!int.TryParse(this.txtTimeout.Text, out this.timeOut))
-                this.timeOut = 20;
+            query = rtbSqlScript.Text;
+            if (!int.TryParse(txtTimeout.Text, out timeOut))
+                timeOut = 20;
 
             base.btnGenerate_Click(sender, e);
 
@@ -95,13 +91,13 @@ namespace SqlSync.SqlBuild.MultiDb
         /// </summary>
         private void InitMRU()
         {
-            this.mruManager = new MRUManager();
-            this.mruManager.Initialize(
+            mruManager = new MRUManager();
+            mruManager.Initialize(
                 this,                              // owner form
                 actionToolStripMenuItem,
                 recentFilesToolStripMenuItem,                        // Recent Files menu item
                 @"Software\Michael McKechney\Sql Sync\AdHoc Query"); // Registry path to keep MRU list
-            this.mruManager.MaxDisplayNameLength = 40;
+            mruManager.MaxDisplayNameLength = 40;
         }
 
         #region IMRUClient Members
@@ -125,8 +121,8 @@ namespace SqlSync.SqlBuild.MultiDb
         }
         private void LoadSqlScript(string fileName)
         {
-            this.rtbSqlScript.Text = File.ReadAllText(fileName);
-            this.mruManager.Add(fileName);
+            rtbSqlScript.Text = File.ReadAllText(fileName);
+            mruManager.Add(fileName);
 
         }
 
@@ -135,14 +131,14 @@ namespace SqlSync.SqlBuild.MultiDb
             if (DialogResult.OK == saveFileDialog1.ShowDialog())
             {
                 File.WriteAllText(saveFileDialog1.FileName, rtbSqlScript.Text);
-                this.mruManager.Add(saveFileDialog1.FileName);
+                mruManager.Add(saveFileDialog1.FileName);
 
             }
         }
 
         private void AdHocQueryExecution_Load(object sender, EventArgs e)
         {
-            this.InitMRU();
+            InitMRU();
 
         }
 
@@ -166,13 +162,13 @@ namespace SqlSync.SqlBuild.MultiDb
 
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
-            if( (e.KeyValue < (int) Keys.D0 || e.KeyValue > (int) Keys.D9) &&
-                (e.KeyValue < (int) Keys.NumPad0 || e.KeyValue > (int) Keys.NumPad9))
+            if ((e.KeyValue < (int)Keys.D0 || e.KeyValue > (int)Keys.D9) &&
+                (e.KeyValue < (int)Keys.NumPad0 || e.KeyValue > (int)Keys.NumPad9))
             {
-                if(e.KeyCode != Keys.Back && e.KeyCode != Keys.Delete)
+                if (e.KeyCode != Keys.Back && e.KeyCode != Keys.Delete)
                     e.SuppressKeyPress = true;
             }
-           
+
         }
     }
 }

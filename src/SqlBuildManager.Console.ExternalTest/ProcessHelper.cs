@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace SqlBuildManager.Console.ExternalTest
@@ -45,19 +43,19 @@ namespace SqlBuildManager.Console.ExternalTest
 
         public int ExecuteProcess(string processName)
         {
-            return this.ExecuteProcess(processName, string.Empty);
+            return ExecuteProcess(processName, string.Empty);
         }
         public int ExecuteProcess(string processName, string arguments)
         {
-            this.startTime = DateTime.Now;
-            this.prc = new System.Diagnostics.Process();
-            this.prc.StartInfo.FileName = processName;
-            this.prc.StartInfo.Arguments = arguments;
-            this.prc.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            this.prc.StartInfo.CreateNoWindow = true;
-            this.prc.StartInfo.UseShellExecute = false;
-            this.prc.StartInfo.RedirectStandardOutput = true;
-            this.prc.StartInfo.RedirectStandardError = true;
+            startTime = DateTime.Now;
+            prc = new System.Diagnostics.Process();
+            prc.StartInfo.FileName = processName;
+            prc.StartInfo.Arguments = arguments;
+            prc.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            prc.StartInfo.CreateNoWindow = true;
+            prc.StartInfo.UseShellExecute = false;
+            prc.StartInfo.RedirectStandardOutput = true;
+            prc.StartInfo.RedirectStandardError = true;
             prc.Start();
             Thread THRoutput = new Thread(new ThreadStart(StdOutReader));
             Thread THRerror = new Thread(new ThreadStart(StdErrorReader));
@@ -66,14 +64,14 @@ namespace SqlBuildManager.Console.ExternalTest
             THRoutput.Start();
             THRerror.Start();
 
-            this.prc.WaitForExit();
+            prc.WaitForExit();
 
             THRoutput.Join(new TimeSpan(0, 3, 0));
             THRerror.Join(new TimeSpan(0, 3, 0));
 
-            this.endTime = DateTime.Now;
+            endTime = DateTime.Now;
 
-            return this.prc.ExitCode;
+            return prc.ExitCode;
 
         }
 
@@ -82,32 +80,32 @@ namespace SqlBuildManager.Console.ExternalTest
         {
             try
             {
-                this.output = "";
-                string stdOutput = this.prc.StandardOutput.ReadToEnd();
+                output = "";
+                string stdOutput = prc.StandardOutput.ReadToEnd();
                 lock (this)
                 {
-                    this.output = stdOutput;
+                    output = stdOutput;
                 }
             }
             catch (Exception e)
             {
-                this.output += e.ToString();
+                output += e.ToString();
             }
         }
         private void StdErrorReader()
         {
             try
             {
-                this.error = "";
-                string stdError = this.prc.StandardError.ReadToEnd();
+                error = "";
+                string stdError = prc.StandardError.ReadToEnd();
                 lock (this)
                 {
-                    this.error = stdError;
+                    error = stdError;
                 }
             }
             catch (Exception e)
             {
-                this.error += e.ToString();
+                error += e.ToString();
             }
         }
 

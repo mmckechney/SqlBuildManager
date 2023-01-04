@@ -1,6 +1,5 @@
 namespace Algorithm.Diff
 {
-    using System;
     using System.Collections;
     using System.IO;
 
@@ -21,7 +20,7 @@ namespace Algorithm.Diff
                     list.Add(text);
                 }
             }
-            return (string[]) list.ToArray(typeof(string));
+            return (string[])list.ToArray(typeof(string));
         }
 
         private static void WriteBlock(TextWriter writer, char prefix, Algorithm.Diff.Range items)
@@ -99,7 +98,7 @@ namespace Algorithm.Diff
                 Algorithm.Diff.Diff.Hunk hunk2 = null;
                 if (hunks.Count > 0)
                 {
-                    hunk2 = (Algorithm.Diff.Diff.Hunk) hunks[hunks.Count - 1];
+                    hunk2 = (Algorithm.Diff.Diff.Hunk)hunks[hunks.Count - 1];
                 }
                 if (hunk.Same)
                 {
@@ -136,7 +135,7 @@ namespace Algorithm.Diff
                 }
                 hunks.Add(hunk);
             }
-            if ((hunks.Count > 0) && ((hunks.Count != 1) || !((Algorithm.Diff.Diff.Hunk) hunks[0]).Same))
+            if ((hunks.Count > 0) && ((hunks.Count != 1) || !((Algorithm.Diff.Diff.Hunk)hunks[0]).Same))
             {
                 WriteUnifiedDiffSection(writer, hunks);
             }
@@ -155,16 +154,16 @@ namespace Algorithm.Diff
 
         private static void WriteUnifiedDiffSection(TextWriter writer, ArrayList hunks)
         {
-            Algorithm.Diff.Diff.Hunk hunk = (Algorithm.Diff.Diff.Hunk) hunks[0];
-            Algorithm.Diff.Diff.Hunk hunk2 = (Algorithm.Diff.Diff.Hunk) hunks[hunks.Count - 1];
+            Algorithm.Diff.Diff.Hunk hunk = (Algorithm.Diff.Diff.Hunk)hunks[0];
+            Algorithm.Diff.Diff.Hunk hunk2 = (Algorithm.Diff.Diff.Hunk)hunks[hunks.Count - 1];
             writer.Write("@@ -");
-            writer.Write((int) (hunk.Left.Start + 1));
+            writer.Write((int)(hunk.Left.Start + 1));
             writer.Write(",");
-            writer.Write((int) ((hunk2.Left.End - hunk.Left.Start) + 1));
+            writer.Write((int)((hunk2.Left.End - hunk.Left.Start) + 1));
             writer.Write(" +");
-            writer.Write((int) (hunk.Right.Start + 1));
+            writer.Write((int)(hunk.Right.Start + 1));
             writer.Write(",");
-            writer.Write((int) ((hunk2.Right.End - hunk.Right.Start) + 1));
+            writer.Write((int)((hunk2.Right.End - hunk.Right.Start) + 1));
             writer.WriteLine(" @@");
             foreach (Algorithm.Diff.Diff.Hunk hunk3 in hunks)
             {

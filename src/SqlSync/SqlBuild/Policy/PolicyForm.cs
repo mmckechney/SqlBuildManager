@@ -1,13 +1,10 @@
-﻿using System;
+﻿using SqlBuildManager.Enterprise.Policy;
+using SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using SqlBuildManager.Enterprise.Policy;
-using SqlBuildManager.Interfaces.ScriptHandling.Policy;
 using System.IO;
+using System.Windows.Forms;
 namespace SqlSync.SqlBuild.Policy
 {
     public partial class PolicyForm : Form
@@ -26,10 +23,10 @@ namespace SqlSync.SqlBuild.Policy
         {
 
 
-            if (this.buildData == null || this.buildData.Script == null)
+            if (buildData == null || buildData.Script == null)
             {
                 MessageBox.Show("You need to have an open build project prior to running policy checks", "Project needed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                this.Close();
+                Close();
             }
 
             List<IScriptPolicy> lstPol = PolicyHelper.GetPolicies();
@@ -49,10 +46,10 @@ namespace SqlSync.SqlBuild.Policy
 
         private void button1_Click(object sender, EventArgs e)
         {
-            this.lstResults.Items.Clear();
+            lstResults.Items.Clear();
 
             List<IScriptPolicy> selectedPolices = new List<IScriptPolicy>();
-            for(int i=0;i<lstPolicies.CheckedItems.Count;i++)
+            for (int i = 0; i < lstPolicies.CheckedItems.Count; i++)
                 selectedPolices.Add((IScriptPolicy)lstPolicies.CheckedItems[i].Tag);
 
             statGeneral.Text = "Checking scripts for policy compliance...";
@@ -69,22 +66,22 @@ namespace SqlSync.SqlBuild.Policy
 
         private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            if( !(sender is BackgroundWorker))
+            if (!(sender is BackgroundWorker))
                 return;
 
             BackgroundWorker bg = (BackgroundWorker)sender;
-            if(!(e.Argument is List<IScriptPolicy>))
+            if (!(e.Argument is List<IScriptPolicy>))
             {
-                bg.ReportProgress(0,"Error running. Policies not selected");
+                bg.ReportProgress(0, "Error running. Policies not selected");
                 return;
             }
             List<IScriptPolicy> selectedPolices = (List<IScriptPolicy>)e.Argument;
 
             string message, fileName, script, targetDatabase;
             bool passed;
-            foreach (SqlSyncBuildData.ScriptRow row in this.buildData.Script)
+            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
             {
-                fileName = Path.Combine(this.projectFilePath , row.FileName);
+                fileName = Path.Combine(projectFilePath, row.FileName);
                 if (File.Exists(fileName))
                 {
                     script = File.ReadAllText(fileName);
@@ -98,13 +95,13 @@ namespace SqlSync.SqlBuild.Policy
                             ((CommentHeaderPolicy)selectedPolices[i]).DayThreshold = 40;
 
                         Violation tmp = PolicyHelper.ValidateScriptAgainstPolicy(script, targetDatabase, selectedPolices[i]);
-                        
+
                         if (tmp == null)
                             passed = true;
                         else
                             message = tmp.Message;
 
-                        PolicyMessage msg = new PolicyMessage(row.FileName, selectedPolices[i].ShortDescription, passed, message,row);
+                        PolicyMessage msg = new PolicyMessage(row.FileName, selectedPolices[i].ShortDescription, passed, message, row);
                         bg.ReportProgress(0, msg);
                     }
                 }
@@ -119,9 +116,9 @@ namespace SqlSync.SqlBuild.Policy
 
                 string changeDate = (msg.ScriptRow.DateModified == DateTime.MinValue) ? msg.ScriptRow.DateAdded.ToString() : msg.ScriptRow.DateModified.ToString();
 
-                ListViewItem item = new ListViewItem(new string[] { msg.ScriptName,changeDate, msg.PolicyType, msg.Passed.ToString(), msg.Message });
+                ListViewItem item = new ListViewItem(new string[] { msg.ScriptName, changeDate, msg.PolicyType, msg.Passed.ToString(), msg.Message });
                 item.Tag = msg.ScriptRow;
-                lstResults.Items.Insert(0,item);
+                lstResults.Items.Insert(0, item);
             }
         }
 
@@ -136,18 +133,18 @@ namespace SqlSync.SqlBuild.Policy
 
         private class PolicyMessage
         {
-            public readonly string ScriptName; 
+            public readonly string ScriptName;
             public readonly string PolicyType;
             public readonly bool Passed;
             public readonly string Message;
             public readonly SqlSyncBuildData.ScriptRow ScriptRow;
             public PolicyMessage(string scriptName, string policyType, bool passed, string message, SqlSyncBuildData.ScriptRow scriptRow)
             {
-                this.ScriptName = scriptName;
-                this.PolicyType = policyType;
-                this.Passed = passed;
-                this.Message = message;
-                this.ScriptRow = scriptRow;
+                ScriptName = scriptName;
+                PolicyType = policyType;
+                Passed = passed;
+                Message = message;
+                ScriptRow = scriptRow;
             }
         }
 
@@ -156,8 +153,8 @@ namespace SqlSync.SqlBuild.Policy
             if (lstResults.SelectedItems.Count == 0)
                 return;
 
-            if(this.ScriptSelected != null)
-                this.ScriptSelected(this,new ScriptSelectedEventArgs((SqlSyncBuildData.ScriptRow)lstResults.SelectedItems[0].Tag));
+            if (ScriptSelected != null)
+                ScriptSelected(this, new ScriptSelectedEventArgs((SqlSyncBuildData.ScriptRow)lstResults.SelectedItems[0].Tag));
         }
 
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
@@ -170,7 +167,7 @@ namespace SqlSync.SqlBuild.Policy
         public SqlSyncBuildData.ScriptRow SelectedRow = null;
         public ScriptSelectedEventArgs(SqlSyncBuildData.ScriptRow selectedRow)
         {
-            this.SelectedRow = selectedRow;
+            SelectedRow = selectedRow;
         }
     }
 }

@@ -1,14 +1,12 @@
-using System;
-
 namespace SqlSync.TableScript
 {
-	/// <summary>
-	/// Summary description for ScriptTemplates.
-	/// </summary>
-	public class ScriptTemplates
-	{
+    /// <summary>
+    /// Summary description for ScriptTemplates.
+    /// </summary>
+    public class ScriptTemplates
+    {
 
-		public const string ADD_UPDATE_ID_COLUMN =
+        public const string ADD_UPDATE_ID_COLUMN =
 @"
 IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.Columns WHERE TABLE_NAME = '<<tableName>>' AND TABLE_SCHEMA = '<<schema>>' AND COLUMN_NAME = '<<columnName>>')
 BEGIN
@@ -48,7 +46,7 @@ GO
 ALTER TABLE [<<schema>>].[<<tableName>>] ALTER COLUMN [<<columnName>>] varchar(50) NOT NULL
 GO";
 
-		public const string ADD_UPDATE_DATE_COLUMN =
+        public const string ADD_UPDATE_DATE_COLUMN =
 @"
 IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.Columns WHERE TABLE_NAME = '<<tableName>>' AND TABLE_SCHEMA = '<<schema>>' AND COLUMN_NAME = '<<columnName>>')
 BEGIN
@@ -88,7 +86,7 @@ GO
 ALTER TABLE [<<schema>>].[<<tableName>>] ALTER COLUMN [<<columnName>>] datetime NOT NULL
 GO";
 
-		public const string DropExistingDefaultConstraint =
+        public const string DropExistingDefaultConstraint =
 @"
 DECLARE @Name varchar(255)
 DECLARE @sql nvarchar(500)
@@ -103,6 +101,6 @@ GO
 ALTER TABLE [<<schema>>].[<<tableName>>] ADD CONSTRAINT [DF_<<tableName>>_<<columnName>>] DEFAULT <<defaultValue>> FOR [<<columnName>>]
 GO
 ";
-	}
+    }
 
 }

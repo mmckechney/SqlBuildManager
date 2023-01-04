@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 namespace SqlBuildManager.Enterprise
 {
-    public partial class EnterpriseConfiguration 
+    public partial class EnterpriseConfiguration
     {
     }
 

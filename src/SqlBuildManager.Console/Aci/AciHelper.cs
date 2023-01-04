@@ -33,13 +33,13 @@ namespace SqlBuildManager.Console.Aci
                 credsTemplate = credsTemplate.Replace("{{registryServer}}", cmdLine.ContainerRegistryArgs.RegistryServer);
                 credsTemplate = credsTemplate.Replace("{{registryPassword}}", cmdLine.ContainerRegistryArgs.RegistryPassword);
                 credsTemplate = credsTemplate.Replace("{{registryUserName}}", cmdLine.ContainerRegistryArgs.RegistryUserName);
-}
+            }
             template = template.Replace("\"{{registryCredentials}}\"", credsTemplate);
 
             string containerTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "container_template.json"));
             List<string> containers = new List<string>();
             int padding = cmdLine.AciArgs.ContainerCount.ToString().Length;
-            for(int i=0;i<cmdLine.AciArgs.ContainerCount;i++)
+            for (int i = 0; i < cmdLine.AciArgs.ContainerCount; i++)
             {
                 var tmpContainer = containerTemplate.Replace("{{counter}}", i.ToString().PadLeft(padding, '0'));
                 tmpContainer = tmpContainer.Replace("{{tag}}", cmdLine.ContainerRegistryArgs.ImageTag);
@@ -88,7 +88,7 @@ namespace SqlBuildManager.Console.Aci
             {
                 if (await ShouldDeleteExistingInstance(templateFileName, subscriptionId, resourceGroupName, aciName))
                 {
-                    await DeleteAciInstance(subscriptionId,resourceGroupName,aciName);
+                    await DeleteAciInstance(subscriptionId, resourceGroupName, aciName);
                 }
                 var rgName = resourceGroupName;
                 var deploymentName = jobName;
@@ -106,7 +106,7 @@ namespace SqlBuildManager.Console.Aci
                 log.LogInformation("Completed ACI deployment");
                 return success;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 log.LogError($"Unable to deploy ACI instance: {ex.Message}");
                 return false;
@@ -127,9 +127,9 @@ namespace SqlBuildManager.Console.Aci
 
                 return !(containerCount == templateContainerCount && memory == templateMemory && cpu == templateCpu);
             }
-            catch(Azure.RequestFailedException rexe)
+            catch (Azure.RequestFailedException rexe)
             {
-                if(rexe.Status == 404)
+                if (rexe.Status == 404)
                 {
                     return false;
                 }
@@ -139,9 +139,9 @@ namespace SqlBuildManager.Console.Aci
                     return true;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                
+
                 log.LogError(ex.Message);
                 return true;
             }
@@ -154,9 +154,9 @@ namespace SqlBuildManager.Console.Aci
                 log.LogInformation("Removing any pre-existing ACI deployment");
                 var success = await ArmHelper.DeleteResource(subscriptionId, resourceGroupName, aciName);
                 log.LogInformation("Pre-existing ACI deployment removed");
-                return success; 
+                return success;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError($"Unable to remove existing ACI instance: {exe.Message}");
                 return false;
@@ -173,7 +173,7 @@ namespace SqlBuildManager.Console.Aci
             return status == containerCount;
         }
 
-        internal static async Task<(int,double, int)> GetAciCountMemoryAndCpu(string subscriptionId, string resourceGroupName, string aciName)
+        internal static async Task<(int, double, int)> GetAciCountMemoryAndCpu(string subscriptionId, string resourceGroupName, string aciName)
         {
             var aciResult = await GetAciInstanceData(subscriptionId, resourceGroupName, aciName);
             var containerCount = aciResult.Properties.Containers.Count;

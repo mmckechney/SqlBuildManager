@@ -137,7 +137,7 @@ namespace SqlBuildManager.Console.CommandLine
                             }
                             break;
                         case "TenantId":
-                            if(toStringType != StringType.Batch)
+                            if (toStringType != StringType.Batch)
                             {
                                 args.AddRange(new string[] { "--tenantid", property.GetValue(obj).ToString().Quoted() });
                             }
@@ -203,7 +203,7 @@ namespace SqlBuildManager.Console.CommandLine
 
         public static void AddRange(this Command cmd, List<Option> options)
         {
-            foreach(var opt in options)
+            foreach (var opt in options)
             {
                 cmd.Add(opt);
             }

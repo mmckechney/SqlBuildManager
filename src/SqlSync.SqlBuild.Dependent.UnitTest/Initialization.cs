@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SqlSync.Connection;
-using System.IO;
-using System.Data.SqlClient;
-using System.Data;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlSync.Connection;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using Microsoft.Extensions.Logging;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     public class Initialization : IDisposable
@@ -64,17 +62,17 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             if (!CreateDatabases())
                 Assert.Fail(String.Format("Unable to create the target databases. {0}", Initialization.MissingDatabaseErrorMessage));
-            if(!CreateTestTables())
+            if (!CreateTestTables())
                 Assert.Fail("Unable to create the target tables");
             if (!CreateSqlBuildLoggingTables())
                 Assert.Fail("Unable to create the SqlBuild_Logging tables");
 
-            if(!CleanTestTables())
+            if (!CleanTestTables())
             {
                 Assert.Fail("Unable to clean pre-existing data from the target tables");
             }
 
-            if(!CleanSqlBuildLoggingTables())
+            if (!CleanSqlBuildLoggingTables())
             {
                 Assert.Fail("Unable to clean pre-existing data from the SqlBuild_Logging tables");
             }
@@ -85,17 +83,17 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         public void Dispose()
         {
-            for (int i = 0; i < this.tempFiles.Count; i++)
+            for (int i = 0; i < tempFiles.Count; i++)
             {
-                if (File.Exists(this.tempFiles[i]))
-                    File.Delete(this.tempFiles[i]);
+                if (File.Exists(tempFiles[i]))
+                    File.Delete(tempFiles[i]);
             }
 
-            if (File.Exists(this.projectFileName))
-                File.Delete(this.projectFileName);
+            if (File.Exists(projectFileName))
+                File.Delete(projectFileName);
 
-            if (File.Exists(this.buildHistoryXmlFile))
-                File.Delete(this.buildHistoryXmlFile);
+            if (File.Exists(buildHistoryXmlFile))
+                File.Delete(buildHistoryXmlFile);
         }
 
         public bool CreateDatabases()
@@ -131,7 +129,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 }
                 return true;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError(exe, "Unable to create test databases");
                 return false;
@@ -261,8 +259,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.CausesBuildFailure = true;
             row.Database = testDatabaseNames[0];
             row.DateAdded = testTimeStamp;
-            string fileName = this.GetTrulyUniqueFile();
-            
+            string fileName = GetTrulyUniqueFile();
+
             row.FileName = fileName;
             row.RollBackOnError = true;
             row.StripTransactionText = true;
@@ -285,8 +283,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.CausesBuildFailure = true;
             row.Database = testDatabaseNames[0];
             row.DateAdded = testTimeStamp;
-            string fileName = this.GetTrulyUniqueFile();
-            
+            string fileName = GetTrulyUniqueFile();
+
             row.FileName = fileName;
             row.RollBackOnError = true;
             row.StripTransactionText = true;
@@ -301,7 +299,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
 
         }
-        public void AddFailureScript(ref SqlSyncBuildData data, bool rollBackOnError,bool causeBuildFailure)
+        public void AddFailureScript(ref SqlSyncBuildData data, bool rollBackOnError, bool causeBuildFailure)
         {
             SqlSyncBuildData.ScriptRow row = data.Script.NewScriptRow();
             row.AllowMultipleRuns = true;
@@ -309,8 +307,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.CausesBuildFailure = causeBuildFailure;
             row.Database = testDatabaseNames[0];
             row.DateAdded = testTimeStamp;
-            string fileName = this.GetTrulyUniqueFile();
-            
+            string fileName = GetTrulyUniqueFile();
+
             row.FileName = fileName;
             row.RollBackOnError = rollBackOnError;
             row.StripTransactionText = true;
@@ -333,8 +331,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.CausesBuildFailure = true;
             row.Database = "REALLY_BAD_DATABASE";
             row.DateAdded = testTimeStamp;
-            string fileName = this.GetTrulyUniqueFile();
-            
+            string fileName = GetTrulyUniqueFile();
+
             row.FileName = fileName;
             row.RollBackOnError = true;
             row.StripTransactionText = true;
@@ -357,8 +355,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.CausesBuildFailure = true;
             row.Database = testDatabaseNames[0];
             row.DateAdded = testTimeStamp;
-            string fileName = this.GetTrulyUniqueFile();
-            
+            string fileName = GetTrulyUniqueFile();
+
             row.FileName = fileName;
             row.RollBackOnError = true;
             row.StripTransactionText = true;
@@ -380,8 +378,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.CausesBuildFailure = true;
             row.Database = testDatabaseNames[0];
             row.DateAdded = testTimeStamp;
-            string fileName = this.GetTrulyUniqueFile();
-            
+            string fileName = GetTrulyUniqueFile();
+
             row.FileName = fileName;
             row.RollBackOnError = true;
             row.StripTransactionText = true;
@@ -401,24 +399,24 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         public SqlBuildHelper CreateSqlBuildHelper(SqlSyncBuildData buildData)
         {
-            SqlBuildHelper helper = new SqlBuildHelper(this.connData);
-            return SetSqlBuildHelperValues(helper,  buildData);
+            SqlBuildHelper helper = new SqlBuildHelper(connData);
+            return SetSqlBuildHelperValues(helper, buildData);
         }
         public SqlBuildHelper CreateSqlBuildHelper_NonTransactional(SqlSyncBuildData buildData, bool withScriptLog)
         {
-            SqlBuildHelper helper = new SqlBuildHelper(this.connData, withScriptLog, string.Empty, false);
+            SqlBuildHelper helper = new SqlBuildHelper(connData, withScriptLog, string.Empty, false);
             return SetSqlBuildHelperValues(helper, buildData);
         }
         public SqlBuildHelper CreateSqlBuildHelper_Basic()
         {
-            SqlBuildHelper helper = new SqlBuildHelper(this.connData);
+            SqlBuildHelper helper = new SqlBuildHelper(connData);
             return SetSqlBuildHelperValues(helper, null);
         }
 
         public SqlBuildHelper CreateSqlBuildHelperAccessor(SqlSyncBuildData buildData)
         {
-            SqlBuildHelper target = new SqlBuildHelper(this.connData);
-            
+            SqlBuildHelper target = new SqlBuildHelper(connData);
+
 
             //Set fields
             BackgroundWorker bg = new BackgroundWorker();
@@ -428,19 +426,19 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             target.buildData = buildData;
 
-            string logFile = this.GetTrulyUniqueFile();
-            this.tempFiles.Add(logFile);
+            string logFile = GetTrulyUniqueFile();
+            tempFiles.Add(logFile);
             target.scriptLogFileName = logFile;
 
             SqlSyncBuildData buildHist = CreateSqlSyncSqlBuildDataObject();
             target.buildHistoryData = buildHist;
 
-            this.projectFileName = this.GetTrulyUniqueFile();
-            this.tempFiles.Add(projectFileName);
+            projectFileName = GetTrulyUniqueFile();
+            tempFiles.Add(projectFileName);
             target.projectFileName = projectFileName;
 
-            this.buildHistoryXmlFile = this.GetTrulyUniqueFile();
-            this.tempFiles.Add(buildHistoryXmlFile);
+            buildHistoryXmlFile = GetTrulyUniqueFile();
+            tempFiles.Add(buildHistoryXmlFile);
             target.buildHistoryXmlFile = buildHistoryXmlFile;
 
             return target;
@@ -454,16 +452,16 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             sbh.buildData = buildData;
 
-            string logFile = this.GetTrulyUniqueFile();
+            string logFile = GetTrulyUniqueFile();
             sbh.scriptLogFileName = logFile;
 
             SqlSyncBuildData buildHist = CreateSqlSyncSqlBuildDataObject();
             sbh.buildHistoryData = buildHist;
 
-            this.projectFileName = this.GetTrulyUniqueFile();
+            projectFileName = GetTrulyUniqueFile();
             sbh.projectFileName = projectFileName;
 
-            this.buildHistoryXmlFile = this.GetTrulyUniqueFile();
+            buildHistoryXmlFile = GetTrulyUniqueFile();
             sbh.buildHistoryXmlFile = buildHistoryXmlFile;
             return sbh;
         }
@@ -501,7 +499,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.Database = testDatabaseNames[0];
             row.DateAdded = testTimeStamp;
             row.ScriptTimeOut = scriptTimeout;
-            string fileName = this.GetTrulyUniqueFile();
+            string fileName = GetTrulyUniqueFile();
 
             row.FileName = fileName;
             row.RollBackOnError = true;
@@ -565,31 +563,31 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 BuildFileName = @"C:\temp\UnitTestBuildFile.sbm",
                 BuildType = "Development",
                 ProjectFileName = @"C:\temp\ProjectFile.xml",
-                Server = this.serverName,
+                Server = serverName,
                 StartIndex = 0
             };
-            
+
             runData.IsTransactional = true;
             runData.IsTrial = false;
             runData.TargetDatabaseOverrides = GetDatabaseOverrides();
 
             return runData;
         }
-       
+
         public int GetSqlBuildLoggingRowCountByBuildFileName(int databaseIndex)
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(String.Format(this.connectionString,testDatabaseNames[databaseIndex])))
+                using (SqlConnection conn = new SqlConnection(String.Format(connectionString, testDatabaseNames[databaseIndex])))
                 {
                     SqlCommand cmd = new SqlCommand("SELECT count(*) FROM SqlBuild_Logging WHERE BuildFileName = @BuildFileName", conn);
-                    cmd.Parameters.AddWithValue("@BuildFileName", Path.GetFileName(this.projectFileName));
+                    cmd.Parameters.AddWithValue("@BuildFileName", Path.GetFileName(projectFileName));
                     conn.Open();
                     object val = cmd.ExecuteScalar();
                     return (int)val;
                 }
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError(exe, "Unable to get count for build file");
                 return -1;
@@ -600,7 +598,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(String.Format(this.connectionString, testDatabaseNames[databaseIndex])))
+                using (SqlConnection conn = new SqlConnection(String.Format(connectionString, testDatabaseNames[databaseIndex])))
                 {
                     SqlCommand cmd = new SqlCommand("SELECT count(*) FROM SqlBuild_Logging WHERE ScriptId = @ScriptId", conn);
                     cmd.Parameters.AddWithValue("@ScriptId", guidValue);
@@ -619,11 +617,11 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(String.Format(this.connectionString, testDatabaseNames[databaseIndex])))
+                using (SqlConnection conn = new SqlConnection(String.Format(connectionString, testDatabaseNames[databaseIndex])))
                 {
                     SqlCommand cmd = new SqlCommand("SELECT count(*) FROM TransactionTest WHERE [Guid] = @Guid", conn);
-                    cmd.Parameters.AddWithValue("@Guid", this.testGuid);
-                  
+                    cmd.Parameters.AddWithValue("@Guid", testGuid);
+
                     conn.Open();
                     object val = cmd.ExecuteScalar();
                     return (int)val;
@@ -641,7 +639,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.Move(tmpName, newName);
 
 
-            this.tempFiles.Add(newName);
+            tempFiles.Add(newName);
             return newName;
 
         }
@@ -649,7 +647,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         public string GetTableLockingScript()
         {
-            string lockingScript = string.Format(Properties.Resources.TableLockingScript, this.TableLockingLoopCount.ToString());
+            string lockingScript = string.Format(Properties.Resources.TableLockingScript, TableLockingLoopCount.ToString());
             return lockingScript;
         }
 

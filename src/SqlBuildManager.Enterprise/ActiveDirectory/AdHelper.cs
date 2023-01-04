@@ -1,9 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.DirectoryServices;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.ActiveDirectory
 {
     public class AdHelper
@@ -110,7 +108,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.LogError(exe,"Failure to retrived Distinguished Name value. Returning empty string.");
+                log.LogError(exe, "Failure to retrived Distinguished Name value. Returning empty string.");
                 return string.Empty;
             }
 
@@ -138,7 +136,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.LogError(exe,"Failure to retrived Distinguished Name value. Returning empty string.");
+                log.LogError(exe, "Failure to retrived Distinguished Name value. Returning empty string.");
                 return string.Empty;
             }
 

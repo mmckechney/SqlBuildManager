@@ -1,7 +1,5 @@
 namespace SqlSync.BasicCompare
 {
-    using System;
-
     public class Templates
     {
         public const string addLine = "<INS>#line#</INS>";

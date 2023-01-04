@@ -1,11 +1,10 @@
-﻿using SqlSync.SqlBuild.MultiDb;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlSync.SqlBuild.MultiDb;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for MultiDbDataTest and is intended
     ///to contain all MultiDbDataTest Unit Tests
@@ -70,8 +69,8 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void RunAsTrialTest()
         {
-            MultiDbData target = new MultiDbData(); 
-            bool expected = true; 
+            MultiDbData target = new MultiDbData();
+            bool expected = true;
             bool actual;
             target.RunAsTrial = expected;
             actual = target.RunAsTrial;
@@ -116,8 +115,8 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void IsTransactionalTest()
         {
-            MultiDbData target = new MultiDbData(); 
-            bool expected = false; 
+            MultiDbData target = new MultiDbData();
+            bool expected = false;
             bool actual;
             target.IsTransactional = expected;
             actual = target.IsTransactional;
@@ -134,8 +133,8 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void BuildFileNameTest()
         {
-            MultiDbData target = new MultiDbData(); 
-            string expected = "MyNewBuildFileName"; 
+            MultiDbData target = new MultiDbData();
+            string expected = "MyNewBuildFileName";
             string actual;
             target.BuildFileName = expected;
             actual = target.BuildFileName;
@@ -148,7 +147,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public void BuildDataTest()
         {
-            MultiDbData target = new MultiDbData(); 
+            MultiDbData target = new MultiDbData();
             SqlSyncBuildData expected = new SqlSyncBuildData();
             SqlSyncBuildData actual;
             target.BuildData = expected;

@@ -1,15 +1,9 @@
-﻿using System;
+﻿using SqlSync.Connection;
+using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.Text;
-using System.Xml.Serialization;
-using SqlSync.Connection;
-using SqlSync.DbInformation;
 using System.Linq;
-using Microsoft.Build.Framework;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Microsoft.SqlServer.TransactSql.ScriptDom;
+using System.Xml.Serialization;
 
 namespace SqlSync.SqlBuild.MultiDb
 {
@@ -43,7 +37,7 @@ namespace SqlSync.SqlBuild.MultiDb
     }
     public class ServerData
     {
-    
+
         public string ServerName { get; set; } = string.Empty;
         public DbOverrides Overrides { get; set; } = new DbOverrides();
 
@@ -53,11 +47,11 @@ namespace SqlSync.SqlBuild.MultiDb
 
         public bool Equals(ServerData other)
         {
-            if(this.ServerName != other.ServerName)
+            if (ServerName != other.ServerName)
             {
                 return false;
             }
-            return this.Overrides.Equals(other.Overrides);
+            return Overrides.Equals(other.Overrides);
         }
 
     }
@@ -68,13 +62,13 @@ namespace SqlSync.SqlBuild.MultiDb
         public DbOverrides() { }
         public DbOverrides(params DatabaseOverride[] ovr)
         {
-            this.AddRange(ovr);
+            AddRange(ovr);
         }
         public List<QueryRowItem> GetQueryRowData(string defaultDb, string overrideDb)
         {
             try
             {
-                if (this.Count == 0)
+                if (Count == 0)
                     return new List<QueryRowItem>();
 
                 defaultDb = defaultDb.ToLower().Trim();
@@ -112,14 +106,14 @@ namespace SqlSync.SqlBuild.MultiDb
 
         public bool Equals(DbOverrides other)
         {
-            if(this.Count != other.Count)
+            if (Count != other.Count)
             {
                 return false;
             }
-            this.Sort();
+            Sort();
             other.Sort();
-            
-           for(int i=0;i<this.Count;i++)
+
+            for (int i = 0; i < Count; i++)
             {
                 if (this[i].DefaultDbTarget != other[i].DefaultDbTarget)
                 {
@@ -134,7 +128,7 @@ namespace SqlSync.SqlBuild.MultiDb
             return true;
         }
 
-      
+
     }
 
 }

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using System.Text.RegularExpressions;
-using System.Linq;
+﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.ScriptHandling;
-using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class ScriptSyntaxCheckPolicy : p.IScriptPolicyMultiple
@@ -23,7 +22,7 @@ namespace SqlBuildManager.Enterprise.Policy
         public p.ViolationSeverity Severity
         {
             get { return severity; }
-            set { this.severity = value; }
+            set { severity = value; }
         }
         public string ShortDescription
         {
@@ -45,8 +44,8 @@ namespace SqlBuildManager.Enterprise.Policy
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
         {
@@ -54,7 +53,7 @@ namespace SqlBuildManager.Enterprise.Policy
             {
                 message = string.Empty;
                 Dictionary<int, bool> rulesLine = new Dictionary<int, bool>();
-                foreach (p.IScriptPolicyArgument argument in this.arguments)
+                foreach (p.IScriptPolicyArgument argument in arguments)
                 {
                     Regex syntaxCheck = new Regex(argument.Value, RegexOptions.IgnoreCase);
                     MatchCollection syntaxMatches = syntaxCheck.Matches(script);
@@ -102,14 +101,14 @@ namespace SqlBuildManager.Enterprise.Policy
                         lineNumber = 1;
                     else
                         lineNumber = PolicyHelper.GetLineNumber(script, line[0]);
-                    message = this.ErrorMessage.Replace(PolicyHelper.LineNumberToken, lineNumber.ToString());
+                    message = ErrorMessage.Replace(PolicyHelper.LineNumberToken, lineNumber.ToString());
                     return false;
                 }
                 else
                 {
                     return true;
                 }
-            } 
+            }
             catch (Exception exe)
             {
                 message = "Error processing script policy. See application log file for details";
@@ -127,11 +126,11 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get
             {
-                return this.arguments;
+                return arguments;
             }
             set
             {
-                this.arguments = value;
+                arguments = value;
             }
         }
 

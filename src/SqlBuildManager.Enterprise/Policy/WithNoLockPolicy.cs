@@ -1,9 +1,9 @@
-﻿using SqlBuildManager.ScriptHandling;
+﻿using Microsoft.Extensions.Logging;
+using SqlBuildManager.ScriptHandling;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
     public class WithNoLockPolicy : p.IScriptPolicy
@@ -36,8 +36,8 @@ namespace SqlBuildManager.Enterprise.Policy
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
         {
@@ -45,7 +45,7 @@ namespace SqlBuildManager.Enterprise.Policy
             {
                 List<List<string>> tablesMissingNoLock;
                 string start = script;
-                string end = ScriptOptimization.ProcessNoLockOptimization(script, commentBlockMatches,out tablesMissingNoLock);
+                string end = ScriptOptimization.ProcessNoLockOptimization(script, commentBlockMatches, out tablesMissingNoLock);
 
                 if (ScriptOptimization.regNoLock.Matches(start).Count == ScriptOptimization.regNoLock.Matches(end).Count)
                 {
@@ -79,8 +79,8 @@ namespace SqlBuildManager.Enterprise.Policy
 
                 }
             }
-            
-            
+
+
             catch (Exception exe)
             {
                 message = "Error processing script policy. See application log file for details"; ;
@@ -105,12 +105,12 @@ namespace SqlBuildManager.Enterprise.Policy
                 {
                     tables += tables + string.Format(format, tbl);
                 }
-                
+
                 tables = tables.Substring(0, tables.Length - 1);
                 Regex regTableNames = new Regex(tables);
 
                 string match = regNoLockException.Match(script).Value;
-               
+
 
                 if (regTableNames.Match(match).Success)
                 {

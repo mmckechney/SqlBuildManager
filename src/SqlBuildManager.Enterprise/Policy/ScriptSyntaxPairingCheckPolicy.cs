@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using System.Text.RegularExpressions;
-using System.Linq;
+﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.ScriptHandling;
-using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class ScriptSyntaxPairingCheckPolicy : p.IScriptPolicyMultiple
@@ -28,7 +26,7 @@ namespace SqlBuildManager.Enterprise.Policy
         public p.ViolationSeverity Severity
         {
             get { return severity; }
-            set { this.severity = value; }
+            set { severity = value; }
         }
         public string ShortDescription
         {
@@ -50,8 +48,8 @@ namespace SqlBuildManager.Enterprise.Policy
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
         {
@@ -66,11 +64,11 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get
             {
-                return this.arguments;
+                return arguments;
             }
             set
             {
-                this.arguments = value;
+                arguments = value;
             }
         }
 
@@ -86,14 +84,14 @@ namespace SqlBuildManager.Enterprise.Policy
                 List<p.IScriptPolicyArgument> childPairRegexList = new List<p.IScriptPolicyArgument>();
                 List<p.IScriptPolicyArgument> childDontPairRegexList = new List<p.IScriptPolicyArgument>();
                 //Parse out the arguments
-                foreach (p.IScriptPolicyArgument argument in this.arguments)
+                foreach (p.IScriptPolicyArgument argument in arguments)
                 {
                     switch (argument.Name)
                     {
                         case parentRegexKey:
                             if (parentRegex.Length > 0)
                             {
-                                log.LogWarning($"The ScriptSyntaxPairingCheckPolicy \"{this.ShortDescription}\" already has a {ScriptSyntaxPairingCheckPolicy.parentRegexKey} value of \"{parentRegex}\". This is being overwritten by a value of \"{argument.Value}\"");
+                                log.LogWarning($"The ScriptSyntaxPairingCheckPolicy \"{ShortDescription}\" already has a {ScriptSyntaxPairingCheckPolicy.parentRegexKey} value of \"{parentRegex}\". This is being overwritten by a value of \"{argument.Value}\"");
                             }
                             parentRegex = argument.Value;
                             break;
@@ -107,7 +105,7 @@ namespace SqlBuildManager.Enterprise.Policy
                             policyTargetDatabase = argument.Value;
                             break;
                         default:
-                            log.LogWarning($"The ScriptSyntaxPairingCheckPolicy \"{this.ShortDescription}\" has an unrecognized argument. Name: {argument.Name}; Value:{argument.Value}");
+                            log.LogWarning($"The ScriptSyntaxPairingCheckPolicy \"{ShortDescription}\" has an unrecognized argument. Name: {argument.Name}; Value:{argument.Value}");
                             break;
                     }
                 }
@@ -115,14 +113,14 @@ namespace SqlBuildManager.Enterprise.Policy
                 //Check to make sure we have some values set
                 if (parentRegex.Length == 0)
                 {
-                    message = String.Format("The ScriptSyntaxPairingCheckPolicy \"{0}\" does not have a {1} argument/value. Unable to process policy.", this.ShortDescription, ScriptSyntaxPairingCheckPolicy.parentRegexKey);
+                    message = String.Format("The ScriptSyntaxPairingCheckPolicy \"{0}\" does not have a {1} argument/value. Unable to process policy.", ShortDescription, ScriptSyntaxPairingCheckPolicy.parentRegexKey);
                     log.LogWarning(message);
                     return true;
                 }
 
                 if (childDontPairRegexList.Count == 0 && childPairRegexList.Count == 0)
                 {
-                    message = String.Format("The ScriptSyntaxPairingCheckPolicy \"{0}\" does not have any {1} or {2} argument/values. Unable to process policy.", this.ShortDescription, ScriptSyntaxPairingCheckPolicy.childPairRegexKey, ScriptSyntaxPairingCheckPolicy.childDontPairRegexKey);
+                    message = String.Format("The ScriptSyntaxPairingCheckPolicy \"{0}\" does not have any {1} or {2} argument/values. Unable to process policy.", ShortDescription, ScriptSyntaxPairingCheckPolicy.childPairRegexKey, ScriptSyntaxPairingCheckPolicy.childDontPairRegexKey);
                     log.LogWarning(message);
                     return true;
                 }
@@ -222,7 +220,7 @@ namespace SqlBuildManager.Enterprise.Policy
 
                             return false;
                         }
-                     
+
                     }
 
                 }
@@ -233,7 +231,7 @@ namespace SqlBuildManager.Enterprise.Policy
             }
             catch (Exception exe)
             {
-                message = String.Format("Error processing script policy {0}. See application log file for details", this.ShortDescription);
+                message = String.Format("Error processing script policy {0}. See application log file for details", ShortDescription);
                 log.LogError(exe, message);
                 return false;
             }

@@ -32,7 +32,7 @@ namespace SqlSync.SqlBuild
 
             try
             {
-                string tempName = Path.Combine( Path.GetDirectoryName(zipFileName), @"~" + retryCount.ToString() + "~" + Path.GetFileName(zipFileName));
+                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + retryCount.ToString() + "~" + Path.GetFileName(zipFileName));
                 using (ZipArchive newFile = ZipFile.Open(tempName, ZipArchiveMode.Create))
                 {
                     foreach (string file in fullPathFilesToZip)
@@ -40,7 +40,7 @@ namespace SqlSync.SqlBuild
                         if (File.Exists(file) == false)
                             continue;
 
-                        newFile.CreateEntryFromFile(file, Path.GetFileName(file),CompressionLevel.Fastest);
+                        newFile.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Fastest);
 
                     }
                 }
@@ -72,7 +72,7 @@ namespace SqlSync.SqlBuild
             List<string> fullPathFiles = new List<string>();
             foreach (string file in filesToZip)
             {
-                fullPathFiles.Add( Path.Combine(basePath,file));
+                fullPathFiles.Add(Path.Combine(basePath, file));
             }
             return CreateZipPackage(fullPathFiles, zipFileName, keepPathInfo, retryCount);
         }
@@ -119,7 +119,7 @@ namespace SqlSync.SqlBuild
                     foreach (var file in filesToZip)
                     {
                         log.LogDebug($"Adding files '{file}' to package zip file '{filesToZip}'");
-                        modFile.CreateEntryFromFile(file, Path.GetFileName(file),CompressionLevel.Fastest);
+                        modFile.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Fastest);
                     }
 
                 }
@@ -127,7 +127,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
-                log.LogError(exe,"Error adding files to package zip");
+                log.LogError(exe, "Error adding files to package zip");
                 return false;
             }
 

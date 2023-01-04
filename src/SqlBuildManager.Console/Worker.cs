@@ -50,7 +50,7 @@ namespace SqlBuildManager.Console
         {
             Worker.startArgs = startArgs;
             Worker.cmdLine = cmdLine;
-            this.applicationLifetime = appLifetime;
+            applicationLifetime = appLifetime;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -61,7 +61,7 @@ namespace SqlBuildManager.Console
 
             log.LogDebug("Received Command: " + String.Join(" | ", Worker.startArgs.Args));
 
-            this.applicationLifetime.ApplicationStarted.Register(() =>
+            applicationLifetime.ApplicationStarted.Register(() =>
             {
                 Task.Run(async () =>
                 {
@@ -254,8 +254,8 @@ namespace SqlBuildManager.Console
             int retVal;
             string readOnlySas;
             Task monitorTask = null;
-         
-           
+
+
             //Register the monitoring events if designated
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) && monitor)
             {
@@ -267,10 +267,10 @@ namespace SqlBuildManager.Console
                 stream = false;
             }
 
-            Task<(int, string)> batchExeTask = batchExe.StartBatch(stream,unittest);
+            Task<(int, string)> batchExeTask = batchExe.StartBatch(stream, unittest);
             batchExeTask.Wait();
             (retVal, readOnlySas) = batchExeTask.Result;
-            
+
             if (monitorTask != null)
             {
                 monitorTask.Wait(500);
@@ -302,7 +302,7 @@ namespace SqlBuildManager.Console
         private static Task<int> batchMonitorTask = null;
         private static void Batch_MonitorStart(object sender, BatchMonitorEventArgs e)
         {
-            batchMonitorTask  = MonitorServiceBusRuntimeProgress(e.CmdLine, e.Stream,DateTime.UtcNow,  e.UnitTest);
+            batchMonitorTask = MonitorServiceBusRuntimeProgress(e.CmdLine, e.Stream, DateTime.UtcNow, e.UnitTest);
         }
         private static void Batch_MonitorEnd(object sender, EventArgs e)
         {
@@ -354,7 +354,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Downloading the consolidated output file...");
                 try
                 {
-                    if(await StorageManager.DownloadBlobToLocal(readOnlySas, cmdLine.OutputFile.FullName))
+                    if (await StorageManager.DownloadBlobToLocal(readOnlySas, cmdLine.OutputFile.FullName))
                     {
                         log.LogInformation($"Output file copied locally to {cmdLine.OutputFile.FullName}");
                     }
@@ -556,16 +556,16 @@ namespace SqlBuildManager.Console
                         cmdLine.Server = multiData.First().ServerName;
                         overrides = multiData.First().Overrides;
                     }
-                    if(string.IsNullOrWhiteSpace(cmdLine.Database))
+                    if (string.IsNullOrWhiteSpace(cmdLine.Database))
                     {
                         cmdLine.Database = overrides.First().OverrideDbTarget;
                     }
 
-                    if(multiData.Count > 1)
+                    if (multiData.Count > 1)
                     {
                         multiDbData = multiData;
                     }
-             
+
                 }
                 else if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
                 {
@@ -575,7 +575,7 @@ namespace SqlBuildManager.Console
                     var target = ovrRide.Split(':')[1].Split(',')[1];
                     overrides = new List<DatabaseOverride>() { new DatabaseOverride() { DefaultDbTarget = def, OverrideDbTarget = target } };
                 }
-                else if(!string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets))
+                else if (!string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets))
                 {
                     var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
                     var def = ovrRide.Split(':')[1].Split(',')[0];
@@ -583,7 +583,7 @@ namespace SqlBuildManager.Console
                     overrides = new List<DatabaseOverride>() { new DatabaseOverride() { DefaultDbTarget = def, OverrideDbTarget = target } };
                 }
 
-                
+
                 if (string.IsNullOrEmpty(cmdLine.RootLoggingPath))
                 {
                     cmdLine.RootLoggingPath = Directory.GetCurrentDirectory();
@@ -591,7 +591,7 @@ namespace SqlBuildManager.Console
 
                 string projFilePath = "", projectFileName = "";
                 sb.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.BuildFileName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
-                
+
                 bool success = sb.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sb.SqlSyncBuildData buildData, projectFileName, true);
                 if (!success)
                 {
@@ -611,7 +611,7 @@ namespace SqlBuildManager.Console
                     ProjectFileName = projectFileName,
                     BuildFileName = cmdLine.BuildFileName,
                     AllowObjectDelete = cmdLine.AllowObjectDelete,
-                    
+
 
                 };
                 ConnectionData connData = new ConnectionData()
@@ -749,7 +749,7 @@ namespace SqlBuildManager.Console
             ExecutionReturn exeResult;
             if (Enum.TryParse<ExecutionReturn>(retVal.ToString(), out exeResult))
             {
-                switch(exeResult)
+                switch (exeResult)
                 {
                     case ExecutionReturn.Successful:
                         log.LogInformation("Completed Successfully");
@@ -814,7 +814,7 @@ namespace SqlBuildManager.Console
                     }
                 }
 
-                if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+                if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
                 {
                     cmdLine.BatchArgs.OutputContainerSasUrl = CloudStorage.StorageManager.GetContainerRawUrl(cmdLine.ConnectionArgs.StorageAccountName, jobName);
                 }
@@ -822,7 +822,7 @@ namespace SqlBuildManager.Console
                 {
                     cmdLine.BatchArgs.OutputContainerSasUrl = CloudStorage.StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, false);
                 }
-                
+
 
                 if (keepGoing)
                 {
@@ -857,7 +857,7 @@ namespace SqlBuildManager.Console
                 return -2;
             }
 
-            if(!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
                 (bool discard, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             }
@@ -865,7 +865,7 @@ namespace SqlBuildManager.Console
             {
                 (success, cmdLine) = KubernetesManager.ReadOpaqueSecrets(cmdLine);
             }
-      
+
             return await RunGenericContainerQueueWorker(cmdLine);
         }
 
@@ -903,7 +903,7 @@ namespace SqlBuildManager.Console
 
             //set up event handler
             (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
-            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString,cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey,jobName, jobName);
+            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, jobName);
 
             Task eventHubMonitorTask = null;
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
@@ -954,7 +954,7 @@ namespace SqlBuildManager.Console
                 (commit, error, events) = ehandler.GetCommitErrorAndScannedCounts();
                 if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
                 {
-                    
+
                     lines = new List<CursorStatusItem>()
                     {
                         new CursorStatusItem(){Label= "Events Scanned:", Counter = events},
@@ -974,7 +974,7 @@ namespace SqlBuildManager.Console
                 if (unittest) firstLoop = true; //Won't have a console to change position for unit tests
                 SetCursorStatus(lines, firstLoop, stream);
 
-                
+
 
 
                 System.Threading.Thread.Sleep(500);
@@ -995,7 +995,7 @@ namespace SqlBuildManager.Console
                     }
                     else
                     {
-                        if(eventHubMonitorTask != null) 
+                        if (eventHubMonitorTask != null)
                             eventHubMonitorTask.Wait(500);
 
                         break;
@@ -1035,7 +1035,7 @@ namespace SqlBuildManager.Console
 
             await qManager.DeleteSubscription();
 
-         
+
             if (error > 0)
             {
                 return 1;
@@ -1077,11 +1077,11 @@ namespace SqlBuildManager.Console
             }
             if (!first && !stream)
             {
-                System.Console.SetCursorPosition(0, System.Console.CursorTop - (items.Count()-1));
+                System.Console.SetCursorPosition(0, System.Console.CursorTop - (items.Count() - 1));
             }
-            int maxLabel = items.Select(l => l.Label.Length).Max() +2;
+            int maxLabel = items.Select(l => l.Label.Length).Max() + 2;
             StringBuilder sb = new StringBuilder();
-            for(int i=0;i<items.Count;i++)
+            for (int i = 0; i < items.Count; i++)
             {
                 if (!stream)
                 {
@@ -1099,7 +1099,7 @@ namespace SqlBuildManager.Console
             }
             else
             {
-                System.Console.WriteLine(sb.ToString().Substring(0, sb.Length -2));
+                System.Console.WriteLine(sb.ToString().Substring(0, sb.Length - 2));
             }
         }
 
@@ -1117,7 +1117,7 @@ namespace SqlBuildManager.Console
                 AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
             }
             cmdLine.ContainerAppArgs.RunningAsContainerApp = true;
-            
+
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
             if (!Directory.Exists(cmdLine.RootLoggingPath))
@@ -1125,7 +1125,7 @@ namespace SqlBuildManager.Console
                 Directory.CreateDirectory(cmdLine.RootLoggingPath);
             }
             //Set this so that the threaded service bus loop doesn't terminate
-            
+
 
             return await RunGenericContainerQueueWorker(cmdLine);
         }
@@ -1135,13 +1135,13 @@ namespace SqlBuildManager.Console
             FileInfo packageFileInfo = string.IsNullOrWhiteSpace(cmdLine.BuildFileName) ? null : new FileInfo(cmdLine.BuildFileName);
             FileInfo dacpacFileInfo = string.IsNullOrWhiteSpace(cmdLine.DacpacName) ? null : new FileInfo(cmdLine.DacpacName);
             var res = await PrepAndUploadContainerAppBuildPackage(cmdLine, packageFileInfo, dacpacFileInfo, force);
-            if(res != 0)
+            if (res != 0)
             {
                 log.LogError("Failed to upload build package to Blob storage");
                 return 1;
             }
 
-            res =  await EnqueueOverrideTargets(cmdLine);
+            res = await EnqueueOverrideTargets(cmdLine);
             if (res != 0)
             {
                 log.LogError("Failed to enqueue override targets");
@@ -1166,25 +1166,25 @@ namespace SqlBuildManager.Console
             bool initSuccess;
             (initSuccess, cmdLine) = Init(cmdLine);
             var validationErrors = Validation.ValidateContainerAppArgs(cmdLine);
-           
-            if(validationErrors.Count > 0)
+
+            if (validationErrors.Count > 0)
             {
                 validationErrors.ForEach(m => log.LogError(m));
                 return -1;
             }
             int retVal = 0;
             var utcMonitorStart = DateTime.UtcNow;
-            var success =  await ContainerApp.ContainerAppHelper.DeployContainerApp(cmdLine);
+            var success = await ContainerApp.ContainerAppHelper.DeployContainerApp(cmdLine);
             if (!success) retVal = -7;
 
 
             if (success && monitor)
             {
-                retVal = await MonitorContainerAppRuntimeProgress(cmdLine,stream, utcMonitorStart,  unittest);
+                retVal = await MonitorContainerAppRuntimeProgress(cmdLine, stream, utcMonitorStart, unittest);
             }
-            if(deleteWhenDone)
+            if (deleteWhenDone)
             {
-               success =  await ContainerAppHelper.DeleteContainerApp(cmdLine);
+                success = await ContainerAppHelper.DeleteContainerApp(cmdLine);
                 if (!success) retVal = -6;
             }
 
@@ -1200,12 +1200,12 @@ namespace SqlBuildManager.Console
             {
                 cmdLine.BuildFileName = packageName.FullName;
             }
-            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName)) 
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
             {
                 log.LogError("--storageaccountname is required");
                 return -1;
             }
-            if(string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
             {
                 log.LogError("--storageaccountkey is required if a Managed Identity is not included");
                 return -1;
@@ -1245,9 +1245,9 @@ namespace SqlBuildManager.Console
                 return 1;
             }
 
-            var retVal =  await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest, false);
+            var retVal = await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest, false);
             ConsolidateRuntimeLogFiles(cmdLine);
-            
+
             return retVal;
         }
 
@@ -1271,7 +1271,7 @@ namespace SqlBuildManager.Console
                 return -4;
             }
 
-            var retVal =  await MonitorServiceBusRuntimeProgress(cmdLine, stream, DateTime.UtcNow.AddMinutes(-15), unittest);
+            var retVal = await MonitorServiceBusRuntimeProgress(cmdLine, stream, DateTime.UtcNow.AddMinutes(-15), unittest);
             if (consolidateLogs)
             {
                 ConsolidateRuntimeLogFiles(cmdLine);
@@ -1298,7 +1298,7 @@ namespace SqlBuildManager.Console
             {
                 return 1;
             }
-            
+
 
             var val = await DeQueueOverrideTargets(cmdLine);
             return val;
@@ -1348,7 +1348,7 @@ namespace SqlBuildManager.Console
             {
                 cmdLine.KeyVaultName = null;
             }
-           
+
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
 
@@ -1360,7 +1360,7 @@ namespace SqlBuildManager.Console
             {
                 cmdLine = KubernetesManager.SetCmdLineArgsFromSecretsAndConfigmap(cmdLine, secretsFile.Name, runtimeFile.Name);
             }
-            
+
             bool kvSuccess;
             (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             if (!kvSuccess)
@@ -1402,7 +1402,7 @@ namespace SqlBuildManager.Console
                 }
                 if (runtimeFile != null)
                 {
-                  
+
                     string runtimeContents = KubernetesManager.GenerateConfigmapYaml(cmdLine);
                     File.WriteAllText(runtimeFile.FullName, runtimeContents);
                     log.LogInformation($"Updated runtime file '{runtimeFile.FullName}' with job and package name");
@@ -1412,17 +1412,17 @@ namespace SqlBuildManager.Console
 
         }
 
-        private static async Task<(bool,string)> ValidateAndUploadContainerBuildFilesToStorage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo platinumDacpac, bool force)
+        private static async Task<(bool, string)> ValidateAndUploadContainerBuildFilesToStorage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo platinumDacpac, bool force)
         {
             if (packageName == null && platinumDacpac == null)
             {
                 log.LogError("Either a --packagename or --platinumdacpac argument is required");
-                return (false,"");
+                return (false, "");
             }
 
             bool sbmGenerated = false;
             //Need to build the SBM package 
-            if(platinumDacpac != null && packageName == null)
+            if (platinumDacpac != null && packageName == null)
             {
                 if (string.IsNullOrEmpty(cmdLine.MultiDbRunConfigFileName))
                 {
@@ -1431,7 +1431,7 @@ namespace SqlBuildManager.Console
                 }
 
                 var multiData = MultiDbHelper.ImportMultiDbTextConfig(cmdLine.MultiDbRunConfigFileName);
-                if(multiData == null)
+                if (multiData == null)
                 {
                     log.LogError($"Unable to derive database targets from specified --override setting of '{cmdLine.MultiDbRunConfigFileName}' . Please check that the file exists and is properly formatted.");
                     return (false, "");
@@ -1439,12 +1439,12 @@ namespace SqlBuildManager.Console
                 string sbmName;
                 cmdLine.PlatinumDacpac = platinumDacpac.FullName;
                 var stat = Worker.GetSbmFromDacPac(cmdLine, multiData, out sbmName, true);
-                if(stat == sb.DacpacDeltasStatus.Success)
+                if (stat == sb.DacpacDeltasStatus.Success)
                 {
                     if (Path.GetFileNameWithoutExtension(sbmName) != Path.GetFileNameWithoutExtension(platinumDacpac.FullName))
                     {
                         var newSbmName = Path.Combine(Path.GetDirectoryName(platinumDacpac.FullName), Path.GetFileNameWithoutExtension(platinumDacpac.FullName) + ".sbm");
-                        File.Copy(sbmName, newSbmName,true);
+                        File.Copy(sbmName, newSbmName, true);
                         packageName = new FileInfo(newSbmName);
                     }
                     else
@@ -1496,7 +1496,7 @@ namespace SqlBuildManager.Console
                 return (false, "");
             }
 
-            if(sbmGenerated)
+            if (sbmGenerated)
             {
                 log.LogInformation($"An SBM Package file was generated and uploaded with the DACPAC. When running the `deploy` command, please use this argument: --packagename \"{packageName.FullName}\"");
                 return (true, packageName.FullName);
@@ -1504,7 +1504,7 @@ namespace SqlBuildManager.Console
 
             return (true, "");
         }
-        internal static async Task<int> MonitorAciRuntimeProgress(CommandLineArgs cmdLine, FileInfo templateFile, DateTime? utcMonitorStart,  bool unitest, bool stream = false)
+        internal static async Task<int> MonitorAciRuntimeProgress(CommandLineArgs cmdLine, FileInfo templateFile, DateTime? utcMonitorStart, bool unitest, bool stream = false)
         {
             if (templateFile != null)
             {
@@ -1517,9 +1517,9 @@ namespace SqlBuildManager.Console
                 return 1;
             }
 
-            var retVal =  await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest,  true);
+            var retVal = await MonitorServiceBusRuntimeProgress(cmdLine, stream, utcMonitorStart, unitest, true);
             ConsolidateRuntimeLogFiles(cmdLine);
-            
+
             return retVal;
         }
 
@@ -1562,7 +1562,7 @@ namespace SqlBuildManager.Console
             }
             cmdLine.RunningAsContainer = true;
 
-            
+
 
             int seconds = 5;
             log.LogInformation($"Waiting {seconds} for Managed Identity assignment");
@@ -1590,9 +1590,9 @@ namespace SqlBuildManager.Console
         internal static async Task<int> PrepAndUploadAciBuildPackage(CommandLineArgs cmdLine, FileInfo packageName, FileInfo platinumDacpac, FileInfo outputFile, bool force)
         {
             Init(cmdLine);
-            if(packageName != null) cmdLine.BuildFileName = packageName.FullName;
+            if (packageName != null) cmdLine.BuildFileName = packageName.FullName;
             var valErrors = Validation.ValidateAciAppArgs(cmdLine);
-            if(valErrors.Count > 0)
+            if (valErrors.Count > 0)
             {
                 valErrors.ForEach(m => log.LogError(m));
                 return 1;
@@ -1620,7 +1620,7 @@ namespace SqlBuildManager.Console
             {
                 return -1;
             }
-            if(!string.IsNullOrWhiteSpace(sbmName))
+            if (!string.IsNullOrWhiteSpace(sbmName))
             {
                 cmdLine.BuildFileName = sbmName;
             }
@@ -1671,9 +1671,9 @@ namespace SqlBuildManager.Console
 
             while (true)
             {
-                
+
                 (currentCommit, currentError, currentEvents) = ehandler.GetCommitErrorAndScannedCounts();
-                if(currentCommit == lastCommit && currentError == lastError && currentEvents == lastEvents)
+                if (currentCommit == lastCommit && currentError == lastError && currentEvents == lastEvents)
                 {
                     counter++;
                 }
@@ -1684,7 +1684,7 @@ namespace SqlBuildManager.Console
                     lastCommit = currentCommit;
                     lastEvents = currentEvents;
                 }
-                if(counter == 10)
+                if (counter == 10)
                 {
                     break;
                 }
@@ -1707,8 +1707,8 @@ namespace SqlBuildManager.Console
         }
 
         internal static void GetQueueMessageCount(CommandLineArgs cmdLine)
-        { 
-          
+        {
+
         }
 
         internal static void TestAuth(string discard)
@@ -1716,7 +1716,7 @@ namespace SqlBuildManager.Console
             System.Console.WriteLine(KeyVault.KeyVaultHelper.GetSecret("sbm3keyvault", "StorageAccountName"));
         }
 
-        
+
 
         internal static async Task<int> KubernetesRun(CommandLineArgs cmdLine, FileInfo Override, FileInfo packagename, FileInfo platinumdacpac, bool force, bool allowObjectDelete, bool unittest, bool stream, bool cleanupOnFailure)
         {
@@ -1740,7 +1740,7 @@ namespace SqlBuildManager.Console
 
             //Upload 'prep'
             (var retVal, cmdLine) = await UploadKubernetesBuildPackage(cmdLine, null, null, packagename, platinumdacpac, force);
-            if(retVal != 0)
+            if (retVal != 0)
             {
                 log.LogError("There was a problem uploading the build package to Azure storage");
                 return -1;
@@ -1758,7 +1758,7 @@ namespace SqlBuildManager.Console
             }
 
             //Enqueue
-            retVal = await EnqueueContainerOverrideTargets(cmdLine,secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, Override);
+            retVal = await EnqueueContainerOverrideTargets(cmdLine, secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, Override);
             if (retVal != 0)
             {
                 log.LogError("There was a problem enqueuing the database targest to Service Bus");
@@ -1766,7 +1766,7 @@ namespace SqlBuildManager.Console
             }
             //Kubernetes apply
             var success = KubernetesManager.ApplyDeployment(kubernetesFiles);
-            if(!success)
+            if (!success)
             {
                 log.LogError("There was a problem deploying to Kubernetes");
                 log.LogInformation("Attempting to clean up Kubernetes resources...");
@@ -1779,7 +1779,7 @@ namespace SqlBuildManager.Console
             }
             //Monitor pod creation
             log.LogInformation("Checking for successful job start...");
-            
+
             if (!Kubernetes.KubernetesManager.MonitorForPodStart(k8Jobname))
             {
                 log.LogError("Failed to start Kubernetes jobs. Running clean-up");
@@ -1801,7 +1801,7 @@ namespace SqlBuildManager.Console
             ConsolidateRuntimeLogFiles(cmdLine);
             return retVal;
         }
-        internal static async Task<int> SaveKubernetesYamlFiles(CommandLineArgs cmdLine,DirectoryInfo path, string prefix, FileInfo packagename, FileInfo platinumdacpac, bool force)
+        internal static async Task<int> SaveKubernetesYamlFiles(CommandLineArgs cmdLine, DirectoryInfo path, string prefix, FileInfo packagename, FileInfo platinumdacpac, bool force)
         {
             (var x, cmdLine) = Init(cmdLine);
             if (packagename != null)
@@ -2601,23 +2601,23 @@ namespace SqlBuildManager.Console
             var projectFilePath = "";
             string result;
             string dir = directory.FullName;
-            if(!Directory.Exists(dir))
+            if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
-            bool success = SqlSync.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFile(package.FullName, ref dir,ref projectFilePath, ref projectFileName,false, true, out result);
-            if(File.Exists(Path.Combine(dir,projectFileName)))
+            bool success = SqlSync.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFile(package.FullName, ref dir, ref projectFilePath, ref projectFileName, false, true, out result);
+            if (File.Exists(Path.Combine(dir, projectFileName)))
             {
                 var sbmName = Path.GetFileNameWithoutExtension(package.FullName) + ".sbx";
                 File.Move(Path.Combine(dir, projectFileName), Path.Combine(dir, sbmName));
             }
-            if(success)
+            if (success)
             {
                 log.LogInformation($"SBM file extracted to: {Path.GetFullPath(directory.FullName)}");
             }
         }
 
-       
+
 
         internal class StartArgs
         {

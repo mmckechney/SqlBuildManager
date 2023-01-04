@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 namespace SqlBuildManager.Interfaces.ScriptHandling.Policy
 {
@@ -17,7 +15,7 @@ namespace SqlBuildManager.Interfaces.ScriptHandling.Policy
         /// <summary>
         /// Detailed description of the policy
         /// </summary>
-        string LongDescription  { get; }
+        string LongDescription { get; }
         /// <summary>
         /// Executes the policy rule against the input script
         /// </summary>
@@ -34,8 +32,8 @@ namespace SqlBuildManager.Interfaces.ScriptHandling.Policy
         /// Determines how bad the violation is. 
         /// </summary>
         ViolationSeverity Severity { get; set; }
-       
-       
-            
+
+
+
     }
 }

@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlClient;
 using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     [TestClass]
@@ -39,7 +38,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            init.AddScriptForProcessBuild(ref buildData, true,20);
+            init.AddScriptForProcessBuild(ref buildData, true, 20);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunData runData = init.GetSqlBuildRunData_TransactionalNotTrial(buildData);
@@ -54,7 +53,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow actual;
             actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
             Assert.AreEqual(expected, actual.FinalStatus);
-           
+
         }
 
         /// <summary>
@@ -66,7 +65,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            init.AddScriptForProcessBuild(ref buildData, true,20);
+            init.AddScriptForProcessBuild(ref buildData, true, 20);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunData runData = init.GetSqlBuildRunData_TransactionalNotTrial(buildData);
@@ -91,11 +90,11 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             init.TableLockingLoopCount = 10000000;
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            init.AddScriptForProcessBuild(ref buildData, true,1);
+            init.AddScriptForProcessBuild(ref buildData, true, 1);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunData runData = init.GetSqlBuildRunData_TransactionalNotTrial(buildData);
-           
+
             BackgroundWorker bgWorker = init.GetBackgroundWorker();
             DoWorkEventArgs e = new DoWorkEventArgs(null);
             string serverName = init.serverName;
@@ -198,15 +197,15 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
 
-        private void StartInfiniteLockingThread( object initObj)
+        private void StartInfiniteLockingThread(object initObj)
         {
             Initialization init = (Initialization)initObj;
-            string connStr = string.Format(init.connectionString,init.testDatabaseNames[0]);
+            string connStr = string.Format(init.connectionString, init.testDatabaseNames[0]);
             SqlConnection conn = new SqlConnection(connStr);
             SqlCommand cmd = new SqlCommand(init.GetTableLockingScript(), conn);
             conn.Open();
             cmd.ExecuteNonQuery();
         }
-        
+
     }
 }

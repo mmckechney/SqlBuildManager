@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using SqlSync.ObjectScript;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using SqlSync.Connection;
-using System.IO;
-using SqlSync.ObjectScript;
-using SqlSync.DbInformation;
-using Microsoft.Extensions.Logging;
 namespace SqlSync.SqlBuild
 {
     public partial class BackoutPackageForm : Form
@@ -28,7 +27,7 @@ namespace SqlSync.SqlBuild
         private bool removeNewObjectsFromPackage = true;
         private bool markManualObjectsAsRunOnce = true;
         private bool dropRoutines = true;
-       
+
         private BackoutPackageForm()
         {
             InitializeComponent();
@@ -50,7 +49,7 @@ namespace SqlSync.SqlBuild
 
         private void btnChangeSource_Click(object sender, EventArgs e)
         {
-            if (this.sqlConnect1.Database.Length == 0)
+            if (sqlConnect1.Database.Length == 0)
             {
                 MessageBox.Show("Please select a database first!", "Missing Database", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
@@ -66,19 +65,19 @@ namespace SqlSync.SqlBuild
 
             SetSourceServerAndDatabase(server, database);
 
-            this.pnlSqlConnect.SendToBack();
-            this.pnlSqlConnect.Visible = false;
-         
+            pnlSqlConnect.SendToBack();
+            pnlSqlConnect.Visible = false;
+
 
         }
 
         private void SetSourceServerAndDatabase(string serverName, string databaseName)
         {
-            BackoutPackage.SetBackoutSourceDatabaseAndServer(ref this.initialCanUpdateList, serverName,databaseName);
-           
+            BackoutPackage.SetBackoutSourceDatabaseAndServer(ref initialCanUpdateList, serverName, databaseName);
+
             if (serverName.Length > 0 && databaseName.Length > 0)
             {
-                while (this.bgCheckTargetObjects.IsBusy)
+                while (bgCheckTargetObjects.IsBusy)
                 {
                     Application.DoEvents();
                 }
@@ -91,12 +90,12 @@ namespace SqlSync.SqlBuild
         {
             try
             {
-                
-                SqlBuildFileHelper.GetFileDataForObjectUpdates(ref this.sourceBuildData, this.extractedProjectFile, out initialCanUpdateList, out manualScriptsCanNotUpdate);
+
+                SqlBuildFileHelper.GetFileDataForObjectUpdates(ref sourceBuildData, extractedProjectFile, out initialCanUpdateList, out manualScriptsCanNotUpdate);
 
                 string pleaseSelect = "[Please select a {0} via Action --> Change SQL Server Connection menu]";
-                lblDatabaseSetting.Text = this.connData.DatabaseName;
-                lblServerSetting.Text = this.connData.SQLServerName;
+                lblDatabaseSetting.Text = connData.DatabaseName;
+                lblServerSetting.Text = connData.SQLServerName;
 
                 if (lblDatabaseSetting.Text.Length == 0)
                     lblDatabaseSetting.Text = String.Format(pleaseSelect, "database");
@@ -104,25 +103,25 @@ namespace SqlSync.SqlBuild
                 if (lblServerSetting.Text.Length == 0)
                     lblServerSetting.Text = String.Format(pleaseSelect, "server");
 
-                txtBackoutPackage.Text = BackoutPackage.GetDefaultPackageName(this.sourceSbmFullFileName); 
+                txtBackoutPackage.Text = BackoutPackage.GetDefaultPackageName(sourceSbmFullFileName);
 
-                SetSourceServerAndDatabase(this.connData.SQLServerName, this.connData.DatabaseName);
+                SetSourceServerAndDatabase(connData.SQLServerName, connData.DatabaseName);
 
-                if (this.connData.SQLServerName.Length > 0 && this.connData.DatabaseName.Length > 0 && !this.bgCheckTargetObjects.IsBusy)
-                    bgCheckTargetObjects.RunWorkerAsync(new string[] { this.connData.SQLServerName, this.connData.DatabaseName });
+                if (connData.SQLServerName.Length > 0 && connData.DatabaseName.Length > 0 && !bgCheckTargetObjects.IsBusy)
+                    bgCheckTargetObjects.RunWorkerAsync(new string[] { connData.SQLServerName, connData.DatabaseName });
                 else
-                    BindListViews(this.initialCanUpdateList, this.notPresentOnTarget, this.manualScriptsCanNotUpdate);
+                    BindListViews(initialCanUpdateList, notPresentOnTarget, manualScriptsCanNotUpdate);
 
-               
+
             }
             catch (Exception exe)
             {
                 log.LogError(exe, "Error loading the Backout Package form");
                 MessageBox.Show("Error loading form. Please see log file for details", "Whoops!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                this.bgCheckTargetObjects = null;
-                this.bgMakeBackout = null;
-                this.Close();
+                bgCheckTargetObjects = null;
+                bgMakeBackout = null;
+                Close();
             }
         }
 
@@ -202,14 +201,14 @@ namespace SqlSync.SqlBuild
             else if (sender is ListView)
                 callingListView = (ListView)sender;
 
-            if(callingListView == null || callingListView.SelectedItems.Count == 0)
+            if (callingListView == null || callingListView.SelectedItems.Count == 0)
                 return;
 
             string fileName = callingListView.SelectedItems[0].Text;
 
-            if (File.Exists(Path.Combine(this.extractedPath , fileName)))
+            if (File.Exists(Path.Combine(extractedPath, fileName)))
             {
-                string scriptContents = File.ReadAllText(Path.Combine(this.extractedPath , fileName));
+                string scriptContents = File.ReadAllText(Path.Combine(extractedPath, fileName));
                 ScriptDisplayForm frmDisp = new ScriptDisplayForm(scriptContents, "", fileName, Highlighting.SyntaxHightlightType.Sql);
                 frmDisp.ShowDialog();
             }
@@ -217,9 +216,9 @@ namespace SqlSync.SqlBuild
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.bgCheckTargetObjects = null;
-            this.bgMakeBackout = null;
-            this.Close();
+            bgCheckTargetObjects = null;
+            bgMakeBackout = null;
+            Close();
         }
 
         private void btnCreate_Click(object sender, EventArgs e)
@@ -232,22 +231,22 @@ namespace SqlSync.SqlBuild
                 return;
             }
 
-            this.Cursor = Cursors.WaitCursor;
-            this.statBar.Style = ProgressBarStyle.Marquee;
-            this.btnCreate.Enabled = false;
-            this.removeNewObjectsFromPackage = chkRemoveNewScripts.Checked;
-            this.markManualObjectsAsRunOnce = chkManualAsRunOnce.Checked;
-            this.dropRoutines = chkDropRoutines.Checked;
-            bgMakeBackout.RunWorkerAsync(new List<string>(new string[]{txtBackoutPackage.Text, lblServerSetting.Text, lblDatabaseSetting.Text} ));
-          
+            Cursor = Cursors.WaitCursor;
+            statBar.Style = ProgressBarStyle.Marquee;
+            btnCreate.Enabled = false;
+            removeNewObjectsFromPackage = chkRemoveNewScripts.Checked;
+            markManualObjectsAsRunOnce = chkManualAsRunOnce.Checked;
+            dropRoutines = chkDropRoutines.Checked;
+            bgMakeBackout.RunWorkerAsync(new List<string>(new string[] { txtBackoutPackage.Text, lblServerSetting.Text, lblDatabaseSetting.Text }));
+
         }
 
         #region Creating Backout Package BG worker event handlers
         private void bgMakeBackout_DoWork(object sender, DoWorkEventArgs e)
         {
             List<string> vals = (List<string>)e.Argument;
-            e.Result = BackoutPackage.CreateBackoutPackage(this.connData, this.currentTargetCanUpdateList, this.notPresentOnTarget, this.manualScriptsCanNotUpdate, 
-                this.sourceSbmFullFileName, vals[0], vals[1], vals[2],this.removeNewObjectsFromPackage,this.markManualObjectsAsRunOnce, this.dropRoutines, ref this.bgMakeBackout);
+            e.Result = BackoutPackage.CreateBackoutPackage(connData, currentTargetCanUpdateList, notPresentOnTarget, manualScriptsCanNotUpdate,
+                sourceSbmFullFileName, vals[0], vals[1], vals[2], removeNewObjectsFromPackage, markManualObjectsAsRunOnce, dropRoutines, ref bgMakeBackout);
         }
 
         private void bgMakeBackout_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -258,10 +257,10 @@ namespace SqlSync.SqlBuild
 
         private void bgMakeBackout_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            this.Cursor = Cursors.Default;
-            this.statBar.Style = ProgressBarStyle.Blocks;
-            this.statGeneral.Text = "Ready.";
-            this.btnCreate.Enabled = true;
+            Cursor = Cursors.Default;
+            statBar.Style = ProgressBarStyle.Blocks;
+            statGeneral.Text = "Ready.";
+            btnCreate.Enabled = true;
             if (((bool)e.Result) == true)
             {
                 if (DialogResult.Yes == MessageBox.Show("Backout package was successfully created.\r\nDo you want to open it now?", "Success!", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
@@ -273,7 +272,7 @@ namespace SqlSync.SqlBuild
             }
             else
             {
-                if(File.Exists(txtBackoutPackage.Text))
+                if (File.Exists(txtBackoutPackage.Text))
                     File.Delete(txtBackoutPackage.Text);
 
                 MessageBox.Show("There was an error creating the backout package.\r\nPlease check the log file via the Help --> View Application Log File menu", "Whoops. Something when wrong!", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -282,17 +281,17 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region Checking Target DB Objects BG worker methods and event handlers
-       
+
         private void bgCheckTargetObjects_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker bg = (BackgroundWorker)sender;
 
-            if (bg.WorkerReportsProgress) 
+            if (bg.WorkerReportsProgress)
                 bg.ReportProgress(-1, "Checking new database target for presence of scriptable objects...");
 
             string[] args = (string[])e.Argument;
 
-            this.notPresentOnTarget = BackoutPackage.GetObjectsNotPresentTargetDatabase(this.initialCanUpdateList, this.connData, args[0], args[1]);
+            notPresentOnTarget = BackoutPackage.GetObjectsNotPresentTargetDatabase(initialCanUpdateList, connData, args[0], args[1]);
             if (notPresentOnTarget.Count > 0)
             {
                 var cur = from i in initialCanUpdateList
@@ -301,13 +300,13 @@ namespace SqlSync.SqlBuild
 
                 if (cur.Any())
                     currentTargetCanUpdateList = cur.ToList();
-                else 
+                else
                     currentTargetCanUpdateList.Clear();
             }
             else
             {
                 currentTargetCanUpdateList.Clear();
-                currentTargetCanUpdateList.AddRange(this.initialCanUpdateList);
+                currentTargetCanUpdateList.AddRange(initialCanUpdateList);
             }
 
 
@@ -315,11 +314,11 @@ namespace SqlSync.SqlBuild
 
         private void bgCheckTargetObjects_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            if(statBar.Style != ProgressBarStyle.Marquee)
+            if (statBar.Style != ProgressBarStyle.Marquee)
                 statBar.Style = ProgressBarStyle.Marquee;
-            
-            if(this.Cursor != Cursors.AppStarting)
-                this.Cursor = Cursors.AppStarting;
+
+            if (Cursor != Cursors.AppStarting)
+                Cursor = Cursors.AppStarting;
 
             if (e.UserState is string)
                 statGeneral.Text = e.UserState.ToString();
@@ -327,11 +326,11 @@ namespace SqlSync.SqlBuild
 
         private void bgCheckTargetObjects_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            BindListViews(this.currentTargetCanUpdateList, this.notPresentOnTarget, this.manualScriptsCanNotUpdate);
+            BindListViews(currentTargetCanUpdateList, notPresentOnTarget, manualScriptsCanNotUpdate);
 
             statBar.Style = ProgressBarStyle.Blocks;
             statGeneral.Text = "Ready.";
-            this.Cursor = Cursors.Default;
+            Cursor = Cursors.Default;
         }
         #endregion
 
@@ -360,7 +359,7 @@ namespace SqlSync.SqlBuild
             StringBuilder sbNotFound = new StringBuilder();
             StringBuilder sbManual = new StringBuilder();
 
-            foreach(ListViewItem item in lstObjectNotUpdateable.Items)
+            foreach (ListViewItem item in lstObjectNotUpdateable.Items)
             {
                 if (item.Group.Name == "grpNotUpdatable")
                 {
@@ -379,7 +378,7 @@ namespace SqlSync.SqlBuild
             sb.AppendLine("* Manual Scripts *");
             sb.Append(sbManual.ToString());
             Clipboard.SetText(sb.ToString());
-            
+
         }
 
 

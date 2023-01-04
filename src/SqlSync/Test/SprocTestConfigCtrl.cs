@@ -1,13 +1,10 @@
+using Microsoft.Data.SqlClient;
+using SqlSync.SprocTest;
+using SqlSync.SprocTest.Configuration;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
-using SqlSync.SprocTest.Configuration;
-using SqlSync.SprocTest;
-using Microsoft.Data.SqlClient;
 namespace SqlSync.Test
 {
     public partial class SprocTestConfigCtrl : UserControl
@@ -24,12 +21,14 @@ namespace SqlSync.Test
         }
         private string databaseName = string.Empty;
         public bool DataChanged
-        {            
-            set { dataChanged = value;
-            btnSaveChanges.Enabled = dataChanged;
+        {
+            set
+            {
+                dataChanged = value;
+                btnSaveChanges.Enabled = dataChanged;
+            }
         }
-        }
-       
+
 
         public TestCase TestCase
         {
@@ -37,7 +36,7 @@ namespace SqlSync.Test
             set
             {
                 tCase = value;
-                if(tCase != null)
+                if (tCase != null)
                     BindData();
             }
         }
@@ -45,14 +44,14 @@ namespace SqlSync.Test
         public SprocTestConfigCtrl()
         {
             InitializeComponent();
-            
+
         }
 
         internal void SetTestCaseData(TestCase tCase, SqlParameterCollection derivedParameters, string sprocName, string databaseName)
         {
-            SetTestCaseData(tCase, derivedParameters, sprocName, databaseName,false);
+            SetTestCaseData(tCase, derivedParameters, sprocName, databaseName, false);
         }
-        internal void SetTestCaseData(TestCase tCase, SqlParameterCollection derivedParameters,string sprocName, string databaseName, bool isNew)
+        internal void SetTestCaseData(TestCase tCase, SqlParameterCollection derivedParameters, string sprocName, string databaseName, bool isNew)
         {
             this.isNew = isNew;
             this.tCase = tCase;
@@ -64,13 +63,13 @@ namespace SqlSync.Test
         private void BindData()
         {
 
-            this.grpTestCase.Text = "Test Case Definition for " + this.sprocName;
+            grpTestCase.Text = "Test Case Definition for " + sprocName;
             pnlParameters.Controls.Clear();
             pnlOutput.Controls.Clear();
 
             List<ParameterCtrl> paramCtrls = new List<ParameterCtrl>();
-            this.txtCaseName.Text = this.tCase.Name;
-            this.ddExecutionType.SelectedItem = this.tCase.ExecuteType;
+            txtCaseName.Text = tCase.Name;
+            ddExecutionType.SelectedItem = tCase.ExecuteType;
 
             #region Add Parameter controls
             bool foundMatch;
@@ -82,52 +81,52 @@ namespace SqlSync.Test
                 for (int i = 0; i < derivedParameters.Count; i++)
                 {
                     foundMatch = false;
-                    if (this.tCase.Parameter != null)
-                        for (int j = 0; j < this.tCase.Parameter.Length; j++)
+                    if (tCase.Parameter != null)
+                        for (int j = 0; j < tCase.Parameter.Length; j++)
                         {
-                            if (this.tCase.Parameter[j].Name.ToLower() == this.derivedParameters[i].ParameterName.ToLower())
+                            if (tCase.Parameter[j].Name.ToLower() == derivedParameters[i].ParameterName.ToLower())
                             {
-                                this.tCase.Parameter[j].HasDerivedParameterMatch = true;
-                                ParameterCtrl ctrl = new ParameterCtrl(ref this.tCase.Parameter[j]);
+                                tCase.Parameter[j].HasDerivedParameterMatch = true;
+                                ParameterCtrl ctrl = new ParameterCtrl(ref tCase.Parameter[j]);
                                 ctrl.ParameterStatus = ParameterStatus.Matching;
-                                ctrl.DbType = this.derivedParameters[i].SqlDbType;
-                                ctrl.DbLength = this.derivedParameters[i].Size;
+                                ctrl.DbType = derivedParameters[i].SqlDbType;
+                                ctrl.DbLength = derivedParameters[i].Size;
                                 paramCtrls.Add(ctrl);
                                 foundMatch = true;
                                 break;
-                              // new Int32Converter().ConvertFrom(this.derivedParameters[i].Precision)
+                                // new Int32Converter().ConvertFrom(this.derivedParameters[i].Precision)
                             }
                         }
 
                     if (!foundMatch)
                     {
-                        ParameterCtrl ctrl = new ParameterCtrl(this.derivedParameters[i].ParameterName);
+                        ParameterCtrl ctrl = new ParameterCtrl(derivedParameters[i].ParameterName);
                         ctrl.ParameterStatus = ParameterStatus.NotInTestCase;
-                        ctrl.DbType = this.derivedParameters[i].SqlDbType;
-                        ctrl.DbLength = this.derivedParameters[i].Size;
+                        ctrl.DbType = derivedParameters[i].SqlDbType;
+                        ctrl.DbLength = derivedParameters[i].Size;
                         paramCtrls.Add(ctrl);
                     }
                 }
 
                 //Loop through the test case and add any "extra" parameters.
-                if (this.tCase.Parameter != null)
-                    for (int i = 0; i < this.tCase.Parameter.Length; i++)
+                if (tCase.Parameter != null)
+                    for (int i = 0; i < tCase.Parameter.Length; i++)
                     {
-                        if (!this.tCase.Parameter[i].HasDerivedParameterMatch)
+                        if (!tCase.Parameter[i].HasDerivedParameterMatch)
                         {
-                            ParameterCtrl ctrl = new ParameterCtrl(ref this.tCase.Parameter[i]);
+                            ParameterCtrl ctrl = new ParameterCtrl(ref tCase.Parameter[i]);
                             ctrl.ParameterStatus = ParameterStatus.NotInDatabase;
                             paramCtrls.Add(ctrl);
 
                         }
                     }
             }
-            else if (this.tCase.Parameter != null)
+            else if (tCase.Parameter != null)
             {
                 //If there are no derived parameters...
-                for (int i = 0; i < this.tCase.Parameter.Length; i++)
+                for (int i = 0; i < tCase.Parameter.Length; i++)
                 {
-                    ParameterCtrl ctrl = new ParameterCtrl(ref this.tCase.Parameter[i]);
+                    ParameterCtrl ctrl = new ParameterCtrl(ref tCase.Parameter[i]);
                     ctrl.ParameterStatus = ParameterStatus.NotInDatabase;
                     paramCtrls.Add(ctrl);
                 }
@@ -148,33 +147,33 @@ namespace SqlSync.Test
 
             #endregion
 
-            if (this.tCase.ExpectedResult != null)
+            if (tCase.ExpectedResult != null)
             {
-                if (this.tCase.ExpectedResult.RowCountSpecified)
-                    this.txtRowCount.Text = this.tCase.ExpectedResult.RowCount.ToString();
+                if (tCase.ExpectedResult.RowCountSpecified)
+                    txtRowCount.Text = tCase.ExpectedResult.RowCount.ToString();
                 else
-                    this.txtRowCount.Text = "";
+                    txtRowCount.Text = "";
 
-                if (this.tCase.ExpectedResult.ColumnCountSpecified)
-                    this.txtColumnCount.Text = this.tCase.ExpectedResult.ColumnCount.ToString();
+                if (tCase.ExpectedResult.ColumnCountSpecified)
+                    txtColumnCount.Text = tCase.ExpectedResult.ColumnCount.ToString();
                 else
-                    this.txtColumnCount.Text = "";
+                    txtColumnCount.Text = "";
 
-                if (this.tCase.ExpectedResult.RowCountOperatorSpecified)
-                    this.ddRowCountOperator.SelectedItem = this.tCase.ExpectedResult.RowCountOperator;
+                if (tCase.ExpectedResult.RowCountOperatorSpecified)
+                    ddRowCountOperator.SelectedItem = tCase.ExpectedResult.RowCountOperator;
                 else
-                    this.ddRowCountOperator.SelectedItem = RowCountOperator.EqualTo;
+                    ddRowCountOperator.SelectedItem = RowCountOperator.EqualTo;
 
-                this.ddResultType.SelectedItem = this.tCase.ExpectedResult.ResultType;
-       
+                ddResultType.SelectedItem = tCase.ExpectedResult.ResultType;
+
                 #region Add Output Controls
                 List<OutputResultCtrl> outputCtrls = new List<OutputResultCtrl>();
                 Point outputStart = new Point(3, 3);
-                if (this.tCase.ExpectedResult.OutputResult != null)
+                if (tCase.ExpectedResult.OutputResult != null)
                 {
-                    for (int i = 0; i < this.tCase.ExpectedResult.OutputResult.Length; i++)
+                    for (int i = 0; i < tCase.ExpectedResult.OutputResult.Length; i++)
                     {
-                        OutputResultCtrl ctrl = new OutputResultCtrl(ref this.tCase.ExpectedResult.OutputResult[i]);
+                        OutputResultCtrl ctrl = new OutputResultCtrl(ref tCase.ExpectedResult.OutputResult[i]);
                         outputCtrls.Add(ctrl);
                     }
                 }
@@ -192,21 +191,21 @@ namespace SqlSync.Test
             }
             ddExecutionType_SelectionChangeCommitted(null, EventArgs.Empty);
             ddResultType_SelectionChangeCommitted(null, EventArgs.Empty);
-            this.DataChanged = false;
+            DataChanged = false;
         }
 
         void SprocTestConfigCtrl_RemoveOutputResult(object sender, EventArgs e)
         {
             if (sender is OutputResultCtrl)
             {
-                this.pnlOutput.Controls.Remove(sender as OutputResultCtrl);
-                this.DataChanged = true;
+                pnlOutput.Controls.Remove(sender as OutputResultCtrl);
+                DataChanged = true;
             }
         }
         public TestCase RefreshTestCaseData()
         {
             //Top Level
-            tCase.ExecuteType = (ExecuteType) ddExecutionType.SelectedItem;
+            tCase.ExecuteType = (ExecuteType)ddExecutionType.SelectedItem;
             tCase.ExecuteTypeSpecified = true;
             tCase.Name = txtCaseName.Text;
 
@@ -225,7 +224,7 @@ namespace SqlSync.Test
             }
 
             int colCount;
-            if(int.TryParse(txtColumnCount.Text,out colCount))
+            if (int.TryParse(txtColumnCount.Text, out colCount))
             {
                 tCase.ExpectedResult.ColumnCount = colCount;
                 tCase.ExpectedResult.ColumnCountSpecified = true;
@@ -265,7 +264,7 @@ namespace SqlSync.Test
                 tCase.ModifiedDate = DateTime.Now;
                 tCase.ModifiedDateSpecified = true;
             }
-            
+
             return tCase;
 
         }
@@ -273,29 +272,29 @@ namespace SqlSync.Test
         {
             if (sender is ParameterCtrl)
             {
-                this.pnlParameters.Controls.Remove(sender as ParameterCtrl);
-                this.DataChanged = true;
+                pnlParameters.Controls.Remove(sender as ParameterCtrl);
+                DataChanged = true;
             }
         }
-         private void ChildData_DataChanged(object sender, EventArgs e)
+        private void ChildData_DataChanged(object sender, EventArgs e)
         {
-            this.DataChanged = true;
+            DataChanged = true;
         }
 
 
         private void SprocTestConfigCtrl_Load(object sender, EventArgs e)
         {
-            this.ddExecutionType.DataSource = Enum.GetValues(typeof(SqlSync.SprocTest.Configuration.ExecuteType));
-            this.ddExecutionType.SelectedItem = ExecuteType.ReturnData;
+            ddExecutionType.DataSource = Enum.GetValues(typeof(SqlSync.SprocTest.Configuration.ExecuteType));
+            ddExecutionType.SelectedItem = ExecuteType.ReturnData;
 
-            this.ddRowCountOperator.DataSource = Enum.GetValues(typeof(SqlSync.SprocTest.Configuration.RowCountOperator));
-            this.ddRowCountOperator.SelectedItem = RowCountOperator.EqualTo;
+            ddRowCountOperator.DataSource = Enum.GetValues(typeof(SqlSync.SprocTest.Configuration.RowCountOperator));
+            ddRowCountOperator.SelectedItem = RowCountOperator.EqualTo;
 
-            this.ddResultType.DataSource = Enum.GetValues(typeof(SqlSync.SprocTest.Configuration.ResultType));
-            this.ddResultType.SelectedItem = ResultType.Success;
+            ddResultType.DataSource = Enum.GetValues(typeof(SqlSync.SprocTest.Configuration.ResultType));
+            ddResultType.SelectedItem = ResultType.Success;
 
 
-            this.DataChanged = false;
+            DataChanged = false;
 
         }
 
@@ -309,7 +308,7 @@ namespace SqlSync.Test
             }
             else
                 start = new Point(3, 3);
-            
+
             OutputResultCtrl ctrl = new OutputResultCtrl();
             ctrl.Location = start;
             ctrl.DataChanged += new EventHandler(ChildData_DataChanged);
@@ -326,12 +325,12 @@ namespace SqlSync.Test
                 MessageBox.Show("Please enter a name for this test", "Test Name Required", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
             }
-            if(TestCaseChanged != null)
+            if (TestCaseChanged != null)
             {
                 TestCase tmp = RefreshTestCaseData();
-                TestCaseChanged(this,new TestConfigChangedEventArgs(tmp,this.isNew));
-                this.DataChanged = false;
-                this.isNew = false;
+                TestCaseChanged(this, new TestConfigChangedEventArgs(tmp, isNew));
+                DataChanged = false;
+                isNew = false;
             }
         }
 
@@ -341,13 +340,13 @@ namespace SqlSync.Test
         private void lnkPasteParameters_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             PasteScriptForm frmScript = new PasteScriptForm();
-            if(DialogResult.OK == frmScript.ShowDialog())
+            if (DialogResult.OK == frmScript.ShowDialog())
             {
-                Dictionary<string, string> paramvalues = TestManager.ParseParameterValuesFromScript(this.sprocName, RetrieveParameterNames(), frmScript.ScriptText);
+                Dictionary<string, string> paramvalues = TestManager.ParseParameterValuesFromScript(sprocName, RetrieveParameterNames(), frmScript.ScriptText);
                 foreach (Control ctrl in pnlParameters.Controls)
                 {
                     if (ctrl is ParameterCtrl)
-                    {   
+                    {
                         ParameterCtrl pC = (ParameterCtrl)ctrl;
                         if (paramvalues.ContainsKey(pC.Parameter.Name))
                         {
@@ -391,7 +390,7 @@ namespace SqlSync.Test
         private void lnkGetSqlScript_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             TestCase updatedTC = RefreshTestCaseData();
-            string script = TestManager.GenerateTestSql(this.sprocName, this.databaseName,updatedTC);
+            string script = TestManager.GenerateTestSql(sprocName, databaseName, updatedTC);
             PasteScriptForm frmScript = new PasteScriptForm();
             frmScript.ScriptText = script;
             frmScript.ShowDialog();
@@ -417,7 +416,7 @@ namespace SqlSync.Test
 
             }
 
-           
+
             ChildData_DataChanged(sender, e);
         }
 
@@ -456,7 +455,7 @@ namespace SqlSync.Test
         }
 
 
-        
+
     }
     public delegate void TestCaseChangedEventHandler(object sender, TestConfigChangedEventArgs e);
     public class TestConfigChangedEventArgs : EventArgs
@@ -465,8 +464,8 @@ namespace SqlSync.Test
         public readonly bool IsNew;
         public TestConfigChangedEventArgs(TestCase testCaseConfig, bool isNew)
         {
-            this.TestCaseConfig = testCaseConfig;
-            this.IsNew = isNew;
+            TestCaseConfig = testCaseConfig;
+            IsNew = isNew;
         }
     }
 }

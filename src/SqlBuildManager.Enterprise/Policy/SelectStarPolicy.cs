@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using System.Text.RegularExpressions;
-using System.Linq;
+﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.ScriptHandling;
-using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class SelectStarPolicy : p.IScriptPolicyWithArguments
@@ -23,7 +22,7 @@ namespace SqlBuildManager.Enterprise.Policy
         public p.ViolationSeverity Severity
         {
             get { return severity; }
-            set { this.severity = value; }
+            set { severity = value; }
         }
         public string ShortDescription
         {
@@ -33,7 +32,7 @@ namespace SqlBuildManager.Enterprise.Policy
         public string LongDescription
         {
             get { return "Checks that no queries in the script use \"SELECT *\" but rather explicitly lists columns"; }
-         }
+        }
 
         public string ErrorMessage
         {
@@ -41,13 +40,13 @@ namespace SqlBuildManager.Enterprise.Policy
             {
                 return "A SELECT using \"*\" was found on line " + PolicyHelper.LineNumberToken + ". Please remove this wildcard and use explicit column names";
             }
-          
+
         }
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
         {
@@ -56,7 +55,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 message = string.Empty;
                 Regex selectStar = new Regex(@"(SELECT\s*\*)|(SELECT\s*.*\.\*)", RegexOptions.IgnoreCase | RegexOptions.Compiled); // Finds "SELECT *" and also "SELECT abc.*"
                 List<string> regStrings = new List<string>();
-                var tmpRegStrings = (from a in this.arguments select a.Value);
+                var tmpRegStrings = (from a in arguments select a.Value);
                 if (tmpRegStrings.Count() > 0)
                     regStrings = tmpRegStrings.ToList();
 
@@ -80,7 +79,7 @@ namespace SqlBuildManager.Enterprise.Policy
                         if (exceptionMatches.Count == 0)
                         {
                             int lineNumber = PolicyHelper.GetLineNumber(script, star.Index);
-                            message = this.ErrorMessage.Replace(PolicyHelper.LineNumberToken, lineNumber.ToString());
+                            message = ErrorMessage.Replace(PolicyHelper.LineNumberToken, lineNumber.ToString());
                         }
                         else if (exceptionMatches[0].Index == star.Index)
                         {
@@ -92,7 +91,7 @@ namespace SqlBuildManager.Enterprise.Policy
                     if (!foundException)
                     {
                         int lineNumber = PolicyHelper.GetLineNumber(script, star.Index);
-                        message = this.ErrorMessage.Replace(PolicyHelper.LineNumberToken, lineNumber.ToString());
+                        message = ErrorMessage.Replace(PolicyHelper.LineNumberToken, lineNumber.ToString());
                         return false;
                     }
                 }
@@ -117,11 +116,11 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get
             {
-                return this.arguments;
+                return arguments;
             }
             set
             {
-                this.arguments = value;
+                arguments = value;
             }
         }
 

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace SqlSync.Compare
 {
     public class FileCompareResults
@@ -26,7 +22,7 @@ namespace SqlSync.Compare
             get { return leftScriptText; }
             set { leftScriptText = value; }
         }
-        
+
         string rightSciptText = string.Empty;
         public string RightSciptText
         {
@@ -57,7 +53,7 @@ namespace SqlSync.Compare
 
         string leftScriptTag = string.Empty;
 
- 
+
 
 
     }

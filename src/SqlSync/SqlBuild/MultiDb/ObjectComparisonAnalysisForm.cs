@@ -1,11 +1,7 @@
-﻿using System;
+﻿using SqlSync.ObjectScript.Hash;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using SqlSync.ObjectScript.Hash;
 namespace SqlSync.SqlBuild.MultiDb
 {
     public partial class ObjectComparisonAnalysisForm : Form
@@ -19,7 +15,7 @@ namespace SqlSync.SqlBuild.MultiDb
 
         private void ObjectComparisonAnalysisForm_Load(object sender, EventArgs e)
         {
-            foreach(ObjectScriptHashData data in rawReportData.DatabaseData)
+            foreach (ObjectScriptHashData data in rawReportData.DatabaseData)
             {
                 ListViewItem item = new ListViewItem(data.ToString());
                 item.Tag = data;
@@ -47,7 +43,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 MessageBox.Show("Please check a database to use as a baseline", "Selection Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            this.rawReportData.ResetComparisonValues();
+            rawReportData.ResetComparisonValues();
 
             List<ObjectScriptHashData> hashes = new List<ObjectScriptHashData>();
 
@@ -62,14 +58,14 @@ namespace SqlSync.SqlBuild.MultiDb
             rawReportData = coll.ProcessHashDifferences(baseline, hashes);
             string tempFile = System.IO.Path.GetTempFileName();
             tempFile = System.IO.Path.GetFileNameWithoutExtension(tempFile) + ".html";
-            coll.GenerateReport(tempFile, SqlSync.SqlBuild.Status.ReportType.Summary, this.rawReportData);
-            this.rawReportData.DatabaseData.Add(baseline);
+            coll.GenerateReport(tempFile, SqlSync.SqlBuild.Status.ReportType.Summary, rawReportData);
+            rawReportData.DatabaseData.Add(baseline);
 
             System.Diagnostics.Process prc = new System.Diagnostics.Process();
             prc.StartInfo.FileName = tempFile;
             prc.Start();
         }
 
-      
+
     }
 }

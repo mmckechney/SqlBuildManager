@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Linq;
-using System.Linq.Expressions;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.ScriptHandling
 {
     public class ScriptOptimization
@@ -29,12 +28,12 @@ namespace SqlBuildManager.ScriptHandling
         /// <param name="commentBlockMatches"></param>
         /// <param name="tablesMissingNoLock"></param>
         /// <returns>Script updated with the WITH (NOLOCK) directive</returns>
-        public static string ProcessNoLockOptimization(string rawScript, List<Match> commentBlockMatches, out List<List<string>> tablesMissingNoLock )
+        public static string ProcessNoLockOptimization(string rawScript, List<Match> commentBlockMatches, out List<List<string>> tablesMissingNoLock)
         {
             tablesMissingNoLock = new List<List<string>>();
             try
             {
-                if(commentBlockMatches == null)
+                if (commentBlockMatches == null)
                     commentBlockMatches = ScriptHandlingHelper.GetScriptCommentBlocks(rawScript);
 
                 StringBuilder sb = new StringBuilder();
@@ -59,7 +58,7 @@ namespace SqlBuildManager.ScriptHandling
                 Regex regSet = new Regex(@"(\bSET\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                 Regex regInsertInto = new Regex(@"(\bINSERT INTO\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                 Regex regValues = new Regex(@"(\bVALUES\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regFindFunction = new Regex(@"(\b\S+\(.*\)\s*)",  RegexOptions.Compiled);
+                Regex regFindFunction = new Regex(@"(\b\S+\(.*\)\s*)", RegexOptions.Compiled);
                 Regex regTriggerTables = new Regex(@"(\binserted\b)|(\bdeleted\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
                 //Regex regIgnoreObjects = new Regex(@"(FROM sys\.objects)|(FROM INFORMATION_SCHEMA)|(FROM sysobjects)|(FROM sysindexes)|(FROM sys\.indexes)|(FROM sys\.triggers)|(FROM dbo\.sysusers)|(FROM syscolumns)|(FROM sys\.columns)|(FROM sys\.stats)|(FROM sys\.foreign_keys)", RegexOptions.IgnoreCase);
@@ -149,7 +148,7 @@ namespace SqlBuildManager.ScriptHandling
                     else if (regFrom.Match(current.Value).Success && regInto.Match(next.Value).Success) // looks like a cursor... FROM xyx INTO
                     {
                         int len = next.Index - textIndex;
-                        if(len < 0 || textIndex+ len > rawScript.Length)
+                        if (len < 0 || textIndex + len > rawScript.Length)
                             continue;
 
                         subStr = rawScript.Substring(textIndex, len);
@@ -161,10 +160,10 @@ namespace SqlBuildManager.ScriptHandling
                         int len;
                         if (current.Index > textIndex)
                         {
-                        //    if (ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
-                        //        len = current.Index + current.Length - 4; //current.Index - textIndex;
-                        //    else
-                                len = current.Index - textIndex + 4;
+                            //    if (ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
+                            //        len = current.Index + current.Length - 4; //current.Index - textIndex;
+                            //    else
+                            len = current.Index - textIndex + 4;
 
                             if (len < 0 || textIndex + len > rawScript.Length)
                                 continue;
@@ -172,10 +171,10 @@ namespace SqlBuildManager.ScriptHandling
                             sb.Append(rawScript.Substring(textIndex, len));
                         }
 
-                       // if(ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
-                       //     subStr = regFromWithTableName.Match(rawScript, current.Index).Value;
-                       // else
-                            subStr = regFromWithTableName.Match(rawScript, current.Index).Value.Substring(4);
+                        // if(ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
+                        //     subStr = regFromWithTableName.Match(rawScript, current.Index).Value;
+                        // else
+                        subStr = regFromWithTableName.Match(rawScript, current.Index).Value.Substring(4);
 
                         len = next.Index - current.Index;
                         if (len < 0 || current.Index + len > rawScript.Length)
@@ -192,8 +191,8 @@ namespace SqlBuildManager.ScriptHandling
                         {
                             sb.Append(subStr);
                         }
-                        else if (previous != null && 
-                                (previous.Value.ToLower().Trim().StartsWith("delete") || 
+                        else if (previous != null &&
+                                (previous.Value.ToLower().Trim().StartsWith("delete") ||
                                 previous.Value.ToLower().Trim().StartsWith("insert") ||
                                 previous.Value.ToLower().Trim().StartsWith("update"))) //Covers where there is a "delete, insert or update" that is followed by a FROM but no WHERE
                         {
@@ -220,15 +219,15 @@ namespace SqlBuildManager.ScriptHandling
                             textIndex = rawScript.Length;
                         else
                         {
-                    //        if (ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
-                    //        {
-                    //            textIndex = current.Index + subStr.Length + current.Length;
-                    //                ;
-                    //        }
-                    //        else
-                    //        {
-                                textIndex = current.Index + subStr.Length + 4;
-                     //       }
+                            //        if (ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
+                            //        {
+                            //            textIndex = current.Index + subStr.Length + current.Length;
+                            //                ;
+                            //        }
+                            //        else
+                            //        {
+                            textIndex = current.Index + subStr.Length + 4;
+                            //       }
 
                             //this used to be "1"...changed to 4 and all unit tests still pass!?!
                         }
@@ -248,9 +247,9 @@ namespace SqlBuildManager.ScriptHandling
                 sb.Append(rawScript.Substring(textIndex, rawScript.Length - textIndex));
                 return sb.ToString();
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
-                log.LogError(exe,"Error processing Script Optimization");
+                log.LogError(exe, "Error processing Script Optimization");
                 throw;
             }
         }
@@ -264,7 +263,7 @@ namespace SqlBuildManager.ScriptHandling
         private static List<string> GetTableName(string subString)
         {
             string tmpTrimmed = subString.Trim();
-            Regex regWords = new Regex(@"\b\w*\b",RegexOptions.IgnoreCase);
+            Regex regWords = new Regex(@"\b\w*\b", RegexOptions.IgnoreCase);
             MatchCollection coll = regWords.Matches(tmpTrimmed);
 
             //remove any blank entries...
@@ -279,7 +278,7 @@ namespace SqlBuildManager.ScriptHandling
                 names.Add(t.Last());
 
                 if (t.Count() > 1)
-                    names.Add(t.ElementAt(t.Count()-2))
+                    names.Add(t.ElementAt(t.Count() - 2))
                 ;
             }
             return names;

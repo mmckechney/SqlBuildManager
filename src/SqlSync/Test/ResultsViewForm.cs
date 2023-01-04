@@ -1,16 +1,12 @@
+using SqlSync.SprocTest;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using SqlSync.SprocTest;
 namespace SqlSync.Test
 {
     public partial class ResultsViewForm : Form
     {
-        private TestManager.TestResult args= null;
+        private TestManager.TestResult args = null;
         internal ResultsViewForm()
         {
             InitializeComponent();
@@ -18,13 +14,13 @@ namespace SqlSync.Test
         public ResultsViewForm(TestManager.TestResult args)
         {
             InitializeComponent();
-            this.args = args;         
-            }
+            this.args = args;
+        }
 
         private void ResultsViewForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
-                this.Close();
+                Close();
         }
 
         private void ResultsViewForm_Load(object sender, EventArgs e)
@@ -33,7 +29,7 @@ namespace SqlSync.Test
                 return;
 
             System.Text.StringBuilder sb = new StringBuilder();
-            sb.Append("Stored Procedure: " + args.StoredProcedureName +"\r\n");
+            sb.Append("Stored Procedure: " + args.StoredProcedureName + "\r\n");
             sb.Append("Test Case Name: " + args.TestCase.Name + "\r\n");
             sb.Append("Passed? " + args.Passed.ToString() + "\r\n");
             sb.Append("Results:\r\n");

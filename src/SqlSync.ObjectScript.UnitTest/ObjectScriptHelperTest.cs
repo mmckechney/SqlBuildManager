@@ -1,5 +1,4 @@
-﻿using SqlSync.ObjectScript;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 using SqlSync.ObjectScript.Hash;
 using System;
@@ -8,8 +7,8 @@ using System.Text;
 
 namespace SqlSync.ObjectScript.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ObjectScriptHelperTest and is intended
     ///to contain all ObjectScriptHelperTest Unit Tests
@@ -106,7 +105,7 @@ GO
 ", coll[0], coll[1]);
             string schema = "dbo";
             StringBuilder sb = new StringBuilder();
-            
+
             target.CollateScriptWithSchemaCheck(coll, schema, ref sb);
             Assert.AreEqual(expected, sb.ToString());
         }

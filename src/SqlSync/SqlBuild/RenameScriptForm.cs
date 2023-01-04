@@ -1,11 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using SqlSync.SqlBuild;
 namespace SqlSync.SqlBuild
 {
     public partial class RenameScriptForm : Form
@@ -33,30 +27,30 @@ namespace SqlSync.SqlBuild
 
         private void RenameScriptForm_Load(object sender, EventArgs e)
         {
-            this.lblCurrentName.Text = this.scriptRow.FileName;
-            this.txtNewName.Text = this.scriptRow.FileName;
+            lblCurrentName.Text = scriptRow.FileName;
+            txtNewName.Text = scriptRow.FileName;
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            this.oldName = this.lblCurrentName.Text;
-            this.newName = this.txtNewName.Text;
-            this.DialogResult = DialogResult.OK;
-            this.Close();
+            oldName = lblCurrentName.Text;
+            newName = txtNewName.Text;
+            DialogResult = DialogResult.OK;
+            Close();
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.Cancel;
-            this.Close();
+            DialogResult = DialogResult.Cancel;
+            Close();
         }
 
         private void RenameScriptForm_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
             {
-                this.DialogResult = DialogResult.Cancel;
-                this.Close();
+                DialogResult = DialogResult.Cancel;
+                Close();
             }
         }
     }

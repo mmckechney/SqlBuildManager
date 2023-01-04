@@ -1,10 +1,9 @@
-using System;
 using System.Text.RegularExpressions;
 namespace SqlSync.SqlBuild
 {
     public enum DefaultScriptCopyStatus
     {
-        Success, 
+        Success,
         PreexistingDifferent,
         PreexistingReadOnly,
         PreexistingDifferentReadOnly,
@@ -28,75 +27,75 @@ namespace SqlSync.SqlBuild
         BUILD_CANCELLED_NO_TRANSACTION
 
     }
-	public class ResortBuildType
-	{
-		public static readonly string[] SortOrder = new string[]{"TAB","SQL","VIW","UDF","PRC", "TRG"};
+    public class ResortBuildType
+    {
+        public static readonly string[] SortOrder = new string[] { "TAB", "SQL", "VIW", "UDF", "PRC", "TRG" };
 
-	}
-	public enum ResequenceIgnore : int 
-	{
-		StartNumber = 1000
-	}
-	public enum ImportFileStatus : int
-	{
-		Canceled = -1000,
-		UnableToImport = -1,
-		NoRowsImported = -500
-	}
-	public class XmlFileNames
-	{
-		public const string ExportFile = "SqlSyncBuildProject.xml";
-		public const string MainProjectFile = "SqlSyncBuildProject.xml";
-		public const string HistoryFile = "SqlSyncBuildHistory.xml";
-	}
-	public enum ScriptListIndex : int
-	{
-		PreRunIconCol = 0,
+    }
+    public enum ResequenceIgnore : int
+    {
+        StartNumber = 1000
+    }
+    public enum ImportFileStatus : int
+    {
+        Canceled = -1000,
+        UnableToImport = -1,
+        NoRowsImported = -500
+    }
+    public class XmlFileNames
+    {
+        public const string ExportFile = "SqlSyncBuildProject.xml";
+        public const string MainProjectFile = "SqlSyncBuildProject.xml";
+        public const string HistoryFile = "SqlSyncBuildHistory.xml";
+    }
+    public enum ScriptListIndex : int
+    {
+        PreRunIconCol = 0,
         PolicyIconColumn = 1,
         CodeReviewStatusIconColumn = 2,
-		SequenceNumber = 3,
-		FileName = 4,
-		Database = 5,
-		ScriptId = 6,
+        SequenceNumber = 3,
+        FileName = 4,
+        Database = 5,
+        ScriptId = 6,
         FileSize = 7,
         ScriptTag = 8,
-        DateAdded = 9, 
+        DateAdded = 9,
         DateModified = 10
 
-	}
+    }
 
-	public enum BuildListIndex : int
-	{
-		SequenceNumber = 0,
-		FileName = 1,
-		Database = 2,
-		OriginalSequenceNumber = 3,
-		Status = 4,
+    public enum BuildListIndex : int
+    {
+        SequenceNumber = 0,
+        FileName = 1,
+        Database = 2,
+        OriginalSequenceNumber = 3,
+        Status = 4,
         Duration = 5
-	}
+    }
 
-	public class BuildType
-	{
-		public const string Trial = "Trial";
-		public const string TrialPartial = "Trial - Partial";
-		public const string DevelopmentIntegration = "Development Integration";
-		public const string QualityAssurance = "Quality Assurance";
-		public const string UserAcceptance = "User Acceptance";
-		public const string Staging = "Staging";
-		public const string Production = "Production";
-		public const string Partial = "Partial";
-		public const string Other = "Other";
-	}
-	public class BuildTransaction
-	{
-		public const string TransactionName = "SqlBuildTrans";
-	}
+    public class BuildType
+    {
+        public const string Trial = "Trial";
+        public const string TrialPartial = "Trial - Partial";
+        public const string DevelopmentIntegration = "Development Integration";
+        public const string QualityAssurance = "Quality Assurance";
+        public const string UserAcceptance = "User Acceptance";
+        public const string Staging = "Staging";
+        public const string Production = "Production";
+        public const string Partial = "Partial";
+        public const string Other = "Other";
+    }
+    public class BuildTransaction
+    {
+        public const string TransactionName = "SqlBuildTrans";
+    }
 
-	public class BuildItemStatus
-	{
-		public const string Committed = "Committed";
-		public const string RolledBack = "RolledBack";
-		public const string TrialRolledBack = "TrialRolledBack";
+    public class BuildItemStatus
+    {
+        public const string Committed = "Committed";
+        public const string RolledBack = "RolledBack";
+        public const string TrialRolledBack = "TrialRolledBack";
         /// <summary>
         /// This status reserved for MultiDb runs that have failed processing, but not yet rolled back
         /// </summary>
@@ -129,11 +128,11 @@ namespace SqlSync.SqlBuild
         /// Database was updated but required the creation and use of a custom dacpac
         /// </summary>
         public const string CommittedWithCustomDacpac = "CommittedWithCustomDacpac";
-	}
-	public class BatchParsing
-	{
-		public const string Delimiter = "GO";
-	}
+    }
+    public class BatchParsing
+    {
+        public const string Delimiter = "GO";
+    }
 
     public class ScriptTokens
     {
@@ -145,5 +144,5 @@ namespace SqlSync.SqlBuild
         public static Regex regBuildFileName = new Regex(ScriptTokens.BuildFileName, RegexOptions.IgnoreCase);
         public static Regex regBuildPackageHash = new Regex(ScriptTokens.BuildPackageHash, RegexOptions.IgnoreCase);
     }
-	
+
 }

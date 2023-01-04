@@ -1,9 +1,9 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for WithNoLockPolicyTest and is intended
     ///to contain all WithNoLockPolicyTest Unit Tests
@@ -43,7 +43,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             }
         }
 
-        
+
 
         /// <summary>
         ///A test for CheckPolicy FROM statement that has NOLOCK directive
@@ -52,7 +52,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void WithNoLockPolicyTest_FromHasNoLock()
         {
             WithNoLockPolicy target = new WithNoLockPolicy();
-            string script = @"SELECT test FROM TestTable WITH (NOLOCK) WHERE Column1 = 'Hello' and Column3 = 'World'"; 
+            string script = @"SELECT test FROM TestTable WITH (NOLOCK) WHERE Column1 = 'Hello' and Column3 = 'World'";
             string message = string.Empty;
             string messageExpected = string.Empty;
             bool expected = true;
@@ -75,7 +75,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string messageExpected = WithNoLockPolicy.MissingNoLockMessage;
             bool expected = false;
             bool actual;
-            System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script); 
+            System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
             Assert.AreEqual(messageExpected, message);
             Assert.AreEqual(expected, actual);
@@ -121,7 +121,7 @@ INNER JOIN Table2 WITH (NOLOCK) ON TestTable.Column 1= Table2.Column3 WHERE Colu
             Assert.AreEqual(expected, actual);
 
         }
-        
+
         /// <summary>
         ///A test for LongDescription
         ///</summary>
@@ -131,7 +131,7 @@ INNER JOIN Table2 WITH (NOLOCK) ON TestTable.Column 1= Table2.Column3 WHERE Colu
             WithNoLockPolicy target = new WithNoLockPolicy();
             string actual;
             actual = target.LongDescription;
-            string expected = "Checks that select scripts include WITH (NOLOCK) directive or have a [NOLOCK Exception: <table name> <reason>] tag"; 
+            string expected = "Checks that select scripts include WITH (NOLOCK) directive or have a [NOLOCK Exception: <table name> <reason>] tag";
             Assert.AreEqual(expected, actual);
 
         }
@@ -159,7 +159,7 @@ INNER JOIN Table2 WITH (NOLOCK) ON TestTable.Column 1= Table2.Column3 WHERE Colu
             string script = @"--[NOLOCK Exception: TestTable doesn't need it here]
 SELECT test FROM TestTable WHERE Column1 = 'Hello' and Column3 = 'World'";
             string message = string.Empty;
-            string messageExpected = WithNoLockPolicy.FoundExceptionMessage; 
+            string messageExpected = WithNoLockPolicy.FoundExceptionMessage;
             bool expected = true;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
@@ -292,7 +292,7 @@ SELECT test FROM TestTable tt WHERE Column1 = 'Hello' and Column3 = 'World'";
 
         }
 
-           /// <summary>
+        /// <summary>
         ///A test for CheckPolicy 
         ///</summary>
         [TestMethod()]
@@ -349,7 +349,7 @@ SELECT test FROM TestTable tt WHERE Column1 = 'Hello' and Column3 = 'World'";
 
         }
 
-         /// <summary>
+        /// <summary>
         ///A test for CheckPolicy 
         ///</summary>
         [TestMethod()]
@@ -368,7 +368,7 @@ SELECT test FROM TestTable tt WHERE Column1 = 'Hello' and Column3 = 'World'";
 
         }
 
-         /// <summary>
+        /// <summary>
         ///A test for CheckPolicy 
         ///</summary>
         [TestMethod()]
@@ -398,7 +398,7 @@ SELECT test FROM TestTable tt WHERE Column1 = 'Hello' and Column3 = 'World'";
         public void WithNoLockPolicyTest_WithInsertButNoWhere()
         {
             WithNoLockPolicy target = new WithNoLockPolicy();
-             string script = @"IF EXISTS (SELECT 1 FROM dbo.MyTable WITH (NOLOCK) WHERE TableId = 57 AND SecondId = 3)
+            string script = @"IF EXISTS (SELECT 1 FROM dbo.MyTable WITH (NOLOCK) WHERE TableId = 57 AND SecondId = 3)
 	BEGIN
 		INSERT INTO dbo.MyTable WHERE TableId = 57 AND SecondId = 3
 		PRINT 'Inserted General Admin from dbo.MyTable for MyAspPage.aspx.'

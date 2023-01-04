@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using SqlSync.Connection;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using SqlSync.Connection;
-using System.IO;
-using Microsoft.Extensions.Logging;
-using System.Reflection;
 namespace SqlSync.SqlBuild.AdHocQuery
 {
     [Serializable()]
@@ -16,13 +14,13 @@ namespace SqlSync.SqlBuild.AdHocQuery
         }
         public QueryResultData(string server, string database)
         {
-            this.Server = server;
-            this.Database = database;
+            Server = server;
+            Database = database;
         }
 
         public override string ToString()
         {
-            return this.Server + "." + this.Database;
+            return Server + "." + Database;
         }
 
         public string Server
@@ -71,9 +69,9 @@ namespace SqlSync.SqlBuild.AdHocQuery
             {
                 StringBuilder sb = new System.Text.StringBuilder();
                 int count = 1;
-                foreach (Result r in this.results)
+                foreach (Result r in results)
                 {
-                    sb.Append("\"" + this.Server + "\",\"" + this.Database + "\",\"" + this.rowCount.ToString() + "\",\"" + count.ToString() + "\",");
+                    sb.Append("\"" + Server + "\",\"" + Database + "\",\"" + rowCount.ToString() + "\",\"" + count.ToString() + "\",");
                     foreach (QueryRowItem item in queryAppendData)
                         sb.Append("\"" + item.Value + "\",");
                     sb.Append(r.GetCsvString() + "\r\n");
@@ -81,7 +79,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 }
                 if (sb.Length == 0) // add in a zero record
                 {
-                    sb.Append("\"" + this.Server + "\",\"" + this.Database + "\",\"" + this.rowCount.ToString() + "\",\"" + count.ToString() + "\",");
+                    sb.Append("\"" + Server + "\",\"" + Database + "\",\"" + rowCount.ToString() + "\",\"" + count.ToString() + "\",");
                 }
                 return sb.ToString();
             }
@@ -112,7 +110,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         //    return ms;
         //}
 
-      
+
 
         public string GetColumnsCsvString()
         {
@@ -122,7 +120,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 sb.Append("\"Server\",\"Database\",\"RowCount\",\"Row #\",");
                 foreach (QueryRowItem item in queryAppendData)
                     sb.Append("\"" + item.ColumnName + "\",");
-                sb.Append(this.columnDefinition.GetCsvString());
+                sb.Append(columnDefinition.GetCsvString());
                 return sb.ToString();
             }
             catch (OutOfMemoryException omExe)
@@ -144,21 +142,21 @@ namespace SqlSync.SqlBuild.AdHocQuery
         public Result Copy()
         {
             Result dic = new Result();
-            foreach (string key in this.Keys)
+            foreach (string key in Keys)
             {
                 dic.Add(key, this[key]);
             }
             return dic;
-         }
+        }
 
         public string GetCsvString()
         {
             StringBuilder sb = new System.Text.StringBuilder();
-            foreach (string value in this.Values)
+            foreach (string value in Values)
             {
                 sb.Append("\"" + value + "\",");
             }
-            if(sb.Length > 0)
+            if (sb.Length > 0)
                 sb.Length = sb.Length - 1;
             return sb.ToString();
         }
@@ -175,7 +173,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         public string GetCsvString()
         {
             StringBuilder sb = new System.Text.StringBuilder();
-            foreach(string columnName in this.Keys)
+            foreach (string columnName in Keys)
             {
                 sb.Append("\"" + columnName + "\",");
             }
@@ -184,8 +182,8 @@ namespace SqlSync.SqlBuild.AdHocQuery
             return sb.ToString();
         }
 
-       
-       
+
+
     }
-   
+
 }

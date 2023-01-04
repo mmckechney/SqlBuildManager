@@ -1,11 +1,9 @@
-﻿using SqlBuildManager.ScriptHandling;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SqlBuildManager.ScriptHandling.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ScriptHandlingHelperTest and is intended
     ///to contain all ScriptHandlingHelperTest Unit Tests
@@ -27,8 +25,8 @@ will not be in a comment header
 /****************
 *  not here 
 *****************/";
-            int index = 24; 
-            bool expected = false; 
+            int index = 24;
+            bool expected = false;
             bool actual;
             actual = ScriptHandlingHelper.IsInLargeCommentHeader(rawScript, index);
             Assert.AreEqual(expected, actual);

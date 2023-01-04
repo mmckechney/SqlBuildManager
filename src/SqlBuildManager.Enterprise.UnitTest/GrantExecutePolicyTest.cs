@@ -1,9 +1,9 @@
-﻿using SqlBuildManager.Enterprise.Policy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Policy;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for GrantExecutePolicyTest and is intended
     ///to contain all GrantExecutePolicyTest Unit Tests
@@ -129,10 +129,10 @@ GO
 
 GRANT EXECUTE ON [HumanResources].[uspUpdateEmployeePersonalInfo] TO [public]
 GO";
-#endregion
+            #endregion
             string message;
-            string messageExpected = string.Empty; 
-            bool expected = true; 
+            string messageExpected = string.Empty;
+            bool expected = true;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
@@ -224,10 +224,10 @@ GO
 
 GRANT EXECUTE ON HumanResources.uspUpdateEmployeePersonalInfo TO [public]
 GO";
-#endregion
+            #endregion
             string message;
-            string messageExpected = string.Empty; 
-            bool expected = true; 
+            string messageExpected = string.Empty;
+            bool expected = true;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
@@ -413,7 +413,7 @@ GO
             #endregion
             string message;
             string messageExpected = "Missing execute on HumanResources.uspUpdateEmployeePersonalInfo";
-            bool expected = false; 
+            bool expected = false;
             bool actual;
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
@@ -937,7 +937,7 @@ GO
         [TestMethod()]
         public void LongDescriptionTest()
         {
-            GrantExecutePolicy target = new GrantExecutePolicy(); 
+            GrantExecutePolicy target = new GrantExecutePolicy();
             string actual;
             actual = target.LongDescription;
             string expected = "Checks that Stored Procedure and Function scripts have at least one \"GRANT EXECUTE\" statement";
@@ -951,7 +951,7 @@ GO
         [TestMethod()]
         public void ShortDescriptionTest()
         {
-            GrantExecutePolicy target = new GrantExecutePolicy(); 
+            GrantExecutePolicy target = new GrantExecutePolicy();
             string actual;
             actual = target.ShortDescription;
             string expected = "Check for GRANT EXECUTE";

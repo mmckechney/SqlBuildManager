@@ -1,11 +1,10 @@
-﻿using SqlSync.SqlBuild.MultiDb;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.DbInformation;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlSync.SqlBuild.MultiDb;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ServerDataTest and is intended
     ///to contain all ServerDataTest Unit Tests
@@ -85,7 +84,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void OverrideSequenceTest()
         {
             ServerData target = new ServerData();
-            DbOverrides expected = new DbOverrides(); 
+            DbOverrides expected = new DbOverrides();
             DbOverrides actual;
             target.Overrides = expected;
             actual = target.Overrides;

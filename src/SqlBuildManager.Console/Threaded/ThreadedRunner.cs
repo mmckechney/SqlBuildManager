@@ -33,7 +33,7 @@ namespace SqlBuildManager.Console.Threaded
             {
                 if (targetTag == string.Empty)
                 {
-                    if (this.overrides != null && this.overrides[0].OverrideDbTarget != null)
+                    if (overrides != null && overrides[0].OverrideDbTarget != null)
                         targetTag = server + "." + overrides[0].OverrideDbTarget;
                     else
                         targetTag = server;
@@ -42,7 +42,7 @@ namespace SqlBuildManager.Console.Threaded
             }
 
 
-            
+
         }
         public int ReturnValue
         {
@@ -91,27 +91,27 @@ namespace SqlBuildManager.Console.Threaded
 
         public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac)
         {
-            this.server = serverName;
+            server = serverName;
             this.overrides = overrides;
-            this.isTrial = cmdArgs.Trial;
+            isTrial = cmdArgs.Trial;
             this.cmdArgs = cmdArgs;
             this.buildRequestedBy = buildRequestedBy;
             this.forceCustomDacpac = forceCustomDacpac;
-            this.username = cmdArgs.AuthenticationArgs.UserName;
-            this.password = cmdArgs.AuthenticationArgs.Password;
-            this.authType = cmdArgs.AuthenticationArgs.AuthenticationType;
-            this.DacpacName = cmdArgs.DacPacArgs.PlatinumDacpac;
+            username = cmdArgs.AuthenticationArgs.UserName;
+            password = cmdArgs.AuthenticationArgs.Password;
+            authType = cmdArgs.AuthenticationArgs.AuthenticationType;
+            DacpacName = cmdArgs.DacPacArgs.PlatinumDacpac;
 
-            
+
             try
             {
-                this.DefaultDatabaseName = overrides[0].DefaultDbTarget; //Set the default for reference
+                DefaultDatabaseName = overrides[0].DefaultDbTarget; //Set the default for reference
 
                 for (int i = 0; i < overrides.Count; i++)
                     targetDatabases += overrides[i].OverrideDbTarget + ";";
 
-                if (this.targetDatabases.Length > 0)
-                    this.targetDatabases = this.targetDatabases.Substring(0, this.targetDatabases.Length - 1);
+                if (targetDatabases.Length > 0)
+                    targetDatabases = targetDatabases.Substring(0, targetDatabases.Length - 1);
             }
             catch { }
 
@@ -124,30 +124,30 @@ namespace SqlBuildManager.Console.Threaded
         /// <returns></returns>
         internal async Task<int> RunDatabaseBuild()
         {
-            this.returnValue = (int)RunnerReturn.BuildResultInconclusive;
+            returnValue = (int)RunnerReturn.BuildResultInconclusive;
 
             ConnectionData connData = null;
             BackgroundWorker bg = null;
             DoWorkEventArgs e = null;
             SqlBuildRunData runData = new SqlBuildRunData();
             string targetDatabase = overrides[0].OverrideDbTarget;
-            string loggingDirectory = Path.Combine(ThreadedExecution.WorkingDirectory, server, targetDatabase); 
+            string loggingDirectory = Path.Combine(ThreadedExecution.WorkingDirectory, server, targetDatabase);
             try
             {
-                 //Start setting properties on the object that contains the run configuration data.
+                //Start setting properties on the object that contains the run configuration data.
                 runData.BuildType = "Other";
                 if (!string.IsNullOrEmpty(cmdArgs.Description))
                     runData.BuildDescription = cmdArgs.Description;
                 else
                     runData.BuildDescription = "Threaded Multi-Database. Run ID:" + ThreadedExecution.RunID;
-                
-                runData.IsTrial = this.isTrial;
+
+                runData.IsTrial = isTrial;
                 runData.RunScriptOnly = false;
                 runData.TargetDatabaseOverrides = overrides;
-                runData.Server = this.server;
+                runData.Server = server;
                 runData.IsTransactional = cmdArgs.Transactional;
-                if (this.cmdArgs.LogToDatabaseName.Length > 0)
-                    runData.LogToDatabaseName = this.cmdArgs.LogToDatabaseName;
+                if (cmdArgs.LogToDatabaseName.Length > 0)
+                    runData.LogToDatabaseName = cmdArgs.LogToDatabaseName;
 
                 runData.PlatinumDacPacFileName = cmdArgs.DacPacArgs.PlatinumDacpac;
                 runData.BuildRevision = cmdArgs.BuildRevision;
@@ -165,8 +165,8 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     runData.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
-                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, this.authType, this.username, this.password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete);
-                    switch(status)
+                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, authType, username, password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete);
+                    switch (status)
                     {
                         case DacpacDeltasStatus.Success:
                             //nothing to do
@@ -174,13 +174,13 @@ namespace SqlBuildManager.Console.Threaded
                         case DacpacDeltasStatus.InSync:
                         case DacpacDeltasStatus.OnlyPostDeployment:
                             log.LogInformation($"Target database {targetDatabase} is already in sync with {cmdArgs.DacPacArgs.PlatinumDacpac}. Nothing to do!");
-                            this.returnValue = (int)RunnerReturn.DacpacDatabasesInSync;
+                            returnValue = (int)RunnerReturn.DacpacDatabasesInSync;
                             break;
                         default:
                             log.LogError($"Error creating custom dacpac and scripts for {targetDatabase}. No update was performed");
-                            this.returnValue = (int)RunnerReturn.PackageCreationError;
+                            returnValue = (int)RunnerReturn.PackageCreationError;
                             return (int)RunnerReturn.PackageCreationError; ;
-                            
+
                     }
 
                 }
@@ -197,23 +197,23 @@ namespace SqlBuildManager.Console.Threaded
                     }
                     //Clear out any existing ComittedScript data.. just log what is relevent to this run.
                     buildData.CommittedScript.Clear();
-                    
-                    
+
+
                     runData.BuildData = buildData;
                     runData.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedExecution.ProjectFileName));
                     runData.BuildFileName = ThreadedExecution.BuildZipFileName;
                 }
 
-               
+
 
                 //Create a connection object.. all we need is the server here, the DB will be filled in at execution time
                 connData = new ConnectionData(server, "");
-                if (this.cmdArgs.AuthenticationArgs.UserName.Length > 0 && this.cmdArgs.AuthenticationArgs.Password.Length > 0)
+                if (cmdArgs.AuthenticationArgs.UserName.Length > 0 && cmdArgs.AuthenticationArgs.Password.Length > 0)
                 {
                     connData.UserId = cmdArgs.AuthenticationArgs.UserName;
                     connData.Password = cmdArgs.AuthenticationArgs.Password;
                 }
-                connData.AuthenticationType = this.cmdArgs.AuthenticationArgs.AuthenticationType;
+                connData.AuthenticationType = cmdArgs.AuthenticationArgs.AuthenticationType;
 
                 //Set the log file name
                 string logFile = Path.Combine(loggingDirectory, "ExecutionLog.log");
@@ -226,31 +226,31 @@ namespace SqlBuildManager.Console.Threaded
             }
             catch (Exception exe)
             {
-                log.LogError(exe, $"Error Initializing run for {this.TargetTag}");
+                log.LogError(exe, $"Error Initializing run for {TargetTag}");
                 WriteErrorLog(loggingDirectory, exe.ToString());
-                this.returnValue = (int)ExecutionReturn.RunInitializationError;
+                returnValue = (int)ExecutionReturn.RunInitializationError;
                 return (int)ExecutionReturn.RunInitializationError; ;
             }
 
-            log.LogDebug("Initializing run for " + this.TargetTag + ". Starting \"ProcessBuild\"");
+            log.LogDebug("Initializing run for " + TargetTag + ". Starting \"ProcessBuild\"");
 
             try
             {
                 //Initilize the run helper object and kick it off.
-                SqlBuildHelper helper = new SqlBuildHelper(connData, true, string.Empty,cmdArgs.Transactional); //don't need an "external" log for this, it's all external!
+                SqlBuildHelper helper = new SqlBuildHelper(connData, true, string.Empty, cmdArgs.Transactional); //don't need an "external" log for this, it's all external!
                 helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
                 helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
                 helper.BuildSuccessTrialRolledBackEvent += new EventHandler(helper_BuildSuccessTrialRolledBackEvent);
-                await Task.Run(() => 
-                { 
-                    helper.ProcessBuild(runData, bg, e, ThreadedExecution.BatchColl, this.buildRequestedBy, cmdArgs.TimeoutRetryCount); 
+                await Task.Run(() =>
+                {
+                    helper.ProcessBuild(runData, bg, e, ThreadedExecution.BatchColl, buildRequestedBy, cmdArgs.TimeoutRetryCount);
                 });
             }
             catch (Exception exe)
             {
-                log.LogError("Error Processing run for " + this.TargetTag, exe);
+                log.LogError("Error Processing run for " + TargetTag, exe);
                 WriteErrorLog(loggingDirectory, exe.ToString());
-                this.returnValue = (int)ExecutionReturn.ProcessBuildError;
+                returnValue = (int)ExecutionReturn.ProcessBuildError;
                 return (int)ExecutionReturn.ProcessBuildError; ;
             }
             return 0;
@@ -259,27 +259,27 @@ namespace SqlBuildManager.Console.Threaded
 
         void helper_BuildSuccessTrialRolledBackEvent(object sender, EventArgs e)
         {
-            log.LogDebug(this.TargetTag + " BuildSuccessTrialRolledBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.SuccessWithTrialRolledBack));
-            this.returnValue = (int)RunnerReturn.SuccessWithTrialRolledBack;
+            log.LogDebug(TargetTag + " BuildSuccessTrialRolledBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.SuccessWithTrialRolledBack));
+            returnValue = (int)RunnerReturn.SuccessWithTrialRolledBack;
         }
 
         void helper_BuildErrorRollBackEvent(object sender, EventArgs e)
         {
-            if (this.IsTransactional)
+            if (IsTransactional)
             {
-                log.LogDebug(this.TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.RolledBack));
-                this.returnValue = (int)RunnerReturn.RolledBack;
+                log.LogDebug(TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.RolledBack));
+                returnValue = (int)RunnerReturn.RolledBack;
             }
             else
             {
-                log.LogDebug(this.TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.BuildErrorNonTransactional));
-                this.returnValue = (int)RunnerReturn.BuildErrorNonTransactional;
+                log.LogDebug(TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.BuildErrorNonTransactional));
+                returnValue = (int)RunnerReturn.BuildErrorNonTransactional;
             }
         }
 
-        void helper_BuildCommittedEvent(object sender,RunnerReturn returnValue)
+        void helper_BuildCommittedEvent(object sender, RunnerReturn returnValue)
         {
-            log.LogDebug(this.TargetTag + " BuildCommittedEvent status: " + Enum.GetName(typeof(RunnerReturn), returnValue));
+            log.LogDebug(TargetTag + " BuildCommittedEvent status: " + Enum.GetName(typeof(RunnerReturn), returnValue));
             this.returnValue = (int)returnValue;
         }
 

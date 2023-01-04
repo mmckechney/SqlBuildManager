@@ -1,21 +1,13 @@
-﻿using SqlBuildManager.Console;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using System.Collections.Generic;
-using System;
-using System.IO;
-using SqlBuildManager.Interfaces.Console;
-using System.Data.SqlClient;
-using System.Threading;
-using System.Text.RegularExpressions;
-using SqlBuildManager.Console.Threaded;
-using Microsoft.Extensions.Logging;
-using System.Text;
-using System.Linq;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
-using Microsoft.Rest.TransientFaultHandling;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
@@ -73,8 +65,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         {
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<LocalBuildTest>("SqlBuildManager.Console.log", @"C:\temp");
 
-            System.Console.SetOut(new StringWriter(this.ConsoleOutput));    // Associate StringBuilder with StdOut
-            this.ConsoleOutput.Clear();    // Clear text from any previous text runs
+            System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
+            ConsoleOutput.Clear();    // Clear text from any previous text runs
         }
 
         //Use ClassCleanup to run code after all tests in a class have run
@@ -119,7 +111,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = this.ConsoleOutput.ToString();
+                string executionLogFile = ConsoleOutput.ToString();
 
 
                 var regex = new Regex("Recording Commited Script:");
@@ -134,7 +126,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -180,7 +172,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = this.ConsoleOutput.ToString();
+                string executionLogFile = ConsoleOutput.ToString();
 
 
                 var regex = new Regex("Recording Commited Script:");
@@ -195,7 +187,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -240,7 +232,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = this.ConsoleOutput.ToString();
+                string executionLogFile = ConsoleOutput.ToString();
 
                 var regex = new Regex("Recording Commited Script:");
                 Assert.AreEqual(1, regex.Matches(executionLogFile).Count(), "Didn't find 1 script commit");
@@ -254,7 +246,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -303,20 +295,20 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = this.ConsoleOutput.ToString();
+                string executionLogFile = ConsoleOutput.ToString();
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");
                 Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find build commited message");
                 var regex = new Regex("Recording Commited Script:");
-                Assert.AreEqual(10,regex.Matches(executionLogFile).Count(), "Didn't find 10 scripts commits");
+                Assert.AreEqual(10, regex.Matches(executionLogFile).Count(), "Didn't find 10 scripts commits");
 
                 Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find commit message");
             }
 
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -367,13 +359,13 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = this.ConsoleOutput.ToString();
+                string executionLogFile = ConsoleOutput.ToString();
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");
                 Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find build commited message");
 
-               var regex = new Regex("Recording Commited Script:");
+                var regex = new Regex("Recording Commited Script:");
                 Assert.AreEqual(2, regex.Matches(executionLogFile).Count(), "Didn't find 2 scripts commits");
 
                 Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find commit message");
@@ -382,7 +374,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
                 try
                 {
                     if (File.Exists(sbmFileName))

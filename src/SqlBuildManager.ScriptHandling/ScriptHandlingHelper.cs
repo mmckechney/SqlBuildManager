@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 namespace SqlBuildManager.ScriptHandling
 {
     public class ScriptHandlingHelper
@@ -25,7 +23,7 @@ namespace SqlBuildManager.ScriptHandling
             return commentList;
         }
 
-        
+
 
         public static bool IsInComment(int index, List<Match> commentBlockMatches)
         {
@@ -78,7 +76,7 @@ namespace SqlBuildManager.ScriptHandling
 
         #endregion
 
-     
+
         public static bool IsInLargeCommentHeader(string rawScript, int index)
         {
             Regex regCommentHeader = new Regex(@"(/\*\*.*\*\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
@@ -89,7 +87,7 @@ namespace SqlBuildManager.ScriptHandling
             if (index > headerMatch.Index &&
                 index < headerMatch.Index + headerMatch.Length)
                 return true;
-          
+
             return false;
         }
     }

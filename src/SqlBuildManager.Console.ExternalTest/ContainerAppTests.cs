@@ -18,7 +18,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class ContainerAppTests
     {
- 
+
         private string settingsFileKeyPath;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
@@ -27,10 +27,10 @@ namespace SqlBuildManager.Console.ExternalTest
         {
 
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", @"C:\temp");
-            this.settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+            settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
 
-            System.Console.SetOut(new StringWriter(this.ConsoleOutput));    // Associate StringBuilder with StdOut
-            this.ConsoleOutput.Clear();    // Clear text from any previous text runs
+            System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
+            ConsoleOutput.Clear();    // Clear text from any previous text runs
         }
         [TestCleanup]
         public void CleanUp()
@@ -73,7 +73,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     //"--loglevel", "Debug",
                     "containerapp",  "run",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "-P", sbmFileName,
                     "--override", overrideFile,
                     "--jobname", jobName,
@@ -93,11 +93,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.AreEqual(0, result);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -137,7 +137,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                     "containerapp",  "prep",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--packagename", sbmFileName
 
@@ -152,7 +152,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 args = new string[]{
                     "containerapp",  "enqueue",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", overrideFile
@@ -167,7 +167,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     //"--loglevel", "Debug",
                     "containerapp",  "deploy",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "-P", sbmFileName,
                     "--override", overrideFile,
                     "--jobname", jobName,
@@ -188,11 +188,11 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
 
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -200,7 +200,7 @@ namespace SqlBuildManager.Console.ExternalTest
         //TODO: Enable Managed Identity****** Managed Identity for SQL Authentication is not available for Container Apps currently, only SB and EH
         //[DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        
+
         [DataTestMethod]
         public void ContainerApp_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
@@ -226,7 +226,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                     "containerapp",  "prep",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--packagename", sbmFileName
 
@@ -241,7 +241,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 args = new string[]{
                     "containerapp",  "enqueue",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", overrideFile
@@ -256,7 +256,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--loglevel", "Debug",
                     "containerapp",  "deploy",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "-P", sbmFileName,
                     "--override", overrideFile,
                     "--jobname", jobName,
@@ -273,15 +273,15 @@ namespace SqlBuildManager.Console.ExternalTest
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 result = val.Result;
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
                 Assert.AreEqual(0, result);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -314,7 +314,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                     "containerapp",  "prep",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--packagename", sbmFileName
 
@@ -329,7 +329,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 args = new string[]{
                     "containerapp",  "enqueue",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", overrideFile
@@ -344,7 +344,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--loglevel", "debug",
                     "containerapp",  "deploy",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "-P", sbmFileName,
                     "--override", overrideFile,
                     "--jobname", jobName,
@@ -364,11 +364,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.AreEqual(0, result);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -395,7 +395,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
 
                 var cmdLine = new CommandLineArgs();
-                cmdLine.SettingsFileKey = this.settingsFileKeyPath;
+                cmdLine.SettingsFileKey = settingsFileKeyPath;
                 cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
                 bool decryptSuccess;
                 (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
@@ -426,7 +426,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                     "containerapp",  "prep",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--platinumdacpac", dacpacName,
                      "--override", minusFirst
@@ -442,7 +442,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 args = new string[]{
                     "containerapp",  "enqueue",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", minusFirst
@@ -457,7 +457,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     //"--loglevel", "Debug",
                     "containerapp",  "deploy",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "-P", sbmFileName,
                     "--platinumdacpac", dacpacName,
                     "--override", minusFirst,
@@ -478,11 +478,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.AreEqual(0, result);
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
         }
 
@@ -514,7 +514,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
 
                 var cmdLine = new CommandLineArgs();
-                cmdLine.SettingsFileKey = this.settingsFileKeyPath;
+                cmdLine.SettingsFileKey = settingsFileKeyPath;
                 cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
                 bool decryptSuccess;
                 (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
@@ -544,7 +544,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                     "containerapp",  "prep",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--platinumdacpac", dacpacName,
                      "--override", minusFirst
@@ -560,7 +560,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 args = new string[]{
                     "containerapp",  "enqueue",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", minusFirst
@@ -575,7 +575,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--loglevel", "Debug",
                     "containerapp",  "deploy",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "-P", sbmFileName,
                     "--platinumdacpac", dacpacName,
                     "--override", minusFirst,
@@ -591,18 +591,18 @@ namespace SqlBuildManager.Console.ExternalTest
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 result = val.Result;
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
                 Assert.AreEqual(0, result);
 
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
                 Assert.IsTrue(logFileContents.Contains("Dacpac Databases In Sync"), "There should be a DB already in sync that forced a custom DACPAC to be created");
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -635,7 +635,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
 
                 var cmdLine = new CommandLineArgs();
-                cmdLine.SettingsFileKey = this.settingsFileKeyPath;
+                cmdLine.SettingsFileKey = settingsFileKeyPath;
                 cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
                 bool decryptSuccess;
                 (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
@@ -664,7 +664,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                     "containerapp",  "prep",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--platinumdacpac", dacpacName,
                     "--override", minusFirst
@@ -684,7 +684,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 args = new string[]{
                     "containerapp",  "enqueue",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", minusFirst
@@ -699,7 +699,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     //"--loglevel", "Debug",
                     "containerapp",  "deploy",
                     "--settingsfile", settingsFile,
-                    "--settingsfilekey", this.settingsFileKeyPath,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "-P", sbmFileName,
                     "--platinumdacpac", dacpacName,
                     "--override", minusFirst,
@@ -722,11 +722,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.IsTrue(logFileContents.Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
-                Assert.IsTrue(this.ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
             }
             finally
             {
-                Debug.WriteLine(this.ConsoleOutput.ToString());
+                Debug.WriteLine(ConsoleOutput.ToString());
             }
 
         }

@@ -1,4 +1,5 @@
-﻿using SqlSync.SqlBuild;
+﻿using Microsoft.Extensions.Logging;
+using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Objects;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,6 @@ using System.Xml.Serialization;
 using System.Xml.XPath;
 using System.Xml.Xsl;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using Microsoft.Extensions.Logging;
 
 namespace SqlBuildManager.Enterprise.Policy
 {
@@ -103,21 +103,21 @@ namespace SqlBuildManager.Enterprise.Policy
                             }
 
                             tmpNew.Severity = (SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity)
-                                Enum.Parse(typeof(SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity),policy.Severity.ToString());
+                                Enum.Parse(typeof(SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity), policy.Severity.ToString());
 
                             if (policy.Argument != null)
                             {
                                 foreach (ScriptPolicyArgument argument in policy.Argument)
                                 {
                                     tmpNew.Arguments.Add(new p.IScriptPolicyArgument()
-                                    { 
-                                       Name = argument.Name, 
-                                       Value = argument.Value, 
-                                       IsGlobalException = argument.IsGlobalException, 
-                                       IsLineException = argument.IsLineException, 
-                                       FailureMessage = argument.FailureMessage,
+                                    {
+                                        Name = argument.Name,
+                                        Value = argument.Value,
+                                        IsGlobalException = argument.IsGlobalException,
+                                        IsLineException = argument.IsLineException,
+                                        FailureMessage = argument.FailureMessage,
                                     });
-                                   
+
                                 }
                             }
                             activePolicies.Add(tmpNew);
@@ -151,7 +151,7 @@ namespace SqlBuildManager.Enterprise.Policy
                             activePolicies.Add(allPolicies[policy.PolicyId]);
                         }
 
-                        
+
                     }
                     else
                     {
@@ -166,10 +166,10 @@ namespace SqlBuildManager.Enterprise.Policy
                 log.LogWarning("No EnterpriseConfiguration settings found for ScriptPolicies. Loading all default policies");
                 activePolicies.AddRange(allPolicies.Values);
             }
-            
+
             //Get only those that are "turned on"
             var a = from p in activePolicies where p.Enforce == true select p;
-            if(a.Count() > 0)
+            if (a.Count() > 0)
                 activePolicies = a.ToList();
 
             log.LogDebug($"Loaded {activePolicies.Count.ToString()} script policy objects");
@@ -177,7 +177,7 @@ namespace SqlBuildManager.Enterprise.Policy
             return activePolicies;
         }
 
-        public Script ValidateScriptAgainstPolicies( string script)
+        public Script ValidateScriptAgainstPolicies(string script)
         {
             return ValidateScriptAgainstPolicies(script, string.Empty);
         }
@@ -212,19 +212,19 @@ namespace SqlBuildManager.Enterprise.Policy
             List<Match> commentBlockMatches = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             if (policy is p.IScriptPolicyWithArguments && policy.Enforce)
             {
-                if (!((p.IScriptPolicyWithArguments)policy).CheckPolicy(script, targetDatabase,commentBlockMatches,  out message))
-                    return new Violation(policy.ShortDescription, message,Enum.GetName(typeof(p.ViolationSeverity),policy.Severity));
+                if (!((p.IScriptPolicyWithArguments)policy).CheckPolicy(script, targetDatabase, commentBlockMatches, out message))
+                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(p.ViolationSeverity), policy.Severity));
             }
             else if (policy.Enforce)
             {
                 if (!policy.CheckPolicy(script, commentBlockMatches, out message))
-                    return new Violation(policy.ShortDescription, message,Enum.GetName(typeof(p.ViolationSeverity),policy.Severity));
+                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(p.ViolationSeverity), policy.Severity));
             }
             return null;
         }
         public Package ValidateScriptsAgainstPolicies(List<UpdatedObject> namesAndScripts)
         {
-            List<KeyValuePair<string,string>> tmpLst = new List<KeyValuePair<string,string>>();
+            List<KeyValuePair<string, string>> tmpLst = new List<KeyValuePair<string, string>>();
             foreach (UpdatedObject obj in namesAndScripts)
                 tmpLst.Add(new KeyValuePair<string, string>(obj.ScriptName, obj.ScriptContents));
 
@@ -234,7 +234,7 @@ namespace SqlBuildManager.Enterprise.Policy
         public Package ValidateScriptsAgainstPolicies(List<KeyValuePair<string, string>> namesAndScripts)
         {
             Package lstViolations = new Package();
-            foreach (KeyValuePair<string,string> pair in namesAndScripts)
+            foreach (KeyValuePair<string, string> pair in namesAndScripts)
             {
                 Script violations = ValidateScriptAgainstPolicies(pair.Value);
                 if (violations != null)
@@ -252,7 +252,7 @@ namespace SqlBuildManager.Enterprise.Policy
         }
         public Script ValidateFileAgainstPolicies(string fileName)
         {
-          
+
             if (File.Exists(fileName))
             {
                 string script = File.ReadAllText(fileName);
@@ -292,8 +292,8 @@ namespace SqlBuildManager.Enterprise.Policy
             {
                 try
                 {
-                    string scriptContents = File.ReadAllText(Path.Combine(extractedProjectPath,row.FileName));
-                    scriptItem = this.ValidateScriptAgainstPolicies(row.FileName, row.ScriptId, scriptContents, row.Database, 80);
+                    string scriptContents = File.ReadAllText(Path.Combine(extractedProjectPath, row.FileName));
+                    scriptItem = ValidateScriptAgainstPolicies(row.FileName, row.ScriptId, scriptContents, row.Database, 80);
                     if (scriptItem == null)
                     {
                         row.PolicyCheckState = ScriptStatusType.PolicyPass;
@@ -336,8 +336,8 @@ namespace SqlBuildManager.Enterprise.Policy
                 log.LogError(exe, "Unable to serialize violations");
                 return string.Empty;
             }
-                
-            
+
+
         }
         public static bool TransformViolationstoCsv(string fileName, Package currentViolations)
         {
@@ -430,8 +430,8 @@ namespace SqlBuildManager.Enterprise.Policy
                 passed = !pkg.Select(p => p.Violations.Select(v => v.Severity == highSeverity)).Any();
 
                 var violationMessages = from s in pkg
-                                     from v in s.Violations
-                                        select new {v.Severity, s.ScriptName, v.Message}; 
+                                        from v in s.Violations
+                                        select new { v.Severity, s.ScriptName, v.Message };
 
                 foreach (var violation in violationMessages)
                 {
@@ -446,7 +446,7 @@ namespace SqlBuildManager.Enterprise.Policy
                     //else 
                     //    log.LogInformation(message);
                 }
-                return policyReturns;   
+                return policyReturns;
             }
             else
             {

@@ -1,15 +1,14 @@
-﻿using System;
+﻿using SqlSync.Connection;
+using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Status;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Xml;
-using System.Xml.Serialization;
 using System.Xml.XPath;
 using System.Xml.Xsl;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Status;
 namespace SqlSync.ObjectScript.Hash
 {
     public class HashCollector
@@ -25,12 +24,12 @@ namespace SqlSync.ObjectScript.Hash
         }
         public HashCollector()
         {
-         
+
         }
         public ObjectScriptHashReportData GetObjectHashes()
         {
             BackgroundWorker bw = new BackgroundWorker();
-            return this.GetObjectHashes(ref bw,"",ReportType.XML, true);
+            return GetObjectHashes(ref bw, "", ReportType.XML, true);
         }
         public ObjectScriptHashReportData GetObjectHashes(ref BackgroundWorker bgWorker, string fileName, ReportType reportType, bool runThreaded)
         {
@@ -88,19 +87,19 @@ namespace SqlSync.ObjectScript.Hash
 
             List<ObjectScriptHashData> hashes = new List<ObjectScriptHashData>();
             ObjectScriptHashData baseLine = null;
-            foreach(HashCollectionRunner runner in this.runners)
+            foreach (HashCollectionRunner runner in runners)
             {
-                if(runner.IsBaseLine)
+                if (runner.IsBaseLine)
                     baseLine = runner.HashData;
                 else
                     hashes.Add(runner.HashData);
             }
 
-            ObjectScriptHashReportData reportData =  ProcessHashDifferences(baseLine, hashes);
+            ObjectScriptHashReportData reportData = ProcessHashDifferences(baseLine, hashes);
             GenerateReport(fileName, reportType, reportData);
 
             hashes.Add(baseLine);
-            
+
             ObjectScriptHashReportData rawReportData = new ObjectScriptHashReportData();
             rawReportData.ProcessTime = reportData.ProcessTime;
             rawReportData.DatabaseData = hashes;
@@ -109,7 +108,7 @@ namespace SqlSync.ObjectScript.Hash
 
         void runner_HashCollectionRunnerUpdate(object sender, HashCollectionRunnerUpdateEventArgs e)
         {
-            this.bgWorker.ReportProgress(0, e);
+            bgWorker.ReportProgress(0, e);
         }
         private void ProcessThreadedHashCollection(object objRunner)
         {
@@ -181,8 +180,8 @@ namespace SqlSync.ObjectScript.Hash
         {
 
             MemoryStream ms = new MemoryStream();
-        
-            StringBuilder sb  = new StringBuilder();
+
+            StringBuilder sb = new StringBuilder();
             using (StringWriter sw = new StringWriter(sb))
             {
                 System.Xml.Serialization.XmlSerializer xmlS = new System.Xml.Serialization.XmlSerializer(typeof(ObjectScriptHashReportData));
@@ -193,7 +192,7 @@ namespace SqlSync.ObjectScript.Hash
 
             if (fileName.Length > 0)
             {
-                
+
                 XmlTextReader xsltReader;
 
                 XslCompiledTransform trans = new XslCompiledTransform();

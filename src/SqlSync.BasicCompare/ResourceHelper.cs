@@ -24,7 +24,7 @@ namespace SqlSync.BasicCompare
             {
                 if (manifestResourceStream != null)
                 {
-                    ((IDisposable) manifestResourceStream).Dispose();
+                    ((IDisposable)manifestResourceStream).Dispose();
                 }
             }
             return text;

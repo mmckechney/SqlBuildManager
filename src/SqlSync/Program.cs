@@ -1,19 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
-using SqlSync.SqlBuild;
-using System.Collections.Specialized;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
+using SqlSync.SqlBuild;
+using System;
+using System.IO;
+using System.Windows.Forms;
 namespace SqlSync
 {
     class Program
     {
-         private static ILogger log;
+        private static ILogger log;
         public static int returnCode = 0;
-        private static readonly string applicationLogFileName = "SqlBuildManager.log"; 
+        private static readonly string applicationLogFileName = "SqlBuildManager.log";
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -23,7 +19,7 @@ namespace SqlSync
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Program>(applicationLogFileName);
 
             log.LogDebug("Sql Build Manager Staring...");
-            if(args.Length > 0)
+            if (args.Length > 0)
                 log.LogInformation("Received Command: " + String.Join(" | ", args));
 
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
@@ -64,7 +60,7 @@ namespace SqlSync
                 {
                     MessageBox.Show("Looks like you are trying to perform a command line operation. Please use \"sbm.exe\" instead");
                     returnCode = -1;
-                   
+
                 }
             }
             catch (Exception exe)
@@ -73,7 +69,7 @@ namespace SqlSync
                 returnCode = 9999;
             }
 
-            log.LogDebug("Sql Build Manager Exiting with return code: "+returnCode.ToString());
+            log.LogDebug("Sql Build Manager Exiting with return code: " + returnCode.ToString());
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             Environment.Exit(returnCode);
             return returnCode;

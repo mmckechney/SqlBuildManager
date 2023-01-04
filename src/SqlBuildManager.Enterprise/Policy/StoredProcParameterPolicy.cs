@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Text.RegularExpressions;
 using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
-using System.Linq;
-using Microsoft.Extensions.Logging;
 namespace SqlBuildManager.Enterprise.Policy
 {
     class StoredProcParameterPolicy : p.IScriptPolicyMultiple
@@ -18,11 +17,11 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.StoredProcParameterPolicy;
             }
         }
-        private  p.ViolationSeverity severity = p.ViolationSeverity.High;
+        private p.ViolationSeverity severity = p.ViolationSeverity.High;
         public p.ViolationSeverity Severity
         {
             get { return severity; }
-            set { this.severity = value; }
+            set { severity = value; }
         }
         public string ShortDescription
         {
@@ -46,7 +45,7 @@ namespace SqlBuildManager.Enterprise.Policy
                     return "Stored Proc Parameter";
                 }
             }
-            set { this.ShortDescription = value; }
+            set { ShortDescription = value; }
         }
         public string ErrorMessage
         {
@@ -56,29 +55,29 @@ namespace SqlBuildManager.Enterprise.Policy
         private bool enforce = true;
         public bool Enforce
         {
-            get { return this.enforce; }
-            set { this.enforce = value; }
+            get { return enforce; }
+            set { enforce = value; }
         }
         private void GetSchemaAndParamValues(out bool hasParameter, out string paramValue, out bool hasSchema, out string schemaValue)
         {
-            var tmpHasParameter = (from a in this.arguments where a.Name == "Parameter" select true);
+            var tmpHasParameter = (from a in arguments where a.Name == "Parameter" select true);
             hasParameter = (tmpHasParameter.Count() > 0);
- 
+
             paramValue = string.Empty;
             if (hasParameter)
-                paramValue = (from a in this.arguments where a.Name == "Parameter" select a.Value).First();
+                paramValue = (from a in arguments where a.Name == "Parameter" select a.Value).First();
 
-            var tmpHasSchema = (from a in this.arguments where a.Name == "Schema" select true);
+            var tmpHasSchema = (from a in arguments where a.Name == "Schema" select true);
             hasSchema = (tmpHasSchema.Count() > 0);
-            
+
             schemaValue = string.Empty;
             if (hasSchema)
-                schemaValue = (from a in this.arguments where a.Name == "Schema" select a.Value).First();
+                schemaValue = (from a in arguments where a.Name == "Schema" select a.Value).First();
         }
         public string LongDescription
         {
             get { return "Makes certain that new stored procs have the proper default parameters"; }
-            set { this.LongDescription = value; }
+            set { LongDescription = value; }
         }
 
         public bool CheckPolicy(string script, List<Match> commentBlockMatches, out string message)
@@ -96,7 +95,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 message = string.Empty;
                 Regex regSchema = null;
                 Regex regParameter = null;
-                if (this.arguments.Count == 0)
+                if (arguments.Count == 0)
                 {
                     message = "Missing \"Schema\", \"Parameter\" arguments in setup. Please check your Enterprise configuration";
                     return false;
@@ -127,19 +126,19 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
 
                 bool hasType = false;
-                var tmpHasType = (from a in this.arguments where a.Name == "SqlType" select true);
+                var tmpHasType = (from a in arguments where a.Name == "SqlType" select true);
                 if (tmpHasType.Count() > 0) hasType = true;
 
                 string typeValue = string.Empty;
                 if (hasType)
-                    typeValue = (from a in this.arguments where a.Name == "SqlType" select a.Value).First();
+                    typeValue = (from a in arguments where a.Name == "SqlType" select a.Value).First();
 
                 bool hasTarget = false;
-                var tmpHasTarget = (from a in this.arguments where a.Name == "TargetDatabase" select true);
+                var tmpHasTarget = (from a in arguments where a.Name == "TargetDatabase" select true);
                 if (tmpHasTarget.Count() > 0) hasTarget = true;
                 string targetValue = string.Empty;
                 if (hasTarget)
-                    targetValue = (from a in this.arguments where a.Name == "TargetDatabase" select a.Value).First();
+                    targetValue = (from a in arguments where a.Name == "TargetDatabase" select a.Value).First();
 
 
                 if (paramVal.Length > 0 && hasType)
@@ -169,7 +168,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
 
                 return true;
-            } 
+            }
             catch (Exception exe)
             {
                 message = "Error processing script policy. See application log file for details";
@@ -186,11 +185,11 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get
             {
-                return this.arguments;
+                return arguments;
             }
             set
             {
-                this.arguments = value;
+                arguments = value;
             }
         }
 

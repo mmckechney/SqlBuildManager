@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Web;
-using System.Xml.Serialization;
-using System.IO;
+﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Enterprise.ActiveDirectory;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 using System.Net.Http;
+using System.Xml.Serialization;
 
 namespace SqlBuildManager.Enterprise
 {
@@ -42,7 +40,7 @@ namespace SqlBuildManager.Enterprise
                 {
                     EnterpriseConfigHelper.enterpriseConfig = LoadEnterpriseConfiguration();
                 }
-                if(EnterpriseConfigHelper.enterpriseConfig == null)
+                if (EnterpriseConfigHelper.enterpriseConfig == null)
                 {
                     log.LogWarning("Unable to load the EnterpriseConfiguration. Creating a new shell EnterpriseConfiguration object");
                     EnterpriseConfigHelper.enterpriseConfig = new EnterpriseConfiguration();
@@ -68,7 +66,7 @@ namespace SqlBuildManager.Enterprise
         }
 
 
-        
+
         public static EnterpriseConfiguration LoadEnterpriseConfiguration(string configPath)
         {
             string localConfigPath = Path.Combine(SqlBuildManager.Logging.Configure.AppDataPath, "EnterpriseConfiguration.xml");
@@ -92,7 +90,7 @@ namespace SqlBuildManager.Enterprise
                 File.WriteAllText(localConfigPath, configuration);
                 log.LogDebug($"Loaded Enterprise Configuration from {configPath} and saved to {localConfigPath}");
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError(exe, $"Unable to load Enterprise configuration from {configPath}");
             }
@@ -102,7 +100,7 @@ namespace SqlBuildManager.Enterprise
 
 
             //If we get here, then we need to try the local copy.
-            if(File.Exists(localConfigPath))
+            if (File.Exists(localConfigPath))
             {
                 log.LogDebug($"Reading EnterpriseConfig from local path:{localConfigPath}");
                 configuration = File.ReadAllText(localConfigPath);
@@ -112,7 +110,7 @@ namespace SqlBuildManager.Enterprise
             log.LogError("Unable to load EnterpriseConfig from configuation file!");
             return null;
 
-           
+
         }
         internal static EnterpriseConfiguration DeserializeConfiguration(string configuration)
         {
@@ -130,7 +128,7 @@ namespace SqlBuildManager.Enterprise
                 }
 
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError(exe, $"Error deserializing enterprise configuration file from: {configuration}");
             }
@@ -190,9 +188,9 @@ namespace SqlBuildManager.Enterprise
                 string extension = Path.GetExtension(scriptName).ToLowerInvariant();
 
                 List<TimeoutSetting[]> ts = GetCurrentUsersTimeoutSettings();
-                if(ts == null)
+                if (ts == null)
                     return null;
-              
+
                 //If we find some that apply, find a matching extension value
                 if (ts.Count() > 0)
                 {
@@ -205,7 +203,7 @@ namespace SqlBuildManager.Enterprise
                         return tsaList.First();
                 }
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogWarning(exe, $"Unable to get Enterprise TimeoutSetting object for file '{scriptName}'");
             }

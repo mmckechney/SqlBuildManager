@@ -1,9 +1,3 @@
-using System;
-using System.Data;
-using System.Configuration;
-using System.Web;
-using System.Xml.Serialization;
-using Microsoft.Data.SqlClient;
 namespace SqlSync.SprocTest.Configuration
 {
     public partial class StoredProcedure
@@ -16,16 +10,16 @@ namespace SqlSync.SprocTest.Configuration
         {
             get
             {
-                return this.derivedParameters;
+                return derivedParameters;
             }
             set
             {
-                this.derivedParameters = value;
+                derivedParameters = value;
             }
         }
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
     }
 }

@@ -14,8 +14,8 @@ namespace SqlSync.SqlBuild
     public class DacPacHelper
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-       
-        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType,  string userName, string password, string dacPacFileName)
+
+        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType, string userName, string password, string dacPacFileName)
         {
 
             try
@@ -40,12 +40,12 @@ namespace SqlSync.SqlBuild
                 log.LogInformation($"dacpac from {sourceServer}.{sourceDatabase} saved to {dacPacFileName}");
                 return true;
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 log.LogError($"Problem creating DACPAC from {sourceServer}.{sourceDatabase}: {exe.ToString()}");
                 return false;
             }
-           
+
 
         }
 
@@ -59,12 +59,12 @@ namespace SqlSync.SqlBuild
                 opts.IgnoreExtendedProperties = true;
                 opts.BlockOnPossibleDataLoss = false;
                 opts.IgnoreUserSettingsObjects = true;
-                if(allowObjectDelete)
+                if (allowObjectDelete)
                 {
                     opts.DropObjectsNotInSource = true;
                 }
 
-                if(ignoreCompatError)
+                if (ignoreCompatError)
                 {
                     opts.AllowIncompatiblePlatform = true;
                 }
@@ -72,11 +72,11 @@ namespace SqlSync.SqlBuild
 
                 DacPackage platPackage = DacPackage.Load(platinumDacPacFileName);
                 DacPackage targPackage = DacPackage.Load(targetDacPacFileName);
-                string script =  DacServices.GenerateDeployScript(platPackage, targPackage, Path.GetFileNameWithoutExtension(targetDacPacFileName), opts);
+                string script = DacServices.GenerateDeployScript(platPackage, targPackage, Path.GetFileNameWithoutExtension(targetDacPacFileName), opts);
                 return script;
 
             }
-            catch(Microsoft.SqlServer.Dac.DacServicesException dexe)
+            catch (Microsoft.SqlServer.Dac.DacServicesException dexe)
             {
                 if (dexe.ToString().Contains("DeploymentCompatibilityException"))
                 {
@@ -95,23 +95,23 @@ namespace SqlSync.SqlBuild
                 return string.Empty;
             }
 
-           
+
         }
-      
+
         public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, out string buildPackageName)
         {
-            log.LogInformation($"Generating SBM build from dacpac differences: {Path.GetFileName(platinumDacPacFileName)} vs { Path.GetFileName(targetDacPacFileName)}");
+            log.LogInformation($"Generating SBM build from dacpac differences: {Path.GetFileName(platinumDacPacFileName)} vs {Path.GetFileName(targetDacPacFileName)}");
             string path = Path.GetDirectoryName(targetDacPacFileName);
             buildPackageName = string.Empty;
             string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path, allowObjectDelete, false);
             if (!string.IsNullOrEmpty(rawScript))
             {
-                
+
                 Directory.CreateDirectory(path);
 
                 string cleaned;
                 var cleanStatus = CleanDacPacScript(rawScript, out cleaned);
-                switch(cleanStatus)
+                switch (cleanStatus)
                 {
                     case DacpacDeltasStatus.InSync:
                     case DacpacDeltasStatus.OnlyPostDeployment:
@@ -119,7 +119,7 @@ namespace SqlSync.SqlBuild
                 }
 
                 string baseFileName = Path.Combine(path, string.Format("{0}_to_{1}", Path.GetFileNameWithoutExtension(targetDacPacFileName), Path.GetFileNameWithoutExtension(platinumDacPacFileName)));
-                
+
                 List<string> files = new List<string>();
                 if (batchScripts)
                 {
@@ -130,8 +130,8 @@ namespace SqlSync.SqlBuild
                     File.WriteAllText(baseFileName + ".sql", cleaned);
                     files.Add(baseFileName + ".sql");
                 }
-                
-                if(!string.IsNullOrWhiteSpace(buildRevision))
+
+                if (!string.IsNullOrWhiteSpace(buildRevision))
                 {
                     var versionIns = Properties.Resources.VersionsInsert.Replace("{{BuildRevision}}", buildRevision);
                     string verName = Path.Combine(path, "Versions Insert.sql");
@@ -170,13 +170,13 @@ namespace SqlSync.SqlBuild
             var invalidChars = Path.GetInvalidFileNameChars();
             int counter = 0;
 
-            
+
             List<string> files = new List<string>();
             log.LogInformation("Parsing our master update script into batch scripts");
             var batched = SqlBuildHelper.ReadBatchFromScriptText(masterScript, true, false);
             foreach (var script in batched)
             {
-                if(script.Trim().Length == 0)
+                if (script.Trim().Length == 0)
                 {
                     continue;
                 }
@@ -186,16 +186,16 @@ namespace SqlSync.SqlBuild
                 tmp = regNewLine.Replace(script, " ", 1);
                 tmp = new string(tmp.Where(x => !invalidChars.Contains(x)).ToArray()).Replace(";", "").Replace("SET XACT_ABORT ON", "").Trim();
                 tmp = counter.ToString().PadLeft(4, '0') + "_" + ((tmp.Length > 50) ? tmp.Substring(0, 50) : tmp);
-                if(tmp.IndexOf('(') > -1)
+                if (tmp.IndexOf('(') > -1)
                 {
                     tmp = tmp.Substring(0, tmp.IndexOf('('));
                 }
                 while (tmp.EndsWith('.') || tmp.EndsWith('\'')) tmp = tmp.Substring(0, tmp.Length - 1);
                 tmp = regDupeSpaces.Replace(tmp, " ");
-            
+
                 fileName = Path.Combine(workingPath, tmp.Trim() + ".sql");
                 File.WriteAllText(fileName, script);
-    
+
                 files.Add(fileName);
             }
             return files;
@@ -245,11 +245,11 @@ namespace SqlSync.SqlBuild
 
             //Look for the "Post-Deployment Script Template"
             string matchString = Regex.Escape(@"Post-Deployment Script Template");
-            var postDeploy = Regex.Match(cleanedScript,matchString);
-            if(postDeploy.Success)
+            var postDeploy = Regex.Match(cleanedScript, matchString);
+            if (postDeploy.Success)
             {
                 var lineNumber = cleanedScript.Take(postDeploy.Index).Count(c => c == '\n') + 1;
-                if(lineNumber < 25)
+                if (lineNumber < 25)
                 {
                     log.LogDebug($"Cleand script contents:{Environment.NewLine}{cleanedScript}");
                     return DacpacDeltasStatus.OnlyPostDeployment;
@@ -260,7 +260,7 @@ namespace SqlSync.SqlBuild
             var realLines = cleanedScript.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
                 .Where(x => !x.StartsWith("PRINT", StringComparison.InvariantCultureIgnoreCase))
                 .Where(x => !x.StartsWith("GO", StringComparison.InvariantCultureIgnoreCase));
-            if(!realLines.Any())
+            if (!realLines.Any())
             {
                 log.LogDebug($"Cleand script contents:{Environment.NewLine}{cleanedScript}");
                 return DacpacDeltasStatus.InSync;
@@ -272,10 +272,10 @@ namespace SqlSync.SqlBuild
         }
 
 
-        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, AuthenticationType authType,  string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete)
+        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, AuthenticationType authType, string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete)
         {
-            string tmpDacPacName = Path.Combine(workingDirectory,targetDatabase + ".dacpac");
-            if(!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName))
+            string tmpDacPacName = Path.Combine(workingDirectory, targetDatabase + ".dacpac");
+            if (!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName))
             {
                 return DacpacDeltasStatus.ExtractionFailure;
             }
@@ -283,18 +283,18 @@ namespace SqlSync.SqlBuild
             string sbmFileName;
 
             var stat = CreateSbmFromDacPacDifferences(runData.PlatinumDacPacFileName, tmpDacPacName, false, buildRevision, defaultScriptTimeout, allowObjectDelete, out sbmFileName);
-            if(stat != DacpacDeltasStatus.Success)
+            if (stat != DacpacDeltasStatus.Success)
             {
                 return stat;
             }
 
-          
+
             string projectFilePath = Path.GetTempPath() + Guid.NewGuid().ToString();
             string projectFileName = null;
             string result;
 
             log.LogInformation("Preparing build package for processing");
-            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, false,out result))
+            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, false, out result))
             {
                 return DacpacDeltasStatus.SbmProcessingFailure;
             }
@@ -313,9 +313,10 @@ namespace SqlSync.SqlBuild
             return DacpacDeltasStatus.Success;
         }
 
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout,  MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete)        {
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete)
+        {
             string workingFolder = (!string.IsNullOrEmpty(rootLoggingPath) ? rootLoggingPath : Path.GetTempPath());
-   
+
             workingFolder = Path.Combine(workingFolder, "Dacpac");
             if (!Directory.Exists(workingFolder))
             {
@@ -328,7 +329,7 @@ namespace SqlSync.SqlBuild
 
             if (!String.IsNullOrEmpty(targetDacpac))
             {
-                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacpac, batchScripts, buildRevision, defaultScriptTimeout, allowObjectDelete,out sbmName);
+                stat = DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacPac, targetDacpac, batchScripts, buildRevision, defaultScriptTimeout, allowObjectDelete, out sbmName);
             }
             else if (!string.IsNullOrEmpty(database) && !string.IsNullOrEmpty(server))
             {
@@ -365,7 +366,7 @@ namespace SqlSync.SqlBuild
                         }
                         else if (stat == DacpacDeltasStatus.OnlyPostDeployment)
                         {
-                            log.LogInformation($"{Path.GetFileName(platinumDacPac)} to { Path.GetFileName(targetDacPac)} appears to have only Post-Deployment steps. Will not be used as a source - looping to next database.");
+                            log.LogInformation($"{Path.GetFileName(platinumDacPac)} to {Path.GetFileName(targetDacPac)} appears to have only Post-Deployment steps. Will not be used as a source - looping to next database.");
                             stat = DacpacDeltasStatus.Processing;
                         }
                         else
@@ -399,11 +400,11 @@ namespace SqlSync.SqlBuild
             }
             return stat;
         }
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, AuthenticationType authType,  string server, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete)
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, AuthenticationType authType, string server, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete)
         {
-            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, authType,  username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName, batchScripts, allowObjectDelete);
+            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, authType, username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName, batchScripts, allowObjectDelete);
         }
-      
+
 
     }
 

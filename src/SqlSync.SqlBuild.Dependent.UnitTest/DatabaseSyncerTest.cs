@@ -1,13 +1,13 @@
 ﻿using Microsoft.Data.SqlClient;
-using SqlSync.SqlBuild.Syncronizer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Syncronizer;
+using System;
 
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for DatabaseSyncerTest and is intended
     ///to contain all DatabaseSyncerTest Unit Tests
@@ -75,7 +75,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod()]
         public void SyncronizeDatabasesTest_SyncWorked()
         {
-            DatabaseSyncer target = new DatabaseSyncer(); 
+            DatabaseSyncer target = new DatabaseSyncer();
             ConnectionData gold = new ConnectionData()
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",
@@ -89,7 +89,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 AuthenticationType = AuthenticationType.Windows
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
-            bool success = target.SyncronizeDatabases(gold, toUpdate,false);
+            bool success = target.SyncronizeDatabases(gold, toUpdate, false);
 
             CleanUpSyncTest2();
 
@@ -99,7 +99,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod()]
         public void SyncronizeDatabasesTest_SyncWorkedAndSticks()
         {
-            DatabaseSyncer target = new DatabaseSyncer(); 
+            DatabaseSyncer target = new DatabaseSyncer();
             ConnectionData gold = new ConnectionData()
             {
                 DatabaseName = "SqlBuildTest_SyncTest1",
@@ -113,20 +113,20 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 AuthenticationType = AuthenticationType.Windows
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
-            bool success = target.SyncronizeDatabases(gold, toUpdate,false);
+            bool success = target.SyncronizeDatabases(gold, toUpdate, false);
 
             DatabaseDiffer differ = new DatabaseDiffer();
             var history = differ.GetDatabaseHistoryDifference(gold, toUpdate);
 
             CleanUpSyncTest2();
-           
-            Assert.AreEqual(0,history.BuildFileHistory.Count);
+
+            Assert.AreEqual(0, history.BuildFileHistory.Count);
 
         }
-        
+
         void target_SyncronizationInfoEvent(string message)
         {
-           Console.WriteLine(message);
+            Console.WriteLine(message);
         }
 
         internal static void CleanUpSyncTest2()
@@ -134,11 +134,11 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             string sql = "DELETE FROM [SqlBuildTest_SyncTest2].[dbo].[SqlBuild_Logging]";
             ConnectionData sync2Conn = new ConnectionData()
-                {
-                    DatabaseName = "SqlBuildTest_SyncTest2",
-                    SQLServerName = @"localhost\SQLEXPRESS",
-                    AuthenticationType = AuthenticationType.Windows
-                };
+            {
+                DatabaseName = "SqlBuildTest_SyncTest2",
+                SQLServerName = @"localhost\SQLEXPRESS",
+                AuthenticationType = AuthenticationType.Windows
+            };
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(sync2Conn);
             conn.Open();
             using (SqlCommand cmd = new SqlCommand(sql, conn))
@@ -146,7 +146,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 cmd.ExecuteNonQuery();
                 conn.Close();
             }
-        
+
         }
     }
 }

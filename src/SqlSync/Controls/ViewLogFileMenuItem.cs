@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using Microsoft.Extensions.Logging;
 using System.IO;
+using System.Windows.Forms;
 namespace SqlSync.Controls
 {
     public partial class ViewLogFileMenuItem : ToolStripMenuItem
@@ -22,16 +17,16 @@ namespace SqlSync.Controls
         }
         private void CustomInitializeComponent()
         {
-            this.Text = "View Application Log File";
-            this.Click += new System.EventHandler(this.ViewLogFileMenuItem_Click);
-            this.Image = global::SqlSync.Properties.Resources.New;
-            this.Size = new System.Drawing.Size(251, 22);
+            Text = "View Application Log File";
+            Click += new System.EventHandler(ViewLogFileMenuItem_Click);
+            Image = global::SqlSync.Properties.Resources.New;
+            Size = new System.Drawing.Size(251, 22);
 
-            this.bg = new BackgroundWorker();
-            this.bg.WorkerReportsProgress = true;
-            this.bg.ProgressChanged += new ProgressChangedEventHandler(bg_ProgressChanged);
-            this.bg.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bg_RunWorkerCompleted);
-            this.bg.DoWork += new DoWorkEventHandler(bg_DoWork);
+            bg = new BackgroundWorker();
+            bg.WorkerReportsProgress = true;
+            bg.ProgressChanged += new ProgressChangedEventHandler(bg_ProgressChanged);
+            bg.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bg_RunWorkerCompleted);
+            bg.DoWork += new DoWorkEventHandler(bg_DoWork);
         }
 
         void bg_DoWork(object sender, DoWorkEventArgs e)
@@ -40,7 +35,7 @@ namespace SqlSync.Controls
             try
             {
                 string file = SqlBuildManager.Logging.ApplicationLogging.LogFileName;
-                if(!File.Exists(file))
+                if (!File.Exists(file))
                 {
                     file = Path.Combine(Path.GetDirectoryName(file), Path.GetFileNameWithoutExtension(file) + DateTime.Now.ToString("yyyyMMdd") + Path.GetExtension(file));
                 }
@@ -78,21 +73,21 @@ namespace SqlSync.Controls
                 frmScript.ScrollToEndOnLoad = true;
                 frmScript.Show();
             }
-            else if(e.Result is Exception || e.Result == null)
+            else if (e.Result is Exception || e.Result == null)
             {
-                MessageBox.Show("Sorry, there was an error trying to load the application log file","Something went wrong", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Sorry, there was an error trying to load the application log file", "Something went wrong", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
         }
 
         void bg_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            if (this.Owner != null && this.Owner.FindForm() != null)
+            if (Owner != null && Owner.FindForm() != null)
             {
                 if (e.ProgressPercentage == 0)
-                    this.Owner.FindForm().Cursor = Cursors.WaitCursor;
+                    Owner.FindForm().Cursor = Cursors.WaitCursor;
                 else
-                    this.Owner.FindForm().Cursor = Cursors.Default;
+                    Owner.FindForm().Cursor = Cursors.Default;
             }
         }
 

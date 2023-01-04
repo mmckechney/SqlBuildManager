@@ -1,6 +1,5 @@
 namespace Algorithm.Diff
 {
-    using System;
     using System.Collections;
 
     public class Patch : IEnumerable
@@ -29,7 +28,7 @@ namespace Algorithm.Diff
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.hunks.GetEnumerator();
+            return hunks.GetEnumerator();
         }
 
         public class Hunk
@@ -44,18 +43,18 @@ namespace Algorithm.Diff
             internal Hunk(object[] rightData, int st, int c, int rs, int rc, bool s)
             {
                 this.rightData = rightData;
-                this.leftstart = st;
-                this.leftcount = c;
-                this.rightstart = rs;
-                this.rightcount = rc;
-                this.same = s;
+                leftstart = st;
+                leftcount = c;
+                rightstart = rs;
+                rightcount = rc;
+                same = s;
             }
 
             public int Count
             {
                 get
                 {
-                    return this.leftcount;
+                    return leftcount;
                 }
             }
 
@@ -63,7 +62,7 @@ namespace Algorithm.Diff
             {
                 get
                 {
-                    return ((this.leftstart + this.leftcount) - 1);
+                    return ((leftstart + leftcount) - 1);
                 }
             }
 
@@ -71,11 +70,11 @@ namespace Algorithm.Diff
             {
                 get
                 {
-                    if (this.same)
+                    if (same)
                     {
                         return null;
                     }
-                    return new Algorithm.Diff.Range(this.rightData, this.rightstart, this.rightcount);
+                    return new Algorithm.Diff.Range(rightData, rightstart, rightcount);
                 }
             }
 
@@ -83,7 +82,7 @@ namespace Algorithm.Diff
             {
                 get
                 {
-                    return this.same;
+                    return same;
                 }
             }
 
@@ -91,7 +90,7 @@ namespace Algorithm.Diff
             {
                 get
                 {
-                    return this.leftstart;
+                    return leftstart;
                 }
             }
         }

@@ -1,34 +1,33 @@
-using System;
-using System.Text;
 using SqlSync.Connection;
 using SqlSync.DbInformation;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 namespace SqlSync.TableScript.Audit
 {
-	/// <summary>
-	/// Summary description for AuditHelper.
-	/// </summary>
-	public class AuditHelper
-	{
-		private static string auditTableNameFormat = "{0}_Audit";
+    /// <summary>
+    /// Summary description for AuditHelper.
+    /// </summary>
+    public class AuditHelper
+    {
+        private static string auditTableNameFormat = "{0}_Audit";
         //private static string auditTableNameFormatwithSchema = "[{1}].[{0}_Audit]";
-		public static string AuditTableNameFormat
-		{
-			get {  return auditTableNameFormat; }
-			set { auditTableNameFormat = value; }    
-		}
-	
-		public static string triggerNameFormat = "{0}_AuditTrig_{1}";
+        public static string AuditTableNameFormat
+        {
+            get { return auditTableNameFormat; }
+            set { auditTableNameFormat = value; }
+        }
 
-		public AuditHelper()
-		{
+        public static string triggerNameFormat = "{0}_AuditTrig_{1}";
 
-		}
-		
+        public AuditHelper()
+        {
 
-		#region .: Audit Table and Audit Trigger Scripting :.
+        }
+
+
+        #region .: Audit Table and Audit Trigger Scripting :.
 
         public static string GetAuditScript(TableConfig tableCfg, AuditScriptType type, ConnectionData connData)
         {
@@ -103,7 +102,7 @@ namespace SqlSync.TableScript.Audit
             return sb.ToString();
 
         }
-        private static string ScriptForAuditTriggers(TableConfig parentTable, ConnectionData connData,AuditScriptType type, bool useDS)
+        private static string ScriptForAuditTriggers(TableConfig parentTable, ConnectionData connData, AuditScriptType type, bool useDS)
         {
             SqlSync.TableScript.ResourceHelper resHelper = new SqlSync.TableScript.ResourceHelper();
 
@@ -113,7 +112,7 @@ namespace SqlSync.TableScript.Audit
             {
                 if (columns[i].DataType.ToLower() == "text" || columns[i].DataType.ToLower() == "ntext" || columns[i].DataType.ToLower() == "image")
                     continue;
-                cols.AppendFormat("[{0}],",columns[i].ColumnName);
+                cols.AppendFormat("[{0}],", columns[i].ColumnName);
             }
             cols.Length = cols.Length - 1;
             string colList = cols.ToString();
@@ -186,23 +185,23 @@ namespace SqlSync.TableScript.Audit
 
             return sb.ToString();
         }
-		/// <summary>
-		/// Returns string for the audit master table
-		/// </summary>
-		/// <returns></returns>
-		private static string ScriptForAuditMasterTable(bool useDS)
-		{
-			SqlSync.TableScript.ResourceHelper resHelper = new SqlSync.TableScript.ResourceHelper();
+        /// <summary>
+        /// Returns string for the audit master table
+        /// </summary>
+        /// <returns></returns>
+        private static string ScriptForAuditMasterTable(bool useDS)
+        {
+            SqlSync.TableScript.ResourceHelper resHelper = new SqlSync.TableScript.ResourceHelper();
             if (!useDS)
                 return Properties.Resources.AuditTrxMaster;
             else
                 return Properties.Resources.AuditTrxMasterDS;
 
-		}
+        }
 
-		
-		public static bool ScriptForCompleteAudit(List<TableConfig> tables, ConnectionData connData, string destFolder, bool useDS)
-		{
+
+        public static bool ScriptForCompleteAudit(List<TableConfig> tables, ConnectionData connData, string destFolder, bool useDS)
+        {
             string master = ScriptForAuditMasterTable(useDS);
             using (System.IO.StreamWriter sw = System.IO.File.CreateText(Path.Combine(destFolder, "Audit Master Table.sql")))
             {
@@ -212,10 +211,10 @@ namespace SqlSync.TableScript.Audit
             }
 
             string audTable;
-			string sudTrig;
-			for(int i=0;i<tables.Count;i++)
-			{
-				audTable = ScriptForAuditTableCreation(tables[i],connData);
+            string sudTrig;
+            for (int i = 0; i < tables.Count; i++)
+            {
+                audTable = ScriptForAuditTableCreation(tables[i], connData);
 
                 using (System.IO.StreamWriter sw = System.IO.File.CreateText(Path.Combine(destFolder, tables[i].TableName + " Audit Table.sql")))
                 {
@@ -248,21 +247,21 @@ namespace SqlSync.TableScript.Audit
                     sw.Close();
                 }
 
-			}
-			return true;
-		}
+            }
+            return true;
+        }
         public static bool ScriptForCompleteTriggerEnableDisable(string[] tables, ConnectionData connData, bool isEnable, string destFolder)
-		{
+        {
 
-			string aud;
-			string fileName;
-			for(int i=0;i<tables.Length;i++)
-			{
-				aud = ScriptForAuditTriggerEnableDisable(tables[i],connData,isEnable);
-				if(isEnable)
-					fileName = tables[i] +" Enable Triggers.sql";
-				else
-					fileName = tables[i] +" Disable Triggers.sql";
+            string aud;
+            string fileName;
+            for (int i = 0; i < tables.Length; i++)
+            {
+                aud = ScriptForAuditTriggerEnableDisable(tables[i], connData, isEnable);
+                if (isEnable)
+                    fileName = tables[i] + " Enable Triggers.sql";
+                else
+                    fileName = tables[i] + " Disable Triggers.sql";
 
                 using (System.IO.StreamWriter sw = System.IO.File.CreateText(Path.Combine(destFolder, fileName)))
                 {
@@ -270,44 +269,44 @@ namespace SqlSync.TableScript.Audit
                     sw.Flush();
                     sw.Close();
                 }
-			}
-			return true;
-		}
-		
-		public static AuditAutoDetectData[] AutoDetectDataAuditing(ConnectionData connData)
-		{
-            List<AuditAutoDetectData> lst = new List<AuditAutoDetectData>();
-			string[] auditTables = SqlSync.DbInformation.InfoHelper.GetDatabaseTableList(connData,String.Format(auditTableNameFormat,"%"));
-			TableSize[] allTable = SqlSync.DbInformation.InfoHelper.GetDatabaseTableListWithRowCount(connData);
-			string baseName;
-			int rowCount;
-			for(int i=0;i<auditTables.Length;i++)
-			{
-				baseName = auditTables[i].Replace(String.Format(auditTableNameFormat,""),"");
+            }
+            return true;
+        }
 
-				rowCount =  SqlSync.DbInformation.InfoHelper.DbContainsTableWithRowcount(baseName,allTable);
-				if(rowCount > -1)
-				{
-					AuditAutoDetectData dat = new AuditAutoDetectData();
-					dat.TableName = baseName;
-					dat.RowCount = rowCount;
-					dat.HasAuditTable = true;
-					lst.Add(dat);
-				}
-			}
-			string[] allTriggers = SqlSync.DbInformation.InfoHelper.GetTriggers(connData);
-			for(int i=0;i<lst.Count;i++)
-			{
+        public static AuditAutoDetectData[] AutoDetectDataAuditing(ConnectionData connData)
+        {
+            List<AuditAutoDetectData> lst = new List<AuditAutoDetectData>();
+            string[] auditTables = SqlSync.DbInformation.InfoHelper.GetDatabaseTableList(connData, String.Format(auditTableNameFormat, "%"));
+            TableSize[] allTable = SqlSync.DbInformation.InfoHelper.GetDatabaseTableListWithRowCount(connData);
+            string baseName;
+            int rowCount;
+            for (int i = 0; i < auditTables.Length; i++)
+            {
+                baseName = auditTables[i].Replace(String.Format(auditTableNameFormat, ""), "");
+
+                rowCount = SqlSync.DbInformation.InfoHelper.DbContainsTableWithRowcount(baseName, allTable);
+                if (rowCount > -1)
+                {
+                    AuditAutoDetectData dat = new AuditAutoDetectData();
+                    dat.TableName = baseName;
+                    dat.RowCount = rowCount;
+                    dat.HasAuditTable = true;
+                    lst.Add(dat);
+                }
+            }
+            string[] allTriggers = SqlSync.DbInformation.InfoHelper.GetTriggers(connData);
+            for (int i = 0; i < lst.Count; i++)
+            {
                 IAuditInfo item = lst[i];
                 CheckForStandardAuditTriggers(ref item, allTriggers);
-			}
-			
-			AuditAutoDetectData[] data = new AuditAutoDetectData[lst.Count];
-			lst.CopyTo(data);
-			return data;
+            }
+
+            AuditAutoDetectData[] data = new AuditAutoDetectData[lst.Count];
+            lst.CopyTo(data);
+            return data;
 
 
-		}
+        }
         public static void CheckForStandardAuditTriggers(ref IAuditInfo tableInf, ConnectionData connData)
         {
             string[] allTriggers = SqlSync.DbInformation.InfoHelper.GetTriggers(connData);
@@ -331,31 +330,31 @@ namespace SqlSync.TableScript.Audit
                 }
             }
         }
-		#endregion
-		
-		public static void TableTemplateReplacements(ref StringBuilder sb,string auditTable,string colName, string colType, string charLength,string tableName, string schema)
-		{
-			sb.Replace(ReplaceConstants.AuditTableName,auditTable);
-			sb.Replace(ReplaceConstants.CharLength,charLength);
-			sb.Replace(ReplaceConstants.ColumnName,colName);
-			sb.Replace(ReplaceConstants.ColumnType,colType);
-			sb.Replace(ReplaceConstants.TableName,tableName);
+        #endregion
+
+        public static void TableTemplateReplacements(ref StringBuilder sb, string auditTable, string colName, string colType, string charLength, string tableName, string schema)
+        {
+            sb.Replace(ReplaceConstants.AuditTableName, auditTable);
+            sb.Replace(ReplaceConstants.CharLength, charLength);
+            sb.Replace(ReplaceConstants.ColumnName, colName);
+            sb.Replace(ReplaceConstants.ColumnType, colType);
+            sb.Replace(ReplaceConstants.TableName, tableName);
             sb.Replace(ReplaceConstants.Schema, schema);
-		}
-		public static void TriggerTemplateReplacements(ref StringBuilder sb,string auditTable,string masterTableName, string columnList,string triggerName, string schema)
-		{
-			sb.Replace(ReplaceConstants.AuditTableName,auditTable);
-			sb.Replace(ReplaceConstants.TableName,masterTableName);
-			sb.Replace(ReplaceConstants.ColumnList,columnList);
-			sb.Replace(ReplaceConstants.TriggerName,triggerName);
+        }
+        public static void TriggerTemplateReplacements(ref StringBuilder sb, string auditTable, string masterTableName, string columnList, string triggerName, string schema)
+        {
+            sb.Replace(ReplaceConstants.AuditTableName, auditTable);
+            sb.Replace(ReplaceConstants.TableName, masterTableName);
+            sb.Replace(ReplaceConstants.ColumnList, columnList);
+            sb.Replace(ReplaceConstants.TriggerName, triggerName);
             sb.Replace(ReplaceConstants.Schema, schema);
-		}
+        }
 
         public static void TriggerTemplateReplacements(ref StringBuilder sb, string auditTable, string masterTableName, string columnList, string triggerName, TableConfig cfg)
         {
             string schema;
             InfoHelper.ExtractNameAndSchema(masterTableName, out masterTableName, out schema);
-            TriggerTemplateReplacements(ref sb, auditTable, masterTableName, columnList, triggerName,schema);
+            TriggerTemplateReplacements(ref sb, auditTable, masterTableName, columnList, triggerName, schema);
             if (cfg.ConfigData != null)
             {
                 if (cfg.ConfigData.IndividualIDColumn.Length == 0)
@@ -378,7 +377,7 @@ namespace SqlSync.TableScript.Audit
 
 
 
-        
+
     }
-    
+
 }

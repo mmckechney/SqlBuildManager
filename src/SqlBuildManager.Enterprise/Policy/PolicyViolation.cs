@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Xml.Serialization;
 using System.Xml;
+using System.Xml.Serialization;
 namespace SqlBuildManager.Enterprise.Policy
 {
 
     [Serializable()]
     [XmlRoot("PackageInventory")]
-    public class PackageInventory :List<Package>
+    public class PackageInventory : List<Package>
     {
-         public PackageInventory() { }
-         public PackageInventory(string inventoryDate)
-            : this()
+        public PackageInventory() { }
+        public PackageInventory(string inventoryDate)
+           : this()
         {
-            this.InventoryDate = inventoryDate;
+            InventoryDate = inventoryDate;
         }
         [XmlAttribute()]
         public string InventoryDate
@@ -32,11 +31,11 @@ namespace SqlBuildManager.Enterprise.Policy
         public Package(string packageName)
             : this()
         {
-            this.PackageName = packageName;
+            PackageName = packageName;
         }
         public Package(Script[] scripts)
         {
-            this.AddRange(scripts);
+            AddRange(scripts);
         }
 
         [XmlAttribute()]
@@ -58,29 +57,29 @@ namespace SqlBuildManager.Enterprise.Policy
         public Script(string scriptName, string scriptGuid)
             : this()
         {
-            this.ScriptName = scriptName;
-            this.Guid = scriptGuid;
+            ScriptName = scriptName;
+            Guid = scriptGuid;
         }
         public void AddViolation(Violation item)
         {
-            this.violations.Add(item);
+            violations.Add(item);
         }
         public int Count
         {
             get
             {
-                return this.violations.Count;
+                return violations.Count;
             }
         }
         public Violation this[int index]
         {
             get
             {
-                return this.violations[index];
+                return violations[index];
             }
             set
             {
-                this.violations[index] = value;
+                violations[index] = value;
             }
         }
 
@@ -116,11 +115,11 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get
             {
-                return this.violations;
+                return violations;
             }
             set
             {
-                this.violations = value;
+                violations = value;
             }
         }
 
@@ -132,11 +131,11 @@ namespace SqlBuildManager.Enterprise.Policy
         public Violation()
         {
         }
-        public Violation(string violationName, string message, string severity) :this()
+        public Violation(string violationName, string message, string severity) : this()
         {
-            this.Name  = violationName;
-            this.Message = message;
-            this.Severity = severity;
+            Name = violationName;
+            Message = message;
+            Severity = severity;
         }
 
 

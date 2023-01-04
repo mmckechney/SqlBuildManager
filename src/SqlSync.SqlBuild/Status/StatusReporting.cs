@@ -1,15 +1,12 @@
-﻿using System;
+﻿using SqlSync.SqlBuild.MultiDb;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using SqlSync.DbInformation;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.MultiDb;
-using System.Threading;
-using System.IO;
 using System.ComponentModel;
-using System.Xml.Xsl;
-using System.Xml.XPath;
+using System.IO;
+using System.Text;
 using System.Xml;
+using System.Xml.XPath;
+using System.Xml.Xsl;
 namespace SqlSync.SqlBuild.Status
 {
     public class StatusReporting
@@ -31,7 +28,7 @@ namespace SqlSync.SqlBuild.Status
         public string GetScriptStatus()
         {
             BackgroundWorker bw = new BackgroundWorker();
-            return this.GetScriptStatus(ref bw, string.Empty,ReportType.XML);
+            return GetScriptStatus(ref bw, string.Empty, ReportType.XML);
         }
         public string GetScriptStatus(ref BackgroundWorker bgWorker, string fileName, ReportType reportType)
         {
@@ -43,7 +40,7 @@ namespace SqlSync.SqlBuild.Status
                 {
                     StatusReporting.SyncObj.WorkingRunners++;
                 }
-                StatusReportRunner runner = new StatusReportRunner(this.buildData, srv.ServerName, srv.Overrides, projectFilePath);
+                StatusReportRunner runner = new StatusReportRunner(buildData, srv.ServerName, srv.Overrides, projectFilePath);
                 runners.Add(runner);
                 System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedScriptStatus, runner);
             }
@@ -62,10 +59,10 @@ namespace SqlSync.SqlBuild.Status
                 bgWorker.ReportProgress(0, "Collating Results...");
 
             ServerStatusDataCollection coll = new ServerStatusDataCollection();
-            coll.BuildFileNameFull = this.buildZipFileName;
-            foreach (StatusReportRunner runner in this.runners)
+            coll.BuildFileNameFull = buildZipFileName;
+            foreach (StatusReportRunner runner in runners)
             {
-               coll[runner.ServerName][runner.BaseDatabase] = runner.Status;
+                coll[runner.ServerName][runner.BaseDatabase] = runner.Status;
             }
             return GenerateReport(coll, fileName, reportType);
         }
@@ -85,11 +82,11 @@ namespace SqlSync.SqlBuild.Status
             }
         }
 
-        private string GenerateReport(ServerStatusDataCollection collection, string fileName,ReportType reportType)
+        private string GenerateReport(ServerStatusDataCollection collection, string fileName, ReportType reportType)
         {
             MemoryStream ms = new MemoryStream();
-        
-            StringBuilder sb  = new StringBuilder();
+
+            StringBuilder sb = new StringBuilder();
             using (StringWriter sw = new StringWriter(sb))
             {
                 System.Xml.Serialization.XmlSerializer xmlS = new System.Xml.Serialization.XmlSerializer(typeof(ServerStatusDataCollection));
@@ -100,7 +97,7 @@ namespace SqlSync.SqlBuild.Status
 
             if (fileName.Length > 0)
             {
-                
+
                 XmlTextReader xsltReader;
 
                 XslCompiledTransform trans = new XslCompiledTransform();

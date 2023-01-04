@@ -1,9 +1,9 @@
-﻿using SqlBuildManager.Enterprise.Properties;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Enterprise.Properties;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for SettingsTest and is intended
     ///to contain all SettingsTest Unit Tests

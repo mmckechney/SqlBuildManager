@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using SqlBuildManager.Enterprise;
+﻿using SqlBuildManager.Enterprise;
+using System;
 using System.Diagnostics;
+using System.Windows.Forms;
 namespace SqlSync.SqlBuild.Notification
 {
     public partial class TableWatchControl : UserControl
@@ -25,7 +20,7 @@ namespace SqlSync.SqlBuild.Notification
 
         private void TableWatchControl_Load(object sender, EventArgs e)
         {
-            if (this.watch == null)
+            if (watch == null)
                 return;
 
             lblDescription.Text = watch.Description;
@@ -54,6 +49,6 @@ namespace SqlSync.SqlBuild.Notification
             prc.Start();
         }
 
-       
+
     }
 }

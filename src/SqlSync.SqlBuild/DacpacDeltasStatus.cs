@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SqlSync.SqlBuild
+﻿namespace SqlSync.SqlBuild
 {
     public enum DacpacDeltasStatus
     {
@@ -31,7 +25,7 @@ namespace SqlSync.SqlBuild
         /// <summary>
         /// Status gathering in process
         /// </summary>
-        Processing, 
+        Processing,
         /// <summary>
         /// Script contains only post-deployment steps and will not be used as a change source
         /// </summary>

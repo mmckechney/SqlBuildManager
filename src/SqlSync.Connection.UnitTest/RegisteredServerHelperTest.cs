@@ -1,12 +1,10 @@
-﻿using SqlSync.Connection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using System.Text.RegularExpressions;
 namespace SqlSync.Connection.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for RegisteredServerHelperTest and is intended
     ///to contain all RegisteredServerHelperTest Unit Tests
@@ -58,7 +56,7 @@ namespace SqlSync.Connection.UnitTest
             RegisteredServers actual;
             actual = RegisteredServerHelper.DeserializeRegisteredServers(serverFileContents);
             Assert.IsNull(actual);
-            
+
         }
         /// <summary>
         ///A test for DeserializeRegisteredServers
@@ -77,12 +75,12 @@ namespace SqlSync.Connection.UnitTest
         #endregion
 
         #region GetRegisteredServersTest
-      
+
 
 
         #endregion
 
-       
+
 
         /// <summary>
         ///A test for ReloadRegisteredServerData
@@ -115,7 +113,7 @@ namespace SqlSync.Connection.UnitTest
             regServers.ServerGroup[0] = new ServerGroup() { Name = "Test" };
             regServers.ServerGroup[1] = new ServerGroup() { Name = "Test2" };
 
-            bool expected = true; 
+            bool expected = true;
             bool actual;
             RegisteredServerHelper.RegisteredServerFileName = Path.GetTempFileName();
             actual = RegisteredServerHelper.SaveRegisteredServers(regServers);
@@ -145,7 +143,7 @@ namespace SqlSync.Connection.UnitTest
             actual = RegisteredServerHelper.SaveRegisteredServers(regServers);
             Assert.AreEqual(expected, actual);
 
-       }
+        }
         #endregion
 
         #region SerializeRegisteredServersTest
@@ -243,7 +241,7 @@ namespace SqlSync.Connection.UnitTest
             RegisteredServerHelper.RegisteredServerFileName = expected;
             actual = RegisteredServerHelper.RegisteredServerFileName;
             Assert.AreEqual(expected, actual);
-            
+
         }
     }
 }

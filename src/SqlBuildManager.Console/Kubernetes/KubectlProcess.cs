@@ -8,7 +8,7 @@ namespace SqlBuildManager.Console.Kubernetes
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static int ApplyFile(string fileName)
         {
-            (int resp, string output, string error) =  RunKubectl($"apply -f \"{fileName}\"");
+            (int resp, string output, string error) = RunKubectl($"apply -f \"{fileName}\"");
             return resp;
         }
 
@@ -18,7 +18,7 @@ namespace SqlBuildManager.Console.Kubernetes
             {
                 k8namespace = $" -n {k8namespace}";
             }
-            (int resp, string output, string error) =  RunKubectl($"delete  {resourceKind} {resourceName} {k8namespace}");
+            (int resp, string output, string error) = RunKubectl($"delete  {resourceKind} {resourceName} {k8namespace}");
             return resp;
         }
         public static int CreateKubernetesResource(string resourceKind, string resourceName, string k8namespace = "")
@@ -46,7 +46,7 @@ namespace SqlBuildManager.Console.Kubernetes
             {
                 k8namespace = $" -n {k8namespace}";
             }
-            (int resp, string output, string error) = RunKubectl($"describe  {resourceKind} {resourceName} {k8namespace}",false);
+            (int resp, string output, string error) = RunKubectl($"describe  {resourceKind} {resourceName} {k8namespace}", false);
             return resp;
         }
 
@@ -56,43 +56,43 @@ namespace SqlBuildManager.Console.Kubernetes
             bool hasRunning = false;
             bool hasCompleted = false;
             bool hasPending = false;
- 
+
             (int resp, string output, string error) = RunKubectl($"get pods -n {KubernetesManager.SbmNamespace}", false);
-            if(resp == 0)
+            if (resp == 0)
             {
                 var arrOut = output.Split("\n", StringSplitOptions.RemoveEmptyEntries);
-                foreach(var line in arrOut)
+                foreach (var line in arrOut)
                 {
-                    if(line.Trim().StartsWith(k8jobName))
+                    if (line.Trim().StartsWith(k8jobName))
                     {
                         var linearr = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                         if (line.ToLower().Contains("error") || line.ToLower().Contains("crashloopbackoff"))
                         {
-                            if(logStatus)  log.LogError($"Pod {linearr[0]} is showing error status {linearr[2]}");
+                            if (logStatus) log.LogError($"Pod {linearr[0]} is showing error status {linearr[2]}");
                             hasError = true;
                         }
-                        if(line.ToLower().Contains("running"))
+                        if (line.ToLower().Contains("running"))
                         {
                             if (logStatus) log.LogInformation($"Pod {linearr[0]} is running");
                             hasRunning = true;
                         }
-                        if(line.ToLower().Contains("completed"))
+                        if (line.ToLower().Contains("completed"))
                         {
                             if (logStatus) log.LogInformation($"Pod {linearr[0]} is completed");
                             hasCompleted = true;
                         }
                         if (line.ToLower().Contains("pending"))
-{
+                        {
                             if (logStatus) log.LogWarning($"Pod {linearr[0]} is pending");
                             hasPending = true;
                         }
                     }
                 }
-                if(hasRunning)
+                if (hasRunning)
                 {
                     return PodStatus.Running;
                 }
-                if(hasCompleted)
+                if (hasCompleted)
                 {
                     return PodStatus.Completed;
                 }

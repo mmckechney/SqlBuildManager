@@ -1,9 +1,8 @@
-﻿using SqlBuildManager.Enterprise;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SqlBuildManager.Enterprise.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for NotifyTest and is intended
     ///to contain all NotifyTest Unit Tests

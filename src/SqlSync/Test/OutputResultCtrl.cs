@@ -1,9 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
 
 namespace SqlSync.Test
@@ -48,10 +43,10 @@ namespace SqlSync.Test
             InitializeComponent();
             this.outputResult = outputResult;
         }
-       
+
         private void OutputResultCtrl_Load(object sender, EventArgs e)
         {
-            if (this.outputResult != null)
+            if (outputResult != null)
             {
                 txtExpectedValue.Text = outputResult.Value;
                 txtColumnName.Text = outputResult.ColumnName;

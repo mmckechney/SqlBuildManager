@@ -1,23 +1,20 @@
-﻿using SqlBuildManager.Console;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using System.Collections.Generic;
-using System;
-using System.IO;
-using SqlBuildManager.Interfaces.Console;
-using System.Data.SqlClient;
-using System.Threading;
-using System.Text.RegularExpressions;
-using SqlBuildManager.Console.Threaded;
-using Microsoft.Extensions.Logging;
-using System.Text;
-using System.Linq;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Threaded;
+using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
-    
-    
+
+
     /// <summary>
     ///This is a test class for ThreadedExecutionTest and is intended
     ///to contain all ThreadedExecutionTest Unit Tests
@@ -37,11 +34,11 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         private static string GetLocalhostFolderName(string loggingRoot)
         {
-            if(Directory.Exists(Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS")))
+            if (Directory.Exists(Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS")))
             {
                 return Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS");
             }
-            else if(Directory.Exists(Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS")))
+            else if (Directory.Exists(Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS")))
             {
                 return Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS");
             }
@@ -121,7 +118,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--timeoutretrycount", "0",
                  "--concurrency", "1",
                 "--concurrencytype",  "Count"
-                
+
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedExecution target = new ThreadedExecution(cmdLine);
@@ -460,7 +457,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0",
-                "--authtype", 
+                "--authtype",
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedExecution target = new ThreadedExecution(cmdLine);
@@ -512,7 +509,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
             }
 
-       }
+        }
         /// <summary>
         ///A test for Execute
         ///</summary>
@@ -560,14 +557,14 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
                 //SqlBuildTest should still committed with at least one timeout message
-                string[] logFiles = Directory.GetFiles( Path.Combine(GetLocalhostFolderName(loggingPath),"SqlBuildTest"),"*.log");
+                string[] logFiles = Directory.GetFiles(Path.Combine(GetLocalhostFolderName(loggingPath), "SqlBuildTest"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
-                Regex regFindTimeout = new Regex("Timeout expired",RegexOptions.IgnoreCase);
+                Regex regFindTimeout = new Regex("Timeout expired", RegexOptions.IgnoreCase);
 
                 MatchCollection matches = regFindTimeout.Matches(logContents);
                 Assert.IsTrue(matches.Count > 0, "No Timeout messages were encountered");
-                Assert.IsTrue(matches.Count < retryCount+1 , String.Format("There were more Timeout retries than configured for! Allocated {0}; Found {1}",retryCount+1, matches.Count));
+                Assert.IsTrue(matches.Count < retryCount + 1, String.Format("There were more Timeout retries than configured for! Allocated {0}; Found {1}", retryCount + 1, matches.Count));
                 Assert.IsTrue(logContents.IndexOf("COMMIT TRANSACTION") > -1, "SqlBuildTest Log does not contain a 'COMMIT' message");
                 Assert.IsTrue(logContents.IndexOf("ROLLBACK TRANSACTION") > -1, "SqlBuildTest does not contain a 'ROLLBACK' message. It should for the retries.");
                 Assert.IsTrue(logContents.IndexOf("use SqlBuildTest") > -1, "SqlBuildTest Log does not contain the proper database name");
@@ -652,7 +649,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
                 MatchCollection matches = regFindTimeout.Matches(logContents);
-                Assert.IsTrue(matches.Count == retryCount + 1, String.Format("Timeout message count of {0} does not equal retrycount +1 value of {1}", matches.Count.ToString(),(retryCount+1).ToString()));
+                Assert.IsTrue(matches.Count == retryCount + 1, String.Format("Timeout message count of {0} does not equal retrycount +1 value of {1}", matches.Count.ToString(), (retryCount + 1).ToString()));
                 Assert.IsTrue(logContents.IndexOf("ROLLBACK TRANSACTION") > -1, "SqlBuildTest Log does not contain a 'ROLLBACK' message");
                 Assert.IsTrue(logContents.IndexOf("COMMIT TRANSACTION") == -1, "SqlBuildTest Log contains a 'COMMIT' message - it should not for a rollback");
                 Assert.IsTrue(logContents.IndexOf("use SqlBuildTest") > -1, "SqlBuildTest Log does not contain the proper database name");
@@ -801,7 +798,7 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
 
-           
+
 
             if (actual == -600)
                 Assert.Fail("Unable to complete test!");
@@ -986,7 +983,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             {
                 THRInfinite = new Thread(StartInfiniteLockingThread);
                 THRInfinite.Start(10000000);
-              
+
 
                 actual = target.Execute();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
@@ -1088,7 +1085,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 Assert.AreEqual(1, logFiles.Length, "Unable to find SqlBuildTest log file necessary to complete test");
                 string logContents = File.ReadAllText(logFiles[0]);
                 MatchCollection matches = regFindTimeout.Matches(logContents);
-                Assert.IsTrue(matches.Count < retryCount +1 , String.Format("Timeout message count of {0} should be less than the retrycount +1 value of {1}", matches.Count.ToString(), (retryCount + 1).ToString()));
+                Assert.IsTrue(matches.Count < retryCount + 1, String.Format("Timeout message count of {0} should be less than the retrycount +1 value of {1}", matches.Count.ToString(), (retryCount + 1).ToString()));
                 Assert.IsTrue(logContents.IndexOf("ROLLBACK TRANSACTION") > -1, "SqlBuildTest Log does not contain a 'ROLLBACK' message - it should for a trial run");
                 Assert.IsTrue(logContents.IndexOf("COMMIT TRANSACTION") == -1, " SqlBuildTest Log contains a 'COMMIT' message - it should for a trial run");
                 Assert.IsTrue(logContents.IndexOf("use SqlBuildTest") > -1, "SqlBuildTest Log does not contain the proper database name");
@@ -1116,7 +1113,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     if (Directory.Exists(loggingPath))
                         Directory.Delete(loggingPath, true);
                 }
-                catch {}
+                catch { }
             }
         }
 
@@ -1209,14 +1206,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         {
             try
             {
-            int loop = (int)loopCount;
-            string connStr = string.Format(Initialization.ConnectionString, "SqlBuildTest");
-            SqlConnection conn = new SqlConnection(connStr);
-            SqlCommand cmd = new SqlCommand(string.Format(Properties.Resources.TableLockingScript, loop.ToString()), conn);
-            conn.Open();
-            cmd.ExecuteNonQuery();
-            }catch
-            {}
+                int loop = (int)loopCount;
+                string connStr = string.Format(Initialization.ConnectionString, "SqlBuildTest");
+                SqlConnection conn = new SqlConnection(connStr);
+                SqlCommand cmd = new SqlCommand(string.Format(Properties.Resources.TableLockingScript, loop.ToString()), conn);
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+            catch
+            { }
         }
 
         private void StartSqlTimeoutThread(object targetDatabase)
@@ -1228,7 +1226,8 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 SqlCommand cmd = new SqlCommand(Properties.Resources.sql_waitfor_createtimeout, conn);
                 conn.Open();
                 cmd.ExecuteNonQuery();
-            } catch
+            }
+            catch
             {
 
             }

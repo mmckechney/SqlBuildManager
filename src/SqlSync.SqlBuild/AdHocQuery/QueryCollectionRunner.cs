@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using Polly;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Status;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using Microsoft.Data.SqlClient;
 using System.IO;
+using System.Text;
 using System.Xml;
-using System.Xml.Serialization;
-using SqlSync.SqlBuild.Status;
-using Microsoft.Extensions.Logging;
-using System.Reflection;
-using Polly;
 namespace SqlSync.SqlBuild.AdHocQuery
 {
     public class QueryCollectionRunner : IDisposable
@@ -63,31 +61,31 @@ namespace SqlSync.SqlBuild.AdHocQuery
             this.tempWorkingDirectory = tempWorkingDirectory;
             this.scriptTimeout = scriptTimeout;
             this.masterConnData = masterConnData;
-         }
+        }
 
         public void CollectQueryData()
         {
 
-            this.ConfigurePollyRetryPolicies();
+            ConfigurePollyRetryPolicies();
             string errorMessage = string.Empty;
-            if (this.QueryCollectionRunnerUpdate != null)
-                QueryCollectionRunnerUpdate(this, new QueryCollectionRunnerUpdateEventArgs(this.serverName, this.databaseName, "Starting"));
+            if (QueryCollectionRunnerUpdate != null)
+                QueryCollectionRunnerUpdate(this, new QueryCollectionRunnerUpdateEventArgs(serverName, databaseName, "Starting"));
 
             ConnectionData connData = new ConnectionData(serverName, databaseName);
-            if(this.masterConnData.AuthenticationType == AuthenticationType.AzureADPassword || this.masterConnData.AuthenticationType == AuthenticationType.Password)
+            if (masterConnData.AuthenticationType == AuthenticationType.AzureADPassword || masterConnData.AuthenticationType == AuthenticationType.Password)
             {
-                connData.UserId = this.masterConnData.UserId;
-                connData.Password = this.masterConnData.Password;
-                connData.AuthenticationType = this.masterConnData.AuthenticationType;
+                connData.UserId = masterConnData.UserId;
+                connData.Password = masterConnData.Password;
+                connData.AuthenticationType = masterConnData.AuthenticationType;
             }
-            connData.ScriptTimeout = this.scriptTimeout;
+            connData.ScriptTimeout = scriptTimeout;
             SqlConnection conn = ConnectionHelper.GetConnection(connData);
             SqlCommand cmd = new SqlCommand(query, conn);
             cmd.CommandType = CommandType.Text;
 
 
-            results = new QueryResultData(this.serverName, this.databaseName);
-            results.QueryAppendData = (List<QueryRowItem>)this.AppendData;
+            results = new QueryResultData(serverName, databaseName);
+            results.QueryAppendData = (List<QueryRowItem>)AppendData;
             int rowCount = 0;
             try
             {
@@ -95,7 +93,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                     {
                         if (conn.State == ConnectionState.Closed)
                             conn.Open();
-                        
+
                         rowCount = 0;
 
                         string columnName = string.Empty;
@@ -133,7 +131,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                                 rowCount++;
 
                                 if (rowCount % 10000 == 0)
-                                    this.DumpResults();
+                                    DumpResults();
                             }
                             reader.Close();
                             reader.Dispose();
@@ -144,14 +142,14 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             catch (OutOfMemoryException omExe)
             {
-                log.LogError(omExe, $"Ran out of memory running Query: {query} on {connData.SQLServerName}.{connData.DatabaseName}" );
+                log.LogError(omExe, $"Ran out of memory running Query: {query} on {connData.SQLServerName}.{connData.DatabaseName}");
             }
             catch (Exception exe)
             {
                 errorMessage = exe.Message;
                 log.LogError(exe, $"Error Executing Query: {query}");
                 Result r = new Result();
-                r.Add("","** Execution Error: "+errorMessage);
+                r.Add("", "** Execution Error: " + errorMessage);
                 results.Results.Add(r);
             }
             finally
@@ -160,9 +158,9 @@ namespace SqlSync.SqlBuild.AdHocQuery
                     conn.Close();
             }
 
-            this.DumpResults();
+            DumpResults();
             string combined = MergeDumpFiles();
-            this.SerializeToTempFile(combined);
+            SerializeToTempFile(combined);
             results = null;
         }
 
@@ -175,10 +173,10 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// </summary>
         private void DumpResults()
         {
-            string tmpDump = Path.Combine(this.tempWorkingDirectory , String.Format("Dump-{0}.txt", Guid.NewGuid().ToString()));
-            if (this.reportType == ReportType.CSV)
+            string tmpDump = Path.Combine(tempWorkingDirectory, String.Format("Dump-{0}.txt", Guid.NewGuid().ToString()));
+            if (reportType == ReportType.CSV)
             {
-                File.WriteAllText(tmpDump, this.results.GetRowValuesCsvString());
+                File.WriteAllText(tmpDump, results.GetRowValuesCsvString());
             }
             else
             {
@@ -186,13 +184,13 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 {
                     sw.Formatting = Formatting.Indented;
                     System.Xml.Serialization.XmlSerializer xmlS = new System.Xml.Serialization.XmlSerializer(typeof(List<Result>));
-                    xmlS.Serialize(sw, this.results.Results);
+                    xmlS.Serialize(sw, results.Results);
                     sw.Flush();
                     sw.Close();
                 }
             }
-            this.dumpFiles.Add(tmpDump);
-            this.results.Results = new List<Result>();
+            dumpFiles.Add(tmpDump);
+            results.Results = new List<Result>();
         }
         /// <summary>
         /// Once an extract is complete, each dump file that was created gets merged into a single file representing this set of data.
@@ -200,11 +198,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <returns></returns>
         private string MergeDumpFiles()
         {
-            string tmpCombined = Path.Combine(this.tempWorkingDirectory , String.Format("Merge-{0}.txt", Guid.NewGuid().ToString()));
-            if (this.reportType == ReportType.CSV)
+            string tmpCombined = Path.Combine(tempWorkingDirectory, String.Format("Merge-{0}.txt", Guid.NewGuid().ToString()));
+            if (reportType == ReportType.CSV)
             {
-                File.WriteAllText(tmpCombined, this.results.GetColumnsCsvString() + "\r\n");
-                foreach (string partial in this.dumpFiles)
+                File.WriteAllText(tmpCombined, results.GetColumnsCsvString() + "\r\n");
+                foreach (string partial in dumpFiles)
                 {
                     File.AppendAllText(tmpCombined, File.ReadAllText(partial));
                     File.Delete(partial);
@@ -215,7 +213,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 string tempLine = null;
                 using (StreamWriter sw = new StreamWriter(tmpCombined, true))
                 {
-                    foreach (string partial in this.dumpFiles)
+                    foreach (string partial in dumpFiles)
                     {
                         using (StreamReader sr = new StreamReader(partial))
                         {
@@ -251,25 +249,25 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="combinedFile">The name of the merged dump file.</param>
         private void SerializeToTempFile(string combinedFile)
         {
-            if (this.reportType == ReportType.CSV)
+            if (reportType == ReportType.CSV)
             {
-                this.ResultsTempFile = combinedFile;
+                ResultsTempFile = combinedFile;
                 return;
             }
             //Write the results shell to a file... but remember, we've dumped all the data, that needs to be re-integrated...
-            string tmpShell = Path.Combine(this.tempWorkingDirectory, String.Format("Shell-{0}.txt", Guid.NewGuid().ToString()));
+            string tmpShell = Path.Combine(tempWorkingDirectory, String.Format("Shell-{0}.txt", Guid.NewGuid().ToString()));
             using (XmlTextWriter sw = new XmlTextWriter(tmpShell, Encoding.UTF8))
             {
                 sw.Formatting = Formatting.Indented;
                 System.Xml.Serialization.XmlSerializer xmlS = new System.Xml.Serialization.XmlSerializer(typeof(QueryResultData));
-                xmlS.Serialize(sw, this.results);
+                xmlS.Serialize(sw, results);
                 sw.Flush();
                 sw.Close();
             }
 
-            this.ResultsTempFile = Path.Combine(this.tempWorkingDirectory , String.Format("Combined-{0}.txt", Guid.NewGuid().ToString()));
+            ResultsTempFile = Path.Combine(tempWorkingDirectory, String.Format("Combined-{0}.txt", Guid.NewGuid().ToString()));
             string tmpLine = null;
-            using (StreamWriter sw = new StreamWriter(this.ResultsTempFile))
+            using (StreamWriter sw = new StreamWriter(ResultsTempFile))
             {
                 using (StreamReader srShell = new StreamReader(tmpShell))
                 {
@@ -312,9 +310,9 @@ namespace SqlSync.SqlBuild.AdHocQuery
         {
             try
             {
-                if (File.Exists(this.ResultsTempFile))
+                if (File.Exists(ResultsTempFile))
                 {
-                    File.Delete(this.ResultsTempFile);
+                    File.Delete(ResultsTempFile);
                 }
             }
             catch
@@ -331,9 +329,9 @@ namespace SqlSync.SqlBuild.AdHocQuery
         public readonly string Message;
         public QueryCollectionRunnerUpdateEventArgs(string server, string database, string message)
         {
-            this.Server = server;
-            this.Database = database;
-            this.Message = message;
+            Server = server;
+            Database = database;
+            Message = message;
         }
     }
 }
