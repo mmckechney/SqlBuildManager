@@ -10,12 +10,12 @@
 		<property>
 			<public_name>Connection</public_name>
 			<default_value>null</default_value>
-			<data_type>System.Data.SqlClient.SqlConnection</data_type>
+			<data_type>Microsoft.Data.SqlClient.SqlConnection</data_type>
 		</property>
 		<property>
 			<public_name>Transaction</public_name>
 			<default_value>null</default_value>
-			<data_type>System.Data.SqlClient.SqlTransaction</data_type>
+			<data_type>Microsoft.Data.SqlClient.SqlTransaction</data_type>
 		</property>
 		<property>
 			<public_name>DatabaseName</public_name>

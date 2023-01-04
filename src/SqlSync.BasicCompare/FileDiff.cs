@@ -4,7 +4,7 @@ namespace SqlSync.BasicCompare
     using System.Collections;
     using System.Collections.Specialized;
     using System.ComponentModel;
-    using System.Data.SqlClient;
+    using Microsoft.Data.SqlClient;
     using System.Text;
 
     [Serializable, DesignerCategory("Component"), DesignTimeVisible(true), ToolboxItem(true)]

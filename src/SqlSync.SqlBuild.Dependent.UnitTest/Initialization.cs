@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
 using System.IO;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
@@ -22,7 +22,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public string projectFileName = null;
         public string buildHistoryXmlFile = null;
 
-        public string connectionString = @"Data Source=(local)\SQLEXPRESS;Initial Catalog={0}; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;";
+        public string connectionString = @"Data Source=(local)\SQLEXPRESS;Initial Catalog={0}; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;Trust Server Certificate=true";
         public string serverName = @"(local)\SQLEXPRESS";
 
         public string PreRunScriptGuid = "47037F10-C217-4e7b-89AE-482F8C09D672";

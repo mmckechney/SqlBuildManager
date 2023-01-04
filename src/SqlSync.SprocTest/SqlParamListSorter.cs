@@ -1,6 +1,6 @@
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 namespace SqlSync.SprocTest
 {
     class SqlParamListSorter : IComparer<List<SqlParameter>>

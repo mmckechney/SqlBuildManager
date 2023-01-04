@@ -141,7 +141,7 @@ namespace SQLSync {
             }
         }
         
-        public virtual bool Fill(System.Data.SqlClient.SqlDataReader reader, bool closeReader) {
+        public virtual bool Fill(Microsoft.Data.SqlClient.SqlDataReader reader, bool closeReader) {
             try {
                 if ((reader.Read() == false)) {
                     reader.Close();
