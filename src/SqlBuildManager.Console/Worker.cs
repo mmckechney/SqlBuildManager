@@ -1508,7 +1508,7 @@ namespace SqlBuildManager.Console
         {
             if (templateFile != null)
             {
-                cmdLine = Aci.AciHelper.GetRuntimeValuesFromDeploymentTempate(cmdLine, templateFile.FullName);
+                cmdLine = Aci.AciHelper.GetRuntimeValuesFromDeploymentTemplate(cmdLine, templateFile.FullName);
             }
 
             if (string.IsNullOrWhiteSpace(cmdLine.JobName))
@@ -1542,7 +1542,7 @@ namespace SqlBuildManager.Console
                 log.LogError("The value for --subscriptionid is required as a parameter or inclusion in the --settingsfile");
             }
 
-            cmdLine = Aci.AciHelper.GetRuntimeValuesFromDeploymentTempate(cmdLine, templateFile.FullName);
+            cmdLine = Aci.AciHelper.GetRuntimeValuesFromDeploymentTemplate(cmdLine, templateFile.FullName);
             var utcMonitorStart = DateTime.UtcNow;
             var success = await Aci.AciHelper.DeployAciInstance(templateFile.FullName, cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName, cmdLine.JobName);
             if (success && monitor)

@@ -191,7 +191,7 @@ namespace SqlBuildManager.Console.Aci
             return aciResult;
         }
 
-        internal static CommandLineArgs GetRuntimeValuesFromDeploymentTempate(CommandLineArgs cmdLine, string templateFileName)
+        internal static CommandLineArgs GetRuntimeValuesFromDeploymentTemplate(CommandLineArgs cmdLine, string templateFileName)
         {
             var j = System.Text.Json.JsonSerializer.Deserialize<Aci.TemplateClass>(File.ReadAllText(templateFileName));
             cmdLine.JobName = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_JobName").FirstOrDefault().Value;

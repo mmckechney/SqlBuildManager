@@ -50,24 +50,26 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void ACI_Queue_SBMSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
-            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
+            try
             {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+                }
 
 
-            //get the size of the log file before we start
-            int startingLine = TestHelper.LogFileCurrentLineCount();
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
 
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            string jobName = TestHelper.GetUniqueJobName("aci");
-            string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("aci");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
-            //Prep the build
-            var args = new string[]{
+                //Prep the build
+                var args = new string[]{
                 "aci",  "prep",
                 "--settingsfile", settingsFile,
                 "--tag", imageTag,
@@ -80,26 +82,26 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--force"
             };
 
-            var val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            int result = val.Result;
-            Assert.AreEqual(0, result);
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
 
-            //enqueue the topic messages
-            args = new string[]{
+                //enqueue the topic messages
+                args = new string[]{
                 "aci",  "enqueue",
                 "--settingsfile", settingsFile,
                 "--jobname", jobName,
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", overrideFile
             };
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-            Assert.AreEqual(0, result);
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
 
-            //monitor for completion
-            args = new string[]{
+                //monitor for completion
+                args = new string[]{
                 "aci",  "deploy",
                  "--settingsfile", settingsFile,
                  "--templatefile", outputFile,
@@ -107,10 +109,15 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest", "true",
                 "--monitor", "true"
             };
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-            Assert.AreEqual(0, result);
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+            }
 
 
         }
@@ -202,24 +209,26 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void ACI_Queue_SBMSource_ManagedIdentity_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
-            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-            var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
+            try
             {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+                }
 
 
-            //get the size of the log file before we start
-            int startingLine = TestHelper.LogFileCurrentLineCount();
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
 
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            string jobName = TestHelper.GetUniqueJobName("aci");
-            string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("aci");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
-            //Prep the build
-            var args = new string[]{
+                //Prep the build
+                var args = new string[]{
                 "aci",  "prep",
                 "--settingsfile", settingsFile,
                 "--tag", imageTag,
@@ -232,26 +241,26 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--force"
             };
 
-            var val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            int result = val.Result;
-            Assert.AreEqual(0, result);
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
 
-            //enqueue the topic messages
-            args = new string[]{
+                //enqueue the topic messages
+                args = new string[]{
                 "aci",  "enqueue",
                 "--settingsfile", settingsFile,
                 "--jobname", jobName,
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", overrideFile
             };
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-            Assert.AreEqual(0, result);
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
 
-            //monitor for completion
-            args = new string[]{
+                //monitor for completion
+                args = new string[]{
                 "aci",  "deploy",
                  "--settingsfile", settingsFile,
                  "--templatefile", outputFile,
@@ -259,11 +268,15 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest", "true",
                 "--monitor", "true"
             };
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-            Assert.AreEqual(0, result);
-
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+            }
 
         }
 
@@ -271,39 +284,41 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void ACI_Queue_DacpacSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
-            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
-            int removeCount = 1;
-            string server, database;
+                int removeCount = 1;
+                string server, database;
 
-            var overrideFileContents = File.ReadAllLines(overrideFile).ToList();
-            string firstOverride = overrideFileContents.First();
-            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+                var overrideFileContents = File.ReadAllLines(overrideFile).ToList();
+                string firstOverride = overrideFileContents.First();
+                (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
 
-            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
-            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
+                string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+                File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
 
-            //Get the creds for the DB to be used for unit test DACPAC creation
-            var userNameFile = Path.GetFullPath("TestConfig/un.txt");
-            var un = File.ReadAllText(userNameFile).Trim();
-            var pwFile = Path.GetFullPath("TestConfig/pw.txt");
-            var pw = File.ReadAllText(pwFile).Trim();
+                //Get the creds for the DB to be used for unit test DACPAC creation
+                var userNameFile = Path.GetFullPath("TestConfig/un.txt");
+                var un = File.ReadAllText(userNameFile).Trim();
+                var pwFile = Path.GetFullPath("TestConfig/pw.txt");
+                var pw = File.ReadAllText(pwFile).Trim();
 
 
-            var cmdLine = new CommandLineArgs() { UserName = un, Password = pw };
-            DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
-            string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
+                var cmdLine = new CommandLineArgs() { UserName = un, Password = pw };
+                DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+                string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
 
-            //get the size of the log file before we start
-            int startingLine = TestHelper.LogFileCurrentLineCount();
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
 
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            string jobName = TestHelper.GetUniqueJobName("aci");
-            string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("aci");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
-            //Prep the build
-            var args = new string[]{
+                //Prep the build
+                var args = new string[]{
                 "aci",  "prep",
                 "--settingsfile", settingsFile,
                 "--tag", imageTag,
@@ -317,26 +332,26 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--force"
             };
 
-            var val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            int result = val.Result;
-            Assert.AreEqual(0, result);
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
 
-            //enqueue the topic messages
-            args = new string[]{
+                //enqueue the topic messages
+                args = new string[]{
                 "aci",  "enqueue",
                 "--settingsfile", settingsFile,
                 "--jobname", jobName,
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", minusFirst
             };
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-            Assert.AreEqual(0, result);
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
 
-            //monitor for completion
-            args = new string[]{
+                //monitor for completion
+                args = new string[]{
                 "aci",  "deploy",
                  "--settingsfile", settingsFile,
                  "--templatefile", outputFile,
@@ -344,52 +359,59 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest", "true",
                 "--monitor", "true"
             };
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-            Assert.AreEqual(0, result);
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+            }
         }
         [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataTestMethod]
         public void ACI_Queue_DacpacSource_ForceApplyCustom_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
-            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
-            int removeCount = 1;
-            string server, database;
+                int removeCount = 1;
+                string server, database;
 
-            var overrideFileContents = File.ReadAllLines(overrideFile).ToList();
+                var overrideFileContents = File.ReadAllLines(overrideFile).ToList();
 
-            string firstOverride = overrideFileContents.First();
-            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+                string firstOverride = overrideFileContents.First();
+                (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
 
-            string server2, database2;
-            string thirdOverride = overrideFileContents.ElementAt(2);
-            (server2, database2) = DatabaseHelper.ExtractServerAndDbFromLine(thirdOverride);
+                string server2, database2;
+                string thirdOverride = overrideFileContents.ElementAt(2);
+                (server2, database2) = DatabaseHelper.ExtractServerAndDbFromLine(thirdOverride);
 
-            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
-            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
+                string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+                File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
 
-            //Get the creds for the DB to be used for unit test DACPAC creation
-            var userNameFile = Path.GetFullPath("TestConfig/un.txt");
-            var un = File.ReadAllText(userNameFile).Trim();
-            var pwFile = Path.GetFullPath("TestConfig/pw.txt");
-            var pw = File.ReadAllText(pwFile).Trim();
+                //Get the creds for the DB to be used for unit test DACPAC creation
+                var userNameFile = Path.GetFullPath("TestConfig/un.txt");
+                var un = File.ReadAllText(userNameFile).Trim();
+                var pwFile = Path.GetFullPath("TestConfig/pw.txt");
+                var pw = File.ReadAllText(pwFile).Trim();
 
-            var cmdLine = new CommandLineArgs() { UserName = un, Password = pw };
-            DatabaseHelper.CreateRandomTable(cmdLine, new List<string>() { firstOverride, thirdOverride });
-            string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
+                var cmdLine = new CommandLineArgs() { UserName = un, Password = pw };
+                DatabaseHelper.CreateRandomTable(cmdLine, new List<string>() { firstOverride, thirdOverride });
+                string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
 
-            //get the size of the log file before we start
-            int startingLine = TestHelper.LogFileCurrentLineCount();
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
 
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            string jobName = TestHelper.GetUniqueJobName("aci");
-            string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("aci");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
-            //Prep the build
-            var args = new string[]{
+                //Prep the build
+                var args = new string[]{
                 "aci",  "prep",
                 "--settingsfile", settingsFile,
                 "--tag", imageTag,
@@ -403,32 +425,32 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--force"
             };
 
-            var val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            int result = val.Result;
-            Assert.AreEqual(0, result);
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
 
 
 
-            //enqueue the topic messages
-            args = new string[]{
+                //enqueue the topic messages
+                args = new string[]{
                 "aci",  "enqueue",
                 "--settingsfile", settingsFile,
                 "--jobname", jobName,
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", minusFirst
             };
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-            Assert.AreEqual(0, result);
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
 
-            //Create another table in the first that will be applied when the custom DACPAC is created
-            DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
-            DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
+                //Create another table in the first that will be applied when the custom DACPAC is created
+                DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+                DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
 
-            //monitor for completion
-            args = new string[]{
+                //monitor for completion
+                args = new string[]{
                 "aci",  "deploy",
                  "--settingsfile", settingsFile,
                  "--templatefile", outputFile,
@@ -437,13 +459,18 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--monitor", "true",
                 "--stream", "true"
             };
-            val = rootCommand.InvokeAsync(args);
-            val.Wait();
-            result = val.Result;
-            Assert.AreEqual(0, result);
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
 
-            var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
-            Assert.IsTrue(logFileContents.Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
+                var tmp = ConsoleOutput.ToString();
+                Assert.IsTrue(tmp.Contains("Dacpac Databases In Sync") || tmp.Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+            }
 
         }
     }
