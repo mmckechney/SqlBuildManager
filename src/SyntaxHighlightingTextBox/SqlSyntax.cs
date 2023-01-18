@@ -57,7 +57,7 @@ namespace SqlSync.Highlighting
             }
             coll.Add(new HighlightDescriptor("GO", Color.Purple, null, DescriptorType.Word, DescriptorRecognition.WholeWord, true));
             coll.Add(new HighlightDescriptor("/*", "*/", Color.Green, null, DescriptorType.ToCloseToken, DescriptorRecognition.StartsWith, false));
-            //coll.Add(new HighlightDescriptor("'", "'", Color.Red, null, DescriptorType.ToCloseToken, DescriptorRecognition.StartsWith, false));
+            coll.Add(new HighlightDescriptor("'", "'", Color.Red, null, DescriptorType.ToCloseToken, DescriptorRecognition.StartsWith, false));
             coll.Add(new HighlightDescriptor("--", Color.Green, null, DescriptorType.ToEOL, DescriptorRecognition.StartsWith, false));
 
             sqlHighlighting = coll;

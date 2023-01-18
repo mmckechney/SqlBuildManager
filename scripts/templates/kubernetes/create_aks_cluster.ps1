@@ -2,6 +2,7 @@ param
 (
     [string] $prefix,
     [string] $resourceGroupName,
+    [string] $path = "..\..\..\src\TestConfig",
     [bool] $includeContainerRegistry
 )
 Write-Host "Create AKS cluster"  -ForegroundColor Cyan
@@ -62,7 +63,7 @@ $aksSubnetId = az network vnet subnet show --resource-group $resourceGroupName -
 # az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-managed-identity --enable-pod-identity --network-plugin azure --enable-addons virtual-node --vnet-subnet-id $aksSubnetId --aci-subnet-name $virtualKubletSubnet --yes -o table
 
 Write-Host "Creating AKS Cluster: $aksClusterName" -ForegroundColor DarkGreen
-az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-oidc-issuer --enable-workload-identity --network-plugin azure --vnet-subnet-id $aksSubnetId  --generate-ssh-keys --yes -o table
+az aks create --name $aksClusterName --resource-group $resourceGroupName --node-count 1 --enable-oidc-issuer --enable-workload-identity --network-plugin azure --vnet-subnet-id $aksSubnetId  --generate-ssh-keys --node-osdisk-type Ephemeral --node-vm-size Standard_DS3_v2 --yes -o table
 
 if($includeContainerRegistry)
 {

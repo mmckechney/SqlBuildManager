@@ -3,7 +3,7 @@ param
     [string] $prefix
 )
 
-Write-Host "Deleteing test databases" -ForegroundColor DarkGreen
+Write-Host "Deleting test databases" -ForegroundColor DarkGreen
 ./Database/delete_databases_fromprefix.ps1 -prefix $prefix
 
 Write-Host "Deleting batch pools" -ForegroundColor DarkGreen

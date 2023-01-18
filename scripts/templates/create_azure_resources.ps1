@@ -8,7 +8,7 @@ $prefix,
  $location = "East US",
 
  [string]
- $outputPath = "..\..\src\TestConfig",
+ $outputPath = 2,
 
  [int]
  $testDatabaseCount = 10,

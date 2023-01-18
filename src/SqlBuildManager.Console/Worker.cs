@@ -887,6 +887,7 @@ namespace SqlBuildManager.Console
         internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool stream, DateTime? utcStartDate, bool unittest = false, bool checkAciState = false)
         {
             Worker.activeServiceBusMonitoring = true;
+            CancellationTokenSource ehCancellationSource = new CancellationTokenSource();
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 bool kvSuccess;
@@ -908,8 +909,7 @@ namespace SqlBuildManager.Console
             Task eventHubMonitorTask = null;
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
-                CancellationTokenSource cancelSource = new CancellationTokenSource();
-                eventHubMonitorTask = ehandler.MonitorEventHub(stream, utcStartDate, cancelSource.Token);
+                eventHubMonitorTask = ehandler.MonitorEventHub(stream, utcStartDate, ehCancellationSource.Token);
             }
             else
             {
@@ -996,7 +996,10 @@ namespace SqlBuildManager.Console
                     else
                     {
                         if (eventHubMonitorTask != null)
+                        {
+                            ehCancellationSource.Cancel();
                             eventHubMonitorTask.Wait(500);
+                        }
 
                         break;
                     }
@@ -1029,7 +1032,13 @@ namespace SqlBuildManager.Console
 
             if (eventHubMonitorTask != null)
             {
-                eventHubMonitorTask.Dispose();
+                try
+                { 
+                    ehCancellationSource.Cancel();
+                    eventHubMonitorTask.Wait(500);
+                    eventHubMonitorTask.Dispose();
+                }
+                catch { }
             }
             ehandler.Dispose();
 

@@ -3,7 +3,8 @@
 param
 (
     [string] $prefix,
-    [string] $resourceGroupName
+    [string] $resourceGroupName,
+    [string] $path = "..\..\..\src\TestConfig"
 )
 #############################################
 # Get set resource name variables from prefix

@@ -351,7 +351,8 @@ namespace SqlSync.Highlighting
                                            "TAN",
                                            "COT",
                                            "RADIANS",
-                                            "OBJECT_ID",};
+                                           "OBJECT_ID",
+                                           "INFORMATION_SCHEMA"};
         }
 
 

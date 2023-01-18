@@ -2,6 +2,7 @@ param
 (
     [string] $prefix,
     [string] $resourceGroupName,
+    [string] $path = "..\..\..\src\TestConfig",
     [bool] $wait = $true
 )
 #############################################

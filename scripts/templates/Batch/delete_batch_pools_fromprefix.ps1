@@ -9,7 +9,7 @@ param
 . ./../prefix_resource_names.ps1 -prefix $prefix
 
 
-$batchAccts = az batch account list --resource-group $resourceGroup  --query "[].{Name:name, AccountEndpoint:accountEndpoint}" | ConvertFrom-Json
+$batchAccts = az batch account list --resource-group $resourceGroupName  --query "[].{Name:name, AccountEndpoint:accountEndpoint}" | ConvertFrom-Json
 
 foreach($batch in $batchAccts)
 {
