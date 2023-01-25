@@ -275,7 +275,8 @@ namespace SqlBuildManager.Console.Kubernetes
             string k8ConfigMapName = KubernetesConfigmapName(args);
             string k8SecretsName = KubernetesSecretsName(args);
             string k8SecretsProviderName = KubernetesSecretProviderClassName(args);
-            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName, k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer, args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, hasKeyVault, useMangedIdenty, args.IdentityArgs.ServiceAccountName);
+            int podCount = args.KubernetesArgs.PodCount;
+            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName, k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer, args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, podCount, hasKeyVault, useMangedIdenty, args.IdentityArgs.ServiceAccountName);
             var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
             var jobYaml = serializer.Serialize(yml);
 

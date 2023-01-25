@@ -16,6 +16,8 @@ az role assignment create --role "Azure Service Bus Data Owner" --assignee $clie
 az role assignment create --role "Azure Event Hubs Data Receiver" --assignee $clientId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
 az role assignment create --role "Azure Event Hubs Data Sender" --assignee $clientId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
 az role assignment create --role "AcrPull" --assignee $clientId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
+az role assignment create --role "AcrPull" --assignee $clientId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
+az role assignment create --role "Contributor" --assignee $clientId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
 
 Write-Host "Settings key vault policy for $keyVaultName" -ForegroundColor DarkGreen
 az keyvault set-policy -n $keyVaultName --resource-group $resourceGroupName --secret-permissions get --spn $clientId -o table

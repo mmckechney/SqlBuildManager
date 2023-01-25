@@ -29,6 +29,8 @@ Write-Host "Using storage account name:'$storageAccountName'" -ForegroundColor D
 Write-Host "Using Event Hub Namespace name:'$eventHubNamespaceName'" -ForegroundColor DarkGreen
 Write-Host "Using Service Bus Namespace name:'$serviceBusNamespaceName'" -ForegroundColor DarkGreen
 Write-Host "Using Managed Identity name:'$identityName'" -ForegroundColor DarkGreen
+Write-Host "Using VNET name:'$vnet'" -ForegroundColor DarkGreen
+Write-Host "Using Subnet name:'$batchSubnet'" -ForegroundColor DarkGreen
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-.$scriptDir/create_batch_settingsfiles.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -batchAccountName $batchAccountName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword 
+.$scriptDir/create_batch_settingsfiles.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -batchAccountName $batchAccountName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -identityName $identityName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -vnetName $vnet -subnetName $batchSubnet 

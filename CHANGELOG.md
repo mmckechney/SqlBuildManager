@@ -1,5 +1,16 @@
 # SQL Build Manager Change Log
 
+### Version 15.1.0-beta
+
+- *ADDED:* New `--batchresourcegroup` argument to specify the resource group for the Batch account. (Was previously inferred from the Identity resource group)
+- *ADDED:* `--podcount` for Kubernetes deployments to specify the number of pods to deploy per job
+- *UPDATED:* AKS cluster creation now has Azure RBAC enabled
+- *UPDATED:* Changed Sample/Test environment to use VNET connections between databases and compute platforms
+  - *ADDED:* SQL Server private VNET connections only, with local firewall rules and excluding "Azure Services"
+  - *ADDED:* VNET integration for Azure Container Apps
+  - *ADDED:* VNET integration for Azure Container Instances
+  - *ADDED:* VNET integration for Batch Nodes
+  
 ### Version 15.0.3-beta
 
 - *NEW:* With v15+ the Kubernetes implementation is switching from using AAD Pod Identity to [Workload Identity (preview)](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview). Because Workload Identity is in Public Preview, v15 will remain in beta until the feature goes GA. This is a breaking change from any previous Kubernetes deployments. To understand how to configure your cluster, review the steps in the [create_aks_cluster.ps1](scripts/templates/kubernetes/create_aks_cluster.ps1) script.
@@ -8,7 +19,7 @@ _ *ADDED:* Option to provide Azure AD Tenant ID for deployments. This will be ne
 - *FIXED:* Regression in Batch processing from generated settings files. 
 - *UPDATED:* General code cleanup and switch from System.Data.SqlClient for Microsoft.Data.SqlClient
 - *UPDATED:* Docker base images updated to .NET Runtime 7.0.2 and .NET SDK to 7.0.102
-
+  
 ### Version 14.6.1
 
  - *UPDATED:* Added Windows installer setup project for SQL Build Manager windows form app

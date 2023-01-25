@@ -8,14 +8,15 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.ResourceManager.ContainerInstance;
+using Azure.ResourceManager.ContainerInstance.Models;
+using Azure.Core;
 
 namespace SqlBuildManager.Console.Aci
 {
     class AciHelper
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-
         internal static string CreateAciArmTemplate(CommandLineArgs cmdLine)
         {
             //TODO: Accomodate custom container repositories
@@ -35,6 +36,24 @@ namespace SqlBuildManager.Console.Aci
                 credsTemplate = credsTemplate.Replace("{{registryUserName}}", cmdLine.ContainerRegistryArgs.RegistryUserName);
             }
             template = template.Replace("\"{{registryCredentials}}\"", credsTemplate);
+
+            string networkTemplate = "";
+            var profileIdTemplate = "";
+            if (!string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.VnetName) && !string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.SubnetName))
+            {
+                networkTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "aci_networkprofile.json"));
+                networkTemplate = networkTemplate.Replace("{{aciName}}", cmdLine.AciArgs.AciName);
+                networkTemplate = networkTemplate.Replace("{{vnetName}}", cmdLine.NetworkArgs.VnetName);
+                networkTemplate = networkTemplate.Replace("{{subnetName}}", cmdLine.NetworkArgs.SubnetName);
+                networkTemplate = networkTemplate.Replace("{{subscriptionId}}", cmdLine.IdentityArgs.SubscriptionId);
+                networkTemplate = networkTemplate.Replace("{{resourceGroupName}}", cmdLine.IdentityArgs.ResourceGroup);
+
+
+                profileIdTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "networkprofileid.txt"));
+                profileIdTemplate = profileIdTemplate.Replace("{{aciName}}", cmdLine.AciArgs.AciName);
+            }
+            template = template.Replace("{{networkTemplate}}", networkTemplate);
+            template = template.Replace("{{networkprofileid}}", profileIdTemplate);
 
             string containerTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "container_template.json"));
             List<string> containers = new List<string>();

@@ -4,6 +4,7 @@ param
     [string] $path = "..\..\..\src\TestConfig",
     [string] $resourceGroupName,
     [string] $prefix,
+    [int] $podCount = 2,
     [string] $sqlUserName,
     [string] $sqlPassword
 )
@@ -46,5 +47,5 @@ Write-Host "Using keyvault name: '$keyVaultName'" -ForegroundColor DarkGreen
 
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-.$scriptDir/create_aks_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName  $resourceGroupName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -acrName $containerRegistryName  -keyVaultName $keyVaultName -serviceAccount $serviceAccountName
+.$scriptDir/create_aks_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName  $resourceGroupName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -acrName $containerRegistryName  -keyVaultName $keyVaultName -serviceAccount $serviceAccountName -podCount $podCount
 

@@ -442,6 +442,7 @@ namespace SqlBuildManager.Console
                 cmdLine.AciArgs = null;
                 cmdLine.ContainerAppArgs = null;
                 cmdLine.ContainerRegistryArgs = null;
+                cmdLine.KubernetesArgs = null;
             }
 
             if (!clearText)
@@ -1323,6 +1324,7 @@ namespace SqlBuildManager.Console
             cmdLine.ConnectionArgs.BatchAccountUrl = null;
             cmdLine.IdentityArgs.PrincipalId = null;
             cmdLine.IdentityArgs.ResourceId = null;
+            cmdLine.KubernetesArgs = null;
 
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
@@ -1335,6 +1337,7 @@ namespace SqlBuildManager.Console
             cmdLine.AciArgs = null;
             cmdLine.IdentityArgs.PrincipalId = null;
             cmdLine.IdentityArgs.ResourceId = null;
+            cmdLine.KubernetesArgs = null;
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
         internal static int SaveAndEncryptKubernetesSettings(CommandLineArgs cmdLine, bool clearText)

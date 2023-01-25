@@ -8,7 +8,7 @@ $prefix,
  $location = "East US",
 
  [string]
- $outputPath = 2,
+ $outputPath = "..\..\src\TestConfig",
 
  [int]
  $testDatabaseCount = 10,
@@ -38,6 +38,8 @@ $prefix,
 #############################################
 . ./prefix_resource_names.ps1 -prefix $prefix
 . ./key_file_names.ps1 -prefix $prefix -path $outputPath
+
+$targetFramework = .\get_targetframework.ps1
 
  if($false -eq (Test-Path  $outputPath))
  {
@@ -140,7 +142,7 @@ else
 #############################################################
 # Save the settings files and config files for the unit tests
 #############################################################
-$sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\net6.0\sbm.exe").Path
+$sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\$targetFramework\sbm.exe").Path
 
 ##########################
 # Add Secrets to Key Vault

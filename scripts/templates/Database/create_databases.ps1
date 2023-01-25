@@ -3,7 +3,7 @@ param
     [string] $prefix,
     [string] $resourceGroupName,
     [string] $path,
-    [int] $testDatabaseCount
+    [int] $testDatabaseCount = 10
 
 )
 
@@ -19,4 +19,4 @@ Write-Host "Creating Test databases. $testDatabaseCount per server" -ForegroundC
 az deployment group create --resource-group $resourceGroupName --template-file "$($scriptDir)/azuredeploy_db.bicep" --parameters namePrefix="$prefix" sqladminname="$sqlUserName" sqladminpassword="$sqlPassword" testDbCountPerServer=$testDatabaseCount  -o table
 
 #Create local firewall rule
-.$scriptDir/create_database_firewall_rule.ps1 -resourceGroupName $resourceGroupName
+.$scriptDir/create_database_firewall_rule.ps1 -resourceGroupName $resourceGroupName -prefix $prefix

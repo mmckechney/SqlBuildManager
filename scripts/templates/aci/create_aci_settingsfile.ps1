@@ -12,6 +12,8 @@ param
     [string] $serviceBusNamespaceName,
     [string] $identityName,
     [string] $identityClientId,
+    [string]  $vnetName = "",
+    [string]  $subnetName = "",
     [string] $sqlUserName,
     [string] $sqlPassword, 
     [ValidateSet("Password", "ManagedIdentity", "Both")]
@@ -125,6 +127,11 @@ foreach($auth in $authTypes)
     if([string]::IsNullOrWhiteSpace($imageTag) -eq $false)
     {
         $params += ("--imagetag", $imageTag)
+    }
+    if($vnetName -ne "" -and $subnetName -ne "")
+    {
+        $params += ("--vnetname", $vnetName)
+        $params += ("--subnetname", $subnetName)
     }
     $params += ("--authtype", $auth)
     Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow

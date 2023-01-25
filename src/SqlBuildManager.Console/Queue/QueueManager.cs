@@ -235,27 +235,35 @@ namespace SqlBuildManager.Console.Queue
         private async Task<List<ServiceBusReceivedMessage>> GetCountBasedTargetsFromQueue(int maxMessages)
         {
             var lstMsg = new List<ServiceBusReceivedMessage>();
-            var messages = await MessageReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
+            try
+            {
+                
+                var messages = await MessageReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
 
-            if (messages.Count == 0)
-            {
-                return lstMsg;
-            }
-            foreach (var message in messages)
-            {
-                if (message.Subject.ToLower().Trim() != jobName.ToLower().Trim())
+                if (messages.Count == 0)
                 {
-                    await MessageReceiver.DeadLetterMessageAsync(message);
-                    log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{jobName}'");
+                    return lstMsg;
                 }
-                else
+                foreach (var message in messages)
                 {
-                    lstMsg.Add(message);
+                    if (message.Subject.ToLower().Trim() != jobName.ToLower().Trim())
+                    {
+                        await MessageReceiver.DeadLetterMessageAsync(message);
+                        log.LogWarning($"Send message '{message.MessageId} to deadletter. Subject of '{message.Subject}' did not match batch job name of '{jobName}'");
+                    }
+                    else
+                    {
+                        lstMsg.Add(message);
+                    }
+                }
+                if (lstMsg.Count == 0)
+                {
+                    return await GetCountBasedTargetsFromQueue(maxMessages);
                 }
             }
-            if (lstMsg.Count == 0)
+            catch(Exception exe)
             {
-                return await GetCountBasedTargetsFromQueue(maxMessages);
+                log.LogError($"Problem getting messages from Service Bus Queue: {exe.Message}");
             }
             return lstMsg;
         }
@@ -369,7 +377,7 @@ namespace SqlBuildManager.Console.Queue
             }
             catch (Exception exe)
             {
-                log.LogError($"Error getting messages: {exe.ToString()}");
+                log.LogError($"Error getting messages: {exe.Message}");
                 return lstMsg;
             }
             return lstMsg;

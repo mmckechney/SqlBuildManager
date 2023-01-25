@@ -1,8 +1,11 @@
 param
 (
+    [string] $prefix,
     [string] $resourceGroupName,
     [string] $ipAddress
 )
+. ./../prefix_resource_names.ps1 -prefix $prefix
+
 Write-Host "Create Database Firewall rules"  -ForegroundColor Cyan
 if([string]::IsNullOrWhiteSpace($ipAddress))
 {
@@ -12,6 +15,8 @@ Write-Host "Setting firewall rule for IP Address: $ipAddress"  -ForegroundColor 
 
 $servers = az sql server list --resource-group $resourceGroupName -o tsv --query "[].name"
 $auto = -Join ((65..90) + (97..122) | Get-Random -Count 10 | % {[char]$_})
+
+$subnets = az network vnet show -g $resourceGroupName -n $vnet --query 'subnets[].name'  -o tsv
 
 foreach ($server in $servers)
 {
@@ -24,5 +29,11 @@ foreach ($server in $servers)
     else 
     {
         Write-Host "Firewall rule for $ipAddress on $server already exists!" -ForegroundColor DarkGreen
+    }
+
+    foreach($subnet in $subnets)
+    {
+        Write-Host "Creating firewall rule on $server for subnet '$subnet'" -ForegroundColor DarkGreen
+        az sql server vnet-rule create --resource-group $resourceGroupName --name "$subnet-rule" --server $server --vnet $vnet --subnet $subnet -o table
     }
 }

@@ -24,8 +24,12 @@ $eventHubNamespaceName = $prefix + "eventhubnamespace"
 $eventHubName = $prefix + "eventhub" 
 $serviceBusNamespaceName = $prefix + "servicebus" 
 $aksClusterName = $prefix + "aks"
-$aksVnet = $prefix + "vnet"
+$vnet = $prefix + "vnet"
+$aksSubnet = $prefix + "akssubnet"
 $nsgName = $prefix + "nsg"
+$containerAppSubnet = $prefix + "containerappsubnet"
+$aciSubnet = $prefix + "acisubnet"
+$batchSubnet = $prefix + "batchsubnet"
 
 #Used with Kubernetes Workload Identity
 $serviceAccountName= $prefix + "serviceaccount"

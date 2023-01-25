@@ -1,0 +1,25 @@
+,{
+    "type": "Microsoft.Network/networkProfiles",
+    "apiVersion": "2020-11-01",
+    "name": "{{aciName}}profile",
+    "location": "[resourceGroup().location]",
+    "properties": {
+      "containerNetworkInterfaceConfigurations": [
+        {
+          "name": "eth0",
+          "properties": {
+            "ipConfigurations": [
+              {
+                "name": "{{aciName}}ipconfigprofile",
+                "properties": {
+                  "subnet": {
+                    "id": "[format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/virtualNetworks/{2}/subnets/{3}', subscription().subscriptionId, '{{resourceGroupName}}','{{vnetName}}', '{{subnetName}}')]"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }

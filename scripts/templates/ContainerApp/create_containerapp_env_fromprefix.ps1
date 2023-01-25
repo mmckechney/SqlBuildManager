@@ -20,4 +20,9 @@ Write-Host "Using Container Registry name: '$containerRegistryName'"  -Foregroun
 $location =  az group show -n $resourceGroupName -o tsv --query location
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-.$scriptDir/create_containerapp_env.ps1 -containerAppEnvName $containerAppEnvName -logAnalyticsWorkspace $logAnalyticsWorkspace -location $location -resourceGroupName $resourceGroupName -containerRegistryName $containerRegistryName 
+
+.$scriptDir/../Network/create_vnet_fromprefix.ps1 -prefix $prefix 
+$subnetId = az network vnet subnet show -g $resourceGroupName --vnet-name $vnet -n $containerAppSubnet --query id -o tsv
+
+$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+.$scriptDir/create_containerapp_env.ps1 -containerAppEnvName $containerAppEnvName -logAnalyticsWorkspace $logAnalyticsWorkspace -location $location -resourceGroupName $resourceGroupName -containerRegistryName $containerRegistryName -subnetId $subnetId 

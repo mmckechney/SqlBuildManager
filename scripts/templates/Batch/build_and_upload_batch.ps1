@@ -7,11 +7,14 @@ param
     [string] $action = "BuildAndUpload"
 )
 Write-Host "Build and Upload Batch" -ForegroundColor Cyan
+$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 
 $path = Resolve-Path $path
 Write-Host "Code Publish output path set to $path" -ForegroundColor DarkGreen
+$frameworkTarget = Invoke-Expression -Command (Join-Path $scriptDir ..\get_targetframework.ps1)
 
-$frameworkTarget = "net6.0"
+Write-Host "Target Framework:  $frameworkTarget" -ForegroundColor DarkGreen
+
 Write-Output "Using Batch Account: $batchAcctName" -ForegroundColor DarkGreen
 
 $winenv =@{
@@ -31,7 +34,7 @@ $linuxenv = @{
 }
 $vars = $winenv, $linuxenv
 
-$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+
 foreach ($env in $vars) {
 
     Write-Host "Publishing for $($env.OSName)" -ForegroundColor DarkGreen

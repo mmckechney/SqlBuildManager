@@ -73,6 +73,7 @@ namespace SqlBuildManager.Console.CommandLine
 
         private static Option<bool> decryptedOption = new Option<bool>("--decrypted", "Indicating that the settings file is already in clear text");
         private static Option<string> jobnameOption = new Option<string>(new string[] { "--jobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed");
+        private static Option<int> podCountOption = new Option<int>(new string[] { "--podcount" }, "Number of pods to create for the job");
 
 
         //K8s Options
@@ -83,10 +84,17 @@ namespace SqlBuildManager.Console.CommandLine
         //ACI Options
         private static Option<int> aciContainerCountOption = new Option<int>("--containercount", "Number of containers to create for processing") { IsRequired = true };
         private static Option<string> aciInstanceNameOption = new Option<string>("--aciname", "Name of the Azure Container Instance you will create and deploy to") { IsRequired = true };
+        private static Option<string> aciInstanceNameNotReqOption = new Option<string>("--aciname", "Name of the Azure Container Instance you will create and deploy to") { IsRequired = false };
         private static Option<string> aciIResourceGroupNameOption = new Option<string>(new string[] { "--acirg", "--aciresourcegroup" }, "Name of the Resource Group for the ACI deployment") { IsRequired = true };
+        private static Option<string> aciIResourceGroupNameNotReqOption = new Option<string>(new string[] { "--acirg", "--aciresourcegroup" }, "Name of the Resource Group for the ACI deployment") { IsRequired = false };
         private static Option<FileInfo> aciOutputFileOption = new Option<FileInfo>("--outputfile", "File name to save ACI ARM template");
         private static Option<FileInfo> aciArmTemplateOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')") { IsRequired = true }.ExistingOnly();
         private static Option<FileInfo> aciArmTemplateNotReqOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm aci prep')").ExistingOnly();
+
+
+        //VNET options
+        private static Option<string> vnetNameOption = new Option<string>("--vnetname", "Name of the VNET to use for the deployment");
+        private static Option<string> subnetNameOption = new Option<string>("--subnetname", "Name of the subnet to use for the deployment");
 
 
         //ContainerApp Options
@@ -138,12 +146,16 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var list = new List<Option>()
                 {
+                    batchResourceGroupOption,
                     batchpoolOsOption,
                     batchpoolnameOption,
                     batchnodecountOption,
                     batchvmsizeOption,
                     batchApplicationOption,
-                    deletebatchpoolOption
+                    deletebatchpoolOption,
+                    vnetNameOption,
+                    subnetNameOption,
+                    
 
                 };
                 return list;
@@ -152,6 +164,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<OsType> batchpoolOsOption = new Option<OsType>(new string[] { "-os", "--os", "--batchpoolos" }, "Operating system for the Azure Batch nodes. Windows is default");
         private static Option<int> batchnodecountOption = new Option<int>(new string[] { "--nodecount", "--batchnodecount" }, "Number of nodes to provision to run the batch job");
         private static Option<string> batchvmsizeOption = new Option<string>(new string[] { "--vmsize", "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) ");
+        private static Option<string> batchResourceGroupOption = new Option<string>(new string[] { "--batchresourcegroup", "--batchrg" }, "The Resource Group name for the Batch Account");
         private static Option<string> batchpoolnameOption = new Option<string>(new string[] { "--poolname", "--batchpoolname" }, "Override for the default pool name of \"SqlBuildManagerPool\"");
         private static Option<bool> deletebatchpoolOption = new Option<bool>(new string[] { "--deletebatchpool" }, () => false, "Whether or not to delete the batch pool servers after an execution");
         private static Option<string> batchApplicationOption = new Option<string>(new string[] { "--apppackage", "--applicationpackage" }, "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux");
@@ -1076,10 +1089,13 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("savesettings", "Saves settings file for Azure Container Instances container deployments")
                 {
                     settingsfileNewOption,
-                    aciInstanceNameOption,
                     aciIResourceGroupNameOption,
+                    aciInstanceNameOption,
+                    vnetNameOption,
+                    subnetNameOption,
                     subscriptionIdOption,
                     //Key value option
+                    sectionPlaceholderOption,
                     keyVaultNameOption.Copy(true),
                     storageaccountnameOption,
                     storageaccountkeyOption,
@@ -1111,11 +1127,16 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("prep", "Creates ACI arm template, a storage container, and uploads the SBM and/or DACPAC files that will be used for the build. ")
                 {
                     settingsfileExistingOption,
-                    aciInstanceNameOption.Copy(false),
+                    aciIResourceGroupNameNotReqOption,
+                    aciInstanceNameNotReqOption,
+                    vnetNameOption,
+                    subnetNameOption,
+                    aciContainerCountOption.Copy(true),
+                    
                     identityNameOption.Copy(false),
                     identityResourceGroupOption.Copy(false),
-                    aciIResourceGroupNameOption.Copy(false),
-                    aciContainerCountOption.Copy(true),
+
+                    sectionPlaceholderOption,
                     jobnameOption.Copy(true),
                     packagenameAsFileToUploadOption,
                     overrideOption,
@@ -1164,7 +1185,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("deploy", "Deploy the ACI instance using the template file created from 'sbm prep' and start containers")
                 {
                     aciArmTemplateOption,
-                    aciIResourceGroupNameOption.Copy(false),
+                    aciIResourceGroupNameNotReqOption,
                     overrideOption.Copy(false),
                     unitTestOption,
                     streamEventsOption,
@@ -1265,6 +1286,7 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     sectionPlaceholderOption,
                     jobnameOption,
+                    podCountOption,
                     overrideAsFileOption,
                     packagenameAsFileToUploadOption,
                     platinumdacpacFileInfoOption,
@@ -1303,6 +1325,7 @@ namespace SqlBuildManager.Console.CommandLine
                     pathOption,
                     prefixOption,
                     jobnameOption,
+                    podCountOption,
                     packagenameAsFileToUploadOption,
                     platinumdacpacFileInfoOption,
                     forceOption,
@@ -1360,6 +1383,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("savesettings", "Saves settings file for Kubernetes deployments");
                 cmd.AddRange(SettingsFileNewOptions);
+                cmd.Add(podCountOption);
                 cmd.Add(imageTagOption);
                 cmd.Add(imageNameOption);
                 cmd.Add(imageRepositoryOption);
@@ -1780,9 +1804,9 @@ namespace SqlBuildManager.Console.CommandLine
                                firstColumnText: $"\u0000{Environment.NewLine}** Connection and Secrets Options:\u0000{Environment.NewLine}{OptionString(keyVaultNameOption)}",
                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{keyVaultNameOption.Description}");
 
-                           ctx.HelpBuilder.CustomizeSymbol(batchpoolOsOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Batch Pool Compute Options :\u0000{Environment.NewLine}{OptionString(batchpoolOsOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{batchpoolOsOption.Description}");
+                           ctx.HelpBuilder.CustomizeSymbol(batchResourceGroupOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Batch Pool Compute Options :\u0000{Environment.NewLine}{OptionString(batchResourceGroupOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{batchResourceGroupOption.Description}");
 
                            ctx.HelpBuilder.CustomizeSymbol(batchjobnameOption,
                                firstColumnText: $"\u0000{Environment.NewLine}** Batch Job Settings Options :\u0000{Environment.NewLine}{OptionString(batchjobnameOption)}",
@@ -1795,6 +1819,14 @@ namespace SqlBuildManager.Console.CommandLine
                            ctx.HelpBuilder.CustomizeSymbol(runtimeFileOption,
                                firstColumnText: $"\u0000{Environment.NewLine}** Kubernetes YAML file Options :\u0000{Environment.NewLine}{OptionString(runtimeFileOption)}",
                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{runtimeFileOption.Description}");
+
+                           ctx.HelpBuilder.CustomizeSymbol(aciIResourceGroupNameOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Container Instance Options :\u0000{Environment.NewLine}{OptionString(aciIResourceGroupNameOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{aciIResourceGroupNameOption.Description}");
+
+                           ctx.HelpBuilder.CustomizeSymbol(aciIResourceGroupNameNotReqOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** Container Instance Options :\u0000{Environment.NewLine}{OptionString(aciIResourceGroupNameNotReqOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{aciIResourceGroupNameNotReqOption.Description}");
 
                            ctx.HelpBuilder.CustomizeSymbol(sectionPlaceholderOption,
                                firstColumnText: $"\u0000{Environment.NewLine}** General Options:\u0000",

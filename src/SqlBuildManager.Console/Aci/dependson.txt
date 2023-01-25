@@ -1,0 +1,4 @@
+﻿ ,
+ "dependsOn": [
+    "[resourceId('Microsoft.Network/networkProfiles',  '{{aciName}}profile')]"
+ ]

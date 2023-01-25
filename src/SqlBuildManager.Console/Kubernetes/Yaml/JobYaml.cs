@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Azure.Batch;
+using Microsoft.SqlServer.TransactSql.ScriptDom;
+using SqlBuildManager.Console.ContainerApp.Internal;
+using System.Collections.Generic;
+using System.Net.Http.Headers;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using static SqlBuildManager.Console.Kubernetes.Yaml.Containers;
 
@@ -6,7 +11,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     public class JobYaml
     {
-        public JobYaml(string k8jobname, string k8ConfigMapName, string k8SecretsName, string k8SecretsProviderName, string registry, string image, string tag, bool hasKeyVault, bool useManagedIdentity, string serviceAccountName)
+        public JobYaml(string k8jobname, string k8ConfigMapName, string k8SecretsName, string k8SecretsProviderName, string registry, string image, string tag, int podCount, bool hasKeyVault, bool useManagedIdentity, string serviceAccountName)
         {
 
             if (!string.IsNullOrWhiteSpace(k8jobname))
@@ -20,7 +25,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
                 registry += ".azurecr.io";
             }
 
-            spec = new JobSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
+            spec = new JobSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName, podCount);
             spec.template.spec.containers[0].image = $"{registry}/{image}:{tag}";
 
             if (useManagedIdentity || hasKeyVault) //remove secrets volume and mount
@@ -29,16 +34,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
                 spec.template.spec.containers[0].volumeMounts = new Mounts[] { spec.template.spec.containers[0].volumeMounts[0] };
             }
 
-            metadata = new Dictionary<string, object>  {
-                {"name", k8jobname },
-                { "namespace", KubernetesManager.SbmNamespace },
-                {"labels",  new Dictionary<string, string>
-                    {
-                        {"jobgroup" , k8jobname }
-                    }
-                }
-            };
-
+            metadata = new JobMetaData(k8jobname);
 
         }
         [YamlIgnore()]
@@ -54,20 +50,49 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 
 
         [YamlMember(Order = 3)]
-        public Dictionary<string, object> metadata;
+        public JobMetaData metadata;
         [YamlMember(Order = 4)]
         public JobSpec spec;
+   
+    }
+   
+    public class JobMetaData
+    {
+        public JobMetaData(string jobName)
+        {
+            name = jobName;
+            this.labels = new JobLabels(jobName);
+        }
+        [YamlMember(Order = 1)]
+        public string name { get; set; }
+        [YamlMember(Order = 2)]
+        public string @namespace { get; set; } = KubernetesManager.SbmNamespace;
+        [YamlMember(Order = 3)]
+        public JobLabels labels;
+    }
+    public class JobLabels
+    {
+        public JobLabels(string jobName)
+        {
+            jobgroup = jobName;
+        }
+        public string jobgroup { get; set; }
+
+        [YamlMember(Alias = "azure.workload.identity/use", ScalarStyle =ScalarStyle.SingleQuoted)]
+        public bool workloadIdentity { get; set; } = true;
+
     }
     public class JobSpec
     {
-
-        public JobSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName)
+        private int podCount;
+        public JobSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName, int podCount)
         {
             template = new JobTemplate(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
+            this.podCount = podCount;
         }
 
         [YamlMember(Order = 1)]
-        public string parallelism { get { return "2"; } }
+        public string parallelism { get { return $"{podCount}"; } }
         [YamlMember(Order = 2)]
         public JobTemplate template;
     }
@@ -76,21 +101,22 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 
         public JobTemplate(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName)
         {
-            metadata = new Dictionary<string, object>
-            {
-                {"labels",  new Dictionary<string, string>
-                    {
-                        {"jobgroup" , k8jobname }//,
-                        //{"aadpodidbinding" , "azure-pod-identity-binding-selector" }
-                    }
-                }
-            };
+            metadata = new JobTemplateMetaData(k8jobname);
             spec = new ContainerSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
         }
-        public Dictionary<string, object> metadata;
+        public JobTemplateMetaData metadata;
         public ContainerSpec spec;
 
     }
+    public class JobTemplateMetaData
+    {
+        public JobTemplateMetaData(string jobName)
+        {
+            labels = new JobLabels(jobName);
+        }
+        public JobLabels labels;
+    }
+
 
     public class ContainerSpec
     {

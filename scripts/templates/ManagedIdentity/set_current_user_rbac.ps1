@@ -16,4 +16,8 @@ az role assignment create --role "Azure Event Hubs Data Receiver" --assignee $us
 az role assignment create --role "Azure Event Hubs Data Sender" --assignee $userId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
 az role assignment create --role "AcrPull" --assignee $userId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
 
+az role assignment create --role "Azure Kubernetes Service Cluster Admin Role" --assignee $userId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
+az role assignment create --role "Azure Kubernetes Service RBAC Admin" --assignee $userId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
+az role assignment create --role "Azure Kubernetes Service RBAC Writer" --assignee $userId --scope /subscriptions/$subscriptionId/resourcegroups/$resourceGroupName -o table
+
 az keyvault set-policy -n $keyVaultName --secret-permissions get set --object-id $userId -o table

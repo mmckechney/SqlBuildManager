@@ -9,6 +9,8 @@ param
     [string] $eventHubNamespaceName,
     [string] $serviceBusNamespaceName,
     [string] $identityName,
+    [string] $vnetName,
+    [string] $subnetName,
     [string] $sqlUserName,
     [string] $sqlPassword
 )
@@ -76,6 +78,7 @@ $linuxParams += ("-os", "Linux")
 
 $params = @("batch", "savesettings")
 $params += @("--settingsfilekey",$keyFile)
+$params += @("--batchresourcegroup",$resourceGroupName)
 $params += @("--batchaccountname",$batchAccountName)
 $params += @("--batchaccountkey",$batchAcctKey)
 $params += @("--batchaccounturl", "https://$batchAcctEndpoint" )
@@ -94,6 +97,12 @@ $params += @("--idrg",$identity.resourceGroup)
 $params += @("--tenantid", $tenantId)
 $params += @("--subscriptionid", $subscriptionId)
 $params += @("--silent")
+
+if($vnetName -ne "" && $subnetName -ne "")
+{
+    $params += @("--vnetname", $vnetName)
+    $params += @("--subnetname", $subnetName)
+}
 
 if($haveSqlInfo)
 {

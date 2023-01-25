@@ -301,7 +301,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");
                 Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find build commited message");
                 var regex = new Regex("Recording Commited Script:");
-                Assert.AreEqual(10, regex.Matches(executionLogFile).Count(), "Didn't find 10 scripts commits");
+                Assert.AreEqual(15, regex.Matches(executionLogFile).Count(), "Didn't find 10 scripts commits");
 
                 Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find commit message");
             }

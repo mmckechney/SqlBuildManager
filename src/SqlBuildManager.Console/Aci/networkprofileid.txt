@@ -1,0 +1,3 @@
+ "networkProfile": {
+   "id": "[resourceId('Microsoft.Network/networkProfiles', '{{aciName}}profile')]"
+ },

@@ -25,9 +25,11 @@
           "{{Container_Placeholder}}"
         ],
         "osType": "Linux",
+        {{networkprofileid}}
         "restartPolicy": "OnFailure"
         "{{registryCredentials}}"
       }
     }
+    {{networkTemplate}}
   ]
 }

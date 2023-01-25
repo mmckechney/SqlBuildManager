@@ -602,7 +602,19 @@ namespace SqlBuildManager.Console.Batch
             var userAssignedResourceId = cmdLine.IdentityArgs.ResourceId;
             var userAssignedPrinId = cmdLine.IdentityArgs.PrincipalId;
             var userAssignedClientId = cmdLine.IdentityArgs.ClientId;
-            var resourceGroupName = cmdLine.IdentityArgs.ResourceGroup;
+            string resourceGroupName;
+            if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ResourceGroup))
+            {
+                resourceGroupName = cmdLine.BatchArgs.ResourceGroup;
+            }
+            else if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup))
+            {
+                resourceGroupName = cmdLine.IdentityArgs.ResourceGroup;
+            }
+            else
+            {
+                throw new ArgumentException("Resource group must be specified either in for the Batch account or the Identity");
+            }
             var subscriptionId = cmdLine.IdentityArgs.SubscriptionId;
 
 
@@ -645,9 +657,19 @@ namespace SqlBuildManager.Console.Batch
                 VmSize = vmSize,
                 ScaleSettings = scaleSettings,
                 DeploymentConfiguration = deploymentConfig,
-                Identity = poolIdentity
-
+                Identity = poolIdentity,
+                TargetNodeCommunicationMode = bm.NodeCommunicationMode.Simplified
             };
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.SubnetName) && !string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.VnetName))
+            {
+                var networkConfig = new bm.NetworkConfiguration()
+                {
+                    SubnetId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{cmdLine.NetworkArgs.VnetName}/subnets/{cmdLine.NetworkArgs.SubnetName}",
+                };
+                poolParameters.NetworkConfiguration = networkConfig;
+            }
+            
             try
             {
                 var pool = await managementClient.Pool.CreateWithHttpMessagesAsync(
@@ -661,6 +683,46 @@ namespace SqlBuildManager.Console.Batch
                 {
                     log.LogWarning($"Issue creating pool: {pool.Body.ProvisioningState.ToString()}");
                     return false;
+                }
+            }
+            catch (Microsoft.Rest.Azure.CloudException ce)
+            {
+                // Accept the specific error code PoolExists as that is expected if the pool already exists
+                if (ce.Message.ToLower().Contains("a property that cannot be updated was specified"))
+                {
+                    try
+                    {
+                        log.LogInformation($"The pool {poolId} already existed when we tried to create it");
+                        var poolresult = managementClient.Pool.Get(resourceGroupName, batchAccountName, PoolName);
+                        log.LogInformation($"Pre-existing node count {poolresult.CurrentDedicatedNodes}");
+                        if (poolresult.CurrentDedicatedNodes != nodeCount)
+                        {
+                            log.LogWarning($"The pool {poolId} node count of {poolresult.CurrentDedicatedNodes} does not match the requested node count of {nodeCount}");
+                            if (poolresult.CurrentDedicatedNodes < nodeCount)
+                            {
+                                log.LogWarning($"Requested node count is greater then existing node count. Resizing pool to {nodeCount}");
+                                var updatePoolParameters = new bm.Pool(name: poolId)
+                                {
+                                    ScaleSettings = scaleSettings,
+                                };
+                                await managementClient.Pool.UpdateAsync(resourceGroupName, batchAccountName, poolId, updatePoolParameters);
+
+                            }
+                            else
+                            {
+                                log.LogWarning("Existing node count is larger than requested node count. No pool changes bring made");
+                            }
+                        }
+                    }
+                    catch (Exception exe)
+                    {
+                        log.LogWarning($"Unable to get information on existing pool. {exe.ToString()}");
+                        return false;
+                    }
+                }
+                else
+                {
+                    throw;
                 }
             }
             catch (Exception exe)

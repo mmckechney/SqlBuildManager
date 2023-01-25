@@ -29,7 +29,9 @@ namespace SqlBuildManager.Console.CommandLine
                 if (property.PropertyType == typeof(CommandLineArgs.AutoScripting) ||
                     property.PropertyType == typeof(CommandLineArgs.StoredProcTesting) ||
                     property.PropertyType == typeof(CommandLineArgs.Synchronize) ||
-                    property.PropertyType == typeof(CommandLineArgs.Aci))
+                    property.PropertyType == typeof(CommandLineArgs.Aci) ||
+                    property.PropertyType == typeof(CommandLineArgs.Kubernetes) ||
+                    property.PropertyType == typeof(CommandLineArgs.Network))
                 {
                     if (property.GetValue(obj) != null && toStringType == StringType.Basic)
                     {
@@ -131,7 +133,7 @@ namespace SqlBuildManager.Console.CommandLine
                                 args.AddRange(new string[] { "--identityresourcegroup", property.GetValue(obj).ToString().Quoted() });
 
                             }
-                            else
+                            else if(toStringType != StringType.Batch)
                             {
                                 args.AddRange(new string[] { "--resourcegroup", property.GetValue(obj).ToString().Quoted() });
                             }

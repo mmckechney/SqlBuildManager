@@ -3,7 +3,7 @@ param
     [string] $prefix,
     [string] $resourceGroupName,
     [string] $path = "..\..\..\src\TestConfig",
-    [int] $testDatabaseCount
+    [int] $testDatabaseCount = 10
 
 )
 

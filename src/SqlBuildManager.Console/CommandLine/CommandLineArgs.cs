@@ -1,3 +1,4 @@
+using Microsoft.Azure.Batch;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -25,6 +26,8 @@ namespace SqlBuildManager.Console.CommandLine
         public Connections ConnectionArgs { get; set; } = new Connections();
         public Identity IdentityArgs { get; set; } = new Identity();
         public Aci AciArgs { get; set; } = new Aci();
+
+        public Network NetworkArgs { get; set; } = new Network();
         [JsonIgnore]
         public DacPac DacPacArgs { get; set; } = new DacPac();
         [JsonIgnore]
@@ -35,6 +38,8 @@ namespace SqlBuildManager.Console.CommandLine
         public StoredProcTesting StoredProcTestingArgs { get; set; } = new StoredProcTesting();
 
         public ContainerApp ContainerAppArgs { get; set; } = new ContainerApp();
+
+        public Kubernetes KubernetesArgs { get; set; } = new Kubernetes();
 
         public ContainerRegistry ContainerRegistryArgs { get; set; } = new ContainerRegistry();
 
@@ -59,10 +64,12 @@ namespace SqlBuildManager.Console.CommandLine
                     AciArgs = cmdLine.AciArgs;
                     ContainerAppArgs = cmdLine.ContainerAppArgs;
                     ContainerRegistryArgs = cmdLine.ContainerRegistryArgs;
-
+                    KubernetesArgs = cmdLine.KubernetesArgs;
+                    NetworkArgs = cmdLine.NetworkArgs;
                     RootLoggingPath = cmdLine.RootLoggingPath;
                     DefaultScriptTimeout = cmdLine.DefaultScriptTimeout;
                     TimeoutRetryCount = cmdLine.TimeoutRetryCount;
+
                 }
                 settingsFile = value;
             }
@@ -338,10 +345,16 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set { BatchArgs.ApplicationPackage = value; }
         }
+        [JsonIgnore]
+        public virtual string BatchResourceGroup
+        {
+            set { BatchArgs.ResourceGroup = value; }
+        }
         [Serializable]
         public class Batch
         {
 
+            public string ResourceGroup { get; set; } = string.Empty;
             public int BatchNodeCount { get; set; } = 10;
             public string BatchVmSize { get; set; } = null;
             [JsonIgnore]
@@ -479,6 +492,7 @@ namespace SqlBuildManager.Console.CommandLine
         public string AciName { set { AciArgs.AciName = value; } }
         public string AciResourceGroup { set { AciArgs.ResourceGroup = value; } }
         public int ContainerCount { set { AciArgs.ContainerCount = value; } }
+
         public string IdentityName { set { IdentityArgs.IdentityName = value; } }
         public class Aci
         {
@@ -486,7 +500,14 @@ namespace SqlBuildManager.Console.CommandLine
             public string ResourceGroup { get; set; } = string.Empty;
             [JsonIgnore]
             public int ContainerCount { get; set; } = 10;
+        }
 
+        public string VnetName { set { NetworkArgs.VnetName = value; } }
+        public string SubnetName { set { NetworkArgs.SubnetName = value; } }
+        public class Network
+        {
+            public string VnetName { get; set; } = string.Empty;
+            public string SubnetName { get; set; } = string.Empty;
         }
 
         public string EnvironmentName { set { ContainerAppArgs.EnvironmentName = value; } }
@@ -533,6 +554,12 @@ namespace SqlBuildManager.Console.CommandLine
             public string RegistryUserName { get; set; } = string.Empty;
             public string RegistryPassword { get; set; } = string.Empty;
 
+        }
+
+        public int PodCount { set { KubernetesArgs.PodCount = value; } }
+        public class Kubernetes
+        {
+            public int PodCount { get; set; } = 10;
         }
 
         [Serializable]

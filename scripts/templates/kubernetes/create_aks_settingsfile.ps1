@@ -9,6 +9,7 @@ param
     [string] $acrName, 
     [string] $keyVaultName,
     [string] $serviceAccountName,
+    [int] $podCount = 2,
     [string] $sqlUserName,
     [string] $sqlPassword,
     [ValidateSet("Password", "ManagedIdentity", "Both")]
@@ -64,6 +65,7 @@ $saveSettingsShared += @("--tag", "latest-vNext")
 $saveSettingsShared += @("--tenantid", $tenantId)
 $saveSettingsShared += @("--serviceaccountname", $serviceAccountName)
 $saveSettingsShared += @("--force")
+$saveSettingsShared += @("--podcount", $podCount)
 
 
 if($authTypes -contains "Password")

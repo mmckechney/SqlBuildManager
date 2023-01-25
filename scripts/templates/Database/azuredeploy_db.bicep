@@ -30,14 +30,14 @@ resource sqlserver_a_name_resource 'Microsoft.Sql/servers@2021-02-01-preview' = 
   }
 }
 
-resource sqlserver_a_AllowAllWindowsAzureIps 'Microsoft.Sql/servers/firewallRules@2021-02-01-preview' = {
-  parent: sqlserver_a_name_resource
-  name: 'AllowAllWindowsAzureIps'
-  properties: {
-    startIpAddress: '0.0.0.0'
-    endIpAddress: '0.0.0.0'
-  }
-}
+// resource sqlserver_a_AllowAllWindowsAzureIps 'Microsoft.Sql/servers/firewallRules@2021-02-01-preview' = {
+//   parent: sqlserver_a_name_resource
+//   name: 'AllowAllWindowsAzureIps'
+//   properties: {
+//     startIpAddress: '0.0.0.0'
+//     endIpAddress: '0.0.0.0'
+//   }
+// }
 
 resource sqlserver_a_pool_resource 'Microsoft.Sql/servers/elasticPools@2021-02-01-preview' = {
   parent: sqlserver_a_name_resource
@@ -91,14 +91,14 @@ resource sqlserver_b_name_resource 'Microsoft.Sql/servers@2021-02-01-preview' = 
   }
 }
 
-resource sqlserver_b_AllowAllWindowsAzureIps 'Microsoft.Sql/servers/firewallRules@2021-02-01-preview' = {
-  parent: sqlserver_b_name_resource
-  name: 'AllowAllWindowsAzureIps'
-  properties: {
-    startIpAddress: '0.0.0.0'
-    endIpAddress: '0.0.0.0'
-  }
-}
+// resource sqlserver_b_AllowAllWindowsAzureIps 'Microsoft.Sql/servers/firewallRules@2021-02-01-preview' = {
+//   parent: sqlserver_b_name_resource
+//   name: 'AllowAllWindowsAzureIps'
+//   properties: {
+//     startIpAddress: '0.0.0.0'
+//     endIpAddress: '0.0.0.0'
+//   }
+// }
 
 
 resource sqlserver_b_pool_resource 'Microsoft.Sql/servers/elasticPools@2021-02-01-preview' = {
