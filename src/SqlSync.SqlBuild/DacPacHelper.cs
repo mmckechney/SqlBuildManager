@@ -251,7 +251,7 @@ namespace SqlSync.SqlBuild
                 var lineNumber = cleanedScript.Take(postDeploy.Index).Count(c => c == '\n') + 1;
                 if (lineNumber < 25)
                 {
-                    log.LogDebug($"Cleand script contents:{Environment.NewLine}{cleanedScript}");
+                    log.LogDebug($"Cleaned script contents:{Environment.NewLine}{cleanedScript}");
                     return DacpacDeltasStatus.OnlyPostDeployment;
                 }
             }
@@ -262,11 +262,11 @@ namespace SqlSync.SqlBuild
                 .Where(x => !x.StartsWith("GO", StringComparison.InvariantCultureIgnoreCase));
             if (!realLines.Any())
             {
-                log.LogDebug($"Cleand script contents:{Environment.NewLine}{cleanedScript}");
+                log.LogDebug($"Cleaned script contents:{Environment.NewLine}{cleanedScript}");
                 return DacpacDeltasStatus.InSync;
             }
 
-            log.LogDebug($"Cleand script contents:{Environment.NewLine}{cleanedScript}");
+            log.LogDebug($"Cleaned script contents:{Environment.NewLine}{cleanedScript}");
             return DacpacDeltasStatus.Success;
 
         }
