@@ -98,7 +98,7 @@ $params += @("--tenantid", $tenantId)
 $params += @("--subscriptionid", $subscriptionId)
 $params += @("--silent")
 
-if($vnetName -ne "" && $subnetName -ne "")
+if($vnetName -ne "" -and $subnetName -ne "")
 {
     $params += @("--vnetname", $vnetName)
     $params += @("--subnetname", $subnetName)
