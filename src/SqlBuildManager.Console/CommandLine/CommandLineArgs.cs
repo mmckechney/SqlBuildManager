@@ -20,7 +20,8 @@ namespace SqlBuildManager.Console.CommandLine
 
         [JsonIgnore]
         public bool Decrypted { get; set; } = false;
-        #region Nested Object properties
+        
+        #region Nested Argument Object properties
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
         public Batch BatchArgs { get; set; } = new Batch();
         public Connections ConnectionArgs { get; set; } = new Connections();
@@ -44,6 +45,7 @@ namespace SqlBuildManager.Console.CommandLine
         public ContainerRegistry ContainerRegistryArgs { get; set; } = new ContainerRegistry();
 
         #endregion
+        
         private string settingsFile = string.Empty;
         [JsonIgnore]
         public string SettingsFile
@@ -108,6 +110,14 @@ namespace SqlBuildManager.Console.CommandLine
         public string SettingsFileKey { get; set; }
         [JsonIgnore]
         public virtual string Server { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Script file name for generating override cfg file
+        /// </summary>
+        [JsonIgnore]
+        public virtual FileInfo ScriptFile { get; set; }
+        [JsonIgnore]
+        public virtual string ScriptText { get; set; }
         [JsonIgnore]
         public virtual string Database { get; set; } = string.Empty;
         public virtual string RootLoggingPath { get; set; } = string.Empty;
@@ -273,37 +283,8 @@ namespace SqlBuildManager.Console.CommandLine
                 jobName = value.ToLower();
             }
         }
-        [JsonIgnore]
-        public virtual string BatchAccountName
-        {
-            set { ConnectionArgs.BatchAccountName = value; }
-        }
-        [JsonIgnore]
-        public virtual string BatchAccountKey
-        {
-            set { ConnectionArgs.BatchAccountKey = value; }
-        }
-        [JsonIgnore]
-        public virtual string BatchAccountUrl
-        {
-            set { ConnectionArgs.BatchAccountUrl = value; }
-        }
-        [JsonIgnore]
-        public virtual string StorageAccountName
-        {
-            set
-            {
-                ConnectionArgs.StorageAccountName = value;
-            }
-        }
-        [JsonIgnore]
-        public virtual string StorageAccountKey
-        {
-            set
-            {
-                ConnectionArgs.StorageAccountKey = value;
-            }
-        }
+
+
         [JsonIgnore]
         public virtual string BatchVmSize
         {
@@ -314,22 +295,7 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set { BatchArgs.BatchPoolName = value; }
         }
-        [JsonIgnore]
-        public virtual string EventHubConnection
-        {
-            set
-            {
-                ConnectionArgs.EventHubConnectionString = value;
-            }
-        }
-        [JsonIgnore]
-        public virtual string ServiceBusTopicConnection
-        {
-            set
-            {
-                ConnectionArgs.ServiceBusTopicConnectionString = value;
-            }
-        }
+
         [JsonIgnore]
         public virtual bool PollBatchPoolStatus
         {
@@ -427,8 +393,28 @@ namespace SqlBuildManager.Console.CommandLine
         }
         #endregion
 
-
+        #region Connection Nested Class and property setters
+        [JsonIgnore]
         public string KeyVaultName { set { ConnectionArgs.KeyVaultName = value; } }
+        [JsonIgnore]
+        public virtual string EventHubConnection { set { ConnectionArgs.EventHubConnectionString = value; } }
+
+        [JsonIgnore]
+        public virtual string ServiceBusTopicConnection { set { ConnectionArgs.ServiceBusTopicConnectionString = value; } }
+
+        [JsonIgnore]
+        public virtual string StorageAccountName { set { ConnectionArgs.StorageAccountName = value; } }
+
+        [JsonIgnore]
+        public virtual string StorageAccountKey { set { ConnectionArgs.StorageAccountKey = value; } }
+        [JsonIgnore]
+        public virtual string BatchAccountName { set { ConnectionArgs.BatchAccountName = value; } }
+   
+        [JsonIgnore]
+        public virtual string BatchAccountKey { set { ConnectionArgs.BatchAccountKey = value; } }
+        [JsonIgnore]
+        public virtual string BatchAccountUrl { set { ConnectionArgs.BatchAccountUrl = value; } }
+
         public class Connections
         {
             public string KeyVaultName { get; set; } = string.Empty;
@@ -442,7 +428,9 @@ namespace SqlBuildManager.Console.CommandLine
             public string BatchAccountUrl { get; set; } = string.Empty;
 
         }
+        #endregion
 
+        #region Identity Nested Class and property setters
         public string ClientId { set { IdentityArgs.ClientId = value; } }
         public string PrincipalId { set { IdentityArgs.PrincipalId = value; } }
         public string ResourceId { set { IdentityArgs.ResourceId = value; } }
@@ -487,8 +475,9 @@ namespace SqlBuildManager.Console.CommandLine
 
             public string ServiceAccountName { get; set; } = string.Empty;
         }
+        #endregion
 
-
+        #region ACI Nested Class and property setters
         public string AciName { set { AciArgs.AciName = value; } }
         public string AciResourceGroup { set { AciArgs.ResourceGroup = value; } }
         public int ContainerCount { set { AciArgs.ContainerCount = value; } }
@@ -501,7 +490,9 @@ namespace SqlBuildManager.Console.CommandLine
             [JsonIgnore]
             public int ContainerCount { get; set; } = 10;
         }
+        #endregion
 
+        #region Networking Nested Class and property setters
         public string VnetName { set { NetworkArgs.VnetName = value; } }
         public string SubnetName { set { NetworkArgs.SubnetName = value; } }
         public class Network
@@ -509,7 +500,9 @@ namespace SqlBuildManager.Console.CommandLine
             public string VnetName { get; set; } = string.Empty;
             public string SubnetName { get; set; } = string.Empty;
         }
+        #endregion
 
+        #region ContainerApp Nested Class and property setters
         public string EnvironmentName { set { ContainerAppArgs.EnvironmentName = value; } }
         public string Location { set { ContainerAppArgs.Location = value; } }
         public string ResourceGroup { set { ContainerAppArgs.ResourceGroup = value; } }
@@ -527,7 +520,9 @@ namespace SqlBuildManager.Console.CommandLine
             [JsonIgnore]
             public bool EnvironmentVariablesOnly { get; set; } = false;
         }
+        #endregion
 
+        #region ContainerRegistry Nested Class and property setters
         public string RegistryServer { set { ContainerRegistryArgs.RegistryServer = value; } }
         public string ImageName { set { ContainerRegistryArgs.ImageName = value; } }
         public string ImageTag { set { ContainerRegistryArgs.ImageTag = value; } }
@@ -555,13 +550,17 @@ namespace SqlBuildManager.Console.CommandLine
             public string RegistryPassword { get; set; } = string.Empty;
 
         }
+        #endregion
 
+        #region Kubernetes Nested Class and property setters
         public int PodCount { set { KubernetesArgs.PodCount = value; } }
         public class Kubernetes
         {
             public int PodCount { get; set; } = 10;
         }
-
+        #endregion
+        
+        
         [Serializable]
         public class AutoScripting
         {

@@ -1,5 +1,9 @@
 # SQL Build Manager Change Log
 
+### Version 15.2.0-beta
+
+- *ADDED:* New `sbm utilty override` command to generate an override cfg file from a SQL script file.
+
 ### Version 15.1.0-beta
 
 - *ADDED:* New `--batchresourcegroup` argument to specify the resource group for the Batch account. (Was previously inferred from the Identity resource group)

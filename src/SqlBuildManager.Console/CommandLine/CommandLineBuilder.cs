@@ -1685,8 +1685,22 @@ namespace SqlBuildManager.Console.CommandLine
             SettingsFileExistingRequiredOptions.ForEach(o => eventHubUtilityCommand.Add(o));
             eventHubUtilityCommand.Handler = CommandHandler.Create<CommandLineArgs, DateTime?>(Worker.GetEventHubEvents);
 
-            var utilityCommand = new Command("utility", "Utility commands for interrogating Service Bus and EventHubs")
+            var overrideFromSqlUtilityCommand = new Command("override", "Generate an override file from a SQL script. Specify either --scriptfile or --scripttext.")
             {
+                serverOption,
+                databaseOption,
+                new Option<FileInfo>(new string[] { "--scriptfile" }, "Name of the SQL script (with \".sql\" extension) to generate an override file from. Should be in format: \"SELECT <target server>, <target db> ...\"").ExistingOnly(),
+                new Option<string>(new string[] { "--scripttext" }, "SQL query to generate an override file from. Should be in format: \"SELECT <target server>, <target db> ...\""),
+                new Option<FileInfo>(new string[] { "-o", "--outputfile" }, "Name of the output file to write the override file to. Will always generate file with \".cfg\" extension") { IsRequired = true },
+                new Option<bool>(new string[] { "-f", "--force" }, "Force overwrite of existing output file"),
+
+            };
+            overrideFromSqlUtilityCommand.AddRange(DatabaseAuthArgs);
+            overrideFromSqlUtilityCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.GenerateOverrideFileFromSqlScript);
+
+            var utilityCommand = new Command("utility", "Utility commands for generating override file from SQL statement and interrogating Service Bus and EventHubs")
+            {
+                overrideFromSqlUtilityCommand,
                 queueUtilityCommand,
                 eventHubUtilityCommand
             };

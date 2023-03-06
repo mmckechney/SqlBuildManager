@@ -2629,7 +2629,60 @@ namespace SqlBuildManager.Console
             }
         }
 
+        internal static int GenerateOverrideFileFromSqlScript(CommandLineArgs cmdLine)
+        {
+            string tmpFile = string.Empty;
+            if (cmdLine.ScriptFile == null && string.IsNullOrWhiteSpace(cmdLine.ScriptText))
+            {
+                log.LogError("Please specify a --scriptfile or --scripttext parameter.");
+                return -1;
+            }
+            else if (cmdLine.ScriptFile != null && !string.IsNullOrWhiteSpace(cmdLine.ScriptText))
+            {
+                log.LogError("Please specify either a --scriptfile or --scripttext parameter, not both.");
+                return -2;
+            }
 
+
+            log.LogInformation("Generating override file from SQL script...");
+
+            if (cmdLine.ScriptFile != null)
+            {
+                cmdLine.MultiDbRunConfigFileName = cmdLine.ScriptFile.FullName;
+            }
+            else
+            {
+                tmpFile = Path.Combine(Path.GetDirectoryName(cmdLine.OutputFile.FullName), $"{Guid.NewGuid().ToString()}.sql");
+                File.WriteAllText(tmpFile,cmdLine.ScriptText);
+                cmdLine.ScriptFile = new FileInfo(tmpFile);
+                cmdLine.MultiDbRunConfigFileName = tmpFile;
+            }
+
+
+            var res = Validation.ValidateAndLoadMultiDbData(cmdLine.ScriptFile.FullName, cmdLine, out MultiDbData multiDb, out string[] errorMessage);
+            if (res != 0)
+            {
+                log.LogError(string.Join("\r\n", errorMessage));
+            }
+            else
+            {
+                string cfg = MultiDbHelper.ConvertMultiDbDataToTextConfig(multiDb);
+                var outputFileName = Path.Join(Path.GetDirectoryName(cmdLine.OutputFile.FullName), Path.GetFileNameWithoutExtension(cmdLine.OutputFile.FullName) + ".cfg");
+                File.WriteAllText(outputFileName, cfg);
+                log.LogInformation($"Configuration file saved to: {outputFileName}");
+            }
+            if (!string.IsNullOrWhiteSpace(tmpFile))
+            {
+                try
+                {
+                    File.Delete(tmpFile);
+                }
+                catch { }
+            }
+
+            return 0;
+
+        }
 
         internal class StartArgs
         {

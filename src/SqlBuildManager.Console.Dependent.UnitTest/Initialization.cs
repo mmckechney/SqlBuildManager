@@ -11,6 +11,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         public static string SqlBuildZipFileName;
         public static string MultiDbFileName;
         public static string DbConfigFileName;
+        public static string SqlScriptOverrideFileName;
 
         public Initialization()
         {
@@ -18,6 +19,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Initialization.SqlBuildZipFileName = GetTrulyUniqueFile("sbm");
             Initialization.MultiDbFileName = GetTrulyUniqueFile("multidb");
             Initialization.DbConfigFileName = GetTrulyUniqueFile("cfg");
+            Initialization.SqlScriptOverrideFileName = GetTrulyUniqueFile("sql");
         }
         public static void CleanUp()
         {
@@ -43,6 +45,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         public void CopyDbConfigFileToTestPath()
         {
             File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig);
+        }
+        public void CopySqlScriptOverrideFiletoTestPath()
+        {
+            File.WriteAllText(Initialization.SqlScriptOverrideFileName, Properties.Resources.override_sql);
         }
         public void CopyDbConfigFileLongToTestPath()
         {

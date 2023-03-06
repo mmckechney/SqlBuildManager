@@ -131,6 +131,15 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SELECT &apos;client&apos;, name FROM sys.Databases WHERE name like &apos;Sql%&apos;.
+        /// </summary>
+        public static string override_sql {
+            get {
+                return ResourceManager.GetString("override_sql", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] SimpleSelect {
