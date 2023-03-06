@@ -2629,7 +2629,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static int GenerateOverrideFileFromSqlScript(CommandLineArgs cmdLine)
+        internal static int GenerateOverrideFileFromSqlScript(CommandLineArgs cmdLine, bool force)
         {
             string tmpFile = string.Empty;
             if (cmdLine.ScriptFile == null && string.IsNullOrWhiteSpace(cmdLine.ScriptText))
@@ -2642,8 +2642,13 @@ namespace SqlBuildManager.Console
                 log.LogError("Please specify either a --scriptfile or --scripttext parameter, not both.");
                 return -2;
             }
-
-
+            var outputFileName = Path.Join(Path.GetDirectoryName(cmdLine.OutputFile.FullName), Path.GetFileNameWithoutExtension(cmdLine.OutputFile.FullName) + ".cfg");
+            if (File.Exists(outputFileName) && !force)
+            {
+                log.LogError($"Output file already exists: \"{outputFileName}\". To overwite it, please use the --force flag");
+                return -3;
+            }
+            
             log.LogInformation("Generating override file from SQL script...");
 
             if (cmdLine.ScriptFile != null)
@@ -2667,7 +2672,6 @@ namespace SqlBuildManager.Console
             else
             {
                 string cfg = MultiDbHelper.ConvertMultiDbDataToTextConfig(multiDb);
-                var outputFileName = Path.Join(Path.GetDirectoryName(cmdLine.OutputFile.FullName), Path.GetFileNameWithoutExtension(cmdLine.OutputFile.FullName) + ".cfg");
                 File.WriteAllText(outputFileName, cfg);
                 log.LogInformation($"Configuration file saved to: {outputFileName}");
             }

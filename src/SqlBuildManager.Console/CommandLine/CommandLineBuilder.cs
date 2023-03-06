@@ -1696,7 +1696,7 @@ namespace SqlBuildManager.Console.CommandLine
 
             };
             overrideFromSqlUtilityCommand.AddRange(DatabaseAuthArgs);
-            overrideFromSqlUtilityCommand.Handler = CommandHandler.Create<CommandLineArgs>(Worker.GenerateOverrideFileFromSqlScript);
+            overrideFromSqlUtilityCommand.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.GenerateOverrideFileFromSqlScript);
 
             var utilityCommand = new Command("utility", "Utility commands for generating override file from SQL statement and interrogating Service Bus and EventHubs")
             {
