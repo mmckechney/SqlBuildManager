@@ -41,6 +41,7 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             KeyValuePair<ReportType, string> args = (KeyValuePair<ReportType, string>)e.Argument;
             collector = new QueryCollector(multiDbData, connData);
+            collector.BackgroundWorker = bgWorker;
             //this.rawReportData = 
             try
             {

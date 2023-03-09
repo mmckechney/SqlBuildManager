@@ -70,7 +70,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 //monitor for completion
                 var args = new string[]{
-                    //"--loglevel", "Debug",
+                    "--loglevel", "Debug",
                     "containerapp",  "run",
                     "--settingsfile", settingsFile,
                     "--settingsfilekey", settingsFileKeyPath,
@@ -198,7 +198,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
         //TODO: Enable Managed Identity****** Managed Identity for SQL Authentication is not available for Container Apps currently, only SB and EH
-        //[DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
 
         [DataTestMethod]

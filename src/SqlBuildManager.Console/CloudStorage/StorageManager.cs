@@ -125,8 +125,17 @@ namespace SqlBuildManager.Console.CloudStorage
 
         internal static async Task<string> WriteFileToLocalStorage(string storageAccountName, string storageAccountKey, string sourceContainerName, string filename)
         {
-            var client = CreateStorageClient(storageAccountName, storageAccountKey);
-            return await WriteFileToLocalStorage(client, sourceContainerName, filename);
+            try
+            {
+                var client = CreateStorageClient(storageAccountName, storageAccountKey);
+                return await WriteFileToLocalStorage(client, sourceContainerName, filename);
+            }
+            catch(Exception exe)
+            {
+                log.LogError($"Error creating storage client: {exe.Message}");
+                return string.Empty;
+            }
+
         }
         internal static async Task<string> WriteFileToLocalStorage(BlobServiceClient storageSvcClient, string sourceContainerName, string filename)
         {
@@ -245,7 +254,7 @@ namespace SqlBuildManager.Console.CloudStorage
                 return false;
             }
         }
-        internal static async Task<bool> UploadFilesToContainer(string storageAccountName, string storageAccountKey, string containerName, string[] filePaths, bool isRetry = false)
+        internal static async Task<bool> UploadFilesToStorageContainer(string storageAccountName, string storageAccountKey, string containerName, string[] filePaths, bool isRetry = false)
         {
 
             try
@@ -275,7 +284,7 @@ namespace SqlBuildManager.Console.CloudStorage
                 {
                     log.LogInformation("Existing storage container is still being deleted. waiting...");
                     System.Threading.Thread.Sleep(3000);
-                    return await UploadFilesToContainer(storageAccountName, storageAccountKey, containerName, filePaths, true); ;
+                    return await UploadFilesToStorageContainer(storageAccountName, storageAccountKey, containerName, filePaths, true); ;
                 }
                 else
                 {
@@ -313,6 +322,30 @@ namespace SqlBuildManager.Console.CloudStorage
             }
         }
 
+        internal static async Task<bool> DownloadBlobToLocal(BlobServiceClient blobSvcClient, string containerName, string localFileName)
+        {
+            try
+            {
+                
+                var cloudBlobContainer = blobSvcClient.GetBlobContainerClient(containerName);
+                var blob = cloudBlobContainer.GetBlobClient(Path.GetFileName(localFileName));
+                var resp = await blob.DownloadToAsync(localFileName);
+                if (resp.Status < 300)
+                {
+                    return true;
+                }
+                else
+                {
+                    log.LogError($"Unable to download file {Path.GetFileName(localFileName)} to {localFileName}: {resp.ReasonPhrase}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                log.LogError($"Unable to download file {Path.GetFileName(localFileName)} to {localFileName}: {ex.Message}");
+                return false;
+            }
+        }
 
         internal static ResourceFile UploadFileToBatchContainer(string storageAcctName, string containerName, StorageSharedKeyCredential storageCreds, string filePath)
         {
@@ -502,6 +535,26 @@ namespace SqlBuildManager.Console.CloudStorage
             return containerClient;
         }
 
+        internal static bool  CopyFileToStorage(string storageAccountName, string storageAccountKey, string jobName, string localName, string storageName)
+        {
+            try
+            {
+                var container = GetBlobContainerClient(storageAccountName, storageAccountKey, jobName);
+
+                var blobData = GetBlockBlobClient(storageAccountName, storageAccountKey, jobName, storageName);
+                using (var fs = new FileStream(localName, FileMode.Open))
+                {
+                    blobData.Upload(fs);
+                }
+                log.LogInformation($"File {localName} uploaded to {storageName} in container [{jobName}]");
+                return true;
+            }
+            catch(Exception exe)
+            {
+                log.LogError($"Problem uploading file {localName} to storage: " + exe.Message);
+                return false;
+            }
+        }
     }
 
 }

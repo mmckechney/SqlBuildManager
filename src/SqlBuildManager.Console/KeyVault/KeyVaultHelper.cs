@@ -149,7 +149,7 @@ namespace SqlBuildManager.Console.KeyVault
             if (!string.IsNullOrWhiteSpace(tmp))
             {
                 cmdLine.StorageAccountName = tmp;
-                retrieved.Add(KeyVaultHelper.StorageAccountKey);
+                retrieved.Add(KeyVaultHelper.StorageAccountName);
             }
 
 

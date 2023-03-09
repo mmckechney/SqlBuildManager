@@ -61,6 +61,8 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         public string StorageAccountName { get; set; } = null;
 
         public string KeyVaultName { get; set; } = null;
+        public string QueryFile { get; set; } = null;
+        public string OutputFile { get; set; } = null;
 
     }
 }

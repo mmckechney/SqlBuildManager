@@ -1,3 +1,4 @@
+using Microsoft.Azure.Batch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using System;
@@ -93,6 +94,78 @@ namespace SqlBuildManager.Console.ExternalTest
             finally
             {
                 Debug.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
+        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
+        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")]
+        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json")]
+        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        [DataTestMethod]
+        public void Kubernetes_Query_Queue_SBMSource_Success(string settingsFile)
+        {
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            try
+            {
+                var prc = new ProcessHelper();
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var queryFile = Path.GetFullPath("selectquery.sql");
+                
+                if (!File.Exists(queryFile))
+                {
+                    File.WriteAllText(queryFile, Properties.Resources.selectquery);
+                }
+                string jobName = TestHelper.GetUniqueJobName("k8s");
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+
+                //Clear any exiting pods
+                var result = prc.ExecuteProcess("kubectl", $"delete job sqlbuildmanager ");
+
+                var args = new string[]
+                {
+                "k8s", "query",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--jobname", jobName,
+                "--override", overrideFile,
+                "--queryfile", queryFile,
+                "--outputfile", outputFile,
+                "--force",
+                "--unittest",
+                "--stream"
+                };
+
+
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+
+                Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+
+                Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
+                var outputLength = File.ReadAllLines(outputFile).Length;
+                var overrideLength = File.ReadAllLines(overrideFile).Length;
+
+                Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+ 
+                if (File.Exists(outputFile))
+                {
+                    File.Delete(outputFile);
+                }
+                
             }
 
         }

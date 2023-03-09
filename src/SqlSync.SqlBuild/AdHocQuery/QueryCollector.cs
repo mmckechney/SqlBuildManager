@@ -10,6 +10,11 @@ using System.Text;
 using System.Xml;
 using System.Xml.XPath;
 using System.Xml.Xsl;
+using System.Threading.Tasks;
+using System.Linq;
+using Azure.Messaging.EventHubs.Processor;
+using System.Security.Permissions;
+
 namespace SqlSync.SqlBuild.AdHocQuery
 {
     public class QueryCollector
@@ -20,6 +25,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         private List<QueryCollectionRunner> runners = new List<QueryCollectionRunner>();
         private BackgroundWorker bgWorker;
         private ConnectionData connData = null;
+
         /// <summary>
         /// The directory where the ultimate results file will be created. Will be used as the root for the temp files
         /// </summary>
@@ -39,6 +45,35 @@ namespace SqlSync.SqlBuild.AdHocQuery
         {
 
         }
+        public BackgroundWorker BackgroundWorker
+        {
+            set
+            {
+                this.bgWorker = value;
+            }
+        }
+
+        public bool EnsureOutputPath(string outputDirectory)
+        {
+
+            try
+            {
+                DirectoryInfo inf = new DirectoryInfo(outputDirectory);
+                inf.Create();
+                inf.Attributes = FileAttributes.Hidden;
+                return true;
+            }
+            catch (Exception exe)
+            {
+                string message = String.Format("Unable to create working temp directory at {0}: {1}", outputDirectory, exe.Message);
+                log.LogError(exe, message);
+                if (bgWorker != null && bgWorker.WorkerReportsProgress)
+                {
+                    bgWorker.ReportProgress(-1, message);
+                }
+                return false;
+            }
+        }
         /// <summary>
         /// Main method that coordinates the collection of data from each target database
         /// </summary>
@@ -47,31 +82,19 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="reportType">The report type that the user wants</param>
         /// <param name="query">The SQL query to execute across the databases.</param>
         /// <param name="scriptTimeout">SQL timeout per connection</param>
-        public bool GetQueryResults(ref BackgroundWorker bgWorker, string fileName, ReportType reportType, string query, int scriptTimeout)
+        public bool GetQueryResults(string fileName, ReportType reportType, string query, int scriptTimeout)
         {
             resultsFilePath = Path.Combine(Path.GetDirectoryName(fileName), Guid.NewGuid().ToString());
 
-            try
+            if(!EnsureOutputPath(resultsFilePath))
             {
-                DirectoryInfo inf = new DirectoryInfo(resultsFilePath);
-                inf.Create();
-                inf.Attributes = FileAttributes.Hidden;
-            }
-            catch (Exception exe)
-            {
-                string message = String.Format("Unable to create working temp directory at {0}: {1}", resultsFilePath, exe.Message);
-                log.LogError(exe, message);
-                if (bgWorker != null && bgWorker.WorkerReportsProgress)
-                {
-                    bgWorker.ReportProgress(-1, message);
-                }
                 return false;
             }
 
-            this.bgWorker = bgWorker;
             int threadTotal = 0;
             string db;
 
+            var queryTasks = new List<Task<(int,string)>>();
             //bool baseLineSet = false;
             foreach (ServerData srv in multiDbData)
             {
@@ -86,82 +109,51 @@ namespace SqlSync.SqlBuild.AdHocQuery
                         QueryCollector.SyncObj.WorkingRunners++;
                     }
                     QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, resultsFilePath, scriptTimeout, connData);
-                    runner.QueryCollectionRunnerUpdate += new QueryCollectionRunner.QueryCollectionRunnerUpdateEventHandler(runner_HashCollectionRunnerUpdate);
-                    runners.Add(runner);
-                    System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedHashCollection, runner);
+                    queryTasks.Add(runner.CollectQueryData());
                 }
             }
-
-
-            int counter = 0;
-            while (QueryCollector.SyncObj.WorkingRunners > 0)
+            while(true)
             {
                 System.Threading.Thread.Sleep(1000);
-                counter++;
+                var remaining = queryTasks.Count(t => t.Status != TaskStatus.RanToCompletion);
+                bgWorker?.ReportProgress(QueryCollector.SyncObj.WorkingRunners, String.Format("Databases remaining: {0}", remaining));
 
-                if (bgWorker != null && bgWorker.WorkerReportsProgress && (counter % 2 == 0))
+                var running = queryTasks.Count(t => t.Status == TaskStatus.Running);
+                if (running == 0)
                 {
-                    bgWorker.ReportProgress(QueryCollector.SyncObj.WorkingRunners, String.Format("Databases remaining: {0}", QueryCollector.SyncObj.WorkingRunners.ToString()));
+                    break;
                 }
+                
             }
+            Task.WaitAll(queryTasks.ToArray());
+ 
+            if (bgWorker != null && bgWorker.WorkerReportsProgress)
+            {
+                bgWorker?.ReportProgress(0, "Collating Results...");
+            }
+
+
+            var queryResultFiles = queryTasks.Select(t => t.Result.Item2).ToList();
+            var retVal = queryTasks.Select(t => t.Result.Item1).Sum();
 
             if (bgWorker != null && bgWorker.WorkerReportsProgress)
             {
-                bgWorker.ReportProgress(0, "Collating Results...");
+                bgWorker?.ReportProgress(-1, "Generating combined data report...");
             }
 
-            List<string> queryResultFiles = new List<string>();
-            foreach (QueryCollectionRunner runner in runners)
+            var reportGenRes =  GenerateReport(fileName, reportType, queryResultFiles);
+            if(reportGenRes && retVal == 0)
             {
-                queryResultFiles.Add(runner.ResultsTempFile);
+                return true;
             }
-
-
-            if (bgWorker != null && bgWorker.WorkerReportsProgress)
+            else
             {
-                bgWorker.ReportProgress(-1, "Generating combined data report...");
+                return false;
             }
-
-            return GenerateReport(fileName, reportType, queryResultFiles);
 
         }
 
-        /// <summary>
-        /// Event handler that collects responses from the threaded runners and uses the Backgroundworker to transmit back to caller
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void runner_HashCollectionRunnerUpdate(object sender, QueryCollectionRunnerUpdateEventArgs e)
-        {
-
-            if (bgWorker != null && bgWorker.WorkerReportsProgress)
-            {
-                bgWorker.ReportProgress(0, e);
-            }
-        }
-        /// <summary>
-        /// Method called by ThreadPool to kick off data collection
-        /// </summary>
-        /// <param name="objRunner"></param>
-        private void ProcessThreadedHashCollection(object objRunner)
-        {
-            try
-            {
-                QueryCollectionRunner runner = (QueryCollectionRunner)objRunner;
-                runner.CollectQueryData();
-            }
-            catch (Exception exe)
-            {
-                log.LogError($"Error with QueryCollectionRunner{Environment.NewLine}{exe.ToString()}");
-            }
-            finally
-            {
-                lock (QueryCollector.SyncObj)
-                {
-                    QueryCollector.SyncObj.WorkingRunners--;
-                }
-            }
-        }
+     
         /// <summary>
         /// Collates the data from each runner's temp output file and creates the final report
         /// </summary>
@@ -356,7 +348,7 @@ GROUP BY {0}, {1}, CommitDate ORDER BY CommitDate DESC";
                     break;
             }
 
-            GetQueryResults(ref bgWorker, fileName, reportType, script, scriptTimeout);
+            GetQueryResults(fileName, reportType, script, scriptTimeout);
 
         }
 

@@ -12,6 +12,7 @@ $outputDbConfigFile = Join-Path $path "databasetargets.cfg"
 $databaseDbWithBadTargetConfigFile = Join-Path $path "databasetargets-badtargets.cfg"
 $clientDbConfigFile = Join-Path $path "clientdbtargets.cfg"
 $doubleClientDbConfigFile = Join-Path $path "clientdbtargets-doubledb.cfg"
+$serverTextFile = Join-Path $path "server.txt"
 
 $sqlServers =  (az sql server list --resource-group $resourceGroupName ) | ConvertFrom-Json
 Write-Host "Using server targets: $sqlServers"  -ForegroundColor Cyan
@@ -58,3 +59,7 @@ $doubleClientDbConfig | Set-Content -Path $doubleClientDbConfigFile
 
 Write-Host "Writing test database config to  path set to $databaseDbWithBadTargetConfigFile" -ForegroundColor DarkGreen
 $databaseDbWithBadTargetConfig | Set-Content -Path $databaseDbWithBadTargetConfigFile
+
+
+Write-Host "Creating server.txt file for SQL Query override config tests" -ForegroundColor DarkGreen
+$sqlServers[0].fullyQualifiedDomainName.trim()   | Set-Content -Path $serverTextFile

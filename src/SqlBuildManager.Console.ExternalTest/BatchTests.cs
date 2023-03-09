@@ -26,6 +26,9 @@ namespace SqlBuildManager.Console.ExternalTest
         private string settingsFilePath;
         private string linuxSettingsFilePath;
         private string settingsFileKeyPath;
+        private string un;
+        private string pw;
+        private string server;
 
         [TestInitialize]
         public void ConfigureProcessInfo()
@@ -36,6 +39,9 @@ namespace SqlBuildManager.Console.ExternalTest
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
             overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            un = File.ReadAllText(Path.GetFullPath("TestConfig/un.txt")).Trim();
+            pw = File.ReadAllText(Path.GetFullPath("TestConfig/pw.txt")).Trim();
+            server = File.ReadAllText(Path.GetFullPath("TestConfig/server.txt")).Trim();
 
             cmdLine = new CommandLineArgs();
             cmdLine.FileInfoSettingsFile = new FileInfo(settingsFilePath);
@@ -159,6 +165,81 @@ namespace SqlBuildManager.Console.ExternalTest
             }
         }
 
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.Count, 10)]
+        [DataTestMethod]
+        public void Batch_SqlScriptOverride_SBMSource_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            settingsFile = Path.GetFullPath(settingsFile);
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFilePath), Guid.NewGuid().ToString() + ".cfg");
+
+            var args = new string[]{
+                "--loglevel", "Debug",
+                "utility",  "override",
+                "--server", server,
+                "--database", "master",
+                "--scripttext", "SELECT CONCAT(@@SERVERNAME, '.database.windows.net'), 'SqlBuildTest', name FROM sys.Databases WHERE name like 'sql%'",
+                "--username", un,
+                "--password", pw,
+                "--outputfile", tmpOverride,
+                "--force" };
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            
+            var tmpOverrideFileContents = File.ReadAllLines(tmpOverride).ToList();
+
+            args = new string[]{
+                "--loglevel", "Debug",
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", tmpOverride,
+                "--packagename", sbmFileName,
+                "--concurrency", "2",
+                "--concurrencytype","Server" };
+
+            rootCommand = CommandLineBuilder.SetUp();
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+
+
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "run")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            }
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {tmpOverrideFileContents.Count()}"), $"Should have run against a {tmpOverrideFileContents.Count()} databases");
+            }
+
+            try
+            {
+                File.Delete(tmpOverride);
+            }
+            catch { }
+        }
+
+
+
         [DataRow("run", "TestConfig/settingsfile-batch-windows-mi.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi.json", ConcurrencyType.Count, 10)]
         [DataTestMethod]
@@ -176,6 +257,7 @@ namespace SqlBuildManager.Console.ExternalTest
             int startingLine = LogFileCurrentLineCount();
 
             var args = new string[]{
+                "--loglevel", "debug",
                 "batch",  batchMethod,
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,
@@ -486,7 +568,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("query", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("query", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
-        public void Batch_Query_SelectSuccess(string batchMethod, string settingsFile)
+        public void Batch_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
         {
 
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -504,6 +586,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 settingsFile = Path.GetFullPath(settingsFile);
                 var args = new string[]{
+                "--loglevel", "debug",
                 "batch",  batchMethod,
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,
@@ -516,6 +599,164 @@ namespace SqlBuildManager.Console.ExternalTest
                 var val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 var result = val.Result;
+
+                var logFileContents = ReleventLogFileContents(startingLine);
+                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+                switch (batchMethod)
+                {
+                    case "querythreaded":
+                        Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                        break;
+
+                    case "query":
+                        Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
+                        break;
+                }
+                Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
+                var outputLength = File.ReadAllLines(outputFile).Length;
+                var overrideLength = File.ReadAllLines(overrideFile).Length;
+
+                Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+            }
+            finally
+            {
+                if (File.Exists(outputFile))
+                {
+                    File.Delete(outputFile);
+                }
+            }
+
+
+        }
+       
+        [DataRow("query", "TestConfig/settingsfile-batch-windows-mi.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-mi.json")]
+        [DataTestMethod]
+        public void Batch_Query_Override_ManagedIdentity_SelectSuccess(string batchMethod, string settingsFile)
+        {
+            
+            string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            try
+            {
+                string jobName = GetUniqueBatchJobName("batch-sbm");
+                string selectquery = Path.GetFullPath("selectquery.sql");
+                if (!File.Exists(selectquery))
+                {
+                    File.WriteAllText(selectquery, Properties.Resources.selectquery);
+                }
+
+                //get the size of the log file before we start
+                int startingLine = LogFileCurrentLineCount();
+
+                settingsFile = Path.GetFullPath(settingsFile);
+                var args = new string[]{
+                "--loglevel", "debug",
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", overrideFile,
+                "--outputfile", outputFile,
+                "--queryfile", selectquery,
+                "--jobname", jobName,
+                "--silent"};
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                var result = val.Result;
+
+                var logFileContents = ReleventLogFileContents(startingLine);
+                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+                switch (batchMethod)
+                {
+                    case "querythreaded":
+                        Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                        break;
+
+                    case "query":
+                        Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
+                        break;
+                }
+                Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
+                var outputLength = File.ReadAllLines(outputFile).Length;
+                var overrideLength = File.ReadAllLines(overrideFile).Length;
+
+                Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+            }
+            finally
+            {
+                if (File.Exists(outputFile))
+                {
+                    File.Delete(outputFile);
+                }
+            }
+
+
+        }
+
+        [DataRow("querythreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("querythreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Count, 100)]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows-queue-mi.json", ConcurrencyType.Server, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-mi.json", ConcurrencyType.Server, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows-queue-keyvault-mi.json", ConcurrencyType.Server, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.Server, 5)]
+        [DataTestMethod]
+        public void Batch_Query_Queue_SelectSuccess(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+
+            string jobName = GetUniqueBatchJobName("batch-sbm");
+            settingsFile = Path.GetFullPath(settingsFile);
+            string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            try
+            {
+
+                string selectquery = Path.GetFullPath("selectquery.sql");
+                if (!File.Exists(selectquery))
+                {
+                    File.WriteAllText(selectquery, Properties.Resources.selectquery);
+                }
+
+                //get the size of the log file before we start
+                int startingLine = LogFileCurrentLineCount();
+
+
+
+                var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override" , overrideFilePath,
+                "--concurrencytype",  concurType.ToString(),
+                "--jobname", jobName};
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                Task<int> val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                var result = val.Result;
+
+
+                settingsFile = Path.GetFullPath(settingsFile);
+                args = new string[]{
+                "--loglevel", "debug",
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", overrideFile,
+                "--outputfile", outputFile,
+                "--queryfile", selectquery,
+                "--jobname", jobName,
+                "--concurrencytype",  concurType.ToString(),
+                "--concurrency", concurrency.ToString(),
+                "--silent"};
+
+                rootCommand = CommandLineBuilder.SetUp();
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
 
                 var logFileContents = ReleventLogFileContents(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
@@ -622,6 +863,45 @@ namespace SqlBuildManager.Console.ExternalTest
             var logFileContents = ReleventLogFileContents(startingLine);
             Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "A DELETE statement should have been found");
+        }
+
+        [DataRow("querythreaded", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux.json")]
+        [DataTestMethod]
+        public void Batch_Query_SelectFail(string batchMethod, string settingsFile)
+        {
+
+            string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            string badSelect = Path.GetFullPath("bad_select.sql");
+            if (!File.Exists(badSelect))
+            {
+                File.WriteAllText(badSelect, Properties.Resources.bad_select);
+            }
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            settingsFile = Path.GetFullPath(settingsFile);
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", overrideFile,
+                "--outputfile", outputFile,
+                "--queryfile", badSelect,
+                "--silent"};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(6, result, StandardExecutionErrorMessage(logFileContents));
+
         }
 
         [DataRow("querythreaded", "TestConfig/settingsfile-batch-windows.json")]
@@ -764,6 +1044,7 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
+                "--loglevel", "debug",
                 "batch",  batchMethod,
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,

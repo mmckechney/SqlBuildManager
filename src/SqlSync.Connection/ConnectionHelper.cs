@@ -82,6 +82,8 @@ namespace SqlSync.Connection
                     break;
                 case AuthenticationType.AzureADIntegrated:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryIntegrated;
+                    builder.IntegratedSecurity = true;
+                    builder.TrustServerCertificate = true;
                     break;
                 case AuthenticationType.AzureADPassword:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryPassword;
@@ -89,7 +91,10 @@ namespace SqlSync.Connection
                     builder.Password = pw;
                     break;
                 case AuthenticationType.ManagedIdentity:
-                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryManagedIdentity;
+                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault;
+                    break;
+                case AuthenticationType.AzureADInteractive:
+                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryInteractive;
                     break;
                 case AuthenticationType.Password:
                 default:

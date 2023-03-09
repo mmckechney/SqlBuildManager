@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
@@ -466,7 +467,7 @@ namespace SqlBuildManager.Console
                 log.LogError($"An INSERT, UPDATE or DELETE keyword was found. You can not use the query function to modify data. Instead, please run your data modification script as a SQL Build Package or DACPAC update");
                 return 5;
             }
-            if (!File.Exists(cmdLine.MultiDbRunConfigFileName))
+            if (!File.Exists(cmdLine.MultiDbRunConfigFileName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 log.LogError("The --override file was not found. Please check the name or path and try again");
                 return 3;
@@ -604,6 +605,40 @@ namespace SqlBuildManager.Console
             return messages;
         }
 
+        public static (bool, CommandLineArgs) ValidateContainerQueueArgs(CommandLineArgs cmdLine, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection)
+        {
+
+            cmdLine.KeyVaultName = keyvaultname;
+            bool kvSuccess;
+            (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+
+            if (!string.IsNullOrWhiteSpace(servicebustopicconnection))
+            {
+                cmdLine.ServiceBusTopicConnection = servicebustopicconnection;
+            }
+            if (!string.IsNullOrWhiteSpace(jobname))
+            {
+                cmdLine.JobName = jobname;
+            }
+            if (concurrencytype != ConcurrencyType.Count)
+            {
+                cmdLine.ConcurrencyType = concurrencytype;
+            }
+
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                log.LogError("The ServiceBusTopicConnection is required as either a --servicebustopicconnection parameter or as part of the --secretsfile");
+                return (false, cmdLine);
+            }
+
+            if (string.IsNullOrWhiteSpace(cmdLine.JobName))
+            {
+                log.LogError("The JobName is required as either a --jobname parameter or as part of the --runtimefile");
+                return (false, cmdLine);
+            }
+
+            return (true, cmdLine);
+        }
 
     }
 }

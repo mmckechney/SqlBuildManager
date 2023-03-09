@@ -10,6 +10,7 @@ using System.Data.Common;
 using System.IO;
 using System.Text;
 using System.Xml;
+using System.Threading.Tasks;
 namespace SqlSync.SqlBuild.AdHocQuery
 {
     public class QueryCollectionRunner : IDisposable
@@ -63,105 +64,119 @@ namespace SqlSync.SqlBuild.AdHocQuery
             this.masterConnData = masterConnData;
         }
 
-        public void CollectQueryData()
+        public Task<(int, string)> CollectQueryData()
         {
-
-            ConfigurePollyRetryPolicies();
-            string errorMessage = string.Empty;
-            if (QueryCollectionRunnerUpdate != null)
-                QueryCollectionRunnerUpdate(this, new QueryCollectionRunnerUpdateEventArgs(serverName, databaseName, "Starting"));
-
-            ConnectionData connData = new ConnectionData(serverName, databaseName);
-            if (masterConnData.AuthenticationType == AuthenticationType.AzureADPassword || masterConnData.AuthenticationType == AuthenticationType.Password)
+            var coll = Task<(int, string)>.Run(() =>
             {
-                connData.UserId = masterConnData.UserId;
-                connData.Password = masterConnData.Password;
-                connData.AuthenticationType = masterConnData.AuthenticationType;
-            }
-            connData.ScriptTimeout = scriptTimeout;
-            SqlConnection conn = ConnectionHelper.GetConnection(connData);
-            SqlCommand cmd = new SqlCommand(query, conn);
-            cmd.CommandType = CommandType.Text;
+                int queryResult = 0;
+                ConfigurePollyRetryPolicies();
+                string errorMessage = string.Empty;
+                if (QueryCollectionRunnerUpdate != null)
+                    QueryCollectionRunnerUpdate(this, new QueryCollectionRunnerUpdateEventArgs(serverName, databaseName, "Starting"));
+
+                ConnectionData connData = new ConnectionData(serverName, databaseName);
+                if (masterConnData.AuthenticationType == AuthenticationType.AzureADPassword || masterConnData.AuthenticationType == AuthenticationType.Password)
+                {
+                    connData.UserId = masterConnData.UserId;
+                    connData.Password = masterConnData.Password;
+                    connData.AuthenticationType = masterConnData.AuthenticationType;
+                }
+                else
+                {
+                    connData.AuthenticationType = masterConnData.AuthenticationType;
+                }
+                connData.ScriptTimeout = scriptTimeout;
+                SqlConnection conn = ConnectionHelper.GetConnection(connData);
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.CommandType = CommandType.Text;
 
 
-            results = new QueryResultData(serverName, databaseName);
-            results.QueryAppendData = (List<QueryRowItem>)AppendData;
-            int rowCount = 0;
-            try
-            {
-                pollyRetryPolicy.Execute(() =>
-                    {
-                        if (conn.State == ConnectionState.Closed)
-                            conn.Open();
-
-                        rowCount = 0;
-
-                        string columnName = string.Empty;
-                        using (DbDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+                results = new QueryResultData(serverName, databaseName);
+                results.QueryAppendData = (List<QueryRowItem>)AppendData;
+                int rowCount = 0;
+                try
+                {
+                    pollyRetryPolicy.Execute(() =>
                         {
+                            if (conn.State == ConnectionState.Closed)
+                                conn.Open();
 
-                            int fieldCount = 0;
-                            //Add column definitions...
-                            DataTable tbl = reader.GetSchemaTable();
-                            int columnCount = tbl.Rows.Count;
-                            for (int i = 0; i < columnCount; i++)
+                            rowCount = 0;
+
+                            string columnName = string.Empty;
+                            using (DbDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                             {
-                                columnName = tbl.Rows[i]["ColumnName"].ToString();
-                                if (columnName.Length == 0)
-                                    columnName = "Column " + (i + 1).ToString();
-                                else if (results.ColumnDefinition.ContainsKey(columnName))
-                                    columnName = columnName + (i + 1).ToString();
 
-                                results.ColumnDefinition.Add(columnName, i.ToString());
-                            }
-
-
-                            while (reader.Read())
-                            {
-                                fieldCount = reader.FieldCount;
-                                Result tmp = new Result();
-                                for (int i = 0; i < fieldCount; i++)
+                                int fieldCount = 0;
+                                //Add column definitions...
+                                DataTable tbl = reader.GetSchemaTable();
+                                int columnCount = tbl.Rows.Count;
+                                for (int i = 0; i < columnCount; i++)
                                 {
-                                    if (reader[i] == DBNull.Value)
-                                        tmp.Add(i.ToString(), "NULL");
-                                    else
-                                        tmp.Add(i.ToString(), reader[i].ToString());
+                                    columnName = tbl.Rows[i]["ColumnName"].ToString();
+                                    if (columnName.Length == 0)
+                                        columnName = "Column " + (i + 1).ToString();
+                                    else if (results.ColumnDefinition.ContainsKey(columnName))
+                                        columnName = columnName + (i + 1).ToString();
+
+                                    results.ColumnDefinition.Add(columnName, i.ToString());
                                 }
-                                results.Results.Add(tmp);
-                                rowCount++;
 
-                                if (rowCount % 10000 == 0)
-                                    DumpResults();
+
+                                while (reader.Read())
+                                {
+                                    fieldCount = reader.FieldCount;
+                                    Result tmp = new Result();
+                                    for (int i = 0; i < fieldCount; i++)
+                                    {
+                                        if (reader[i] == DBNull.Value)
+                                            tmp.Add(i.ToString(), "NULL");
+                                        else
+                                            tmp.Add(i.ToString(), reader[i].ToString());
+                                    }
+                                    results.Results.Add(tmp);
+                                    rowCount++;
+
+                                    if (rowCount % 10000 == 0)
+                                        DumpResults();
+                                }
+                                reader.Close();
+                                reader.Dispose();
                             }
-                            reader.Close();
-                            reader.Dispose();
-                        }
-                    });
+                        });
 
-                results.RowCount = rowCount;
-            }
-            catch (OutOfMemoryException omExe)
-            {
-                log.LogError(omExe, $"Ran out of memory running Query: {query} on {connData.SQLServerName}.{connData.DatabaseName}");
-            }
-            catch (Exception exe)
-            {
-                errorMessage = exe.Message;
-                log.LogError(exe, $"Error Executing Query: {query}");
-                Result r = new Result();
-                r.Add("", "** Execution Error: " + errorMessage);
-                results.Results.Add(r);
-            }
-            finally
-            {
-                if (conn != null)
-                    conn.Close();
-            }
+                    results.RowCount = rowCount;
+                }
+                catch (OutOfMemoryException omExe)
+                {
+                    log.LogError(omExe, $"Ran out of memory running Query: {query} on {connData.SQLServerName}.{connData.DatabaseName}");
+                    queryResult = -1;
+                }
+                catch (Exception exe)
+                {
+                    errorMessage = exe.Message;
+                    log.LogError(exe, $"Error Executing Query: {query}");
+                    Result r = new Result();
+                    r.Add("", "** Execution Error: " + errorMessage);
+                    results.Results.Add(r);
+                    queryResult = -2;
+                }
+                finally
+                {
+                    if (conn != null)
+                        conn.Close();
+                }
 
-            DumpResults();
-            string combined = MergeDumpFiles();
-            SerializeToTempFile(combined);
-            results = null;
+                DumpResults();
+                string combined = MergeDumpFiles();
+                SerializeToTempFile(combined);
+                results = null;
+                return (queryResult, this.ResultsTempFile);
+                
+            });
+
+            return coll;
+            
         }
 
         #region Buffering for very large results

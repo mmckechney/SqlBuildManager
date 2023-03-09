@@ -16,6 +16,307 @@ namespace SqlBuildManager.Console.Kubernetes
         public static readonly string SbmNamespace = "sqlbuildmanager";
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        #region "Local" Command Line methods
+        public static Task<KubernetesFiles> SaveKubernetesYamlFiles(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
+        {
+            var dir = Directory.GetCurrentDirectory();
+            var secretsName = "";
+            if (path != null)
+            {
+                dir = path.FullName;
+            }
+            //Save secrets to KV or create settings file
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                var lst = KeyVaultHelper.SaveSecrets(cmdLine);
+                log.LogInformation($"Saved secrets to Azure Key Vault {cmdLine.ConnectionArgs.KeyVaultName}: {string.Join(", ", lst)}");
+            }
+            else
+            {
+                secretsName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secrets.yaml" : $"{prefix}-secrets.yaml");
+                string secrets = KubernetesManager.GenerateSecretsYaml(cmdLine);
+                if (!string.IsNullOrWhiteSpace(secrets))
+                {
+                    File.WriteAllText(secretsName, secrets);
+                    log.LogInformation($"Secrets file written to: {secretsName}");
+                }
+                else
+                {
+                    log.LogInformation($"NO secrets are needed, NOT saving secrets yaml to : {secretsName}");
+                }
+            }
+
+            //Create configmap file
+            string cfgMap = KubernetesManager.GenerateConfigmapYaml(cmdLine);
+            var cfgMapName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "configmap.yaml" : $"{prefix}-configmap.yaml");
+            File.WriteAllText(cfgMapName, cfgMap);
+            log.LogInformation($"Configmap file written to: {cfgMapName}");
+
+            string jobYaml = KubernetesManager.GenerateJobYaml(cmdLine);
+            var jobYamlFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "job.yaml" : $"{prefix}-job.yaml");
+            File.WriteAllText(jobYamlFileName, jobYaml);
+            log.LogInformation($"Job Yaml file written to: {jobYamlFileName}");
+
+            var kf = new KubernetesFiles
+            {
+                RuntimeConfigMapFile = cfgMapName,
+                SecretsFile = secretsName,
+                JobFileName = jobYamlFileName,
+            };
+
+            return Task.Run(() => (kf));
+        }
+        internal static bool ApplyDeployment(KubernetesFiles files)
+        {
+            var returnCode = 0;
+            log.LogInformation($"Creating 'sqlbuildmanager' namespace (if not already exists)");
+            if (KubectlProcess.DescribeKubernetesResource("namespace", KubernetesManager.SbmNamespace) != 0)
+            {
+                returnCode += KubectlProcess.CreateKubernetesResource("namespace", KubernetesManager.SbmNamespace);
+            }
+
+            log.LogInformation($"Applying file {files.RuntimeConfigMapFile}");
+            returnCode += KubectlProcess.ApplyFile(files.RuntimeConfigMapFile);
+
+            if (!string.IsNullOrWhiteSpace(files.SecretsFile) && File.Exists(files.SecretsFile))
+            {
+                log.LogInformation($"Applying file {files.SecretsFile}");
+                returnCode += KubectlProcess.ApplyFile(files.SecretsFile);
+
+            }
+            log.LogInformation($"Applying file {files.JobFileName}");
+            returnCode += KubectlProcess.ApplyFile(files.JobFileName);
+            return returnCode == 0;
+        }
+        internal static bool MonitorForPodStart(string k8Jobname)
+        {
+            int pendingCounter = 0;
+            int runningCounter = 0;
+            while (true)
+            {
+                var stat = KubectlProcess.GetJobPodStatus(k8Jobname, true);
+                switch (stat)
+                {
+                    case PodStatus.Running:
+                        if (runningCounter > 3)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            runningCounter++;
+                        }
+                        break;
+                    case PodStatus.Unknown:
+                        continue;
+                    case PodStatus.Error:
+                        return false;
+                    case PodStatus.Completed:
+                        return true;
+                    case PodStatus.Pending:
+                        if (pendingCounter > 5)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            pendingCounter++;
+                        }
+                        break;
+                }
+                System.Threading.Thread.Sleep(2000);
+            }
+
+        }
+        internal static bool MonitorForPodComplete(string k8Jobname)
+        {
+            log.LogInformation("Ensuring all pods have completed post-processing...");
+            int errorCounter = 0;
+            while (true)
+            {
+                var stat = KubectlProcess.GetJobPodStatus(k8Jobname, false);
+                switch (stat)
+                {
+                    case PodStatus.Running:
+                    case PodStatus.Pending:
+                    case PodStatus.Unknown:
+                        errorCounter = 0;
+                        continue;
+                    case PodStatus.Error:
+                        if (errorCounter > 3)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            errorCounter++;
+                        }
+                        break;
+                    case PodStatus.Completed:
+                        return true;
+                }
+                System.Threading.Thread.Sleep(2000);
+            }
+
+        }
+        internal static bool CleanUpKubernetesResource(bool secretsExist, string k8jobName = "")
+        {
+            if (!string.IsNullOrWhiteSpace(k8jobName))
+            {
+                MonitorForPodComplete(k8jobName);
+            }
+            var returnCode = 0;
+            returnCode += KubectlProcess.DeleteKubernetesResource(JobYaml.Kind, JobYaml.k8jobname, KubernetesManager.SbmNamespace);
+            if (secretsExist)
+            {
+                returnCode += KubectlProcess.DeleteKubernetesResource(SecretYaml.Kind, SecretYaml.Name, KubernetesManager.SbmNamespace);
+            }
+            returnCode += KubectlProcess.DeleteKubernetesResource(ConfigmapYaml.Kind, ConfigmapYaml.k8ConfigMapName, KubernetesManager.SbmNamespace);
+            return returnCode == 0;
+        }
+
+        #region Dynamic Yaml Generation
+
+        internal static string GenerateJobYaml(CommandLineArgs args)
+        {
+            bool hasKeyVault = !string.IsNullOrWhiteSpace(args.ConnectionArgs.KeyVaultName);
+            bool useMangedIdenty = args.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity;
+            string k8jobname = KubernetesJobName(args);
+            string k8ConfigMapName = KubernetesConfigmapName(args);
+            string k8SecretsName = KubernetesSecretsName(args);
+            string k8SecretsProviderName = KubernetesSecretProviderClassName(args);
+            int podCount = args.KubernetesArgs.PodCount;
+            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName, k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer, args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, podCount, hasKeyVault, useMangedIdenty, args.IdentityArgs.ServiceAccountName, args.QueryFile);
+            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            var jobYaml = serializer.Serialize(yml);
+
+
+            return jobYaml;
+
+        }
+        internal static string GenerateSecretsYaml(CommandLineArgs args)
+        {
+            bool secretAdded = false;
+            string k8SecretsName = KubernetesSecretsName(args);
+            var yml = new Yaml.SecretYaml(k8SecretsName);
+
+
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.EventHubConnectionString))
+            {
+                yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString.EncodeBase64();
+                secretAdded = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString.EncodeBase64();
+                secretAdded = true;
+            }
+
+            if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
+            {
+                if (!string.IsNullOrWhiteSpace(args.AuthenticationArgs.UserName))
+                {
+                    yml.data.UserName = args.AuthenticationArgs.UserName.EncodeBase64();
+                    secretAdded = true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(args.AuthenticationArgs.Password))
+                {
+                    yml.data.Password = args.AuthenticationArgs.Password.EncodeBase64();
+                    secretAdded = true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountKey))
+                {
+                    yml.data.StorageAccountKey = args.ConnectionArgs.StorageAccountKey.EncodeBase64();
+                    secretAdded = true;
+                }
+            }
+
+            if (secretAdded)
+            {
+                var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+                var yamlString = serializer.Serialize(yml);
+                return yamlString;
+            }
+            else
+            {
+                log.LogInformation("No secrets were provided or needed. No secrets yaml is being generated");
+                return string.Empty;
+            }
+
+
+
+
+        }
+
+        internal static string GenerateConfigmapYaml(CommandLineArgs args)
+        {
+            string k8jobname = KubernetesJobName(args);
+            string k8ConfigMapName = KubernetesConfigmapName(args);
+
+
+            var yml = new Yaml.ConfigmapYaml(k8ConfigMapName);
+            yml.data.DacpacName = Path.GetFileName(args.DacPacArgs.PlatinumDacpac);
+            yml.data.PackageName = Path.GetFileName(args.BuildFileName);
+            yml.data.JobName = args.JobName; //NOT the k8jobname!
+            yml.data.AllowObjectDelete = args.AllowObjectDelete.ToString();
+            yml.data.Concurrency = args.Concurrency.ToString();
+            yml.data.ConcurrencyType = args.ConcurrencyType.ToString();
+            yml.data.AuthType = args.AuthenticationArgs.AuthenticationType.ToString();
+            yml.data.KeyVaultName = args.ConnectionArgs.KeyVaultName;
+            if (args.QueryFile != null)
+            {
+                yml.data.QueryFile = args.QueryFile.Name;
+            }
+            if (args.OutputFile != null)
+            {
+                yml.data.OutputFile = args.OutputFile.Name;
+            }
+
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && !ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString;
+            }
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && !ConnectionValidator.IsEventHubConnectionString(args.ConnectionArgs.EventHubConnectionString))
+            {
+                yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString;
+            }
+
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountName))
+            {
+                yml.data.StorageAccountName = args.ConnectionArgs.StorageAccountName;
+            }
+
+            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            var yamlString = serializer.Serialize(yml);
+
+            return yamlString;
+
+        }
+
+        internal static string KubernetesJobName(CommandLineArgs args)
+        {
+            return $"sbm-{args.JobName.ToLower()}-job";
+        }
+        internal static string KubernetesConfigmapName(CommandLineArgs args)
+        {
+            return $"sbm-{args.JobName.ToLower()}-configmap";
+        }
+        internal static string KubernetesSecretsName(CommandLineArgs args)
+        {
+            return $"sbm-{args.JobName.ToLower()}-secrets";
+        }
+        internal static string KubernetesSecretProviderClassName(CommandLineArgs args)
+        {
+            return $"sbm-{args.JobName.ToLower()}-secprovider";
+        }
+
+        #endregion
+        #endregion
+
+        #region Container Runtime Methods
         internal static (bool, CommandLineArgs) ReadConfigmapParameters(CommandLineArgs args)
         {
 
@@ -101,331 +402,69 @@ namespace SqlBuildManager.Console.Kubernetes
                 log.LogDebug($"KeyVaultName= {args.ConnectionArgs.KeyVaultName}");
             }
 
+            if (File.Exists("/etc/runtime/QueryFile"))
+            {
+                args.QueryFile = new FileInfo(File.ReadAllText("/etc/runtime/QueryFile").Trim());
+                log.LogDebug($"QueryFile= {args.QueryFile.Name}");
+            }
+
+            if (File.Exists("/etc/runtime/OutputFile"))
+            {
+                args.OutputFile = new FileInfo(File.ReadAllText("/etc/runtime/OutputFile").Trim());
+                log.LogDebug($"OutputFile= {args.OutputFile.Name}");
+            }
+
 
             return (true, args);
         }
-
-        internal static bool ApplyDeployment(KubernetesFiles files)
+        internal static (bool, CommandLineArgs) ReadOpaqueSecrets(CommandLineArgs args)
         {
-            var returnCode = 0;
-            log.LogInformation($"Creating 'sqlbuildmanager' namespace (if not already exists)");
-            if (KubectlProcess.DescribeKubernetesResource("namespace", KubernetesManager.SbmNamespace) != 0)
+            if (args == null)
             {
-                returnCode += KubectlProcess.CreateKubernetesResource("namespace", KubernetesManager.SbmNamespace);
+                args = new CommandLineArgs();
             }
 
-            log.LogInformation($"Applying file {files.RuntimeConfigMapFile}");
-            returnCode += KubectlProcess.ApplyFile(files.RuntimeConfigMapFile);
-
-            if (!string.IsNullOrWhiteSpace(files.SecretsFile) && File.Exists(files.SecretsFile))
+            try
             {
-                log.LogInformation($"Applying file {files.SecretsFile}");
-                returnCode += KubectlProcess.ApplyFile(files.SecretsFile);
-
-            }
-            log.LogInformation($"Applying file {files.JobFileName}");
-            returnCode += KubectlProcess.ApplyFile(files.JobFileName);
-            return returnCode == 0;
-        }
-        internal static bool CleanUpKubernetesResource(bool secretsExist, string k8jobName = "")
-        {
-            if (!string.IsNullOrWhiteSpace(k8jobName))
-            {
-                MonitorForPodComplete(k8jobName);
-            }
-            var returnCode = 0;
-            returnCode += KubectlProcess.DeleteKubernetesResource(JobYaml.Kind, JobYaml.k8jobname, KubernetesManager.SbmNamespace);
-            if (secretsExist)
-            {
-                returnCode += KubectlProcess.DeleteKubernetesResource(SecretYaml.Kind, SecretYaml.Name, KubernetesManager.SbmNamespace);
-            }
-            returnCode += KubectlProcess.DeleteKubernetesResource(ConfigmapYaml.Kind, ConfigmapYaml.k8ConfigMapName, KubernetesManager.SbmNamespace);
-            return returnCode == 0;
-        }
-
-        internal static bool MonitorForPodStart(string k8Jobname)
-        {
-            int pendingCounter = 0;
-            int runningCounter = 0;
-            while (true)
-            {
-                var stat = KubectlProcess.GetJobPodStatus(k8Jobname, true);
-                switch (stat)
+                if (File.Exists("/etc/sbm/EventHubConnectionString"))
                 {
-                    case PodStatus.Running:
-                        if (runningCounter > 3)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            runningCounter++;
-                        }
-                        break;
-                    case PodStatus.Unknown:
-                        continue;
-                    case PodStatus.Error:
-                        return false;
-                    case PodStatus.Completed:
-                        return true;
-                    case PodStatus.Pending:
-                        if (pendingCounter > 5)
-                        {
-                            return false;
-                        }
-                        else
-                        {
-                            pendingCounter++;
-                        }
-                        break;
-                }
-                System.Threading.Thread.Sleep(2000);
-            }
-
-        }
-        internal static bool MonitorForPodComplete(string k8Jobname)
-        {
-            log.LogInformation("Ensuring all pods have completed post-processing...");
-            int errorCounter = 0;
-            while (true)
-            {
-                var stat = KubectlProcess.GetJobPodStatus(k8Jobname, false);
-                switch (stat)
-                {
-                    case PodStatus.Running:
-                    case PodStatus.Pending:
-                    case PodStatus.Unknown:
-                        errorCounter = 0;
-                        continue;
-                    case PodStatus.Error:
-                        if (errorCounter > 3)
-                        {
-                            return false;
-                        }
-                        else
-                        {
-                            errorCounter++;
-                        }
-                        break;
-                    case PodStatus.Completed:
-                        return true;
-                }
-                System.Threading.Thread.Sleep(2000);
-            }
-
-        }
-
-        public static Task<KubernetesFiles> SaveKubernetesYamlFiles(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
-        {
-            var dir = Directory.GetCurrentDirectory();
-            var secretsName = "";
-            if (path != null)
-            {
-                dir = path.FullName;
-            }
-            //Save secrets to KV or create settings file
-            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
-            {
-                var lst = KeyVaultHelper.SaveSecrets(cmdLine);
-                log.LogInformation($"Saved secrets to Azure Key Vault {cmdLine.ConnectionArgs.KeyVaultName}: {string.Join(", ", lst)}");
-            }
-            else
-            {
-                secretsName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "secrets.yaml" : $"{prefix}-secrets.yaml");
-                string secrets = KubernetesManager.GenerateSecretsYaml(cmdLine);
-                if (!string.IsNullOrWhiteSpace(secrets))
-                {
-                    File.WriteAllText(secretsName, secrets);
-                    log.LogInformation($"Secrets file written to: {secretsName}");
-                }
-                else
-                {
-                    log.LogInformation($"NO secrets are needed, NOT saving secrets yaml to : {secretsName}");
-                }
-            }
-
-            //Create configmap file
-            string cfgMap = KubernetesManager.GenerateConfigmapYaml(cmdLine);
-            var cfgMapName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "configmap.yaml" : $"{prefix}-configmap.yaml");
-            File.WriteAllText(cfgMapName, cfgMap);
-            log.LogInformation($"Configmap file written to: {cfgMapName}");
-
-            string jobYaml = KubernetesManager.GenerateJobYaml(cmdLine);
-            var jobYamlFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "job.yaml" : $"{prefix}-job.yaml");
-            File.WriteAllText(jobYamlFileName, jobYaml);
-            log.LogInformation($"Job Yaml file written to: {jobYamlFileName}");
-
-            var kf = new KubernetesFiles
-            {
-                RuntimeConfigMapFile = cfgMapName,
-                SecretsFile = secretsName,
-                JobFileName = jobYamlFileName,
-            };
-
-            return Task.Run(() => (kf));
-        }
-
-        #region Dynamic Yaml Generation
-
-        internal static string GenerateJobYaml(CommandLineArgs args)
-        {
-            bool hasKeyVault = !string.IsNullOrWhiteSpace(args.ConnectionArgs.KeyVaultName);
-            bool useMangedIdenty = args.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity;
-            string k8jobname = KubernetesJobName(args);
-            string k8ConfigMapName = KubernetesConfigmapName(args);
-            string k8SecretsName = KubernetesSecretsName(args);
-            string k8SecretsProviderName = KubernetesSecretProviderClassName(args);
-            int podCount = args.KubernetesArgs.PodCount;
-            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName, k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer, args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, podCount, hasKeyVault, useMangedIdenty, args.IdentityArgs.ServiceAccountName);
-            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
-            var jobYaml = serializer.Serialize(yml);
-
-
-            return jobYaml;
-
-        }
-        internal static string GenerateSecretsYaml(CommandLineArgs args)
-        {
-            bool secretAdded = false;
-            string k8SecretsName = KubernetesSecretsName(args);
-            var yml = new Yaml.SecretYaml(k8SecretsName);
-
-
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.EventHubConnectionString))
-            {
-                yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString.EncodeBase64();
-                secretAdded = true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
-            {
-                yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString.EncodeBase64();
-                secretAdded = true;
-            }
-
-            if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
-            {
-                if (!string.IsNullOrWhiteSpace(args.AuthenticationArgs.UserName))
-                {
-                    yml.data.UserName = args.AuthenticationArgs.UserName.EncodeBase64();
-                    secretAdded = true;
+                    args.EventHubConnection = File.ReadAllText("/etc/sbm/EventHubConnectionString");
+                    log.LogDebug($"eventhub= {args.ConnectionArgs.EventHubConnectionString}");
                 }
 
-                if (!string.IsNullOrWhiteSpace(args.AuthenticationArgs.Password))
+                if (File.Exists("/etc/sbm/ServiceBusTopicConnectionString"))
                 {
-                    yml.data.Password = args.AuthenticationArgs.Password.EncodeBase64();
-                    secretAdded = true;
+                    args.ServiceBusTopicConnection = File.ReadAllText("/etc/sbm/ServiceBusTopicConnectionString");
+                    log.LogDebug($"serviceBus= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
                 }
 
-                if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountKey))
+                if (File.Exists("/etc/sbm/StorageAccountKey"))
                 {
-                    yml.data.StorageAccountKey = args.ConnectionArgs.StorageAccountKey.EncodeBase64();
-                    secretAdded = true;
+                    args.StorageAccountKey = File.ReadAllText("/etc/sbm/StorageAccountKey");
+                    log.LogDebug($"storageaccountkey= {args.ConnectionArgs.StorageAccountKey}");
                 }
-            }
 
-            if (secretAdded)
+                if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
+                {
+                    args.Password = File.ReadAllText("/etc/sbm/Password");
+                    log.LogDebug($"password= {args.AuthenticationArgs.Password}");
+
+                    args.UserName = File.ReadAllText("/etc/sbm/UserName");
+                    log.LogDebug($"username= {args.AuthenticationArgs.UserName}");
+                }
+
+                return (true, args);
+            }
+            catch (Exception ex)
             {
-                var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
-                var yamlString = serializer.Serialize(yml);
-                return yamlString;
+                log.LogError($"Unable to read secrets: {ex.Message}");
+                log.LogWarning("The secrets needed for running a container/pod worker have not been set.They should be set as secrets mounted to /etc/sbm");
+                return (false, args);
             }
-            else
-            {
-                log.LogInformation("No secrets were provided or needed. No secrets yaml is being generated");
-                return string.Empty;
-            }
-
-
-
-
         }
-
-        internal static string GenerateConfigmapYaml(CommandLineArgs args)
-        {
-            string k8jobname = KubernetesJobName(args);
-            string k8ConfigMapName = KubernetesConfigmapName(args);
-
-
-            var yml = new Yaml.ConfigmapYaml(k8ConfigMapName);
-            yml.data.DacpacName = Path.GetFileName(args.DacPacArgs.PlatinumDacpac);
-            yml.data.PackageName = Path.GetFileName(args.BuildFileName);
-            yml.data.JobName = args.JobName; //NOT the k8jobname!
-            yml.data.AllowObjectDelete = args.AllowObjectDelete.ToString();
-            yml.data.Concurrency = args.Concurrency.ToString();
-            yml.data.ConcurrencyType = args.ConcurrencyType.ToString();
-            yml.data.AuthType = args.AuthenticationArgs.AuthenticationType.ToString();
-            yml.data.KeyVaultName = args.ConnectionArgs.KeyVaultName;
-
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && !ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
-            {
-                yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString;
-            }
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && !ConnectionValidator.IsEventHubConnectionString(args.ConnectionArgs.EventHubConnectionString))
-            {
-                yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString;
-            }
-
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.StorageAccountName))
-            {
-                yml.data.StorageAccountName = args.ConnectionArgs.StorageAccountName;
-            }
-
-            var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
-            var yamlString = serializer.Serialize(yml);
-
-            return yamlString;
-
-        }
-
-        internal static string KubernetesJobName(CommandLineArgs args)
-        {
-            return $"sbm-{args.JobName.ToLower()}-job";
-        }
-        internal static string KubernetesConfigmapName(CommandLineArgs args)
-        {
-            return $"sbm-{args.JobName.ToLower()}-configmap";
-        }
-        internal static string KubernetesSecretsName(CommandLineArgs args)
-        {
-            return $"sbm-{args.JobName.ToLower()}-secrets";
-        }
-        internal static string KubernetesSecretProviderClassName(CommandLineArgs args)
-        {
-            return $"sbm-{args.JobName.ToLower()}-secprovider";
-        }
-
         #endregion
 
-        private static string GetValueFromSecrets(string fileName, string key)
-        {
-            try
-            {
-                var des = new DeserializerBuilder().Build();
-                var sec = des.Deserialize<dynamic>(File.ReadAllText(fileName));
-                var sb = (string)sec["data"][key];
-                return sb.DecodeBase64();
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-        private static string GetValueFromConfigMapstring(string fileName, string key)
-        {
-            try
-            {
-                var des = new DeserializerBuilder().Build();
-                var sec = des.Deserialize<dynamic>(File.ReadAllText(fileName));
-                var name = sec["data"][key];
-                return name as string;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
+        #region Methods for reading values from YAML files
         internal static CommandLineArgs SetCmdLineArgsFromSecretsAndConfigmap(CommandLineArgs args, string secretsFile, string configMapFile)
         {
             if (File.Exists(secretsFile))
@@ -472,51 +511,6 @@ namespace SqlBuildManager.Console.Kubernetes
 
         }
 
-        internal static (bool, CommandLineArgs) ReadOpaqueSecrets(CommandLineArgs args)
-        {
-            if (args == null)
-            {
-                args = new CommandLineArgs();
-            }
-
-            try
-            {
-                if (File.Exists("/etc/sbm/EventHubConnectionString"))
-                {
-                    args.EventHubConnection = File.ReadAllText("/etc/sbm/EventHubConnectionString");
-                    log.LogDebug($"eventhub= {args.ConnectionArgs.EventHubConnectionString}");
-                }
-
-                if (File.Exists("/etc/sbm/ServiceBusTopicConnectionString"))
-                {
-                    args.ServiceBusTopicConnection = File.ReadAllText("/etc/sbm/ServiceBusTopicConnectionString");
-                    log.LogDebug($"serviceBus= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
-                }
-
-                if (File.Exists("/etc/sbm/StorageAccountKey"))
-                {
-                    args.StorageAccountKey = File.ReadAllText("/etc/sbm/StorageAccountKey");
-                    log.LogDebug($"storageaccountkey= {args.ConnectionArgs.StorageAccountKey}");
-                }
-
-                if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
-                {
-                    args.Password = File.ReadAllText("/etc/sbm/Password");
-                    log.LogDebug($"password= {args.AuthenticationArgs.Password}");
-
-                    args.UserName = File.ReadAllText("/etc/sbm/UserName");
-                    log.LogDebug($"username= {args.AuthenticationArgs.UserName}");
-                }
-
-                return (true, args);
-            }
-            catch (Exception ex)
-            {
-                log.LogError($"Unable to read secrets: {ex.Message}");
-                log.LogWarning("The secrets needed for running a container/pod worker have not been set.They should be set as secrets mounted to /etc/sbm");
-                return (false, args);
-            }
-        }
         private static CommandLineArgs GetArgumentsFromConfigMapFile(string filename, CommandLineArgs args)
         {
             if (args == null)
@@ -566,10 +560,42 @@ namespace SqlBuildManager.Console.Kubernetes
             tmp = GetValueFromConfigMapstring(filename, "KeyVaultName");
             if (!string.IsNullOrWhiteSpace(tmp)) args.ConnectionArgs.KeyVaultName = tmp;
 
+            tmp = GetValueFromConfigMapstring(filename, "KeyVaultName");
+            if (!string.IsNullOrWhiteSpace(tmp)) args.ConnectionArgs.KeyVaultName = tmp;
+
             return args;
 
         }
 
+        private static string GetValueFromSecrets(string fileName, string key)
+        {
+            try
+            {
+                var des = new DeserializerBuilder().Build();
+                var sec = des.Deserialize<dynamic>(File.ReadAllText(fileName));
+                var sb = (string)sec["data"][key];
+                return sb.DecodeBase64();
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+        private static string GetValueFromConfigMapstring(string fileName, string key)
+        {
+            try
+            {
+                var des = new DeserializerBuilder().Build();
+                var sec = des.Deserialize<dynamic>(File.ReadAllText(fileName));
+                var name = sec["data"][key];
+                return name as string;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+        #endregion
 
     }
 }

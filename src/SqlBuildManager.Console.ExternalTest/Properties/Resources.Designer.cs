@@ -61,6 +61,15 @@ namespace SqlBuildManager.Console.ExternalTest.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SELECT * from dbo.NoTableExists.
+        /// </summary>
+        internal static string bad_select {
+            get {
+                return ResourceManager.GetString("bad_select", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to DELETE FROM Test
         ///.
         /// </summary>

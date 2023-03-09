@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.SqlServer.Management.Smo;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -87,14 +89,27 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> aciInstanceNameNotReqOption = new Option<string>("--aciname", "Name of the Azure Container Instance you will create and deploy to") { IsRequired = false };
         private static Option<string> aciIResourceGroupNameOption = new Option<string>(new string[] { "--acirg", "--aciresourcegroup" }, "Name of the Resource Group for the ACI deployment") { IsRequired = true };
         private static Option<string> aciIResourceGroupNameNotReqOption = new Option<string>(new string[] { "--acirg", "--aciresourcegroup" }, "Name of the Resource Group for the ACI deployment") { IsRequired = false };
-        private static Option<FileInfo> aciOutputFileOption = new Option<FileInfo>("--outputfile", "File name to save ACI ARM template");
-        private static Option<FileInfo> aciArmTemplateOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm prep')") { IsRequired = true }.ExistingOnly();
-        private static Option<FileInfo> aciArmTemplateNotReqOption = new Option<FileInfo>("--templatefile", "ARM template to deploy ACI (generated from 'sbm aci prep')").ExistingOnly();
+        //private static Option<FileInfo> aciOutputFileOption = new Option<FileInfo>("--outputfile", "File name to save ACI ARM template");
+
 
 
         //VNET options
         private static Option<string> vnetNameOption = new Option<string>("--vnetname", "Name of the VNET to use for the deployment");
+        private static Option<string> vnetResourceGroupOption = new Option<string>(new string[] { "--vnetresourcegroup", "-vnetrg" }, "Resource group where VNET is deployed");
         private static Option<string> subnetNameOption = new Option<string>("--subnetname", "Name of the subnet to use for the deployment");
+        private static List<Option> VnetOptions
+        {
+            get
+            {
+                var list = new List<Option> 
+                {
+                    vnetNameOption,
+                    subnetNameOption,
+                    vnetResourceGroupOption
+                };
+                return list;
+            }
+        }
 
 
         //ContainerApp Options
@@ -152,12 +167,9 @@ namespace SqlBuildManager.Console.CommandLine
                     batchnodecountOption,
                     batchvmsizeOption,
                     batchApplicationOption,
-                    deletebatchpoolOption,
-                    vnetNameOption,
-                    subnetNameOption,
-                    
-
+                    deletebatchpoolOption
                 };
+                list.AddRange(VnetOptions);
                 return list;
             }
         }
@@ -576,7 +588,8 @@ namespace SqlBuildManager.Console.CommandLine
                     transactionalOption,
                     timeoutretrycountOption,
                     unitTestOption,
-                    new Option<bool>("--monitor"){IsHidden = true}, //these two options aren't used and are added just for reusability in unit tests
+                    //these two options aren't used and are added just for reusability in unit tests
+                    new Option<bool>("--monitor"){IsHidden = true}, 
                     new Option<bool>("--stream"){IsHidden = true},
 
                 };
@@ -748,12 +761,13 @@ namespace SqlBuildManager.Console.CommandLine
                     defaultscripttimeoutOption,
                     jobnameOption
                 };
-                SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
-                BatchComputeOptions.ForEach(o => cmd.Add(o));
-                DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-                ConnectionAndSecretsOptionsForBatch.ForEach(o => cmd.Add(o));
-                IdentityArgumentsForBatch.ForEach(o => cmd.Add(o));
-                ConcurrencyOptions.ForEach(o => cmd.Add(o));
+
+                cmd.AddRange(SettingsFileExistingOptions);
+                cmd.AddRange(BatchComputeOptions);
+                cmd.AddRange(DatabaseAuthArgs);
+                cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
+                cmd.AddRange(IdentityArgumentsForBatch);
+                cmd.AddRange(ConcurrencyOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchQuery);
                 return cmd;
             }
@@ -768,7 +782,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("querythreaded", "[Internal use only] - this commmand is used to send query commands to Azure Batch Nodes")
                 {
-                    overrideOption.Copy(true),
+                    overrideOption,
                     queryFileOption.Copy(true),
                     outputFileOption.Copy(true),
                     deletebatchjobOption,
@@ -782,12 +796,12 @@ namespace SqlBuildManager.Console.CommandLine
                     jobnameOption
 
                 };
-                SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
-                BatchComputeOptions.ForEach(o => cmd.Add(o));
-                DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-                ConnectionAndSecretsOptionsForBatch.ForEach(o => { if (o.Name != "servicebustopicconnection") cmd.Add(o); });
-                IdentityArgumentsForBatch.ForEach(o => cmd.Add(o));
-                ConcurrencyOptions.ForEach(o => cmd.Add(o));
+                cmd.AddRange(SettingsFileExistingOptions);
+                cmd.AddRange(BatchComputeOptions);
+                cmd.AddRange(DatabaseAuthArgs);
+                cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
+                cmd.AddRange(IdentityArgumentsForBatch);
+                cmd.AddRange(ConcurrencyOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabases);
                 cmd.IsHidden = true;
                 return cmd;
@@ -912,7 +926,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Worker.PrepAndUploadContainerAppBuildPackage);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Worker.PrepAndUploadContainerBuildPackage);
 
                 return cmd;
             }
@@ -1091,8 +1105,6 @@ namespace SqlBuildManager.Console.CommandLine
                     settingsfileNewOption,
                     aciIResourceGroupNameOption,
                     aciInstanceNameOption,
-                    vnetNameOption,
-                    subnetNameOption,
                     subscriptionIdOption,
                     //Key value option
                     sectionPlaceholderOption,
@@ -1111,49 +1123,75 @@ namespace SqlBuildManager.Console.CommandLine
                     cleartextOption
 
                 };
-                DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-                IdentityArgumentsForContainerApp.ForEach(o => cmd.Add(o));
-                ContainerRegistryAndImageOptions.ForEach(o => cmd.Add(o));
+                cmd.AddRange(VnetOptions);
+                cmd.AddRange(DatabaseAuthArgs);
+                cmd.AddRange(IdentityArgumentsForContainerApp);
+                cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptAciSettings);
 
                 return cmd;
             }
         }
 
-        private static Command aciPrepCommand
+        private static Command aciRun
         {
+           
             get
             {
-                var cmd = new Command("prep", "Creates ACI arm template, a storage container, and uploads the SBM and/or DACPAC files that will be used for the build. ")
+                var cmd = new Command("run", "Runs an ACI build (orchestrates the prep, enqueue, deploy and monitor commands")
                 {
-                    settingsfileExistingOption,
-                    aciIResourceGroupNameNotReqOption,
-                    aciInstanceNameNotReqOption,
-                    vnetNameOption,
-                    subnetNameOption,
-                    aciContainerCountOption.Copy(true),
-                    
-                    identityNameOption.Copy(false),
-                    identityResourceGroupOption.Copy(false),
-
                     sectionPlaceholderOption,
                     jobnameOption.Copy(true),
                     packagenameAsFileToUploadOption,
-                    overrideOption,
+                    overrideOption.Copy(true),
                     platinumdacpacFileInfoOption,
-                    aciOutputFileOption,
+                    allowForObjectDeletionOption,
+                    
+                    new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment"),
+                    unitTestOption,
+                    streamEventsOption,
                     forceOption,
-                    allowForObjectDeletionOption
 
+                    settingsfileExistingOption,
+                    aciIResourceGroupNameNotReqOption,
+                    aciInstanceNameNotReqOption,
+                    aciContainerCountOption.Copy(true),
+                    
                 };
-                ContainerRegistryAndImageOptions.ForEach(o => cmd.Add(o));
+                cmd.AddRange(VnetOptions);
+                cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(storageaccountnameOption);
                 cmd.Add(storageaccountkeyOption);
                 cmd.Add(authtypeOption);
-                ConcurrencyRequiredOptions.ForEach(o => cmd.Add(o));
+                cmd.Add(clientIdOption);
+                cmd.Add(identityNameOption.Copy(false));
+                cmd.Add(identityResourceGroupOption.Copy(false));
+                cmd.Add(subscriptionIdOption.Copy(false));
+                cmd.AddRange(ConcurrencyRequiredOptions);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool, bool, bool>(Worker.AciRun);
+                return cmd;
+            }
+        }
+        private static Command aciPrepCommand
+        {
+            get
+            {
+                var cmd = new Command("prep", "Creates an Azure storage container and uploads the SBM and/or DACPAC files that will be used for the build.")
+                {
+                    jobnameOption.Copy(true),
+                    storageaccountnameOption,
+                    storageaccountkeyOption,
+                    packagenameAsFileToUploadOption,
+                    platinumdacpacFileInfoOption,
+                    overrideOption,
+                    decryptedOption,
+                    forceOption,
+                    allowForObjectDeletionOption
 
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, bool>(Worker.PrepAndUploadAciBuildPackage);
+                };
+                SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Worker.PrepAndUploadContainerBuildPackage);
 
                 return cmd;
             }
@@ -1182,22 +1220,37 @@ namespace SqlBuildManager.Console.CommandLine
         {
             get
             {
-                var cmd = new Command("deploy", "Deploy the ACI instance using the template file created from 'sbm prep' and start containers")
+                var cmd = new Command("deploy", "Deploy the ACI instance and start containers")
                 {
-                    aciArmTemplateOption,
+                    settingsfileExistingOption,
                     aciIResourceGroupNameNotReqOption,
+                    aciInstanceNameNotReqOption,
+                    aciContainerCountOption.Copy(true),
+
+                    identityNameOption.Copy(false),
+                    identityResourceGroupOption.Copy(false),
+
+                    sectionPlaceholderOption,
+                    jobnameOption.Copy(true),
+                    packagenameAsFileToUploadOption,
                     overrideOption.Copy(false),
-                    unitTestOption,
-                    streamEventsOption,
+                    platinumdacpacFileInfoOption,
+                    allowForObjectDeletionOption,
                     new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment"),
-                    allowForObjectDeletionOption
+                    unitTestOption,
+                    streamEventsOption
                 };
-                cmd.Add(settingsfileExistingOption);
-                ContainerRegistryAndImageOptions.ForEach(o => cmd.Add(o));
+                cmd.AddRange(VnetOptions);
+                cmd.AddRange(ContainerRegistryAndImageOptions);
+                cmd.Add(keyVaultNameOption);
+                cmd.Add(storageaccountnameOption);
+                cmd.Add(storageaccountkeyOption);
+                cmd.Add(authtypeOption);
                 cmd.Add(clientIdOption);
                 cmd.Add(subscriptionIdOption.Copy(false));
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool, bool, bool>(Worker.DeployAciTemplate);
+                ConcurrencyRequiredOptions.ForEach(o => cmd.Add(o));
 
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool, bool>(Worker.AciDeploy);
                 return cmd;
             }
         }
@@ -1209,8 +1262,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
                 {
                     settingsfileExistingOption,
-                    aciArmTemplateNotReqOption,
-                     jobnameOption,
+                    jobnameOption,
                     overrideOption,
                     threadedConcurrencyTypeOption,
                     unitTestOption,
@@ -1219,7 +1271,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(serviceBusconnectionOption);
                 cmd.Add(eventhubconnectionOption);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, DateTime?, bool, bool>(Worker.MonitorAciRuntimeProgress);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, DateTime?, bool, bool>(Worker.AciMonitorRuntimeProgress);
 
                 return cmd;
             }
@@ -1260,6 +1312,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("aci", "Commands for setting and executing a build running in containers on Azure Container Instances. ACI Containers will always leverage Azure Key Vault.");
                 cmd.Add(aciSaveSettingsCommand);
+                cmd.Add(aciRun);
                 cmd.Add(aciPrepCommand);
                 cmd.Add(aciEnqueueTargetsCommand);
                 cmd.Add(aciDeployCommand);
@@ -1312,7 +1365,41 @@ namespace SqlBuildManager.Console.CommandLine
 
             }
         }
+        private static Command KubernetesQueryCommand
+        {
+            get
+            {
 
+                var cmd = new Command("query", "Run a SELECT query across multiple databases using Kubernetes. [NOTE: 'kubectl' must be installed and in your path]");
+                cmd.AddRange(SettingsFileExistingOptions);
+                cmd.AddRange(new List<Option>
+                {
+                    sectionPlaceholderOption,
+                    jobnameOption,
+                    podCountOption,
+                    overrideAsFileOption,
+                    queryFileOption,
+                    outputFileOption,
+                    forceOption,
+                    streamEventsOption,
+                    new Option<bool>("--cleanup-onfailure", () => true, "Cleanup the Kubernetes applied resources (job, configmap, etc) if there is a job failure"),
+                    imageTagOption,
+                    imageNameOption,
+                    imageRepositoryOption
+                });
+                cmd.AddRange(IdentityArgumentsForKubernetes);
+                cmd.AddRange(ConnectionAndSecretsOptions);
+                cmd.AddRange(DatabaseAuthArgs);
+                cmd.AddRange(ConcurrencyOptions);
+                cmd.Add(subscriptionIdOption);
+                cmd.Add(unitTestOption);
+
+
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool, bool, bool, bool>(Worker.KubernetesQuery);
+                return cmd;
+
+            }
+        }
         private static Command KubernetesCreateYamlCommand
         {
             get
@@ -1337,10 +1424,21 @@ namespace SqlBuildManager.Console.CommandLine
                     serviceAccountNameOption
 
                 });
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, DirectoryInfo, string, FileInfo, FileInfo, bool>(Worker.SaveKubernetesYamlFiles);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, DirectoryInfo, string, FileInfo, FileInfo, bool>(Worker.KubernetesSaveYamlFiles);
                 return cmd;
             }
 
+        }
+
+        private static Command kubernetesQueryWorkerCommand
+        {
+            get
+            {
+                var cmd = new Command("query", "[Used by Kubernetes] Starts the pod as a worker for database querying - polling and retrieving items from target service bus queue topic");
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunKubernetesQueueQueryWorker);
+
+                return cmd;
+            }
         }
         private static Command kubernetesWorkerCommand
         {
@@ -1348,10 +1446,11 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("worker", "[Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
                 cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunKubernetesQueueWorker);
-
+                cmd.Add(kubernetesQueryWorkerCommand);
                 return cmd;
             }
         }
+       
 
         private static Command kubernetesEnqueueTargetsCommand
         {
@@ -1422,7 +1521,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(serviceBusconnectionOption);
                 cmd.Add(eventhubconnectionOption);
                 cmd.AddRange(kubernetesYamlFileOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool, bool>(Worker.MonitorKubernetesRuntimeProgress);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool, bool>(Worker.KubernetesMonitorRuntimeProgress);
                 return cmd;
             }
         }
@@ -1450,7 +1549,7 @@ namespace SqlBuildManager.Console.CommandLine
                 });
                 cmd.AddRange(kubernetesYamlFileOptions);
                 cmd.AddRange(DatabaseAuthArgs);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, FileInfo, bool>(Worker.UploadKubernetesBuildPackage);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, FileInfo, bool>(Worker.KubernetesUploadBuildPackage);
                 return cmd;
             }
         }
@@ -1471,7 +1570,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                 });
                 cmd.AddRange(kubernetesYamlFileOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, string, string, ConcurrencyType, string>(Worker.DequeueKubernetesOverrideTargets);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, string, string, ConcurrencyType, string>(Worker.KubernetesDequeueOverrideTargets);
                 return cmd;
             }
         }
@@ -1488,6 +1587,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(kubernetesMonitorCommand);
                 cmd.Add(kubernetesDequeueTargetsCommand);
                 cmd.Add(KubernetesCreateYamlCommand);
+                cmd.Add(KubernetesQueryCommand);
                 cmd.Add(kubernetesWorkerCommand);
 
                 return cmd;
@@ -1505,6 +1605,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(kubernetesMonitorCommand);
                 cmd.Add(kubernetesDequeueTargetsCommand);
                 cmd.Add(KubernetesCreateYamlCommand);
+                cmd.Add(KubernetesQueryCommand);
                 cmd.Add(kubernetesWorkerCommand);
 
                 cmd.IsHidden = true;
@@ -1513,6 +1614,7 @@ namespace SqlBuildManager.Console.CommandLine
         }
 
         #endregion
+        
         public static RootCommand SetUp()
         {
 
@@ -1706,10 +1808,6 @@ namespace SqlBuildManager.Console.CommandLine
             };
 
 
-            var authCommand = new Command("authtest", "Test Azure authentication");
-            authCommand.Handler = CommandHandler.Create<string>(Worker.TestAuth);
-            authCommand.IsHidden = true;
-
             RootCommand rootCommand = new RootCommand(description: $"Tool to manage your SQL server database updates and releases{Environment.NewLine}Full documentation can be found here: https://github.com/mmckechney/SqlBuildManager#sql-build-manager");
             rootCommand.Add(logLevelOption);
             rootCommand.Add(buildCommand);
@@ -1734,7 +1832,6 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(synchronizeCommand);
             //rootCommand.Add(scriptExtractCommand);
 
-            rootCommand.Add(authCommand);
 
             FirstBuildRunCommand = buildCommand;
             FirstUtilityCommand = utilityCommand;
@@ -1841,6 +1938,12 @@ namespace SqlBuildManager.Console.CommandLine
                            ctx.HelpBuilder.CustomizeSymbol(aciIResourceGroupNameNotReqOption,
                                firstColumnText: $"\u0000{Environment.NewLine}** Container Instance Options :\u0000{Environment.NewLine}{OptionString(aciIResourceGroupNameNotReqOption)}",
                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{aciIResourceGroupNameNotReqOption.Description}");
+
+                           ctx.HelpBuilder.CustomizeSymbol(vnetNameOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** VNET Options :\u0000{Environment.NewLine}{OptionString(vnetNameOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{vnetNameOption.Description}");
+
+                           
 
                            ctx.HelpBuilder.CustomizeSymbol(sectionPlaceholderOption,
                                firstColumnText: $"\u0000{Environment.NewLine}** General Options:\u0000",

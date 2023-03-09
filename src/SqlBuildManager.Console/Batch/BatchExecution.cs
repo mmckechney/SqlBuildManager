@@ -307,6 +307,10 @@ namespace SqlBuildManager.Console.Batch
                             new OutputFile(
                                 filePattern: @"../std*.txt",
                                 destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
+                             new OutputFile(
+                                filePattern: @"../*.csv",
+                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))//,
 
                             //new OutputFile(
@@ -393,13 +397,6 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 SqlBuildManager.Logging.Threaded.Configure.CloseAndFlushAllLoggers();
-                log.LogInformation("Consolidating log files");
-                StorageManager.ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
-
-                if (batchType == BatchType.Query)
-                {
-                    StorageManager.CombineQueryOutputfiles(storageSvcClient, storageContainerName, outputFile);
-                }
 
                 //Finish the job out
                 if (myExitCode == 0)
@@ -414,6 +411,16 @@ namespace SqlBuildManager.Console.Batch
                     CloudJob j = batchClient.JobOperations.GetJob(jobId);
                     j.Terminate("Error");
                 }
+
+                log.LogInformation("Consolidating log files");
+                StorageManager.ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
+
+                if (batchType == BatchType.Query)
+                {
+                    StorageManager.CombineQueryOutputfiles(storageSvcClient, storageContainerName, outputFile);
+                }
+
+                
 
                 readOnlySasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, true);
                 log.LogInformation($"The consolidated log files can be found in the Azure storage account '{cmdLine.ConnectionArgs.StorageAccountName}' in blob container '{storageContainerName}'");
@@ -663,9 +670,10 @@ namespace SqlBuildManager.Console.Batch
 
             if (!string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.SubnetName) && !string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.VnetName))
             {
+                var vnetRg = string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.ResourceGroup) ? resourceGroupName : cmdLine.NetworkArgs.ResourceGroup;
                 var networkConfig = new bm.NetworkConfiguration()
                 {
-                    SubnetId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{cmdLine.NetworkArgs.VnetName}/subnets/{cmdLine.NetworkArgs.SubnetName}",
+                    SubnetId = $"/subscriptions/{subscriptionId}/resourceGroups/{vnetRg}/providers/Microsoft.Network/virtualNetworks/{cmdLine.NetworkArgs.VnetName}/subnets/{cmdLine.NetworkArgs.SubnetName}",
                 };
                 poolParameters.NetworkConfiguration = networkConfig;
             }
@@ -778,11 +786,11 @@ namespace SqlBuildManager.Console.Batch
                 switch (os)
                 {
                     case OsType.Windows:
-                        threadCmdLine.RootLoggingPath = string.Format("D:\\{0}", jobId);
+                        threadCmdLine.RootLoggingPath = "%AZ_BATCH_TASK_DIR%";// string.Format("D:\\{0}", jobId);
                         break;
 
                     case OsType.Linux:
-                        threadCmdLine.RootLoggingPath = "$AZ_BATCH_TASK_WORKING_DIR";
+                        threadCmdLine.RootLoggingPath = "$AZ_BATCH_TASK_DIR";
                         break;
                 }
 

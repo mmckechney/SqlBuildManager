@@ -39,7 +39,61 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataTestMethod]
+        public void ACI_Queue_Run_SBMSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+                }
 
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("aci");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //Prep the build
+                var args = new string[]{
+                "aci",  "run",
+                "--settingsfile", settingsFile,
+                "--jobname", jobName,
+                "--packagename", sbmFileName,
+                 "--override", overrideFile,
+                "--concurrencytype", concurrencyType.ToString(),
+                "--containercount", containerCount.ToString(),
+                "--concurrency", concurrency.ToString(),
+                "--unittest", "true",
+                "--monitor", "true"
+                };
+
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+               Assert.AreEqual(0, result);
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+            }
+
+
+        }
 
         [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
@@ -72,15 +126,9 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                 "aci",  "prep",
                 "--settingsfile", settingsFile,
-                "--tag", imageTag,
                 "--jobname", jobName,
-                "--packagename", sbmFileName,
-                "--outputfile", outputFile,
-                "--containercount", containerCount.ToString(),
-                "--concurrencytype", concurrencyType.ToString(),
-                "--concurrency", concurrency.ToString(),
-                "--force"
-            };
+                "--packagename", sbmFileName
+                };
 
                 var val = rootCommand.InvokeAsync(args);
                 val.Wait();
@@ -102,9 +150,14 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 //monitor for completion
                 args = new string[]{
+                "--loglevel", "debug",
                 "aci",  "deploy",
-                 "--settingsfile", settingsFile,
-                 "--templatefile", outputFile,
+                "--settingsfile", settingsFile,
+                "--packagename", sbmFileName,
+                "--jobname", jobName,
+                "--containercount", containerCount.ToString(),
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString(),
                 "--override", overrideFile,
                 "--unittest", "true",
                 "--monitor", "true"
@@ -150,14 +203,9 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                 "aci",  "prep",
                 "--settingsfile", settingsFile,
-                "--tag", imageTag,
                 "--jobname", jobName,
-                "--packagename", sbmFileName,
-                "--outputfile", outputFile,
-                "--containercount", containerCount.ToString(),
-                "--concurrencytype", concurrencyType.ToString(),
-                "--concurrency", concurrency.ToString(),
-                "--force"
+                "--packagename", sbmFileName
+
             };
 
                 var val = rootCommand.InvokeAsync(args);
@@ -180,9 +228,14 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 //monitor for completion
                 args = new string[]{
+               "--loglevel", "debug",
                 "aci",  "deploy",
-                 "--settingsfile", settingsFile,
-                 "--templatefile", outputFile,
+                "--settingsfile", settingsFile,
+                "--packagename", sbmFileName,
+                "--jobname", jobName,
+                "--containercount", containerCount.ToString(),
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString(),
                 "--override", overrideFile,
                 "--unittest", "true",
                 "--monitor", "true"
@@ -231,14 +284,9 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                 "aci",  "prep",
                 "--settingsfile", settingsFile,
-                "--tag", imageTag,
                 "--jobname", jobName,
                 "--packagename", sbmFileName,
-                "--outputfile", outputFile,
-                "--containercount", containerCount.ToString(),
-                "--concurrencytype", concurrencyType.ToString(),
-                "--concurrency", concurrency.ToString(),
-                "--force"
+                "--override", overrideFile
             };
 
                 var val = rootCommand.InvokeAsync(args);
@@ -261,9 +309,14 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 //monitor for completion
                 args = new string[]{
+                "--loglevel", "debug",
                 "aci",  "deploy",
-                 "--settingsfile", settingsFile,
-                 "--templatefile", outputFile,
+                "--settingsfile", settingsFile,
+                "--packagename", sbmFileName,
+                "--jobname", jobName,
+                "--containercount", containerCount.ToString(),
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString(),
                 "--override", overrideFile,
                 "--unittest", "true",
                 "--monitor", "true"
@@ -321,15 +374,9 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                 "aci",  "prep",
                 "--settingsfile", settingsFile,
-                "--tag", imageTag,
                 "--jobname", jobName,
                 "--platinumdacpac", dacpacName,
-                "--outputfile", outputFile,
-                "--containercount", containerCount.ToString(),
-                "--concurrencytype", concurrencyType.ToString(),
-                "--concurrency", concurrency.ToString(),
                 "--override", minusFirst,
-                 "--force"
             };
 
                 var val = rootCommand.InvokeAsync(args);
@@ -350,11 +397,19 @@ namespace SqlBuildManager.Console.ExternalTest
                 result = val.Result;
                 Assert.AreEqual(0, result);
 
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName), Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+
                 //monitor for completion
                 args = new string[]{
+                "--loglevel", "debug",
                 "aci",  "deploy",
-                 "--settingsfile", settingsFile,
-                 "--templatefile", outputFile,
+                "--settingsfile", settingsFile,
+                "--packagename", sbmFileName,
+                "--platinumdacpac", dacpacName,
+                "--jobname", jobName,
+                "--containercount", containerCount.ToString(),
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString(),
                 "--override", minusFirst,
                 "--unittest", "true",
                 "--monitor", "true"
@@ -414,15 +469,10 @@ namespace SqlBuildManager.Console.ExternalTest
                 var args = new string[]{
                 "aci",  "prep",
                 "--settingsfile", settingsFile,
-                "--tag", imageTag,
                 "--jobname", jobName,
                 "--platinumdacpac", dacpacName,
-                "--outputfile", outputFile,
-                "--containercount", containerCount.ToString(),
-                "--concurrencytype", concurrencyType.ToString(),
-                "--concurrency", concurrency.ToString(),
                 "--override", minusFirst,
-                "--force"
+
             };
 
                 var val = rootCommand.InvokeAsync(args);
@@ -449,15 +499,22 @@ namespace SqlBuildManager.Console.ExternalTest
                 DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
                 DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
 
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName), Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+
                 //monitor for completion
                 args = new string[]{
+                "--loglevel", "debug",
                 "aci",  "deploy",
-                 "--settingsfile", settingsFile,
-                 "--templatefile", outputFile,
+                "--settingsfile", settingsFile,
+                "--packagename", sbmFileName,
+                "--platinumdacpac", dacpacName,
+                "--jobname", jobName,
+                "--containercount", containerCount.ToString(),
+                "--concurrencytype", concurrencyType.ToString(),
+                "--concurrency", concurrency.ToString(),
                 "--override", minusFirst,
                 "--unittest", "true",
-                "--monitor", "true",
-                "--stream", "true"
+                "--monitor", "true"
             };
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();

@@ -5,14 +5,23 @@ using System.Collections.Generic;
 using System.Net.Http.Headers;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
+using System.IO;
 using static SqlBuildManager.Console.Kubernetes.Yaml.Containers;
 
 namespace SqlBuildManager.Console.Kubernetes.Yaml
 {
     public class JobYaml
     {
-        public JobYaml(string k8jobname, string k8ConfigMapName, string k8SecretsName, string k8SecretsProviderName, string registry, string image, string tag, int podCount, bool hasKeyVault, bool useManagedIdentity, string serviceAccountName)
+        public JobYaml(string k8jobname, string k8ConfigMapName, string k8SecretsName, string k8SecretsProviderName, string registry, string image, string tag, int podCount, bool hasKeyVault, bool useManagedIdentity, string serviceAccountName, FileInfo queryFile)
         {
+            string queryFileName;
+            if (queryFile !=null)
+            {
+                queryFileName = queryFile.Name;
+            }else
+            {
+                queryFileName = string.Empty;
+            }
 
             if (!string.IsNullOrWhiteSpace(k8jobname))
             {
@@ -25,7 +34,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
                 registry += ".azurecr.io";
             }
 
-            spec = new JobSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName, podCount);
+            spec = new JobSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName, podCount, queryFileName);
             spec.template.spec.containers[0].image = $"{registry}/{image}:{tag}";
 
             if (useManagedIdentity || hasKeyVault) //remove secrets volume and mount
@@ -85,9 +94,9 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
     public class JobSpec
     {
         private int podCount;
-        public JobSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName, int podCount)
+        public JobSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName, int podCount, string queryFileName)
         {
-            template = new JobTemplate(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
+            template = new JobTemplate(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName, queryFileName);
             this.podCount = podCount;
         }
 
@@ -99,10 +108,10 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
     public class JobTemplate
     {
 
-        public JobTemplate(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName)
+        public JobTemplate(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName, string queryFileName)
         {
             metadata = new JobTemplateMetaData(k8jobname);
-            spec = new ContainerSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName);
+            spec = new ContainerSpec(k8jobname, k8ConfigMapName, k8SecretsName, serviceAccountName, queryFileName);
         }
         public JobTemplateMetaData metadata;
         public ContainerSpec spec;
@@ -121,7 +130,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
     public class ContainerSpec
     {
         private string _serviceAccountName;
-        public ContainerSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName)
+        public ContainerSpec(string k8jobname, string k8ConfigMapName, string k8SecretsName, string serviceAccountName, string queryFileName)
         {
             volumes = new Dictionary<string, object>[]
             {
@@ -144,7 +153,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
                     }
                 }
             };
-            containers = new Containers[1] { new Containers(k8jobname) };
+            containers = new Containers[1] { new Containers(k8jobname, queryFileName) };
             _serviceAccountName = serviceAccountName;
         }
         [YamlMember(Order = 1)]
@@ -167,9 +176,13 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
     public class Containers
     {
         private static string k8jobname = string.Empty;
-        internal Containers(string k8jobname)
+        internal Containers(string k8jobname, string queryFileName)
         {
             Containers.k8jobname = k8jobname;
+            if (!string.IsNullOrEmpty(queryFileName))
+            {
+                command.Add("query");
+            }
         }
         [YamlMember(Order = 1)]
         public string name { get => k8jobname; }

@@ -2,7 +2,7 @@
 using System.IO;
 namespace SqlBuildManager.Console.Threaded
 {
-    class LogMsg
+    public class LogMsg
     {
         private string sourceDacPac = string.Empty;
         private LogType logType = LogType.Message;

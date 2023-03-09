@@ -1,4 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Azure;
+using Azure.Core;
+using Azure.ResourceManager.ContainerInstance;
+using Azure.ResourceManager.ContainerInstance.Models;
+using Azure.ResourceManager.Models;
+using Azure.ResourceManager.Network;
+using Azure.ResourceManager.Network.Models;
+using Azure.ResourceManager.Resources;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
 using SqlBuildManager.Console.Arm;
 using SqlBuildManager.Console.CommandLine;
 using System;
@@ -8,143 +17,219 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.ResourceManager.ContainerInstance;
-using Azure.ResourceManager.ContainerInstance.Models;
-using Azure.Core;
 
 namespace SqlBuildManager.Console.Aci
 {
     class AciHelper
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        internal static string CreateAciArmTemplate(CommandLineArgs cmdLine)
+
+        internal static async Task<string> DeployNetworkProfile(CommandLineArgs cmdLine)
         {
-            //TODO: Accomodate custom container repositories
-            string exePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-            string pathToTemplates = Path.Combine(exePath, "Aci");
-            string template = File.ReadAllText(Path.Combine(pathToTemplates, "aci_arm_template.json"));
-            template = template.Replace("{{identityName}}", cmdLine.IdentityArgs.IdentityName);
-            template = template.Replace("{{identityResourceGroup}}", cmdLine.IdentityArgs.ResourceGroup);
-            template = template.Replace("{{aciName}}", cmdLine.AciArgs.AciName);
+            var rgResourceId = ResourceGroupResource.CreateResourceIdentifier(cmdLine.AciArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup);
+            var rgResourceGroup = ArmHelper.SbmArmClient.GetResourceGroupResource(rgResourceId).Get().Value;
 
-            string credsTemplate = "";
-            if (!string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
+            var vnetRg = string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.ResourceGroup) ? cmdLine.AciArgs.ResourceGroup : cmdLine.NetworkArgs.ResourceGroup;
+            string subnetId = $"/subscriptions/{cmdLine.IdentityArgs.SubscriptionId}/resourceGroups/{vnetRg}/providers/Microsoft.Network/virtualNetworks/{cmdLine.NetworkArgs.VnetName}/subnets/{cmdLine.NetworkArgs.SubnetName}";
+
+            var data = new NetworkProfileData()
             {
-                credsTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "registryCredentialsSnippet.txt"));
-                credsTemplate = credsTemplate.Replace("{{registryServer}}", cmdLine.ContainerRegistryArgs.RegistryServer);
-                credsTemplate = credsTemplate.Replace("{{registryPassword}}", cmdLine.ContainerRegistryArgs.RegistryPassword);
-                credsTemplate = credsTemplate.Replace("{{registryUserName}}", cmdLine.ContainerRegistryArgs.RegistryUserName);
-            }
-            template = template.Replace("\"{{registryCredentials}}\"", credsTemplate);
+                ContainerNetworkInterfaceConfigurations =
+                    {
+                        new ContainerNetworkInterfaceConfiguration()
+                        {
+                            IPConfigurations =
+                            {
+                                new NetworkIPConfigurationProfile()
+                                {
+                                Subnet = new SubnetData()
+                                {
+                                Id = new ResourceIdentifier(subnetId),
+                                },
+                            Name = "ipconfig1",
+                            }
+                        },
+                        Name = "eth1",
+                        }
+                    },
+                Location = rgResourceGroup.Data.Location
+            };
 
-            string networkTemplate = "";
-            var profileIdTemplate = "";
+            NetworkProfileCollection collection = rgResourceGroup.GetNetworkProfiles();
+            var result = await collection.CreateOrUpdateAsync(WaitUntil.Completed, $"{cmdLine.AciArgs.AciName}profile", data);
+            if(result.GetRawResponse().Status < 300)
+            {
+                log.LogInformation("Created ACI network profile");
+                return subnetId;
+            }
+            else
+            {
+                log.LogError("Failed to create ACI network profile");
+                return string.Empty;
+            }
+
+
+        }
+        internal static async Task<bool> DeployAci(CommandLineArgs cmdLine)
+        {
+            if (await AciInstanceExists(cmdLine))
+            {
+                await DeleteAciInstance(cmdLine.AciArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName);
+            }
+            log.LogInformation("Starting ACI deployment");
+            string subnetId = string.Empty;
             if (!string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.VnetName) && !string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.SubnetName))
             {
-                networkTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "aci_networkprofile.json"));
-                networkTemplate = networkTemplate.Replace("{{aciName}}", cmdLine.AciArgs.AciName);
-                networkTemplate = networkTemplate.Replace("{{vnetName}}", cmdLine.NetworkArgs.VnetName);
-                networkTemplate = networkTemplate.Replace("{{subnetName}}", cmdLine.NetworkArgs.SubnetName);
-                networkTemplate = networkTemplate.Replace("{{subscriptionId}}", cmdLine.IdentityArgs.SubscriptionId);
-                networkTemplate = networkTemplate.Replace("{{resourceGroupName}}", cmdLine.IdentityArgs.ResourceGroup);
-
-
-                profileIdTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "networkprofileid.txt"));
-                profileIdTemplate = profileIdTemplate.Replace("{{aciName}}", cmdLine.AciArgs.AciName);
+                subnetId = await DeployNetworkProfile(cmdLine);
+                if (subnetId.Length == 0)
+                {
+                    return false;
+                }
             }
-            template = template.Replace("{{networkTemplate}}", networkTemplate);
-            template = template.Replace("{{networkprofileid}}", profileIdTemplate);
 
-            string containerTemplate = File.ReadAllText(Path.Combine(pathToTemplates, "container_template.json"));
-            List<string> containers = new List<string>();
-            int padding = cmdLine.AciArgs.ContainerCount.ToString().Length;
+
+            var rgResourceId = ResourceGroupResource.CreateResourceIdentifier(cmdLine.AciArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup);
+            var rgResourceGroup = ArmHelper.SbmArmClient.GetResourceGroupResource(rgResourceId).Get().Value;
+
+            //Init Container Group Data
+            var containerGroupData = new ContainerGroupData(rgResourceGroup.Data.Location, new List<ContainerInstanceContainer>(), ContainerInstanceOperatingSystemType.Linux)
+            {
+                RestartPolicy = "Never",
+            };
+            containerGroupData.OSType = "Linux";
+            //Add Identity
+            var mi = new ManagedServiceIdentity(ManagedServiceIdentityType.UserAssigned);
+            mi.UserAssignedIdentities.Add(new ResourceIdentifier(cmdLine.IdentityArgs.ResourceId), new UserAssignedIdentity());
+            containerGroupData.Identity = mi;
+
+            //Configure the containers..
+            string imageName;
+            if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.ImageName))
+            {
+                imageName = $"sqlbuildmanager:{cmdLine.ContainerRegistryArgs.ImageTag}";
+            }
+            else
+            {
+                imageName = $"{cmdLine.ContainerRegistryArgs.ImageName}:{cmdLine.ContainerRegistryArgs.ImageTag}";
+            }
+            if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
+            {
+                imageName = $"ghcr.io/mmckechney/{imageName}";
+            }
+            else
+            {
+                imageName = $"{cmdLine.ContainerRegistryArgs.RegistryServer}/{imageName}";
+            }
+
+            var envVariables = GetEnvironmentVariables(cmdLine);
             for (int i = 0; i < cmdLine.AciArgs.ContainerCount; i++)
             {
-                var tmpContainer = containerTemplate.Replace("{{counter}}", i.ToString().PadLeft(padding, '0'));
-                tmpContainer = tmpContainer.Replace("{{tag}}", cmdLine.ContainerRegistryArgs.ImageTag);
-                tmpContainer = tmpContainer.Replace("{{keyVaultName}}", cmdLine.ConnectionArgs.KeyVaultName);
-                tmpContainer = tmpContainer.Replace("{{dacpacName}}", Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac));
-                tmpContainer = tmpContainer.Replace("{{jobname}}", cmdLine.JobName);
-                tmpContainer = tmpContainer.Replace("{{packageName}}", Path.GetFileName(cmdLine.BuildFileName));
-                tmpContainer = tmpContainer.Replace("{{concurrency}}", cmdLine.Concurrency.ToString());
-                tmpContainer = tmpContainer.Replace("{{concurrencyType}}", cmdLine.ConcurrencyType.ToString());
-                tmpContainer = tmpContainer.Replace("{{identityClientId}}", cmdLine.IdentityArgs.ClientId.ToString());
-                tmpContainer = tmpContainer.Replace("{{allowObjectDelete}}", cmdLine.AllowObjectDelete.ToString());
-                tmpContainer = tmpContainer.Replace("{{authType}}", cmdLine.AuthenticationArgs.AuthenticationType.ToString());
-                tmpContainer = tmpContainer.Replace("{{eventHub}}", cmdLine.ConnectionArgs.EventHubConnectionString);
-                tmpContainer = tmpContainer.Replace("{{serviceBus}}", cmdLine.ConnectionArgs.ServiceBusTopicConnectionString);
-
-
-                if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
+                var containerRequests = new ContainerResourceRequestsContent(1.0, 1.0);
+                var containerReqs = new ContainerResourceRequirements(containerRequests);
+                var container = new ContainerInstanceContainer($"sqlbuildmanager{i.ToString().PadLeft(3, '0')}", imageName, containerReqs);
+                container.Command.Add("dotnet");
+                container.Command.Add("sbm.dll");
+                container.Command.Add("aci");
+                container.Command.Add("worker");
+                if (cmdLine.QueryFile != null)
                 {
-                    tmpContainer = tmpContainer.Replace("{{registryServer}}", "ghcr.io/mmckechney");
-                }
-                else
-                {
-                    tmpContainer = tmpContainer.Replace("{{registryServer}}", cmdLine.ContainerRegistryArgs.RegistryServer);
+                    container.Command.Add("query");
                 }
 
-                if (string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.ImageName))
-                {
-                    tmpContainer = tmpContainer.Replace("{{imagename}}", "sqlbuildmanager");
-                }
-                else
-                {
-                    tmpContainer = tmpContainer.Replace("{{imagename}}", cmdLine.ContainerRegistryArgs.ImageName);
-                }
 
-                containers.Add(tmpContainer);
+                envVariables.ForEach(e => container.EnvironmentVariables.Add(e));
+
+                containerGroupData.Containers.Add(container);
             }
-            string allContainers = string.Join("," + Environment.NewLine, containers);
+           
 
-            template = template.Replace("\"{{Container_Placeholder}}\"", allContainers);
-            return template;
-        }
+            //Set container registry creds if needed
+            ContainerGroupImageRegistryCredential registryCreds;
+            if (!string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
+            {
+                if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
+                    {
+                    registryCreds = new ContainerGroupImageRegistryCredential(cmdLine.ContainerRegistryArgs.RegistryServer)
+                    {
+                        Username = cmdLine.ContainerRegistryArgs.RegistryUserName,
+                        Password = cmdLine.ContainerRegistryArgs.RegistryPassword,
+                        Server = cmdLine.ContainerRegistryArgs.RegistryServer
+                    };
+                }else
+                {
+                    registryCreds = new ContainerGroupImageRegistryCredential(cmdLine.ContainerRegistryArgs.RegistryServer)
+                    {
+                        Identity = cmdLine.IdentityArgs.ResourceId,
+                       // IdentityUri = cmdLine.IdentityArgs.ResourceId,
+                        Server = cmdLine.ContainerRegistryArgs.RegistryServer
+                    };
+                }
+                containerGroupData.ImageRegistryCredentials.Add(registryCreds);
+            }
+            
 
-        internal static async Task<bool> DeployAciInstance(string templateFileName, string subscriptionId, string resourceGroupName, string aciName, string jobName)
-        {
+            if (subnetId.Length > 0)
+            {
+               containerGroupData.SubnetIds.Add(new ContainerGroupSubnetId(new ResourceIdentifier(subnetId)));
+            }
+
             try
             {
-                if (await ShouldDeleteExistingInstance(templateFileName, subscriptionId, resourceGroupName, aciName))
+                log.LogDebug(JsonSerializer.Serialize<ContainerGroupData>(containerGroupData, new JsonSerializerOptions() { WriteIndented = true }));
+
+                var coll = rgResourceGroup.GetContainerGroups();
+                var result = await coll.CreateOrUpdateAsync(WaitUntil.Completed, cmdLine.AciArgs.AciName, containerGroupData);
+                if (result.GetRawResponse().Status < 300)
                 {
-                    await DeleteAciInstance(subscriptionId, resourceGroupName, aciName);
+                    log.LogInformation($"Completed ACI deployment for App Name: '{cmdLine.AciArgs.AciName}'");
+                    return true;
                 }
-                var rgName = resourceGroupName;
-                var deploymentName = jobName;
-                var templateFileContents = File.ReadAllText(templateFileName);
-
-                log.LogInformation($"Starting a deployment for ACI '{aciName}' for job: {deploymentName}");
-                bool success = await ArmHelper.SubmitDeployment(subscriptionId, rgName, templateFileContents, "{}", deploymentName);
-
-                log.LogInformation($"Completed ACI deployment: {deploymentName}. Waiting for identity assignment completion....");
-
-
-                //Introduce a delay to see if that will help with what seems to be an issue with a timely managed identity assignment
-                Thread.Sleep(10000);
-
-                log.LogInformation("Completed ACI deployment");
-                return success;
-            }
-            catch (Exception ex)
+                else
+                {
+                    log.LogError("ACI deployment failed. Unable to proceed.");
+                    return false;
+                }
+            }catch(Exception exe)
             {
-                log.LogError($"Unable to deploy ACI instance: {ex.Message}");
+                log.LogError(exe.Message);
                 return false;
             }
 
         }
+        internal static List<ContainerEnvironmentVariable> GetEnvironmentVariables(CommandLineArgs cmdLine)
+        {
+            var lst = new List<ContainerEnvironmentVariable>();
+            lst.Add(new ContainerEnvironmentVariable("Sbm_KeyVaultName") { Value = cmdLine.ConnectionArgs.KeyVaultName });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_DacpacName") { Value = Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac) });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_EventHubConnectionString") { Value = cmdLine.ConnectionArgs.EventHubConnectionString });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_JobName") { Value = cmdLine.JobName });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_ServiceBusTopicConnectionString") { Value = cmdLine.ConnectionArgs.ServiceBusTopicConnectionString });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_PackageName") { Value = Path.GetFileName(cmdLine.BuildFileName) });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_Concurrency") { Value = cmdLine.Concurrency.ToString() });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_AuthType") { Value = cmdLine.AuthenticationArgs.AuthenticationType.ToString() });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_ConcurrencyType") { Value = cmdLine.ConcurrencyType.ToString() });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_AllowObjectDelete") { Value = cmdLine.AllowObjectDelete.ToString() });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_IdentityClientId") { Value = cmdLine.IdentityArgs.ClientId.ToString() });
+            lst.Add(new ContainerEnvironmentVariable("Sbm_StorageAccountName") { Value = cmdLine.ConnectionArgs.StorageAccountName });
 
-        private static async Task<bool> ShouldDeleteExistingInstance(string templateFileName, string subscriptionId, string resourceGroupName, string aciName)
+            return lst;
+        }
+
+        private static async Task<bool> AciInstanceExists(CommandLineArgs cmdLine)
         {
             try
             {
-                (int containerCount, double memory, int cpu) = await GetAciCountMemoryAndCpu(subscriptionId, resourceGroupName, aciName);
-
-                var j = JsonSerializer.Deserialize<TemplateClass>(File.ReadAllText(templateFileName));
-                var templateContainerCount = j.Resources.First().Properties.Containers.Count();
-                var templateMemory = j.Resources.First().Properties.Containers.First().Properties.Resources.Requests.MemoryInGB;
-                var templateCpu = j.Resources.First().Properties.Containers.First().Properties.Resources.Requests.Cpu;
-
-                return !(containerCount == templateContainerCount && memory == templateMemory && cpu == templateCpu);
+                var rgResourceId = ResourceGroupResource.CreateResourceIdentifier(cmdLine.AciArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup);
+                var rgResourceGroup = (await ArmHelper.SbmArmClient.GetResourceGroupResource(rgResourceId).GetAsync()).Value;
+                var coll = (await rgResourceGroup.GetContainerGroups().GetAsync(cmdLine.AciArgs.AciName)).Value;
+                if(coll.HasData)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             catch (Azure.RequestFailedException rexe)
             {
@@ -172,6 +257,8 @@ namespace SqlBuildManager.Console.Aci
             {
                 log.LogInformation("Removing any pre-existing ACI deployment");
                 var success = await ArmHelper.DeleteResource(subscriptionId, resourceGroupName, aciName);
+                //Wait for the delete to complete
+                Thread.Sleep(10000);
                 log.LogInformation("Pre-existing ACI deployment removed");
                 return success;
             }
@@ -192,16 +279,6 @@ namespace SqlBuildManager.Console.Aci
             return status == containerCount;
         }
 
-        internal static async Task<(int, double, int)> GetAciCountMemoryAndCpu(string subscriptionId, string resourceGroupName, string aciName)
-        {
-            var aciResult = await GetAciInstanceData(subscriptionId, resourceGroupName, aciName);
-            var containerCount = aciResult.Properties.Containers.Count;
-            var memoryPer = aciResult.Properties.Containers.Select(c => c.Properties.Resources.Requests.MemoryInGB).FirstOrDefault();
-            var cpuPer = aciResult.Properties.Containers.Select(c => c.Properties.Resources.Requests.Cpu).FirstOrDefault();
-
-            return (containerCount, memoryPer, cpuPer);
-        }
-
         private static async Task<Aci.Arm.Deployment> GetAciInstanceData(string subscriptionId, string resourceGroupName, string aciName)
         {
             var resp = await ArmHelper.GetAciDeploymentDetails(subscriptionId, resourceGroupName, aciName);
@@ -209,21 +286,6 @@ namespace SqlBuildManager.Console.Aci
 
             return aciResult;
         }
-
-        internal static CommandLineArgs GetRuntimeValuesFromDeploymentTemplate(CommandLineArgs cmdLine, string templateFileName)
-        {
-            var j = System.Text.Json.JsonSerializer.Deserialize<Aci.TemplateClass>(File.ReadAllText(templateFileName));
-            cmdLine.JobName = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_JobName").FirstOrDefault().Value;
-            var tmp = j.Resources[0].Properties.Containers[0].Properties.EnvironmentVariables.Where(e => e.Name == "Sbm_ConcurrencyType").FirstOrDefault().Value;
-            if (Enum.TryParse<ConcurrencyType>(tmp, out ConcurrencyType concurrencyType))
-            {
-                cmdLine.ConcurrencyType = concurrencyType;
-            }
-            cmdLine.AciName = j.variables.aciName;
-
-            return cmdLine;
-        }
-
 
     }
 }

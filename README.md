@@ -5,7 +5,7 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
 
- **Kubernetes breaking changes in 15.0, be sure to review the change log**
+ **Kubernetes and ACI breaking changes in 15.0, be sure to review the change log**
 #### _Be sure to review the [change log](CHANGELOG.md) for the latest updates, enhancements and bug fixes_
 
 

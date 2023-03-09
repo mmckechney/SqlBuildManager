@@ -19,7 +19,7 @@ namespace SqlBuildManager.Console.Arm
 
         internal static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ArmHelper>();
         private static ArmClient _sbmarmClient = null;
-        private static ArmClient SbmArmClient
+        public static ArmClient SbmArmClient
         {
             get
             {

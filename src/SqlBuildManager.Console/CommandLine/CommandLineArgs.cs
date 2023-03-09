@@ -435,7 +435,7 @@ namespace SqlBuildManager.Console.CommandLine
         public string PrincipalId { set { IdentityArgs.PrincipalId = value; } }
         public string ResourceId { set { IdentityArgs.ResourceId = value; } }
         public string IdentityResourceGroup { set { IdentityArgs.ResourceGroup = value; } }
-        public string SubscriptionId { set { IdentityArgs.SubscriptionId = value; ContainerAppArgs.SubscriptionId = value; } }
+        public string SubscriptionId { set { IdentityArgs.SubscriptionId = value; ContainerAppArgs.SubscriptionId = value; AciArgs.SubscriptionId = value; } }
         public string TenantId { set { IdentityArgs.TenantId = value; } }
 
         public class Identity
@@ -487,6 +487,7 @@ namespace SqlBuildManager.Console.CommandLine
         {
             public string AciName { get; set; } = string.Empty;
             public string ResourceGroup { get; set; } = string.Empty;
+            public string SubscriptionId { get; set; } = string.Empty;
             [JsonIgnore]
             public int ContainerCount { get; set; } = 10;
         }
@@ -495,10 +496,12 @@ namespace SqlBuildManager.Console.CommandLine
         #region Networking Nested Class and property setters
         public string VnetName { set { NetworkArgs.VnetName = value; } }
         public string SubnetName { set { NetworkArgs.SubnetName = value; } }
+        public string VnetResourceGroup { set { NetworkArgs.ResourceGroup = value; } }
         public class Network
         {
             public string VnetName { get; set; } = string.Empty;
             public string SubnetName { get; set; } = string.Empty;
+            public string ResourceGroup { get; set; } = string.Empty;
         }
         #endregion
 
