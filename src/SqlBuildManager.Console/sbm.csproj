@@ -63,7 +63,7 @@
 		<PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="4.0.3" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.15.0" />
-		<PackageReference Include="YamlDotNet" Version="13.0.1" />
+		<PackageReference Include="YamlDotNet" Version="13.0.2" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="Aci\aci_arm_template.json">
