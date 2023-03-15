@@ -132,6 +132,7 @@ foreach($auth in $authTypes)
     {
         $params += ("--vnetname", $vnetName)
         $params += ("--subnetname", $subnetName)
+        $params += ("--vnetrg", $resourceGroupName)
     }
     $params += ("--authtype", $auth)
     Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow

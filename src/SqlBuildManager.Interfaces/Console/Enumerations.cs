@@ -89,6 +89,8 @@ namespace SqlBuildManager.Interfaces.Console
         [Description("SuccessDatabases")]
         SuccessDatabases,
         [Description("FailureDatabases")]
-        FailureDatabases
+        FailureDatabases,
+        [Description("WorkerCompleted")]
+        WorkerCompleted
     }
 }

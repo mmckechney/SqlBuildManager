@@ -102,6 +102,7 @@ if($vnetName -ne "" -and $subnetName -ne "")
 {
     $params += @("--vnetname", $vnetName)
     $params += @("--subnetname", $subnetName)
+    $params += ("--vnetrg", $resourceGroupName)
 }
 
 if($haveSqlInfo)

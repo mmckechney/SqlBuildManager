@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.ContainerApp;
+using SqlBuildManager.Console.ContainerShared;
+using SqlBuildManager.Console.KeyVault;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -25,7 +28,7 @@ namespace SqlBuildManager.Console
         {
             FileInfo packageFileInfo = string.IsNullOrWhiteSpace(cmdLine.BuildFileName) ? null : new FileInfo(cmdLine.BuildFileName);
             FileInfo dacpacFileInfo = string.IsNullOrWhiteSpace(cmdLine.DacpacName) ? null : new FileInfo(cmdLine.DacpacName);
-            var res = await PrepAndUploadContainerBuildPackage(cmdLine, packageFileInfo, dacpacFileInfo, force);
+            var res = await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packageFileInfo, dacpacFileInfo, force);
             if (res != 0)
             {
                 log.LogError("Failed to upload build package to Blob storage");
@@ -39,7 +42,7 @@ namespace SqlBuildManager.Console
                 return 1;
             }
 
-            res = await DeployContainerApp(cmdLine, unittest, stream, true, deleteWhenDone);
+            res = await ContainerAppDeploy(cmdLine, unittest, stream, true, deleteWhenDone);
             if (res != -7)
             {
                 log.LogError("Failed to deploy container app");
@@ -52,7 +55,7 @@ namespace SqlBuildManager.Console
                 return res;
             }
         }
-        internal static async Task<int> DeployContainerApp(CommandLineArgs cmdLine, bool unittest, bool stream, bool monitor, bool deleteWhenDone)
+        internal static async Task<int> ContainerAppDeploy(CommandLineArgs cmdLine, bool unittest, bool stream, bool monitor, bool deleteWhenDone)
         {
             bool initSuccess;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -96,7 +99,7 @@ namespace SqlBuildManager.Console
                 validationErrors.ForEach(m => log.LogError(m));
             }
             ContainerAppHelper.SetEnvVariablesForTest(cmdLine);
-            return await RunContainerAppWorker(cmdLine);
+            return await ContainerAppWorker_RunBuild(cmdLine);
         }
 
         internal static async Task<int> MonitorContainerAppRuntimeProgress(CommandLineArgs cmdLine, bool stream, DateTime? utcMonitorStart, bool unitest)
@@ -113,5 +116,35 @@ namespace SqlBuildManager.Console
 
             return retVal;
         }
+
+        #region Container Worker Methods
+
+        internal static async Task<int> ContainerAppWorker_RunBuild(CommandLineArgs cmdLine)
+        {
+            bool initSuccess;
+            (initSuccess, cmdLine) = Init(cmdLine);
+            cmdLine.RunningAsContainer = true;
+            cmdLine = ContainerShared.EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+            (bool discard, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+            cmdLine = ContainerShared.EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+            if (cmdLine.IdentityArgs != null)
+            {
+                AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+                AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
+            }
+            cmdLine.ContainerAppArgs.RunningAsContainerApp = true;
+
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            if (!Directory.Exists(cmdLine.RootLoggingPath))
+            {
+                Directory.CreateDirectory(cmdLine.RootLoggingPath);
+            }
+            //Set this so that the threaded service bus loop doesn't terminate
+
+
+            return await GenericContainer.GenericContainerWorker_RunQueueBuild(cmdLine);
+        }
+        #endregion
     }
 }

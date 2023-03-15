@@ -1,4 +1,4 @@
-﻿namespace SqlBuildManager.Console.Shared
+﻿namespace SqlBuildManager.Console.ContainerShared
 {
     internal class ContainerEnvVariables
     {
@@ -16,11 +16,11 @@
         internal static string UserName { get; } = "Sbm_UserName";
         internal static string Password { get; } = "Sbm_Password";
         internal static string AllowObjectDelete { get; } = "Sbm_AllowObjectDelete";
-
         internal static string AuthType { get; } = "Sbm_AuthType";
-
         internal static string IdentityResourceGroup { get; } = "Sbm_IdentityResourceGroup";
         internal static string IdentityName { get; } = "Sbm_IdentityName";
+        internal static string QueryFile { get; } = "Sbm_QueryFile";
+        internal static string OutputFile { get; } = "Sbm_OutputFile";
 
     }
 }

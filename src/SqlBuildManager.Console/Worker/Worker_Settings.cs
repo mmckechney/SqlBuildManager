@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
-using SqlBuildManager.Console.Shared;
 using SqlSync.Connection;
 using System;
 using System.IO;
@@ -40,12 +39,12 @@ namespace SqlBuildManager.Console
                 cmdLine.ConnectionArgs.StorageAccountKey = null;
                 cmdLine.ContainerRegistryArgs.RegistryPassword = null;
 
-                if (ConnectionValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
+                if (ConnectionStringValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
                 {
                     cmdLine.ConnectionArgs.EventHubConnectionString = null;
                 }
 
-                if (ConnectionValidator.IsServiceBusConnectionString(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+                if (ConnectionStringValidator.IsServiceBusConnectionString(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
                 {
                     if (cmdLine.ContainerAppArgs == null || string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName))
                     {

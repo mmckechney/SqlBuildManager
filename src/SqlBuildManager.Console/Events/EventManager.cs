@@ -3,7 +3,6 @@ using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Processor;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
-using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Interfaces.Console;
 using System;
 using System.Text;
@@ -29,6 +28,7 @@ namespace SqlBuildManager.Console.Events
         private int databaseCommitMessages = 0;
         private int databaseErrorMessages = 0;
         private int eventsScanned = 0;
+        private int workersCompleted = 0;
 
 
         private void IncrementDatabaseCommitMessages()
@@ -38,6 +38,10 @@ namespace SqlBuildManager.Console.Events
         private void IncrementDatabaseErrorsMessages()
         {
             Interlocked.Increment(ref databaseErrorMessages);
+        }
+        private void IncrementWorkerCompletedMessages()
+        {
+            Interlocked.Increment(ref workersCompleted);
         }
         private void IncrementEventsScanned()
         {
@@ -75,7 +79,7 @@ namespace SqlBuildManager.Console.Events
 
                 if (_eventClient == null)
                 {
-                    if (ConnectionValidator.IsEventHubConnectionString(eventHubconnectionString))
+                    if (ConnectionStringValidator.IsEventHubConnectionString(eventHubconnectionString))
                     {
                         _eventClient = new EventProcessorClient(BlobClient, consumerGroup, eventHubconnectionString);
                     }
@@ -122,9 +126,9 @@ namespace SqlBuildManager.Console.Events
             }
 
         }
-        public (int, int, int) GetCommitErrorAndScannedCounts()
+        public (int, int, int, int) GetCommitErrorScannedAndWorkerCompleteCounts()
         {
-            return (databaseCommitMessages, databaseErrorMessages, eventsScanned);
+            return (databaseCommitMessages, databaseErrorMessages, eventsScanned, workersCompleted);
         }
 
         private Task InitializeEventHandler(PartitionInitializingEventArgs args)
@@ -182,6 +186,10 @@ namespace SqlBuildManager.Console.Events
                         case LogType.Error:
                             if (StreamEvents) log.LogError($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(31)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
                             IncrementDatabaseErrorsMessages();
+                            break;
+                        case LogType.WorkerCompleted:
+                            if (StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(25)}{msg.Properties.LogMsg.Message.PadRight(31)}");
+                            IncrementWorkerCompletedMessages();
                             break;
                     }
                 }

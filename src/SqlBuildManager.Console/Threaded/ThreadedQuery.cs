@@ -50,7 +50,9 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     log.LogInformation($"Sourcing targets from Service Bus topic with Concurrency Type: {cmdLine.ConcurrencyType} and Concurency setting: {cmdLine.Concurrency}");
                     Task<int> queueTask = ExecuteQueryFromQueue(cmdLine, connData, query, System.Environment.UserName);
+                    log.LogInformation($"Waiting for ExeuteQueryFromQueue to complete...");
                     queueTask.Wait();
+                    log.LogInformation($"ExeuteQueryFromQueue wait completed. Task status is {queueTask.Status}");
                     return queueTask.Result;
                 }
                 else
@@ -155,6 +157,7 @@ namespace SqlBuildManager.Console.Threaded
             }
             log.LogInformation($"Generating consolidated results report from {listResultsTempFiles.Count} temporary files.");
             collector.GenerateReport(cmdLine.OutputFile.FullName, ReportType.CSV, listResultsTempFiles);
+
             return resultCode;
         }
         private async Task<(int, string)> ProcessThreadedQueryWithQueue(QueryCollectionRunner runner, ServiceBusReceivedMessage message)

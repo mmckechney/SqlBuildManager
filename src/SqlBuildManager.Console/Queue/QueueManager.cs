@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using MoreLinq;
 using Polly;
 using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Console.Shared;
 using SqlBuildManager.Console.Threaded;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
@@ -64,7 +63,7 @@ namespace SqlBuildManager.Console.Queue
             {
                 if (_client == null)
                 {
-                    if (ConnectionValidator.IsServiceBusConnectionString(topicConnectionString))
+                    if (ConnectionStringValidator.IsServiceBusConnectionString(topicConnectionString))
                     {
                         _client = new ServiceBusClient(topicConnectionString);
                     }
@@ -85,7 +84,7 @@ namespace SqlBuildManager.Console.Queue
             {
                 if (_adminClient == null)
                 {
-                    if (ConnectionValidator.IsServiceBusConnectionString(topicConnectionString))
+                    if (ConnectionStringValidator.IsServiceBusConnectionString(topicConnectionString))
                     {
                         _adminClient = new ServiceBusAdministrationClient(topicConnectionString);
                     }

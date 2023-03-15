@@ -18,9 +18,12 @@ namespace SqlBuildManager.Console.CommandLine
 
         }
 
+        #region Flags Used to prevent excess processing
         [JsonIgnore]
         public bool Decrypted { get; set; } = false;
-        
+        [JsonIgnore]
+        public bool KeyVaultSecretsRetrieved { get; set; } = false;
+        #endregion
         #region Nested Argument Object properties
         public Authentication AuthenticationArgs { get; set; } = new Authentication();
         public Batch BatchArgs { get; set; } = new Batch();
@@ -560,6 +563,8 @@ namespace SqlBuildManager.Console.CommandLine
         public class Kubernetes
         {
             public int PodCount { get; set; } = 10;
+            [JsonIgnore]
+            public bool RunningInKubernetes = false;
         }
         #endregion
         

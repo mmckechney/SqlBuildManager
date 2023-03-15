@@ -21,7 +21,6 @@ namespace SqlSync.SqlBuild.AdHocQuery
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         MultiDbData multiDbData;
-        private static SyncObject SyncObj = new SyncObject();
         private List<QueryCollectionRunner> runners = new List<QueryCollectionRunner>();
         private BackgroundWorker bgWorker;
         private ConnectionData connData = null;
@@ -91,7 +90,6 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 return false;
             }
 
-            int threadTotal = 0;
             string db;
 
             var queryTasks = new List<Task<(int,string)>>();
@@ -103,11 +101,6 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 {
                     db = srv.ServerName + "." + ovr.OverrideDbTarget;
 
-                    threadTotal++;
-                    lock (QueryCollector.SyncObj)
-                    {
-                        QueryCollector.SyncObj.WorkingRunners++;
-                    }
                     QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, resultsFilePath, scriptTimeout, connData);
                     queryTasks.Add(runner.CollectQueryData());
                 }
@@ -116,7 +109,8 @@ namespace SqlSync.SqlBuild.AdHocQuery
             {
                 System.Threading.Thread.Sleep(1000);
                 var remaining = queryTasks.Count(t => t.Status != TaskStatus.RanToCompletion);
-                bgWorker?.ReportProgress(QueryCollector.SyncObj.WorkingRunners, String.Format("Databases remaining: {0}", remaining));
+                var percent = remaining == 0 ? 0 : (int)((double)remaining / (double)queryTasks.Count * 100);
+                bgWorker?.ReportProgress(percent, String.Format("Databases remaining: {0}", remaining));
 
                 var running = queryTasks.Count(t => t.Status == TaskStatus.Running);
                 if (running == 0)
@@ -280,6 +274,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="queryResultFiles">List of raw report files from the runner objects</param>
         private bool CreateCombinedCsvFile(string fileName, List<string> queryResultsFiles)
         {
+            if(queryResultsFiles.Count == 0)
+            {
+                log.LogInformation($"No results files generated, not creating summary report.");
+                return true;
+            }
             log.LogInformation($"Creating combined CSV from {queryResultsFiles.Count} results files");
             try
             {

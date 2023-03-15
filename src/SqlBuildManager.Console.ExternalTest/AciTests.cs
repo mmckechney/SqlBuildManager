@@ -48,7 +48,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataTestMethod]
-        public void ACI_Queue_Run_SBMSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public void ACI_Queue_Run_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -528,6 +528,75 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 Debug.WriteLine(ConsoleOutput.ToString());
             }
+
+        }
+
+
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataTestMethod]
+        public void ACI_Queue_Query_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var queryFile = Path.GetFullPath("selectquery.sql");
+                if (!File.Exists(queryFile))
+                {
+                    File.WriteAllText(queryFile, Properties.Resources.selectquery);
+                }
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("aci");
+
+                //Prep the build
+                var args = new string[]{
+                "aci",  "query",
+                "--settingsfile", settingsFile,
+                "--jobname", jobName,
+                 "--override", overrideFile,
+                 "--outputfile", outputFile,
+                 "--queryfile", queryFile,
+                "--concurrencytype", concurrencyType.ToString(),
+                "--containercount", containerCount.ToString(),
+                "--concurrency", concurrency.ToString(),
+                "--unittest", "true",
+                "--monitor", "true",
+                 "--stream"
+                };
+
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
+                var outputLength = File.ReadAllLines(outputFile).Length;
+                var overrideLength = File.ReadAllLines(overrideFile).Length;
+
+                Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+                if (File.Exists(outputFile))
+                {
+                    File.Delete(outputFile);
+                }
+            }
+
 
         }
     }

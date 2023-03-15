@@ -12,7 +12,7 @@ using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-
+using SqlBuildManager.Console.ContainerShared;
 namespace SqlBuildManager.Console.CommandLine
 {
     public class CommandLineBuilder
@@ -527,7 +527,6 @@ namespace SqlBuildManager.Console.CommandLine
         }
         #endregion
 
-
         #region Batch Commands
 
         /// <summary>
@@ -832,7 +831,6 @@ namespace SqlBuildManager.Console.CommandLine
 
         #endregion
 
-
         #region Container App Commands
 
         /// <summary>
@@ -926,7 +924,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Worker.PrepAndUploadContainerBuildPackage);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(GenericContainer.PrepAndUploadContainerBuildPackage);
 
                 return cmd;
             }
@@ -990,7 +988,7 @@ namespace SqlBuildManager.Console.CommandLine
                 //end
                 ContainerRegistryAndImageOptions.ForEach(o => cmd.Add(o));
                 ConcurrencyOptions.ForEach(o => cmd.Add(o));
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool, bool>(Worker.DeployContainerApp);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool, bool>(Worker.ContainerAppDeploy);
 
                 return cmd;
             }
@@ -1066,7 +1064,7 @@ namespace SqlBuildManager.Console.CommandLine
             get
             {
                 var tmp = new Command("worker", "[Used by Container Apps] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
-                tmp.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunContainerAppWorker);
+                tmp.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ContainerAppWorker_RunBuild);
                 tmp.Add(containerAppWorkerTestCommand);
 
                 return tmp;
@@ -1089,7 +1087,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(containerAppMonitorCommand);
                 cmd.Add(containerAppDequeueTargetsCommand);
                 cmd.Add(containerAppWorkerCommand);
-
+                cmd.AddAlias("ca");
                 return cmd;
             }
         }
@@ -1173,6 +1171,48 @@ namespace SqlBuildManager.Console.CommandLine
                 return cmd;
             }
         }
+
+        private static Command aciQuery
+        {
+            get
+            {
+
+                var cmd = new Command("query", "Run a SELECT query across multiple databases using ACI.");
+                cmd.AddRange(SettingsFileExistingOptions);
+                cmd.AddRange(new List<Option>
+                {
+                    sectionPlaceholderOption,
+                    jobnameOption,
+                    new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment"),
+                     unitTestOption,
+                    overrideAsFileOption,
+                    queryFileOption,
+                    outputFileOption,
+
+                    forceOption,
+                    streamEventsOption,
+                    aciIResourceGroupNameNotReqOption,
+                    aciInstanceNameNotReqOption,
+                    aciContainerCountOption.Copy(true)
+                });
+                cmd.AddRange(VnetOptions);
+                cmd.AddRange(ContainerRegistryAndImageOptions);
+                cmd.Add(keyVaultNameOption);
+                cmd.Add(storageaccountnameOption);
+                cmd.Add(storageaccountkeyOption);
+                cmd.Add(authtypeOption);
+                cmd.Add(clientIdOption);
+                cmd.Add(identityNameOption.Copy(false));
+                cmd.Add(identityResourceGroupOption.Copy(false));
+                cmd.Add(subscriptionIdOption.Copy(false));
+                cmd.AddRange(ConcurrencyRequiredOptions);
+
+
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool, bool, bool,bool>(Worker.AciQuery);
+                return cmd;
+
+            }
+        }
         private static Command aciPrepCommand
         {
             get
@@ -1191,7 +1231,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                 };
                 SettingsFileExistingOptions.ForEach(o => cmd.Add(o));
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(Worker.PrepAndUploadContainerBuildPackage);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(GenericContainer.PrepAndUploadContainerBuildPackage);
 
                 return cmd;
             }
@@ -1295,13 +1335,23 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
 
+   
+        private static Command aciQueryWorkerCommand
+        {
+            get
+            {
+                var cmd = new Command("query", "[Used by ACI] Starts the container(s) as a worker for database querying - polling and retrieving items from target service bus queue topic");
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.AciWorker_RunQueueQuery);
+                return cmd;
+            }
+        }
         private static Command aciWorkerCommand
         {
             get
             {
                 var cmd = new Command("worker", "[Used by ACI] Starts the container(s) as a worker - polling and retrieving items from target service bus queue topic");
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunAciQueueWorker);
-
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.AciWorker_RunQueueBuild);
+                cmd.Add(aciQueryWorkerCommand);
                 return cmd;
             }
         }
@@ -1317,6 +1367,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(aciEnqueueTargetsCommand);
                 cmd.Add(aciDeployCommand);
                 cmd.Add(aciMonitorCommand);
+                cmd.Add(aciQuery);
                 cmd.Add(aciDequeueTargetsCommand);
                 cmd.Add(aciWorkerCommand);
 
@@ -1435,7 +1486,7 @@ namespace SqlBuildManager.Console.CommandLine
             get
             {
                 var cmd = new Command("query", "[Used by Kubernetes] Starts the pod as a worker for database querying - polling and retrieving items from target service bus queue topic");
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunKubernetesQueueQueryWorker);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.KubernetesWorker_RunQueueQuery);
 
                 return cmd;
             }
@@ -1445,7 +1496,7 @@ namespace SqlBuildManager.Console.CommandLine
             get
             {
                 var cmd = new Command("worker", "[Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunKubernetesQueueWorker);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.KubernetesWorker_RunQueueBuild);
                 cmd.Add(kubernetesQueryWorkerCommand);
                 return cmd;
             }
@@ -1469,7 +1520,7 @@ namespace SqlBuildManager.Console.CommandLine
                 });
                 cmd.AddRange(kubernetesYamlFileOptions);
 
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, string, string, ConcurrencyType, string, FileInfo>(Worker.EnqueueContainerOverrideTargets);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, string, string, ConcurrencyType, string, FileInfo>(Worker.KubernetesEnqueueOverrideTargets);
 
 
                 return cmd;
@@ -1589,29 +1640,11 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(KubernetesCreateYamlCommand);
                 cmd.Add(KubernetesQueryCommand);
                 cmd.Add(kubernetesWorkerCommand);
-
+                cmd.AddAlias("aks");
                 return cmd;
             }
         }
-        private static Command kubernetesAksCommand
-        {
-            get
-            {
-                var cmd = new Command("aks", "Commands for setting and executing a build running in pods on Kubernetes");
-                cmd.Add(kubernetesSaveSettingsCommand);
-                cmd.Add(KubernetesRunCommand);
-                cmd.Add(kubernetesPrepCommand);
-                cmd.Add(kubernetesEnqueueTargetsCommand);
-                cmd.Add(kubernetesMonitorCommand);
-                cmd.Add(kubernetesDequeueTargetsCommand);
-                cmd.Add(KubernetesCreateYamlCommand);
-                cmd.Add(KubernetesQueryCommand);
-                cmd.Add(kubernetesWorkerCommand);
-
-                cmd.IsHidden = true;
-                return cmd;
-            }
-        }
+    
 
         #endregion
         
@@ -1814,7 +1847,6 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(threadedCommand);
             rootCommand.Add(containerAppCommand);
             rootCommand.Add(kubernetesCommand);
-            rootCommand.Add(kubernetesAksCommand);
             rootCommand.Add(aciCommand);
             rootCommand.Add(batchCommand);
             rootCommand.Add(utilityCommand);

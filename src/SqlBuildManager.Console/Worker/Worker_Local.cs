@@ -11,7 +11,7 @@ using SqlBuildManager.Console.ContainerApp;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Kubernetes;
 using SqlBuildManager.Console.Queue;
-using SqlBuildManager.Console.Shared;
+using SqlBuildManager.Console.ContainerShared;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;

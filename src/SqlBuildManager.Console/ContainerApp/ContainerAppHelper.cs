@@ -2,7 +2,7 @@
 using SqlBuildManager.Console.Arm;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.ContainerApp.Internal;
-using SqlBuildManager.Console.Shared;
+using SqlBuildManager.Console.ContainerShared;
 using System;
 using System.IO;
 using System.Text;
@@ -69,19 +69,19 @@ namespace SqlBuildManager.Console.ContainerApp
                 if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
                     secrets.Add("password", cmdLine.AuthenticationArgs.Password);
-                    secretRefs.Add("Sbm_Password", "password");
+                    secretRefs.Add(ContainerEnvVariables.Password, "password");
                 }
 
                 if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
                 {
                     secrets.Add("username", cmdLine.AuthenticationArgs.UserName);
-                    secretRefs.Add("Sbm_UserName", "username");
+                    secretRefs.Add(ContainerEnvVariables.UserName, "username");
                 }
 
                 if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
                 {
                     secrets.Add("storageaccountkey", cmdLine.ConnectionArgs.StorageAccountKey);
-                    secretRefs.Add("Sbm_StorageAccountKey", "storageaccountkey");
+                    secretRefs.Add(ContainerEnvVariables.StorageAccountKey, "storageaccountkey");
                 }
                
             }
@@ -89,18 +89,18 @@ namespace SqlBuildManager.Console.ContainerApp
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
                 secrets.Add("eventhubconnectionstring", cmdLine.ConnectionArgs.EventHubConnectionString);
-                secretRefs.Add("Sbm_EventHubConnectionString", "eventhubconnectionstring");
+                secretRefs.Add(ContainerEnvVariables.EventHubConnectionString, "eventhubconnectionstring");
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 secrets.Add("servicebustopicconnectionstring", cmdLine.ConnectionArgs.ServiceBusTopicConnectionString);
-                secretRefs.Add("Sbm_ServiceBusTopicConnectionString", "servicebustopicconnectionstring");
+                secretRefs.Add(ContainerEnvVariables.ServiceBusTopicConnectionString, "servicebustopicconnectionstring");
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
             {
                 secrets.Add("storageaccountname", cmdLine.ConnectionArgs.StorageAccountName);
-                secretRefs.Add("Sbm_StorageAccountName", "storageaccountname");
+                secretRefs.Add(ContainerEnvVariables.StorageAccountName, "storageaccountname");
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer) && !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryUserName))
@@ -115,30 +115,39 @@ namespace SqlBuildManager.Console.ContainerApp
         private static Dictionary<string, string> GetParametersDictionary(CommandLineArgs cmdLine)
         {
             var parms = new Dictionary<string, string>();
-            parms.Add("Sbm_JobName", cmdLine.JobName);
-            parms.Add("Sbm_PackageName", Path.GetFileName(cmdLine.BuildFileName));
+            parms.Add(ContainerEnvVariables.JobName, cmdLine.JobName);
+            parms.Add(ContainerEnvVariables.PackageName, Path.GetFileName(cmdLine.BuildFileName));
             if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDacpac))
             {
-                parms.Add("Sbm_DacpacName", Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac));
+                parms.Add(ContainerEnvVariables.DacpacName, Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac));
             }
-            parms.Add("Sbm_Concurrency", cmdLine.Concurrency.ToString());
-            parms.Add("Sbm_ConcurrencyType", cmdLine.ConcurrencyType.ToString());
-            parms.Add("Sbm_KeyVaultName", cmdLine.ConnectionArgs.KeyVaultName);
+            parms.Add(ContainerEnvVariables.Concurrency, cmdLine.Concurrency.ToString());
+            parms.Add(ContainerEnvVariables.ConcurrencyType, cmdLine.ConcurrencyType.ToString());
+            parms.Add(ContainerEnvVariables.KeyVaultName, cmdLine.ConnectionArgs.KeyVaultName);
 
             if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
             {
-                parms.Add("Sbm_IdentityClientId", cmdLine.IdentityArgs.ClientId);
+                parms.Add(ContainerEnvVariables.IdentityClientId, cmdLine.IdentityArgs.ClientId);
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceGroup))
             {
-                parms.Add("Sbm_IdentityResourceGroup", cmdLine.IdentityArgs.ResourceGroup);
+                parms.Add(ContainerEnvVariables.IdentityResourceGroup, cmdLine.IdentityArgs.ResourceGroup);
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
             {
-                parms.Add("Sbm_IdentityName", cmdLine.IdentityArgs.IdentityName);
+                parms.Add(ContainerEnvVariables.IdentityName, cmdLine.IdentityArgs.IdentityName);
             }
-            parms.Add("Sbm_AllowObjectDelete", cmdLine.AllowObjectDelete.ToString());
-            parms.Add("Sbm_AuthType", cmdLine.AuthenticationArgs.AuthenticationType.ToString());
+            parms.Add(ContainerEnvVariables.AllowObjectDelete, cmdLine.AllowObjectDelete.ToString());
+            parms.Add(ContainerEnvVariables.AuthType, cmdLine.AuthenticationArgs.AuthenticationType.ToString());
+
+            if (cmdLine.QueryFile != null)
+            {
+                parms.Add(ContainerEnvVariables.QueryFile, cmdLine.QueryFile.Name);
+            }
+            if (cmdLine.OutputFile != null)
+            {
+                parms.Add(ContainerEnvVariables.OutputFile, cmdLine.OutputFile.Name);
+            }
 
             return parms;
 

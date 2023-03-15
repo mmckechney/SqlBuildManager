@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using SqlBuildManager.Console.Arm;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.ContainerShared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -121,7 +122,7 @@ namespace SqlBuildManager.Console.Aci
                 imageName = $"{cmdLine.ContainerRegistryArgs.RegistryServer}/{imageName}";
             }
 
-            var envVariables = GetEnvironmentVariables(cmdLine);
+            var envVariables = GetContainerEnvironmentVariables(cmdLine);
             for (int i = 0; i < cmdLine.AciArgs.ContainerCount; i++)
             {
                 var containerRequests = new ContainerResourceRequestsContent(1.0, 1.0);
@@ -196,21 +197,30 @@ namespace SqlBuildManager.Console.Aci
             }
 
         }
-        internal static List<ContainerEnvironmentVariable> GetEnvironmentVariables(CommandLineArgs cmdLine)
+        internal static List<ContainerEnvironmentVariable> GetContainerEnvironmentVariables(CommandLineArgs cmdLine)
         {
             var lst = new List<ContainerEnvironmentVariable>();
-            lst.Add(new ContainerEnvironmentVariable("Sbm_KeyVaultName") { Value = cmdLine.ConnectionArgs.KeyVaultName });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_DacpacName") { Value = Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac) });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_EventHubConnectionString") { Value = cmdLine.ConnectionArgs.EventHubConnectionString });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_JobName") { Value = cmdLine.JobName });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_ServiceBusTopicConnectionString") { Value = cmdLine.ConnectionArgs.ServiceBusTopicConnectionString });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_PackageName") { Value = Path.GetFileName(cmdLine.BuildFileName) });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_Concurrency") { Value = cmdLine.Concurrency.ToString() });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_AuthType") { Value = cmdLine.AuthenticationArgs.AuthenticationType.ToString() });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_ConcurrencyType") { Value = cmdLine.ConcurrencyType.ToString() });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_AllowObjectDelete") { Value = cmdLine.AllowObjectDelete.ToString() });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_IdentityClientId") { Value = cmdLine.IdentityArgs.ClientId.ToString() });
-            lst.Add(new ContainerEnvironmentVariable("Sbm_StorageAccountName") { Value = cmdLine.ConnectionArgs.StorageAccountName });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.KeyVaultName) { Value = cmdLine.ConnectionArgs.KeyVaultName });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.DacpacName) { Value = Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac) });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.EventHubConnectionString) { Value = cmdLine.ConnectionArgs.EventHubConnectionString });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.JobName) { Value = cmdLine.JobName });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString) { Value = cmdLine.ConnectionArgs.ServiceBusTopicConnectionString });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.PackageName) { Value = Path.GetFileName(cmdLine.BuildFileName) });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.Concurrency) { Value = cmdLine.Concurrency.ToString() });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AuthType) { Value = cmdLine.AuthenticationArgs.AuthenticationType.ToString() });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.ConcurrencyType) { Value = cmdLine.ConcurrencyType.ToString() });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete) { Value = cmdLine.AllowObjectDelete.ToString() });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityClientId) { Value = cmdLine.IdentityArgs.ClientId.ToString() });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.StorageAccountName) { Value = cmdLine.ConnectionArgs.StorageAccountName });
+
+            if (cmdLine.QueryFile != null)
+            {
+                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.QueryFile) { Value = cmdLine.QueryFile.Name });
+            }
+            if (cmdLine.OutputFile != null)
+            {
+                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.OutputFile) { Value = cmdLine.OutputFile.Name });
+            }
 
             return lst;
         }
@@ -286,6 +296,11 @@ namespace SqlBuildManager.Console.Aci
 
             return aciResult;
         }
+
+        #region Container Worker Methods
+
+
+        #endregion
 
     }
 }

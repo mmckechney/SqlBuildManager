@@ -3,8 +3,9 @@ using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using System;
+using System.IO;
 
-namespace SqlBuildManager.Console.Shared
+namespace SqlBuildManager.Console.ContainerShared
 {
 
     internal class EnvironmentVariableHelper
@@ -173,6 +174,28 @@ namespace SqlBuildManager.Console.Shared
                     log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.Password}");
                 }
             }
+            
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.QueryFile);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.QueryFile = new FileInfo(tmp);
+            }
+            else
+            {
+                log.LogInformation($"Unable to read environment variable {ContainerEnvVariables.QueryFile}");
+            }
+            
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.OutputFile);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.OutputFile = new FileInfo(tmp);
+            }
+            else
+            {
+                log.LogInformation($"Unable to read environment variable {ContainerEnvVariables.OutputFile}");
+            }
+
+
             return cmdLine;
         }
     }

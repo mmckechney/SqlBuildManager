@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Console.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,12 +85,12 @@ namespace SqlBuildManager.Console.KeyVault
             var keys = new List<string>();
             var kvName = cmdLine.ConnectionArgs.KeyVaultName;
 
-            if (ConnectionValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
+            if (ConnectionStringValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
                 keys.Add(SaveSecret(kvName, KeyVaultHelper.EventHubConnectionString, cmdLine.ConnectionArgs.EventHubConnectionString));
             }
 
-            if (ConnectionValidator.IsServiceBusConnectionString(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            if (ConnectionStringValidator.IsServiceBusConnectionString(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 keys.Add(SaveSecret(kvName, KeyVaultHelper.ServiceBusTopicConnectionString, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString));
             }
@@ -108,6 +107,12 @@ namespace SqlBuildManager.Console.KeyVault
         }
         public static (bool, CommandLineArgs) GetSecrets(CommandLineArgs cmdLine)
         {
+            if (cmdLine.KeyVaultSecretsRetrieved)
+            {
+                log.LogInformation("KeyVault Secrets already retrieved");
+                return (true, cmdLine);
+            }
+            
             if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
                 log.LogInformation("No Key Vault name supplied. Unable to retrieve secrets");
@@ -188,6 +193,7 @@ namespace SqlBuildManager.Console.KeyVault
             }
             if (retrieved.Count > 0)
             {
+                cmdLine.KeyVaultSecretsRetrieved = true;
                 log.LogInformation($"Retrieved secrets from Key Vault: {string.Join(", ", retrieved)}");
                 return (true, cmdLine);
             }

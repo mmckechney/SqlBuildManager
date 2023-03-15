@@ -454,7 +454,7 @@ namespace SqlBuildManager.Console
         public static int ValidateQueryArguments(ref CommandLineArgs cmdLine)
         {
 
-            if (!cmdLine.QueryFile.Exists)
+            if (cmdLine.QueryFile == null || !cmdLine.QueryFile.Exists)
             {
                 log.LogError("The --queryfile file was not found. Please check the name or path and try again");
                 return 2;

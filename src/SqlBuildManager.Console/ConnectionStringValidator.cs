@@ -1,6 +1,6 @@
-﻿namespace SqlBuildManager.Console.Shared
+﻿namespace SqlBuildManager.Console
 {
-    public class ConnectionValidator
+    public class ConnectionStringValidator
     {
         public static bool IsEventHubConnectionString(string input)
         {

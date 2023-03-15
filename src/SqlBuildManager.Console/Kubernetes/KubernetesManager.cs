@@ -2,7 +2,6 @@
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Kubernetes.Yaml;
-using SqlBuildManager.Console.Shared;
 using SqlSync.Connection;
 using System;
 using System.IO;
@@ -201,13 +200,13 @@ namespace SqlBuildManager.Console.Kubernetes
             var yml = new Yaml.SecretYaml(k8SecretsName);
 
 
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.EventHubConnectionString))
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && ConnectionStringValidator.IsServiceBusConnectionString(args.ConnectionArgs.EventHubConnectionString))
             {
                 yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString.EncodeBase64();
                 secretAdded = true;
             }
 
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && ConnectionStringValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString.EncodeBase64();
                 secretAdded = true;
@@ -250,7 +249,6 @@ namespace SqlBuildManager.Console.Kubernetes
 
 
         }
-
         internal static string GenerateConfigmapYaml(CommandLineArgs args)
         {
             string k8jobname = KubernetesJobName(args);
@@ -275,11 +273,11 @@ namespace SqlBuildManager.Console.Kubernetes
                 yml.data.OutputFile = args.OutputFile.Name;
             }
 
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && !ConnectionValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.ServiceBusTopicConnectionString) && !ConnectionStringValidator.IsServiceBusConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 yml.data.ServiceBusTopicConnectionString = args.ConnectionArgs.ServiceBusTopicConnectionString;
             }
-            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && !ConnectionValidator.IsEventHubConnectionString(args.ConnectionArgs.EventHubConnectionString))
+            if (!string.IsNullOrWhiteSpace(args.ConnectionArgs.EventHubConnectionString) && !ConnectionStringValidator.IsEventHubConnectionString(args.ConnectionArgs.EventHubConnectionString))
             {
                 yml.data.EventHubConnectionString = args.ConnectionArgs.EventHubConnectionString;
             }
@@ -295,7 +293,6 @@ namespace SqlBuildManager.Console.Kubernetes
             return yamlString;
 
         }
-
         internal static string KubernetesJobName(CommandLineArgs args)
         {
             return $"sbm-{args.JobName.ToLower()}-job";

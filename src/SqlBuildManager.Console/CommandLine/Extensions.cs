@@ -158,6 +158,7 @@ namespace SqlBuildManager.Console.CommandLine
                         case "SettingsFileKey":
                         case "ContainerAppArgs":
                         case "ContainerRegistryArgs":
+                        case "KeyVaultSecretsRetrieved":
                             //ignore these
                             break;
 

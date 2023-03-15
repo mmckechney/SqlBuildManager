@@ -1,9 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.ContainerShared;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Kubernetes;
+using SqlBuildManager.Console.Queue;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -53,7 +56,7 @@ namespace SqlBuildManager.Console
                 cmdLine.PlatinumDacpac = platinumdacpac.FullName;
             }
             cmdLine.MultiDbRunConfigFileName = @override.FullName;
-
+            cmdLine.KubernetesArgs.RunningInKubernetes = true;
             //Upload 'prep'
             (var retVal, cmdLine) = await KubernetesUploadBuildPackage(cmdLine, null, null, packagename, platinumdacpac, force);
             if (retVal != 0)
@@ -87,7 +90,7 @@ namespace SqlBuildManager.Console
             }
 
             //Enqueue
-            int retVal = await EnqueueContainerOverrideTargets(cmdLine, secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, @override);
+            int retVal = await KubernetesEnqueueOverrideTargets(cmdLine, secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, @override);
             if (retVal != 0)
             {
                 log.LogError("There was a problem enqueuing the database targest to Service Bus");
@@ -157,13 +160,13 @@ namespace SqlBuildManager.Console
             log.LogInformation("Running Kubernetes Query Execution...");
 
             //Upload 'prep'
-            (var retVal, string tmp) = await ValidateAndUploadContainerQueryToStorage(cmdLine, force);
+            (var retVal, string tmp) = await GenericContainer.ValidateAndUploadContainerQueryToStorage(cmdLine, force);
             if (!retVal)
             {
                 log.LogError("There was a problem uploading the query file to Azure storage");
                 return -1;
             }
-
+            cmdLine.KubernetesArgs.RunningInKubernetes = true;
             success = await KubernetesApplyJobs(cmdLine, @override, cleanupOnFailure, stream, unittest);
 
             var storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
@@ -280,7 +283,7 @@ namespace SqlBuildManager.Console
             //    return 1;
 
             //}
-            (bool retVal, string sbmName) = await ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
+            (bool retVal, string sbmName) = await GenericContainer.ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
             if (!retVal)
             {
                 return (1, cmdLine);
@@ -311,5 +314,95 @@ namespace SqlBuildManager.Console
 
         }
 
+        internal static async Task<int> KubernetesEnqueueOverrideTargets(CommandLineArgs cmdLine, FileInfo secretsFile, FileInfo runtimeFile, string keyvaultname, string jobname, ConcurrencyType concurrencytype, string servicebustopicconnection, FileInfo Override)
+        {
+            bool valid;
+            if (cmdLine == null)
+            {
+                cmdLine = new CommandLineArgs();
+            }
+            (var x, cmdLine) = Init(cmdLine);
+            if (secretsFile != null && runtimeFile != null)
+            {
+                cmdLine = KubernetesManager.SetCmdLineArgsFromSecretsAndConfigmap(cmdLine, secretsFile.Name, runtimeFile.Name);
+                (valid, cmdLine) = Validation.ValidateContainerQueueArgs(cmdLine, keyvaultname, jobname, concurrencytype, servicebustopicconnection);
+                if (!valid)
+                {
+                    return 1;
+                }
+            }
+            //TODO: validate jobname format
+
+            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(Override.FullName, null, out MultiDbData multiData, out string[] errorMessages);
+            if (tmpValReturn != 0)
+            {
+                log.LogError(String.Join(";", errorMessages));
+                return tmpValReturn;
+            }
+            log.LogInformation("Sending database targets to Service Bus");
+            var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
+            int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
+            if (messages > 0)
+            {
+                log.LogInformation($"Successfully sent {messages} targets to Service Bus queue");
+                return 0;
+            }
+            else
+            {
+                log.LogError("Error sending messages to Service Bus queue");
+                return 2355;
+            }
+        }
+
+        #region Container Worker Methods
+        internal static async Task<int> KubernetesWorker_RunQueueBuild(CommandLineArgs cmdLine)
+        {
+            (bool success, cmdLine) = KubernetesWorker_PrepCommandLine(cmdLine);
+            if (!success)
+            {
+                return -1;
+            }
+            return await GenericContainer.GenericContainerWorker_RunQueueBuild(cmdLine);
+        }
+        private static (bool, CommandLineArgs) KubernetesWorker_PrepCommandLine(CommandLineArgs cmdLine)
+        {
+            (var x, cmdLine) = Init(cmdLine);
+            SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+            cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            if (!Directory.Exists(cmdLine.RootLoggingPath))
+            {
+                Directory.CreateDirectory(cmdLine.RootLoggingPath);
+            }
+            cmdLine.RunningAsContainer = true;
+            bool success = true;
+
+            //Configmap params
+            (success, cmdLine) = KubernetesManager.ReadConfigmapParameters(cmdLine);
+            if (!success)
+            {
+                log.LogError("Unable to acquire runtime values. Terminating container.");
+                return (false, cmdLine);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                (bool discard, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+            }
+            else
+            {
+                (success, cmdLine) = KubernetesManager.ReadOpaqueSecrets(cmdLine);
+            }
+            return (success, cmdLine);
+        }
+        internal static async Task<int> KubernetesWorker_RunQueueQuery(CommandLineArgs cmdLine)
+        {
+            (bool success, cmdLine) = KubernetesWorker_PrepCommandLine(cmdLine);
+            if (!success)
+            {
+                return -1;
+            }
+            return await GenericContainer.GenericContainerWorker_RunQueueQuery(cmdLine);
+        }
+        #endregion
     }
 }

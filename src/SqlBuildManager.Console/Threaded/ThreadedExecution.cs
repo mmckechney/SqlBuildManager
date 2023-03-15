@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Management.Smo;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Queue;
-using SqlBuildManager.Console.Shared;
+using SqlBuildManager.Console.ContainerShared;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
@@ -82,7 +82,7 @@ namespace SqlBuildManager.Console.Threaded
         /// <summary>
         /// "unique" identifier for the run. 
         /// </summary>
-        internal static string RunID
+        public static string RunID
         {
             get
             {
