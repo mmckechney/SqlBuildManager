@@ -5,6 +5,7 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -29,6 +30,8 @@ namespace SqlBuildManager.Console.Events
         private int databaseErrorMessages = 0;
         private int eventsScanned = 0;
         private int workersCompleted = 0;
+        private List<string> committedDbs = new();
+        private List<string> errorDbs = new();
 
 
         private void IncrementDatabaseCommitMessages()
@@ -170,6 +173,7 @@ namespace SqlBuildManager.Console.Events
 
         private Task ProcessEventHandler(ProcessEventArgs eventArgs)
         {
+            string dbName;
             try
             {
                 IncrementEventsScanned();
@@ -181,11 +185,21 @@ namespace SqlBuildManager.Console.Events
                     {
                         case LogType.Commit:
                             if (StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(31)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
-                            IncrementDatabaseCommitMessages();
+                            dbName = $"{msg.Properties.LogMsg.ServerName.ToLower().Trim()}:{msg.Properties.LogMsg.DatabaseName.ToLower().Trim()}";                            
+                            if(!committedDbs.Contains(dbName))
+                            {
+                                committedDbs.Add(dbName);
+                                IncrementDatabaseCommitMessages();
+                            }
                             break;
                         case LogType.Error:
                             if (StreamEvents) log.LogError($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(31)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
-                            IncrementDatabaseErrorsMessages();
+                            dbName = $"{msg.Properties.LogMsg.ServerName.ToLower().Trim()}:{msg.Properties.LogMsg.DatabaseName.ToLower().Trim()}";
+                            if (!errorDbs.Contains(dbName))
+                            {
+                                errorDbs.Add(dbName);
+                                IncrementDatabaseErrorsMessages();
+                            }
                             break;
                         case LogType.WorkerCompleted:
                             if (StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(25)}{msg.Properties.LogMsg.Message.PadRight(31)}");

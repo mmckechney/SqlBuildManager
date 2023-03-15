@@ -5,8 +5,9 @@
 - *ADDED:* New `sbm utilty override` command to generate an override cfg file from a SQL script file.
 - *ADDED:* New `sbm k8s query` command to run a query across your database fleet using Kubernetes as a compute platform
 - *ADDED:* New `sbm aci run` command to orchrstrate full ACI process (prep, enqueue, deploy and monitor commands)
+- *ADDED:* New `sbm aci query` command to run a query across your database fleet using ACI as a compute platform
 - *UPDATED:* The `sbm batch query` command now fully supports reading messages from Service Bus as well as using Managed Identity
-- *UPDATED:* *BREAKING CHANGE*: Changed ACI deployment to use SDK vs custom ARM templates. Review new command arguments for `sbm aci prep` and `sbm aci deploy`
+- *UPDATED:* *BREAKING CHANGE*: Changed ACI deployment to use SDK vs custom ARM templates. Review new command arguments for `sbm aci prep` and `sbm aci deploy` (and consider using new `sbm aci run` command)
 - *ADDED:* New `--vnetresourcegroup` (`--vnetrg`) argument to specify the resource group for the VNET. (If not provided, will be infered from compute resource group)
 
 ### Version 15.1.0-beta

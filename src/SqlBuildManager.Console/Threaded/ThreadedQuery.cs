@@ -100,9 +100,6 @@ namespace SqlBuildManager.Console.Threaded
             }
             bool messagesSinceLastLoop = true;
             int noMessagesCounter = 0;
-
-            //Container apps should poll continually... they will be managed by the Keda triggers
-            bool runContinually = (cmdLine.ContainerAppArgs != null && cmdLine.ContainerAppArgs.RunningAsContainerApp);
             while (true)
             {
                 var messages = await qManager.GetDatabaseTargetFromQueue(cmdLine.Concurrency, cmdLine.ConcurrencyType);
@@ -112,6 +109,8 @@ namespace SqlBuildManager.Console.Threaded
                     if (cmdLine.RunningAsContainer)
                     {
                         log.LogInformation("No messages found in Service Bus Topic. Waiting 10 seconds to check again...");
+                        var msg = new LogMsg() { RunId = ThreadedExecution.RunID, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
+                        threadLogger.WriteToLog(msg);
                         if (messagesSinceLastLoop)
                         {
                             await CloudStorage.StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
@@ -119,7 +118,7 @@ namespace SqlBuildManager.Console.Threaded
                         }
                         else
                         {
-                            if (noMessagesCounter == 4 && !runContinually)
+                            if (noMessagesCounter == 4)
                             {
                                 log.LogInformation("No messages found in Service Bus Topic after 4 retries. Terminating Container.");
                                 break;

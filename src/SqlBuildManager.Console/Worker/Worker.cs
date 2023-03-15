@@ -282,7 +282,7 @@ namespace SqlBuildManager.Console
         internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool stream, DateTime? utcStartDate, bool unittest = false, bool checkAciState = false)
         {
             Worker.activeServiceBusMonitoring = true;
-            var workerCount = GetWorkerCount(cmdLine);
+            var workersConfigured = GetWorkerCount(cmdLine);
             CancellationTokenSource ehCancellationSource = new CancellationTokenSource();
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
@@ -316,13 +316,13 @@ namespace SqlBuildManager.Console
             {
                 var lines = File.ReadAllLines(cmdLine.MultiDbRunConfigFileName);
                 targets = lines.Where(l => !string.IsNullOrWhiteSpace(l)).Count();
-                if (workerCount == 0)
+                if (workersConfigured == 0)
                 {
                     System.Console.WriteLine($"Monitoring for the status of {targets} databases");
                 }
                 else
                 {
-                    System.Console.WriteLine($"Monitoring for the status of {targets} databases and {workerCount} workers");
+                    System.Console.WriteLine($"Monitoring for the status of {targets} databases and {workersConfigured} workers");
                 }
             }
 
@@ -334,7 +334,7 @@ namespace SqlBuildManager.Console
             int lastEventCount = -1;
             int lastWorkers = -1;
             int events = 0;
-            int workers = 0;
+            int workersCompleted = 0;
             int error = 0, commit = 0;
             bool firstLoop = true;
             int cursorStepBack = (targets == 0) ? 3 : 4;
@@ -356,7 +356,7 @@ namespace SqlBuildManager.Console
 
                 var lines = new List<CursorStatusItem>();
                 messageCount = await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
-                (commit, error, events, workers) = ehandler.GetCommitErrorScannedAndWorkerCompleteCounts();
+                (commit, error, events, workersCompleted) = ehandler.GetCommitErrorScannedAndWorkerCompleteCounts();
                 if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
                 {
 
@@ -366,7 +366,7 @@ namespace SqlBuildManager.Console
                         new CursorStatusItem(){Label= "Remaining Messages:", Counter = messageCount},
                         new CursorStatusItem(){Label= "Database Commits:", Counter = commit},
                         new CursorStatusItem(){Label= "Database Errors:", Counter = error},
-                        new CursorStatusItem(){Label= "Workers Complete:", Counter = workers}
+                        new CursorStatusItem(){Label= "Workers Complete:", Counter = workersCompleted}
                     };
                     if (targets > 0)
                     {
@@ -380,9 +380,6 @@ namespace SqlBuildManager.Console
                 if (unittest) firstLoop = true; //Won't have a console to change position for unit tests
                 SetCursorStatus(lines, firstLoop, stream);
 
-
-
-
                 System.Threading.Thread.Sleep(500);
                 if (messageCount == 0)
                 {
@@ -393,7 +390,7 @@ namespace SqlBuildManager.Console
                     zeroMessageCounter = 0; unitTestLoops = 0;
                 }
                 
-                if (targets == 0 && zeroMessageCounter >= 20 && lastCommitCount == commit && lastErrorCount == error && lastEventCount == events && (workerCount != 0 && lastWorkers == workers) && !unittest) //not seeing progress
+                if (targets == 0 && zeroMessageCounter >= 20 && lastCommitCount == commit && lastErrorCount == error && lastEventCount == events && (workersConfigured != 0 && lastWorkers == workersCompleted) && !unittest) //not seeing progress
                 {
                     System.Console.WriteLine();
                     System.Console.Write("Message count has remained 0, do you want to continue monitoring (Y/n)");
@@ -418,21 +415,26 @@ namespace SqlBuildManager.Console
                         break;
                     }
                 }
-                else if (targets != 0 && (commit + error == targets)) //we know the target count and we have received updates from them all)
+                else if (lastCommitCount != commit || lastErrorCount != error || lastWorkers != workersCompleted) //reset the counters if we still see progress.
                 {
-                    if (workerCount == 0)
+                    zeroMessageCounter = 0;
+                    unitTestLoops = 0;
+                }
+                else if (targets != 0 && (commit + error >= targets)) //we know the target count and we have received updates from them all)
+                {
+                    if (workersConfigured == 0)
                     {
                         System.Console.WriteLine();
                         System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                         break;
                     }
-                    else if (workerCount == workers)
+                    else if (workersConfigured == workersCompleted)
                     {
                         System.Console.WriteLine($"Received status on {targets} databases. Complete!");
-                        System.Console.WriteLine($"All {workers} workers have completed.");
+                        System.Console.WriteLine($"All {workersCompleted} workers have completed.");
                         break;
                     }
-                    else if(workerCount < workers && zeroMessageCounter >= 20 && !string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName)) //Special case for Container Apps which may have not needed to go to max scale...
+                    else if(workersCompleted > 0 && workersCompleted < workersConfigured && zeroMessageCounter >= 25 && !string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName)) //Special case for Container Apps which may have not needed to go to max scale...
                     {
                         System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                         System.Console.WriteLine($"Completing ContainerApp execution.");
@@ -440,23 +442,19 @@ namespace SqlBuildManager.Console
 
                     }
                 }
-                else if (lastCommitCount != commit || lastErrorCount != error) //reset the counters if we still see progress.
-                {
-                    zeroMessageCounter = 0;
-                    unitTestLoops = 0;
-                }
+                
                 else if (unittest && unitTestLoops == 300)
                 {
                     System.Console.WriteLine();
                     log.LogError("Unit test taking too long! There is likely something wrong with the containers.");
                     return -1;
                 }
-
-
                 lastErrorCount = error;
                 lastCommitCount = commit;
                 lastEventCount = events;
+                lastWorkers = workersCompleted;
                 firstLoop = false;
+                
                 unitTestLoops++;
             }
 

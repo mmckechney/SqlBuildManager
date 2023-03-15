@@ -26,6 +26,7 @@ namespace SqlBuildManager.Console
         }
         internal static async Task<int> ContainerAppsRun(CommandLineArgs cmdLine, bool unittest, bool stream, bool monitor, bool deleteWhenDone, bool force)
         {
+            (var x, cmdLine) = Init(cmdLine);
             FileInfo packageFileInfo = string.IsNullOrWhiteSpace(cmdLine.BuildFileName) ? null : new FileInfo(cmdLine.BuildFileName);
             FileInfo dacpacFileInfo = string.IsNullOrWhiteSpace(cmdLine.DacpacName) ? null : new FileInfo(cmdLine.DacpacName);
             var res = await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packageFileInfo, dacpacFileInfo, force);
@@ -140,9 +141,6 @@ namespace SqlBuildManager.Console
             {
                 Directory.CreateDirectory(cmdLine.RootLoggingPath);
             }
-            //Set this so that the threaded service bus loop doesn't terminate
-
-
             return await GenericContainer.GenericContainerWorker_RunQueueBuild(cmdLine);
         }
         #endregion

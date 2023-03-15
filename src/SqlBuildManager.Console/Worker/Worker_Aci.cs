@@ -41,7 +41,7 @@ namespace SqlBuildManager.Console
             {
                 cmdLine.PlatinumDacpac = platinumDacpac.FullName;
             }
-
+            (var x, cmdLine) = Init(cmdLine);
             var res = await AciPrepAndUploadBuildPackage(cmdLine, packageName, platinumDacpac, force);
             if (res != 0)
             {
