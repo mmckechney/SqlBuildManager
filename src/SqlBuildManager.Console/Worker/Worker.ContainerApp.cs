@@ -15,13 +15,15 @@ namespace SqlBuildManager.Console
         internal static int SaveAndEncryptContainerAppSettings(CommandLineArgs cmdLine, bool clearText)
         {
             cmdLine.BatchArgs = null;
+            cmdLine.NetworkArgs = null;
+            cmdLine.AciArgs = null;
+            cmdLine.KubernetesArgs = null;
             cmdLine.ConnectionArgs.BatchAccountKey = null;
             cmdLine.ConnectionArgs.BatchAccountName = null;
             cmdLine.ConnectionArgs.BatchAccountUrl = null;
-            cmdLine.AciArgs = null;
             cmdLine.IdentityArgs.PrincipalId = null;
             cmdLine.IdentityArgs.ResourceId = null;
-            cmdLine.KubernetesArgs = null;
+            
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
         internal static async Task<int> ContainerAppsRun(CommandLineArgs cmdLine, bool unittest, bool stream, bool monitor, bool deleteWhenDone, bool force)

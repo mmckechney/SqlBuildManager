@@ -11,6 +11,15 @@ namespace SqlBuildManager.Console
 {
     internal partial class Worker
     {
+        internal static int SaveAndEncryptBatchSettings(CommandLineArgs cmdLine, bool clearText)
+        {
+            cmdLine.AciArgs = null;
+            cmdLine.ContainerAppArgs = null;
+            cmdLine.KubernetesArgs = null;
+            cmdLine.ContainerRegistryArgs = null;
+
+            return SaveAndEncryptSettings(cmdLine, clearText);
+        }
         internal static int RunBatchCleanUp(CommandLineArgs cmdLine)
         {
             bool initSuccess = false;

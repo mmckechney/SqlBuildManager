@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
 using SqlSync.Connection;
@@ -63,24 +64,17 @@ namespace SqlBuildManager.Console
                 cmdLine.AuthenticationArgs.Password = null;
             }
 
-            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
-            {
-                //Clean out ACI, Container App and Container Registry for Batch runs
-                cmdLine.AciArgs = null;
-                cmdLine.ContainerAppArgs = null;
-                cmdLine.ContainerRegistryArgs = null;
-                cmdLine.KubernetesArgs = null;
-            }
-
             if (!clearText)
             {
                 cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);
             }
 
-            var mystuff = JsonConvert.SerializeObject(cmdLine, Formatting.Indented, new JsonSerializerSettings
+            var mystuff = JsonSerializer.Serialize<CommandLineArgs>(cmdLine.NullEmptyStrings(), new JsonSerializerOptions
             {
-                NullValueHandling = NullValueHandling.Ignore
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull | JsonIgnoreCondition.WhenWritingDefault
             });
+
 
             try
             {

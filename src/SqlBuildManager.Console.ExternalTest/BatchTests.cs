@@ -1,5 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,8 @@ using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.ExternalTest
@@ -1093,9 +1094,10 @@ namespace SqlBuildManager.Console.ExternalTest
 
             CommandLineArgs cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile) };
             cmdLine.ConnectionArgs.EventHubConnectionString = null;
-            var updatedJson = JsonConvert.SerializeObject(cmdLine, Formatting.Indented, new JsonSerializerSettings
+            var updatedJson = JsonSerializer.Serialize<CommandLineArgs>(cmdLine, new JsonSerializerOptions
             {
-                NullValueHandling = NullValueHandling.Ignore
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull | JsonIgnoreCondition.WhenWritingDefault
             });
             File.WriteAllText(settingFileNoEventHub, updatedJson);
             RootCommand rootCommand = CommandLineBuilder.SetUp();

@@ -5,7 +5,6 @@ param
     [string] $resourceGroupName,
     [string] $prefix,
     [string] $imageTag,
-    [bool] $withContainerRegistry,
     [string] $sqlUserName,
     [string] $sqlPassword
 )

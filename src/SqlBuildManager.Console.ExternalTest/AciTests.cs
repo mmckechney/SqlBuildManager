@@ -3,6 +3,7 @@ using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -64,7 +65,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 //get the size of the log file before we start
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
-                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                var parser = CommandLineBuilder.GetCommandParser();
                 string jobName = TestHelper.GetUniqueJobName("aci");
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
@@ -79,10 +80,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--containercount", containerCount.ToString(),
                 "--concurrency", concurrency.ToString(),
                 "--unittest", "true",
-                "--monitor", "true"
+                "--monitor", "true",
+                "--stream"
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = parser.InvokeAsync(args);
                 val.Wait();
                 int result = val.Result;
                Assert.AreEqual(0, result);
@@ -160,7 +162,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrency", concurrency.ToString(),
                 "--override", overrideFile,
                 "--unittest", "true",
-                "--monitor", "true"
+                "--monitor", "true",
+                "--stream"
             };
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
@@ -238,7 +241,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrency", concurrency.ToString(),
                 "--override", overrideFile,
                 "--unittest", "true",
-                "--monitor", "true"
+                "--monitor", "true",
+                "--stream"
             };
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
@@ -319,7 +323,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrency", concurrency.ToString(),
                 "--override", overrideFile,
                 "--unittest", "true",
-                "--monitor", "true"
+                "--monitor", "true",
+                "--stream"
             };
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
@@ -412,7 +417,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrency", concurrency.ToString(),
                 "--override", minusFirst,
                 "--unittest", "true",
-                "--monitor", "true"
+                "--monitor", "true",
+                "--stream"
             };
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
@@ -514,7 +520,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrency", concurrency.ToString(),
                 "--override", minusFirst,
                 "--unittest", "true",
-                "--monitor", "true"
+                "--monitor", "true",
+                "--stream"
             };
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();

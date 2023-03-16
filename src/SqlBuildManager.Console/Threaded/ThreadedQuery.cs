@@ -88,6 +88,7 @@ namespace SqlBuildManager.Console.Threaded
         }
         private async Task<int> ExecuteQueryFromQueue(CommandLineArgs cmdLine, ConnectionData connData, string query, string userName)
         {
+            int waitMs = 5000;
             log.LogInformation("Executing database queries from queued targets.");
             var resultCode = 0;
             var listResultsTempFiles = new List<string>();
@@ -108,7 +109,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     if (cmdLine.RunningAsContainer)
                     {
-                        log.LogInformation("No messages found in Service Bus Topic. Waiting 10 seconds to check again...");
+                        log.LogInformation($"No messages found in Service Bus Topic. Waiting {waitMs / 1000} seconds to check again...");
                         var msg = new LogMsg() { RunId = ThreadedExecution.RunID, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
                         threadLogger.WriteToLog(msg);
                         if (messagesSinceLastLoop)
@@ -126,7 +127,7 @@ namespace SqlBuildManager.Console.Threaded
                             noMessagesCounter++;
                         }
                         messagesSinceLastLoop = false;
-                        System.Threading.Thread.Sleep(10000);
+                        System.Threading.Thread.Sleep(waitMs);
                     }
                     else
                     {

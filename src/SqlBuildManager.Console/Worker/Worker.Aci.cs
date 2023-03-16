@@ -21,12 +21,14 @@ namespace SqlBuildManager.Console
         internal static int SaveAndEncryptAciSettings(CommandLineArgs cmdLine, bool clearText)
         {
             cmdLine.BatchArgs = null;
+            cmdLine.KubernetesArgs = null;
+            cmdLine.ContainerAppArgs = null;
             cmdLine.ConnectionArgs.BatchAccountKey = null;
             cmdLine.ConnectionArgs.BatchAccountName = null;
             cmdLine.ConnectionArgs.BatchAccountUrl = null;
             cmdLine.IdentityArgs.PrincipalId = null;
             cmdLine.IdentityArgs.ResourceId = null;
-            cmdLine.KubernetesArgs = null;
+            
 
             return SaveAndEncryptSettings(cmdLine, clearText);
         }

@@ -1,8 +1,14 @@
-﻿using System;
+﻿using Azure.ResourceManager.Resources.Models;
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.Remoting;
 using System.Text;
 
 
@@ -256,6 +262,104 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 return value;
             }
+        }
+
+
+        public static void SetValues(this CommandLineArgs current, CommandLineArgs incoming)
+        {
+            foreach (System.Reflection.PropertyInfo incomingProp in incoming.GetType().GetProperties())
+            {
+                if(incomingProp.PropertyType.BaseType == typeof(ArgsBase))
+                {
+                    var currentProp = current.GetType().GetProperty(incomingProp.Name);
+                    currentProp.GetValue(current).SetValues(incomingProp.GetValue(incoming), current.DirectPropertyChangeTracker);
+                }
+            }
+        }
+        /// <summary>
+        /// Used to set property values from a twin object, but not overwrite existing values if they have already been directly set
+        /// </summary>
+        /// <typeparam name="T">Type of object</typeparam>
+        /// <param name="current">Parent object that is to be updated (but may have already had properties set directly)</param>
+        /// <param name="incoming">Incoming twin object that will contain values read from a config file. These should not overwrite any existing values that have already been updated.</param>
+        private static void SetValues<T>(this T current, T incoming, List<string> changeTracked)
+        {
+            foreach (System.Reflection.PropertyInfo incomingProp in incoming.GetType().GetProperties())
+            {
+                var typeName = incoming.GetType().Name;
+                if (changeTracked.Contains($"{typeName}.{incomingProp.Name}"))
+                {
+                    continue;
+                }
+
+                if (incomingProp.CanWrite && incomingProp.CanRead && incomingProp.GetValue(incoming) != null)
+                {
+                    var incomingPropType = incomingProp.PropertyType;
+                    var defaultVal = incomingProp.GetCustomAttribute<DefaultValueAttribute>();
+                    var incomingValue = incomingProp.GetValue(incoming);
+
+                    //There is a value coming from the deserialized config file.. so keep checking
+                    if (incomingValue != null)
+                    {
+                        //See if we can skip because it's value is insignificant or a default
+                        if (incomingPropType == typeof(string) && string.IsNullOrWhiteSpace(incomingValue.ToString()))
+                        {
+                            continue;
+                        }
+                        else if (incomingPropType == typeof(int) && (int)incomingValue == 0)
+                        {
+                            continue;
+                        }
+                        else if (defaultVal != null && incomingValue == defaultVal.Value)
+                        {
+                            continue;
+                        }
+                        //If we get here.. we have a meaningful value, we need to see if we can overwrite any existing value that has already been set..
+                        var currentProp = current.GetType().GetProperty(incomingProp.Name);
+                        currentProp.SetValue(current, incomingValue);
+                    }
+                }
+            }
+        }
+        
+        public static CommandLineArgs NullEmptyStrings(this CommandLineArgs obj)
+        {
+            foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
+            {
+                if (property.PropertyType == typeof(string) && property.CanWrite && property.CanRead && property.GetValue(obj) != null && string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
+                {
+                    property.SetValue(obj, null);
+                }
+                else if (
+                    property.PropertyType == typeof(CommandLineArgs.Authentication) ||
+                    property.PropertyType == typeof(CommandLineArgs.Batch) ||
+                    property.PropertyType == typeof(CommandLineArgs.Connections) ||
+                    property.PropertyType == typeof(CommandLineArgs.ContainerApp) ||
+                    property.PropertyType == typeof(CommandLineArgs.ContainerRegistry) ||
+                    property.PropertyType == typeof(CommandLineArgs.Identity) ||
+                    property.PropertyType == typeof(CommandLineArgs.Kubernetes) ||
+                    property.PropertyType == typeof(CommandLineArgs.Network))
+                {
+                    property.SetValue(obj, NullEmptyStrings(property.GetValue(obj)));
+                }
+            }
+
+            return (CommandLineArgs)obj;
+        }
+        private static object NullEmptyStrings(this object obj)
+        {
+            if(obj == null)
+            {
+                return obj;
+            }
+            foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
+            {
+                if (property.PropertyType == typeof(string) && property.CanWrite && property.CanRead && property.GetValue(obj) != null && string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
+                {
+                    property.SetValue(obj, null);
+                }
+            }
+            return obj;
         }
     }
 }

@@ -157,7 +157,7 @@ foreach($auth in $authTypes)
     #$params += ("--authtype", "Password")
     
 
-    #Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow
+    Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow
     Start-Process $sbmExe -ArgumentList ($params + $sbAndEhArgs)
 }
 

@@ -283,6 +283,7 @@ namespace SqlBuildManager.Console.Threaded
         }
         private async Task<int> ExecuteFromQueue(CommandLineArgs cmdLine, string buildRequestedBy, string storageContainerName)
         {
+            int waitMs = 5000;
             qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             bool messagesSinceLastLoop = true;
             int noMessagesCounter = 0;
@@ -294,7 +295,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     if (cmdLine.RunningAsContainer)
                     {
-                        log.LogInformation("No messages found in Service Bus Topic. Waiting 10 seconds to check again...");
+                        log.LogInformation($"No messages found in Service Bus Topic. Waiting {waitMs/1000} seconds to check again...");
                         var msg = new LogMsg() { RunId = ThreadedExecution.RunID, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
                         threadedLog.WriteToLog(msg);
                         if (messagesSinceLastLoop)
@@ -312,7 +313,7 @@ namespace SqlBuildManager.Console.Threaded
                             noMessagesCounter++;
                         }
                         messagesSinceLastLoop = false;
-                        System.Threading.Thread.Sleep(10000);
+                        System.Threading.Thread.Sleep(waitMs);
                     }
                     else
                     {

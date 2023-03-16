@@ -61,12 +61,12 @@ namespace SqlBuildManager.Console
             string error = string.Empty;
 
             //Validate and set the value for the root logging path
-            if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
-            {
-                string msg = "Invalid command line set. Missing --rootloggingpath setting.";
-                log.LogError(msg);
-                return -99;
-            }
+            //if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
+            //{
+            //    string msg = "Invalid command line set. Missing --rootloggingpath setting.";
+            //    log.LogError(msg);
+            //    return -99;
+            //}
 
             //Check that they haven't set --trial=true and --transaction=false
             if (cmdLine.Transactional == false && cmdLine.Trial == true)

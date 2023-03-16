@@ -18,19 +18,24 @@ namespace SqlBuildManager.Console
         internal static int SaveAndEncryptKubernetesSettings(CommandLineArgs cmdLine, bool clearText)
         {
             cmdLine.BatchArgs = null;
+            cmdLine.NetworkArgs = null;
+            cmdLine.AciArgs = null;
+            cmdLine.ContainerAppArgs = null;
+            
             cmdLine.ConnectionArgs.BatchAccountKey = null;
             cmdLine.ConnectionArgs.BatchAccountName = null;
             cmdLine.ConnectionArgs.BatchAccountUrl = null;
-            cmdLine.AciArgs = null;
-            cmdLine.ContainerAppArgs = null;
+            
             cmdLine.IdentityArgs.PrincipalId = null;
             cmdLine.IdentityArgs.ResourceId = null;
             cmdLine.IdentityArgs.IdentityName = null;
             cmdLine.IdentityArgs.ClientId = null;
             cmdLine.IdentityArgs.ResourceGroup = null;
             cmdLine.IdentityArgs.SubscriptionId = null;
+            
             cmdLine.ContainerRegistryArgs.RegistryUserName = null;
             cmdLine.ContainerRegistryArgs.RegistryPassword = null;
+            
             if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
             {
                 cmdLine.KeyVaultName = null;

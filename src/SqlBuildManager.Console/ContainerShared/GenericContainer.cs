@@ -1,36 +1,13 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using Spectre.Console;
-using SqlBuildManager.Console.Aad;
-using SqlBuildManager.Console.Batch;
+﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Console.ContainerApp;
-using SqlBuildManager.Console.KeyVault;
-using SqlBuildManager.Console.Kubernetes;
-using SqlBuildManager.Console.Queue;
-using SqlBuildManager.Console.ContainerShared;
 using SqlBuildManager.Console.Threaded;
-using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
-using SqlBuildManager.Logging.Threaded;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.AdHocQuery;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Markup;
-using clb = SqlBuildManager.Console.CommandLine.CommandLineBuilder;
 using sb = SqlSync.SqlBuild;
 
 namespace SqlBuildManager.Console.ContainerShared
