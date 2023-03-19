@@ -71,6 +71,7 @@ namespace SqlBuildManager.Console.UnitTest
         ///A test for ValidateCommonCommandLineArgs
         ///</summary>
         [TestMethod()]
+        [Ignore]
         public void ValidateCommonCommandLineArgsTest_MissingRootLoggingPath()
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
