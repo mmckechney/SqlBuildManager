@@ -152,7 +152,7 @@ namespace SqlBuildManager.Console
             }
 
             var utcMonitorStart = DateTime.UtcNow;
-            success = await Aci.AciHelper.DeployAci(cmdLine);
+            success = await Aci.AciManager.DeployAci(cmdLine);
             if (success && monitor)
             {
                 return await AciMonitorRuntimeProgress(cmdLine, utcMonitorStart, unittest, stream);
@@ -180,7 +180,7 @@ namespace SqlBuildManager.Console
             {
                 try
                 {
-                    var stat = await Aci.AciHelper.AciIsInErrorState(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName);
+                    var stat = await Aci.AciManager.AciIsInErrorState(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName);
                     aciIsInErrorState = stat;
                 }
                 catch { }

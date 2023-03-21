@@ -24,7 +24,7 @@ using bm = Microsoft.Azure.Management.Batch.Models;
 
 namespace SqlBuildManager.Console.Batch
 {
-    public class Execution
+    public class BatchManager
     {
         readonly bool isDebug;
         private enum BatchType
@@ -44,7 +44,7 @@ namespace SqlBuildManager.Console.Batch
         private BatchType batchType = BatchType.Run;
         private const string baseTargetFormat = "target_{0}.cfg";
 
-        public Execution(CommandLineArgs cmdLine)
+        public BatchManager(CommandLineArgs cmdLine)
         {
             this.cmdLine = cmdLine;
 
@@ -55,7 +55,7 @@ namespace SqlBuildManager.Console.Batch
 
             isDebug = SqlBuildManager.Logging.ApplicationLogging.IsDebug();
         }
-        public Execution(CommandLineArgs cmdLine, string queryFile, string outputFile) : this(cmdLine)
+        public BatchManager(CommandLineArgs cmdLine, string queryFile, string outputFile) : this(cmdLine)
         {
             this.queryFile = queryFile;
             this.outputFile = outputFile;
@@ -524,77 +524,6 @@ namespace SqlBuildManager.Console.Batch
             return (jobId, poolId, storageContainerName);
         }
 
-        private bool CreateBatchPoolLegacy(BatchClient batchClient, string poolId, int nodeCount, string vmSize, OsType os)
-        {
-            log.LogInformation($"Creating pool [{poolId}]...");
-            ImageReference imageReference;
-            VirtualMachineConfiguration virtualMachineConfiguration;
-            switch (os)
-            {
-
-                case OsType.Linux:
-                    imageReference = new ImageReference(publisher: "Canonical", offer: "UbuntuServer", sku: "18.04-lts", version: "latest");
-                    virtualMachineConfiguration = new VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 18.04");
-                    break;
-
-                case OsType.Windows:
-                default:
-                    imageReference = new ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer", sku: "2016-Datacenter-with-containers", version: "latest");
-                    virtualMachineConfiguration = new VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
-
-                    break;
-            }
-
-            try
-            {
-                CloudPool pool = batchClient.PoolOperations.CreatePool(
-                    poolId: poolId,
-                    targetDedicatedComputeNodes: nodeCount,
-                    virtualMachineSize: vmSize,
-                    virtualMachineConfiguration: virtualMachineConfiguration);
-                pool.Commit();
-
-            }
-            catch (BatchException be)
-            {
-                // Accept the specific error code PoolExists as that is expected if the pool already exists
-                if (be.RequestInformation?.BatchError?.Code == BatchErrorCodeStrings.PoolExists)
-                {
-                    try
-                    {
-                        log.LogInformation($"The pool {poolId} already existed when we tried to create it");
-                        var pool = batchClient.PoolOperations.GetPool(poolId);
-                        log.LogInformation($"Pre-existing node count {pool.CurrentDedicatedComputeNodes}");
-                        if (pool.CurrentDedicatedComputeNodes != nodeCount)
-                        {
-                            log.LogWarning($"The pool {poolId} node count of {pool.CurrentDedicatedComputeNodes} does not match the requested node count of {nodeCount}");
-                            if (pool.CurrentDedicatedComputeNodes < nodeCount)
-                            {
-                                log.LogWarning($"Requested node count is greater then existing node count. Resizing pool to {nodeCount}");
-                                pool.Resize(targetDedicatedComputeNodes: nodeCount);
-                            }
-                            else
-                            {
-                                log.LogWarning("Existing node count is larger than requested node count. No pool changes bring made");
-                            }
-                        }
-                    }
-                    catch (Exception exe)
-                    {
-                        log.LogWarning($"Unable to get information on existing pool. {exe.ToString()}");
-                        return false;
-                    }
-                }
-                else
-                {
-                    log.LogError($"Received unexpected pool status: {be.RequestInformation?.BatchError.Code}");
-                    log.LogError("Unable to proceed!");
-                    throw; // Any other exception is unexpected
-                }
-            }
-            return true;
-        }
-
         private async Task<bool> CreateBatchPool(CommandLineArgs cmdLine, string poolId)
         {
 
@@ -853,15 +782,6 @@ namespace SqlBuildManager.Console.Batch
 
             return commandLines;
         }
-        /// <summary>
-        /// Uploads the specified file to the specified Blob container.
-        /// </summary>
-        /// <param name="storageSvcClient">A <see cref="CloudBlobClient"/>.</param>
-        /// <param name="containerName">The name of the blob storage container to which the file should be uploaded.</param>
-        /// <param name="filePath">The full path to the file to upload to Storage.</param>
-        /// <returns>A ResourceFile instance representing the file within blob storage.</returns>
-
-
 
         /// <summary>
         /// Gets a string array for all of the target DB override settings
@@ -876,6 +796,7 @@ namespace SqlBuildManager.Console.Batch
             string cfg = MultiDbHelper.ConvertMultiDbDataToTextConfig(multiDb);
             return cfg.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         }
+
         /// <summary>
         /// Divde up the override targets amongst the nodes
         /// </summary>

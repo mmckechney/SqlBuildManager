@@ -145,35 +145,15 @@ namespace SqlBuildManager.Console
 
         }
         
-        #region Container Runtime Worker Methods
-
-        #region Database builds
- 
-        
-  
-
-
-
-
-        #endregion
-
-        #endregion
-
-
         internal async static Task<int> EnqueueOverrideTargets(CommandLineArgs cmdLine)
         {
-            Init(cmdLine);
+            (bool success, cmdLine) = Init(cmdLine);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(applicationLogFileName);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(applicationLogFileName, cmdLine.RootLoggingPath);
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
-            var start = DateTime.Now;
-            bool decryptSuccess;
-            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            bool kvSuccess;
-            (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
-            if (!decryptSuccess)
+            if(!success)
             {
-                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                log.LogError("Problemn reading configuration");
                 return 3424;
             }
 
@@ -195,6 +175,8 @@ namespace SqlBuildManager.Console
                 log.LogError(String.Join(";", errorMessages));
                 return tmpValReturn;
             }
+            DateTime start = DateTime.Now;
+            
             log.LogInformation("Sending database targets to Service Bus");
             var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
@@ -260,8 +242,29 @@ namespace SqlBuildManager.Console
             }
         }
 
-       
-       
+        private static (int, CommandLineArgs) PrepForRemoteQueryExecution(CommandLineArgs cmdLine)
+        {
+
+            (bool success, cmdLine) = Init(cmdLine);
+            if (!success)
+            {
+                return (-8675, cmdLine);
+            }
+            log = Logging.ApplicationLogging.CreateLogger<Worker>(Program.applicationLogFileName, cmdLine.RootLoggingPath);
+            var outpt = Validation.ValidateQueryArguments(ref cmdLine);
+            if (outpt != 0)
+            {
+                return (outpt, cmdLine);
+            }
+
+            //Always run the remote Batch as silent or it will get hung up
+            if (cmdLine.Silent == false)
+            {
+                cmdLine.Silent = true;
+            }
+            return (0, cmdLine);
+        }
+
 
         #region ServiceBus and EventHub Monitoring
         private static bool activeServiceBusMonitoring = true;

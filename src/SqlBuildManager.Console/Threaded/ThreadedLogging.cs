@@ -19,13 +19,17 @@ namespace SqlBuildManager.Console.Threaded
         private static ILogger logFailures;
         private static ILogger logSuccess;
         private static ILogger logRuntime;
-        private static bool theadedLoggingInitiated = false;
+        public static bool TheadedLoggingInitiated = false;
         private string runId;
         CommandLineArgs cmdLine;
         public ThreadedLogging(CommandLineArgs cmdLine, string runId)
         {
             this.cmdLine = cmdLine;
             this.runId = runId;
+        }
+        public void Flush()
+        {
+            Logging.Threaded.Configure.CloseAndFlushAllLoggers(true);
         }
         public void InitThreadedLogging()
         {
@@ -49,12 +53,12 @@ namespace SqlBuildManager.Console.Threaded
             logCommitRun = SqlBuildManager.Logging.Threaded.CommitLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
             logErrorRun = SqlBuildManager.Logging.Threaded.ErrorLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
 
-            ThreadedLogging.theadedLoggingInitiated = true;
+            ThreadedLogging.TheadedLoggingInitiated = true;
         }
         public void WriteToLog(LogMsg msg)
         {
             msg.JobName = cmdLine.JobName;
-            if (!ThreadedLogging.theadedLoggingInitiated)
+            if (!ThreadedLogging.TheadedLoggingInitiated)
             {
                 InitThreadedLogging();
             }
@@ -80,6 +84,7 @@ namespace SqlBuildManager.Console.Threaded
                     logEventHub?.LogInformation("{@LogMsg}", msg);
                     return;
                 case LogType.WorkerCompleted:
+                    logRuntime.LogInformation($"{runId}  {msg.ServerName}  {msg.DatabaseName}: {msg.Message}");
                     logEventHub?.LogInformation("{@LogMsg}", msg);
                     return;
 

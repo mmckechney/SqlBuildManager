@@ -121,7 +121,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
             actual = target.Execute();
 
@@ -192,7 +192,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--concurrencytype",  "Count"
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
             actual = target.Execute();
 
@@ -253,7 +253,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--concurrencytype",  "Count"
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
             actual = target.Execute();
 
@@ -321,7 +321,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--concurrencytype",  "Server"
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
             actual = target.Execute();
 
@@ -393,7 +393,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--concurrencytype",  "MaxPerServer"
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
             actual = target.Execute();
@@ -460,7 +460,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--authtype",
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
             actual = target.Execute();
@@ -538,7 +538,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--timeoutretrycount", retryCount.ToString()
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
 
@@ -625,7 +625,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--timeoutretrycount", retryCount.ToString()
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
@@ -708,7 +708,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--timeoutretrycount", retryCount.ToString()
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
@@ -790,7 +790,7 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
                 "--timeoutretrycount","-1"
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
 
             int expected = (int)ExecutionReturn.NegativeTimeoutRetryCount;
             int actual;
@@ -847,7 +847,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--timeoutretrycount","0"
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
             actual = target.Execute();
@@ -922,7 +922,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--timeoutretrycount","20"
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
             int actual;
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
@@ -974,7 +974,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--timeoutretrycount","0"
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
@@ -1062,7 +1062,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--timeoutretrycount", retryCount.ToString()
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
 
@@ -1145,7 +1145,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 "--timeoutretrycount", retryCount.ToString()
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
-            ThreadedExecution target = new ThreadedExecution(cmdLine);
+            ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 

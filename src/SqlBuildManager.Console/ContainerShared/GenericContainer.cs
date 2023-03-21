@@ -18,7 +18,7 @@ namespace SqlBuildManager.Console.ContainerShared
         internal static async Task<int> GenericContainerWorker_RunQueueBuild(CommandLineArgs cmdLine)
         {
             int result = 1;
-            var runId = ThreadedExecution.RunID;
+            var runId = ThreadedManager.RunID;
             var threadLogger = new ThreadedLogging(cmdLine, runId);
             try
             {
@@ -77,7 +77,7 @@ namespace SqlBuildManager.Console.ContainerShared
         internal static async Task<int> GenericContainerWorker_RunQueueQuery(CommandLineArgs cmdLine)
         {
             int result = 1;
-           var runId = ThreadedExecution.RunID;
+           var runId = ThreadedManager.RunID;
             var threadLogger = new ThreadedLogging(cmdLine, runId);
 
             try

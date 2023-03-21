@@ -71,7 +71,7 @@ namespace SqlBuildManager.Console
             }
             int retVal = 0;
             var utcMonitorStart = DateTime.UtcNow;
-            var success = await ContainerApp.ContainerAppHelper.DeployContainerApp(cmdLine);
+            var success = await ContainerApp.ContainerAppManager.DeployContainerApp(cmdLine);
             if (!success) retVal = -7;
 
 
@@ -81,7 +81,7 @@ namespace SqlBuildManager.Console
             }
             if (deleteWhenDone)
             {
-                success = await ContainerAppHelper.DeleteContainerApp(cmdLine);
+                success = await ContainerAppManager.DeleteContainerApp(cmdLine);
                 if (!success) retVal = -6;
             }
 
@@ -101,7 +101,7 @@ namespace SqlBuildManager.Console
             {
                 validationErrors.ForEach(m => log.LogError(m));
             }
-            ContainerAppHelper.SetEnvVariablesForTest(cmdLine);
+            ContainerAppManager.SetEnvVariablesForTest(cmdLine);
             return await ContainerAppWorker_RunBuild(cmdLine);
         }
 

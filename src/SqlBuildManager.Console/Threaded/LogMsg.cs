@@ -20,9 +20,9 @@ namespace SqlBuildManager.Console.Threaded
         {
             get
             {
-                if (runId == string.Empty && !string.IsNullOrWhiteSpace(ThreadedExecution.RunID))
+                if (runId == string.Empty && !string.IsNullOrWhiteSpace(ThreadedManager.RunID))
                 {
-                    runId = ThreadedExecution.RunID;
+                    runId = ThreadedManager.RunID;
                 }
                 return runId;
             }
@@ -48,9 +48,9 @@ namespace SqlBuildManager.Console.Threaded
         {
             get
             {
-                if (sourceDacPac == string.Empty && !string.IsNullOrWhiteSpace(ThreadedExecution.PlatinumDacPacFileName))
+                if (sourceDacPac == string.Empty && !string.IsNullOrWhiteSpace(ThreadedManager.PlatinumDacPacFileName))
                 {
-                    sourceDacPac = Path.GetFileName(ThreadedExecution.PlatinumDacPacFileName);
+                    sourceDacPac = Path.GetFileName(ThreadedManager.PlatinumDacPacFileName);
                 }
                 return sourceDacPac;
             }

@@ -38,7 +38,10 @@ namespace SqlBuildManager.Console
                 cmdLine.AuthenticationArgs.Password = null;
                 cmdLine.ConnectionArgs.BatchAccountKey = null;
                 cmdLine.ConnectionArgs.StorageAccountKey = null;
-                cmdLine.ContainerRegistryArgs.RegistryPassword = null;
+                if (cmdLine.ContainerRegistryArgs != null)
+                {
+                    cmdLine.ContainerRegistryArgs.RegistryPassword = null;
+                }
 
                 if (ConnectionStringValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
                 {

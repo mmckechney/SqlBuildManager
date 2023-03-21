@@ -35,13 +35,11 @@ namespace SqlBuildManager.Console.Threaded
             }
             else
             {
-                log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+                log = Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
             }
 
             var query = File.ReadAllText(cmdLine.QueryFile.FullName);
-            var multiData = MultiDbHelper.ImportMultiDbTextConfig(cmdLine.MultiDbRunConfigFileName);
             var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType };
-
 
             try
             {
@@ -57,6 +55,7 @@ namespace SqlBuildManager.Console.Threaded
                 }
                 else
                 {
+                    var multiData = MultiDbHelper.ImportMultiDbTextConfig(cmdLine.MultiDbRunConfigFileName);
                     //Set the number of allowed retries...
                     multiData.AllowableTimeoutRetries = cmdLine.TimeoutRetryCount;
                     //Set Trial
@@ -81,6 +80,8 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     qManager.Dispose();
                 }
+                //Make sure these logs are fully written
+                threadLogger.Flush();
             }
 
     
@@ -110,7 +111,7 @@ namespace SqlBuildManager.Console.Threaded
                     if (cmdLine.RunningAsContainer)
                     {
                         log.LogInformation($"No messages found in Service Bus Topic. Waiting {waitMs / 1000} seconds to check again...");
-                        var msg = new LogMsg() { RunId = ThreadedExecution.RunID, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
+                        var msg = new LogMsg() { RunId = ThreadedManager.RunID, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
                         threadLogger.WriteToLog(msg);
                         if (messagesSinceLastLoop)
                         {

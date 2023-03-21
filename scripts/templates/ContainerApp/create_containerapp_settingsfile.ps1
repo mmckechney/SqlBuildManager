@@ -158,6 +158,6 @@ foreach($auth in $authTypes)
     
 
     Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow
-    Start-Process $sbmExe -ArgumentList ($params + $sbAndEhArgs)
+    Start-Process $sbmExe -ArgumentList ($params + $sbAndEhArgs) -Wait -NoNewWindow
 }
 

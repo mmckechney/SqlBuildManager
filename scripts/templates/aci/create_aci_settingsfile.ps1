@@ -136,7 +136,7 @@ foreach($auth in $authTypes)
     }
     $params += ("--authtype", $auth)
     Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow
-    Start-Process $sbmExe -ArgumentList ($params + $sbAndEhArgs) -Wait
+    Start-Process $sbmExe -ArgumentList ($params + $sbAndEhArgs) -Wait -NoNewWindow
 }
 
 

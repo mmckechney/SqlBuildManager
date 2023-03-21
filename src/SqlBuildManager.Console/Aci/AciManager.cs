@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.Aci
 {
-    class AciHelper
+    class AciManager
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

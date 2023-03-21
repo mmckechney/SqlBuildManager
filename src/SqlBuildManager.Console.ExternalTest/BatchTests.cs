@@ -133,6 +133,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
 
             settingsFile = Path.GetFullPath(settingsFile);
+            string jobName = GetUniqueBatchJobName("batch-sbm");
 
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
@@ -145,7 +146,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFilePath,
                 "--packagename", sbmFileName,
                 "--concurrency", "2",
-                "--concurrencytype","Server" };
+                "--concurrencytype","Server",
+                "--jobname", jobName}; 
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -182,6 +184,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
+            string jobName = GetUniqueBatchJobName("batch-sqlsbm");
             var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFilePath), Guid.NewGuid().ToString() + ".cfg");
 
             var args = new string[]{
@@ -193,7 +196,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--username", un,
                 "--password", pw,
                 "--outputfile", tmpOverride,
-                "--force" };
+                "--force"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -212,7 +215,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", tmpOverride,
                 "--packagename", sbmFileName,
                 "--concurrency", "2",
-                "--concurrencytype","Server" };
+                "--concurrencytype","Server",
+                "--jobname", jobName};
 
             rootCommand = CommandLineBuilder.SetUp();
             val = rootCommand.InvokeAsync(args);
@@ -256,6 +260,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
+            string jobName = GetUniqueBatchJobName("batch-sbm");
 
             var args = new string[]{
                 "--loglevel", "debug",
@@ -266,7 +271,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--packagename", sbmFileName,
                 "--concurrency", "2",
                 "--concurrencytype","Server",
-            };
+                "--jobname", jobName};
+        
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -298,13 +304,15 @@ namespace SqlBuildManager.Console.ExternalTest
             settingsFile = Path.GetFullPath(settingsFile);
 
             //get the size of the log file before we start
+            string jobName = GetUniqueBatchJobName("batch-sbm");
             int startingLine = LogFileCurrentLineCount();
 
             var args = new string[]{
                 "batch",  batchMethod,
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,
-                "--override", overrideFilePath };
+                "--override", overrideFilePath,
+                "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -337,6 +345,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
+            string jobName = GetUniqueBatchJobName("batch-plat");
 
             var args = new string[]{
                 "batch",  batchMethod,
@@ -344,7 +353,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", minusFirst,
                 "--platinumdbsource", database,
-                "--platinumserversource", server };
+                "--platinumserversource", server,
+                "--jobname", jobName}; 
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -385,6 +395,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
+            string jobName = GetUniqueBatchJobName("batch-plat");
 
             var args = new string[]{
                 "batch",  batchMethod,
@@ -392,7 +403,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", minusFirst,
                 "--platinumdbsource", database,
-                "--platinumserversource", server };
+                "--platinumserversource", server,
+                "--jobname", jobName}; ;
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -433,6 +445,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
+            string jobName = GetUniqueBatchJobName("batch-plat");
 
 
             settingsFile = Path.GetFullPath(settingsFile);
@@ -442,7 +455,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", minusFirst,
                 "--platinumdbsource", database,
-                "--platinumserversource", server };
+                "--platinumserversource", server,
+                "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -485,6 +499,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
+            string jobName = GetUniqueBatchJobName("batch-dacpac");
 
 
             settingsFile = Path.GetFullPath(settingsFile);
@@ -493,7 +508,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", minusFirst,
-                "--platinumdacpac", dacpacName };
+                "--platinumdacpac", dacpacName,
+                "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -537,6 +553,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
+            string jobName = GetUniqueBatchJobName("batch-dacpac");
 
 
             settingsFile = Path.GetFullPath(settingsFile);
@@ -545,7 +562,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", minusFirst,
-                "--platinumdacpac", dacpacName };
+                "--platinumdacpac", dacpacName,
+                "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -574,6 +592,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            string jobName = GetUniqueBatchJobName("batch-query");
             try
             {
                 string selectquery = Path.GetFullPath("selectquery.sql");
@@ -594,6 +613,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFile,
                 "--outputfile", outputFile,
                 "--queryfile", selectquery,
+                "--jobname", jobName,
                 "--silent"};
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -640,7 +660,7 @@ namespace SqlBuildManager.Console.ExternalTest
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
             try
             {
-                string jobName = GetUniqueBatchJobName("batch-sbm");
+                string jobName = GetUniqueBatchJobName("batch-query");
                 string selectquery = Path.GetFullPath("selectquery.sql");
                 if (!File.Exists(selectquery))
                 {
@@ -708,7 +728,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void Batch_Query_Queue_SelectSuccess(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
 
-            string jobName = GetUniqueBatchJobName("batch-sbm");
+            string jobName = GetUniqueBatchJobName("batch-query");
             settingsFile = Path.GetFullPath(settingsFile);
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
@@ -798,6 +818,7 @@ namespace SqlBuildManager.Console.ExternalTest
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
             string insertquery = Path.GetFullPath("insertquery.sql");
+            string jobName = GetUniqueBatchJobName("batch-fail");
             if (!File.Exists(insertquery))
             {
                 File.WriteAllText(insertquery, Properties.Resources.insertquery);
@@ -814,6 +835,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFile,
                 "--outputfile", outputFile,
                 "--queryfile", insertquery,
+                "--jobname", jobName,
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -837,6 +859,7 @@ namespace SqlBuildManager.Console.ExternalTest
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
             string deletequery = Path.GetFullPath("deletequery.sql");
+            string jobName = GetUniqueBatchJobName("batch-fail");
             if (!File.Exists(deletequery))
             {
                 File.WriteAllText(deletequery, Properties.Resources.deletequery);
@@ -853,6 +876,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFile,
                 "--outputfile", outputFile,
                 "--queryfile", deletequery,
+                "--jobname", jobName,
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -876,6 +900,7 @@ namespace SqlBuildManager.Console.ExternalTest
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
             string badSelect = Path.GetFullPath("bad_select.sql");
+            string jobName = GetUniqueBatchJobName("batch-fail");
             if (!File.Exists(badSelect))
             {
                 File.WriteAllText(badSelect, Properties.Resources.bad_select);
@@ -892,6 +917,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFile,
                 "--outputfile", outputFile,
                 "--queryfile", badSelect,
+                "--jobname", jobName,
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -915,6 +941,7 @@ namespace SqlBuildManager.Console.ExternalTest
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
             string updatequery = Path.GetFullPath("updatequery.sql");
+            string jobName = GetUniqueBatchJobName("batch-fail");
             if (!File.Exists(updatequery))
             {
                 File.WriteAllText(updatequery, Properties.Resources.updatequery);
@@ -930,6 +957,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFile,
                 "--outputfile", outputFile,
                 "--queryfile", updatequery,
+                "--jobname", jobName,
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -1296,6 +1324,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             //Create new table in first so that the third will need a custom DACPAC
             DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+            string jobName = GetUniqueBatchJobName("batch-dacpac");
 
 
             settingsFile = Path.GetFullPath(settingsFile);
@@ -1304,7 +1333,9 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", minusFirst,
-                "--platinumdacpac", dacpacName };
+                "--platinumdacpac", dacpacName, 
+                "--jobname", jobName
+            };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);

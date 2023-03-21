@@ -20,14 +20,14 @@ namespace SqlBuildManager.Console
 
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
-        internal static int RunBatchCleanUp(CommandLineArgs cmdLine)
+        internal static int Batch_NodeCleanUp(CommandLineArgs cmdLine)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
             if (!initSuccess) return -8675;
 
             DateTime start = DateTime.Now;
-            Batch.Execution batchExe = new Batch.Execution(cmdLine);
+            Batch.BatchManager batchExe = new Batch.BatchManager(cmdLine);
             var retVal = batchExe.CleanUpBatchNodes();
 
             TimeSpan span = DateTime.Now - start;
@@ -37,7 +37,7 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        internal static int RunBatchJobDelete(CommandLineArgs cmdLine)
+        internal static int Batch_DeleteJob(CommandLineArgs cmdLine)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -53,14 +53,14 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        internal async static Task<int> RunBatchPreStage(CommandLineArgs cmdLine)
+        internal async static Task<int> Batch_PreStageNodes(CommandLineArgs cmdLine)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
             if (!initSuccess) return -8675;
 
             DateTime start = DateTime.Now;
-            Batch.Execution batchExe = new Batch.Execution(cmdLine);
+            Batch.BatchManager batchExe = new Batch.BatchManager(cmdLine);
             var retVal = await batchExe.PreStageBatchNodes();
 
             TimeSpan span = DateTime.Now - start;
@@ -70,7 +70,7 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        internal static int RunBatchExecution(CommandLineArgs cmdLine, bool monitor = false, bool unittest = false, bool stream = false)
+        internal static int Batch_RunBuild(CommandLineArgs cmdLine, bool monitor = false, bool unittest = false, bool stream = false)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -80,7 +80,7 @@ namespace SqlBuildManager.Console
 
 
             DateTime start = DateTime.Now;
-            Batch.Execution batchExe = new Batch.Execution(cmdLine);
+            Batch.BatchManager batchExe = new Batch.BatchManager(cmdLine);
 
             log.LogDebug("Entering Batch Execution");
             log.LogInformation("Running Batch Execution...");
@@ -142,29 +142,8 @@ namespace SqlBuildManager.Console
             Worker.activeServiceBusMonitoring = false;
         }
 
-        private static (int, CommandLineArgs) PrepForRemoteQueryExecution(CommandLineArgs cmdLine)
-        {
-
-            (bool success, cmdLine) = Init(cmdLine);
-            if (!success)
-            {
-                return (-8675, cmdLine);
-            }
-            log = Logging.ApplicationLogging.CreateLogger<Worker>(Program.applicationLogFileName, cmdLine.RootLoggingPath);
-            var outpt = Validation.ValidateQueryArguments(ref cmdLine);
-            if (outpt != 0)
-            {
-                return (outpt, cmdLine);
-            }
-
-            //Always run the remote Batch as silent or it will get hung up
-            if (cmdLine.Silent == false)
-            {
-                cmdLine.Silent = true;
-            }
-            return (0, cmdLine);
-        }
-        internal static async Task<int> RunBatchQuery(CommandLineArgs cmdLine)
+   
+        internal static async Task<int> Batch_RunQuery(CommandLineArgs cmdLine)
         {
             (int success, cmdLine) = PrepForRemoteQueryExecution(cmdLine);
             if (success != 0)
@@ -173,7 +152,7 @@ namespace SqlBuildManager.Console
             }
 
             DateTime start = DateTime.Now;
-            Batch.Execution batchExe = new Batch.Execution(cmdLine, cmdLine.QueryFile.FullName, Path.Combine(cmdLine.RootLoggingPath, cmdLine.OutputFile.Name));
+            Batch.BatchManager batchExe = new Batch.BatchManager(cmdLine, cmdLine.QueryFile.FullName, Path.Combine(cmdLine.RootLoggingPath, cmdLine.OutputFile.Name));
 
             log.LogDebug("Entering Batch Query Execution");
             log.LogInformation("Running Batch Query Execution...");

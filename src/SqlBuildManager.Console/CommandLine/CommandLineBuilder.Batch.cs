@@ -49,7 +49,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool>(Worker.RunBatchExecution);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool>(Worker.Batch_RunBuild);
                 return cmd;
             }
         }
@@ -112,7 +112,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(batchaccountnameOption);
                 cmd.Add(batchaccountkeyOption);
                 cmd.Add(batchaccounturlOption);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchPreStage);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.Batch_PreStageNodes);
                 return cmd;
             }
         }
@@ -133,7 +133,7 @@ namespace SqlBuildManager.Console.CommandLine
                     batchaccounturlOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchCleanUp);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.Batch_NodeCleanUp);
                 return cmd;
             }
         }
@@ -154,7 +154,7 @@ namespace SqlBuildManager.Console.CommandLine
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
                 cmd.IsHidden = true;
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchJobDelete);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.Batch_DeleteJob);
                 return cmd;
             }
         }
@@ -256,7 +256,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunBatchQuery);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.Batch_RunQuery);
                 return cmd;
             }
         }

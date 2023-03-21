@@ -1,5 +1,8 @@
 # SQL Build Manager Change Log
 
+### Version 15.2.1-beta
+- *UPDATED:* Code refactoring for consistency and ease of maintenance
+
 ### Version 15.2.0-beta
 
 - *ADDED:* New `sbm utilty override` command to generate an override cfg file from a SQL script file.

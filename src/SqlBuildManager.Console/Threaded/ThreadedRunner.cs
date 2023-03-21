@@ -131,7 +131,7 @@ namespace SqlBuildManager.Console.Threaded
             DoWorkEventArgs e = null;
             SqlBuildRunData runData = new SqlBuildRunData();
             string targetDatabase = overrides[0].OverrideDbTarget;
-            string loggingDirectory = Path.Combine(ThreadedExecution.WorkingDirectory, server, targetDatabase);
+            string loggingDirectory = Path.Combine(ThreadedManager.WorkingDirectory, server, targetDatabase);
             try
             {
                 //Start setting properties on the object that contains the run configuration data.
@@ -139,7 +139,7 @@ namespace SqlBuildManager.Console.Threaded
                 if (!string.IsNullOrEmpty(cmdArgs.Description))
                     runData.BuildDescription = cmdArgs.Description;
                 else
-                    runData.BuildDescription = "Threaded Multi-Database. Run ID:" + ThreadedExecution.RunID;
+                    runData.BuildDescription = "Threaded Multi-Database. Run ID:" + ThreadedManager.RunID;
 
                 runData.IsTrial = isTrial;
                 runData.RunScriptOnly = false;
@@ -190,7 +190,7 @@ namespace SqlBuildManager.Console.Threaded
                     //Get a full copy of the build data to work with (avoid threading sync issues)
                     SqlSyncBuildData buildData = new SqlSyncBuildData();
 
-                    string xml = "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n" + ThreadedExecution.BuildData.GetXml();
+                    string xml = "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n" + ThreadedManager.BuildData.GetXml();
                     using (StringReader sr = new StringReader(xml))
                     {
                         buildData.ReadXml(sr);
@@ -200,8 +200,8 @@ namespace SqlBuildManager.Console.Threaded
 
 
                     runData.BuildData = buildData;
-                    runData.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedExecution.ProjectFileName));
-                    runData.BuildFileName = ThreadedExecution.BuildZipFileName;
+                    runData.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedManager.ProjectFileName));
+                    runData.BuildFileName = ThreadedManager.BuildZipFileName;
                 }
 
 
@@ -243,7 +243,7 @@ namespace SqlBuildManager.Console.Threaded
                 helper.BuildSuccessTrialRolledBackEvent += new EventHandler(helper_BuildSuccessTrialRolledBackEvent);
                 await Task.Run(() =>
                 {
-                    helper.ProcessBuild(runData, bg, e, ThreadedExecution.BatchColl, buildRequestedBy, cmdArgs.TimeoutRetryCount);
+                    helper.ProcessBuild(runData, bg, e, ThreadedManager.BatchColl, buildRequestedBy, cmdArgs.TimeoutRetryCount);
                 });
             }
             catch (Exception exe)

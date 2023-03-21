@@ -208,21 +208,13 @@ namespace SqlBuildManager.Console
             }
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(Program.applicationLogFileName, cmdLine.RootLoggingPath);
 
-            bool decryptSuccess;
-            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            if (!decryptSuccess)
+            (var success, cmdLine) = Init(cmdLine);
+            if(!success)
             {
-                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return -8675;
+                log.LogError("There was a problem initilizing command settings");
+                return -322;
             }
-            bool kvSuccess;
-            (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
-            if (!kvSuccess)
-            {
-                log.LogError("A Key Vault name was provided, but unable to retrieve secrets from the Key Vault");
-                return -4353;
-            }
-
+    
             if (cmdLine.IdentityArgs != null)
             {
                 AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
@@ -233,8 +225,8 @@ namespace SqlBuildManager.Console
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
             log.LogDebug(cmdLine.ToStringExtension(StringType.Batch));
             log.LogInformation("Running Threaded Execution...");
-            ThreadedExecution runner = new ThreadedExecution(cmdLine);
-            int retVal = runner.Execute();
+            ThreadedManager tManager = new ThreadedManager(cmdLine);
+            int retVal = tManager.Execute();
             ExecutionReturn exeResult;
             if (Enum.TryParse<ExecutionReturn>(retVal.ToString(), out exeResult))
             {

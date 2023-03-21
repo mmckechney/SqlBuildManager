@@ -84,13 +84,13 @@ if($authTypes -contains "Password")
     #save with encrypted secrets
     $settingsFile = Join-Path $path "settingsfile-k8s-sec.json"
     Write-Host ($params + @("--settingsfile", """$settingsFile"""))-ForegroundColor Yellow
-    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait
+    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait -NoNewWindow
 
     #save with KeyVault settings
     $settingsFile = Join-Path $path "settingsfile-k8s-kv.json"
     $params += @("--keyvaultname", $keyVaultName)
     Write-Host ($params + @("--settingsfile", """$settingsFile""")) -ForegroundColor Yellow
-    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait
+    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait -NoNewWindow
 }    
   
 
@@ -107,13 +107,13 @@ if($authTypes -contains "ManagedIdentity")
     $settingsFile = Join-Path $path "settingsfile-k8s-sec-mi.json"
     Write-Host $params  -ForegroundColor Yellow
     Write-Host ($params + @("--settingsfile", """$settingsFile"""))-ForegroundColor Yellow
-    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait
+    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait -NoNewWindow
 
     $settingsFile = Join-Path $path "settingsfile-k8s-kv-mi.json"
     $params += @("--keyvaultname", $keyVaultName)
     Write-Host $params  -ForegroundColor Yellow
     Write-Host ($params + @("--settingsfile", """$settingsFile"""))-ForegroundColor Yellow
-    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait
+    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait -NoNewWindow
   
 }  
 

@@ -326,6 +326,7 @@ namespace SqlBuildManager.Console
             {
                 cmdLine = new CommandLineArgs();
             }
+            cmdLine.Override = Override.FullName;
             (var x, cmdLine) = Init(cmdLine);
             if (secretsFile != null && runtimeFile != null)
             {
@@ -336,27 +337,9 @@ namespace SqlBuildManager.Console
                     return 1;
                 }
             }
-            //TODO: validate jobname format
 
-            int tmpValReturn = Validation.ValidateAndLoadMultiDbData(Override.FullName, null, out MultiDbData multiData, out string[] errorMessages);
-            if (tmpValReturn != 0)
-            {
-                log.LogError(String.Join(";", errorMessages));
-                return tmpValReturn;
-            }
-            log.LogInformation("Sending database targets to Service Bus");
-            var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
-            int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
-            if (messages > 0)
-            {
-                log.LogInformation($"Successfully sent {messages} targets to Service Bus queue");
-                return 0;
-            }
-            else
-            {
-                log.LogError("Error sending messages to Service Bus queue");
-                return 2355;
-            }
+            return await Worker.EnqueueOverrideTargets(cmdLine);
+
         }
 
         #region Container Worker Methods

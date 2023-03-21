@@ -23,7 +23,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SqlBuildManager.Console.ContainerApp
 {
-    internal class ContainerAppHelper
+    internal class ContainerAppManager
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
