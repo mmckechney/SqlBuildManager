@@ -37,6 +37,7 @@ namespace SqlBuildManager.Console.CommandLine
                     forcecustomdacpacOption,
                     platinumdbsourceOption,
                     platinumserversourceOption,
+                    batchJobMonitorTimeoutMin,
                     new Option<bool>("--monitor", () => false, "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument"),
                     unitTestOption,
                     streamEventsOption,

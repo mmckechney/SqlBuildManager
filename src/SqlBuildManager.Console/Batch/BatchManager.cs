@@ -166,7 +166,6 @@ namespace SqlBuildManager.Console.Batch
                 batchClient = BatchClient.Open(cred);
 
                 // Create a Batch pool, VM configuration, Windows Server image
-                //bool success = CreateBatchPoolLegacy(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount,cmdLine.BatchArgs.BatchVmSize,cmdLine.BatchArgs.BatchPoolOs);
                 bool success = await CreateBatchPool(cmdLine, poolId);
                 if (!success)
                 {
@@ -312,22 +311,6 @@ namespace SqlBuildManager.Console.Batch
                                 filePattern: @"../*.csv",
                                 destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))//,
-
-                            //new OutputFile(
-                            //    filePattern: @"../wd/*",
-                            //    destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: $"{taskId}/wd")),
-                            //    uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
-
-                            //new OutputFile(
-                            //    filePattern: @"../wd/working/*",
-                            //    destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: $"{taskId}/working")),
-                            //    uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))//, 
-
-                             //new OutputFile(
-                             //   filePattern: @"../*.cfg",
-                             //   destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken)),
-                             //   uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
-
                         };
 
                     tasks.Add(task);
@@ -337,7 +320,7 @@ namespace SqlBuildManager.Console.Batch
                 batchClient.JobOperations.AddTask(jobId, tasks);
 
                 // Monitor task success/failure, specifying a maximum amount of time to wait for the tasks to complete.
-                TimeSpan timeout = TimeSpan.FromMinutes(30);
+                TimeSpan timeout = TimeSpan.FromMinutes(cmdLine.BatchArgs.JobMonitorTimeout);
                 log.LogInformation($"Monitoring all tasks for 'Completed' state, timeout in {timeout}...");
 
                 if (BatchProcessStartedEvent != null)
@@ -1003,20 +986,6 @@ namespace SqlBuildManager.Console.Batch
 
     }
 
-    public delegate void BatchMonitorEventHandler(object sender, BatchMonitorEventArgs e);
-    public class BatchMonitorEventArgs : EventArgs
-    {
-
-        public BatchMonitorEventArgs(CommandLineArgs cmdLine, bool stream, bool unittest)
-        {
-            CmdLine = cmdLine;
-            Stream = stream;
-            UnitTest = unittest;
-        }
-
-        public CommandLineArgs CmdLine { get; }
-        public bool Stream { get; }
-        public bool UnitTest { get; }
-    }
+    
 
 }

@@ -194,6 +194,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<bool> deletebatchpoolOption = new Option<bool>(new string[] { "--deletebatchpool" }, () => false, "Whether or not to delete the batch pool servers after an execution");
         private static Option<string> batchApplicationOption = new Option<string>(new string[] { "--apppackage", "--applicationpackage" }, "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux");
         private static Option<string> outputcontainersasurlOption = new Option<string>(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command") { IsHidden = true };
+        private static Option<int> batchJobMonitorTimeoutMin = new Option<int>(new string[] { "--monitortimeout", "--batchjobmonitortimeout" }, "Timeout (in minutes) for the batch job monitor to wait for the job to complete. Default is 30 minutes");
 
 
         /// <summary>

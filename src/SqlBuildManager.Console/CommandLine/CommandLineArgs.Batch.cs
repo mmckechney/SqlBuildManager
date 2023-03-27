@@ -113,6 +113,17 @@ namespace SqlBuildManager.Console.CommandLine
                 this.DirectPropertyChangeTracker.Add("Batch.ResourceGroup");
             }
         }
+
+        [JsonIgnore]
+        public virtual int BatchJobMonitorTimeout
+        {
+            set
+            {
+                BatchArgs.JobMonitorTimeout = value;
+                this.DirectPropertyChangeTracker.Add("Batch.JobMonitorTimeout");
+            }
+        }
+
         [Serializable]
         public class Batch : ArgsBase
         {
@@ -136,6 +147,8 @@ namespace SqlBuildManager.Console.CommandLine
             [JsonConverter(typeof(JsonStringEnumConverter))]
             public OsType BatchPoolOs { get; set; }
             public string ApplicationPackage { get; set; } = string.Empty;
+            public int JobMonitorTimeout { get; set; } = 30;
+            
         }
     }
 }
