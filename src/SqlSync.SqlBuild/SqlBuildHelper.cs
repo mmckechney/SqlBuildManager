@@ -436,7 +436,7 @@ namespace SqlSync.SqlBuild
             bool buildFailure = false;
             bool failureDueToScriptTimeout = false;
 
-
+            List<string> dbTargets = new();
             try
             {
                 if (view == null)
@@ -464,7 +464,7 @@ namespace SqlSync.SqlBuild
 
                     //Check for database override setting...
                     string targetDatabase = GetTargetDatabase(myRow.Database);
-
+                    dbTargets.Add(targetDatabase);
                     //Get Script Run Row id
                     System.Guid scriptRunRowId = System.Guid.NewGuid();
                     //Send Notification
@@ -810,6 +810,7 @@ namespace SqlSync.SqlBuild
                 buildData.AcceptChanges();
                 buildHistoryData.AcceptChanges();
                 SaveBuildDataSet(false);
+                string database = dbTargets.Distinct().Aggregate((a, b) => a + ", " + b);
                 if (ScriptLogWriteEvent != null)
                 {
                     if (isTransactional)
@@ -818,25 +819,25 @@ namespace SqlSync.SqlBuild
                         {
                             if (isTrialBuild)
                             {
-                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", "", "-- Trial Run: Complete Transaction with a rollback--", "Scripted"));
+                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", database, "-- Trial Run: Complete Transaction with a rollback--", "Scripted"));
                             }
                             else
                             {
-                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "COMMIT TRANSACTION", "", "-- Complete Transaction --", "Scripted"));
+                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "COMMIT TRANSACTION", database, "-- Complete Transaction --", "Scripted"));
                             }
                         }
                         else
-                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", "", "-- ERROR: Rollback Transaction --", "Scripted"));
+                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", database, "-- ERROR: Rollback Transaction --", "Scripted"));
                     }
                     else
                     {
                         if (!buildFailure)
                         {
-                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", "", "-- Completed: No Transaction Set --", "Scripted"));
+                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", database, "-- Completed: No Transaction Set --", "Scripted"));
                         }
                         else
                         {
-                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", "", "-- ERROR: No Transaction Set --", "Scripted"));
+                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", database, "-- ERROR: No Transaction Set --", "Scripted"));
                         }
                     }
 
@@ -2131,17 +2132,10 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region ## Events ##
-        //public event GeneralStatusEventHandler GeneralStatusEvent;
-        //public event BuildScriptEventHandler BuildScriptEvent;
-        //public event ScriptRunStatusEventHandler ScriptRunStatusEvent;
-        //public event ScriptRunProjectFileSavedEventHandler ScriptRunProjectFileSavedEvent;
-        //public event CommitFailureEventHandler CommitFailureEvent;
         public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
-        //public event ScriptingErrorEventHandler ScriptingErrorEvent;
         public event BuildCommittedEventHandler BuildCommittedEvent;
         public event EventHandler BuildSuccessTrialRolledBackEvent;
         public event EventHandler BuildErrorRollBackEvent;
-        //public event EventHandler BuildProcessingComplete;
         #endregion
 
         public static bool IsInComment(string rawScript, int index)

@@ -91,6 +91,8 @@ namespace SqlBuildManager.Interfaces.Console
         [Description("FailureDatabases")]
         FailureDatabases,
         [Description("WorkerCompleted")]
-        WorkerCompleted
+        WorkerCompleted,
+        [Description("ScriptLog")]
+        ScriptLog
     }
 }

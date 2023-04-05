@@ -1,5 +1,8 @@
 # SQL Build Manager Change Log
 
+### Version 15.2.2-beta
+- *ADDED:* EventHub logging now also includes the script results for each script run against the databases.  
+
 ### Version 15.2.1-beta
 - *UPDATED:* Code refactoring for consistency and ease of maintenance
 

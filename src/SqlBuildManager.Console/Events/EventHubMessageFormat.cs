@@ -44,8 +44,25 @@ namespace SqlBuildManager.Console.Events
 
         [JsonPropertyName("SourceDacPac")]
         public object SourceDacPac { get; set; }
-    }
 
+        [JsonPropertyName("ScriptLog")]
+        public ScriptLogData ScriptLog { get; set; }
+    }
+    public class ScriptLogData
+    {
+        [JsonPropertyName("ScriptIndex")]
+        public int ScriptIndex { get; set; } = -1;
+
+        [JsonPropertyName("ScriptFileName")]
+        public string ScriptFileName { get; set; } = string.Empty;
+
+        [JsonPropertyName("ScriptText")]
+        public string ScriptText { get; set; } = string.Empty;
+
+        [JsonPropertyName("Result")]
+        public string Result { get; set; } = string.Empty;
+
+    }
     public class Properties
     {
         [JsonPropertyName("LogMsg")]

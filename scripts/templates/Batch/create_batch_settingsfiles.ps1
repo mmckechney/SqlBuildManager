@@ -90,8 +90,6 @@ $params += @("--storageaccountkey",$storageAcctKey)
 $params += @("--defaultscripttimeout", "500")
 $params += @("--concurrency", "5")
 $params += @("--concurrencytype", "Count")
-$params += @("--clientid",$identity.clientId)
-$params += @("--principalid",$identity.principalId)
 $params += @("--resourceid",$identity.id)
 $params += @("--idrg",$identity.resourceGroup)
 $params += @("--tenantid", $tenantId)
@@ -135,6 +133,8 @@ Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath  + $ehCon
 
 #With Managed Identity auth
 $authMi = @("--authtype", "ManagedIdentity");
+$authMi += @("--clientid",$identity.clientId)
+$authMi += @("--principalid",$identity.principalId)
 
 Write-Host "Saving settings file to $settingsJsonWindowsMi" -ForegroundColor DarkGreen
 $tmpPath = @("--settingsfile", $settingsJsonWindowsMi)

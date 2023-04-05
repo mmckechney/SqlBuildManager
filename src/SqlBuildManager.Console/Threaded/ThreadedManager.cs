@@ -480,7 +480,7 @@ namespace SqlBuildManager.Console.Threaded
                 threadedLog.WriteToLog(msg);
 
                 //Run the scripts!!
-                await runner.RunDatabaseBuild();
+                await runner.RunDatabaseBuild(threadedLog);
 
                 msg.Message = ((RunnerReturn)runner.ReturnValue).GetDescription();
                 returnVal = runner.ReturnValue;

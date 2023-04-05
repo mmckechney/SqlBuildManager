@@ -165,6 +165,7 @@ namespace SqlBuildManager.Console.CommandLine
                         case "ContainerAppArgs":
                         case "ContainerRegistryArgs":
                         case "KeyVaultSecretsRetrieved":
+                        case "JobMonitorTimeout":
                             //ignore these
                             break;
 

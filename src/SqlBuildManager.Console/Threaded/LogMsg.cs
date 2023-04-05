@@ -1,5 +1,7 @@
 ﻿using SqlBuildManager.Interfaces.Console;
 using System.IO;
+using System.Text.Json.Serialization;
+
 namespace SqlBuildManager.Console.Threaded
 {
     public class LogMsg
@@ -60,6 +62,23 @@ namespace SqlBuildManager.Console.Threaded
             }
         }
 
+        public ScriptLogData ScriptLog { get; set; } = null;
+            
+    }
+
+    public class ScriptLogData
+    {
+        [JsonPropertyName("ScriptIndex")]
+        public int ScriptIndex { get; set; } = -1;
+
+        [JsonPropertyName("ScriptFileName")]
+        public string ScriptFileName { get; set; } = string.Empty;
+
+        [JsonPropertyName("ScriptText")]
+        public string ScriptText { get; set; } = string.Empty;
+
+        [JsonPropertyName("Result")]
+        public string Result { get; set; } = string.Empty;
 
     }
 }

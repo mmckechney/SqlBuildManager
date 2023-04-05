@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
 using System;
@@ -83,8 +84,17 @@ namespace SqlBuildManager.Console.Threaded
                     logErrorRun.LogInformation($"{runId}  {msg.ServerName}  {msg.DatabaseName}: {msg.Message}");
                     logEventHub?.LogInformation("{@LogMsg}", msg);
                     return;
+                    
                 case LogType.WorkerCompleted:
                     logRuntime.LogInformation($"{runId}  {msg.ServerName}  {msg.DatabaseName}: {msg.Message}");
+                    logEventHub?.LogInformation("{@LogMsg}", msg);
+                    return;
+                    
+                case LogType.ScriptLog:
+                    if (log.IsEnabled(LogLevel.Debug)) { 
+                        log.LogDebug(JsonSerializer.Serialize<LogMsg>(msg));
+                        log.LogDebug("{@LogMsg}", msg);
+                    }
                     logEventHub?.LogInformation("{@LogMsg}", msg);
                     return;
 

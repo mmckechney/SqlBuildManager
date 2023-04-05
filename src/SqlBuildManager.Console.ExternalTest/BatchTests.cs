@@ -1015,6 +1015,7 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
+             "--loglevel", "debug",
             "batch",  batchMethod,
             "--settingsfile", settingsFile,
             "--settingsfilekey", settingsFileKeyPath,

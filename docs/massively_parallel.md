@@ -17,7 +17,12 @@ Save a settings JSON file for the target compute environment. This step is optio
 
 ### **run**
 Single command used to execute by orchestrating the other commands decribed below. \
-_IMPORTANT:_ Currently only available for `sbm k8s` and `sbm containerapp`
+_IMPORTANT:_ Currently only available for `sbm k8s`,  `sbm containerapp` and `sbm aci`
+
+----
+
+## Step-wide deployment
+(_note:_ the `run` command for k8s, containerapp and aci orchestrate this for you)
 
 ### **prep**
 (named `prestage` for `sbm batch`) Creates the required Azure Blob storage container and uploads the package file and/or DACPAC so it is accessable to the compute resources. It will also configure any infrastructure templates and for Batch, will spin up the VMs in the node pool. The blob container is specfied by the `--jobname` parameter

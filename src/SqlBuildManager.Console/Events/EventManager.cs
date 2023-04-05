@@ -205,6 +205,11 @@ namespace SqlBuildManager.Console.Events
                             if (StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(25)}{msg.Properties.LogMsg.Message.PadRight(31)}");
                             IncrementWorkerCompletedMessages();
                             break;
+                        case LogType.ScriptLog:
+                            var json = JsonSerializer.Serialize(msg);
+                            if (StreamEvents) log.LogDebug($"{json}");
+                            IncrementWorkerCompletedMessages();
+                            break;
                     }
                 }
 

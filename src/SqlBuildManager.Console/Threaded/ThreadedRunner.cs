@@ -88,6 +88,8 @@ namespace SqlBuildManager.Console.Threaded
         private string password = string.Empty;
         private AuthenticationType authType = AuthenticationType.Password;
         private string buildRequestedBy = string.Empty;
+        private ThreadedLogging threadedLog = null;
+        private string jobName = string.Empty;
 
         public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac)
         {
@@ -122,10 +124,11 @@ namespace SqlBuildManager.Console.Threaded
         /// <param name="serverName">Name of the SQL server to target</param>
         /// <param name="overrides">List of database override settings to use in execution</param>
         /// <returns></returns>
-        internal async Task<int> RunDatabaseBuild()
+        internal async Task<int> RunDatabaseBuild(ThreadedLogging threadedLog)
         {
             returnValue = (int)RunnerReturn.BuildResultInconclusive;
-
+            this.threadedLog = threadedLog;
+            this.jobName = cmdArgs.JobName;
             ConnectionData connData = null;
             BackgroundWorker bg = null;
             DoWorkEventArgs e = null;
@@ -241,6 +244,7 @@ namespace SqlBuildManager.Console.Threaded
                 helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
                 helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
                 helper.BuildSuccessTrialRolledBackEvent += new EventHandler(helper_BuildSuccessTrialRolledBackEvent);
+                helper.ScriptLogWriteEvent += new ScriptLogWriteEventHandler(helper_ScriptLogWriteEvent);
                 await Task.Run(() =>
                 {
                     helper.ProcessBuild(runData, bg, e, ThreadedManager.BatchColl, buildRequestedBy, cmdArgs.TimeoutRetryCount);
@@ -255,6 +259,27 @@ namespace SqlBuildManager.Console.Threaded
             }
             return 0;
 
+        }
+
+        private void helper_ScriptLogWriteEvent(object sender, ScriptLogEventArgs e)
+        {
+            LogMsg lm = new LogMsg()
+            {
+                LogType = LogType.ScriptLog,
+                DatabaseName = e.Database,
+                JobName = this.jobName,
+                ServerName = this.server,
+                Message = "ScriptLog",
+                ScriptLog = new ScriptLogData()
+                {
+                    ScriptFileName = e.SourceFile,
+                    ScriptText = e.SqlScript,
+                    ScriptIndex = e.ScriptIndex,
+                    Result = e.Results
+                }
+
+            };
+            threadedLog.WriteToLog(lm);
         }
 
         void helper_BuildSuccessTrialRolledBackEvent(object sender, EventArgs e)

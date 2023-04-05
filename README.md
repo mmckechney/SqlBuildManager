@@ -82,7 +82,7 @@ The name of a build. This is used as the name or name prefix for all of the Azur
 
 ## Running Builds (command line)
 
-There are 5 ways to run your database update builds each with their target use case
+There are 6 ways to run your database update builds each with their target use case
 
 ### **Local**
 
@@ -119,6 +119,6 @@ In addition to using SQL Build Manager to perform database updates, you can also
 
 Using the `sbm threaded query` command will allow for querying multiple databases in parallel, but still executed from the local machine.
 
-### Batch
+### Batch, Kubernetes and ACI
 
-Using the `sbm batch query` command leverages Azure Batch to permit massively parallel queries across thousands of databases. (For information on how to get started with Azure Batch, go [here](docs/azure_batch.md))
+Using the `sbm batch query` , `sbm k8s query` or `sbm aci query` commands leverage their respective compute to permit massively parallel queries across thousands of databases. 
