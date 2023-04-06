@@ -17,7 +17,7 @@ namespace SqlBuildManager.Console.Threaded
     public class ThreadedManager
     {
         private static ILogger log = Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private ThreadedLogging threadedLog; 
+        public ThreadedLogging threadedLog; 
 
         MultiDbData multiData = null;
         DateTime startTime;

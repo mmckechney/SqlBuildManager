@@ -246,7 +246,11 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> batchaccountnameOption = new Option<string>(new string[] { "--acct", "--batchaccountname" }, "String name of the Azure Batch account");
         private static Option<string> batchaccountkeyOption = new Option<string>(new string[] { "-k", "--batchaccountkey" }, "Account Key for the Azure Batch account");
         private static Option<string> batchaccounturlOption = new Option<string>(new string[] { "-U", "--batchaccounturl" }, "URL for the Azure Batch account");
-
+        private static Option<EventHubLogging[]> eventHubLoggingTypeOption = new Option<EventHubLogging[]>(new string[] { "--eventhublogging" }, () => new EventHubLogging[] { EventHubLogging.EssentialOnly }, "Controls EventHub logging, including how to log script results and if to emit verbose message events.\r\nAdd multiple flags to combine settings.[EssentialOnly|IndividualScriptResults|ConsolidatedScriptResults|VerboseMessages]")
+        {
+            Arity = ArgumentArity.ZeroOrMore
+        };
+        
 
 
         /// <summary>

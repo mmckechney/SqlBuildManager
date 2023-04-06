@@ -181,6 +181,11 @@ namespace SqlBuildManager.Console.Events
                 //log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}{msg.Properties.LogMsg.DatabaseName}");
                 if (!string.IsNullOrWhiteSpace(msg.Properties.LogMsg.JobName) && msg.Properties.LogMsg.JobName.ToLower() == jobName.ToLower())
                 {
+                    if(log.IsEnabled(LogLevel.Debug))
+                    {
+                        var json = JsonSerializer.Serialize(msg);
+                        log.LogDebug($"{json}");
+                    }
                     switch (msg.Properties.LogMsg.LogType)
                     {
                         case LogType.Commit:
@@ -208,7 +213,6 @@ namespace SqlBuildManager.Console.Events
                         case LogType.ScriptLog:
                             var json = JsonSerializer.Serialize(msg);
                             if (StreamEvents) log.LogDebug($"{json}");
-                            IncrementWorkerCompletedMessages();
                             break;
                     }
                 }

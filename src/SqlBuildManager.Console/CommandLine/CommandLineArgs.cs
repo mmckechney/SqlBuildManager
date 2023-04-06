@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.ComponentModel;
+using SqlBuildManager.Logging.Threaded;
+using System.Linq;
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -194,6 +196,25 @@ namespace SqlBuildManager.Console.CommandLine
         public FileInfo QueryFile { get; set; }
         [JsonIgnore]
         public FileInfo OutputFile { get; set; }
+
+
+        private EventHubLogging[] _EventHubLogging = new EventHubLogging[] { CommandLine.EventHubLogging.EssentialOnly };
+
+        public EventHubLogging[] EventHubLogging
+        {
+            get
+            {
+                return _EventHubLogging;
+            }
+            set
+            {
+                if (_EventHubLogging != null && _EventHubLogging.Length > 0)
+                {
+                    _EventHubLogging = _EventHubLogging.Concat(value).ToArray();
+                }
+                _EventHubLogging = _EventHubLogging.Distinct().ToArray();
+            }
+        }
 
 
         public List<string> DirectPropertyChangeTracker = new();  

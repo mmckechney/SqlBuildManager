@@ -38,6 +38,7 @@ namespace SqlBuildManager.Console.CommandLine
                     platinumdbsourceOption,
                     platinumserversourceOption,
                     batchJobMonitorTimeoutMin,
+                    eventHubLoggingTypeOption,
                     new Option<bool>("--monitor", () => false, "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument"),
                     unitTestOption,
                     streamEventsOption,
@@ -77,6 +78,7 @@ namespace SqlBuildManager.Console.CommandLine
                     transactionalOption,
                     timeoutretrycountOption,
                     unitTestOption,
+                    eventHubLoggingTypeOption,
                     //these two options aren't used and are added just for reusability in unit tests
                     new Option<bool>("--monitor"){IsHidden = true},
                     new Option<bool>("--stream"){IsHidden = true},
@@ -171,6 +173,7 @@ namespace SqlBuildManager.Console.CommandLine
                 {
 
                     deletebatchjobOption,
+                    eventHubLoggingTypeOption,
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
                     //Additional settings
@@ -248,7 +251,8 @@ namespace SqlBuildManager.Console.CommandLine
                     deletebatchjobOption,
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
-                    jobnameOption
+                    jobnameOption,
+                    eventHubLoggingTypeOption
                 };
 
                 cmd.AddRange(SettingsFileExistingOptions);
@@ -282,7 +286,8 @@ namespace SqlBuildManager.Console.CommandLine
                     transactionalOption,
                     timeoutretrycountOption,
                     silentOption,
-                    jobnameOption
+                    jobnameOption,
+                    eventHubLoggingTypeOption,
 
                 };
                 cmd.AddRange(SettingsFileExistingOptions);

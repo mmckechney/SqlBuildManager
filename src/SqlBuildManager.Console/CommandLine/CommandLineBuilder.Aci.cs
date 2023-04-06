@@ -22,6 +22,7 @@ namespace SqlBuildManager.Console.CommandLine
                     aciIResourceGroupNameOption,
                     aciInstanceNameOption,
                     subscriptionIdOption,
+                    eventHubLoggingTypeOption,
                     //Key value option
                     sectionPlaceholderOption,
                     keyVaultNameOption.Copy(true),
@@ -65,7 +66,7 @@ namespace SqlBuildManager.Console.CommandLine
                     overrideOption.Copy(true),
                     platinumdacpacFileInfoOption,
                     allowForObjectDeletionOption,
-
+                    eventHubLoggingTypeOption,
                     new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment"),
                     unitTestOption,
                     streamEventsOption,
@@ -200,7 +201,7 @@ namespace SqlBuildManager.Console.CommandLine
                     aciIResourceGroupNameNotReqOption,
                     aciInstanceNameNotReqOption,
                     aciContainerCountOption.Copy(true),
-
+                    eventHubLoggingTypeOption,
                     identityNameOption.Copy(false),
                     identityResourceGroupOption.Copy(false),
 

@@ -71,7 +71,8 @@ namespace SqlBuildManager.Console
             }
             int retVal = 0;
             var utcMonitorStart = DateTime.UtcNow;
-            var success = await ContainerApp.ContainerAppManager.DeployContainerApp(cmdLine);
+            var logLevel = Logging.ApplicationLogging.GetLogLevelString();
+            var success = await ContainerApp.ContainerAppManager.DeployContainerApp(cmdLine, logLevel);
             if (!success) retVal = -7;
 
 

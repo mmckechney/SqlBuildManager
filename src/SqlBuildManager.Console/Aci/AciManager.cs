@@ -123,6 +123,7 @@ namespace SqlBuildManager.Console.Aci
             }
 
             var envVariables = GetContainerEnvironmentVariables(cmdLine);
+            var logLevel = Logging.ApplicationLogging.GetLogLevelString();
             for (int i = 0; i < cmdLine.AciArgs.ContainerCount; i++)
             {
                 var containerRequests = new ContainerResourceRequestsContent(1.0, 1.0);
@@ -130,6 +131,8 @@ namespace SqlBuildManager.Console.Aci
                 var container = new ContainerInstanceContainer($"sqlbuildmanager{i.ToString().PadLeft(3, '0')}", imageName, containerReqs);
                 container.Command.Add("dotnet");
                 container.Command.Add("sbm.dll");
+                container.Command.Add("--loglevel");
+                container.Command.Add(logLevel);
                 container.Command.Add("aci");
                 container.Command.Add("worker");
                 if (cmdLine.QueryFile != null)
@@ -212,7 +215,7 @@ namespace SqlBuildManager.Console.Aci
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete) { Value = cmdLine.AllowObjectDelete.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityClientId) { Value = cmdLine.IdentityArgs.ClientId.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.StorageAccountName) { Value = cmdLine.ConnectionArgs.StorageAccountName });
-
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.EventHubLogging) { Value = string.Join("|",cmdLine.EventHubLogging) });
             if (cmdLine.QueryFile != null)
             {
                 lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.QueryFile) { Value = cmdLine.QueryFile.Name });

@@ -417,7 +417,7 @@ namespace SqlBuildManager.Console
                         System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                         break;
                     }
-                    else if (workersConfigured == workersCompleted)
+                    else if (workersCompleted >= workersConfigured)
                     {
                         System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                         System.Console.WriteLine($"All {workersCompleted} workers have completed.");
@@ -462,7 +462,7 @@ namespace SqlBuildManager.Console
             await qManager.DeleteSubscription();
 
 
-            if (error > 0)
+           if (error > 0)
             {
                 return 1;
             }

@@ -3,6 +3,7 @@ using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace SqlBuildManager.Console.ContainerShared
@@ -98,6 +99,26 @@ namespace SqlBuildManager.Console.ContainerShared
             if (Enum.TryParse<AuthenticationType>(Environment.GetEnvironmentVariable(ContainerEnvVariables.AuthType), out AuthenticationType auth))
             {
                 cmdLine.AuthenticationType = auth;
+            }
+            else
+            {
+                log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.AuthType}");
+            }
+
+            var ehString = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubLogging);
+            if (!string.IsNullOrWhiteSpace(ehString))
+            {
+                var ehArr = ehString.Split('|');
+                List<EventHubLogging> ehList = new List<EventHubLogging>();
+                foreach (var e in ehArr)
+                {
+                    if (Enum.TryParse<EventHubLogging>(e, out EventHubLogging ehTmp))
+                    {
+                        ehList.Add(ehTmp);
+                    }
+                }
+                cmdLine.EventHubLogging = ehList.ToArray();
+
             }
             else
             {

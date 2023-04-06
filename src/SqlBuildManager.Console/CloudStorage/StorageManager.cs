@@ -52,7 +52,7 @@ namespace SqlBuildManager.Console.CloudStorage
         }
         internal static bool ConsolidateLogFiles(BlobServiceClient storageSvcClient, string outputContainerName, List<string> workerFiles)
         {
-            workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql", "execution.log", "csv" });
+            workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql", "execution.log", "csv", "cfg" });
             var container = storageSvcClient.GetBlobContainerClient(outputContainerName);
             container.CreateIfNotExists();
             var blobs = container.GetBlobs();

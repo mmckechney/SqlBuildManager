@@ -69,6 +69,8 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             finally
             {
+                log.LogInformation("Sending 'WorkerCompleted' event to EventHub");
+                ThreadedLogging.TheadedLoggingInitiated = false; //ensure that is get re-initialized to this gets sent properly
                 threadLogger.WriteToLog(new LogMsg() { LogType = LogType.WorkerCompleted, RunId = runId, Message = System.Environment.MachineName });
             }
             
@@ -125,6 +127,8 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             finally
             {
+                log.LogInformation("Sending 'WorkerCompleted' event to EventHub");
+                ThreadedLogging.TheadedLoggingInitiated = false; //ensure that is get re-initialized to this gets sent properly
                 threadLogger.WriteToLog(new LogMsg() { LogType = LogType.WorkerCompleted, RunId = runId, Message = System.Environment.MachineName });
             }
               return result;

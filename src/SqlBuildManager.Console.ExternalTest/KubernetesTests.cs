@@ -68,6 +68,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var args = new string[]
                 {
+                    "--loglevel", "debug",
                 "k8s", "run",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,
@@ -76,7 +77,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--packagename", sbmFileName,
                 "--force",
                 "--unittest",
-                "--stream"
+                "--stream",
+                "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()
                 };
 
 
@@ -130,6 +132,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var args = new string[]
                 {
+                    "--loglevel", "debug",
                 "k8s", "query",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,
@@ -139,7 +142,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--outputfile", outputFile,
                 "--force",
                 "--unittest",
-                "--stream"
+                "--stream",
+                "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()
                 };
 
 

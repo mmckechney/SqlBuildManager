@@ -495,7 +495,7 @@ namespace SqlBuildManager.Console.Batch
 
                 jobId = cmdLine.BatchArgs.BatchJobName;
                 poolId = PoolName;
-                storageContainerName = cmdLine.BatchArgs.BatchJobName + "-" + jobToken; ;
+                storageContainerName = cmdLine.BatchArgs.BatchJobName; // + "-" + jobToken; ;
             }
             else
             {

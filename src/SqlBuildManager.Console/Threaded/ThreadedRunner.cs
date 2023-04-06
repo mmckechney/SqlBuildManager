@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 namespace SqlBuildManager.Console.Threaded
 {
@@ -244,7 +246,13 @@ namespace SqlBuildManager.Console.Threaded
                 helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
                 helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
                 helper.BuildSuccessTrialRolledBackEvent += new EventHandler(helper_BuildSuccessTrialRolledBackEvent);
-                helper.ScriptLogWriteEvent += new ScriptLogWriteEventHandler(helper_ScriptLogWriteEvent);
+
+                //Determine whether or not to log each script result to EventhHub
+                if (cmdArgs.EventHubLogging.Contains(EventHubLogging.ConsolidatedScriptResults) || cmdArgs.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults))
+                {
+                    helper.ScriptLogWriteEvent += new ScriptLogWriteEventHandler(helper_ScriptLogWriteEvent);
+                }
+
                 await Task.Run(() =>
                 {
                     helper.ProcessBuild(runData, bg, e, ThreadedManager.BatchColl, buildRequestedBy, cmdArgs.TimeoutRetryCount);
@@ -257,29 +265,77 @@ namespace SqlBuildManager.Console.Threaded
                 returnValue = (int)ExecutionReturn.ProcessBuildError;
                 return (int)ExecutionReturn.ProcessBuildError; ;
             }
+            finally
+            {
+                if (cmdArgs.EventHubLogging.Contains(EventHubLogging.ConsolidatedScriptResults))
+                {
+                    LogMsg lm = new LogMsg()
+                    {
+                        LogType = LogType.ScriptLog,
+                        DatabaseName = targetDb,
+                        JobName = this.jobName,
+                        ServerName = this.server,
+                        Message = consolidatedScriptLog.ToString()
+                       
+
+                    };
+                    threadedLog.WriteToLog(lm);
+                }
+            }
             return 0;
 
         }
 
+        private StringBuilder consolidatedScriptLog = new();
+        private string targetDb = string.Empty;
         private void helper_ScriptLogWriteEvent(object sender, ScriptLogEventArgs e)
         {
-            LogMsg lm = new LogMsg()
+            if (cmdArgs.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults))
             {
-                LogType = LogType.ScriptLog,
-                DatabaseName = e.Database,
-                JobName = this.jobName,
-                ServerName = this.server,
-                Message = "ScriptLog",
-                ScriptLog = new ScriptLogData()
+                LogMsg lm = new LogMsg()
                 {
-                    ScriptFileName = e.SourceFile,
-                    ScriptText = e.SqlScript,
-                    ScriptIndex = e.ScriptIndex,
-                    Result = e.Results
+                    LogType = LogType.ScriptLog,
+                    DatabaseName = e.Database,
+                    JobName = this.jobName,
+                    ServerName = this.server,
+                    Message = "ScriptLog",
+                    ScriptLog = new ScriptLogData()
+                    {
+                        ScriptFileName = e.SourceFile,
+                        ScriptText = e.SqlScript,
+                        ScriptIndex = e.ScriptIndex,
+                        Result = e.Results
+                    }
+
+                };
+                threadedLog.WriteToLog(lm);
+            }
+            else if (cmdArgs.EventHubLogging.Contains(EventHubLogging.ConsolidatedScriptResults))
+            {
+                targetDb = e.Database;
+                if (consolidatedScriptLog.Length == 0)
+                {
+                    consolidatedScriptLog.AppendLine($"-- Start Time: {DateTime.Now.ToString()} --");
                 }
 
-            };
-            threadedLog.WriteToLog(lm);
+                consolidatedScriptLog.AppendLine("/************************************");
+                consolidatedScriptLog.AppendLine("Script #" + e.ScriptIndex.ToString() + "; Source File: " + e.SourceFile);
+                consolidatedScriptLog.AppendLine($"Server: {this.server}; Run On Database: {e.Database} */");
+                if (e.Database.Length > 0)
+                {
+                    consolidatedScriptLog.AppendLine($"use {e.Database}");
+                    consolidatedScriptLog.AppendLine($"GO");
+                }
+                consolidatedScriptLog.AppendLine(e.SqlScript);
+                consolidatedScriptLog.AppendLine($"GO"); 
+                consolidatedScriptLog.AppendLine($"/*Script #{e.ScriptIndex.ToString()} Result: { e.Results.Trim()}  */");
+
+
+                if (e.ScriptIndex == -10000)
+                {
+                    consolidatedScriptLog.AppendLine("-- END Time: " + DateTime.Now.ToString() + " --");
+                }
+            }
         }
 
         void helper_BuildSuccessTrialRolledBackEvent(object sender, EventArgs e)

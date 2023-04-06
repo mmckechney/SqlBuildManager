@@ -13,11 +13,22 @@ namespace SqlBuildManager.Console.Threaded
         public LogMsg()
         {
         }
+        [JsonPropertyName("_typeTag")]
+        public string TypeTag { get; set; } = null;
+        
+        [JsonPropertyName("JobName")]
         public string JobName { get; set; } = string.Empty;
+       
+        [JsonPropertyName("Message")]
         public string Message { get; set; } = string.Empty;
+       
+        [JsonPropertyName("DatabaseName")]
         public string DatabaseName { get; set; } = string.Empty;
+       
+        [JsonPropertyName("ServerName")]
         public string ServerName { get; set; } = string.Empty;
-
+ 
+        [JsonPropertyName("RunId")]
         public string RunId
         {
             get
@@ -33,7 +44,9 @@ namespace SqlBuildManager.Console.Threaded
                 runId = value;
             }
         }
-
+        
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonPropertyName("LogType")]
         public LogType LogType
         {
             get
@@ -45,7 +58,8 @@ namespace SqlBuildManager.Console.Threaded
                 logType = value;
             }
         }
-
+   
+        [JsonPropertyName("SourceDacPac")]
         public string SourceDacPac
         {
             get
@@ -62,6 +76,10 @@ namespace SqlBuildManager.Console.Threaded
             }
         }
 
+        [JsonPropertyName("ComputeHostName")]
+        public string ComputeHostName { get; set; } = string.Empty;
+
+        [JsonPropertyName("ScriptLog")]
         public ScriptLogData ScriptLog { get; set; } = null;
             
     }

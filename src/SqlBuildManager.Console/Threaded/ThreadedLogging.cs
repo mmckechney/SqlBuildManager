@@ -23,10 +23,13 @@ namespace SqlBuildManager.Console.Threaded
         public static bool TheadedLoggingInitiated = false;
         private string runId;
         CommandLineArgs cmdLine;
+        private bool isVerboseEhMessages = false;
+        private bool isScriptResultLogging = false;
         public ThreadedLogging(CommandLineArgs cmdLine, string runId)
         {
             this.cmdLine = cmdLine;
             this.runId = runId;
+            InitThreadedLogging();
         }
         public void Flush()
         {
@@ -55,10 +58,17 @@ namespace SqlBuildManager.Console.Threaded
             logErrorRun = SqlBuildManager.Logging.Threaded.ErrorLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
 
             ThreadedLogging.TheadedLoggingInitiated = true;
+            this.isVerboseEhMessages = cmdLine.EventHubLogging.Contains(EventHubLogging.VerboseMessages);
+            this.isScriptResultLogging = cmdLine.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults) || cmdLine.EventHubLogging.Contains(EventHubLogging.ConsolidatedScriptResults);
         }
         public void WriteToLog(LogMsg msg)
         {
             msg.JobName = cmdLine.JobName;
+            msg.ComputeHostName = System.Environment.MachineName;
+            if (log.IsEnabled(LogLevel.Debug))
+            {
+                log.LogDebug(JsonSerializer.Serialize<LogMsg>(msg));
+            }
             if (!ThreadedLogging.TheadedLoggingInitiated)
             {
                 InitThreadedLogging();
@@ -91,17 +101,19 @@ namespace SqlBuildManager.Console.Threaded
                     return;
                     
                 case LogType.ScriptLog:
-                    if (log.IsEnabled(LogLevel.Debug)) { 
-                        log.LogDebug(JsonSerializer.Serialize<LogMsg>(msg));
-                        log.LogDebug("{@LogMsg}", msg);
+                    if (this.isScriptResultLogging)
+                    {
+                        logEventHub?.LogInformation("{@LogMsg}", msg);
                     }
-                    logEventHub?.LogInformation("{@LogMsg}", msg);
                     return;
 
                 case LogType.Message:
                 default:
                     logRuntime.LogInformation($"{runId}  {msg.ServerName}  {msg.DatabaseName}: {msg.Message}");
-                    logEventHub?.LogInformation("{@LogMsg}", msg);
+                    if(this.isVerboseEhMessages)
+                    {
+                        logEventHub?.LogDebug("{@LogMsg}", msg);
+                    }
 
                     return;
             }

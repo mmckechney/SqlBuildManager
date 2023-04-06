@@ -148,4 +148,10 @@
   <data name="concurrency_doubledb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\concurrency_doubledb.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="batch-settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\batch-settings.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="batch_settings_multipleeh" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\batch_settings_multipleeh.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

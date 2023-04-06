@@ -16,6 +16,7 @@ namespace SqlBuildManager.Console.CommandLine
         {
             RootCommand rootCommand = SetUp();
 
+
             var builder = new System.CommandLine.Builder.CommandLineBuilder(rootCommand)
                        .UseTypoCorrections()
                        .UseDefaults()

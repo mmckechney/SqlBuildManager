@@ -149,11 +149,13 @@ namespace SqlBuildManager.Console.ContainerApp
                 parms.Add(ContainerEnvVariables.OutputFile, cmdLine.OutputFile.Name);
             }
 
+
+            parms.Add(ContainerEnvVariables.EventHubLogging, string.Join("|",cmdLine.EventHubLogging));
             return parms;
 
         }
 
-        internal static async Task<bool> DeployContainerApp(CommandLineArgs cmdLine)
+        internal static async Task<bool> DeployContainerApp(CommandLineArgs cmdLine, string logLevel)
         {
             string containerAppName = $"sbm{cmdLine.JobName}";
             var containerAppEnvId = ContainerAppManagedEnvironmentResource.CreateResourceIdentifier(cmdLine.ContainerAppArgs.SubscriptionId, cmdLine.ContainerAppArgs.ResourceGroup, cmdLine.ContainerAppArgs.EnvironmentName);
@@ -234,7 +236,7 @@ namespace SqlBuildManager.Console.ContainerApp
             container.Command.Add("dotnet");
             container.Command.Add("sbm.dll");
             container.Command.Add("--loglevel");
-            container.Command.Add("information");
+            container.Command.Add(logLevel);
             container.Command.Add("containerapp");
             container.Command.Add("worker");
             if(cmdLine.QueryFile != null)

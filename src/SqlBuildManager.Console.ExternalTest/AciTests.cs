@@ -71,17 +71,18 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 //Prep the build
                 var args = new string[]{
-                "aci",  "run",
-                "--settingsfile", settingsFile,
-                "--jobname", jobName,
-                "--packagename", sbmFileName,
-                 "--override", overrideFile,
-                "--concurrencytype", concurrencyType.ToString(),
-                "--containercount", containerCount.ToString(),
-                "--concurrency", concurrency.ToString(),
-                "--unittest", "true",
-                "--monitor", "true",
-                "--stream"
+                    "--loglevel", "debug",
+                    "aci",  "run",
+                    "--settingsfile", settingsFile,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName,
+                     "--override", overrideFile,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--containercount", containerCount.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream"
                 };
 
                 var val = parser.InvokeAsync(args);
@@ -324,7 +325,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFile,
                 "--unittest", "true",
                 "--monitor", "true",
-                "--stream"
+                "--stream",
+                "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()
             };
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();

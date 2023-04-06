@@ -43,7 +43,7 @@ namespace SqlBuildManager.Console.UnitTest
             var cmdLine = new CommandLineArgs();
             cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
             cmdLine.ServiceAccountName = "sbm000federatedid-name";
-            string yml = Kubernetes.KubernetesManager.GenerateJobYaml(cmdLine);
+            string yml = Kubernetes.KubernetesManager.GenerateJobYaml(cmdLine, "debug");
 
             Trace.WriteLine(yml);
             Assert.IsTrue(true);

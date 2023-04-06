@@ -1,12 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.ContainerShared;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Kubernetes.Yaml;
 using SqlSync.Connection;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SqlBuildManager.Console.Kubernetes
 {
@@ -19,6 +22,7 @@ namespace SqlBuildManager.Console.Kubernetes
         public static Task<KubernetesFiles> SaveKubernetesYamlFiles(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
         {
             var dir = Directory.GetCurrentDirectory();
+            var logLevelString = Logging.ApplicationLogging.GetLogLevelString();
             var secretsName = "";
             if (path != null)
             {
@@ -51,7 +55,8 @@ namespace SqlBuildManager.Console.Kubernetes
             File.WriteAllText(cfgMapName, cfgMap);
             log.LogInformation($"Configmap file written to: {cfgMapName}");
 
-            string jobYaml = KubernetesManager.GenerateJobYaml(cmdLine);
+            
+            string jobYaml = KubernetesManager.GenerateJobYaml(cmdLine, logLevelString);
             var jobYamlFileName = Path.Combine(dir, string.IsNullOrWhiteSpace(prefix) ? "job.yaml" : $"{prefix}-job.yaml");
             File.WriteAllText(jobYamlFileName, jobYaml);
             log.LogInformation($"Job Yaml file written to: {jobYamlFileName}");
@@ -176,7 +181,7 @@ namespace SqlBuildManager.Console.Kubernetes
 
         #region Dynamic Yaml Generation
 
-        internal static string GenerateJobYaml(CommandLineArgs args)
+        internal static string GenerateJobYaml(CommandLineArgs args, string logLevel)
         {
             bool hasKeyVault = !string.IsNullOrWhiteSpace(args.ConnectionArgs.KeyVaultName);
             bool useMangedIdenty = args.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity;
@@ -185,7 +190,7 @@ namespace SqlBuildManager.Console.Kubernetes
             string k8SecretsName = KubernetesSecretsName(args);
             string k8SecretsProviderName = KubernetesSecretProviderClassName(args);
             int podCount = args.KubernetesArgs.PodCount;
-            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName, k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer, args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, podCount, hasKeyVault, useMangedIdenty, args.IdentityArgs.ServiceAccountName, args.QueryFile);
+            var yml = new Yaml.JobYaml(k8jobname, k8ConfigMapName, k8SecretsName, k8SecretsProviderName, args.ContainerRegistryArgs.RegistryServer, args.ContainerRegistryArgs.ImageName, args.ContainerRegistryArgs.ImageTag, podCount, hasKeyVault, useMangedIdenty, args.IdentityArgs.ServiceAccountName, args.QueryFile, logLevel);
             var serializer = new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
             var jobYaml = serializer.Serialize(yml);
 
@@ -264,6 +269,7 @@ namespace SqlBuildManager.Console.Kubernetes
             yml.data.ConcurrencyType = args.ConcurrencyType.ToString();
             yml.data.AuthType = args.AuthenticationArgs.AuthenticationType.ToString();
             yml.data.KeyVaultName = args.ConnectionArgs.KeyVaultName;
+            yml.data.EventHubLogging = string.Join("|", args.EventHubLogging);
             if (args.QueryFile != null)
             {
                 yml.data.QueryFile = args.QueryFile.Name;
@@ -410,6 +416,28 @@ namespace SqlBuildManager.Console.Kubernetes
                 args.OutputFile = new FileInfo(File.ReadAllText("/etc/runtime/OutputFile").Trim());
                 log.LogDebug($"OutputFile= {args.OutputFile.Name}");
             }
+
+            if (File.Exists("/etc/runtime/EventHubLogging"))
+            {
+                var ehString = File.ReadAllText("/etc/runtime/EventHubLogging").Trim();
+                if (!string.IsNullOrWhiteSpace(ehString))
+                {
+                    var ehArr = ehString.Split('|');
+                    List<EventHubLogging> ehList = new List<EventHubLogging>();
+                    foreach (var e in ehArr)
+                    {
+                        log.LogDebug($"EventHubLogging string: {e}");
+                        if (Enum.TryParse<EventHubLogging>(e, out EventHubLogging ehTmp))
+                        {
+                            ehList.Add(ehTmp);
+                            log.LogDebug($"{e} added as enum");
+                        }
+                    }
+                    args.EventHubLogging = ehList.ToArray();
+                    log.LogDebug($"EventHubLogging= {string.Join(",", args.EventHubLogging)}");
+                }
+            }
+
 
 
             return (true, args);
@@ -559,6 +587,22 @@ namespace SqlBuildManager.Console.Kubernetes
 
             tmp = GetValueFromConfigMapstring(filename, "KeyVaultName");
             if (!string.IsNullOrWhiteSpace(tmp)) args.ConnectionArgs.KeyVaultName = tmp;
+
+            var ehString = GetValueFromConfigMapstring(filename, "FullEventHubLogging");
+            if (!string.IsNullOrWhiteSpace(ehString))
+            {
+                var ehArr = ehString.Split('|');
+                List<EventHubLogging> ehList = new List<EventHubLogging>();
+                foreach (var e in ehArr)
+                {
+                    if (Enum.TryParse<EventHubLogging>(e, out EventHubLogging ehTmp))
+                    {
+                        ehList.Add(ehTmp);
+                    }
+                }
+                args.EventHubLogging = ehList.ToArray();
+                log.LogDebug($"EventHubLogging= {string.Join(",", args.EventHubLogging)}");
+            }
 
             return args;
 

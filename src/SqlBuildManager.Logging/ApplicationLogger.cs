@@ -76,6 +76,11 @@ namespace SqlBuildManager.Logging
             return logLevel;
 
         }
+        public static string GetLogLevelString()
+        {
+            return logLevel.ToString();
+
+        }
         public static void SetLogLevel(LogLevel level)
         {
             logLevel = level;

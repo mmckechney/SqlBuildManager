@@ -64,5 +64,8 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         public string QueryFile { get; set; } = null;
         public string OutputFile { get; set; } = null;
 
+        [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
+        public string EventHubLogging { get; set; } = null;
+
     }
 }

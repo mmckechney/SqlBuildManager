@@ -2,6 +2,8 @@
 
 ### Version 15.2.2-beta
 - *ADDED:* EventHub logging now also includes the script results for each script run against the databases.  
+- *ADDED:* New option `--eventhublogging` controls how to log script results and if to emit verbose message events. Add multiple flags to combine settings. Values: EssentialOnly|IndividualScriptResults|ConsolidatedScriptResults|VerboseMessages")
+- *FIXED:* Corrected bug where Batch execution wasn't properly consolidating certain log files
 
 ### Version 15.2.1-beta
 - *UPDATED:* Code refactoring for consistency and ease of maintenance

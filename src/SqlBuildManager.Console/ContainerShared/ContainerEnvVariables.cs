@@ -21,6 +21,7 @@
         internal static string IdentityName { get; } = "Sbm_IdentityName";
         internal static string QueryFile { get; } = "Sbm_QueryFile";
         internal static string OutputFile { get; } = "Sbm_OutputFile";
+        internal static string EventHubLogging { get; } = "Sbm_EventHubLogging";
 
     }
 }

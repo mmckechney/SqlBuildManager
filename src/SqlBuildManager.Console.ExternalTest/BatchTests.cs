@@ -147,7 +147,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--packagename", sbmFileName,
                 "--concurrency", "2",
                 "--concurrencytype","Server",
-                "--jobname", jobName}; 
+                "--jobname", jobName }; 
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -772,7 +772,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName,
                 "--concurrencytype",  concurType.ToString(),
                 "--concurrency", concurrency.ToString(),
-                "--silent"};
+                "--silent",
+                "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
                 rootCommand = CommandLineBuilder.SetUp();
                 val = rootCommand.InvokeAsync(args);
@@ -1026,8 +1027,9 @@ namespace SqlBuildManager.Console.ExternalTest
             "--jobname", jobName,
             "--unittest",
             "--monitor",
-            "--stream"
-            };
+            "--stream",
+            "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
+        
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -1286,8 +1288,9 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName,
                 "--unittest",
                 "--monitor",
-                "--stream"
-            };
+                "--stream",
+                "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()};
+       
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();
@@ -1412,8 +1415,9 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName,
                 "--unittest",
                 "--monitor",
-                "--stream"
-            };
+                "--stream",
+                "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
+   
 
             val = rootCommand.InvokeAsync(args);
             val.Wait();

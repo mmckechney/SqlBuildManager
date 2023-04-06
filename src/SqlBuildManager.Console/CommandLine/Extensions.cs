@@ -190,6 +190,14 @@ namespace SqlBuildManager.Console.CommandLine
                             {
                                 args.AddRange(new string[] { $"--{property.Name.ToLower()}", property.GetValue(obj).ToString().Quoted() });
                             }
+                            else if(property.PropertyType == typeof(EventHubLogging[]))
+                            {
+                                var values = (EventHubLogging[])property.GetValue(obj);
+                                foreach (var value in values)
+                                {
+                                    args.AddRange(new string[] { $"--{property.Name.ToLower()}", value.ToString().Quoted() });
+                                }
+                            }
                             else
                             {
                                 double num;

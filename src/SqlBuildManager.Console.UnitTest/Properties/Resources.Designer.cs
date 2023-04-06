@@ -107,7 +107,27 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
                 return ((byte[])(obj));
             }
         }
-        
+
+        internal static byte[] batch_settings
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("batch-settings", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+
+
+
+        internal static byte[] batch_settings_multipleeh
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("batch_settings_multipleeh", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>

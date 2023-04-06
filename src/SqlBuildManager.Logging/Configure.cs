@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -22,6 +23,5 @@ namespace SqlBuildManager.Logging
             //Needed to make sure all files are saved and flushed
             Thread.Sleep(1000);
         }
-
     }
 }

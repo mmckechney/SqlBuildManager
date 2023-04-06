@@ -1,0 +1,43 @@
+{
+  "AuthenticationArgs": {
+    "AuthenticationType": "ManagedIdentity"
+  },
+  "BatchArgs": {
+    "ResourceGroup": "sbmXXX-rg",
+    "BatchNodeCount": 2,
+    "BatchVmSize": "STANDARD_D1_V2",
+    "DeleteBatchPool": false,
+    "DeleteBatchJob": false,
+    "PollBatchPoolStatus": true,
+    "BatchPoolName": "SqlBuildManagerPoolLinux",
+    "BatchPoolOs": "Linux",
+    "JobMonitorTimeout": 30
+  },
+  "ConnectionArgs": {
+    "EventHubConnectionString": "sbmXXXeventhubnamespace|sbmXXXeventhub",
+    "StorageAccountName": "sbmXXXstorage",
+    "StorageAccountKey": "EclX3LXNV3Yw\u002By1ikNg\u002BzQMU0oJsdwxwl5/YlMowwYCiiuRJkqYbtzAJzQd/T\u002BKuhXdOaiQmdyHnupkNAbrhd2LzsZyFHmuOa085pkdPQILfn6Ou5dBb5ZmE3t\u002B7C8PQpw",
+    "BatchAccountName": "sbmXXXbatchacct",
+    "BatchAccountKey": "Aga/jpYmXB1aTDn1KHY4kj29d75ver74XQCH3GhKwewxwxGruZkhyLG6RapJCbAke89mNccFEuu8S0oFqUPk3PzNRaPSltu4SMrAKhF9JC5N0gPW16qLeNqDyI3CrrK",
+    "BatchAccountUrl": "https://sbmXXXbatchacct.eastus.batch.azure.com"
+  },
+  "Concurrency": 5,
+  "ConcurrencyType": "Count",
+  "TimeoutRetryCount": 0,
+  "DefaultScriptTimeout": 500,
+  "RootLoggingPath": "C:/temp",
+  "IdentityArgs": {
+    "IdentityName": "sbmXXXidentity",
+    "ClientId": "f8108958-XXXX-4f25-9d62-5aXXXXX534c4",
+    "PrincipalId": "26a36cfa-XXXX-4ef9-b712-XXXXX52a2bad",
+    "ResourceGroup": "sbmXXX-rg",
+    "SubscriptionId": "0d901325-XXXX-4db7-ae90-58b4e38XXXXX",
+    "TenantId": "16bXXXXX-d300-468d-ac64-7eda0820b6d3"
+  },
+  "NetworkArgs": {
+    "VnetName": "sbmXXXvnet",
+    "SubnetName": "sbmXXXbatchsubnet",
+    "ResourceGroup": "sbmXXX-rg"
+  },
+  "EventHubLogging": [ "VerboseMessage", "IndividualScriptResults" ]
+}

@@ -312,6 +312,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 //Prep the build
                 var args = new string[]{
+                    "--logging", "debug",
                     "containerapp",  "prep",
                     "--settingsfile", settingsFile,
                     "--settingsfilekey", settingsFileKeyPath,
