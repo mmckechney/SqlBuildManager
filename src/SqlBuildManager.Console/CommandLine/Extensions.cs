@@ -284,6 +284,7 @@ namespace SqlBuildManager.Console.CommandLine
                     currentProp.GetValue(current).SetValues(incomingProp.GetValue(incoming), current.DirectPropertyChangeTracker);
                 }
             }
+            current.EventHubLogging = incoming.EventHubLogging;
         }
         /// <summary>
         /// Used to set property values from a twin object, but not overwrite existing values if they have already been directly set

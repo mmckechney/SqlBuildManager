@@ -39,5 +39,5 @@
     "SubnetName": "sbmXXXbatchsubnet",
     "ResourceGroup": "sbmXXX-rg"
   },
-  "EventHubLogging": [ "VerboseMessage", "IndividualScriptResults" ]
+  "EventHubLogging": [ "VerboseMessages", "IndividualScriptResults" ]
 }
