@@ -542,6 +542,30 @@ namespace SqlBuildManager.Console.Queue
             return;
         }
 
+        public async Task<bool> SubscriptionIsPreExisting()
+        {
+            try
+            {
+                switch (concurrencyType)
+                {
+                    case ConcurrencyType.MaxPerServer:
+                    case ConcurrencyType.Server:
+                        return await AdminClient.SubscriptionExistsAsync(topicName, topicSessionSubscriptionName);
+
+                    case ConcurrencyType.Count:
+                    default:
+                        return await AdminClient.SubscriptionExistsAsync(topicName, topicSubscriptionName);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!ex.ToString().Contains("Status: 409"))
+                {
+                    throw;
+                }
+                return false;
+            }
+        }
         private async Task CreateSubscriptions()
         {
             try

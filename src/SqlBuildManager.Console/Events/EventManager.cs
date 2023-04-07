@@ -176,12 +176,12 @@ namespace SqlBuildManager.Console.Events
             string dbName;
             try
             {
-                IncrementEventsScanned();
+                
                 var msg = JsonSerializer.Deserialize<EventHubMessageFormat>(Encoding.UTF8.GetString(eventArgs.Data.Body.ToArray()));
-                //log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}{msg.Properties.LogMsg.DatabaseName}");
                 if (!string.IsNullOrWhiteSpace(msg.Properties.LogMsg.JobName) && msg.Properties.LogMsg.JobName.ToLower() == jobName.ToLower())
                 {
-                    if(log.IsEnabled(LogLevel.Debug))
+                    IncrementEventsScanned(); //only count events that are relevant to this job
+                    if (log.IsEnabled(LogLevel.Debug))
                     {
                         var json = JsonSerializer.Serialize(msg);
                         log.LogDebug($"{json}");

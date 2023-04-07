@@ -24,12 +24,12 @@ Write-Host "Deleting Kubernetes Unit Test resources in sqlbuildmanager namespace
 kubectl delete all --all -n sqlbuildmanager
 
 Write-Host "Deleting Kubernetes Unit Test ConfigMaps" -ForegroundColor Green
-$configMaps = (kubectl get configmap -o name)
+$configMaps = (kubectl get configmap -n sqlbuildmanager -o name)
 foreach($map in $configMaps) 
 { 
     if($map -ne "configmap/kube-root-ca.crt") 
     { 
-        kubectl delete $map
+        kubectl delete $map -n sqlbuildmanager
     }
 }
 

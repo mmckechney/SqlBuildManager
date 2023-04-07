@@ -809,6 +809,84 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
+        [DataRow("query", "TestConfig/settingsfile-batch-windows-queue-mi.json", ConcurrencyType.Server, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-mi.json", ConcurrencyType.Server, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows-queue-keyvault-mi.json", ConcurrencyType.Server, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.Server, 5)]
+        [DataTestMethod]
+        public void Batch_Query_Direct_Queue_SelectSuccess(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+
+            string jobName = GetUniqueBatchJobName("batch-query");
+            settingsFile = Path.GetFullPath(settingsFile);
+            string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
+            try
+            {
+
+                string selectquery = Path.GetFullPath("selectquery.sql");
+                if (!File.Exists(selectquery))
+                {
+                    File.WriteAllText(selectquery, Properties.Resources.selectquery);
+                }
+
+                //get the size of the log file before we start
+                int startingLine = LogFileCurrentLineCount();
+
+                settingsFile = Path.GetFullPath(settingsFile);
+                var args = new string[]{
+                "--loglevel", "debug",
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", overrideFile,
+                "--outputfile", outputFile,
+                "--queryfile", selectquery,
+                "--jobname", jobName,
+                "--concurrencytype",  concurType.ToString(),
+                "--concurrency", concurrency.ToString(),
+                "--silent",
+                "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString(),
+                "--monitor",
+                "--stream",
+                "--unittest"};
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                Task<int>  val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                var result = val.Result;
+
+                var logFileContents = ReleventLogFileContents(startingLine);
+                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+                switch (batchMethod)
+                {
+                    case "querythreaded":
+                        Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                        break;
+
+                    case "query":
+                        Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
+                        break;
+                }
+                Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
+                var outputLength = File.ReadAllLines(outputFile).Length;
+                var overrideLength = File.ReadAllLines(overrideFile).Length;
+
+                Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+            }
+            finally
+            {
+                if (File.Exists(outputFile))
+                {
+                    File.Delete(outputFile);
+                }
+            }
+
+
+        }
+
         [DataRow("querythreaded", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("query", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("query", "TestConfig/settingsfile-batch-linux.json")]
@@ -1300,6 +1378,54 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json")]
+        [DataTestMethod]
+        public void Batch_Queue_Run_DacpacSource_Success(string batchMethod, string settingsFile)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            int removeCount = 1;
+            string server, database;
+            string firstOverride = overrideFileContents.First();
+            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+
+            string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
+            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
+
+            string jobName = GetUniqueBatchJobName("batch-run-dacpac");
+            int startingLine = LogFileCurrentLineCount();
+            var concurType = ConcurrencyType.Count.ToString();
+          
+            var args = new string[]{
+                "--loglevel", "Debug",
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", minusFirst,
+                "--platinumdacpac", dacpacName,
+                "--concurrencytype", concurType,
+                "--concurrency", "5",
+                "--jobname", jobName,
+                "--unittest",
+                "--monitor",
+                "--stream",
+                "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+        }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]

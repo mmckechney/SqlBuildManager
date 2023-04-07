@@ -151,9 +151,12 @@ namespace SqlBuildManager.Console
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(applicationLogFileName);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(applicationLogFileName, cmdLine.RootLoggingPath);
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
+
+            log.LogInformation("Enqueuing Database override targets");
+
             if(!success)
             {
-                log.LogError("Problemn reading configuration");
+                log.LogError("Problem reading configuration");
                 return 3424;
             }
 

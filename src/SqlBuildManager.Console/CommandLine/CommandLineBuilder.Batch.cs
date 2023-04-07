@@ -252,7 +252,10 @@ namespace SqlBuildManager.Console.CommandLine
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
                     jobnameOption,
-                    eventHubLoggingTypeOption
+                    eventHubLoggingTypeOption,
+                    streamEventsOption,
+                    unitTestOption,
+                    new Option<bool>("--monitor", () => false, "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument"),
                 };
 
                 cmd.AddRange(SettingsFileExistingOptions);
@@ -261,7 +264,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.Batch_RunQuery);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs,bool, bool, bool>(Worker.Batch_RunQuery);
                 return cmd;
             }
         }

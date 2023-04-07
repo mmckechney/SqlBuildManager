@@ -118,7 +118,8 @@ namespace SqlBuildManager.Console.CommandLine
                     streamEventsOption,
                     aciIResourceGroupNameNotReqOption,
                     aciInstanceNameNotReqOption,
-                    aciContainerCountOption.Copy(true)
+                    aciContainerCountOption.Copy(true),
+                    eventHubLoggingTypeOption,
                 });
                 cmd.AddRange(VnetOptions);
                 cmd.AddRange(ContainerRegistryAndImageOptions);
@@ -204,7 +205,7 @@ namespace SqlBuildManager.Console.CommandLine
                     eventHubLoggingTypeOption,
                     identityNameOption.Copy(false),
                     identityResourceGroupOption.Copy(false),
-
+                    eventHubLoggingTypeOption,
                     sectionPlaceholderOption,
                     jobnameOption.Copy(true),
                     packagenameAsFileToUploadOption,

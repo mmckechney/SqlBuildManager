@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Rest.TransientFaultHandling;
 using SqlBuildManager.Console.Batch;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Interfaces.Console;
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console
@@ -70,7 +73,41 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        internal static int Batch_RunBuild(CommandLineArgs cmdLine, bool monitor = false, bool unittest = false, bool stream = false)
+        private async static Task<int> CheckAndEnqueueDatabaseTargets(CommandLineArgs cmdLine)
+        {
+            //If using queue and subscription doesn't already exist from a `sbm batch enqueue` command, create it and enqueue targets
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+            {
+                var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
+
+                //Get message count
+                var messageCount = qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
+
+                if (!await qManager.SubscriptionIsPreExisting() || (await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType) == 0))
+                {
+                    if (!cmdLine.OverrideDesignated)
+                    {
+                        log.LogError("Queue Subscription does not exist and no override was designated. Unable to enqueue database targets");
+                        return -1;
+                    }
+
+
+                    log.LogError("Enqueuing database targets");
+                    var enqueueResult = await EnqueueOverrideTargets(cmdLine);
+                    if (enqueueResult != 0)
+                    {
+                        return enqueueResult;
+                    }
+                }
+                else
+                {
+                    log.LogInformation("Database targets already enqueued.");
+                }
+                return 0;
+            }
+            return 0;
+        }
+        internal async static Task<int> Batch_RunBuild(CommandLineArgs cmdLine, bool monitor = false, bool unittest = false, bool stream = false)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -88,6 +125,12 @@ namespace SqlBuildManager.Console
             string readOnlySas;
             Task monitorTask = null;
 
+            //If using queue and subscription doesn't already exist from a `sbm batch enqueue` command, create it and enqueue targets
+            var enqueueRes = await CheckAndEnqueueDatabaseTargets(cmdLine);
+            if(enqueueRes != 0)
+            {
+                return enqueueRes;
+            }
 
             //Register the monitoring events if designated
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) && monitor)
@@ -143,7 +186,7 @@ namespace SqlBuildManager.Console
         }
 
    
-        internal static async Task<int> Batch_RunQuery(CommandLineArgs cmdLine)
+        internal static async Task<int> Batch_RunQuery(CommandLineArgs cmdLine, bool monitor = false, bool unittest = false, bool stream = false)
         {
             (int success, cmdLine) = PrepForRemoteQueryExecution(cmdLine);
             if (success != 0)
@@ -159,7 +202,25 @@ namespace SqlBuildManager.Console
             int retVal;
             string readOnlySas;
 
-            (retVal, readOnlySas) = batchExe.StartBatch().GetAwaiter().GetResult();
+            //If using queue and subscription doesn't already exist from a `sbm batch enqueue` command, create it and enqueue targets
+            var enqueueRes = await CheckAndEnqueueDatabaseTargets(cmdLine);
+            if (enqueueRes != 0)
+            {
+                return enqueueRes;
+            }
+
+            //Register the monitoring events if designated
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) && monitor)
+            {
+                batchExe.BatchProcessStartedEvent += new Batch.BatchMonitorEventHandler(Batch_MonitorStart);
+                batchExe.BatchExecutionCompletedEvent += new BatchMonitorEventHandler(Batch_MonitorEnd);
+            }
+            else
+            {
+                stream = false;
+            }
+
+            (retVal, readOnlySas) = await batchExe.StartBatch(stream,unittest);
 
             if (!string.IsNullOrWhiteSpace(readOnlySas))
             {

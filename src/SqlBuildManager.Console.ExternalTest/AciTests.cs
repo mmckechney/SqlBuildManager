@@ -82,7 +82,8 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--concurrency", concurrency.ToString(),
                     "--unittest", "true",
                     "--monitor", "true",
-                    "--stream"
+                    "--stream",
+                    "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()
                 };
 
                 var val = parser.InvokeAsync(args);
@@ -164,7 +165,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFile,
                 "--unittest", "true",
                 "--monitor", "true",
-                "--stream"
+                "--stream",
+                "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()
             };
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();

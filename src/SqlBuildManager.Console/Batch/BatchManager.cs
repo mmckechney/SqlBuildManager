@@ -310,7 +310,15 @@ namespace SqlBuildManager.Console.Batch
                              new OutputFile(
                                 filePattern: @"../*.csv",
                                 destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
-                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))//,
+                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
+                             new OutputFile(
+                                filePattern: @"../*.cfg",
+                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
+                             new OutputFile(
+                                filePattern: @"../*.log",
+                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
                         };
 
                     tasks.Add(task);
