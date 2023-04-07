@@ -1560,5 +1560,50 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
 
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Server, 2)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Count, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Count, 5)]
+        [DataTestMethod]
+        public void Batch_Queue_LongRunning_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            string sbmFileName = Path.GetFullPath("LongRunning.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.long_running);
+            }
+            string jobName = GetUniqueBatchJobName("batch-long");
+            int startingLine = LogFileCurrentLineCount();
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFilePath), Guid.NewGuid().ToString() + ".cfg");
+            File.WriteAllLines(tmpOverride, overrideFileContents.Take(3).ToList().ToArray());
+
+            
+            var args = new string[]{
+             "--loglevel", "debug",
+            "batch",  batchMethod,
+            "--settingsfile", settingsFile,
+            "--settingsfilekey", settingsFileKeyPath,
+            "--override", tmpOverride,
+            "--packagename", sbmFileName,
+            "--concurrencytype", concurType.ToString(),
+            "--concurrency", concurrency.ToString(),
+            "--jobname", jobName,
+            "--unittest",
+            "--monitor",
+            "--stream",
+            "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            Task<int>  val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+        }
+
     }
 }

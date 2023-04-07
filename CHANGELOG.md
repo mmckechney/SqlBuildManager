@@ -2,6 +2,7 @@
 
 ### Version 15.2.2-beta
 - *NEW:* Eliminated the need for `sbm batch enqueue`. You can now run `sbm batch run` and it will automatically enqueue the database targets for you. You can still run `sbm batch enqueue` first if desired
+- *ADDED:* Renewing Service Bus message lease every 30 seconds until the build is complete for the target database
 - *ADDED:* EventHub logging now also includes the script results for each script run against the databases.  
 - *ADDED:* New option `--eventhublogging` controls how to log script results and if to emit verbose message events. Add multiple flags to combine settings. Values: EssentialOnly|IndividualScriptResults|ConsolidatedScriptResults|VerboseMessages")
 - *FIXED:* Corrected bug where Batch execution wasn't properly consolidating certain log files

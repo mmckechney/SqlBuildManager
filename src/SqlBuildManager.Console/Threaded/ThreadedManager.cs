@@ -446,8 +446,25 @@ namespace SqlBuildManager.Console.Threaded
         }
         private async Task<int> ProcessThreadedBuildWithQueue(ThreadedRunner runner, ServiceBusReceivedMessage message)
         {
-            int retVal = await ProcessThreadedBuild(runner);
-
+            //Renew the lock on the message every 30 seconds
+            var timer = new System.Diagnostics.Stopwatch();
+            timer.Start();
+            var buildTask = ProcessThreadedBuild(runner);
+            while (buildTask.Status != TaskStatus.RanToCompletion && buildTask.Status != TaskStatus.Faulted && buildTask.Status != TaskStatus.Canceled)
+            {
+                if (timer.Elapsed.TotalSeconds >= 30)
+                {
+                    await this.qManager.RenewMessageLock(message);
+                    timer.Restart();
+                }
+                await Task.Delay(1000);
+            }
+            timer.Stop();
+            
+            //Make sure task is done and get result
+            buildTask.Wait();
+            var retVal = buildTask.Result;
+            
             RunnerReturn tmp;
             Enum.TryParse<RunnerReturn>(retVal.ToString(), out tmp);
             switch (tmp)

@@ -112,7 +112,7 @@ namespace SqlBuildManager.Console.KeyVault
         {
             if (cmdLine.KeyVaultSecretsRetrieved)
             {
-                log.LogInformation("KeyVault Secrets already retrieved");
+                log.LogDebug("KeyVault Secrets already retrieved");
                 return (true, cmdLine);
             }
             

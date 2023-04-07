@@ -235,10 +235,10 @@ namespace SqlBuildManager.Console.Queue
         {
             var lstMsg = new List<ServiceBusReceivedMessage>();
             try
-            {
+            { 
                 
                 var messages = await MessageReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
-
+                log.LogDebug($"Received {messages.Count} messages from Service Bus Queue for batch job '{jobName}'");
                 if (messages.Count == 0)
                 {
                     return lstMsg;
@@ -291,7 +291,7 @@ namespace SqlBuildManager.Console.Queue
                 }
 
                 var messages = await _sessionReceiver.ReceiveMessagesAsync(maxMessages, new TimeSpan(0, 0, 10));
-
+                log.LogDebug($"Received {messages.Count} messages from Service Bus Queue for batch job '{jobName}' and subscription Id '{_sessionReceiver.SessionId}'");
                 //If no messages in the current session, try to acquire a new session
                 if (messages.Count == 0 && resetSession == false)
                 {
@@ -456,6 +456,27 @@ namespace SqlBuildManager.Console.Queue
             catch (Exception exe)
             {
                 log.LogError($"Failed to Deadletter message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}: {exe.Message}");
+            }
+            return;
+        }
+        public async Task RenewMessageLock(ServiceBusReceivedMessage message)
+        {
+            var t = message.As<TargetMessage>();
+            try
+            {
+                log.LogDebug($"Renewing message lock on {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+                if (_sessionReceiver != null)
+                {
+                    await _sessionReceiver.RenewSessionLockAsync();
+                }
+                else
+                {
+                    await MessageReceiver.RenewMessageLockAsync(message);
+                }
+            }
+            catch (Exception exe)
+            {
+                log.LogError($"Failed to renew message lock for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}: {exe.Message}");
             }
             return;
         }

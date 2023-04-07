@@ -127,6 +127,9 @@
   <data name="insertquery" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\insertquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="long_running" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\long_running.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="selectquery" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\selectquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>

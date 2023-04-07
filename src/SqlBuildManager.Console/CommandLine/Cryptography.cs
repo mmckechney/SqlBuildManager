@@ -64,7 +64,7 @@ namespace SqlBuildManager.Console.CommandLine
         {
             if (cmdLine.Decrypted)
             {
-                log.LogInformation("Command line arguments already decrypted.");
+                log.LogDebug("Command line arguments already decrypted.");
                 return (true, cmdLine);
             }
             //Nothing to do if none of the settings came from a settings file!

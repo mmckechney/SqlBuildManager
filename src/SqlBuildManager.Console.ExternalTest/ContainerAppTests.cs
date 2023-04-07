@@ -102,11 +102,68 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
+        [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataTestMethod]
+        public void ContainerApp_Run_LongRunning_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile), Guid.NewGuid().ToString() + ".cfg");
+            File.WriteAllLines(tmpOverride, File.ReadAllLines(overrideFile).Take(6).ToArray());
+            try
+            {
+                var sbmFileName = Path.GetFullPath("LongRunning.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.long_running);
+                }
 
 
-        //[DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        //[DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        //[DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("ca");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //monitor for completion
+                var args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp",  "run",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", tmpOverride,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+
+                };
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(tmpOverride).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
+
         [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
@@ -312,7 +369,6 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 //Prep the build
                 var args = new string[]{
-                    "--logging", "debug",
                     "containerapp",  "prep",
                     "--settingsfile", settingsFile,
                     "--settingsfilekey", settingsFileKeyPath,

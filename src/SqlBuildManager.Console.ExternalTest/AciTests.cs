@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -609,6 +610,62 @@ namespace SqlBuildManager.Console.ExternalTest
             }
 
 
+        }
+
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataTestMethod]
+        public void Aci_Queue_LongRunning_SBMSource_ByConcurrencyType_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile), Guid.NewGuid().ToString() + ".cfg");
+            File.WriteAllLines(tmpOverride, File.ReadAllLines(overrideFile).Take(6).ToArray());
+
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var sbmFileName = Path.GetFullPath("LongRunning.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.long_running);
+                }
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                var parser = CommandLineBuilder.GetCommandParser();
+                string jobName = TestHelper.GetUniqueJobName("aci");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //Prep the build
+                var args = new string[]{
+                    "--loglevel", "debug",
+                    "aci",  "run",
+                    "--settingsfile", settingsFile,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName,
+                     "--override", tmpOverride,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--containercount", containerCount.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream",
+                    "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()
+                };
+
+                var val = parser.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+            }
         }
     }
 }

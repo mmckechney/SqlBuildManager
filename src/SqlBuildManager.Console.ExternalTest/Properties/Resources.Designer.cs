@@ -90,6 +90,16 @@ namespace SqlBuildManager.Console.ExternalTest.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] long_running {
+            get {
+                object obj = ResourceManager.GetObject("long_running", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SELECT @@VERSION
         ///.
         /// </summary>
