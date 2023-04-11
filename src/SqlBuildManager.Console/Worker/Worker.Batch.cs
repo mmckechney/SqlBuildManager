@@ -178,7 +178,7 @@ namespace SqlBuildManager.Console
         private static Task<int> batchMonitorTask = null;
         private static void Batch_MonitorStart(object sender, BatchMonitorEventArgs e)
         {
-            batchMonitorTask = MonitorServiceBusRuntimeProgress(e.CmdLine, e.Stream, DateTime.UtcNow, e.UnitTest);
+            batchMonitorTask = MonitorServiceBusRuntimeProgress(e.CmdLine, e.Stream, DateTime.UtcNow, e.UnitTest, false);
         }
         private static void Batch_MonitorEnd(object sender, EventArgs e)
         {

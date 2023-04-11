@@ -1,10 +1,52 @@
 # SQL Build Manager Change Log
 
+### Version 15.3.0
+_Consolidated updates in Version 15+_
+*NEW:* Removing `beta` tag as the new AKS  [Workload Identity](https://docs.microsoft.com/en-us/azure/aks/use-managed-identity) implementation is now GA.  This replaces of AAD Pod Identity and is a *breaking change* from any previous Kubernetes deployments. To understand how to configure your cluster, review the steps in the [create_aks_cluster.ps1](scripts/templates/kubernetes/create_aks_cluster.ps1) script.
+
+_New & Updated Commands:_
+- Eliminated the need for `sbm batch enqueue`. You can now run `sbm batch run` and it will automatically enqueue the database targets for you. You can still run `sbm batch enqueue` first if desired
+- `sbm utilty override` command to generate an override cfg file from a SQL script file.
+- `sbm k8s query` command to run a query across your database fleet using Kubernetes as a compute platform
+- `sbm aci run` command to orchrstrate full ACI process (prep, enqueue, deploy and monitor commands)
+- `sbm aci query` command to run a query across your database fleet using ACI as a compute platform
+- `sbm batch query` command now fully supports reading messages from Service Bus as well as using Managed Identity
+
+
+_New Options:_
+- `--tenantid` option to provide Azure AD Tenant ID for deployments. This will be necessary if local ID has access to multiple tenants and the target tenant is not the default
+- `--batchresourcegroup` (`--batchrg`) argument to specify the resource group for the Batch account.  (If not provided, will be infered from Identity resource group)
+- `--podcount` for Kubernetes deployments to specify the number of pods to deploy per job
+- `--vnetresourcegroup` (`--vnetrg`) argument to specify the resource group for the VNET. (If not provided, will be infered from compute resource group)
+- `--eventhublogging` controls how to log script results and if to emit verbose message events. Add multiple flags to combine settings. Values: `EssentialOnly`,  `IndividualScriptResults`, `ConsolidatedScriptResults`, `VerboseMessages`
+
+_New Configuration:_
+- Changed Sample/Test environment to use VNET connections between databases and compute platforms
+  - SQL Server private VNET connections only, with local firewall rules and excluding "Azure Services"
+  - VNET integration for Azure Container Apps
+  - VNET integration for Azure Container Instances
+  - VNET integration for Batch Nodes
+  - AKS cluster creation now has Azure RBAC enabled
+
+_Bug Fixes & Improvements:_
+- EventHub logging now also includes the script results for each script run against the databases as an option. (`--eventhublogging` options of `IndividualScriptResults` or `ConsolidatedScriptResults`)
+- Renewing Service Bus message lease every 30 seconds until the build is complete for the target database
+- Fixed regression in Batch processing from generated settings files
+- Code refactoring for consistency and ease of maintenance
+- Corrected bug where Batch execution wasn't properly consolidating certain log files
+- *BREAKING CHANGE*: Changed ACI deployment to use SDK vs custom ARM templates. Review new command arguments for `sbm aci prep` and `sbm aci deploy` (and consider using new `sbm aci run` command)
+
+_Platform updates:_
+- Application now targets .NET 7
+- Docker base images updated to .NET Runtime 7.0.5 and .NET SDK to 7.0.203
+- General code cleanup and switch from System.Data.SqlClient for Microsoft.Data.SqlClient
+
+
 ### Version 15.2.2-beta
 - *NEW:* Eliminated the need for `sbm batch enqueue`. You can now run `sbm batch run` and it will automatically enqueue the database targets for you. You can still run `sbm batch enqueue` first if desired
 - *ADDED:* Renewing Service Bus message lease every 30 seconds until the build is complete for the target database
 - *ADDED:* EventHub logging now also includes the script results for each script run against the databases.  
-- *ADDED:* New option `--eventhublogging` controls how to log script results and if to emit verbose message events. Add multiple flags to combine settings. Values: EssentialOnly|IndividualScriptResults|ConsolidatedScriptResults|VerboseMessages")
+- *ADDED:* New option `--eventhublogging` controls how to log script results and if to emit verbose message events. Add multiple flags to combine settings. Values: `EssentialOnly`,  `IndividualScriptResults`, `ConsolidatedScriptResults`, `VerboseMessages`
 - *FIXED:* Corrected bug where Batch execution wasn't properly consolidating certain log files
 
 ### Version 15.2.1-beta

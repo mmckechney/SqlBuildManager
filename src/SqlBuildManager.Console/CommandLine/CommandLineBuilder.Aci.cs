@@ -205,7 +205,6 @@ namespace SqlBuildManager.Console.CommandLine
                     eventHubLoggingTypeOption,
                     identityNameOption.Copy(false),
                     identityResourceGroupOption.Copy(false),
-                    eventHubLoggingTypeOption,
                     sectionPlaceholderOption,
                     jobnameOption.Copy(true),
                     packagenameAsFileToUploadOption,

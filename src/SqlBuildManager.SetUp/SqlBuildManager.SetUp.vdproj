@@ -429,6 +429,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_EA2969DD63AF407B80F2832C511ABFC4"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_F3BA57C1CE1048A38B511DC7CACBE960"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -482,6 +488,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
         "Release"
@@ -506,6 +520,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
     }
@@ -1858,6 +1880,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_EA2969DD63AF407B80F2832C511ABFC4"
+            {
+            "SourcePath" = "8:..\\SqlSync\\bin\\Release\\net7.0-windows\\SqlBuildManager.exe"
+            "TargetName" = "8:SqlBuildManager.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_39C777AAEF4746B49C67DCAA99BC024F"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F3BA57C1CE1048A38B511DC7CACBE960"
             {
             "SourcePath" = "8:..\\SqlSync\\SqlBuild\\Utility\\Wrap Add Index.sql"
@@ -2346,15 +2388,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:SQL Build Manager"
-        "ProductCode" = "8:{2DB34965-7692-4C0F-853F-53AA1C74BA87}"
-        "PackageCode" = "8:{88BA03E3-4687-4E04-A3BC-EFF785C7FBAC}"
+        "ProductCode" = "8:{FD6BDF72-A510-4B26-9F0E-53AB44C18980}"
+        "PackageCode" = "8:{D4DF09A2-5CDD-496C-894D-656ED9F3DC1A}"
         "UpgradeCode" = "8:{00F0500D-7970-463C-9EBE-5BEB116F0DAA}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:14.6.0"
+        "ProductVersion" = "8:15.3.0"
         "Manufacturer" = "8:BlueSkyDevUs"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://blueskydev.us"
@@ -2475,7 +2517,7 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_1E0A882B2ABC473CB3CE87DF188C0ADD"
+            "Target" = "8:_EA2969DD63AF407B80F2832C511ABFC4"
             "Folder" = "8:_77FACB82935C44238697948FE5DA8673"
             "WorkingFolder" = "8:_39C777AAEF4746B49C67DCAA99BC024F"
             "Icon" = "8:_37CC4BB593BC4B78AF85FDF86B1EBE14"
@@ -2489,7 +2531,7 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_1E0A882B2ABC473CB3CE87DF188C0ADD"
+            "Target" = "8:_EA2969DD63AF407B80F2832C511ABFC4"
             "Folder" = "8:_2A2FFD2F59F44804AF8540F849561C56"
             "WorkingFolder" = "8:_39C777AAEF4746B49C67DCAA99BC024F"
             "Icon" = "8:_37CC4BB593BC4B78AF85FDF86B1EBE14"
@@ -2901,7 +2943,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1E0A882B2ABC473CB3CE87DF188C0ADD"
             {
-            "SourcePath" = "8:..\\SqlSync\\obj\\Release\\net6.0-windows\\SqlBuildManager.dll"
+            "SourcePath" = "8:..\\SqlSync\\obj\\Release\\net7.0-windows\\SqlBuildManager.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_39C777AAEF4746B49C67DCAA99BC024F"
@@ -2985,7 +3027,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_875DDF1B8A8D4B4AA4DE8B65F349DDBE"
             {
-            "SourcePath" = "8:..\\SqlBuildManager.Console\\obj\\Release\\net6.0\\apphost.exe"
+            "SourcePath" = "8:..\\SqlBuildManager.Console\\obj\\Release\\net7.0\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_39C777AAEF4746B49C67DCAA99BC024F"
@@ -3069,7 +3111,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C3CBF3D7F53E4B5E838ADB6050E29E56"
             {
-            "SourcePath" = "8:..\\SqlSync\\obj\\Release\\net6.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\SqlSync\\obj\\Release\\net7.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_39C777AAEF4746B49C67DCAA99BC024F"

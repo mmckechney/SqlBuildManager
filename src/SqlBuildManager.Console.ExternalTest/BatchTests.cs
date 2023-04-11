@@ -1579,9 +1579,26 @@ namespace SqlBuildManager.Console.ExternalTest
             int startingLine = LogFileCurrentLineCount();
             var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFilePath), Guid.NewGuid().ToString() + ".cfg");
             File.WriteAllLines(tmpOverride, overrideFileContents.Take(3).ToList().ToArray());
-
             
             var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override" , tmpOverride,
+                "--concurrencytype",  concurType.ToString(),
+                "--jobname", jobName};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+
+
+
+            args = new string[]{
              "--loglevel", "debug",
             "batch",  batchMethod,
             "--settingsfile", settingsFile,
@@ -1596,12 +1613,12 @@ namespace SqlBuildManager.Console.ExternalTest
             "--stream",
             "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int>  val = rootCommand.InvokeAsync(args);
+            rootCommand = CommandLineBuilder.SetUp();
+            val = rootCommand.InvokeAsync(args);
             val.Wait();
-            var result = val.Result;
+            result = val.Result;
             
-            var logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = ReleventLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
