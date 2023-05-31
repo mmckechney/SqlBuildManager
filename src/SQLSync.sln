@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\devops\batch_update_releasepackage.ps1 = ..\devops\batch_update_releasepackage.ps1
 		Dockerfile = Dockerfile
 		format_release_notes.ps1 = format_release_notes.ps1
+		paralleltests.runsettings = paralleltests.runsettings
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLSync", "SqlSync\SQLSync.csproj", "{F54DD837-AD98-4A45-A709-1AA9E38E1A24}"

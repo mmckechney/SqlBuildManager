@@ -16,6 +16,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
     ///to contain all LocalBuildTest Unit Tests
     ///</summary>
     [TestClass()]
+    [DoNotParallelize]
     public class LocalBuildTest
     {
 

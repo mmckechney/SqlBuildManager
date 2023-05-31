@@ -22,14 +22,14 @@
 		<ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.8.2" />
-		<PackageReference Include="Azure.Messaging.EventHubs" Version="5.9.0" />
-		<PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.9.0" />
-		<PackageReference Include="Azure.Messaging.ServiceBus" Version="7.13.1" />
-		<PackageReference Include="Azure.ResourceManager" Version="1.5.0" />
+		<PackageReference Include="Azure.Identity" Version="1.9.0" />
+		<PackageReference Include="Azure.Messaging.EventHubs" Version="5.9.1" />
+		<PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.9.1" />
+		<PackageReference Include="Azure.Messaging.ServiceBus" Version="7.14.0" />
+		<PackageReference Include="Azure.ResourceManager" Version="1.6.0" />
 		<PackageReference Include="Azure.ResourceManager.AppContainers" Version="1.0.3" />
 		<PackageReference Include="Azure.ResourceManager.Batch" Version="1.1.1" />
-		<PackageReference Include="Azure.ResourceManager.ContainerInstance" Version="1.0.1" />
+		<PackageReference Include="Azure.ResourceManager.ContainerInstance" Version="1.1.0" />
 		<PackageReference Include="Azure.ResourceManager.Network" Version="1.2.0" />
 		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.5.0" />
 		<PackageReference Include="Azure.ResourceManager.Resources" Version="1.4.0" />
@@ -41,18 +41,18 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-		<PackageReference Include="Microsoft.SqlServer.DacFx" Version="161.8089.0" />
+		<PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.0.52" />
 		<PackageReference Include="morelinq" Version="3.4.2" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
 		<PackageReference Include="Serilog.Expressions" Version="3.4.1" />
-		<PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
 		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
-		<PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
+		<PackageReference Include="Serilog.Settings.Configuration" Version="7.0.0" />
 		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
 		<PackageReference Include="Serilog.Sinks.AzureEventHub" Version="6.0.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-		<PackageReference Include="Spectre.Console" Version="0.46.0" />
+		<PackageReference Include="Spectre.Console" Version="0.47.0" />
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
 		<PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
 		<PackageReference Include="System.ComponentModel.EventBasedAsync" Version="4.3.0" />

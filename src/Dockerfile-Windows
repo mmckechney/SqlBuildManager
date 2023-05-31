@@ -1,9 +1,9 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.301-windowsservercore-ltsc2019 AS base
+FROM mcr.microsoft.com/dotnet/runtime:7.0.5-windowsservercore-ltsc2019 AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.301-windowsservercore-ltsc2019 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0-windowsservercore-ltsc2019 AS build
 #\\WORKDIR  src
 
 
@@ -35,7 +35,7 @@ WORKDIR /src
 
 
 FROM build AS publish
-RUN dotnet publish SqlBuildManager.Console/sbm.csproj --configuration Release -f net6.0 -o /app/publish -r win-x64 --self-contained
+RUN dotnet publish SqlBuildManager.Console/sbm.csproj --configuration Release -f net7.0 -o /app/publish -r win-x64 --self-contained
 
 
 FROM base AS final

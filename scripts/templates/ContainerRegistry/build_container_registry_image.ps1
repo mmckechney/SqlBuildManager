@@ -39,7 +39,7 @@ if ($success)
 else 
 {
     Write-Host "Unable to read AssemblyVersion.cs file. Can not create a version tag" -ForegroundColor Yellow
-    Write-Host "Building with image tags: '$dateTag' | '$vnextTag' (used in integrat ion tests)" -ForegroundColor DarkGreen
+    Write-Host "Building with image tags: '$dateTag' | '$vnextTag' (used in integration tests)" -ForegroundColor DarkGreen
     if($true -eq $wait)
     {
         az acr build --image $dateTag --image $vnextTag --registry $azureContainerRegistry --resource-group $resourceGroupName  --file "$dockerFile" "$sourcePath" --no-logs --query outputimages

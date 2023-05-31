@@ -25,9 +25,12 @@ namespace SqlBuildManager.Logging
                     .Enrich.WithThreadId()
                     .Enrich.WithThreadName()
                     .WriteTo.Console(outputTemplate: consoleOutput);
-            foreach (var file in loggingPaths)
+            lock (loggingPaths)
             {
-                cfg.WriteTo.Async(a => a.File(file, outputTemplate: logOutputTemplate, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: false, shared: true));
+                foreach (var file in loggingPaths)
+                {
+                    cfg.WriteTo.Async(a => a.File(file, outputTemplate: logOutputTemplate, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: false, shared: true));
+                }
             }
             serilogLogger = cfg.CreateLogger();
 

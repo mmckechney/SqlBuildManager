@@ -17,6 +17,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     ///to contain all SqlBuildHelperTest Unit Tests
     ///</summary>
     [TestClass()]
+    [DoNotParallelize()]
     public class SqlBuildHelperTest
     {
 
