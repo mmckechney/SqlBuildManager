@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Management.Batch.Models;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
