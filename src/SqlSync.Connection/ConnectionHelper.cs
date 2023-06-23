@@ -91,7 +91,8 @@ namespace SqlSync.Connection
                     builder.Password = pw;
                     break;
                 case AuthenticationType.ManagedIdentity:
-                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault;
+                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryManagedIdentity;
+                    builder.UserID = uid; //UID here should be the managed identity client id
                     break;
                 case AuthenticationType.AzureADInteractive:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryInteractive;

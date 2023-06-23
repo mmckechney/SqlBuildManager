@@ -1,5 +1,13 @@
 # SQL Build Manager Change Log
 
+### Version 15.4.0
+- *FIXED:* Corrected bug #386 - `sbm batch *` were not properly handling the `--authtype ManagedIdentity` argument ()
+- *FIXED:* Corrected bug #387 - The path for the `--targetdacpac` was not getting trimmed to just the file name when getting sent to the Batch nodes
+- *UPDATED* Including Managed Identity client ID as SQL connection user ID property when using `--authtype ManagedIdentity` argument
+- *UPDATED:* Added ability for `sbm utility override` to accept `--settingsfile`, `--settingsfilekey` and identity arguments 
+- *UPDATED:* Changed `sbm dacpac` command to accept `--settingsfile`, `--settingsfilekey` and identity arguments (previously only accepted SQL authentication via `--username` and `--password`)
+
+
 ### Version 15.3.0
 _Consolidated updates in Version 15+_
 *NEW:* Removing `beta` tag as the new AKS  [Workload Identity](https://docs.microsoft.com/en-us/azure/aks/use-managed-identity) implementation is now GA.  This replaces of AAD Pod Identity and is a *breaking change* from any previous Kubernetes deployments. To understand how to configure your cluster, review the steps in the [create_aks_cluster.ps1](scripts/templates/kubernetes/create_aks_cluster.ps1) script.

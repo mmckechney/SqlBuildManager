@@ -168,6 +168,12 @@ namespace SqlSync.SqlBuild.MultiDb
 
                 MultiDbData multi = new MultiDbData();
                 int counter = 0;
+                if(tbl.Columns.Count <2)
+                {
+                    message = "Your SQL query didn't return enough columns. It should return at least 2 columns: target server and target database.";
+                    log.LogError(message);
+                    return null;
+                }
                 foreach (DataRow row in tbl.Rows)
                 {
                     var ser = new ServerData();

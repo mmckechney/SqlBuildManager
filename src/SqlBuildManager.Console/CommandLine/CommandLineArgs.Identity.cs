@@ -17,6 +17,10 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 IdentityArgs.ClientId = value;
                 this.DirectPropertyChangeTracker.Add("Identity.ClientId");
+                if (!string.IsNullOrWhiteSpace(value)) //For managed identity, set the username to the client id
+                {
+                    this.AuthenticationArgs.UserName = value;
+                }
             }
         }
             

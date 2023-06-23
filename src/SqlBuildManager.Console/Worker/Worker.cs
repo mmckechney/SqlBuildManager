@@ -94,8 +94,23 @@ namespace SqlBuildManager.Console
 
         internal static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine)
         {
-            if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
-            if (cmdLine.IdentityArgs != null) AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
+            if (cmdLine.IdentityArgs != null)
+            {
+                AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            }
+            else
+            {
+                AadHelper.ManagedIdentityClientId = string.Empty;
+            }
+
+            if (cmdLine.IdentityArgs != null)
+            {
+                AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
+            }
+            else
+            {
+                AadHelper.TenantId = string.Empty;
+            }
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
             bool decryptSuccess;

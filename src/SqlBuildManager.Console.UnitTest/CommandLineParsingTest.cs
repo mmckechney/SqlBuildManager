@@ -1,5 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.SqlServer.Management.HadrModel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MoreLinq;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.ContainerApp.Internal;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
@@ -7,6 +10,7 @@ using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -199,5 +203,38 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
 
+
+        
+        [DataRow("TestConfig/settingsfile-batch-linux-mi.json")]
+        [DataRow("TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json")]
+        [DataRow("TestConfig/settingsfile-batch-linux-queue-mi.json")]
+        [DataRow("TestConfig/settingsfile-batch-windows-mi.json")]
+        [DataRow("TestConfig/settingsfile-batch-windows-queue-keyvault-mi.json")]
+        [DataRow("TestConfig/settingsfile-batch-windows-queue-mi.json")]
+        [DataTestMethod]
+        public void BatchConnectionString_Test(string settingsFile)
+        {
+
+            settingsFile = Path.GetFullPath(settingsFile);
+            if(!File.Exists(settingsFile))
+            {
+                Assert.Inconclusive("Settings file not found: " + settingsFile);
+            }
+            CommandLineArgs cmdLine = new CommandLineArgs();
+            cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
+
+            string cmdString = cmdLine.ToStringExtension(StringType.Batch);
+            Assert.IsTrue(cmdString.Contains("--authtype \"ManagedIdentity\""), "Missing --authtype \"ManagedIdentity\" flag");
+
+            CommandLineArgs cmd2 = new CommandLineArgs();
+            
+            var splitter = CommandLineStringSplitter.Instance;
+            var args = splitter.Split(cmdString);
+            args = args.Insert<string>(new string[] { "batch", "runthreaded" }, 0);
+
+            (cmd2, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args.ToArray());
+
+            Assert.IsFalse(string.IsNullOrWhiteSpace(cmd2.AuthenticationArgs.UserName), "The UserName should be set to the value of the Managed Identity");
+        }
     }
 }
