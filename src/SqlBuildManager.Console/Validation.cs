@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Azure.ResourceManager.Network.Models;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Interfaces.Console;
@@ -31,8 +32,8 @@ namespace SqlBuildManager.Console
                 }
             }
 
-            //Validate that if username or password is specified, then both are
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+            //Validate that if username or password is specified, then both are (not required if set to ManagedIdentity)
+            if (cmdLine.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity && (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password)))
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
@@ -103,18 +104,6 @@ namespace SqlBuildManager.Console
                 if (string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) || string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource))
                 {
                     error = "The --platinumdbsource and --platinumserversource options must be used together";
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
-                    log.LogError(error);
-                    return (int)ExecutionReturn.MissingBuildFlag;
-                }
-            }
-
-            //If using Platinum DB source, make sure we have a username and password as well
-            if (!string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumDbSource) && !string.IsNullOrWhiteSpace(cmdLine.DacPacArgs.PlatinumServerSource))
-            {
-                if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
-                {
-                    error = "The --username and --password arguments are required when using --platinumdbsource";
                     errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingBuildFlag };
                     log.LogError(error);
                     return (int)ExecutionReturn.MissingBuildFlag;
@@ -237,14 +226,7 @@ namespace SqlBuildManager.Console
                 case ".sql":
                     if (cmdLine != null)
                     {
-                        ConnectionData connData = new ConnectionData()
-                        {
-                            DatabaseName = cmdLine.Database,
-                            SQLServerName = cmdLine.Server,
-                            UserId = cmdLine.AuthenticationArgs.UserName,
-                            Password = cmdLine.AuthenticationArgs.Password,
-                            AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType
-                        };
+                        ConnectionData connData = GetConnDataFromCommandLine(cmdLine);
                         multiData = MultiDbHelper.CreateMultiDbConfigFromQuery(connData, File.ReadAllText(cmdLine.MultiDbRunConfigFileName), out message);
                     }
                     break;
@@ -280,7 +262,15 @@ namespace SqlBuildManager.Console
             }
             return 0;
         }
+        private static ConnectionData GetConnDataFromCommandLine(CommandLineArgs cmdLine)
+        {
+            ConnectionData connData = new ConnectionData(cmdLine.Server, cmdLine.Database);
+            connData.UserId = cmdLine.AuthenticationArgs.UserName;
+            connData.Password = cmdLine.AuthenticationArgs.Password;
+            connData.AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType;
 
+            return connData;
+        }
         public static (int, CommandLineArgs) ValidateAndLoadPlatinumDacpac(CommandLineArgs cmdLine, MultiDbData multiDb)
         {
             //DacPac settings validation

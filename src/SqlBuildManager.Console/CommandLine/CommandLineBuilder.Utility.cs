@@ -230,7 +230,9 @@ namespace SqlBuildManager.Console.CommandLine
 					new Option<bool>(new string[] { "-f", "--force" }, "Force overwrite of existing output file"),
 
 				};
-				cmd.AddRange(DatabaseAuthArgs);
+                cmd.AddRange(SettingsFileExistingOptions);
+                cmd.AddRange(DatabaseAuthArgs);
+				cmd.AddRange(IdentityArgumentsForBatch);
 				cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.GenerateOverrideFileFromSqlScript);
 				return cmd;
 			}
@@ -266,7 +268,10 @@ namespace SqlBuildManager.Console.CommandLine
                             serverOption.Copy(true),
                             dacpacOutputOption
                         };
-                DatabaseAuthArgs.ForEach(o => cmd.Add(o));
+
+                cmd.AddRange(SettingsFileExistingOptions);
+                cmd.AddRange(DatabaseAuthArgs);
+                cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateDacpac);
                 return cmd;
             }

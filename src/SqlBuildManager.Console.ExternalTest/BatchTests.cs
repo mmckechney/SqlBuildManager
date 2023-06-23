@@ -171,6 +171,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi.json", ConcurrencyType.Count, 10)]
         [DataTestMethod]
         public void Batch_SqlScriptOverride_SBMSource_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
@@ -527,6 +528,66 @@ namespace SqlBuildManager.Console.ExternalTest
             }
 
         }
+
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi.json")]
+        [DataTestMethod]
+        public void Batch_Override_DacpacSource_TargetDacpac_Set_Success(string batchMethod, string settingsFile)
+        {
+            int removeCount = 1;
+            string server, database;
+            string firstOverride = overrideFileContents.First();
+            (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+            string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+            string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
+
+            string server2, database2;
+            string secondOverride = overrideFileContents.ElementAt(1);
+            (server2, database2) = DatabaseHelper.ExtractServerAndDbFromLine(secondOverride);
+            string targetDacPac = DatabaseHelper.CreateDacpac(cmdLine, server2, database2);
+
+            File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
+
+            DatabaseHelper.CreateRandomTable(cmdLine, new List<string>() { firstOverride, secondOverride });
+
+            Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+            string jobName = GetUniqueBatchJobName("batch-dacpac");
+
+
+            settingsFile = Path.GetFullPath(settingsFile);
+            var args = new string[]{
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", minusFirst,
+                "--platinumdacpac", dacpacName,
+                "--jobname", jobName,
+                "--targetdacpac", targetDacPac};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            ;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
+            }
+
+        }
+
 
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]

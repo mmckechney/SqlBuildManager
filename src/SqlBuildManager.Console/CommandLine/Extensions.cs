@@ -1,4 +1,6 @@
 ﻿using Azure.ResourceManager.Resources.Models;
+using Microsoft.SqlServer.Management.Dmf;
+using SqlBuildManager.Console.ContainerApp.Internal;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -70,6 +72,12 @@ namespace SqlBuildManager.Console.CommandLine
                             if (property.GetValue(obj) != null)
                             {
                                 args.AddRange(property.GetValue(obj).ToArgs(toStringType));
+                            }
+                        }else
+                        {
+                            if(cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity)
+                            {
+                                args.AddRange(new string[] { "--authtype", "ManagedIdentity".Quoted() });
                             }
                         }
 
@@ -285,6 +293,10 @@ namespace SqlBuildManager.Console.CommandLine
                 }
             }
             current.EventHubLogging = incoming.EventHubLogging;
+            if(!string.IsNullOrWhiteSpace(incoming.IdentityArgs.ClientId))
+            {
+                current.UserName = incoming.IdentityArgs.ClientId;
+            }
         }
         /// <summary>
         /// Used to set property values from a twin object, but not overwrite existing values if they have already been directly set

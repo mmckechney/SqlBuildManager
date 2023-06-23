@@ -82,7 +82,7 @@ namespace SqlBuildManager.Console.CommandLine
                 consolidated = consolidated & success;
             }
 
-            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId)) //if there is a managed Id then we not need to decrypt the user name
             {
                 (success, cmdLine.AuthenticationArgs.UserName) = sb.Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, key, "--username", suppressLog);
                 consolidated = consolidated & success;

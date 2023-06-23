@@ -25,18 +25,23 @@ namespace SqlSync.SqlBuild
                 DacExtractOptions opts = new DacExtractOptions();
                 opts.IgnoreExtendedProperties = true;
                 opts.IgnoreUserLoginMappings = true;
+                opts.LongRunningCommandTimeout = 120;
 
+                ConnectionData connData = new ConnectionData(sourceServer, sourceDatabase);
+                connData.AuthenticationType = authType;
+                if (!string.IsNullOrWhiteSpace(userName)) connData.UserId = userName;
+                if (!string.IsNullOrWhiteSpace(password)) connData.Password = password;
 
-                SqlConnectionStringBuilder connBuilder = new SqlConnectionStringBuilder();
-                if (authType == AuthenticationType.Windows) connBuilder.IntegratedSecurity = true;
-                if (!string.IsNullOrWhiteSpace(userName)) connBuilder.UserID = userName;
-                if (!string.IsNullOrWhiteSpace(password)) connBuilder.Password = password;
-                connBuilder.DataSource = sourceServer;
-                connBuilder.InitialCatalog = sourceDatabase;
-
+                //Pre-test the connection. the DacServices can hang for a long time if the connection is bad
+                if (!ConnectionHelper.TestDatabaseConnection(connData))
+                {
+                    log.LogError($"Unable to create Dacpac for {sourceServer}.{sourceDatabase}. Database connection test failed.");
+                    return false;
+                }
+                var connString = ConnectionHelper.GetConnectionString(connData);
                 Version ver = Assembly.GetExecutingAssembly().GetName().Version;
-                DacServices service = new DacServices(connBuilder.ConnectionString);
-                service.Extract(dacPacFileName, sourceDatabase, "Sql Build Manager", ver);
+                DacServices service = new DacServices(connString);
+                service.Extract(dacPacFileName, sourceDatabase, "Sql Build Manager", ver, "Sql Build Manager",null, opts);
                 log.LogInformation($"dacpac from {sourceServer}.{sourceDatabase} saved to {dacPacFileName}");
                 return true;
             }
