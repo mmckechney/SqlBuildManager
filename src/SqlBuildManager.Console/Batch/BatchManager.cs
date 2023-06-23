@@ -108,8 +108,6 @@ namespace SqlBuildManager.Console.Batch
             MultiDbData multiData;
             int? myExitCode = 0;
 
-            int tmpReturn = 0;
-
             //TODO: fix this for queue!!!!
             //Validate the override settings (not needed if --servicebusconnection is provided
             string[] errorMessages;
@@ -127,7 +125,7 @@ namespace SqlBuildManager.Console.Batch
             {
                 return ((int)ExecutionReturn.DacpacDatabasesInSync, string.Empty);
             }
-            else if (tmpReturn != 0)
+            else if (tmpValReturn.Item1 != 0)
             {
                 return (tmpValReturn.Item1, string.Empty);
             }
@@ -179,6 +177,10 @@ namespace SqlBuildManager.Console.Batch
                 if (!string.IsNullOrEmpty(cmdLine.DacPacArgs.PlatinumDacpac))
                 {
                     inputFilePaths.Add(cmdLine.DacPacArgs.PlatinumDacpac);
+                }
+                if (!string.IsNullOrEmpty(cmdLine.DacPacArgs.TargetDacpac))
+                {
+                    inputFilePaths.Add(cmdLine.DacPacArgs.TargetDacpac);
                 }
                 if (!string.IsNullOrEmpty(cmdLine.BuildFileName))
                 {
@@ -688,11 +690,18 @@ namespace SqlBuildManager.Console.Batch
                     threadCmdLine.BuildFileName = pkg.FilePath;
                 }
 
-                //Set the DacPac name to the path on the node (if set)
+                //Set the Platinum DacPac name to the path on the node (if set)
                 if (!string.IsNullOrWhiteSpace(threadCmdLine.DacPacArgs.PlatinumDacpac))
                 {
                     var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac.ToLower()))).FirstOrDefault();
                     threadCmdLine.DacPacArgs.PlatinumDacpac = dac.FilePath;
+                }
+
+                //Set the target DacPac name to the path on the node (if set)
+                if (!string.IsNullOrWhiteSpace(threadCmdLine.DacPacArgs.TargetDacpac))
+                {
+                    var tdac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.TargetDacpac.ToLower()))).FirstOrDefault();
+                    threadCmdLine.DacPacArgs.TargetDacpac = tdac.FilePath;
                 }
 
                 //Set the queryfile name to the path on the node (if set)

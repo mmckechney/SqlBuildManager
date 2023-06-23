@@ -617,6 +617,7 @@ namespace SqlBuildManager.Console
 
         internal static int GenerateOverrideFileFromSqlScript(CommandLineArgs cmdLine, bool force)
         {
+            (bool success, cmdLine) = Init(cmdLine);
             string tmpFile = string.Empty;
             if (cmdLine.ScriptFile == null && string.IsNullOrWhiteSpace(cmdLine.ScriptText))
             {
