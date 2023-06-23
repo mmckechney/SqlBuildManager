@@ -2,14 +2,17 @@
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.Aad
 {
-    internal class AadHelper
+    public class AadHelper
     {
+        private static CancellationTokenSource src = new CancellationTokenSource();
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string _managedIdentityClientId = string.Empty;
-        internal static string ManagedIdentityClientId
+        public static string ManagedIdentityClientId
         {
             get
             {
@@ -76,6 +79,13 @@ namespace SqlBuildManager.Console.Aad
                 }
                 return _tokenCred;
             }
+        }
+
+        public static async Task<string> GetBatchTokenString()
+        {
+            
+            var token = await AadHelper.TokenCredential.GetTokenAsync(new TokenRequestContext(new string[] { "https://batch.core.windows.net/.default" }), src.Token);
+            return token.Token;
         }
 
 

@@ -38,13 +38,6 @@ namespace SqlBuildManager.Console.Arm
             return subscription;
         }
 
-        private static ResourceGroupResource GetResourceGroup(string subscriptionId, string resourceGroupName)
-        {
-            var sub = GetSubscriptionResource(subscriptionId);
-            var rg = sub.GetResourceGroup(resourceGroupName);
-
-            return rg;
-        }
         private static ResourceGroupResource GetResourceGroup(SubscriptionResource sub, string resourceGroupName)
         {
             ResourceGroupResource rg = sub.GetResourceGroup(resourceGroupName);
@@ -59,6 +52,13 @@ namespace SqlBuildManager.Console.Arm
             return resource;
         }
 
+        internal static ResourceGroupResource GetResourceGroup(string subscriptionId, string resourceGroupName)
+        {
+            var sub = GetSubscriptionResource(subscriptionId);
+            var rg = sub.GetResourceGroup(resourceGroupName);
+
+            return rg;
+        }
 
         public static async Task<bool> SubmitDeployment(string subscriptionId, string resourceGroupName, string templateFileContents, string parameters, string deploymentName)
         {

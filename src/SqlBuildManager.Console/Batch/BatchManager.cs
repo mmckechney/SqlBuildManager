@@ -1,7 +1,11 @@
-﻿using Microsoft.Azure.Batch;
+﻿using Azure.Core;
+using Azure.ResourceManager;
+using arb = Azure.ResourceManager.Batch;
+using Azure.ResourceManager.Batch.Models;
+using Azure.ResourceManager.Models;
+using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
-using Microsoft.Azure.Management.Batch;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
@@ -18,9 +22,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using bm = Microsoft.Azure.Management.Batch.Models;
+using Azure.ResourceManager.Batch;
 
 namespace SqlBuildManager.Console.Batch
 {
@@ -515,7 +518,9 @@ namespace SqlBuildManager.Console.Batch
             return (jobId, poolId, storageContainerName);
         }
 
-        private async Task<bool> CreateBatchPool(CommandLineArgs cmdLine, string poolId)
+
+
+        public async Task<bool> CreateBatchPool(CommandLineArgs cmdLine, string poolId)
         {
 
             var batchAccountName = cmdLine.ConnectionArgs.BatchAccountName;
@@ -543,119 +548,63 @@ namespace SqlBuildManager.Console.Batch
                 throw new ArgumentException("Resource group must be specified either in for the Batch account or the Identity");
             }
             var subscriptionId = cmdLine.IdentityArgs.SubscriptionId;
+            if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            if (cmdLine.IdentityArgs != null) AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
 
 
             log.LogInformation($"Creating pool [{poolId}]...");
 
-            //var creds = new BatchSharedKeyCredential(batchAccountName, batchAccountKey);
-            if (cmdLine.IdentityArgs != null) AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
-            if (cmdLine.IdentityArgs != null) AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
-            var creds = new CustomClientCredentials(AadHelper.TokenCredential);
-            var managementClient = new BatchManagementClient(creds);
-            managementClient.SubscriptionId = subscriptionId;
 
-            //// From: https://docs.microsoft.com/en-us/azure/batch/managed-identity-pools
-            bm.ImageReference imageReference;
-            bm.VirtualMachineConfiguration virtualMachineConfiguration;
+            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
+            ArmClient client = new ArmClient(AadHelper.TokenCredential);
+
+            ResourceIdentifier batchAccountResourceId = arb.BatchAccountResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, batchAccountName);
+            arb.BatchAccountResource batchAccount = client.GetBatchAccountResource(batchAccountResourceId);
+
+            // get the collection of this BatchAccountPoolResource
+            arb.BatchAccountPoolCollection collection = batchAccount.GetBatchAccountPools();
+
+            // invoke the operation
+            
+            arb.BatchAccountPoolData data = new arb.BatchAccountPoolData();
+         
+            data.Identity = new ManagedServiceIdentity("UserAssigned")
+            {
+                UserAssignedIdentities = { [new ResourceIdentifier(cmdLine.IdentityArgs.ResourceId)] = new Azure.ResourceManager.Models.UserAssignedIdentity() }
+            };
+
+            BatchImageReference imageReference;
+            BatchVmConfiguration virtualMachineConfiguration;
             switch (os)
             {
                 case OsType.Linux:
-                    imageReference = new bm.ImageReference(publisher: "microsoft-azure-batch", offer: "ubuntu-server-container", sku: "20-04-lts", version: "latest");
-                    virtualMachineConfiguration = new bm.VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 20.04");
+                    imageReference = new BatchImageReference() { Publisher = "microsoft-azure-batch", Offer = "ubuntu-server-container", Sku = "20-04-lts", Version = "latest" };
+                    virtualMachineConfiguration = new BatchVmConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 20.04");
                     break;
 
                 case OsType.Windows:
                 default:
-                    imageReference = new bm.ImageReference(publisher: "MicrosoftWindowsServer", offer: "WindowsServer", sku: "2022-datacenter", version: "latest");
-                    virtualMachineConfiguration = new bm.VirtualMachineConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
+                    imageReference = new BatchImageReference { Publisher = "MicrosoftWindowsServer", Offer = "WindowsServer", Sku = "2022-datacenter", Version = "latest" };
+                    virtualMachineConfiguration = new BatchVmConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
 
                     break;
             }
-
-            var deploymentConfig = new bm.DeploymentConfiguration() { VirtualMachineConfiguration = virtualMachineConfiguration };
-            var ids = new Dictionary<string, bm.UserAssignedIdentities>();
-            ids.Add(userAssignedResourceId, new bm.UserAssignedIdentities(principalId: userAssignedPrinId, clientId: userAssignedClientId));
-
-            var poolIdentity = new bm.BatchPoolIdentity() { Type = bm.PoolIdentityType.UserAssigned, UserAssignedIdentities = ids };
-            var scaleSettings = new bm.ScaleSettings() { FixedScale = new bm.FixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
-
-            var poolParameters = new bm.Pool(name: poolId)
-            {
-                VmSize = vmSize,
-                ScaleSettings = scaleSettings,
-                DeploymentConfiguration = deploymentConfig,
-                Identity = poolIdentity,
-                TargetNodeCommunicationMode = bm.NodeCommunicationMode.Simplified
-            };
-
-            if (!string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.SubnetName) && !string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.VnetName))
-            {
-                var vnetRg = string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.ResourceGroup) ? resourceGroupName : cmdLine.NetworkArgs.ResourceGroup;
-                var networkConfig = new bm.NetworkConfiguration()
-                {
-                    SubnetId = $"/subscriptions/{subscriptionId}/resourceGroups/{vnetRg}/providers/Microsoft.Network/virtualNetworks/{cmdLine.NetworkArgs.VnetName}/subnets/{cmdLine.NetworkArgs.SubnetName}",
-                };
-                poolParameters.NetworkConfiguration = networkConfig;
-            }
+            data.DeploymentConfiguration = new BatchDeploymentConfiguration() { VmConfiguration = virtualMachineConfiguration };
+            data.ScaleSettings = new BatchAccountPoolScaleSettings() { FixedScale = new BatchAccountFixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
+            data.VmSize = vmSize;
             
             try
             {
-                var pool = await managementClient.Pool.CreateWithHttpMessagesAsync(
-                    poolName: poolId,
-                    resourceGroupName: resourceGroupName,
-                    accountName: batchAccountName,
-                    parameters: poolParameters,
-                    cancellationToken: default(CancellationToken));
 
-                if (!pool.Response.IsSuccessStatusCode)
-                {
-                    log.LogWarning($"Issue creating pool: {pool.Body.ProvisioningState.ToString()}");
-                    return false;
-                }
+                ArmOperation<BatchAccountPoolResource> lro = await collection.CreateOrUpdateAsync(Azure.WaitUntil.Completed, poolId, data);
+                BatchAccountPoolResource result = lro.Value;
+                BatchAccountPoolData resourceData = result.Data;
+                log.LogInformation($"Successfully created {os} pool {poolId} with {nodeCount} nodes");
+               
             }
-            catch (Microsoft.Rest.Azure.CloudException ce)
+            catch(Exception exe)
             {
-                // Accept the specific error code PoolExists as that is expected if the pool already exists
-                if (ce.Message.ToLower().Contains("a property that cannot be updated was specified"))
-                {
-                    try
-                    {
-                        log.LogInformation($"The pool {poolId} already existed when we tried to create it");
-                        var poolresult = managementClient.Pool.Get(resourceGroupName, batchAccountName, PoolName);
-                        log.LogInformation($"Pre-existing node count {poolresult.CurrentDedicatedNodes}");
-                        if (poolresult.CurrentDedicatedNodes != nodeCount)
-                        {
-                            log.LogWarning($"The pool {poolId} node count of {poolresult.CurrentDedicatedNodes} does not match the requested node count of {nodeCount}");
-                            if (poolresult.CurrentDedicatedNodes < nodeCount)
-                            {
-                                log.LogWarning($"Requested node count is greater then existing node count. Resizing pool to {nodeCount}");
-                                var updatePoolParameters = new bm.Pool(name: poolId)
-                                {
-                                    ScaleSettings = scaleSettings,
-                                };
-                                await managementClient.Pool.UpdateAsync(resourceGroupName, batchAccountName, poolId, updatePoolParameters);
-
-                            }
-                            else
-                            {
-                                log.LogWarning("Existing node count is larger than requested node count. No pool changes bring made");
-                            }
-                        }
-                    }
-                    catch (Exception exe)
-                    {
-                        log.LogWarning($"Unable to get information on existing pool. {exe.ToString()}");
-                        return false;
-                    }
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            catch (Exception exe)
-            {
-                log.LogError($"Error creating Batch Pool: {exe.ToString()}");
+                log.LogError(exe, $"The pool {poolId} failed to create. Unexpected error");
                 return false;
             }
             return true;

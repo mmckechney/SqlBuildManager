@@ -9,6 +9,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Threading.Tasks;
+using SqlBuildManager.Console.Batch;
+using Microsoft.Azure.Batch.Auth;
+using Microsoft.Azure.Batch;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -1620,6 +1623,39 @@ namespace SqlBuildManager.Console.ExternalTest
             
             logFileContents = ReleventLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+        }
+
+        [DataRow("TestConfig/settingsfile-batch-linux-queue-mi.json", "TestConfig/settingsfilekey.txt")]
+        [DataTestMethod]
+        public async Task CreateBatchPool_Success(string settingsFile, string settingsFileKeyPath)
+        {
+            var poolId = "TestPool1";
+            settingsFile = Path.GetFullPath(settingsFile);
+            
+            CommandLineArgs cmdLine = new CommandLineArgs();
+            cmdLine.SettingsFileKey = settingsFileKeyPath;
+            cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
+            if (cmdLine.IdentityArgs != null) SqlBuildManager.Console.Aad.AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            if (cmdLine.IdentityArgs != null) SqlBuildManager.Console.Aad.AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
+
+            
+            BatchManager mgr = new BatchManager(cmdLine);
+            var result = await mgr.CreateBatchPool(cmdLine, poolId);
+            
+            Assert.IsTrue(result);
+
+            
+            var batchToken = await SqlBuildManager.Console.Aad.AadHelper.GetBatchTokenString();
+            BatchTokenCredentials batchTokenCredentials = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, batchToken);
+            BatchClient batchClient = BatchClient.Open(batchTokenCredentials);
+
+            var existingPool = await batchClient.PoolOperations.GetPoolAsync(poolId);
+
+
+            Assert.IsNotNull(existingPool);
+            Assert.IsNotNull(existingPool.Identity);
+
+
         }
 
     }
