@@ -594,7 +594,18 @@ namespace SqlBuildManager.Console.Batch
             data.DeploymentConfiguration = new BatchDeploymentConfiguration() { VmConfiguration = virtualMachineConfiguration };
             data.ScaleSettings = new BatchAccountPoolScaleSettings() { FixedScale = new BatchAccountFixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
             data.VmSize = vmSize;
-            
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.SubnetName) && !string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.VnetName))
+            {
+                var vnetRg = string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.ResourceGroup) ? resourceGroupName : cmdLine.NetworkArgs.ResourceGroup;
+                var networkConfig = new BatchNetworkConfiguration()
+                {
+                    SubnetId =  new ResourceIdentifier($"/subscriptions/{subscriptionId}/resourceGroups/{vnetRg}/providers/Microsoft.Network/virtualNetworks/{cmdLine.NetworkArgs.VnetName}/subnets/{cmdLine.NetworkArgs.SubnetName}")
+                };
+                data.NetworkConfiguration = networkConfig;
+            }
+
+
             try
             {
 
@@ -603,6 +614,49 @@ namespace SqlBuildManager.Console.Batch
                 BatchAccountPoolData resourceData = result.Data;
                 log.LogInformation($"Successfully created {os} pool {poolId} with {nodeCount} nodes");
                
+            }
+            catch(Azure.RequestFailedException rfe)
+            {
+                if(rfe.ErrorCode == "PropertyCannotBeUpdated")
+                {
+                    try
+                    {
+                        
+                        log.LogInformation($"The pool {poolId} already existed when we tried to create it");
+                        var poolresult = await collection.GetAsync(poolId);
+                        var currentNodeCount = poolresult.Value.Data.ScaleSettings.FixedScale.TargetDedicatedNodes;
+                        log.LogInformation($"Pre-existing node count {currentNodeCount}");
+                        if (currentNodeCount != nodeCount)
+                        {
+                            log.LogWarning($"The pool {poolId} node count of {currentNodeCount} does not match the requested node count of {nodeCount}");
+                            if (currentNodeCount < nodeCount)
+                            {
+                                log.LogWarning($"Requested node count is greater then existing node count. Resizing pool to {nodeCount}");
+                                var scaleSettings = new BatchAccountPoolScaleSettings() { FixedScale = new BatchAccountFixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
+                                poolresult.Value.Data.ScaleSettings = scaleSettings;
+
+                                ArmOperation<BatchAccountPoolResource> lro = await collection.CreateOrUpdateAsync(Azure.WaitUntil.Completed, poolId, poolresult.Value.Data);
+                                BatchAccountPoolResource result = lro.Value;
+                                BatchAccountPoolData resourceData = result.Data;
+                                log.LogInformation($"Successfully created {os} pool {poolId} with {nodeCount} nodes");
+
+                            }
+                            else
+                            {
+                                log.LogWarning("Existing node count is larger than requested node count. No pool changes bring made");
+                            }
+                        }
+                    }
+                    catch (Exception exe)
+                    {
+                        log.LogWarning($"Unable to get information on existing pool. {exe.ToString()}");
+                        return false;
+                    }
+                }else
+                {
+                    log.LogError(rfe, $"The pool {poolId} failed to create. Unexpected error");
+                    return false;
+                }
             }
             catch(Exception exe)
             {
