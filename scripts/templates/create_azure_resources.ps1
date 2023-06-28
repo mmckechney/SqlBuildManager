@@ -13,25 +13,38 @@ $prefix,
  [int]
  $testDatabaseCount = 10,
 
-[bool]
- $build = $true,
 
- [bool]
- $deployBatch = $true,
+ [Parameter()]
+ [string[]]
+ [ValidateSet("AKS", "ContainerApp", "Batch", "ACI", "All")]
+ $deploy = "All"
 
- [bool]
- $deployAks = $true,
+)
 
- [bool]
- $includeAci = $true,
+ if($deploy.Contains("AKS") -or $deploy.Contains("All"))
+ {
+    $deployAks = $true
+    $deployContainerRegistry = $true
+ }
 
- [bool]
- $deployContainerAppEnv = $true,
+if($deploy.Contains("Batch") -or $deploy.Contains("All"))
+{
+    $deployBatch = $true
+    $build = $true
+}
 
- [bool]
- $deployContainerRegistry = $true
- 
- )
+if($deploy.Contains("ContainerApp") -or $deploy.Contains("All"))
+{
+    $deployContainerAppEnv = $true
+    $deployContainerRegistry = $true
+}
+
+if($deploy.Contains("ACI") -or $deploy.Contains("All"))
+{
+    $includeAci = $true
+    $deployContainerRegistry = $true
+}
+
 
 #############################################
 # Get set resource name variables from prefix
@@ -40,6 +53,7 @@ $prefix,
 . ./key_file_names.ps1 -prefix $prefix -path $outputPath
 
 $targetFramework = .\get_targetframework.ps1
+
 
  if($false -eq (Test-Path  $outputPath))
  {
@@ -54,29 +68,41 @@ Write-Host "Will be saving output files to $outputPath" -ForegroundColor Green
 Write-Host "Creating Resourcegroup: $ResourceGroupName" -ForegroundColor Cyan
 az group create --name $resourceGroupName --location $location -o table
 
-##########################################################################################
-# Storage Account, Event Hub and Service Bus Topic, Key Vault and Identity
-##########################################################################################
-Write-Host "Creating Azure resources: Storage Account, Event Hub, Service Bus Topic,  Key Vault and Identity" -ForegroundColor Cyan
-az deployment group create --resource-group $resourceGroupName --template-file azuredeploy_base.bicep --parameters namePrefix="$prefix" eventhubSku="Standard" skuCapacity=1 location=$location -o table
+############################################################################################
+# Storage Account, Event Hub and Service Bus Topic, Key Vault, Identity and RBAC Assignments
+############################################################################################
+$ipAddress = (Invoke-WebRequest ifconfig.me/ip).Content.Trim()
+Write-Host "Using IP Address: $ipAddress" -ForegroundColor Green
 
-####################
-# Set Identity privs
-####################
- ./ManagedIdentity/set_managedidentity_rbac_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName --path $outputPath
+$userIdGuid = az ad signed-in-user show -o tsv --query id
+Write-Host "Using User Id GUID: $userIdGuid" -ForegroundColor Green
 
- ./ManagedIdentity/set_current_user_rbac_fromprefix.ps1 -prefix $prefix -path $outputPath
+Write-Host "Deplpying Azure resources: Virtual Network, Subnets, Storage Account, Event Hub, Service Bus Topic, Key Vault, Identity and RBAC Assignments" -ForegroundColor Cyan
 
-#################
-# Batch
-#################
-if($deployBatch)
+if($false -eq $deployAks) {Write-Host "Skipping AKS deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying AKS Cluster" -ForegroundColor Cyan}
+if($false -eq $deployBatch) {Write-Host "Skipping Batch deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying Batch Account" -ForegroundColor Cyan}
+if($false -eq $deployContainerRegistry) {Write-Host "Skipping Container Registry deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying Container Registry" -ForegroundColor Cyan}
+if($false -eq $deployContainerAppEnv) {Write-Host "Skipping Container App Env deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying Container App Env" -ForegroundColor Cyan}
+if($testDatabaseCount -le 0) {Write-Host "Skipping Test database deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying $testDatabaseCount Test Databases" -ForegroundColor Cyan}
+
+$deployStatus = az deployment group create --resource-group $resourceGroupName --template-file azuredeploy_main.bicep `
+    --parameters `
+        namePrefix="$prefix" `
+        currentIpAddress=$ipAddress `
+        userIdGuid=$userIdGuid `
+        sqladminname=$sqlUserName `
+        sqladminpassword=$sqlPassword `
+        deployBatchAccount=$deployBatch `
+        deployContainerRegistry=$deployContainerRegistry `
+        deployContainerAppEnv=$deployContainerAppEnv `
+        testDbCountPerServer=$testDatabaseCount `
+      
+if($LASTEXITCODE){
+    Write-Host "Deployment failed with status: $($deployStatus)" -ForegroundColor Red
+    exit
+}else 
 {
-    ./Batch/create_batch_account_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath
-}
-else 
-{
-    Write-Host "Skipping Batch deployment" -ForegroundColor DarkBlue
+    Write-Host "Azure resource deployment succeeded" -ForegroundColor Green
 }
 
 ########################################
@@ -84,45 +110,24 @@ else
 ########################################
 if($deployContainerRegistry)
 {
-    ./ContainerRegistry/create_container_registry_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -path $outputPath
-    ./ContainerRegistry/build_container_registry_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -wait $false -path $outputPath
+     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/ContainerRegistry/build_container_registry_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -wait $false -path $outputPath
+}
+else 
+{
+    Write-Host "Skipping Container Build" -ForegroundColor DarkBlue
 }
 #################
 # AKS
 #################
 if($deployAks)
 {
-    ./Kubernetes/create_aks_cluster.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -includeContainerRegistry $deployContainerRegistry -path $outputPath
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/Kubernetes/create_aks_cluster.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -includeContainerRegistry $deployContainerRegistry -path $outputPath
 }
 else 
 {
     Write-Host "Skipping AKS deployment" -ForegroundColor DarkBlue
-}
-
-#################
-# Container App
-#################
-if($deployContainerAppEnv)
-{
-    ./ContainerApp/create_containerapp_env_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath
-
-}
-else 
-{
-    Write-Host "Skipping Container App environment deployment" -ForegroundColor DarkBlue
-}
-
-#################
-# Test Databases?
-#################
-if($testDatabaseCount -gt 0)
-{
-   ./Database/create_databases_from_prefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path  $outputPath -testDatabaseCount $testDatabaseCount
-   ./Database/create_login_for_managedidentity_fromprefix.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path  $outputPath 
-}
-else 
-{
-    Write-Host "Skipping Test database deployment" -ForegroundColor DarkBlue
 }
 
 
@@ -131,13 +136,13 @@ else
 #########################
 if($build -and $deployBatch)
 {
-    ./Batch/build_and_upload_batch_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -path $outputPath -action BuildAndUpload
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/Batch/build_and_upload_batch_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -path $outputPath -action BuildAndUpload
 }
 else 
 {
     Write-Host "Skipping code build" -ForegroundColor DarkBlue
 }
-
 
 #############################################################
 # Save the settings files and config files for the unit tests
@@ -147,15 +152,31 @@ $sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\$targetFram
 ##########################
 # Add Secrets to Key Vault
 ##########################
-./KeyVault/add_secrets_to_keyvault_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+.$scriptDir/KeyVault/add_secrets_to_keyvault_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+
+#########################
+# Database override files
+#########################
+if($testDatabaseCount -gt 0)
+{
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/Database/create_database_override_files.ps1 -prefix $prefix -path $outputPath -resourceGroupName $resourceGroupName
+}
+
 
 if($deployAks)
 {
     ##############################
     # Create AKS Settings files
     ##############################
-    ./kubernetes/create_aks_settingsfile_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/kubernetes/create_aks_settingsfile_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
  }
+ else 
+{
+    Write-Host "Skipping AKS settings files" -ForegroundColor DarkBlue
+}
 
 #################################
 # Settings File for Container App
@@ -163,12 +184,19 @@ if($deployAks)
 if($deployContainerAppEnv)
 {
     # Create test file referencing the 
-    ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $false
-    ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $true
-    if($deployContainerRegistry)
-    {
-        ./ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
-    }
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $false
+    
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $true
+    
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
+
+}
+else 
+{
+    Write-Host "Skipping Container App Environment settings files" -ForegroundColor DarkBlue
 }
 
 #########################
@@ -176,26 +204,30 @@ if($deployContainerAppEnv)
 #########################
 if($deployBatch)
 {
-    ./Batch/create_batch_settingsfiles_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/Batch/create_batch_settingsfiles_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+}
+else 
+{
+    Write-Host "Skipping Batch Account settings files" -ForegroundColor DarkBlue
 }
 #######################
 # Settings File for ACI
 #######################
 if($includeAci)
 {
-    ./aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry 
-    if($deployContainerRegistry)
-    {
-        ./aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
-    }
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry 
+
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    .$scriptDir/aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
+
+}
+else 
+{
+    Write-Host "Skipping ACI settings files" -ForegroundColor DarkBlue
 }
 
-#########################
-# Database override files
-#########################
-if($testDatabaseCount -gt 0)
-{
-    ./Database/create_database_override_files.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName
-}
+
 
 Write-Host "COMPLETED! - Azure resources have been created." -ForegroundColor DarkCyan

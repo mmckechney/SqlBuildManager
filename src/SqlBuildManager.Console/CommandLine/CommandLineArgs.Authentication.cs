@@ -32,6 +32,7 @@ namespace SqlBuildManager.Console.CommandLine
                 this.DirectPropertyChangeTracker.Add("Authentication.Password");
             }
         }
+
         [JsonIgnore]
         public virtual SqlSync.Connection.AuthenticationType AuthenticationType
         {
@@ -46,6 +47,9 @@ namespace SqlBuildManager.Console.CommandLine
         {
             public virtual string UserName { get; set; } = string.Empty;
             public virtual string Password { get; set; } = string.Empty;
+
+            [JsonIgnore]
+            public virtual bool UserNameIsManagedIdentityClientId { get; set; } = false;
 
             [JsonConverter(typeof(JsonStringEnumConverter))]
             [DefaultValue(SqlSync.Connection.AuthenticationType.Password)]

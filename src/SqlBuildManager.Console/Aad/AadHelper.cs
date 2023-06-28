@@ -5,11 +5,11 @@ using System;
 
 namespace SqlBuildManager.Console.Aad
 {
-    internal class AadHelper
+    public class AadHelper
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static string _managedIdentityClientId = string.Empty;
-        internal static string ManagedIdentityClientId
+        public static string ManagedIdentityClientId
         {
             get
             {

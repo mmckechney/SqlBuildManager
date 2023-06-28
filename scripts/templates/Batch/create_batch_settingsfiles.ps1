@@ -122,12 +122,13 @@ $keyVaultParam = @("--keyvaultname", $keyVaultName)
 # With Password auth (default)
 Write-Host "Saving settings file to $settingsJsonWindows" -ForegroundColor DarkGreen
 $tmpPath = @("--settingsfile", $settingsJsonWindows)
-Write-Host $params   $winParams   $tmpPath -ForegroundColor DarkYellow
+Write-Host $params   $winParams   $tmpPath $tmpPath  $ehConnParam -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $ehConnParam ) -Wait -NoNewWindow
 
 
 Write-Host "Saving settings file to $settingsJsonLinux" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonLinux)
+Write-Host $params  $linuxParams  $tmpPath  $ehConnParam -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath  + $ehConnParam )  -Wait -NoNewWindow
  
 
@@ -138,12 +139,13 @@ $authMi += @("--principalid",$identity.principalId)
 
 Write-Host "Saving settings file to $settingsJsonWindowsMi" -ForegroundColor DarkGreen
 $tmpPath = @("--settingsfile", $settingsJsonWindowsMi)
-Write-Host $params  $winParams   $tmpPath -ForegroundColor DarkYellow
+Write-Host $params  $winParams   $tmpPath $authMi  $ehNameParam -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $authMi + $ehNameParam) -Wait -NoNewWindow
 
 
 Write-Host "Saving settings file to $settingsJsonLinuxMi" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonLinuxMi)
+Write-Host $params  $linuxParams $tmpPath  $authMi  $ehNameParam -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $authMi + $ehNameParam ) -Wait -NoNewWindow
 
 
@@ -152,33 +154,41 @@ Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $authMi
 
 Write-Host "Saving settings file to $settingsJsonWindowsQueue" -ForegroundColor DarkGreen
 $tmpPath = @("--settingsfile",$settingsJsonWindowsQueue)
+Write-Host $params  $winParams  $tmpPath  $sbConnParam   $ehConnParam  -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $sbConnParam  + $ehConnParam ) -Wait -NoNewWindow
 
 Write-Host "Saving settings file to $settingsJsonWindowsQueueKv" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonWindowsQueueKv)
+Write-Host $params  $winParams  $tmpPath  $sbConnParam  $ehConnParam  $keyVaultParam  -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $sbConnParam + $ehConnParam + $keyVaultParam )   -Wait -NoNewWindow
 
 Write-Host "Saving settings file to $settingsJsonLinuxQueue" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonLinuxQueue)
+Write-Host $params  $linuxParams  $tmpPath $sbConnParam  $ehConnParam  -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $sbConnParam + $ehConnParam )  -Wait -NoNewWindow
  
 Write-Host "Saving settings file to $settingsJsonLinuxQueueKv" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonLinuxQueueKv)
+Write-Host $params  $linuxParams  $tmpPath  $sbConnParam   $ehConnParam  $keyVaultParam  -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $sbConnParam  + $ehConnParam + $keyVaultParam )  -Wait -NoNewWindow
 
 #With Managed Identity auth
 Write-Host "Saving settings file to $settingsJsonWindowsQueueMi" -ForegroundColor DarkGreen
 $tmpPath = @("--settingsfile",$settingsJsonWindowsQueueMi)
+Write-Host $params  $winParams  $tmpPath  $authMi  $sbNamespaceParam  $ehNameParam  -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $authMi + $sbNamespaceParam  + $ehNameParam) -Wait -NoNewWindow
 
 Write-Host "Saving settings file to $settingsJsonWindowsQueueKvMi" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonWindowsQueueKvMi)
+Write-Host $params  $winParams  $tmpPath  $authMi  $sbNamespaceParam   $ehNameParam  $keyVaultParam -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $winParams + $tmpPath + $authMi + $sbNamespaceParam  + $ehNameParam + $keyVaultParam)  -Wait -NoNewWindow
 
 Write-Host "Saving settings file to $settingsJsonLinuxQueueMi" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonLinuxQueueMi)
+Write-Host $params  $linuxParams  $tmpPath  $authMi $sbNamespaceParam $ehNameParam -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $authMi + $sbNamespaceParam  + $ehNameParam) -Wait -NoNewWindow
  
 Write-Host "Saving settings file to $settingsJsonLinuxQueueKvMi" -ForegroundColor DarkGreen 
 $tmpPath = @("--settingsfile",$settingsJsonLinuxQueueKvMi)
+Write-Host $params $linuxParams  $tmpPath $authMi $sbNamespaceParam  $ehNameParam $keyVaultParam -ForegroundColor DarkYellow
 Start-Process $sbmExe -ArgumentList ($params + $linuxParams + $tmpPath + $authMi + $sbNamespaceParam  + $ehNameParam + $keyVaultParam) -Wait -NoNewWindow

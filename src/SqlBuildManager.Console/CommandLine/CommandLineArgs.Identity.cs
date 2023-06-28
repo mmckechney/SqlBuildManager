@@ -20,6 +20,7 @@ namespace SqlBuildManager.Console.CommandLine
                 if (!string.IsNullOrWhiteSpace(value)) //For managed identity, set the username to the client id
                 {
                     this.AuthenticationArgs.UserName = value;
+                    this.AuthenticationArgs.UserNameIsManagedIdentityClientId = true;
                 }
             }
         }

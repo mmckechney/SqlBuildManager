@@ -126,7 +126,7 @@ foreach($auth in $authTypes)
 
     $params += @("--tenantid", $tenantId)
     $params +=("--environmentname",$containerAppEnvironmentName)
-    $params +=("--location",$location)
+    $params +=("--location","""$location""")
     $params +=("--resourcegroup", $resourceGroupName)
     $params +=("--imagetag",$imageTag)
     $params +=("--settingsfile",$tmpPath)

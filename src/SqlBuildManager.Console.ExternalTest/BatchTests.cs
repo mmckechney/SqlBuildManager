@@ -51,6 +51,9 @@ namespace SqlBuildManager.Console.ExternalTest
             (ds, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             overrideFileContents = File.ReadAllLines(overrideFilePath).ToList();
 
+            Aad.AadHelper.ManagedIdentityClientId = string.Empty;
+            Aad.AadHelper.TenantId = string.Empty;
+
 
         }
         [TestCleanup]

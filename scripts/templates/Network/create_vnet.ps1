@@ -1,9 +1,15 @@
 [CmdletBinding()]
 param (
+
     [Parameter()]
     [string]
-    $resourceGroupName, 
+    $prefix,
 
+
+    [Parameter()]
+    [string]
+    $resourceGroupName =$prefix + "-rg",
+  
     [Parameter()]
     [string]
     $nsgName,
@@ -30,41 +36,45 @@ param (
     
     [Parameter()]
     [string]
-    $vnetPrefix = "10.180.0.0/20",
+    $vnetPrefix,
 
     [Parameter()]
     [string]
-    $aksSubnetPrefix = "10.180.0.0/22",
+    $aksSubnetPrefix,
 
     [Parameter()]
     [string]
-    $containerAppSubnetPrefix = "10.180.4.0/22",
+    $containerAppSubnetPrefix,
+    [Parameter()]
+    [string]
+    $aciSubnetPrefix ,
 
     [Parameter()]
     [string]
-    $aciSubnetPrefix = "10.180.8.0/22",
-
-    [Parameter()]
-    [string]
-    $batchSubnetPrefix = "10.180.12.0/22"
+    $batchSubnetPrefix 
 
 
 )
 
-Write-Host "Creating Network Security Group: $nsgName" -ForegroundColor DarkGreen
-az network nsg create  --resource-group $resourceGroupName --name $nsgName -o table
+$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+Write-Host "Creating VNET and subnets" -ForegroundColor DarkGreen
 
-Write-Host "Creating VNET: $vnet" -ForegroundColor DarkGreen
-az network vnet create --resource-group $resourceGroupName --name $vnet  --address-prefixes  $vnetPrefix  -o table
+$params = "{ ""namePrefix"":{""value"":""$prefix""},"
+if("" -ne $nsgName) { $params += """nsgName"":{""value"":""$nsgName""}," }
+if("" -ne $vnet) { $params += """vnetName"":{""value"":""$vnet""},"}
+if("" -ne $aksSubnet) { $params += """aksSubnetName"":{""value"":""$aksSubnet""},"}
+if("" -ne $containerAppSubnet) { $params += """containerAppSubnetName"":{""value"":""$containerAppSubnet""},"}
+if("" -ne $aciSubnet) { $params += """aciSubnetName"":{""value"":""$aciSubnet""},"}
+if("" -ne $batchSubnet) { $params += """batchSubnetName"":{""value"":""$batchSubnet""},"}
+if("" -ne $vnetPrefix) { $params += """vnetIpRange"":{""value"":""$vnetPrefix""},"}
+if("" -ne $aksSubnetPrefix) { $params += """aksSubnetIpRange"":{""value"":""$aksSubnetPrefix""},"}
+if("" -ne $containerAppSubnetPrefix) { $params += """containerAppSubnetIpRange"":{""value"":""$containerAppSubnetPrefix""},"}
+if("" -ne $aciSubnetPrefix) { $params += """aciSubnetIpRange"":{""value"":""$aciSubnetPrefix""},"}
+if("" -ne $batchSubnetPrefix) { $params += """batchSubnetIpRange"":{""value"":""$batchSubnetPrefix"""}
+$params = $params.TrimEnd(",")
+$params += "}"
+$params = $params | ConvertTo-Json
+Write-Host $params 
 
-Write-Host "Creating AKS subnet: $aksSubnet" -ForegroundColor DarkGreen
-az network vnet subnet create --resource-group $resourceGroupName --vnet-name $vnet --name $aksSubnet --address-prefixes  $aksSubnetPrefix --network-security-group $nsgName  --service-endpoints Microsoft.Sql  -o table
 
-Write-Host "Creating Container App subnet: $containerAppSubnet" -ForegroundColor DarkGreen
-az network vnet subnet create --resource-group $resourceGroupName --vnet-name $vnet --name $containerAppSubnet --address-prefixes $containerAppSubnetPrefix --service-endpoints Microsoft.Sql --network-security-group $nsgName -o table
-
-Write-Host "Creating Container Instance subnet: $aciSubnet" -ForegroundColor DarkGreen
-az network vnet subnet create --resource-group $resourceGroupName --vnet-name $vnet --name $aciSubnet --address-prefixes $aciSubnetPrefix --service-endpoints Microsoft.Sql --delegations Microsoft.ContainerInstance/containerGroups --network-security-group $nsgName -o table
-
-Write-Host "Creating Batch Account subnet: $batchSubnet" -ForegroundColor DarkGreen
-az network vnet subnet create --resource-group $resourceGroupName --vnet-name $vnet --name $batchSubnet --address-prefixes $batchSubnetPrefix --service-endpoints Microsoft.Sql  --network-security-group $nsgName -o table
+az deployment group create --resource-group $resourceGroupName --template-file .$scriptDir../Modules/network.bicep --parameters $params  -o table 

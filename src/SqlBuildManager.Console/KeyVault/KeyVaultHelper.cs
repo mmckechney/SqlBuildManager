@@ -97,8 +97,13 @@ namespace SqlBuildManager.Console.KeyVault
 
             keys.Add(SaveSecret(kvName, KeyVaultHelper.StorageAccountKey, cmdLine.ConnectionArgs.StorageAccountKey));
             keys.Add(SaveSecret(kvName, KeyVaultHelper.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountName));
-            keys.Add(SaveSecret(kvName, KeyVaultHelper.UserName, cmdLine.AuthenticationArgs.UserName));
-            keys.Add(SaveSecret(kvName, KeyVaultHelper.Password, cmdLine.AuthenticationArgs.Password));
+
+            if (!cmdLine.AuthenticationArgs.UserNameIsManagedIdentityClientId)
+            {
+                keys.Add(SaveSecret(kvName, KeyVaultHelper.UserName, cmdLine.AuthenticationArgs.UserName));
+                keys.Add(SaveSecret(kvName, KeyVaultHelper.Password, cmdLine.AuthenticationArgs.Password));
+            }
+            
             keys.Add(SaveSecret(kvName, KeyVaultHelper.BatchAccountKey, cmdLine.ConnectionArgs.BatchAccountKey));
             if (cmdLine.ContainerRegistryArgs != null)
             {

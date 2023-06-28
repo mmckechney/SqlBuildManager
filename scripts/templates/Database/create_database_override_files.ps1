@@ -1,10 +1,14 @@
 param
 (
     [string] $path,
+    [string] $prefix,
     [string] $resourceGroupName
 )
 
-Write-Host "Create Database override files"  -ForegroundColor Cyan
+. ./../prefix_resource_names.ps1 -prefix $prefix
+. ./../key_file_names.ps1 -prefix $prefix -path $path
+
+Write-Host "Create Database override files for sql servers in resource group '$resourceGroupName'"  -ForegroundColor Cyan
 $path = Resolve-Path $path
 Write-Host "Output path set to $path" -ForegroundColor DarkGreen
 
