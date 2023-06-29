@@ -16,35 +16,77 @@ $prefix,
 
  [Parameter()]
  [string[]]
+ [ValidateSet("AKS", "ContainerApp", "Batch", "ACI", "All", "None")]
+ $deploy = "All",
+
+ [Parameter()]
+ [string[]]
  [ValidateSet("AKS", "ContainerApp", "Batch", "ACI", "All")]
- $deploy = "All"
+ $settingsFile = "All"
 
 )
+#############################################
+# Set variable defaults to $false
+#############################################
+$deployAks = $false
+$deployBatch = $false
+$build = $false
+$deployContainerAppEnv = $false
+$deployContainerRegistry = $false
+$settingsFileAks = $false
+$settingsFileBatch = $false
+$settingsFileContainerApp = $false
+$settingsFileAci = $false
+$shouldDeploy = $false
 
- if($deploy.Contains("AKS") -or $deploy.Contains("All"))
- {
-    $deployAks = $true
-    $deployContainerRegistry = $true
- }
-
-if($deploy.Contains("Batch") -or $deploy.Contains("All"))
+$shouldDeploy = (-Not $deploy.Contains("None"))
+if($shouldDeploy)
 {
-    $deployBatch = $true
-    $build = $true
+    if($deploy.Contains("AKS") -or $deploy.Contains("All"))
+    {
+        $deployAks = $true
+        $deployContainerRegistry = $true
+        $settingsFileAks = $true
+    }
+
+    if($deploy.Contains("Batch") -or $deploy.Contains("All"))
+    {
+        $deployBatch = $true
+        $build = $true
+        $settingsFileBatch = $true
+    }
+
+    if($deploy.Contains("ContainerApp") -or $deploy.Contains("All"))
+    {
+        $deployContainerAppEnv = $true
+        $deployContainerRegistry = $true
+        $settingsFileContainerApp = $true
+    }
+
+    if($deploy.Contains("ACI") -or $deploy.Contains("All"))
+    {
+        $deployContainerRegistry = $true
+        $settingsFileAci = $true
+    }
 }
 
-if($deploy.Contains("ContainerApp") -or $deploy.Contains("All"))
+if($settingsFile.Contains("AKS") -or $settingsFile.Contains("All"))
 {
-    $deployContainerAppEnv = $true
-    $deployContainerRegistry = $true
+    $settingsFileAks = $true
 }
-
-if($deploy.Contains("ACI") -or $deploy.Contains("All"))
+if($settingsFile.Contains("Batch") -or $settingsFile.Contains("All"))
 {
-    $includeAci = $true
-    $deployContainerRegistry = $true
+    $settingsFileBatch = $true
 }
-
+if($settingsFile.Contains("ContainerApp") -or $settingsFile.Contains("All"))
+{
+    $settingsFileContainerApp = $true
+    $
+}
+if($settingsFile.Contains("ACI") -or $settingsFile.Contains("All"))
+{
+    $settingsFileAci = $true
+}
 
 #############################################
 # Get set resource name variables from prefix
@@ -62,49 +104,64 @@ $targetFramework = .\get_targetframework.ps1
 $outputPath = Resolve-Path $outputPath
 Write-Host "Will be saving output files to $outputPath" -ForegroundColor Green
 
-################
-# Resource Group
-################
-Write-Host "Creating Resourcegroup: $ResourceGroupName" -ForegroundColor Cyan
-az group create --name $resourceGroupName --location $location -o table
-
-############################################################################################
-# Storage Account, Event Hub and Service Bus Topic, Key Vault, Identity and RBAC Assignments
-############################################################################################
-$ipAddress = (Invoke-WebRequest ifconfig.me/ip).Content.Trim()
-Write-Host "Using IP Address: $ipAddress" -ForegroundColor Green
-
-$userIdGuid = az ad signed-in-user show -o tsv --query id
-Write-Host "Using User Id GUID: $userIdGuid" -ForegroundColor Green
-
-Write-Host "Deplpying Azure resources: Virtual Network, Subnets, Storage Account, Event Hub, Service Bus Topic, Key Vault, Identity and RBAC Assignments" -ForegroundColor Cyan
-
-if($false -eq $deployAks) {Write-Host "Skipping AKS deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying AKS Cluster" -ForegroundColor Cyan}
-if($false -eq $deployBatch) {Write-Host "Skipping Batch deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying Batch Account" -ForegroundColor Cyan}
-if($false -eq $deployContainerRegistry) {Write-Host "Skipping Container Registry deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying Container Registry" -ForegroundColor Cyan}
-if($false -eq $deployContainerAppEnv) {Write-Host "Skipping Container App Env deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying Container App Env" -ForegroundColor Cyan}
-if($testDatabaseCount -le 0) {Write-Host "Skipping Test database deployment" -ForegroundColor DarkBlue} else {Write-Host "Deploying $testDatabaseCount Test Databases" -ForegroundColor Cyan}
-
-$deployStatus = az deployment group create --resource-group $resourceGroupName --template-file azuredeploy_main.bicep `
-    --parameters `
-        namePrefix="$prefix" `
-        currentIpAddress=$ipAddress `
-        userIdGuid=$userIdGuid `
-        sqladminname=$sqlUserName `
-        sqladminpassword=$sqlPassword `
-        deployBatchAccount=$deployBatch `
-        deployContainerRegistry=$deployContainerRegistry `
-        deployContainerAppEnv=$deployContainerAppEnv `
-        testDbCountPerServer=$testDatabaseCount `
-      
-if($LASTEXITCODE){
-    Write-Host "Deployment failed with status: $($deployStatus)" -ForegroundColor Red
-    exit
-}else 
+if($shouldDeploy)
 {
-    Write-Host "Azure resource deployment succeeded" -ForegroundColor Green
-}
+    ################
+    # Resource Group
+    ################
+    Write-Host "Creating Resourcegroup: $ResourceGroupName" -ForegroundColor Cyan
+    az group create --name $resourceGroupName --location $location -o table
 
+    ############################################################################################
+    # Storage Account, Event Hub and Service Bus Topic, Key Vault, Identity and RBAC Assignments
+    ############################################################################################
+    $ipAddress = (Invoke-WebRequest ifconfig.me/ip).Content.Trim()
+    Write-Host "Using IP Address: $ipAddress" -ForegroundColor Green
+
+    $userIdGuid = az ad signed-in-user show -o tsv --query id
+    Write-Host "Using User Id GUID: $userIdGuid" -ForegroundColor Green
+    if("" -eq $sqlUserName -or "" -eq $sqlPassword -or $null -eq $sqlUserName -or $null -eq $sqlPassword)
+    {
+        if($testDatabaseCount -ge 0) {
+            Write-Host "SQL Username or Password is empty. Canceling deployment" -ForegroundColor Red
+            Exit
+        }
+    }
+
+
+    Write-Host "Deplpoying Azure resources: Virtual Network, Subnets, Storage Account, Event Hub, Service Bus Topic, Key Vault, Identity and RBAC Assignments" -ForegroundColor Cyan
+
+    if($deployAks) {Write-Host "Deploying AKS Cluster" -ForegroundColor Cyan} else {Write-Host "Skipping AKS deployment" -ForegroundColor DarkBlue}
+    if($deployBatch) {Write-Host "Deploying Batch Account" -ForegroundColor Cyan} else {Write-Host "Skipping Batch deployment" -ForegroundColor DarkBlue}
+    if($deployContainerRegistry) {Write-Host "Deploying Container Registry" -ForegroundColor Cyan} else {Write-Host "Skipping Container Registry deployment" -ForegroundColor DarkBlue}
+    if($deployContainerAppEnv) {Write-Host "Deploying Container App Env" -ForegroundColor Cyan} else {Write-Host "Skipping Container App Env deployment" -ForegroundColor DarkBlue}
+    if($testDatabaseCount -le 0) {Write-Host "Deploying $testDatabaseCount Test Databases"  -ForegroundColor Cyan} else {Write-Host  "Skipping Test database deployment" -ForegroundColor DarkBlue}
+
+
+    $deployStatus = az deployment group create --resource-group $resourceGroupName --template-file azuredeploy_main.bicep `
+        --parameters `
+            namePrefix="$prefix" `
+            currentIpAddress=$ipAddress `
+            userIdGuid=$userIdGuid `
+            sqladminname=$sqlUserName `
+            sqladminpassword=$sqlPassword `
+            deployBatchAccount=$deployBatch `
+            deployContainerRegistry=$deployContainerRegistry `
+            deployContainerAppEnv=$deployContainerAppEnv `
+            deployAKS=$deployAks `
+            testDbCountPerServer=$testDatabaseCount `
+        
+    if($LASTEXITCODE){
+        Write-Host "Deployment failed with status: $($deployStatus)" -ForegroundColor Red
+        exit
+    }else 
+    {
+        Write-Host "Azure resource deployment succeeded" -ForegroundColor Green
+    }
+}
+else {
+    Write-Host "Skipping Azure resource deployment" -ForegroundColor DarkBlue
+}
 ########################################
 # Container Registry and Container Build
 ########################################
@@ -165,7 +222,7 @@ if($testDatabaseCount -gt 0)
 }
 
 
-if($deployAks)
+if($settingsFileAks)
 {
     ##############################
     # Create AKS Settings files
@@ -181,7 +238,7 @@ if($deployAks)
 #################################
 # Settings File for Container App
 #################################
-if($deployContainerAppEnv)
+if($settingsFileContainerApp)
 {
     # Create test file referencing the 
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
@@ -202,7 +259,7 @@ else
 #########################
 # Settings File for Batch
 #########################
-if($deployBatch)
+if($settingsFileBatch)
 {
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
     .$scriptDir/Batch/create_batch_settingsfiles_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
@@ -214,7 +271,7 @@ else
 #######################
 # Settings File for ACI
 #######################
-if($includeAci)
+if($settingsFileAci)
 {
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
     .$scriptDir/aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry 

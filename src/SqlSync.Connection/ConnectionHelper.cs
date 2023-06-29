@@ -30,9 +30,9 @@ namespace SqlSync.Connection
 
             appName = string.Format($"Sql Build Manager v{version} [{System.Environment.UserName}];");
         }
-        public static SqlConnection GetConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut)
+        public static SqlConnection GetConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
-            String conn = GetConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut);
+            String conn = GetConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId);
             SqlConnection dbConn = new SqlConnection(conn);
 
             return dbConn;
@@ -47,7 +47,8 @@ namespace SqlSync.Connection
                 connData.UserId,
                 connData.Password,
                 connData.AuthenticationType,
-                connData.ScriptTimeout);
+                connData.ScriptTimeout,
+                connData.ManagedIdentityClientId);
         }
         public static string GetConnectionString(ConnectionData connData)
         {
@@ -59,9 +60,10 @@ namespace SqlSync.Connection
                 connData.UserId,
                 connData.Password,
                 connData.AuthenticationType,
-                connData.ScriptTimeout);
+                connData.ScriptTimeout,
+                connData.ManagedIdentityClientId);
         }
-        public static string GetConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut)
+        public static string GetConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
 
             var builder = new SqlConnectionStringBuilder();
@@ -92,7 +94,7 @@ namespace SqlSync.Connection
                     break;
                 case AuthenticationType.ManagedIdentity:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryManagedIdentity;
-                    builder.UserID = uid; //UID here should be the managed identity client id
+                    builder.UserID = managedIdentityClientId;
                     break;
                 case AuthenticationType.AzureADInteractive:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryInteractive;
@@ -139,7 +141,7 @@ namespace SqlSync.Connection
             return true;
         }
 
-        public static bool TestDatabaseConnection(string dbName, string serverName, string username, string password, AuthenticationType authType, int scriptTimeOut)
+        public static bool TestDatabaseConnection(string dbName, string serverName, string username, string password, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
             return TestDatabaseConnection(new ConnectionData()
             {
@@ -148,7 +150,8 @@ namespace SqlSync.Connection
                 SQLServerName = serverName,
                 UserId = username,
                 Password = password,
-                AuthenticationType = authType
+                AuthenticationType = authType,
+                ManagedIdentityClientId = managedIdentityClientId
             });
         }
         public static bool TestDatabaseConnection(ConnectionData connData)

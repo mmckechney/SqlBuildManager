@@ -253,11 +253,16 @@ namespace SqlBuildManager.Console.CommandLine
         {
             get
             {
-                var tmp = new Command("worker", "[Used by Container Apps] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
-                tmp.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ContainerAppWorker_RunBuild);
-                tmp.Add(ContainerAppWorkerTestCommand);
+                var nameArgument = new Argument<string[]>("placeholder", "Used to keep extraneous elements added by the platform from causing issues");
+                nameArgument.IsHidden = true;
+                nameArgument.Arity = ArgumentArity.ZeroOrMore;
+                var cmd = new Command("worker", "[Used by Container Apps] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
+                cmd.AddArgument(nameArgument);
+                
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ContainerAppWorker_RunBuild);
+                cmd.Add(ContainerAppWorkerTestCommand);
 
-                return tmp;
+                return cmd;
             }
         }
 

@@ -1,5 +1,9 @@
 # SQL Build Manager Change Log
 
+### Version 15.4.1
+- *UPDATED:* Changed the test environment creation from az CLI commands to Bicep templates/modules
+- *UPDATED:* Modified/refactored internal handling of Manged Identity Client ID
+
 ### Version 15.4.0
 - *FIXED:* Corrected bug #386 - `sbm batch *` were not properly handling the `--authtype ManagedIdentity` argument ()
 - *FIXED:* Corrected bug #387 - The path for the `--targetdacpac` was not getting trimmed to just the file name when getting sent to the Batch nodes

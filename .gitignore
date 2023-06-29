@@ -225,3 +225,4 @@ Command_scratch.txt
 /src/SqlBuildManager.Console/ContainerApp/parms.json
 /src/SqlBuildManager.Console/ContainerApp/parms2.json
 src/env.txt
+/scripts/templates/test.ps1

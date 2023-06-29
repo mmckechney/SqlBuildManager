@@ -293,10 +293,7 @@ namespace SqlBuildManager.Console.CommandLine
                 }
             }
             current.EventHubLogging = incoming.EventHubLogging;
-            if(!string.IsNullOrWhiteSpace(incoming.IdentityArgs.ClientId))
-            {
-                current.UserName = incoming.IdentityArgs.ClientId;
-            }
+
         }
         /// <summary>
         /// Used to set property values from a twin object, but not overwrite existing values if they have already been directly set

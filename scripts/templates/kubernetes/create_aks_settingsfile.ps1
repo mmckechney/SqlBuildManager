@@ -54,7 +54,7 @@ Write-Host "Retrieving Identity information" -ForegroundColor DarkGreen
 $tenantId = az account show -o tsv --query tenantId
 
 
-$settingsFile = Join-Path $path "settingsfile-k8s-sec.json"
+$settingsFileName = Join-Path $path "settingsfile-k8s-sec.json"
 
 $saveSettingsShared =  @("k8s", "savesettings")
 $saveSettingsShared += @("--settingsfilekey", """$keyFile""")
@@ -82,15 +82,15 @@ if($authTypes -contains "Password")
     }
     
     #save with encrypted secrets
-    $settingsFile = Join-Path $path "settingsfile-k8s-sec.json"
-    Write-Host ($params + @("--settingsfile", """$settingsFile"""))-ForegroundColor Yellow
-    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait -NoNewWindow
+    $settingsFileName = Join-Path $path "settingsfile-k8s-sec.json"
+    Write-Host ($params + @("--settingsfile", """$settingsFileName"""))-ForegroundColor Yellow
+    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFileName""")) -Wait -NoNewWindow
 
     #save with KeyVault settings
-    $settingsFile = Join-Path $path "settingsfile-k8s-kv.json"
+    $settingsFileName = Join-Path $path "settingsfile-k8s-kv.json"
     $params += @("--keyvaultname", $keyVaultName)
-    Write-Host ($params + @("--settingsfile", """$settingsFile""")) -ForegroundColor Yellow
-    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait -NoNewWindow
+    Write-Host ($params + @("--settingsfile", """$settingsFileName""")) -ForegroundColor Yellow
+    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFileName""")) -Wait -NoNewWindow
 }    
   
 
@@ -104,16 +104,16 @@ if($authTypes -contains "ManagedIdentity")
     $params += @("--authtype", "ManagedIdentity")
     
     
-    $settingsFile = Join-Path $path "settingsfile-k8s-sec-mi.json"
+    $settingsFileName = Join-Path $path "settingsfile-k8s-sec-mi.json"
     Write-Host $params  -ForegroundColor Yellow
-    Write-Host ($params + @("--settingsfile", """$settingsFile"""))-ForegroundColor Yellow
-    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait -NoNewWindow
+    Write-Host ($params + @("--settingsfile", """$settingsFileName"""))-ForegroundColor Yellow
+    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFileName""")) -Wait -NoNewWindow
 
-    $settingsFile = Join-Path $path "settingsfile-k8s-kv-mi.json"
+    $settingsFileName = Join-Path $path "settingsfile-k8s-kv-mi.json"
     $params += @("--keyvaultname", $keyVaultName)
     Write-Host $params  -ForegroundColor Yellow
-    Write-Host ($params + @("--settingsfile", """$settingsFile"""))-ForegroundColor Yellow
-    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFile""")) -Wait -NoNewWindow
+    Write-Host ($params + @("--settingsfile", """$settingsFileName"""))-ForegroundColor Yellow
+    Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFileName""")) -Wait -NoNewWindow
   
 }  
 

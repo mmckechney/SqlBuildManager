@@ -64,7 +64,7 @@ namespace SqlSync.Connection.Dependent.UnitTest
             int scriptTimeOut = 20;
             bool expected = true;
             bool actual;
-            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, "", "", AuthenticationType.Windows, scriptTimeOut);
+            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, "", "", AuthenticationType.Windows, scriptTimeOut,"");
             Assert.AreEqual(expected, actual, "NOTE: If this test fails, please make sure you have localhost\\SQLEXPRESS instance running.");
         }
 

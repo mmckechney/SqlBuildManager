@@ -233,6 +233,7 @@ namespace SqlBuildManager.Console.ContainerApp
             container.Image = image;
             container.Name = containerAppName;
             //Add commmand args
+            container.Command.Clear();
             container.Command.Add("dotnet");
             container.Command.Add("sbm.dll");
             container.Command.Add("--loglevel");
@@ -279,7 +280,7 @@ namespace SqlBuildManager.Console.ContainerApp
             customScale.Metadata.Add("messageCount", "2");
             customScale.Auth.Add(new ContainerAppScaleRuleAuth()
             {
-                SecretRef = "azure-servicebus",
+                SecretRef = "servicebustopicconnectionstring",
                 TriggerParameter = "connection"
             });
                     
@@ -303,7 +304,7 @@ namespace SqlBuildManager.Console.ContainerApp
 
             log.LogDebug(JsonSerializer.Serialize<ContainerAppData>(containerAppData, new JsonSerializerOptions() { WriteIndented = true }));
             var result = await collection.CreateOrUpdateAsync(Azure.WaitUntil.Completed, containerAppName, containerAppData);
-
+            
 
             if (result.GetRawResponse().Status < 300)
             {

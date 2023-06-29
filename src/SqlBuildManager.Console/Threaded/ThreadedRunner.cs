@@ -219,6 +219,7 @@ namespace SqlBuildManager.Console.Threaded
                     connData.Password = cmdArgs.AuthenticationArgs.Password;
                 }
                 connData.AuthenticationType = cmdArgs.AuthenticationArgs.AuthenticationType;
+                connData.ManagedIdentityClientId = cmdArgs.IdentityArgs.ClientId;
 
                 //Set the log file name
                 string logFile = Path.Combine(loggingDirectory, "ExecutionLog.log");

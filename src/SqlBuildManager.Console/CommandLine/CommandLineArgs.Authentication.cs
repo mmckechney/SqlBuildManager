@@ -48,9 +48,6 @@ namespace SqlBuildManager.Console.CommandLine
             public virtual string UserName { get; set; } = string.Empty;
             public virtual string Password { get; set; } = string.Empty;
 
-            [JsonIgnore]
-            public virtual bool UserNameIsManagedIdentityClientId { get; set; } = false;
-
             [JsonConverter(typeof(JsonStringEnumConverter))]
             [DefaultValue(SqlSync.Connection.AuthenticationType.Password)]
             public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = SqlSync.Connection.AuthenticationType.Password;
