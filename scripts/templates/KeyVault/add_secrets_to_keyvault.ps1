@@ -15,10 +15,10 @@ Write-Host "Adding secrets to Key Vault"  -ForegroundColor Cyan
 $path = Resolve-Path $path
 Write-Host "Path set to $path" -ForegroundColor DarkGreen
 
-Write-Host "Setting current user Key Vault Access Policy" -ForegroundColor DarkGreen
-$currentUser = az account show -o tsv --query "user.name"
-$currentUserObjectId = az ad signed-in-user show -o tsv --query id
-az keyvault set-policy --name $keyVaultName --object-id $currentUserObjectId --secret-permissions get set list  set -o table
+# Write-Host "Setting current user Key Vault Access Policy" -ForegroundColor DarkGreen
+# $currentUser = az account show -o tsv --query "user.name"
+# $currentUserObjectId = az ad signed-in-user show -o tsv --query id
+# az keyvault set-policy --name $keyVaultName --object-id $currentUserObjectId --secret-permissions get set list  set -o table
 
 if("" -ne $batchAccountName)
 {

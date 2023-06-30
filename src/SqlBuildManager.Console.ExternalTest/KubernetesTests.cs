@@ -250,6 +250,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 var prc = new ProcessHelper();
                 settingsFile = Path.GetFullPath(settingsFile);
+                System.Console.WriteLine(File.ReadAllText(settingsFile));
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets-badtargets.cfg");
                 var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
                 if (!File.Exists(sbmFileName))
@@ -269,6 +270,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var args = new string[]
                 {
+                "--loglevel", "Debug",
                 "k8s", "run",
                 "--settingsfile", settingsFile,
                 "--settingsfilekey", settingsFileKeyPath,

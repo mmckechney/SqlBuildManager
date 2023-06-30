@@ -205,10 +205,16 @@ namespace SqlBuildManager.Console.CommandLine
 				var cmd = new Command("eventhub", "Retrieve the number of messages in the EventHub for a specific job run.")
 				{
 					utilJobName,
-					new Option<DateTime?>(new string[] { "--date" }, "Date to start counting messages from (will result in faster retrieval if there are a lot of messages)")
+					new Option<DateTime?>(new string[] { "--date", "--startdate" }, "Date to start counting messages from (will result in faster retrieval if there are a lot of messages)")
 				};
-				cmd.AddRange(SettingsFileExistingRequiredOptions);
-				cmd.Handler = CommandHandler.Create<CommandLineArgs, DateTime?>(Worker.GetEventHubEvents);
+				cmd.Add(eventhubconnectionOption);
+                cmd.Add(storageaccountnameOption);
+				cmd.Add(storageaccountkeyOption);
+				cmd.Add(streamEventsOption);
+				cmd.Add(new Option<int>(new string[] { "--timeout" }, () => 120, "Number of seconds to wait for next event before terminating. Zero (0) will wait indefinitely."));
+                cmd.AddRange(EventHubResourceOptions);
+                cmd.AddRange(SettingsFileExistingOptions);
+				cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, int, DateTime?>(Worker.GetEventHubEvents);
 				return cmd;
 			}
 		}

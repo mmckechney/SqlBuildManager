@@ -22,23 +22,29 @@ namespace SqlBuildManager.Logging.Threaded
         private static string _ManagedIdentityIdClient = string.Empty;
         public static void ConfigureEventHubLogger(ILoggerFactory factory)
         {
-
-            EventHubProducerClient eventHubClient;
-            if (!string.IsNullOrWhiteSpace(_EventHubConnectionString))
+            try
             {
-                eventHubClient = new EventHubProducerClient(_EventHubConnectionString);
+                EventHubProducerClient eventHubClient;
+                if (!string.IsNullOrWhiteSpace(_EventHubConnectionString))
+                {
+                    eventHubClient = new EventHubProducerClient(_EventHubConnectionString);
+                }
+                else
+                {
+                    eventHubClient = new EventHubProducerClient(_EventHubNamespace, _EventHubName, GetAadTokenCredential());
+                }
+
+                serilogLogger = new LoggerConfiguration()
+                    .MinimumLevel.Verbose()
+                    .WriteTo.AzureEventHub(new JsonFormatter(), eventHubClient, writeInBatches: true, batchPostingLimit: 50)
+                    .CreateLogger();
+
+                _LoggerFactory.AddSerilog(serilogLogger);
             }
-            else
+            catch(Exception exe)
             {
-                eventHubClient = new EventHubProducerClient(_EventHubNamespace, _EventHubName, GetAadTokenCredential());
+                Console.WriteLine("Failed to create EventHub Logger: " + exe.ToString());
             }
-
-            serilogLogger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
-                .WriteTo.AzureEventHub(new JsonFormatter(), eventHubClient, writeInBatches: true, batchPostingLimit: 50)
-                .CreateLogger();
-
-            _LoggerFactory.AddSerilog(serilogLogger);
         }
         private static TokenCredential GetAadTokenCredential()
         {
@@ -85,6 +91,10 @@ namespace SqlBuildManager.Logging.Threaded
         }
         public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type, string eventHubNamespace, string eventHubName, string managedIdentityClientId)
         {
+            if(!eventHubNamespace.ToLower().EndsWith("servicebus.windows.net"))
+            {
+                eventHubNamespace = $"{eventHubNamespace}.servicebus.windows.net";
+            }
             _EventHubNamespace = eventHubNamespace;
             _EventHubName = eventHubName;
             _ManagedIdentityIdClient = managedIdentityClientId;

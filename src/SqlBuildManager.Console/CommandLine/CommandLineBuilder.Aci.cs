@@ -40,6 +40,7 @@ namespace SqlBuildManager.Console.CommandLine
                     cleartextOption
 
                 };
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(VnetOptions);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(IdentityArgumentsForContainerApp);
@@ -249,6 +250,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(serviceBusconnectionOption);
                 cmd.Add(eventhubconnectionOption);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, DateTime?, bool, bool>(Worker.AciMonitorRuntimeProgress);
 
                 return cmd;

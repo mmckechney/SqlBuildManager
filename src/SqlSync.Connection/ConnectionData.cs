@@ -18,6 +18,8 @@ namespace SqlSync.Connection
 
         private string _StartingDirectory = string.Empty;
 
+        private string _ManagedIdentityClientId = string.Empty;
+
         private AuthenticationType authType = AuthenticationType.Password;
 
         private int _ScriptTimeout = 20;
@@ -118,6 +120,18 @@ namespace SqlSync.Connection
             }
         }
 
+        public virtual string ManagedIdentityClientId
+        {
+            get
+            {
+                return _ManagedIdentityClientId;
+            }
+            set
+            {
+                _ManagedIdentityClientId = value;
+            }
+        }
+
         public virtual ConnectionData Fill(ConnectionData dataClass)
         {
             try
@@ -129,6 +143,7 @@ namespace SqlSync.Connection
                 StartingDirectory = dataClass.StartingDirectory;
                 authType = dataClass.authType;
                 ScriptTimeout = dataClass.ScriptTimeout;
+                ManagedIdentityClientId = dataClass.ManagedIdentityClientId;
                 return this;
             }
             catch (System.Exception ex)

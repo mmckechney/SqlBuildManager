@@ -93,6 +93,8 @@ namespace SqlBuildManager.Interfaces.Console
         [Description("WorkerCompleted")]
         WorkerCompleted,
         [Description("ScriptLog")]
-        ScriptLog
+        ScriptLog,
+        [Description("ScriptError")]
+        ScriptError
     }
 }

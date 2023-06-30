@@ -49,7 +49,7 @@ namespace SqlSync.Connection
         private void TestSingleConnection(object data)
         {
             ConnectionTestResult result = (ConnectionTestResult)data;
-            result.Successful = ConnectionHelper.TestDatabaseConnection(result.DatabaseName, result.ServerName, result.DbUserName, result.DbPassword, result.AuthenticationType, 2);
+            result.Successful = ConnectionHelper.TestDatabaseConnection(result.DatabaseName, result.ServerName, result.DbUserName, result.DbPassword, result.AuthenticationType, 2, result.ManagedIdentityClientId);
             lock (ThreadedConnectionTester.SyncObj)
             {
                 ThreadedConnectionTester.SyncObj.WorkingRunners--;

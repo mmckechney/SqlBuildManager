@@ -32,6 +32,7 @@ namespace SqlBuildManager.Console.CommandLine
                 this.DirectPropertyChangeTracker.Add("Authentication.Password");
             }
         }
+
         [JsonIgnore]
         public virtual SqlSync.Connection.AuthenticationType AuthenticationType
         {

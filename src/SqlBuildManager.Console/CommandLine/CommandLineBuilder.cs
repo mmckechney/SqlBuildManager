@@ -52,7 +52,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<FileInfo> outputFileOption = new Option<FileInfo>(new string[] { "--outputfile" }, "Results output file to create");
         private static Option<LogLevel> logLevelOption = new Option<LogLevel>(new string[] { "--loglevel" }, "Logging level for console and log file");
         private static Option<LogLevel> logLevelWithInfoDefaultOption = new Option<LogLevel>(new string[] { "--loglevel" }, () => LogLevel.Information, "Logging level for console and log file");
- 
+
         private static Option<FileInfo> overrideAsFileOption = new Option<FileInfo>(new string[] { "--override" }, "File containing the target database settings (usually a formatted .cfg file)") { IsRequired = true }.ExistingOnly();
         private static Option<FileInfo> overrideAsFileNotRequiredOption = new Option<FileInfo>(new string[] { "--override" }, "File containing the target database settings (optional, used as a counter for monitoring") { IsRequired = false }.ExistingOnly();
         private static Option<FileInfo> packagenameAsFileToUploadOption = new Option<FileInfo>(new string[] { "-P", "--packagename" }, "Name of the .sbm file to upload").ExistingOnly();
@@ -82,7 +82,7 @@ namespace SqlBuildManager.Console.CommandLine
         /// Kubernetes Yaml File Options including --runtimefile, --secretsfile
         /// </summary>
         private static List<Option> kubernetesYamlFileOptions = new List<Option> {
-            runtimeFileOption, 
+            runtimeFileOption,
             secretsFileOption };
 
         //ACI Options
@@ -107,7 +107,7 @@ namespace SqlBuildManager.Console.CommandLine
         {
             get
             {
-                var list = new List<Option> 
+                var list = new List<Option>
                 {
                     vnetNameOption,
                     subnetNameOption,
@@ -210,9 +210,9 @@ namespace SqlBuildManager.Console.CommandLine
                     storageaccountnameOption,
                     storageaccountkeyOption,
                     serviceBusconnectionOption,
-                    eventhubconnectionOption
+                    eventhubconnectionOption,
 
-                };
+            };
                 return list;
             }
         }
@@ -232,7 +232,7 @@ namespace SqlBuildManager.Console.CommandLine
                     storageaccountnameOption,
                     storageaccountkeyOption,
                     serviceBusconnectionOption,
-                    eventhubconnectionOption
+                    eventhubconnectionOption,
 
                 };
                 return list;
@@ -246,12 +246,25 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> batchaccountnameOption = new Option<string>(new string[] { "--acct", "--batchaccountname" }, "String name of the Azure Batch account");
         private static Option<string> batchaccountkeyOption = new Option<string>(new string[] { "-k", "--batchaccountkey" }, "Account Key for the Azure Batch account");
         private static Option<string> batchaccounturlOption = new Option<string>(new string[] { "-U", "--batchaccounturl" }, "URL for the Azure Batch account");
-        private static Option<EventHubLogging[]> eventHubLoggingTypeOption = new Option<EventHubLogging[]>(new string[] { "--eventhublogging" }, () => new EventHubLogging[] { EventHubLogging.EssentialOnly }, "Controls EventHub logging, including how to log script results and if to emit verbose message events.\r\nAdd multiple flags to combine settings.[EssentialOnly|IndividualScriptResults|ConsolidatedScriptResults|VerboseMessages]")
+        private static Option<EventHubLogging[]> eventHubLoggingTypeOption = new Option<EventHubLogging[]>(new string[] { "--eventhublogging" }, () => new EventHubLogging[] { EventHubLogging.EssentialOnly }, "Controls EventHub logging, including how to log script results and if to emit verbose message events.\r\nAdd multiple flags to combine settings.[EssentialOnly|ScriptErrors|IndividualScriptResults|ConsolidatedScriptResults|VerboseMessages]")
         {
             Arity = ArgumentArity.ZeroOrMore
         };
-        
 
+        private static Option<string> eventhubResourceGroupOption = new Option<string>(new string[] { "--ehrg", "--eventhubresourcegroup" }, "Event Hub resource group. If provided along eith --ehsub, the system will attempt to create a customer consumer group for the build");
+        private static Option<string> eventhubSubscriptionOption = new Option<string>(new string[] { "--ehsub", "--eventhubsubscriptionid" }, "Event Hub Subscription Guid. If provided along with --ehrg, the system will attempt to create a customer consumer group for the build");
+        private static List<Option> EventHubResourceOptions
+        {
+            get
+            {
+                var list = new List<Option>()
+                {
+                    eventhubResourceGroupOption,
+                    eventhubSubscriptionOption
+                };
+                return list;
+            }
+        }
 
         /// <summary>
         /// Managed Identity Options for Batch including: --clientid, --principalid, --resourceid, --identityresourcegroup, --subscriptionid, --identityname, --tenantid
