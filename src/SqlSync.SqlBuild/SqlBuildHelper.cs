@@ -259,7 +259,7 @@ namespace SqlSync.SqlBuild
                 if (buildRetries > 0)
                 {
                     if (ScriptLogWriteEvent != null)
-                        ScriptLogWriteEvent(null, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
+                        ScriptLogWriteEvent(null, false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
 
                 }
                 buildResults = RunBuildScripts(filteredScripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, ref e);
@@ -273,7 +273,7 @@ namespace SqlSync.SqlBuild
                     log.LogWarning($"Timeout encountered. Incrementing retries to {buildRetries}");
                 }
             }
-
+            
             //Do we need to try to update the target using the Platinum Dacpac?
             if (buildResults.FinalStatus != BuildItemStatus.Committed && buildResults.FinalStatus != BuildItemStatus.TrialRolledBack &&
                 !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName) && !runData.ForceCustomDacpac)
@@ -503,10 +503,10 @@ namespace SqlSync.SqlBuild
                         buildHistoryData.ScriptRun.AddScriptRunRow(myRunRow);
                         buildHistoryData.AcceptChanges();
 
-
+                        
                         //Write the error to the log...
                         if (ScriptLogWriteEvent != null)
-                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, "Database connection to " + targetDatabase + " failed", targetDatabase, myRow.FileName, e.Message + "\r\n" + sqlInfoMessage));
+                            ScriptLogWriteEvent(null, true, new ScriptLogEventArgs(overallIndex, "Database connection to " + targetDatabase + " failed", targetDatabase, myRow.FileName, e.Message + "\r\n" + sqlInfoMessage));
                         //Roll back the whole build
                         RollbackBuild();
                         //Send Notification
@@ -596,7 +596,7 @@ namespace SqlSync.SqlBuild
                             if (runScriptOnly)
                             {
                                 if (ScriptLogWriteEvent != null)
-                                    ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, "Scripted"));
+                                    ScriptLogWriteEvent(null, false,new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, "Scripted"));
                                 continue;
                             }
 
@@ -630,7 +630,7 @@ namespace SqlSync.SqlBuild
 
                             //Write to the log...
                             if (ScriptLogWriteEvent != null)
-                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, sb.ToString() + sqlInfoMessage));
+                                ScriptLogWriteEvent(null, false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, sb.ToString() + sqlInfoMessage));
 
                         }
                         catch (SqlException e)
@@ -658,7 +658,7 @@ namespace SqlSync.SqlBuild
 
                             //Write the error to the log...
                             if (ScriptLogWriteEvent != null)
-                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, sb.ToString() + sqlInfoMessage));
+                                ScriptLogWriteEvent(null, true, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, myRow.FileName, sb.ToString() + sqlInfoMessage));
 
                             //Roll back save point?
                             bool zombiedTransaction = false;
@@ -819,25 +819,25 @@ namespace SqlSync.SqlBuild
                         {
                             if (isTrialBuild)
                             {
-                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", database, "-- Trial Run: Complete Transaction with a rollback--", "Scripted"));
+                                ScriptLogWriteEvent(null, false, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", database, "-- Trial Run: Complete Transaction with a rollback--", "Scripted"));
                             }
                             else
                             {
-                                ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "COMMIT TRANSACTION", database, "-- Complete Transaction --", "Scripted"));
+                                ScriptLogWriteEvent(null, false, new ScriptLogEventArgs(-10000, "COMMIT TRANSACTION", database, "-- Complete Transaction --", "Scripted"));
                             }
                         }
                         else
-                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", database, "-- ERROR: Rollback Transaction --", "Scripted"));
+                            ScriptLogWriteEvent(null, false,new ScriptLogEventArgs(-10000, "ROLLBACK TRANSACTION", database, "-- ERROR: Rollback Transaction --", "Scripted"));
                     }
                     else
                     {
                         if (!buildFailure)
                         {
-                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", database, "-- Completed: No Transaction Set --", "Scripted"));
+                            ScriptLogWriteEvent(null, false, new ScriptLogEventArgs(-10000, "", database, "-- Completed: No Transaction Set --", "Scripted"));
                         }
                         else
                         {
-                            ScriptLogWriteEvent(null, new ScriptLogEventArgs(-10000, "", database, "-- ERROR: No Transaction Set --", "Scripted"));
+                            ScriptLogWriteEvent(null, false, new ScriptLogEventArgs(-10000, "", database, "-- ERROR: No Transaction Set --", "Scripted"));
                         }
                     }
 
@@ -2160,7 +2160,7 @@ namespace SqlSync.SqlBuild
         }
 
 
-        internal void SqlBuildHelper_ScriptLogWriteEvent(object sender, ScriptLogEventArgs e)
+        internal void SqlBuildHelper_ScriptLogWriteEvent(object sender, bool isError, ScriptLogEventArgs e)
         {
             if (scriptLogFileName == null)
                 throw new NullReferenceException("Attempting to write to Script Log File, but \"scriptLogFileName\" field value is null");

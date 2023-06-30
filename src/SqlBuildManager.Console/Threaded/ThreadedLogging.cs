@@ -25,6 +25,7 @@ namespace SqlBuildManager.Console.Threaded
         CommandLineArgs cmdLine;
         private bool isVerboseEhMessages = false;
         private bool isScriptResultLogging = false;
+        private bool isScriptErrorLogging = false;
         public ThreadedLogging(CommandLineArgs cmdLine, string runId)
         {
             this.cmdLine = cmdLine;
@@ -60,6 +61,7 @@ namespace SqlBuildManager.Console.Threaded
             ThreadedLogging.TheadedLoggingInitiated = true;
             this.isVerboseEhMessages = cmdLine.EventHubLogging.Contains(EventHubLogging.VerboseMessages);
             this.isScriptResultLogging = cmdLine.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults) || cmdLine.EventHubLogging.Contains(EventHubLogging.ConsolidatedScriptResults);
+            this.isScriptErrorLogging = cmdLine.EventHubLogging.Contains(EventHubLogging.ScriptErrors);
         }
         public void WriteToLog(LogMsg msg)
         {
@@ -106,7 +108,12 @@ namespace SqlBuildManager.Console.Threaded
                         logEventHub?.LogInformation("{@LogMsg}", msg);
                     }
                     return;
-
+                case LogType.ScriptError:
+                    if (this.isScriptErrorLogging)
+                    {
+                        logEventHub?.LogInformation("{@LogMsg}", msg);
+                    }
+                    return;
                 case LogType.Message:
                 default:
                     logRuntime.LogInformation($"{runId}  {msg.ServerName}  {msg.DatabaseName}: {msg.Message}");

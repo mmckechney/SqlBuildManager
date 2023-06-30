@@ -64,7 +64,7 @@ namespace SqlSync.SqlBuild
     }
     public delegate void BuildCommittedEventHandler(object sender, SqlBuildManager.Interfaces.Console.RunnerReturn rr);
 
-    public delegate void ScriptLogWriteEventHandler(object sender, ScriptLogEventArgs e);
+    public delegate void ScriptLogWriteEventHandler(object sender, bool isError, ScriptLogEventArgs e);
     public class ScriptLogEventArgs : EventArgs
     {
         public readonly int ScriptIndex;

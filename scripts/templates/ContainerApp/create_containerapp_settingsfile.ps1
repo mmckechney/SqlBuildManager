@@ -132,11 +132,14 @@ foreach($auth in $authTypes)
     $params +=("--settingsfile",$tmpPath)
     $params +=("--settingsfilekey",$keyFile)
     $params +=("--storageaccountname",$storageAccountName)
+    $params += ("--ehrg", $resourceGroupName)
+    $params += ("--ehsub", $subscriptionId)
     
     
     $params +=("--defaultscripttimeout",500)
     $params +=("--subscriptionid",$subscriptionId)
     $params +=("--force","true")
+    $params += ("--eventhublogging", "ScriptErrors")
     if($haveSqlInfo)
     {
         $params +=("--username",$sqlUserName)

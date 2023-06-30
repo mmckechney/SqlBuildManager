@@ -39,7 +39,7 @@ if($false -eq (Test-Path $keyFile))
 
 Write-Host "Retrieving secrets from Azure resources" -ForegroundColor DarkGreen
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
-
+$subscriptionId = az account show --query id --output tsv
 
 Write-Host "Retrieving EventHub information" -ForegroundColor DarkGreen
 $eventHubAuthRuleName = az eventhubs eventhub authorization-rule list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName --eventhub-name $eventHubName -o tsv --query [].name
@@ -66,6 +66,9 @@ $saveSettingsShared += @("--tenantid", $tenantId)
 $saveSettingsShared += @("--serviceaccountname", $serviceAccountName)
 $saveSettingsShared += @("--force")
 $saveSettingsShared += @("--podcount", $podCount)
+$saveSettingsShared += @("--eventhublogging", "ScriptErrors")
+$saveSettingsShared += @("--ehrg", $resourceGroupName)
+$saveSettingsShared += @("--ehsub", $subscriptionId)
 
 
 if($authTypes -contains "Password")
@@ -99,8 +102,8 @@ if($authTypes -contains "ManagedIdentity")
 {
     $params = $saveSettingsShared
     $params += @("--storageaccountname",$storageAccountName)  
-    $params += @("-eh","""$($eventhubNamespaceName).servicebus.windows.net|$($eventHubName)""") 
-    $params += @("-sb","$($serviceBusNamespaceName).servicebus.windows.net")
+    $params += @("-eh","""$($eventhubNamespaceName)|$($eventHubName)""") 
+    $params += @("-sb","$($serviceBusNamespaceName)")
     $params += @("--authtype", "ManagedIdentity")
     
     

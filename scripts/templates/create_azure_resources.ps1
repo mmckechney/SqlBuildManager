@@ -81,7 +81,6 @@ if($settingsFile.Contains("Batch") -or $settingsFile.Contains("All"))
 if($settingsFile.Contains("ContainerApp") -or $settingsFile.Contains("All"))
 {
     $settingsFileContainerApp = $true
-    $
 }
 if($settingsFile.Contains("ACI") -or $settingsFile.Contains("All"))
 {
@@ -148,7 +147,7 @@ if($shouldDeploy)
             deployBatchAccount=$deployBatch `
             deployContainerRegistry=$deployContainerRegistry `
             deployContainerAppEnv=$deployContainerAppEnv `
-            deployAKS=$deployAks `
+            deployAks=$deployAks `
             testDbCountPerServer=$testDatabaseCount `
         
     if($LASTEXITCODE){
@@ -242,14 +241,8 @@ if($settingsFileContainerApp)
 {
     # Create test file referencing the 
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $false
-    
-    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $true
-    
-    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
-
+    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix_all.ps1  -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $false
+   
 }
 else 
 {
@@ -274,11 +267,7 @@ else
 if($settingsFileAci)
 {
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry 
-
-    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $false
-
+    .$scriptDir/aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix 
 }
 else 
 {

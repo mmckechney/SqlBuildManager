@@ -3,6 +3,9 @@
 ### Version 15.4.1
 - *UPDATED:* Changed the test environment creation from az CLI commands to Bicep templates/modules
 - *UPDATED:* Modified/refactored internal handling of Manged Identity Client ID
+- *ADDED:* New EventHub logging type of `ScriptErrors` which will event out any script error messages that occur during execution
+- *UPDATED:* Optional feature to have Eventhub monitoring to attempt to create a custom consumer group to avoid any event read conflicts. The running identity must have "Event Hub Owner" RBAC priviledges and there are also two new arguments `--ehrg`/`--eventhubresourcegroup` and `--ehsub`/`--eventhubsubscriptionid` which would need to be provided. If these are not all met, it will continue to use the existing $Default. The custom consumer group will be deleted after run is complete. 
+- *UPDATED:* `sbm utility eventhub` now accepts a `--jobname=all` to query all events, `--timeout` in seconds for how long to continue to monitor after the last event is received and `--eventhubresourcegroup`/`--ehrg`,  `--eventhubsubscriptionid`/`--ehsub`, `--storageaccountname` and `--storageaccountkey` arguments to support the new optional feature to create a custom consumer group. The storage account is used for the consumer checkpointing 
 
 ### Version 15.4.0
 - *FIXED:* Corrected bug #386 - `sbm batch *` were not properly handling the `--authtype ManagedIdentity` argument ()

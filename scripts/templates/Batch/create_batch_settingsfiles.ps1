@@ -95,6 +95,9 @@ $params += @("--idrg",$identity.resourceGroup)
 $params += @("--tenantid", $tenantId)
 $params += @("--subscriptionid", $subscriptionId)
 $params += @("--silent")
+$params += @("--eventhublogging", "ScriptErrors")
+$params += @("--ehrg", $resourceGroupName)
+$params += @("--ehsub", $subscriptionId)
 
 if($vnetName -ne "" -and $subnetName -ne "")
 {

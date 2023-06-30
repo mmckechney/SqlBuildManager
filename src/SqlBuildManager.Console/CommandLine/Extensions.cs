@@ -39,6 +39,7 @@ namespace SqlBuildManager.Console.CommandLine
                     property.PropertyType == typeof(CommandLineArgs.Synchronize) ||
                     property.PropertyType == typeof(CommandLineArgs.Aci) ||
                     property.PropertyType == typeof(CommandLineArgs.Kubernetes) ||
+                    property.PropertyType == typeof(CommandLineArgs.EventHub) ||
                     property.PropertyType == typeof(CommandLineArgs.Network))
                 {
                     if (property.GetValue(obj) != null && toStringType == StringType.Basic)

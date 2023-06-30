@@ -47,6 +47,7 @@ namespace SqlBuildManager.Console.CommandLine
                 });
                 cmd.AddRange(IdentityArgumentsForKubernetes);
                 cmd.AddRange(ConnectionAndSecretsOptions);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
                 //IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
@@ -88,6 +89,7 @@ namespace SqlBuildManager.Console.CommandLine
                 });
                 cmd.AddRange(IdentityArgumentsForKubernetes);
                 cmd.AddRange(ConnectionAndSecretsOptions);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.Add(subscriptionIdOption);
@@ -204,6 +206,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(IdentityArgumentsForKubernetes);
                 cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConnectionAndSecretsOptions);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.Add(sectionPlaceholderOption);
@@ -239,6 +242,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(serviceBusconnectionOption);
                 cmd.Add(eventhubconnectionOption);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(kubernetesYamlFileOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool, bool>(Worker.KubernetesMonitorRuntimeProgress);
                 return cmd;

@@ -94,6 +94,8 @@ namespace SqlBuildManager.Console.CommandLine
 
             public string ServiceBusTopicConnectionString { get; set; } = string.Empty;
             public string EventHubConnectionString { get; set; } = string.Empty;
+
+            public string EventHubResourceGroup{ get; set; } = string.Empty;
             public string StorageAccountName { get; set; } = string.Empty;
             public string StorageAccountKey { get; set; } = string.Empty;
             public string BatchAccountName { get; set; } = string.Empty;

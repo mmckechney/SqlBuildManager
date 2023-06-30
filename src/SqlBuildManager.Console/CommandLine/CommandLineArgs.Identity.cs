@@ -48,7 +48,10 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                IdentityArgs.SubscriptionId = value; ContainerAppArgs.SubscriptionId = value; AciArgs.SubscriptionId = value;
+                IdentityArgs.SubscriptionId = value; 
+                ContainerAppArgs.SubscriptionId = value;
+                AciArgs.SubscriptionId = value; 
+                EventHubArgs.SubscriptionId = value;
                 this.DirectPropertyChangeTracker.Add("Identity.SubscriptionId");
             }
         }
