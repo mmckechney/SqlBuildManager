@@ -575,6 +575,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 //Prep the build
                 var args = new string[]{
+                "--loglevel", "debug",
                 "aci",  "query",
                 "--settingsfile", settingsFile,
                 "--jobname", jobName,

@@ -39,6 +39,7 @@ namespace SqlBuildManager.Console.CommandLine
                     property.PropertyType == typeof(CommandLineArgs.Synchronize) ||
                     property.PropertyType == typeof(CommandLineArgs.Aci) ||
                     property.PropertyType == typeof(CommandLineArgs.Kubernetes) ||
+                    property.PropertyType == typeof(CommandLineArgs.EventHub) ||
                     property.PropertyType == typeof(CommandLineArgs.Network))
                 {
                     if (property.GetValue(obj) != null && toStringType == StringType.Basic)
@@ -293,10 +294,7 @@ namespace SqlBuildManager.Console.CommandLine
                 }
             }
             current.EventHubLogging = incoming.EventHubLogging;
-            if(!string.IsNullOrWhiteSpace(incoming.IdentityArgs.ClientId))
-            {
-                current.UserName = incoming.IdentityArgs.ClientId;
-            }
+
         }
         /// <summary>
         /// Used to set property values from a twin object, but not overwrite existing values if they have already been directly set

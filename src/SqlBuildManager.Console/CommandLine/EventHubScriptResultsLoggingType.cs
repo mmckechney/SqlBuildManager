@@ -14,6 +14,7 @@ namespace SqlBuildManager.Console.CommandLine
         EssentialOnly = 0,
         VerboseMessages = 1,
         IndividualScriptResults = 2,
-        ConsolidatedScriptResults = 4
+        ConsolidatedScriptResults = 4,
+        ScriptErrors = 8
     }
 }

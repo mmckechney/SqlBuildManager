@@ -219,6 +219,7 @@ namespace SqlBuildManager.Console.Threaded
                     connData.Password = cmdArgs.AuthenticationArgs.Password;
                 }
                 connData.AuthenticationType = cmdArgs.AuthenticationArgs.AuthenticationType;
+                connData.ManagedIdentityClientId = cmdArgs.IdentityArgs.ClientId;
 
                 //Set the log file name
                 string logFile = Path.Combine(loggingDirectory, "ExecutionLog.log");
@@ -288,7 +289,7 @@ namespace SqlBuildManager.Console.Threaded
 
         private StringBuilder consolidatedScriptLog = new();
         private string targetDb = string.Empty;
-        private void helper_ScriptLogWriteEvent(object sender, ScriptLogEventArgs e)
+        private void helper_ScriptLogWriteEvent(object sender, bool isError, ScriptLogEventArgs e)
         {
             if (cmdArgs.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults))
             {
@@ -335,6 +336,26 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     consolidatedScriptLog.AppendLine("-- END Time: " + DateTime.Now.ToString() + " --");
                 }
+            }
+            else if (cmdArgs.EventHubLogging.Contains(EventHubLogging.ScriptErrors))
+            {
+                LogMsg lm = new LogMsg()
+                {
+                    LogType = LogType.ScriptError,
+                    DatabaseName = e.Database,
+                    JobName = this.jobName,
+                    ServerName = this.server,
+                    Message = "ScriptLog",
+                    ScriptLog = new ScriptLogData()
+                    {
+                        ScriptFileName = e.SourceFile,
+                        ScriptText = e.SqlScript,
+                        ScriptIndex = e.ScriptIndex,
+                        Result = e.Results
+                    }
+
+                };
+                threadedLog.WriteToLog(lm);
             }
         }
 

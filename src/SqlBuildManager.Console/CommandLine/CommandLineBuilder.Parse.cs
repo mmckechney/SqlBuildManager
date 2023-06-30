@@ -115,7 +115,9 @@ namespace SqlBuildManager.Console.CommandLine
                                firstColumnText: $"\u0000{Environment.NewLine}** VNET Options :\u0000{Environment.NewLine}{OptionString(vnetNameOption)}",
                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{vnetNameOption.Description}");
 
-
+                           ctx.HelpBuilder.CustomizeSymbol(eventhubResourceGroupOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** EventHub Resource Options :\u0000{Environment.NewLine}{OptionString(eventhubResourceGroupOption)}",
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{eventhubResourceGroupOption.Description}");
 
                            ctx.HelpBuilder.CustomizeSymbol(sectionPlaceholderOption,
                                firstColumnText: $"\u0000{Environment.NewLine}** General Options:\u0000",

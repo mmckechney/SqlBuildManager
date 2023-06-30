@@ -6,86 +6,39 @@
 
 ## create_azure_resources.ps1
 
-This is a one-stop script for creating all of the resources you will need to leverage SQL Build Manager. 
+This is a one-stop script for creating all of the resources you will need to leverage SQL Build Manager. Uses the `azuredeploy_main.bicep` file which will leverage the bicep modules in the `Modules` folder as needed per the parameters passed in. 
 
 It will always create these Azure resources:
 
+- Virtual Network and 4 Subnets
 - Storage Account
-- Batch Account
-- Service Bus Topic
-- Event Hub
-- AKS Cluster
-- Azure Key Vault
-- Managed Identity
+- Event Hub Namespace and Event Hub
+- Service Bus Namespace and Topic
+- Key Vault
+- User Assigned Managed Identity with RBAC Assignments
+- Current User RBAC Assignments
 
-It will also create:
+If you specify a `-testDatabaseCount` value of greater than 0 (zero), it will create:
 
 - 2 Azure SQL Servers
-- 10 databases per server
+- Designated number of databases per server
 
-You can change this behavior by providing a `-testDatabaseCount` value of 0 (zero) to skip the creation of the SQL resources or a different positive integer to change the number of databases per server
+With the default `-deploy` value of `All`, it will also deploy:
+- Azure Batch Account
+- AKS Cluster Azure Container Registry
+- Azure Container App Environment
+- The settings files needed for external tests of Azure Batch, AKS, Azure Container Apps and ACI
+- Run an Azure Container Registry Build to create the Docker image for SqlBuildManager
+- Build the code (both Windows and Linux targets) and publish the packages to the Azure Batch account
 
-And finally it will:
-
-- Build the code (both Windows and Linux targets) and publish the packages to the Azure Batch account (skip this step with `-build $false`)
-- Create Batch settings files, Kubernetes secrets and runtime files, and database target configuration files (used in integration testing and can be used a great reference when creating your own files
-
-----
-
-### azuredeploy.bicep
-
-The Azure Bicep file that is used to generate the `azuredeploy.json` ARM template for the creation of the Storage Account. Batch Account, Service Bus Topic, Event Hub, Key Vault and Managed Identity
+Otherwise you can specify a `-deploy` value of `Batch`, `AKS`, `ContainerApp` or `ACI` (or any combination) to deploy only the resources needed for that environment along with the test settings files and builds.
 
 ----
 
-### azuredbdeploy.bicep
+## create_all_settingsfiles_fromprefix.ps1
 
-The Azure Bicep file that is used to generate the `azuredbdeploy.json` ARM template for the creation of the Azure SQL Servers, elastic pools and data bases
+A helper script that will create the settings files for all of the deployment types. If you run `create_azure_resources.ps1`, it will already create the settings files for you. 
 
-----
+## Subfolder scripts
 
-### add_secrets_to_keyvault_fromprefix.ps1
-
-Collects secrets from resources in the specified resource group with the matching $prefix values and saves them to Azure Key Vault. To specify your own resource names, use `add_secrets_to_keyvault.ps1`
-
-----
-
-### build_and_upload_batch_fromprefix.ps1
-
-Builds the `sbm.csproj` for both Windows and Linux and uploads the zip files into the proper Azure Batch application for the Azure Batch account in the resource group with the associated name $prefix. To specify your own resource names, use `build_and_upload_batch.ps1`. You can upload only if you have created zip packages on your own with the `-uploadonly $true` argument
-
-----
-
-### create_aci_settingsfile_fromprefix.ps1
-
-Creates a settings file `settingsfile-linux-aci-queue-keyvault.json` file that include ACI information, Key Vault name and additional settings for ACI builds for resources matching the $prefix values. To specify your own resource names, use `create_aci_settingsfile.ps1`
-
-----
-
-### create_aks_cluster.ps1
-
-Deploys an AKS cluster and associates it with the appropriate user assigned Managed Identity
-
-----
-
-### create_aks_settingsfile_fromprefix.ps1
-
-Creates `settingsfile-k8s.*.json` files that include all of the information used to execute Kubernetes builds for resources matching the $prefix values. To specify your own resource names, use `create_aks_settingsfile.ps1`
-
-----
-
-### create_batch_settingsfiles_fromprefix.ps1
-
-Creates 6 Azure batch `settings-*.json` files that include the secrets and values for the Azure resources created in the target resource group with the target name prefix. To specify your own resource names, use `create_batch_settingsfiles.ps1`
-
-----
-
-### create_database_firewall_rule.ps1
-
-By default, creates firewall rules for the Azure SQL databases created in the target resource group that match the current machine public IP address. Can also be used to create a rule for a specific IP address by adding the `-ipAddress` parameter. This is useful when running integration tests from your local machine.
-
-----
-
-### create_database_override_files.ps1
-
-Creates two database target override config files `databasetargets.cfg` and `clientdbtargets.cfg`, pulling that information from the Azure resources created in the target resource group. These files are used by the integration testing project.
+Each subfolder has scripts and to individually create resources and settings files for those resources. 

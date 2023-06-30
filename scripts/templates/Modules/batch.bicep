@@ -1,11 +1,14 @@
 @description('Name of Batch Account to Create')
-param batchAccountName string 
+param namePrefix string 
 
-@description('Name of user assigned mangaged identy to assign')
-param identityName string
+@description('Name of Batch Account to Create. Default is <prefixName>batchacct')
+param batchAccountName string = '${namePrefix}batchacct'
 
-@description('Name of storage account to use with Batch')
-param storageAccountName string
+@description('Name of user assigned mangaged identy to assign. Default is <prefixName>identity')
+param identityName string = '${namePrefix}identity'
+
+@description('Name of storage account to use with Batch Account. Default is <prefixName>storage')
+param storageAccountName string = '${namePrefix}storage'
 
 @description('Location for all resources.')
 param location string = resourceGroup().location

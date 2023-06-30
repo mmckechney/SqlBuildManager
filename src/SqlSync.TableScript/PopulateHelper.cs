@@ -173,7 +173,7 @@ namespace SqlSync.TableScript
         public void GenerateUpdatedPopulateScript(SqlBuild.CodeTable.ScriptUpdates updateRule, out string updatedScript)
         {
             //Get the connection
-            dbConn = SqlSync.Connection.ConnectionHelper.GetConnection(data.DatabaseName, data.SQLServerName, data.UserId, data.Password, data.AuthenticationType, data.ScriptTimeout);
+            dbConn = SqlSync.Connection.ConnectionHelper.GetConnection(data.DatabaseName, data.SQLServerName, data.UserId, data.Password, data.AuthenticationType, data.ScriptTimeout, data.ManagedIdentityClientId);
 
             //get the data
             DataTable table = new DataTable();
@@ -209,7 +209,7 @@ namespace SqlSync.TableScript
                 ArrayList dataList = new ArrayList();
                 string selectSql;
                 StringBuilder sb = new StringBuilder();
-                dbConn = SqlSync.Connection.ConnectionHelper.GetConnection(data.DatabaseName, data.SQLServerName, data.UserId, data.Password, data.AuthenticationType, data.ScriptTimeout);
+                dbConn = SqlSync.Connection.ConnectionHelper.GetConnection(data.DatabaseName, data.SQLServerName, data.UserId, data.Password, data.AuthenticationType, data.ScriptTimeout, data.ManagedIdentityClientId);
                 for (int i = 0; i < tableScriptRules.Length; i++)
                 {
                     DataTable table = GetTableValues(tableScriptRules[i].TableName, selectByUpdateDate, out selectSql);
@@ -842,7 +842,7 @@ namespace SqlSync.TableScript
         {
             string schema;
             InfoHelper.ExtractNameAndSchema(tableName, out tableName, out schema);
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout);
+            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             string command = @"
                 select cc.column_Name,c.data_type +
 	                CASE WHEN CHARACTER_MAXIMUM_LENGTH IS NULL THEN '' 

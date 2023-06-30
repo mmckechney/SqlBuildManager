@@ -30,6 +30,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ContainerAppOptions);
                 IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
                 cmd.AddRange(ConnectionAndSecretsOptions);
+                cmd.AddRange(EventHubResourceOptions);
                 ////TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps...
                 //cmd.AddRange(DatabaseAuthArgs);
                 cmd.Add(usernameOption);
@@ -74,7 +75,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ContainerAppOptions);
                 IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
                 cmd.AddRange(ConnectionAndSecretsOptions);
-
+                cmd.AddRange(EventHubResourceOptions);
                 //TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps...
                 //cmd.AddRange(DatabaseAuthArgs);
                 cmd.Add(usernameOption);
@@ -164,7 +165,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ContainerAppOptions);
                 IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
                 cmd.AddRange(ConnectionAndSecretsOptions);
-
+                cmd.AddRange(EventHubResourceOptions);
                 //TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps...
                 //DatabaseAuthArgs.ForEach(o => cmd.Add(o));
                 cmd.Add(usernameOption);
@@ -198,6 +199,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(serviceBusconnectionOption);
                 cmd.Add(eventhubconnectionOption);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, DateTime?, bool>(Worker.MonitorContainerAppRuntimeProgress);
 
                 return cmd;
@@ -253,11 +255,16 @@ namespace SqlBuildManager.Console.CommandLine
         {
             get
             {
-                var tmp = new Command("worker", "[Used by Container Apps] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
-                tmp.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ContainerAppWorker_RunBuild);
-                tmp.Add(ContainerAppWorkerTestCommand);
+                var nameArgument = new Argument<string[]>("placeholder", "Used to keep extraneous elements added by the platform from causing issues");
+                nameArgument.IsHidden = true;
+                nameArgument.Arity = ArgumentArity.ZeroOrMore;
+                var cmd = new Command("worker", "[Used by Container Apps] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
+                cmd.AddArgument(nameArgument);
+                
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ContainerAppWorker_RunBuild);
+                cmd.Add(ContainerAppWorkerTestCommand);
 
-                return tmp;
+                return cmd;
             }
         }
 

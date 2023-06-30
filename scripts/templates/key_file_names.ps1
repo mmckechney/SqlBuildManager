@@ -29,7 +29,7 @@ if(Test-Path $unFile)
 
 if([string]::IsNullOrWhiteSpace($sqlUserName))
 {
-    $sqlUserName = -Join ((65..90) + (97..122) | Get-Random -Count 15 | % {[char]$_})
+    $sqlUserName = "SqlBuildManagerSqlAdmin"
 
     $AESKey = New-Object Byte[] 32
     [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)

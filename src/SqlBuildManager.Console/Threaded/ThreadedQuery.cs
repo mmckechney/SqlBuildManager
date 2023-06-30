@@ -39,7 +39,7 @@ namespace SqlBuildManager.Console.Threaded
             }
 
             var query = File.ReadAllText(cmdLine.QueryFile.FullName);
-            var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType };
+            var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType, ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId };
 
             try
             {

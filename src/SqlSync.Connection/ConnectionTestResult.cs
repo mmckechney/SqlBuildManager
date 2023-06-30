@@ -39,6 +39,13 @@ namespace SqlSync.Connection
             get { return dbPassword; }
             set { dbPassword = value; }
         }
+
+        private string managedIdentityClientId = string.Empty;
+        public string ManagedIdentityClientId
+        {
+            get { return managedIdentityClientId; }
+            set { managedIdentityClientId = value; }
+        }
         private string successful = string.Empty;
         public bool Successful
         {

@@ -51,6 +51,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool>(Worker.Batch_RunBuild);
                 return cmd;
             }
@@ -91,6 +92,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.AddRange(IdentityArgumentsForBatch);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecution);
                 cmd.IsHidden = true;
                 return cmd;
@@ -188,6 +190,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptBatchSettings);
                 return cmd;
             }
@@ -264,6 +267,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs,bool, bool, bool>(Worker.Batch_RunQuery);
                 return cmd;
             }
@@ -299,6 +303,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabases);
                 cmd.IsHidden = true;
                 return cmd;

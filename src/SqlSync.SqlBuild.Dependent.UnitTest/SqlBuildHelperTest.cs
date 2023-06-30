@@ -1288,7 +1288,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             target.scriptLogFileName = null;
             object sender = null;
             ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], "C:\test.sql", "Test Executed");
-            target.SqlBuildHelper_ScriptLogWriteEvent(sender, e);
+            target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
         }
         /// <summary>
         ///A test for SqlBuildHelper_ScriptLogWriteEvent
@@ -1307,7 +1307,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             object sender = null;
             ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
-            target.SqlBuildHelper_ScriptLogWriteEvent(sender, e);
+            target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
 
             string contents = File.ReadAllText(target.scriptLogFileName);
             Assert.IsTrue(contents.IndexOf("SELECT TestCol FROM [test].[TestTable]") > -1);
@@ -1320,7 +1320,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 File.Delete(fileName);
 
             e = new ScriptLogEventArgs(-10000, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
-            target.SqlBuildHelper_ScriptLogWriteEvent(sender, e);
+            target.SqlBuildHelper_ScriptLogWriteEvent(sender,false, e);
             contents = File.ReadAllText(target.externalScriptLogFileName);
             Assert.IsTrue(contents.IndexOf("-- END Time:") > -1);
         }
@@ -1348,7 +1348,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             File.SetAttributes(fileName, FileAttributes.ReadOnly); //Make read-only so the copy throws an exception
 
             ScriptLogEventArgs e = new ScriptLogEventArgs(-10000, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
-            target.SqlBuildHelper_ScriptLogWriteEvent(sender, e);
+            target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
 
             FileInfo inf = new FileInfo(target.externalScriptLogFileName);
             Assert.IsTrue(inf.Length == 0); //file should be zero size because move should have failed.
@@ -1375,7 +1375,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             object sender = null;
             ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
-            target.SqlBuildHelper_ScriptLogWriteEvent(sender, e);
+            target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
 
             string contents = File.ReadAllText(target.scriptLogFileName);
             Assert.IsTrue(contents.IndexOf("-- Executed without a transaction --") > -1);

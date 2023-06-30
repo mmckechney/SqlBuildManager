@@ -17,10 +17,6 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 IdentityArgs.ClientId = value;
                 this.DirectPropertyChangeTracker.Add("Identity.ClientId");
-                if (!string.IsNullOrWhiteSpace(value)) //For managed identity, set the username to the client id
-                {
-                    this.AuthenticationArgs.UserName = value;
-                }
             }
         }
             
@@ -52,7 +48,10 @@ namespace SqlBuildManager.Console.CommandLine
         {
             set
             {
-                IdentityArgs.SubscriptionId = value; ContainerAppArgs.SubscriptionId = value; AciArgs.SubscriptionId = value;
+                IdentityArgs.SubscriptionId = value; 
+                ContainerAppArgs.SubscriptionId = value;
+                AciArgs.SubscriptionId = value; 
+                EventHubArgs.SubscriptionId = value;
                 this.DirectPropertyChangeTracker.Add("Identity.SubscriptionId");
             }
         }

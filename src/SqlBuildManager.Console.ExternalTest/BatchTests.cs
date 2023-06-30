@@ -51,6 +51,9 @@ namespace SqlBuildManager.Console.ExternalTest
             (ds, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             overrideFileContents = File.ReadAllLines(overrideFilePath).ToList();
 
+            Aad.AadHelper.ManagedIdentityClientId = string.Empty;
+            Aad.AadHelper.TenantId = string.Empty;
+
 
         }
         [TestCleanup]
@@ -1491,7 +1494,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
         [DataTestMethod]
-        public void Batch_Override_DacpacSource_FocceApplyCustom_Success(string batchMethod, string settingsFile)
+        public void Batch_Override_DacpacSource_ForceApplyCustom_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;

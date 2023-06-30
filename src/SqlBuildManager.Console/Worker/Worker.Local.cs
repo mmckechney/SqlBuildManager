@@ -116,7 +116,8 @@ namespace SqlBuildManager.Console
                     DatabaseName = cmdLine.Database,
                     AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType,
                     UserId = cmdLine.AuthenticationArgs.UserName,
-                    Password = cmdLine.AuthenticationArgs.Password
+                    Password = cmdLine.AuthenticationArgs.Password,
+                    ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId
                 };
                 sb.SqlBuildHelper helper = new sb.SqlBuildHelper(connData, true, "", cmdLine.Transactional);
                 BackgroundWorker bg = new BackgroundWorker()
