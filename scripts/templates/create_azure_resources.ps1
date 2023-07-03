@@ -21,8 +21,8 @@ $prefix,
 
  [Parameter()]
  [string[]]
- [ValidateSet("AKS", "ContainerApp", "Batch", "ACI", "All")]
- $settingsFile = "All"
+ [ValidateSet("AKS", "ContainerApp", "Batch", "ACI", "All", "None")]
+ $settingsFile = ""
 
 )
 #############################################
@@ -46,47 +46,49 @@ if($shouldDeploy)
     {
         $deployAks = $true
         $deployContainerRegistry = $true
-        $settingsFileAks = $true
+        if(-Not $settingsFile.Contains("None")) { $settingsFileAks = $true}
     }
 
     if($deploy.Contains("Batch") -or $deploy.Contains("All"))
     {
         $deployBatch = $true
         $build = $true
-        $settingsFileBatch = $true
+        if(-Not $settingsFile.Contains("None")) { $settingsFileBatch = $true}
     }
 
     if($deploy.Contains("ContainerApp") -or $deploy.Contains("All"))
     {
         $deployContainerAppEnv = $true
         $deployContainerRegistry = $true
-        $settingsFileContainerApp = $true
+        if(-Not $settingsFile.Contains("None")) { $settingsFileContainerApp = $true}
     }
 
     if($deploy.Contains("ACI") -or $deploy.Contains("All"))
     {
         $deployContainerRegistry = $true
-        $settingsFileAci = $true
+        if(-Not $settingsFile.Contains("None")) { $settingsFileAci = $true}
     }
 }
 
-if($settingsFile.Contains("AKS") -or $settingsFile.Contains("All"))
+if(-Not $settingsFile.Contains("None")) 
 {
-    $settingsFileAks = $true
+    if($settingsFile.Contains("AKS") -or $settingsFile.Contains("All"))
+    {
+        $settingsFileAks = $true
+    }
+    if($settingsFile.Contains("Batch") -or $settingsFile.Contains("All"))
+    {
+        $settingsFileBatch = $true
+    }
+    if($settingsFile.Contains("ContainerApp") -or $settingsFile.Contains("All"))
+    {
+        $settingsFileContainerApp = $true
+    }
+    if($settingsFile.Contains("ACI") -or $settingsFile.Contains("All"))
+    {
+        $settingsFileAci = $true
+    }
 }
-if($settingsFile.Contains("Batch") -or $settingsFile.Contains("All"))
-{
-    $settingsFileBatch = $true
-}
-if($settingsFile.Contains("ContainerApp") -or $settingsFile.Contains("All"))
-{
-    $settingsFileContainerApp = $true
-}
-if($settingsFile.Contains("ACI") -or $settingsFile.Contains("All"))
-{
-    $settingsFileAci = $true
-}
-
 #############################################
 # Get set resource name variables from prefix
 #############################################
@@ -134,7 +136,7 @@ if($shouldDeploy)
     if($deployBatch) {Write-Host "Deploying Batch Account" -ForegroundColor Cyan} else {Write-Host "Skipping Batch deployment" -ForegroundColor DarkBlue}
     if($deployContainerRegistry) {Write-Host "Deploying Container Registry" -ForegroundColor Cyan} else {Write-Host "Skipping Container Registry deployment" -ForegroundColor DarkBlue}
     if($deployContainerAppEnv) {Write-Host "Deploying Container App Env" -ForegroundColor Cyan} else {Write-Host "Skipping Container App Env deployment" -ForegroundColor DarkBlue}
-    if($testDatabaseCount -le 0) {Write-Host "Deploying $testDatabaseCount Test Databases"  -ForegroundColor Cyan} else {Write-Host  "Skipping Test database deployment" -ForegroundColor DarkBlue}
+    if($testDatabaseCount -ge 0) {Write-Host "Deploying $testDatabaseCount Test Databases"  -ForegroundColor Cyan} else {Write-Host  "Skipping Test database deployment" -ForegroundColor DarkBlue}
 
 
     $deployStatus = az deployment group create --resource-group $resourceGroupName --template-file azuredeploy_main.bicep `
@@ -275,5 +277,23 @@ else
 }
 
 
+###########################################
+# Save to settings files to a prefix folder
+###########################################
+if(-Not $settingsFile.Contains("None")) 
+{
+    $prefixFolder = Join-Path $outputPath $prefix 
 
+    if($false -eq (Test-Path  $prefixFolder))
+    {
+        New-Item -Path $prefixFolder -ItemType Directory
+    }
+    $prefixFolder = Resolve-Path $prefixFolder
+
+    Write-Host "Copying settings and config files to $prefixFolder" -ForegroundColor DarkCyan
+    Copy-Item -Path "$outputPath\*.json" -Destination $prefixFolder -Force
+    Copy-Item -Path "$outputPath\*.cfg" -Destination $prefixFolder -Force
+    Copy-Item -Path "$outputPath\*.txt" -Destination $prefixFolder -Force
+    
+}
 Write-Host "COMPLETED! - Azure resources have been created." -ForegroundColor DarkCyan
