@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using sb = SqlSync.SqlBuild;
 
@@ -746,6 +747,37 @@ namespace SqlBuildManager.Console
             }
             sb.AppendLine("|" + new string('-', total) + "|");
             return sb.ToString().Trim();
+        }
+
+        internal static int ShowCommands()
+        {
+            var filledCmdDocs = CommandLineBuilder.ListCommands_ForDocs();
+
+            var output = JsonSerializer.Serialize<List<CommandDoc>>(filledCmdDocs, new JsonSerializerOptions() { WriteIndented = true, MaxDepth = 10 });
+
+            System.Console.WriteLine("Command list for SQL Build Manager, `sbm` command line tool (with associated sub-commands)");
+            System.Console.WriteLine();
+
+            foreach (var parent in filledCmdDocs)
+            {
+                System.Console.ForegroundColor = ConsoleColor.Blue;
+                System.Console.WriteLine($"{parent.ParentCommand.PadRight(23,' ')}{parent.ParentCommandDescription}");
+                System.Console.ForegroundColor = ConsoleColor.White;
+                foreach (var sub in parent.SubCommands)
+                {
+                    System.Console.WriteLine($"\t{sub.Name.PadRight(15,' ')}{sub.Description}");
+                }
+                if (parent.SubCommands.Count > 0)
+                {
+                    System.Console.WriteLine();
+                }
+            }
+            System.Console.ForegroundColor = ConsoleColor.White;
+
+
+   
+
+            return 0;
         }
     }
 }

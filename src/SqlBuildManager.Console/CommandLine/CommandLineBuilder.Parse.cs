@@ -9,6 +9,8 @@ using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -175,6 +177,7 @@ namespace SqlBuildManager.Console.CommandLine
 
             return (instance, string.Empty);
         }
+
         public static CommandLineArgs ParseArguments(string[] args)
         {
             (CommandLineArgs cmd, string msg) = ParseArgumentsWithMessage(args);
@@ -214,6 +217,45 @@ namespace SqlBuildManager.Console.CommandLine
 
 
             return cmdList;
+        }
+
+        public static List<CommandDoc> ListCommands_ForDocs()
+        {
+            var cmdDocs = new List<CommandDoc>();
+            var filledCmdDocs = new List<CommandDoc>();
+            var parser = GetCommandParser();
+
+            var commands = parser.Configuration.RootCommand.Subcommands;
+            cmdDocs.AddRange(commands.Select(c => new CommandDoc { ParentCommand = c.Name, ParentCommandDescription = c.Description }));
+
+            foreach (var cmd in commands)
+            {
+                if (cmd.IsHidden)
+                {
+                    continue;
+                }
+                var targetParent = cmdDocs.Where(c => c.ParentCommand == cmd.Name).FirstOrDefault();
+                foreach (var sub in cmd.Subcommands)
+                {
+
+                    if (!sub.IsHidden) { targetParent.SubCommands.Add(new SubCommand() { Name = sub.Name, Description = sub.Description }); } else { continue; }
+                    foreach (var sub2 in sub.Subcommands)
+                    {
+                        if (!sub2.IsHidden)
+                            targetParent.SubCommands.Add(new SubCommand() { Name = $"{sub.Name} {sub2.Name}", Description = sub2.Description });
+                        else
+                            continue;
+                        foreach (var sub3 in sub2.Subcommands)
+                        {
+                            if (!sub3.IsHidden)
+                                targetParent.SubCommands.Add(new SubCommand() { Name = $"{sub.Name} {sub2.Name} {sub2.Name}", Description = sub3.Description });
+                        }
+                    }
+                }
+                filledCmdDocs.Add(targetParent);
+            }
+
+            return filledCmdDocs;
         }
 
         public static Command FirstBuildRunCommand { get; private set; }

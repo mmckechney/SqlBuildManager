@@ -495,6 +495,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(GetHashCommand);
             rootCommand.Add(GetDifferenceCommand);
             rootCommand.Add(SynchronizeCommand);
+            rootCommand.Add(ShowCommandsCommand);
 
             FirstBuildRunCommand = BuildCommand;
             FirstUtilityCommand = UtilityCommand;

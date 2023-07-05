@@ -281,5 +281,16 @@ namespace SqlBuildManager.Console.CommandLine
                 return cmd;
             }
         }
+
+		private static Command ShowCommandsCommand
+		{
+			get
+			{
+				var cmd = new Command("showcommands", "Creates export of all command and sub-command descriptions");
+                cmd.Handler = CommandHandler.Create(Worker.ShowCommands);
+                return cmd;
+
+            }
+		}
     }
 }
