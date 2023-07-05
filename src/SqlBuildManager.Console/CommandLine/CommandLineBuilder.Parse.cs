@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Help;
@@ -7,6 +8,7 @@ using System.CommandLine.Invocation;
 using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -115,8 +117,8 @@ namespace SqlBuildManager.Console.CommandLine
                                firstColumnText: $"\u0000{Environment.NewLine}** VNET Options :\u0000{Environment.NewLine}{OptionString(vnetNameOption)}",
                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{vnetNameOption.Description}");
 
-                           ctx.HelpBuilder.CustomizeSymbol(eventhubResourceGroupOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** EventHub Resource Options :\u0000{Environment.NewLine}{OptionString(eventhubResourceGroupOption)}",
+                           ctx.HelpBuilder.CustomizeSymbol(eventHubLoggingTypeOption,
+                               firstColumnText: $"\u0000{Environment.NewLine}** EventHub Resource Options :\u0000{Environment.NewLine}{OptionString(eventHubLoggingTypeOption)}",
                                secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{eventhubResourceGroupOption.Description}");
 
                            ctx.HelpBuilder.CustomizeSymbol(sectionPlaceholderOption,
@@ -159,14 +161,14 @@ namespace SqlBuildManager.Console.CommandLine
         }
         public static (CommandLineArgs, string) ParseArgumentsWithMessage(string[] args)
         {
-            RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var res = rootCommand.Parse(args);
+            var parser = GetCommandParser();
+            var res = parser.Parse(args);
             if (res.Errors.Count > 0)
             {
                 return (null, string.Join<string>(System.Environment.NewLine, res.Errors.Select(e => e.Message).ToArray()));
             }
 
-            var bindingContext = new InvocationContext(rootCommand.Parse(args)).BindingContext;
+            var bindingContext = new InvocationContext(parser.Parse(args)).BindingContext;
 
             var binder = new ModelBinder(typeof(CommandLineArgs));
             var instance = (CommandLineArgs)binder.CreateInstance(bindingContext);
@@ -184,6 +186,34 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 return cmd;
             }
+        }
+
+        public static List<List<string>> ListCommands()
+        {
+            var cmdList = new List<List<string>>();
+            var parser = GetCommandParser();
+
+            var commands = parser.Configuration.RootCommand.Subcommands;
+            cmdList.AddRange(commands.Select(c => new List<string> { c.Name }));
+
+            foreach(var cmd in commands)
+            {
+                foreach (var sub in cmd.Subcommands)
+                {
+                    cmdList.Add(new List<string> { cmd.Name, sub.Name });
+                    foreach (var sub2 in sub.Subcommands)
+                    {
+                        cmdList.Add(new List<string> { cmd.Name, sub.Name, sub2.Name });
+                        foreach (var sub3 in sub2.Subcommands)
+                        {
+                            cmdList.Add(new List<string> { cmd.Name, sub.Name, sub2.Name, sub3.Name });
+                        }
+                    }
+                }
+            }
+
+
+            return cmdList;
         }
 
         public static Command FirstBuildRunCommand { get; private set; }

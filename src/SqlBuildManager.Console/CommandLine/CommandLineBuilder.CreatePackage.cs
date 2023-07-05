@@ -86,7 +86,6 @@ namespace SqlBuildManager.Console.CommandLine
                     outputsbmOption.Copy(true),
                     databaseOption.Copy(true),
                     serverOption.Copy(true),
-                    authtypeOption,
                     allowForObjectDeletionOption
                 };
                 cmd.AddRange(DatabaseAuthArgs);

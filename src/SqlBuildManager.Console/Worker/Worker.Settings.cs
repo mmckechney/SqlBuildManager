@@ -67,6 +67,12 @@ namespace SqlBuildManager.Console
                 cmdLine.AuthenticationArgs.Password = null;
             }
 
+
+            if(cmdLine.EventHubLogging.Length > 0)
+            {
+                cmdLine.EventHubArgs.Logging = cmdLine.EventHubLogging;
+                cmdLine.EventHubLogging = null;
+            }
             if (!clearText)
             {
                 cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);

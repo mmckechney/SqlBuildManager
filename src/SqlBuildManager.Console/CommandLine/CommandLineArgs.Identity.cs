@@ -10,7 +10,15 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        public Identity IdentityArgs { get; set; } = new Identity();
+
+        public string IdentityName
+        {
+            set
+            {
+                IdentityArgs.IdentityName = value;
+                this.DirectPropertyChangeTracker.Add("Identity.IdentityName");
+            }
+        }
         public string ClientId
         {
             set

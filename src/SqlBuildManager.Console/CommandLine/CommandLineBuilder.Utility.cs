@@ -210,7 +210,6 @@ namespace SqlBuildManager.Console.CommandLine
 				cmd.Add(eventhubconnectionOption);
                 cmd.Add(storageaccountnameOption);
 				cmd.Add(storageaccountkeyOption);
-				cmd.Add(streamEventsOption);
 				cmd.Add(new Option<int>(new string[] { "--timeout" }, () => 120, "Number of seconds to wait for next event before terminating. Zero (0) will wait indefinitely."));
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(SettingsFileExistingOptions);

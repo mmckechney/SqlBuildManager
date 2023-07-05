@@ -10,10 +10,7 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        [JsonIgnore]
-        public StoredProcTesting StoredProcTestingArgs { get; set; } = new StoredProcTesting();
-
-
+        
         [Serializable]
         public class StoredProcTesting
         {

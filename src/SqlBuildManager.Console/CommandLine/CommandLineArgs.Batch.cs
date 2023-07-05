@@ -11,7 +11,7 @@ namespace SqlBuildManager.Console.CommandLine
     public partial class CommandLineArgs
     {
 
-        public Batch BatchArgs { get; set; } = new Batch();
+        
         
         [JsonIgnore]
         public virtual string OutputContainerSasUrl

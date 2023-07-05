@@ -34,13 +34,10 @@
     "SubscriptionId": "0d901325-XXXX-4db7-ae90-58b4e38XXXXX",
     "TenantId": "16bXXXXX-d300-468d-ac64-7eda0820b6d3"
   },
-  "EventHubArgs": {
-    "Logging": [ "VerboseMessages", "IndividualScriptResults" ]
-  },
   "NetworkArgs": {
     "VnetName": "sbmXXXvnet",
     "SubnetName": "sbmXXXbatchsubnet",
     "ResourceGroup": "sbmXXX-rg"
-  }
- 
+  },
+  "EventHubLogging": [ "VerboseMessages", "IndividualScriptResults" ]
 }

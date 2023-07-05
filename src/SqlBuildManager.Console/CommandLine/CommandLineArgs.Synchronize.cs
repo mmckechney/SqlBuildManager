@@ -9,8 +9,7 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        [JsonIgnore]
-        public Synchronize SynchronizeArgs { get; set; } = new Synchronize();
+        
         
         [JsonIgnore]
         public virtual string GoldServer

@@ -10,9 +10,7 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        [JsonIgnore]
-        public AutoScripting AutoScriptingArgs { get; set; } = new AutoScripting();
-
+      
         [Serializable]
         public class AutoScripting
         {

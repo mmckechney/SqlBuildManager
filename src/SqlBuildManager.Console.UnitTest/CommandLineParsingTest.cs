@@ -35,7 +35,8 @@ namespace SqlBuildManager.Console.UnitTest
 
                 (var cmdLine, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
                 Assert.IsNotNull(cmdLine.BatchArgs);
-                Assert.IsTrue(cmdLine.EventHubLogging.Contains(EventHubLogging.EssentialOnly));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.EssentialOnly));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.ScriptErrors));
 
 
             }
@@ -48,6 +49,36 @@ namespace SqlBuildManager.Console.UnitTest
             }
         }
 
+
+        [TestMethod]
+        public void SettingsFile_oldstyle_eventhublogging()
+        {
+            var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".json";
+            File.WriteAllBytes(tmpCfg, Properties.Resources.batch_setting_oldstyle_eventhublogging);
+            try
+            {
+                string[] args = new string[] {
+                    "batch", "run",
+                    "--override", "XXXXX",
+                    "--settingsfile", tmpCfg
+
+                };
+
+                (var cmdLine, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
+                Assert.IsNotNull(cmdLine.BatchArgs);
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.EssentialOnly));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.ScriptErrors));
+
+
+            }
+            finally
+            {
+                if (File.Exists(tmpCfg))
+                {
+                    File.Delete(tmpCfg);
+                }
+            }
+        }
 
 
         [TestMethod]
@@ -121,7 +152,7 @@ namespace SqlBuildManager.Console.UnitTest
                 };
 
                 (var cmdLine, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
-                Assert.IsTrue(cmdLine.EventHubLogging.Contains(EventHubLogging.ConsolidatedScriptResults));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.ConsolidatedScriptResults));
 
 
 
@@ -134,7 +165,7 @@ namespace SqlBuildManager.Console.UnitTest
                 };
 
                 (cmdLine, message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
-                Assert.IsTrue(cmdLine.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.IndividualScriptResults));
 
                 args = new string[] {
                 "batch", "run",
@@ -145,8 +176,8 @@ namespace SqlBuildManager.Console.UnitTest
                 };
 
                 (cmdLine, message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
-                Assert.IsTrue(cmdLine.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults));
-                Assert.IsTrue(cmdLine.EventHubLogging.Contains(EventHubLogging.VerboseMessages));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.IndividualScriptResults));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.VerboseMessages));
 
                 args = new string[] {
                 "batch", "run",
@@ -170,8 +201,24 @@ namespace SqlBuildManager.Console.UnitTest
                 }
             }
         }
+        [TestMethod]
+        public void BatchRun_Only_CommandArgs()
+        {
+            var args = new string[]
+            {
+                "batch", "run",
+                "--override", "XXXXX",
+                "--eventhublogging", "IndividualScriptResults",
+                "--eventhublogging", "VerboseMessages"
+            };
+
+            (var cmdLine, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
+            Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.IndividualScriptResults));
+            Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.VerboseMessages));
+        }
 
 
+        
         [TestMethod]
         public void SettingsFile_MultipleEHSettings()
         {
@@ -188,8 +235,38 @@ namespace SqlBuildManager.Console.UnitTest
 
                 (var cmdLine, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
                 Assert.IsNotNull(cmdLine.BatchArgs);
-                Assert.IsTrue(cmdLine.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults));
-                Assert.IsTrue(cmdLine.EventHubLogging.Contains(EventHubLogging.VerboseMessages));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.IndividualScriptResults));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.VerboseMessages));
+
+
+            }
+            finally
+            {
+                if (File.Exists(tmpCfg))
+                {
+                    File.Delete(tmpCfg);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void SettingsFile_MultipleEHSettings_OldStyle()
+        {
+            var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".json";
+            File.WriteAllBytes(tmpCfg, Properties.Resources.batch_settings_multipleeh_oldstyle);
+            try
+            {
+                string[] args = new string[] {
+                    "batch", "run",
+                    "--override", "XXXXX",
+                    "--settingsfile", tmpCfg
+
+                };
+
+                (var cmdLine, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
+                Assert.IsNotNull(cmdLine.BatchArgs);
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.IndividualScriptResults));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.VerboseMessages));
 
 
             }
@@ -203,38 +280,40 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
 
-
-        
-        [DataRow("TestConfig/settingsfile-batch-linux-mi.json")]
-        [DataRow("TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json")]
-        [DataRow("TestConfig/settingsfile-batch-linux-queue-mi.json")]
-        [DataRow("TestConfig/settingsfile-batch-windows-mi.json")]
-        [DataRow("TestConfig/settingsfile-batch-windows-queue-keyvault-mi.json")]
-        [DataRow("TestConfig/settingsfile-batch-windows-queue-mi.json")]
-        [DataTestMethod]
-        public void BatchConnectionString_Test(string settingsFile)
+        [TestMethod]
+        public void SettingsFile_SaveSettings_FromOldStyleEH()
         {
-
-            settingsFile = Path.GetFullPath(settingsFile);
-            if(!File.Exists(settingsFile))
+            var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".json";
+            File.WriteAllBytes(tmpCfg, Properties.Resources.batch_settings_multipleeh_oldstyle);
+            try
             {
-                Assert.Inconclusive("Settings file not found: " + settingsFile);
+                string[] args = new string[] {
+                    "batch", "savesettings",
+                    "--settingsfile", tmpCfg,
+                    "--silent"
+
+                };
+
+                (var cmdLine, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
+                Assert.IsNotNull(cmdLine.BatchArgs);
+
+                Worker.SaveAndEncryptBatchSettings(cmdLine, true);
+
+                (cmdLine, message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
+                Assert.IsNotNull(cmdLine.BatchArgs);
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.IndividualScriptResults));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.EssentialOnly));
+                Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.VerboseMessages));
+
+
             }
-            CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
-
-            string cmdString = cmdLine.ToStringExtension(StringType.Batch);
-            Assert.IsTrue(cmdString.Contains("--authtype \"ManagedIdentity\""), "Missing --authtype \"ManagedIdentity\" flag");
-
-            CommandLineArgs cmd2 = new CommandLineArgs();
-            
-            var splitter = CommandLineStringSplitter.Instance;
-            var args = splitter.Split(cmdString);
-            args = args.Insert<string>(new string[] { "batch", "runthreaded" }, 0);
-
-            (cmd2, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args.ToArray());
-
-            Assert.IsFalse(string.IsNullOrWhiteSpace(cmd2.AuthenticationArgs.UserName), "The UserName should be set to the value of the Managed Identity");
+            finally
+            {
+                if (File.Exists(tmpCfg))
+                {
+                    File.Delete(tmpCfg);
+                }
+            }
         }
     }
 }

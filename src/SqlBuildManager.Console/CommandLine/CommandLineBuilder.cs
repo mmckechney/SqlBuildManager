@@ -67,7 +67,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> prefixOption = new Option<string>(new string[] { "--prefix" }, "Prefix to add to the the yaml file names");
 
         private static Option<bool> unitTestOption = new Option<bool>("--unittest", () => false, "Designation that execution is running as a unit test") { IsHidden = true };
-        private static Option<bool> streamEventsOption = new Option<bool>("--stream", () => false, "Stream database Event Log events (database Commit and Error messages)");
+        
 
         private static Option<bool> decryptedOption = new Option<bool>("--decrypted", "Indicating that the settings file is already in clear text");
         private static Option<string> jobnameOption = new Option<string>(new string[] { "--jobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed");
@@ -246,21 +246,25 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> batchaccountnameOption = new Option<string>(new string[] { "--acct", "--batchaccountname" }, "String name of the Azure Batch account");
         private static Option<string> batchaccountkeyOption = new Option<string>(new string[] { "-k", "--batchaccountkey" }, "Account Key for the Azure Batch account");
         private static Option<string> batchaccounturlOption = new Option<string>(new string[] { "-U", "--batchaccounturl" }, "URL for the Azure Batch account");
+
+
         private static Option<EventHubLogging[]> eventHubLoggingTypeOption = new Option<EventHubLogging[]>(new string[] { "--eventhublogging" }, () => new EventHubLogging[] { EventHubLogging.EssentialOnly }, "Controls EventHub logging, including how to log script results and if to emit verbose message events.\r\nAdd multiple flags to combine settings.[EssentialOnly|ScriptErrors|IndividualScriptResults|ConsolidatedScriptResults|VerboseMessages]")
         {
             Arity = ArgumentArity.ZeroOrMore
         };
-
         private static Option<string> eventhubResourceGroupOption = new Option<string>(new string[] { "--ehrg", "--eventhubresourcegroup" }, "Event Hub resource group. If provided along eith --ehsub, the system will attempt to create a customer consumer group for the build");
         private static Option<string> eventhubSubscriptionOption = new Option<string>(new string[] { "--ehsub", "--eventhubsubscriptionid" }, "Event Hub Subscription Guid. If provided along with --ehrg, the system will attempt to create a customer consumer group for the build");
+        private static Option<bool> streamEventsOption = new Option<bool>("--stream", () => false, "Stream database Event Log events (database Commit and Error messages)");
         private static List<Option> EventHubResourceOptions
         {
             get
             {
                 var list = new List<Option>()
                 {
+                    eventHubLoggingTypeOption,
                     eventhubResourceGroupOption,
-                    eventhubSubscriptionOption
+                    eventhubSubscriptionOption,
+                    streamEventsOption
                 };
                 return list;
             }

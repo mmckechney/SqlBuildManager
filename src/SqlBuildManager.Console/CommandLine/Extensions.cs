@@ -293,7 +293,13 @@ namespace SqlBuildManager.Console.CommandLine
                     currentProp.GetValue(current).SetValues(incomingProp.GetValue(incoming), current.DirectPropertyChangeTracker);
                 }
             }
+
+            if(incoming.EventHubLogging.Length > 0)
+            {
+                current.EventHubArgs.Logging = incoming.EventHubLogging;
+            }
             current.EventHubLogging = incoming.EventHubLogging;
+            current.EventHubArgs.Logging = incoming.EventHubArgs.Logging;
 
         }
         /// <summary>

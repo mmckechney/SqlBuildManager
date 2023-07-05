@@ -1,9 +1,11 @@
 {
   "AuthenticationArgs": {
-    "AuthenticationType": "ManagedIdentity"
+    "UserName": "F39bg\u002BQaoKOwtaYvqweqweqwe\u002BbhTxjIed7qPk\u002BVlk=",
+    "Password": "KcH/HBM2FbiT80tqvDu5G9bSqweqeqweBogsgnMNUo3Ztus7pqDfu/eVyTf5",
+    "AuthenticationType": "Password"
   },
   "BatchArgs": {
-    "ResourceGroup": "sbmXXX-rg",
+    "ResourceGroup": "sbmXXXXX-rg",
     "BatchNodeCount": 2,
     "BatchVmSize": "STANDARD_D1_V2",
     "DeleteBatchPool": false,
@@ -14,30 +16,35 @@
     "JobMonitorTimeout": 30
   },
   "ConnectionArgs": {
-    "EventHubConnectionString": "sbmXXXeventhubnamespace|sbmXXXeventhub",
-    "StorageAccountName": "sbmXXXstorage",
-    "StorageAccountKey": "EclX3LXNV3Yw\u002By1ikNg\u002BzQMU0oJsdwxwl5/YlMowwYCiiuRJkqYbtzAJzQd/T\u002BKuhXdOaiQmdyHnupkNAbrhd2LzsZyFHmuOa085pkdPQILfn6Ou5dBb5ZmE3t\u002B7C8PQpw",
-    "BatchAccountName": "sbmXXXbatchacct",
-    "BatchAccountKey": "Aga/jpYmXB1aTDn1KHY4kj29d75ver74XQCH3GhKwewxwxGruZkhyLG6RapJCbAke89mNccFEuu8S0oFqUPk3PzNRaPSltu4SMrAKhF9JC5N0gPW16qLeNqDyI3CrrK",
-    "BatchAccountUrl": "https://sbmXXXbatchacct.eastus.batch.azure.com"
+    "EventHubConnectionString": "wsow/erDnj5v/3eNE5zuC2/tyIzyJyc1cuv/Wt7ZCD3FbGK2sInbGJf9roULUSdHDYecQTdGPCYPoAkAqwewewewewlLSKsioxhvFfXG9VnFmzK0/XP0UUcHT/2NURRDaz9Dt3nd1Za/SOV0hYJBSehe1f\u002BVV8jX6zg\u002BNCahpIR9YprxoHZxiU1ZAn9ixq9Os0DNzFWuJa1f7VEvl4ac2Ur4pQILM/LSoHiF/hd7KlwYERh",
+    "StorageAccountName": "sbmXXXXXstorage",
+    "StorageAccountKey": "XX15nKpTGr4X\u002Bt30g7VRqR8FvLpT\u002BmB/OWMpR4dbA2I5cso8Ar5SNQZxg/S3\u002BbkQdJaPCLR3DQwuAqweqweqweqweqf0Tq9SE4MazCbEzyA\u002BXht94JT7bXc",
+    "BatchAccountName": "sbmXXXXXbatchacct",
+    "BatchAccountKey": "jenSRh6XpaXAmGJ6\u002BgkMqp2c1TEgd/Wo3WVKD6JYnvTmLr\u002BU6XZU/yGdwxsMqweqweqweqwmsazPiTazBqmnZJVpPAUjF3WtgimW6eJWuYeEC",
+    "BatchAccountUrl": "https://sbmXXXXXbatchacct.southcentralus.batch.azure.com"
   },
   "Concurrency": 5,
   "ConcurrencyType": "Count",
   "TimeoutRetryCount": 0,
   "DefaultScriptTimeout": 500,
   "RootLoggingPath": "C:/temp",
+  "EventHubArgs": {
+    "ResourceGroup": "sbmXXXXX-rg",
+    "SubscriptionId": "0d901325-d643-4db7-ae90-58b4e3834629",
+    "Logging": [
+      "EssentialOnly",
+      "ScriptErrors"
+    ]
+  },
   "IdentityArgs": {
-    "IdentityName": "sbmXXXidentity",
-    "ClientId": "f8108958-XXXX-4f25-9d62-5aXXXXX534c4",
-    "PrincipalId": "26a36cfa-XXXX-4ef9-b712-XXXXX52a2bad",
-    "ResourceGroup": "sbmXXX-rg",
-    "SubscriptionId": "0d901325-XXXX-4db7-ae90-58b4e38XXXXX",
-    "TenantId": "16bXXXXX-d300-468d-ac64-7eda0820b6d3"
+    "IdentityName": "sbmXXXXXidentity",
+    "ResourceGroup": "sbmXXXXX-rg",
+    "SubscriptionId": "0d901325-d643-4db7-ae90-58b4e3834629",
+    "TenantId": "16b3c013-d300-468d-ac64-7eda0820b6d3"
   },
   "NetworkArgs": {
-    "VnetName": "sbmXXXvnet",
-    "SubnetName": "sbmXXXbatchsubnet",
-    "ResourceGroup": "sbmXXX-rg"
-  },
-  "EventHubLogging": [ "EssentialOnly" ]
+    "VnetName": "sbmXXXXXvnet",
+    "SubnetName": "sbmXXXXXbatchsubnet",
+    "ResourceGroup": "sbmXXXXX-rg"
+  }
 }

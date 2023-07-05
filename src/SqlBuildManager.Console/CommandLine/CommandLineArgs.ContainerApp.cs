@@ -10,8 +10,6 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        public ContainerApp ContainerAppArgs { get; set; } = new ContainerApp();
-        
         public string EnvironmentName
         {
             set

@@ -23,8 +23,7 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     defaultscripttimeoutOption,
                     cleartextOption,
-                    silentOption,
-                    eventHubLoggingTypeOption,
+                    silentOption
                 };
                 cmd.AddRange(SettingsFileNewOptions);
                 cmd.AddRange(ContainerAppOptions);
@@ -63,8 +62,6 @@ namespace SqlBuildManager.Console.CommandLine
                     decryptedOption,
                     allowForObjectDeletionOption,
                     unitTestOption,
-                    streamEventsOption,
-                    eventHubLoggingTypeOption,
                     new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful Container App container deployment"),
                     containerAppEnvOnly,
                     containerAppDeleteAppUponCompletion,
@@ -154,8 +151,6 @@ namespace SqlBuildManager.Console.CommandLine
                     decryptedOption,
                     allowForObjectDeletionOption,
                     unitTestOption,
-                    streamEventsOption,
-                    eventHubLoggingTypeOption,
                     new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful Container App container deployment"),
                     containerAppEnvOnly,
                     containerAppDeleteAppUponCompletion
@@ -192,7 +187,6 @@ namespace SqlBuildManager.Console.CommandLine
                     overrideOption,
                     threadedConcurrencyTypeOption,
                     unitTestOption,
-                    streamEventsOption,
                     decryptedOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);

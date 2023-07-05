@@ -150,7 +150,7 @@ namespace SqlBuildManager.Console.ContainerApp
             }
 
 
-            parms.Add(ContainerEnvVariables.EventHubLogging, string.Join("|",cmdLine.EventHubLogging));
+            parms.Add(ContainerEnvVariables.EventHubLogging, string.Join("|",cmdLine.EventHubArgs.Logging));
             return parms;
 
         }
