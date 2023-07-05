@@ -286,8 +286,11 @@ namespace SqlBuildManager.Console.CommandLine
 		{
 			get
 			{
-				var cmd = new Command("showcommands", "Creates export of all command and sub-command descriptions");
-                cmd.Handler = CommandHandler.Create(Worker.ShowCommands);
+				var cmd = new Command("showcommands", "Creates export of all command and sub-command descriptions")
+				{
+					new Option<bool>(new string[] { "--md", "--markdown" },() => false, "Output command list as markdown"),
+				};
+                cmd.Handler = CommandHandler.Create<bool>(Worker.ShowCommands);
                 return cmd;
 
             }
