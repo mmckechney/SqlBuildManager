@@ -27,6 +27,7 @@ namespace SqlBuildManager.Console.ExternalTest
         private List<string> overrideFileContents;
 
         private string overrideFilePath;
+        private string overrideFileWithBadTargetsPath;
         private string settingsFilePath;
         private string linuxSettingsFilePath;
         private string settingsFileKeyPath;
@@ -43,6 +44,7 @@ namespace SqlBuildManager.Console.ExternalTest
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
             overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            overrideFileWithBadTargetsPath = Path.GetFullPath("TestConfig/databasetargets-badtargets.cfg");
             un = File.ReadAllText(Path.GetFullPath("TestConfig/un.txt")).Trim();
             pw = File.ReadAllText(Path.GetFullPath("TestConfig/pw.txt")).Trim();
             server = File.ReadAllText(Path.GetFullPath("TestConfig/server.txt")).Trim();
@@ -172,6 +174,46 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count()}"), $"Should have run against a {overrideFileContents.Count()} databases");
             }
+        }
+
+ 
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataTestMethod]
+        public void Batch_OverrideWithBadTarget_SBMSource_ByConcurrencyType_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            settingsFile = Path.GetFullPath(settingsFile);
+            string jobName = GetUniqueBatchJobName("batch-sbm");
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "--loglevel", "Debug",
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", overrideFileWithBadTargetsPath,
+                "--packagename", sbmFileName,
+                "--concurrency", "2",
+                "--concurrencytype","Server",
+                "--jobname", jobName };
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(1, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed with Errors"), "This test should have failed!");
         }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]

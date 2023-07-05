@@ -1,10 +1,11 @@
 param
 (
-    [string] $path = "..\..\..\src\TestConfig",
-    [string] $resourceGroupName,
+    [Parameter(Mandatory=$true)]
     [string] $prefix,
+    [string] $resourceGroupName,
     [ValidateSet("BuildOnly", "UploadOnly", "BuildAndUpload")]
-    [string] $action = "BuildAndUpload"
+    [string] $action = "BuildAndUpload",
+    [string] $path = "..\..\..\src\TestConfig"
 )
 #############################################
 # Get set resource name variables from prefix

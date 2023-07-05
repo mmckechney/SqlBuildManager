@@ -30,7 +30,7 @@ namespace SqlBuildManager.Console.Batch
     public class BatchManager
     {
         readonly bool isDebug;
-        private enum BatchType
+        public enum BatchType
         {
             Run,
             Query
@@ -676,7 +676,7 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        private IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles, string containerSasToken, int poolNodeCount, string jobId, OsType os, string applicationPackage, BatchType bType)
+        public IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles, string containerSasToken, int poolNodeCount, string jobId, OsType os, string applicationPackage, BatchType bType)
         {
             // var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
 

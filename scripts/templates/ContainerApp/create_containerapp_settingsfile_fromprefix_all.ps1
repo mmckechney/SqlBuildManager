@@ -1,5 +1,6 @@
 param
 (
+    [Parameter(Mandatory=$true)]
     [string] $prefix
 )
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path

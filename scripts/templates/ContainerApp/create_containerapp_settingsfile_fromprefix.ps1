@@ -19,7 +19,9 @@ param
 . ./../key_file_names.ps1 -prefix $prefix -path $path
 
 Write-Host "Create Container App Settings file from prefix: $prefix"  -ForegroundColor Cyan
-$path = Resolve-Path $path
+
+$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+$path = Resolve-Path (Join-Path $scriptDir $path)
 
 Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
 if([string]::IsNullOrWhiteSpace($sqlUserName))
@@ -54,12 +56,13 @@ if("" -eq $imageTag)
     Write-Host "Using Image Tag: $imageTag" -ForegroundColor DarkGreen
 }
 
-$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 if($withKeyVault)
 {
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
     .$scriptDir/create_containerapp_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -containerAppEnvironmentName $containerAppEnvName -containerRegistryName $containerRegistryName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -imageTag $imageTag -withContainerRegistry $withContainerRegistry -keyVaultName $keyVaultName -identityName $identityName -identityClientId $identityClientId
 }
 else 
 {
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
     .$scriptDir/create_containerapp_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -containerAppEnvironmentName $containerAppEnvName -containerRegistryName $containerRegistryName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -imageTag $imageTag -withContainerRegistry $withContainerRegistry  -identityName $identityName -identityClientId $identityClientId
 }

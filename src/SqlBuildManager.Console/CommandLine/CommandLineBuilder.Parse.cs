@@ -119,7 +119,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                            ctx.HelpBuilder.CustomizeSymbol(eventHubLoggingTypeOption,
                                firstColumnText: $"\u0000{Environment.NewLine}** EventHub Resource Options :\u0000{Environment.NewLine}{OptionString(eventHubLoggingTypeOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{eventhubResourceGroupOption.Description}");
+                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{eventHubLoggingTypeOption.Description}");
 
                            ctx.HelpBuilder.CustomizeSymbol(sectionPlaceholderOption,
                                firstColumnText: $"\u0000{Environment.NewLine}** General Options:\u0000",
