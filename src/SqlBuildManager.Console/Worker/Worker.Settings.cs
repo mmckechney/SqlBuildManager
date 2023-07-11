@@ -13,6 +13,7 @@ namespace SqlBuildManager.Console
     {
         internal static int SaveAndEncryptSettings(CommandLineArgs cmdLine, bool clearText)
         {
+           (bool success, cmdLine) =  Init(cmdLine);
 
             if (string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
