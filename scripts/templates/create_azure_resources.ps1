@@ -243,7 +243,7 @@ if($settingsFileContainerApp)
 {
     # Create test file referencing the 
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix_all.ps1  -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $false
+    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix_all.ps1 -prefix $prefix 
    
 }
 else 
