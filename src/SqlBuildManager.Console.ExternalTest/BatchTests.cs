@@ -9,6 +9,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Threading.Tasks;
+using SqlBuildManager.Console.Batch;
+using Microsoft.Azure.Batch.Auth;
+using Microsoft.Azure.Batch;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -24,6 +27,7 @@ namespace SqlBuildManager.Console.ExternalTest
         private List<string> overrideFileContents;
 
         private string overrideFilePath;
+        private string overrideFileWithBadTargetsPath;
         private string settingsFilePath;
         private string linuxSettingsFilePath;
         private string settingsFileKeyPath;
@@ -40,6 +44,7 @@ namespace SqlBuildManager.Console.ExternalTest
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
             overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            overrideFileWithBadTargetsPath = Path.GetFullPath("TestConfig/databasetargets-badtargets.cfg");
             un = File.ReadAllText(Path.GetFullPath("TestConfig/un.txt")).Trim();
             pw = File.ReadAllText(Path.GetFullPath("TestConfig/pw.txt")).Trim();
             server = File.ReadAllText(Path.GetFullPath("TestConfig/server.txt")).Trim();
@@ -169,6 +174,46 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count()}"), $"Should have run against a {overrideFileContents.Count()} databases");
             }
+        }
+
+ 
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataTestMethod]
+        public void Batch_OverrideWithBadTarget_SBMSource_ByConcurrencyType_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            settingsFile = Path.GetFullPath(settingsFile);
+            string jobName = GetUniqueBatchJobName("batch-sbm");
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "--loglevel", "Debug",
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", overrideFileWithBadTargetsPath,
+                "--packagename", sbmFileName,
+                "--concurrency", "2",
+                "--concurrencytype","Server",
+                "--jobname", jobName };
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(1, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed with Errors"), "This test should have failed!");
         }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
@@ -1684,6 +1729,39 @@ namespace SqlBuildManager.Console.ExternalTest
             
             logFileContents = ReleventLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+        }
+
+        [DataRow("TestConfig/settingsfile-batch-linux-queue-mi.json", "TestConfig/settingsfilekey.txt")]
+        [DataTestMethod]
+        public async Task CreateBatchPool_Success(string settingsFile, string settingsFileKeyPath)
+        {
+            var poolId = "TestPool1";
+            settingsFile = Path.GetFullPath(settingsFile);
+            
+            CommandLineArgs cmdLine = new CommandLineArgs();
+            cmdLine.SettingsFileKey = settingsFileKeyPath;
+            cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
+            if (cmdLine.IdentityArgs != null) SqlBuildManager.Console.Aad.AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            if (cmdLine.IdentityArgs != null) SqlBuildManager.Console.Aad.AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
+
+            
+            BatchManager mgr = new BatchManager(cmdLine);
+            var result = await mgr.CreateBatchPool(cmdLine, poolId);
+            
+            Assert.IsTrue(result);
+
+            
+            var batchToken = await SqlBuildManager.Console.Aad.AadHelper.GetBatchTokenString();
+            BatchTokenCredentials batchTokenCredentials = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, batchToken);
+            BatchClient batchClient = BatchClient.Open(batchTokenCredentials);
+
+            var existingPool = await batchClient.PoolOperations.GetPoolAsync(poolId);
+
+
+            Assert.IsNotNull(existingPool);
+            Assert.IsNotNull(existingPool.Identity);
+
+
         }
 
     }

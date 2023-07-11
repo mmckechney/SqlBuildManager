@@ -269,7 +269,7 @@ namespace SqlBuildManager.Console.Kubernetes
             yml.data.ConcurrencyType = args.ConcurrencyType.ToString();
             yml.data.AuthType = args.AuthenticationArgs.AuthenticationType.ToString();
             yml.data.KeyVaultName = args.ConnectionArgs.KeyVaultName;
-            yml.data.EventHubLogging = string.Join("|", args.EventHubLogging);
+            yml.data.EventHubLogging = string.Join("|", args.EventHubArgs.Logging);
             if (args.QueryFile != null)
             {
                 yml.data.QueryFile = args.QueryFile.Name;
@@ -434,7 +434,7 @@ namespace SqlBuildManager.Console.Kubernetes
                         }
                     }
                     args.EventHubLogging = ehList.ToArray();
-                    log.LogDebug($"EventHubLogging= {string.Join(",", args.EventHubLogging)}");
+                    log.LogDebug($"EventHubLogging= {string.Join(",", args.EventHubArgs.Logging)}");
                 }
             }
 
@@ -601,7 +601,7 @@ namespace SqlBuildManager.Console.Kubernetes
                     }
                 }
                 args.EventHubLogging = ehList.ToArray();
-                log.LogDebug($"EventHubLogging= {string.Join(",", args.EventHubLogging)}");
+                log.LogDebug($"EventHubLogging= {string.Join(",", args.EventHubArgs.Logging)}");
             }
 
             return args;

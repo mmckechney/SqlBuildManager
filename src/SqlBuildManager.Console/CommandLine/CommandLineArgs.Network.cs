@@ -9,8 +9,6 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        public Network NetworkArgs { get; set; } = new Network();
-        
         public string VnetName
         {
             set

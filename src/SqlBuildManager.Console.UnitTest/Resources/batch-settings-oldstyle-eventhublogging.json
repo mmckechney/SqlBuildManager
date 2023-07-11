@@ -1,0 +1,50 @@
+{
+  "AuthenticationArgs": {
+    "UserName": "F39bg\u002BQaoKOwtaYvs8BYsmBZOJ\u002BbhTxjIed7qPk\u002BVlk=",
+    "Password": "KcH/HBM2FbiT80tqvDu5G9bSxTgvDEAzqeRXBogsgnMNUo3Ztus7pqDfu/eVyTf5",
+    "AuthenticationType": "Password"
+  },
+  "BatchArgs": {
+    "ResourceGroup": "sbm234-rg",
+    "BatchNodeCount": 2,
+    "BatchVmSize": "STANDARD_D1_V2",
+    "DeleteBatchPool": false,
+    "DeleteBatchJob": false,
+    "PollBatchPoolStatus": true,
+    "BatchPoolName": "SqlBuildManagerPoolLinux",
+    "BatchPoolOs": "Linux",
+    "JobMonitorTimeout": 30
+  },
+  "ConnectionArgs": {
+    "EventHubConnectionString": "wsow/erDnj5v/3eNE5zuC2/tyIzyJyc1cuv/Wt7ZCD3FbGK2sInbGJf9roULUSdHDYecQTdGPCYPoAkAWKjaWwpPYYFT8Elh4he20/JQsDvlLSKsioxhvFfXG9VnFmzK0/XP0UUcHT/2NURRDaz9Dt3nd1Za/SOV0hYJBSehe1f\u002BVV8jX6zg\u002BNCahpIR9YprxoHZxiU1ZAn9ixq9Os0DNzFWuJa1f7VEvl4ac2Ur4pQILM/LSoHiF/hd7KlwYERh",
+    "StorageAccountName": "sbm234storage",
+    "StorageAccountKey": "XX15nKpTGr4X\u002Bt30g7VRqR8FvLpT\u002BmB/OWMpR4dbA2I5cso8Ar5SNQZxg/S3\u002BbkQdJaPCLR3DQwuAegoRjfe1TFgFFqAAyV80edf0Tq9SE4MazCbEzyA\u002BXht94JT7bXc",
+    "BatchAccountName": "sbm234batchacct",
+    "BatchAccountKey": "jenSRh6XpaXAmGJ6\u002BgkMqp2c1TEgd/Wo3WVKD6JYnvTmLr\u002BU6XZU/yGdwxsM5wWRCcjzrtd92mlhl3Hc2AYpMa7h3NmsazPiTazBqmnZJVpPAUjF3WtgimW6eJWuYeEC",
+    "BatchAccountUrl": "https://sbm234batchacct.southcentralus.batch.azure.com"
+  },
+  "Concurrency": 5,
+  "ConcurrencyType": "Count",
+  "TimeoutRetryCount": 0,
+  "DefaultScriptTimeout": 500,
+  "RootLoggingPath": "C:/temp",
+  "EventHubLogging": [
+    "EssentialOnly",
+    "ScriptErrors"
+  ],
+  "EventHubArgs": {
+    "ResourceGroup": "sbm234-rg",
+    "SubscriptionId": "0d901325-d643-4db7-ae90-58b4e3834629"
+  },
+  "IdentityArgs": {
+    "IdentityName": "sbm234identity",
+    "ResourceGroup": "sbm234-rg",
+    "SubscriptionId": "0d901325-d643-4db7-ae90-58b4e3834629",
+    "TenantId": "16b3c013-d300-468d-ac64-7eda0820b6d3"
+  },
+  "NetworkArgs": {
+    "VnetName": "sbm234vnet",
+    "SubnetName": "sbm234batchsubnet",
+    "ResourceGroup": "sbm234-rg"
+  }
+}

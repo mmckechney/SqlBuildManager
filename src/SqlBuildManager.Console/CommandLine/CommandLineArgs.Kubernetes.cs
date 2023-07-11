@@ -10,7 +10,6 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        public Kubernetes KubernetesArgs { get; set; } = new Kubernetes();
         public int PodCount
         {
             set

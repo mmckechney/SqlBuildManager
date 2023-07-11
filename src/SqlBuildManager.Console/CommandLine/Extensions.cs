@@ -39,10 +39,16 @@ namespace SqlBuildManager.Console.CommandLine
                     property.PropertyType == typeof(CommandLineArgs.Synchronize) ||
                     property.PropertyType == typeof(CommandLineArgs.Aci) ||
                     property.PropertyType == typeof(CommandLineArgs.Kubernetes) ||
-                    property.PropertyType == typeof(CommandLineArgs.EventHub) ||
                     property.PropertyType == typeof(CommandLineArgs.Network))
                 {
                     if (property.GetValue(obj) != null && toStringType == StringType.Basic)
+                    {
+                        args.AddRange(property.GetValue(obj).ToArgs(toStringType));
+                    }
+                }
+                else if(property.PropertyType == typeof(CommandLineArgs.EventHub))
+                {
+                    if (property.GetValue(obj) != null)
                     {
                         args.AddRange(property.GetValue(obj).ToArgs(toStringType));
                     }
@@ -165,6 +171,16 @@ namespace SqlBuildManager.Console.CommandLine
                                 args.AddRange(new string[] { "--serviceaccountname", property.GetValue(obj).ToString().Quoted() });
                             }
                             break;
+                        case "SubscriptionId":
+                            if(obj is CommandLineArgs.EventHub)
+                            {
+
+                            }
+                            else
+                            {
+                                args.AddRange(new string[] { $"--{property.Name.ToLower()}", property.GetValue(obj).ToString() });
+                            }
+                            break;
                         case "BatchJobName": //Ignore this because it will be counted as a duplicate for JobName
                         case "OverrideDesignated":
                         case "CliVersion":
@@ -204,7 +220,7 @@ namespace SqlBuildManager.Console.CommandLine
                                 var values = (EventHubLogging[])property.GetValue(obj);
                                 foreach (var value in values)
                                 {
-                                    args.AddRange(new string[] { $"--{property.Name.ToLower()}", value.ToString().Quoted() });
+                                    args.AddRange(new string[] { $"--eventhublogging", value.ToString().Quoted() });
                                 }
                             }
                             else
@@ -293,7 +309,13 @@ namespace SqlBuildManager.Console.CommandLine
                     currentProp.GetValue(current).SetValues(incomingProp.GetValue(incoming), current.DirectPropertyChangeTracker);
                 }
             }
+
+            if(incoming.EventHubLogging.Length > 0)
+            {
+                current.EventHubArgs.Logging = incoming.EventHubLogging;
+            }
             current.EventHubLogging = incoming.EventHubLogging;
+            current.EventHubArgs.Logging = incoming.EventHubArgs.Logging;
 
         }
         /// <summary>

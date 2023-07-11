@@ -225,7 +225,14 @@ namespace SqlBuildManager.Console.Events
                         }
                         else
                         {
-                            log.LogInformation($"{json}");
+                            if (msg.Level.ToLower() == "error" ||  msg.Properties.LogMsg.LogType == LogType.ScriptError)
+                            {
+                                log.LogError($"{json}");
+                            }
+                            else
+                            {
+                                log.LogInformation($"{json}");
+                            }
                         }
                     }
                     if (this.jobName.ToLower() != "all")

@@ -213,6 +213,7 @@ $sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\$targetFram
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 .$scriptDir/KeyVault/add_secrets_to_keyvault_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
 
+
 #########################
 # Database override files
 #########################
@@ -243,7 +244,7 @@ if($settingsFileContainerApp)
 {
     # Create test file referencing the 
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix_all.ps1  -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix -withContainerRegistry $deployContainerRegistry -withKeyVault $false
+    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix_all.ps1 -prefix $prefix
    
 }
 else 

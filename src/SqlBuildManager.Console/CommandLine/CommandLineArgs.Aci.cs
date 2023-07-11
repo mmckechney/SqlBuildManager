@@ -9,8 +9,6 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        public Aci AciArgs { get; set; } = new Aci();
-        
         public string AciName
         {
             set
@@ -37,7 +35,7 @@ namespace SqlBuildManager.Console.CommandLine
 
         }
 
-        public string IdentityName { set { IdentityArgs.IdentityName = value; } }
+
         public class Aci : ArgsBase
         {
             public string AciName { get; set; } = string.Empty;

@@ -86,13 +86,21 @@ if($authTypes -contains "Password")
     
     #save with encrypted secrets
     $settingsFileName = Join-Path $path "settingsfile-k8s-sec.json"
-    Write-Host ($params + @("--settingsfile", """$settingsFileName"""))-ForegroundColor Yellow
+    if(Test-Path $settingsFileName)
+    {
+        Remove-Item $settingsFileName
+    }
+    Write-Host ($params + @("--settingsfile", """$settingsFileName"""))-ForegroundColor DarkYellow
     Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFileName""")) -Wait -NoNewWindow
 
     #save with KeyVault settings
     $settingsFileName = Join-Path $path "settingsfile-k8s-kv.json"
+    if(Test-Path $settingsFileName)
+    {
+        Remove-Item $settingsFileName
+    }
     $params += @("--keyvaultname", $keyVaultName)
-    Write-Host ($params + @("--settingsfile", """$settingsFileName""")) -ForegroundColor Yellow
+    Write-Host ($params + @("--settingsfile", """$settingsFileName""")) -ForegroundColor DarkYellow
     Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFileName""")) -Wait -NoNewWindow
 }    
   
@@ -108,14 +116,22 @@ if($authTypes -contains "ManagedIdentity")
     
     
     $settingsFileName = Join-Path $path "settingsfile-k8s-sec-mi.json"
+    if(Test-Path $settingsFileName)
+    {
+        Remove-Item $settingsFileName
+    }
     Write-Host $params  -ForegroundColor Yellow
-    Write-Host ($params + @("--settingsfile", """$settingsFileName"""))-ForegroundColor Yellow
+    Write-Host ($params + @("--settingsfile", """$settingsFileName"""))-ForegroundColor DarkYellow
     Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFileName""")) -Wait -NoNewWindow
 
     $settingsFileName = Join-Path $path "settingsfile-k8s-kv-mi.json"
+    if(Test-Path $settingsFileName)
+    {
+        Remove-Item $settingsFileName
+    }
     $params += @("--keyvaultname", $keyVaultName)
     Write-Host $params  -ForegroundColor Yellow
-    Write-Host ($params + @("--settingsfile", """$settingsFileName"""))-ForegroundColor Yellow
+    Write-Host ($params + @("--settingsfile", """$settingsFileName"""))-ForegroundColor DarkYellow
     Start-Process $sbmExe -ArgumentList ($params + @("--settingsfile", """$settingsFileName""")) -Wait -NoNewWindow
   
 }  

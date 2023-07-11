@@ -1,9 +1,10 @@
 param
 (
+    [Parameter(Mandatory=$true)]
+    [string] $prefix,
     [string] $sbmExe = "sbm.exe",
     [string] $path = "..\..\..\src\TestConfig",
     [string] $resourceGroupName,
-    [string] $prefix,
     [string] $sqlUserName,
     [string] $sqlPassword
 )

@@ -35,6 +35,16 @@ Why `client`?  Inside the `.sbm` file, there is a default database target set to
 
  This is why the flag name is `--override`!
 
+
+ ### File Creation from a SQL Query
+
+ Using the `sbm utility override` command, you can create an override file from a SQL query. This is useful when you want to target a specific set of databases based on some criteria. For example, you may want to target all databases that have a name that starts with `Prod` or `Dev`. You can do this with a SQL script such as:
+
+ ``` sql
+ SELECT [ServerName] + ':client,' + [DatabaseName]
+ ```
+
+
 ### Runtime
 
 If the `--override` setting is provided but there isn't a `--servicebustopicconnection` value, the runtime will use this file directly to update the database and/or distribute traffic for `threaded` and `batch`. It is important to also understand the impact of [concurrency options](concurrency_options.md).

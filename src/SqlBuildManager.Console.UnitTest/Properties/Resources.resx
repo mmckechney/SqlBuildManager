@@ -154,4 +154,10 @@
   <data name="batch_settings_multipleeh" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\batch_settings_multipleeh.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="batch-settings-oldstyle-eventhublogging" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\batch-settings-oldstyle-eventhublogging.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="batch_settings_multipleeh_oldstyle" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\batch_settings_multipleeh_oldstyle.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

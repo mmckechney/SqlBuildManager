@@ -97,6 +97,11 @@ foreach($auth in $authTypes)
         $sbAndEhArgs += ("-eh","""$eventHubConnectionString""")
         $params += ("--storageaccountkey",$storageAcctKey)
     }
+
+    if(Test-Path $settingsAci)
+    {
+        Remove-Item $settingsAci
+    }
     Write-Host "Saving settings file to $settingsAci" -ForegroundColor DarkGreen
 
     

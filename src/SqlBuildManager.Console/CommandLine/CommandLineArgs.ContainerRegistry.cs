@@ -9,7 +9,6 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        public ContainerRegistry ContainerRegistryArgs { get; set; } = new ContainerRegistry();
         public string RegistryServer
         {
             set

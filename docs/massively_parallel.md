@@ -16,13 +16,12 @@ Each remote build option follows the same basic steps to stage the required conf
 Save a settings JSON file for the target compute environment. This step is optional, but is designed for reuse in subsequent commands and across multiple builds targeting the same environment. Each remote type has some variation of options, so use `sbm {remote type} savesettings -h` for specifics. You can also save sensitive information to Azure Key Vault by specifying a `--keyvault` value.
 
 ### **run**
-Single command used to execute by orchestrating the other commands decribed below. \
-_IMPORTANT:_ Currently only available for `sbm k8s`,  `sbm containerapp` and `sbm aci`
+Single command used to execute by orchestrating the other commands decribed below. 
 
 ----
 
 ## Step-wide deployment
-(_note:_ the `run` command for k8s, containerapp and aci orchestrate this for you)
+(_note:_ the `run` command for orchestrates this for you)
 
 ### **prep**
 (named `prestage` for `sbm batch`) Creates the required Azure Blob storage container and uploads the package file and/or DACPAC so it is accessable to the compute resources. It will also configure any infrastructure templates and for Batch, will spin up the VMs in the node pool. The blob container is specfied by the `--jobname` parameter
@@ -31,10 +30,10 @@ _IMPORTANT:_ Currently only available for `sbm k8s`,  `sbm containerapp` and `sb
 Remote executions pull their database targets from Azure Service Bus. This step creates a Service Bus Topic Subscription and uses the Override file as its list of targets, creating a message per target.
 
 ### **deploy**
-(named `run` for `sbm batch`) Deploys the compute infrastucture (for `containerapp` and `aci`) and automatically starts the build once the compute resources are available (`containerapp`, `aci` and `batch`). There is no equivalent step for Kubernetes, for this use the single `k8s run` command or manually run `kubetcl` commands to deploy the pods. 
+Deploys the compute infrastucture (for `containerapp` and `aci`) and automatically starts the build once the compute resources are available (`containerapp`, `aci` and `batch`). There is no equivalent step for Kubernetes, for this use the single `k8s run` command or manually run `kubetcl` commands to deploy the pods. Also no equivalent for `sbm batch`, this is handled by the `batch run` command.
 
 ### **monitor**
-By default the `deploy` command automatically flows into and starts monitoring. Monitoring polls the Service Bus Topic for remaining messages and Azure Event Hub for database processing events. A build is considered complete when the total number of database completion events (commits or errors) is equal to the total number of targets.
+By default the `deploy` command automatically flows into and starts monitoring. Monitoring polls the Service Bus Topic for remaining messages and Azure Event Hub for database processing events. A build is considered complete when the total number of database completion events (commits or errors) is equal to the total number of targets. No equivalent for `sbm batch`. Instead, Batch will direclty monitor the Batch job tasks for compeltion.
 
 ### **cleanup**
 

@@ -10,7 +10,7 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public  partial class CommandLineArgs
     {
-        public Authentication AuthenticationArgs { get; set; } = new Authentication();
+        
         
         [JsonIgnore]
         public virtual string UserName

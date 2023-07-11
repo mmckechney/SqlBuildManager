@@ -1,8 +1,9 @@
 param
 (
+    [Parameter(Mandatory=$true)]
+    [string] $prefix,
     [string] $path = "..\..\..\src\TestConfig",
     [string] $resourceGroupName,
-    [string] $prefix,
     [string] $sqlUserName,
     [string] $sqlPassword
 )
@@ -23,11 +24,16 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
 {
     if(Test-Path (Join-Path $path "un.txt"))
     {
+        Write-Host "Reading sqlUserName from $path\un.txt" -ForegroundColor DarkGreen
         $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()
     }
+}
 
+if([string]::IsNullOrWhiteSpace($sqlPassword))
+{
     if(Test-Path (Join-Path $path "pw.txt"))
     {
+        Write-Host "Reading sqlPassword from $path\pw.txt" -ForegroundColor DarkGreen
         $sqlPassword = (Get-Content -Path (Join-Path $path "pw.txt")).Trim()
     }
 }

@@ -4,6 +4,9 @@ param namePrefix string = ''
 @description('Name of the NSG to create. Default is <namePrefix>nsg')
 param nsgName string ='${namePrefix}nsg'
 
+@description('Name of the Batch NSG to create. Default is <namePrefix>Batchnsg')
+param nsgBatchName string ='${namePrefix}Batchnsg'
+
 @description('Name of the VNet to create. Default is <namePrefix>vnet')
 param vnetName string  = '${namePrefix}vnet'
 
@@ -42,6 +45,28 @@ resource nsg_resource 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
   location: location
   properties: {
     securityRules: []
+  }
+}
+
+resource nsgBatchResource 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
+  name: nsgBatchName
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'BatchServiceRule'
+        properties: {
+          priority: 120
+          access: 'Allow'
+          direction: 'Inbound'
+          sourceAddressPrefix: 'BatchNodeManagement'
+          sourcePortRange: '*'
+          destinationAddressPrefix: '*'
+          destinationPortRange: '29876-29877'
+          protocol: '*'
+        }
+      }
+    ]
   }
 }
 
@@ -128,7 +153,7 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
         properties: {
           addressPrefix: batchSubnetIpRange
           networkSecurityGroup: {
-            id: nsg_resource.id
+            id: nsgBatchResource.id
           }
           serviceEndpoints: [
             {

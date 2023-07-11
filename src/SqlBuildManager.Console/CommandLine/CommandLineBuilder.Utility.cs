@@ -210,7 +210,6 @@ namespace SqlBuildManager.Console.CommandLine
 				cmd.Add(eventhubconnectionOption);
                 cmd.Add(storageaccountnameOption);
 				cmd.Add(storageaccountkeyOption);
-				cmd.Add(streamEventsOption);
 				cmd.Add(new Option<int>(new string[] { "--timeout" }, () => 120, "Number of seconds to wait for next event before terminating. Zero (0) will wait indefinitely."));
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(SettingsFileExistingOptions);
@@ -282,5 +281,19 @@ namespace SqlBuildManager.Console.CommandLine
                 return cmd;
             }
         }
+
+		private static Command ShowCommandsCommand
+		{
+			get
+			{
+				var cmd = new Command("showcommands", "Creates export of all command and sub-command descriptions")
+				{
+					new Option<bool>(new string[] { "--md", "--markdown" },() => false, "Output command list as markdown"),
+				};
+                cmd.Handler = CommandHandler.Create<bool>(Worker.ShowCommands);
+                return cmd;
+
+            }
+		}
     }
 }

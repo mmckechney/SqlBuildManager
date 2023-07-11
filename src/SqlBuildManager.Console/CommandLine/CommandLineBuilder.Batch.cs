@@ -38,10 +38,8 @@ namespace SqlBuildManager.Console.CommandLine
                     platinumdbsourceOption,
                     platinumserversourceOption,
                     batchJobMonitorTimeoutMin,
-                    eventHubLoggingTypeOption,
                     new Option<bool>("--monitor", () => false, "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument"),
                     unitTestOption,
-                    streamEventsOption,
 
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
@@ -79,10 +77,8 @@ namespace SqlBuildManager.Console.CommandLine
                     transactionalOption,
                     timeoutretrycountOption,
                     unitTestOption,
-                    eventHubLoggingTypeOption,
                     //these two options aren't used and are added just for reusability in unit tests
                     new Option<bool>("--monitor"){IsHidden = true},
-                    new Option<bool>("--stream"){IsHidden = true},
 
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
@@ -175,7 +171,6 @@ namespace SqlBuildManager.Console.CommandLine
                 {
 
                     deletebatchjobOption,
-                    eventHubLoggingTypeOption,
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
                     //Additional settings
@@ -255,19 +250,16 @@ namespace SqlBuildManager.Console.CommandLine
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
                     jobnameOption,
-                    eventHubLoggingTypeOption,
-                    streamEventsOption,
                     unitTestOption,
                     new Option<bool>("--monitor", () => false, "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument"),
                 };
-
+                cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(SettingsFileExistingOptions);
                 cmd.AddRange(BatchComputeOptions);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.AddRange(EventHubResourceOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs,bool, bool, bool>(Worker.Batch_RunQuery);
                 return cmd;
             }
@@ -293,9 +285,7 @@ namespace SqlBuildManager.Console.CommandLine
                     transactionalOption,
                     timeoutretrycountOption,
                     silentOption,
-                    jobnameOption,
-                    eventHubLoggingTypeOption,
-
+                    jobnameOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
                 cmd.AddRange(BatchComputeOptions);

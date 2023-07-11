@@ -79,6 +79,10 @@ else
     
 }
 
+if(Test-Path $settingsContainerApp)
+{
+    Remove-Item $settingsContainerApp
+}
 Write-Host "Retrieving keys from resources in $resourceGroupName... $containerAppEnvironmentName" -ForegroundColor DarkGreen
 $location = az containerapp env show -g $resourceGroupName -n $containerAppEnvironmentName -o tsv --query location
 $subscriptionId = az account show --query id --output tsv

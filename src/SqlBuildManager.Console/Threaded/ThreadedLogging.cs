@@ -94,7 +94,7 @@ namespace SqlBuildManager.Console.Threaded
 
                 case LogType.Error:
                     logErrorRun.LogInformation($"{runId}  {msg.ServerName}  {msg.DatabaseName}: {msg.Message}");
-                    logEventHub?.LogInformation("{@LogMsg}", msg);
+                    logEventHub?.LogError("{@LogMsg}", msg);
                     return;
                     
                 case LogType.WorkerCompleted:
@@ -111,7 +111,7 @@ namespace SqlBuildManager.Console.Threaded
                 case LogType.ScriptError:
                     if (this.isScriptErrorLogging)
                     {
-                        logEventHub?.LogInformation("{@LogMsg}", msg);
+                        logEventHub?.LogError("{@LogMsg}", msg);
                     }
                     return;
                 case LogType.Message:

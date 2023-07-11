@@ -15,10 +15,40 @@ namespace SqlBuildManager.Console.CommandLine
     [Serializable]
     public partial class CommandLineArgs //: System.ICloneable
     {
-
+        public Aci AciArgs { get; set; }
+        public Authentication AuthenticationArgs { get; set; }
+        [JsonIgnore]
+        public AutoScripting AutoScriptingArgs { get; set; }
+        public Batch BatchArgs { get; set; }
+        public Connections ConnectionArgs { get; set; }
+        public ContainerApp ContainerAppArgs { get; set; }
+        public ContainerRegistry ContainerRegistryArgs { get; set; }
+        [JsonIgnore]
+        public DacPac DacPacArgs { get; set; }
+        public EventHub EventHubArgs { get; set; }
+        public Identity IdentityArgs { get; set; }
+        public Kubernetes KubernetesArgs { get; set; }
+        public Network NetworkArgs { get; set; }
+        [JsonIgnore]
+        public StoredProcTesting StoredProcTestingArgs { get; set; }
+        [JsonIgnore]
+        public Synchronize SynchronizeArgs { get; set; }
         public CommandLineArgs()
         {
-
+            this.AciArgs = new Aci();
+            this.AuthenticationArgs = new Authentication();
+            this.AutoScriptingArgs = new AutoScripting();
+            this.BatchArgs = new Batch();
+            this.ConnectionArgs = new Connections();
+            this.ContainerAppArgs = new ContainerApp();
+            this.ContainerRegistryArgs = new ContainerRegistry();
+            this.DacPacArgs = new DacPac();
+            this.EventHubArgs = new EventHub();
+            this.IdentityArgs = new Identity();
+            this.KubernetesArgs = new Kubernetes();
+            this.NetworkArgs = new Network();
+            this.StoredProcTestingArgs = new StoredProcTesting();
+            this.SynchronizeArgs = new Synchronize();
         }
 
         [JsonIgnore]
@@ -196,27 +226,7 @@ namespace SqlBuildManager.Console.CommandLine
         public FileInfo QueryFile { get; set; }
         [JsonIgnore]
         public FileInfo OutputFile { get; set; }
-
-
-        private EventHubLogging[] _EventHubLogging = new EventHubLogging[] { CommandLine.EventHubLogging.EssentialOnly };
-
-        public EventHubLogging[] EventHubLogging
-        {
-            get
-            {
-                return _EventHubLogging;
-            }
-            set
-            {
-                if (_EventHubLogging != null && _EventHubLogging.Length > 0)
-                {
-                    _EventHubLogging = _EventHubLogging.Concat(value).ToArray();
-                }
-                _EventHubLogging = _EventHubLogging.Distinct().ToArray();
-            }
-        }
-
-
+        
         public List<string> DirectPropertyChangeTracker = new();  
         public override string ToString()
         {

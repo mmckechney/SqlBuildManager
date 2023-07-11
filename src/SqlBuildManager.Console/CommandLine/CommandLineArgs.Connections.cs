@@ -9,7 +9,7 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineArgs
     {
-        public Connections ConnectionArgs { get; set; } = new Connections();
+        
         
         [JsonIgnore]
         public string KeyVaultName

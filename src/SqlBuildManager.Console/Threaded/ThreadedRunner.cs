@@ -249,7 +249,9 @@ namespace SqlBuildManager.Console.Threaded
                 helper.BuildSuccessTrialRolledBackEvent += new EventHandler(helper_BuildSuccessTrialRolledBackEvent);
 
                 //Determine whether or not to log each script result to EventhHub
-                if (cmdArgs.EventHubLogging.Contains(EventHubLogging.ConsolidatedScriptResults) || cmdArgs.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults))
+                if (cmdArgs.EventHubLogging.Contains(EventHubLogging.ConsolidatedScriptResults) 
+                     || cmdArgs.EventHubLogging.Contains(EventHubLogging.IndividualScriptResults)
+                     || cmdArgs.EventHubLogging.Contains(EventHubLogging.ScriptErrors))
                 {
                     helper.ScriptLogWriteEvent += new ScriptLogWriteEventHandler(helper_ScriptLogWriteEvent);
                 }
@@ -337,7 +339,7 @@ namespace SqlBuildManager.Console.Threaded
                     consolidatedScriptLog.AppendLine("-- END Time: " + DateTime.Now.ToString() + " --");
                 }
             }
-            else if (cmdArgs.EventHubLogging.Contains(EventHubLogging.ScriptErrors))
+            else if (cmdArgs.EventHubLogging.Contains(EventHubLogging.ScriptErrors) && isError)
             {
                 LogMsg lm = new LogMsg()
                 {

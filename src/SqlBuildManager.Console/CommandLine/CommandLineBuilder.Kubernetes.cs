@@ -38,8 +38,6 @@ namespace SqlBuildManager.Console.CommandLine
                     platinumdacpacFileInfoOption,
                     forceOption,
                     allowForObjectDeletionOption,
-                    streamEventsOption,
-                    eventHubLoggingTypeOption,
                     new Option<bool>("--cleanup-onfailure", () => true, "Cleanup the Kubernetes applied resources (job, configmap, etc) if there is a job failure"),
                     imageTagOption,
                     imageNameOption,
@@ -80,8 +78,6 @@ namespace SqlBuildManager.Console.CommandLine
                     queryFileOption,
                     outputFileOption,
                     forceOption,
-                    streamEventsOption,
-                    eventHubLoggingTypeOption,
                     new Option<bool>("--cleanup-onfailure", () => true, "Cleanup the Kubernetes applied resources (job, configmap, etc) if there is a job failure"),
                     imageTagOption,
                     imageNameOption,
@@ -210,7 +206,6 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.Add(sectionPlaceholderOption);
-                cmd.Add(eventHubLoggingTypeOption);
                 cmd.Add(silentOption);
 
 
@@ -234,7 +229,6 @@ namespace SqlBuildManager.Console.CommandLine
                     jobnameOption,
                     overrideOption,
                     unitTestOption,
-                    streamEventsOption,
                     storageaccountnameOption,
                     storageaccountkeyOption,
                     threadedConcurrencyTypeOption,

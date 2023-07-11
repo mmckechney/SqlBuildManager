@@ -13,6 +13,7 @@ namespace SqlBuildManager.Console
     {
         internal static int SaveAndEncryptSettings(CommandLineArgs cmdLine, bool clearText)
         {
+           (bool success, cmdLine) =  Init(cmdLine);
 
             if (string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
@@ -67,6 +68,12 @@ namespace SqlBuildManager.Console
                 cmdLine.AuthenticationArgs.Password = null;
             }
 
+
+            if(cmdLine.EventHubLogging.Length > 0)
+            {
+                cmdLine.EventHubArgs.Logging = cmdLine.EventHubLogging;
+                cmdLine.EventHubLogging = null;
+            }
             if (!clearText)
             {
                 cmdLine = Cryptography.EncryptSensitiveFields(cmdLine);

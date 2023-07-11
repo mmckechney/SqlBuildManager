@@ -1,5 +1,8 @@
 # SQL Build Manager Change Log
 
+### Version 15.4.2
+- *UPDATED:* Converted Batch Node Pool creation to the new `Azure.ResourceManager.Batch` SDK. **NOTE:** This may require you to add batch specific NSG rules if you deploy into a subnet. See [network.bicep's](./scripts/templates/Modules/network.bicep) `nsgBatchResource` resource to see the rules that are needed.
+
 ### Version 15.4.1
 - *UPDATED:* Changed the test environment creation from az CLI commands to Bicep templates/modules
 - *UPDATED:* Modified/refactored internal handling of Manged Identity Client ID

@@ -12,9 +12,7 @@ namespace SqlBuildManager.Console.CommandLine
     {
         [JsonIgnore]
         public bool AllowObjectDelete { get; set; } = false;
-        [JsonIgnore]
 
-        public DacPac DacPacArgs { get; set; } = new DacPac();
         
         [JsonIgnore]
         public virtual string PlatinumDacpac

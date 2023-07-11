@@ -117,6 +117,15 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
             }
         }
 
+        internal static byte[] batch_setting_oldstyle_eventhublogging
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("batch-settings-oldstyle-eventhublogging", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+
 
 
         internal static byte[] batch_settings_multipleeh
@@ -124,6 +133,14 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
             get
             {
                 object obj = ResourceManager.GetObject("batch_settings_multipleeh", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+
+        internal static byte[] batch_settings_multipleeh_oldstyle        {
+            get
+            {
+                object obj = ResourceManager.GetObject("batch_settings_multipleeh_oldstyle", resourceCulture);
                 return ((byte[])(obj));
             }
         }
