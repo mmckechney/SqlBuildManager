@@ -5,7 +5,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     class Initialization : IDisposable
     {
-        public static string ConnectionString = @"Data Source=localhost\SQLEXPRESS;Initial Catalog={0}; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;";
+        public static string ConnectionString = @"Server=(local)\SQLEXPRESS;Database={0};Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;";
 
         private static List<string> tempFiles;
         public static string SqlBuildZipFileName;

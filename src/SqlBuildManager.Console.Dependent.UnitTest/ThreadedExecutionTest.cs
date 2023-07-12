@@ -11,6 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using MoreLinq.Extensions;
+
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
 
@@ -510,6 +512,13 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
 
         }
+
+        [TestMethod()]
+        public void InfiniteLock_Test()
+        {
+            var res = StartInfiniteLockingThread(2);
+            Assert.AreEqual(0, res);
+        }
         /// <summary>
         ///A test for Execute
         ///</summary>
@@ -545,8 +554,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             Thread THRInfinite = null;
             try
             {
-                THRInfinite = new Thread(StartInfiniteLockingThread);
-                THRInfinite.Start(600000);
+                var task = System.Threading.Tasks.Task.Run(() =>
+                {
+                    StartInfiniteLockingThread(2);
+                });
+                while (true)
+                {
+                    System.Threading.Thread.Sleep(2000);
+                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
+                }
+
 
                 actual = target.Execute();
 
@@ -632,8 +649,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             Thread THRInfinite = null;
             try
             {
-                THRInfinite = new Thread(StartInfiniteLockingThread);
-                THRInfinite.Start(10000000);
+                var task = System.Threading.Tasks.Task.Run(() =>
+                {
+                    StartInfiniteLockingThread(2);
+                });
+                while (true)
+                {
+                    System.Threading.Thread.Sleep(2000);
+                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
+                }
 
                 actual = target.Execute();
 
@@ -715,8 +739,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             Thread THRInfinite = null;
             try
             {
-                THRInfinite = new Thread(StartInfiniteLockingThread);
-                THRInfinite.Start(10000000);
+                var task = System.Threading.Tasks.Task.Run(() =>
+                {
+                    StartInfiniteLockingThread(2);
+                });
+                while (true)
+                {
+                    System.Threading.Thread.Sleep(2000);
+                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
+                }
 
                 actual = target.Execute();
 
@@ -981,8 +1012,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             Thread THRInfinite = null;
             try
             {
-                THRInfinite = new Thread(StartInfiniteLockingThread);
-                THRInfinite.Start(10000000);
+                var task = System.Threading.Tasks.Task.Run(() =>
+                {
+                    StartInfiniteLockingThread(2);
+                });
+                while (true)
+                {
+                    System.Threading.Thread.Sleep(2000);
+                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
+                }
 
 
                 actual = target.Execute();
@@ -1069,8 +1107,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             Thread THRInfinite = null;
             try
             {
-                THRInfinite = new Thread(StartInfiniteLockingThread);
-                THRInfinite.Start(200000);
+                var task = System.Threading.Tasks.Task.Run(() =>
+                {
+                    StartInfiniteLockingThread(2);
+                });
+                while (true)
+                {
+                    System.Threading.Thread.Sleep(2000);
+                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
+                }
+            
 
                 actual = target.Execute();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
@@ -1152,8 +1198,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             Thread THRInfinite = null;
             try
             {
-                THRInfinite = new Thread(StartInfiniteLockingThread);
-                THRInfinite.Start(10000000);
+                var task = System.Threading.Tasks.Task.Run(() =>
+                {
+                    StartInfiniteLockingThread(2);
+                });
+                while (true)
+                {
+                    System.Threading.Thread.Sleep(2000);
+                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
+                }
 
                 actual = target.Execute();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
@@ -1202,19 +1255,27 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         }
         #endregion
 
-        private void StartInfiniteLockingThread(object loopCount)
+        private int StartInfiniteLockingThread(double waitMin)
         {
+            string connStr = string.Empty;
+            string cmdStr = string.Empty;
             try
             {
-                int loop = (int)loopCount;
-                string connStr = string.Format(Initialization.ConnectionString, "SqlBuildTest");
+                connStr = string.Format(Initialization.ConnectionString, "SqlBuildTest");
                 SqlConnection conn = new SqlConnection(connStr);
-                SqlCommand cmd = new SqlCommand(string.Format(Properties.Resources.TableLockingScript, loop.ToString()), conn);
+
+                cmdStr = string.Format(Properties.Resources.TableLockingScript, waitMin.ToString());
+                SqlCommand cmd = new SqlCommand(cmdStr, conn);
+                cmd.CommandTimeout = (int)(waitMin * 60 + 10);
                 conn.Open();
                 cmd.ExecuteNonQuery();
+                return 0;
             }
-            catch
-            { }
+            catch(Exception exe)
+            {
+                System.Console.WriteLine($"Error: {exe.Message}; {Environment.NewLine}Connection String:{connStr}{Environment.NewLine}Query:{cmdStr}");
+                return 1;
+            }
         }
 
         private void StartSqlTimeoutThread(object targetDatabase)

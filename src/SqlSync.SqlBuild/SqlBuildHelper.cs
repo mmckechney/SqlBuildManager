@@ -810,7 +810,11 @@ namespace SqlSync.SqlBuild
                 buildData.AcceptChanges();
                 buildHistoryData.AcceptChanges();
                 SaveBuildDataSet(false);
-                string database = dbTargets.Distinct().Aggregate((a, b) => a + ", " + b);
+                string database = "UNKNOWN";
+                if (dbTargets.Count > 0)
+                {
+                    database = dbTargets.Distinct().Aggregate((a, b) => a + ", " + b);
+                }
                 if (ScriptLogWriteEvent != null)
                 {
                     if (isTransactional)
