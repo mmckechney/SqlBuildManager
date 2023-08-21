@@ -550,7 +550,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public List<DatabaseOverride> GetDatabaseOverrides()
         {
             List<DatabaseOverride> o = new List<DatabaseOverride>();
-            o.Add(new DatabaseOverride(testDatabaseNames[0], testDatabaseNames[0]));
+            o.Add(new DatabaseOverride(serverName, testDatabaseNames[0], testDatabaseNames[0]));
             return o;
 
         }

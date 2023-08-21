@@ -133,9 +133,9 @@ namespace SqlSync.SqlBuild.MultiDb
                     string[] over = arrDb[j].Split(',');
                     DatabaseOverride ovr;
                     if (over.Length > 1)
-                        ovr = new DatabaseOverride(over[0].Trim().Replace("'", ""), over[1].Trim(), tag);
+                        ovr = new DatabaseOverride(server, over[0].Trim().Replace("'", ""), over[1].Trim(), tag);
                     else
-                        ovr = new DatabaseOverride("", over[0].Trim(), tag);
+                        ovr = new DatabaseOverride(server, "", over[0].Trim(), tag);
 
                     tmpDb.Add(ovr);
                 }
@@ -215,7 +215,8 @@ namespace SqlSync.SqlBuild.MultiDb
 
                 message = string.Empty;
                 var dbs = multi.Sum(m => m.Overrides.Count());
-                log.LogInformation($"Found {dbs} target databases across {multi.Count()} target servers");
+                var servers = multi.Select(m => m.ServerName).Distinct().Count();
+                log.LogInformation($"Found {dbs} target databases across {servers} target servers");
                 return multi;
             }
             catch (Exception exe)

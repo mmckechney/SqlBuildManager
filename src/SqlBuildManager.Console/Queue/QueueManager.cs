@@ -197,7 +197,14 @@ namespace SqlBuildManager.Console.Queue
                 {
                     foreach (var target in bucket)
                     {
-                        var data = new TargetMessage() { ServerName = target.Item1, DbOverrideSequence = target.Item2 };
+                        TargetMessage data;
+                        if (target.Item1.StartsWith("#"))
+                        {
+                            data = new TargetMessage() { ServerName = target.Item2[0].Server, DbOverrideSequence = target.Item2 };
+                        }else
+                        {
+                            data = new TargetMessage() { ServerName = target.Item1, DbOverrideSequence = target.Item2 };
+                        }
                         var msg = data.AsMessage();
                         msg.Subject = jobName;
                         msg.SessionId = target.Item1;

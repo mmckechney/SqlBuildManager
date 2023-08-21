@@ -30,7 +30,20 @@ namespace SqlBuildManager.Console.Threaded
 
         private static List<IEnumerable<(string, List<DatabaseOverride>)>> MaxConcurrencyByTag(MultiDbData multiData, int concurrency)
         {
-            List<string, List<DatabaseOverride>)> newList = tagGroup.Select(x => (x.Key, x.ToList())).ToList();
+            List<IEnumerable<(string, List<DatabaseOverride>)>> tmp = new List<IEnumerable<(string, List<DatabaseOverride>)>>();
+            var serverChunks = ConcurrencyByTag(multiData);
+            foreach (var sC in serverChunks)
+            {
+
+                var subChunks = sC.SplitIntoChunks(concurrency);
+                tmp.AddRange(subChunks);
+            }
+            return tmp;
+        }
+
+        private static List<IEnumerable<(string, List<DatabaseOverride>)>> ConcurrencyByTag(MultiDbData multiData)
+        {
+            List<IEnumerable<(string, List<DatabaseOverride>)>> tmp = new();
 
             //get a single list of db overrides
             var lstOverrides = new List<DatabaseOverride>();
@@ -41,26 +54,18 @@ namespace SqlBuildManager.Console.Threaded
             {
                 var lstSrv = new List<(string, List<DatabaseOverride>)>();
                 foreach (var o in s)
-                
-                    if(lstSrv.Where(x => x.Item1 == s.Key).Any())
+
+                    if (lstSrv.Where(x => $"#{x.Item1}" == $"#{s.Key}").Any())
                     {
-                        lstSrv.Where(x => x.Item1 == s.Key).First().Item2.Add(o);
+                        lstSrv.Where(x => $"#{x.Item1}" == $"#{s.Key}").First().Item2.Add(o);
                     }
                     else
                     {
-                        lstSrv.Add((s.Key, new List<DatabaseOverride>() { o }));
+                        lstSrv.Add(($"#{s.Key}", new List<DatabaseOverride>() { o }));
                     }
-                    }
-                }
                 tmp.Add(lstSrv);
             }
-
             return tmp;
-        }
-
-        private static List<IEnumerable<(string, List<DatabaseOverride>)>> ConcurrencyByTag(MultiDbData multiData)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>

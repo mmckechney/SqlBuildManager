@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.SqlLogging;
@@ -811,7 +812,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
+            overrides.Add(new DatabaseOverride("Server1", "MyDefault", "MyOverride"));
             helper.targetDatabaseOverrides = overrides;
             string defaultDatabase = "MyDefault";
             string expected = "MyOverride";
@@ -830,7 +831,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
+            overrides.Add(new DatabaseOverride("Server1", "MyDefault", "MyOverride"));
             helper.targetDatabaseOverrides = overrides;
             string defaultDatabase = string.Empty;
             string expected = "MyOverride";
@@ -848,7 +849,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
+            overrides.Add(new DatabaseOverride("Server1", "MyDefault", "MyOverride"));
             helper.targetDatabaseOverrides = overrides;
             string defaultDatabase = null;
             string expected = "MyOverride";
@@ -867,8 +868,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
-            overrides.Add(new DatabaseOverride("MyDefault2", "MyOverride2"));
+            overrides.Add(new DatabaseOverride("Server1", "MyDefault", "MyOverride"));
+            overrides.Add(new DatabaseOverride("Server1", "MyDefault2", "MyOverride2"));
             helper.targetDatabaseOverrides = overrides;
             string defaultDatabase = "MyDefault2";
             string expected = "MyOverride2";
@@ -887,8 +888,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             SqlBuildHelper helper = init.CreateSqlBuildHelper_Basic();
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("MyDefault", "MyOverride"));
-            overrides.Add(new DatabaseOverride("MyDefault2", "MyOverride2"));
+            overrides.Add(new DatabaseOverride("Server1", "MyDefault", "MyOverride"));
+            overrides.Add(new DatabaseOverride("Server1", "MyDefault2", "MyOverride2"));
             helper.targetDatabaseOverrides = overrides;
             string defaultDatabase = "MyDefault3";
             string expected = defaultDatabase;
@@ -1167,9 +1168,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
-            DatabaseOverride override1 = new DatabaseOverride("default1", "override1");
-            DatabaseOverride override2 = new DatabaseOverride("default2", "override2");
-            DatabaseOverride override3 = new DatabaseOverride("default3", "override3");
+            DatabaseOverride override1 = new DatabaseOverride("Server1", "default1", "override1");
+            DatabaseOverride override2 = new DatabaseOverride("Server1","default2", "override2");
+            DatabaseOverride override3 = new DatabaseOverride("Server1", "default3", "override3");
             List<DatabaseOverride> ovr = new List<DatabaseOverride>();
             ovr.Add(override1);
             ovr.Add(override2);
@@ -1200,9 +1201,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
-            DatabaseOverride override1 = new DatabaseOverride("default1", "override1");
-            DatabaseOverride override2 = new DatabaseOverride("default2", "override2");
-            DatabaseOverride override3 = new DatabaseOverride("default3", "override3");
+            DatabaseOverride override1 = new DatabaseOverride("Server1", "default1", "override1");
+            DatabaseOverride override2 = new DatabaseOverride("Server1", "default2", "override2");
+            DatabaseOverride override3 = new DatabaseOverride("Server1", "default3", "override3");
             List<DatabaseOverride> ovr = new List<DatabaseOverride>();
             ovr.Add(override1);
             ovr.Add(override2);
