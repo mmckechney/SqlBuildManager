@@ -70,10 +70,14 @@ namespace SqlSync.SqlBuild.MultiDb
             {
                 foreach (var ovr in srv.Overrides)
                 {
-                    sbOvr.Append(ovr.DefaultDbTarget + "," + ovr.OverrideDbTarget + ";");
+                    sbOvr.Append($"{ovr.DefaultDbTarget},{ovr.OverrideDbTarget};");
+
+                    if (ovr.ConcurrencyTag.Length > 0)
+                        sbOvr.Append($"#{ovr.ConcurrencyTag}");
                 }
+
                 sbOvr.Length = sbOvr.Length - 1;
-                sb.AppendLine(srv.ServerName + ":" + sbOvr.ToString());
+                sb.AppendLine($"{srv.ServerName}:{sbOvr.ToString()}");
                 sbOvr.Length = 0;
             }
             return sb.ToString();
@@ -106,6 +110,14 @@ namespace SqlSync.SqlBuild.MultiDb
 
                 string server = line.Split(':')[0];
                 string dbs = line.Split(':')[1];
+                string tag = string.Empty;
+
+                if(dbs.IndexOf("#") > -1)
+                {
+                   var tmp =  dbs.Split('#', StringSplitOptions.RemoveEmptyEntries);
+                    dbs = tmp[0];
+                    tag = tmp[1];
+                }
 
                 var sData = new ServerData();
                 sData.ServerName = server.Trim();
@@ -121,9 +133,9 @@ namespace SqlSync.SqlBuild.MultiDb
                     string[] over = arrDb[j].Split(',');
                     DatabaseOverride ovr;
                     if (over.Length > 1)
-                        ovr = new DatabaseOverride(over[0].Trim().Replace("'", ""), over[1].Trim());
+                        ovr = new DatabaseOverride(over[0].Trim().Replace("'", ""), over[1].Trim(), tag);
                     else
-                        ovr = new DatabaseOverride("", over[0].Trim());
+                        ovr = new DatabaseOverride("", over[0].Trim(), tag);
 
                     tmpDb.Add(ovr);
                 }
@@ -182,13 +194,20 @@ namespace SqlSync.SqlBuild.MultiDb
                     DatabaseOverride ovr;
                     if (tbl.Columns.Count == 2)
                     {
-                        ovr = new DatabaseOverride("client", row[1].ToString().Trim());
+                        ovr = new DatabaseOverride(ser.ServerName, "client", row[1].ToString().Trim());
+                    }
+                    else if(tbl.Columns.Count == 3)
+                    {
+                        ovr = new DatabaseOverride(ser.ServerName , row[1].ToString().Trim(), row[2].ToString().Trim());
+                        ovr.AppendedQueryRowData(row.ItemArray, 3, tbl.Columns);
                     }
                     else
                     {
-                        ovr = new DatabaseOverride(row[1].ToString().Trim(), row[2].ToString().Trim());
+                        //add Tag if retrieved
+                        ovr = new DatabaseOverride(ser.ServerName, row[1].ToString().Trim(), row[2].ToString().Trim(), row[3].ToString().Trim());
                         ovr.AppendedQueryRowData(row.ItemArray, 3, tbl.Columns);
                     }
+
                     ser.Overrides.Add(ovr);
                     counter++;
                     multi.Add(ser);

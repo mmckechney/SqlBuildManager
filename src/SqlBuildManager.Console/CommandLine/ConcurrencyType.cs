@@ -8,6 +8,8 @@ namespace SqlBuildManager.Console.CommandLine
     {
         Count,
         Server,
-        MaxPerServer
+        MaxPerServer, 
+        Tag, 
+        MaxPerTag
     }
 }

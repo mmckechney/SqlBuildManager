@@ -18,11 +18,51 @@ namespace SqlBuildManager.Console.Threaded
                     return ConcurrencyByServer(multiData);
                 case ConcurrencyType.MaxPerServer:
                     return MaxConcurrencyByServer(multiData, concurrency);
+                case ConcurrencyType.Tag:
+                    return ConcurrencyByTag(multiData);
+                case ConcurrencyType.MaxPerTag:
+                    return MaxConcurrencyByTag(multiData, concurrency);
                 case ConcurrencyType.Count:
                 default:
                     return ConcurrencyByInt(multiData, concurrency);
             }
         }
+
+        private static List<IEnumerable<(string, List<DatabaseOverride>)>> MaxConcurrencyByTag(MultiDbData multiData, int concurrency)
+        {
+            List<string, List<DatabaseOverride>)> newList = tagGroup.Select(x => (x.Key, x.ToList())).ToList();
+
+            //get a single list of db overrides
+            var lstOverrides = new List<DatabaseOverride>();
+            FlattenOverride(multiData).Select(f => f.Item2).ForEach(o => lstOverrides.AddRange(o));
+
+            var tagGroup = lstOverrides.GroupBy(o => o.ConcurrencyTag);
+            foreach (var s in tagGroup)
+            {
+                var lstSrv = new List<(string, List<DatabaseOverride>)>();
+                foreach (var o in s)
+                
+                    if(lstSrv.Where(x => x.Item1 == s.Key).Any())
+                    {
+                        lstSrv.Where(x => x.Item1 == s.Key).First().Item2.Add(o);
+                    }
+                    else
+                    {
+                        lstSrv.Add((s.Key, new List<DatabaseOverride>() { o }));
+                    }
+                    }
+                }
+                tmp.Add(lstSrv);
+            }
+
+            return tmp;
+        }
+
+        private static List<IEnumerable<(string, List<DatabaseOverride>)>> ConcurrencyByTag(MultiDbData multiData)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Divides the targets into the "concurrency" count of Lists. The lists would be run in parallel, with the items in each list run in serial
         /// Fully parallel to the extent of the concurrency number

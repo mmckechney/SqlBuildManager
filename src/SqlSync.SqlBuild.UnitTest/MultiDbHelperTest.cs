@@ -293,7 +293,7 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             MultiDbData dbData = new MultiDbData()
             {
-                new ServerData(){ ServerName = "server1", Overrides = new DbOverrides(new DatabaseOverride("default", "target"),new DatabaseOverride("default2", "target2")) },
+                new ServerData(){ ServerName = "server1", Overrides = new DbOverrides(new DatabaseOverride("server1", "default", "target"),new DatabaseOverride("server1", "default2", "target2")) },
                 new ServerData(){ ServerName = "server2", Overrides = null }
             };
 
@@ -319,14 +319,14 @@ namespace SqlSync.SqlBuild.UnitTest
 
 
             DbOverrides ovr = new DbOverrides();
-            ovr.Add(new DatabaseOverride("default", "target"));
-            ovr.Add(new DatabaseOverride("default2", "target2"));
+            ovr.Add(new DatabaseOverride("server1", "default", "target"));
+            ovr.Add(new DatabaseOverride("server1", "default2", "target2"));
             srv1.Overrides = ovr;
             dbData.Add(srv1);
 
             DbOverrides ovr2 = new DbOverrides();
-            ovr.Add(new DatabaseOverride("default", "target"));
-            ovr.Add(new DatabaseOverride("", ""));
+            ovr.Add(new DatabaseOverride("server2", "default", "target"));
+            ovr.Add(new DatabaseOverride("server2", "", ""));
             srv2.Overrides = ovr2;
             dbData.Add(srv2);
 
@@ -346,13 +346,13 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             MultiDbData cfg = new MultiDbData
             {
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default1", "override1")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default2", "override2")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default0", "override0")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("defaultX", "overrideX"), new DatabaseOverride("defaultY", "overrideY")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default6", "override6")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default7", "override7")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default5", "override5")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default1", "override1")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default2", "override2")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default0", "override0")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","defaultX", "overrideX"), new DatabaseOverride("ServerA","defaultY", "overrideY")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default6", "override6")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default7", "override7")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default5", "override5")) },
             };
 
             string expected =
@@ -375,13 +375,13 @@ ServerB:default5,override5
         {
             MultiDbData cfg = new MultiDbData
             {
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default1", "override1")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default2", "override2")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default0", "override0")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("defaultX", "overrideX"), new DatabaseOverride("defaultY", "overrideY")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default6", "override6")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default7", "override7")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default5", "override5")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default1", "override1")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default2", "override2")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default0", "override0")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","defaultX", "overrideX"), new DatabaseOverride("ServerA","defaultY", "overrideY")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default6", "override6")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default7", "override7")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default5", "override5")) },
             };
 
 
@@ -399,13 +399,13 @@ ServerB:default5,override5
         {
             MultiDbData cfg = new MultiDbData
             {
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default1", "override1")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default2", "override2")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default0", "override0")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("defaultX", "overrideX"), new DatabaseOverride("defaultY", "overrideY")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default6", "override6")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default7", "override7")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default5", "override5")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default1", "override1")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default2", "override2")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default0", "override0")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","defaultX", "overrideX"), new DatabaseOverride("ServerA","defaultY", "overrideY")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default6", "override6")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default7", "override7")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default5", "override5")) },
             };
 
 
@@ -422,13 +422,13 @@ ServerB:default5,override5
         {
             MultiDbData cfg = new MultiDbData
             {
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default1", "override1")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default2", "override2")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("default0", "override0")) },
-                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("defaultX", "overrideX"), new DatabaseOverride("defaultY", "overrideY")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default6", "override6")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default7", "override7")) },
-                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("default5", "override5")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default1", "override1")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default2", "override2")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default0", "override0")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","defaultX", "overrideX"), new DatabaseOverride("ServerA","defaultY", "overrideY")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default6", "override6")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default7", "override7")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default5", "override5")) },
             };
 
 
