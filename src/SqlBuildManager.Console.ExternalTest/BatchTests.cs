@@ -31,6 +31,7 @@ namespace SqlBuildManager.Console.ExternalTest
         private string settingsFilePath;
         private string linuxSettingsFilePath;
         private string settingsFileKeyPath;
+        private string overrideWithTagFilePath;
         private string un;
         private string pw;
         private string server;
@@ -44,6 +45,7 @@ namespace SqlBuildManager.Console.ExternalTest
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
             overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            overrideWithTagFilePath = Path.GetFullPath("TestConfig/databasetargets-tag.cfg");
             overrideFileWithBadTargetsPath = Path.GetFullPath("TestConfig/databasetargets-badtargets.cfg");
             un = File.ReadAllText(Path.GetFullPath("TestConfig/un.txt")).Trim();
             pw = File.ReadAllText(Path.GetFullPath("TestConfig/pw.txt")).Trim();
@@ -118,7 +120,57 @@ namespace SqlBuildManager.Console.ExternalTest
 
         #endregion
 
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Tag, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Tag, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.Tag, 10)]
 
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerTag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerTag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.MaxPerTag, 2)]
+        [DataTestMethod]
+        public void Batch_Override_SBMSource_ByTag_ConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            settingsFile = Path.GetFullPath(settingsFile);
+            string jobName = GetUniqueBatchJobName("batch-sbm-tag");
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "--loglevel", "Debug",
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", overrideWithTagFilePath,
+                "--packagename", sbmFileName,
+                "--concurrency", concurrency.ToString(),
+                "--concurrencytype",concurType.ToString(),
+                "--jobname", jobName };
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+            if (batchMethod == "run")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+            }
+            if (batchMethod == "runthreaded")
+            {
+                Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count()}"), $"Should have run against a {overrideFileContents.Count()} databases");
+            }
+        }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
@@ -153,8 +205,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", overrideFilePath,
                 "--packagename", sbmFileName,
-                "--concurrency", "2",
-                "--concurrencytype","Server",
+                "--concurrency", concurrency.ToString(),
+                "--concurrencytype",concurType.ToString(),
                 "--jobname", jobName }; 
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -201,8 +253,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", overrideFileWithBadTargetsPath,
                 "--packagename", sbmFileName,
-                "--concurrency", "2",
-                "--concurrencytype","Server",
+                "--concurrency", concurrency.ToString(),
+                "--concurrencytype",concurType.ToString(),
                 "--jobname", jobName };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -245,6 +297,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--username", un,
                 "--password", pw,
                 "--outputfile", tmpOverride,
+                "--concurrency", concurrency.ToString(),
+                "--concurrencytype",concurType.ToString(),
                 "--force"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -318,8 +372,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", overrideFilePath,
                 "--packagename", sbmFileName,
-                "--concurrency", "2",
-                "--concurrencytype","Server",
+                "--concurrency", concurrency.ToString(),
+                "--concurrencytype",concurType.ToString(),
                 "--jobname", jobName};
         
 

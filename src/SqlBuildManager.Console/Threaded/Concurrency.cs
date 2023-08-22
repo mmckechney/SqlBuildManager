@@ -1,4 +1,5 @@
-﻿using MoreLinq;
+﻿using Microsoft.Extensions.Logging;
+using MoreLinq;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
@@ -10,6 +11,7 @@ namespace SqlBuildManager.Console.Threaded
 {
     public class Concurrency
     {
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static List<IEnumerable<(string, List<DatabaseOverride>)>> ConcurrencyByType(MultiDbData multiData, int concurrency, ConcurrencyType concurrencyType)
         {
             switch (concurrencyType)
@@ -18,10 +20,12 @@ namespace SqlBuildManager.Console.Threaded
                     return ConcurrencyByServer(multiData);
                 case ConcurrencyType.MaxPerServer:
                     return MaxConcurrencyByServer(multiData, concurrency);
+                
                 case ConcurrencyType.Tag:
                     return ConcurrencyByTag(multiData);
                 case ConcurrencyType.MaxPerTag:
                     return MaxConcurrencyByTag(multiData, concurrency);
+                
                 case ConcurrencyType.Count:
                 default:
                     return ConcurrencyByInt(multiData, concurrency);
@@ -64,6 +68,14 @@ namespace SqlBuildManager.Console.Threaded
                         lstSrv.Add(($"#{s.Key}", new List<DatabaseOverride>() { o }));
                     }
                 tmp.Add(lstSrv);
+            }
+
+            var emptyTag = tmp.Where(t => t.Where(a => a.Item1 == "#").Any()).Any();
+            if(emptyTag)
+            {
+                string msg = "Empty database target tags found. Please ensure all database targets have a tag when using ConcurrencyType of `Tag` or `MaxPerTag`";
+                log.LogError(msg);
+                throw new Exception(msg);
             }
             return tmp;
         }

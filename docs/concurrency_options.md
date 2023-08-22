@@ -25,6 +25,10 @@ You can control the level of parallel execution with the combination of two argu
 
     _For example:_ If there are 5 unique SQL Server targets in the database targets config file and the `concurrency` flag is set to 3, then it will run 3 tasks per server at a time, up to 15 concurrent tasks (5 servers * 3 tasks per server).
 
+- `Tag` - Same behavior as `Server` but allows you to set a concurrency value per tag value instead of server. See [database targets config file](override_options.md) for details on setting the concurrency tag value.
+
+- `MaxPerTag` -  - Same behavior as `MaxPerServer` but allows you to set a concurrency value per tag value instead of server.  See [database targets config file](override_options.md) for details on setting the concurrency tag value
+
 ### --concurrency
 
 This argument takes an integer number (default is 8) defining the maximum number of concurrent threads per the set `concurrencytype`

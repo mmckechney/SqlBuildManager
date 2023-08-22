@@ -31,6 +31,21 @@ sqllab1.database.windows.net:client,SqlBuildTest009
 sqllab1.database.windows.net:client,SqlBuildTest010
 ```
 
+Optionally, if you need to set a concurrency value other that the target server (see [Concurrency Options](concurrency_options.md) for how to leverage the `Tag` and `MaxPerTag` settings), you can add a tag value to the line in the format of:
+
+``` bash
+<server name>:client,<target database>#<tag value>
+```
+
+for example:
+
+``` bash
+sqllab1.database.windows.net:client,SqlBuildTest007#Tag1
+sqllab1.database.windows.net:client,SqlBuildTest008#Tag1
+sqllab1.database.windows.net:client,SqlBuildTest009#Tag2
+sqllab1.database.windows.net:client,SqlBuildTest010#Tag2
+```
+
 Why `client`?  Inside the `.sbm` file, there is a default database target set to `client`. If you don't provide an override, it will look for a database of that name. So, that combination of `client,target` tells the builder to substitute the database name `client` with the database name `target` at runtime.
 
  This is why the flag name is `--override`!
@@ -42,7 +57,11 @@ Why `client`?  Inside the `.sbm` file, there is a default database target set to
 
  ``` sql
  SELECT [ServerName] + ':client,' + [DatabaseName]
- ```
+
+ or
+
+  SELECT [ServerName] + ':client,' + [DatabaseName] + '#' + [TagValue]
+  ```
 
 
 ### Runtime

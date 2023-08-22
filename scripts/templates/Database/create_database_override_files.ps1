@@ -16,7 +16,10 @@ $outputDbConfigFile = Join-Path $path "databasetargets.cfg"
 $databaseDbWithBadTargetConfigFile = Join-Path $path "databasetargets-badtargets.cfg"
 $clientDbConfigFile = Join-Path $path "clientdbtargets.cfg"
 $doubleClientDbConfigFile = Join-Path $path "clientdbtargets-doubledb.cfg"
+$taggedDbConfigFile = Join-Path $path "databasetargets-tag.cfg"
 $serverTextFile = Join-Path $path "server.txt"
+$tag = @("TagA","TagB","TagC")
+$counter = 0
 
 $sqlServers =  (az sql server list --resource-group $resourceGroupName ) | ConvertFrom-Json
 Write-Host "Using server targets: $sqlServers"  -ForegroundColor Cyan
@@ -28,10 +31,18 @@ foreach($server in $sqlServers)
     {
         if($db -ne "master")
         {
+            if($counter -gt 2)
+            {
+                $counter = 0
+            }
             $outputDbConfig += ,@($server.fullyQualifiedDomainName + ":SqlBuildTest,"+$db) 
             $databaseDbWithBadTargetConfig += ,@($server.fullyQualifiedDomainName + ":SqlBuildTest,"+$db) 
             $clientDbConfig += ,@($server.fullyQualifiedDomainName + ":client,"+$db) 
+            $taggedDbConfig += ,@($server.fullyQualifiedDomainName + ":SqlBuildTest,"+$db +"#" + $tag[$counter])
+            $counter = $counter +1; 
         }
+        
+
     }
     $databaseDbWithBadTargetConfig += ,@($server.fullyQualifiedDomainName + ":SqlBuildTest,ThisIsABadDbName") 
 }
@@ -64,6 +75,9 @@ $doubleClientDbConfig | Set-Content -Path $doubleClientDbConfigFile
 Write-Host "Writing test database config to  path set to $databaseDbWithBadTargetConfigFile" -ForegroundColor DarkGreen
 $databaseDbWithBadTargetConfig | Set-Content -Path $databaseDbWithBadTargetConfigFile
 
+Write-Host "Writing test database config to  path set to $taggedDbConfigFile" -ForegroundColor DarkGreen
+$taggedDbConfig | Set-Content -Path $taggedDbConfigFile
 
 Write-Host "Creating server.txt file for SQL Query override config tests" -ForegroundColor DarkGreen
 $sqlServers[0].fullyQualifiedDomainName.trim()   | Set-Content -Path $serverTextFile
+
