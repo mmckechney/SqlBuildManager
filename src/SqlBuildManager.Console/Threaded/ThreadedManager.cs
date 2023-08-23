@@ -321,8 +321,10 @@ namespace SqlBuildManager.Console.Threaded
                     foreach (var message in messages)
                     {
                         var target = message.As<TargetMessage>();
+                        target.DbOverrideSequence[0].ConcurrencyTag = target.ConcurrencyTag;
+
                         ThreadedRunner runner = new ThreadedRunner(target.ServerName, target.DbOverrideSequence, cmdLine, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
-                        var msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, RunId = ThreadedManager.RunID, Message = "Queuing up thread", LogType = LogType.Message };
+                        var msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, RunId = ThreadedManager.RunID, Message = "Queuing up thread", LogType = LogType.Message, ConcurrencyTag = runner.ConcurrencyTag };
                         threadedLog.WriteToLog(msg);
                         tasks.Add(ProcessThreadedBuildWithQueue(runner, message));
                     }
@@ -367,7 +369,7 @@ namespace SqlBuildManager.Console.Threaded
                 log.LogInformation($"Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
                 string dacpacName = Path.Combine(ThreadedManager.rootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
 
-                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName))
+                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName, cmdLine.DefaultScriptTimeout))
                 {
                     var m = new LogMsg()
                     {
@@ -438,7 +440,7 @@ namespace SqlBuildManager.Console.Threaded
             foreach ((string server, List<DatabaseOverride> ovr) in bucket)
             {
                 ThreadedRunner runner = new ThreadedRunner(server, ovr, cmdLine, buildRequestedBy, forceCustomDacpac);
-                var msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, RunId = ThreadedManager.RunID, Message = "Queuing up thread", LogType = LogType.Message };
+                var msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, RunId = ThreadedManager.RunID, Message = "Queuing up thread", LogType = LogType.Message, ConcurrencyTag = runner.ConcurrencyTag };
                 threadedLog.WriteToLog(msg);
                 await ProcessThreadedBuild(runner);
             }
@@ -493,7 +495,7 @@ namespace SqlBuildManager.Console.Threaded
                 //SERVER:defaultDb,override
                 string cfgString = String.Format("{0}:{1},{2}", runner.Server, runner.DefaultDatabaseName, runner.TargetDatabases);
 
-                msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, SourceDacPac = runner.DacpacName, RunId = ThreadedManager.RunID, Message = "Starting up thread", LogType = LogType.Message };
+                msg = new LogMsg() { DatabaseName = runner.TargetDatabases, ServerName = runner.Server, SourceDacPac = runner.DacpacName, RunId = ThreadedManager.RunID, Message = "Starting up thread", LogType = LogType.Message, ConcurrencyTag = runner.ConcurrencyTag};
                 threadedLog.WriteToLog(msg);
 
                 //Run the scripts!!
@@ -509,7 +511,9 @@ namespace SqlBuildManager.Console.Threaded
                     case (int)RunnerReturn.SuccessWithTrialRolledBack:
                         msg.LogType = LogType.Commit;
                         threadedLog.WriteToLog(msg);
-                        threadedLog.WriteToLog(new LogMsg() { LogType = LogType.SuccessDatabases, Message = cfgString });
+                        msg.LogType = LogType.SuccessDatabases;
+                        msg.Message = cfgString;
+                        threadedLog.WriteToLog(msg);
                         returnVal = 0;
                         break;
 
@@ -518,7 +522,9 @@ namespace SqlBuildManager.Console.Threaded
                     default:
                         msg.LogType = LogType.Error;
                         threadedLog.WriteToLog(msg);
-                        threadedLog.WriteToLog(new LogMsg() { LogType = LogType.FailureDatabases, Message = cfgString });
+                        msg.LogType = LogType.FailureDatabases;
+                        msg.Message = cfgString;
+                        threadedLog.WriteToLog(msg);
                         hasError = true;
                         break;
                 }

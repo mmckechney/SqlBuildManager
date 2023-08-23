@@ -116,7 +116,10 @@ namespace SqlSync.SqlBuild.MultiDb
                 {
                    var tmp =  dbs.Split('#', StringSplitOptions.RemoveEmptyEntries);
                     dbs = tmp[0];
-                    tag = tmp[1];
+                    if (tmp.Length > 1) //just in case there is a # with no actual tag value.
+                    {
+                        tag = tmp[1];
+                    }
                 }
 
                 var sData = new ServerData();
@@ -321,7 +324,7 @@ namespace SqlSync.SqlBuild.MultiDb
             return true;
         }
 
-
+      
     }
     public class MultiDbConfigurationException : Exception
     {

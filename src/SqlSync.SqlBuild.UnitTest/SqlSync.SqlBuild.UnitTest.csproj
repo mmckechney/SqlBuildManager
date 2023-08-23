@@ -8,6 +8,7 @@
   <ItemGroup>
     <None Remove="Resources\dbconfig-doubledb.cfg" />
     <None Remove="Resources\serialized_multidb_json.txt" />
+    <None Remove="Resources\serialized_multidb_json_withtag_json.txt" />
     <None Remove="Resources\serialized_multidb_xml.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -16,6 +17,7 @@
     <EmbeddedResource Include="Resources\LoggingTable.sql" />
     <EmbeddedResource Include="Resources\MultiDb_WithQueryRowData.xml" />
     <EmbeddedResource Include="Resources\sbx_package_tester.sbx" />
+    <EmbeddedResource Include="Resources\serialized_multidb_json_withtag_json.txt" />
     <EmbeddedResource Include="Resources\serialized_multidb_json.txt" />
     <EmbeddedResource Include="Resources\serialized_multidb_xml.txt" />
   </ItemGroup>

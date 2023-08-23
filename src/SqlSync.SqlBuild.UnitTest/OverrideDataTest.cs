@@ -70,8 +70,8 @@ namespace SqlSync.SqlBuild.UnitTest
         public void TargetDatabaseOverridesTest()
         {
             List<DatabaseOverride> expected = new List<DatabaseOverride>();
-            expected.Add(new DatabaseOverride("default1", "override1"));
-            expected.Add(new DatabaseOverride("default2", "override2"));
+            expected.Add(new DatabaseOverride("server1", "default1", "override1"));
+            expected.Add(new DatabaseOverride("server1", "default2", "override2"));
             List<DatabaseOverride> actual;
             OverrideData.TargetDatabaseOverrides = expected;
             actual = OverrideData.TargetDatabaseOverrides;

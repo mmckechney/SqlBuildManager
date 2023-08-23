@@ -74,7 +74,9 @@ namespace SqlBuildManager.Interfaces.Console
         [EnumMember]
         CheckingConnections = 7000,
         [EnumMember]
-        DacpacDatabasesInSync = 87598
+        DacpacDatabasesInSync = 87598,
+        [EnumMember]
+        MissingOverrideTags = 100323
 
     }
 

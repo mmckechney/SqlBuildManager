@@ -115,6 +115,11 @@ namespace SqlBuildManager.Console.Queue
         {
             try
             {
+                if ( (cType == ConcurrencyType.Tag || cType == ConcurrencyType.MaxPerTag) && multiDb.AsQueryable().Where(m => m.Overrides.Where(o => o.ConcurrencyTag.Length == 0).Any()).Any())
+                {
+                    log.LogError($"There are database targets that do not have a concurrency tag. This is required when the Concurrency Type is '{cType.ToString()}'. Please add a concurrency tag to all database targets before sending to the queue.");
+                    return 0;
+                }
                 log.LogInformation($"Setting up Topic Subscription with Job filter name '{jobName}'");
                 await RemoveDefaultFilters();
                 await CleanUpCustomFilters();
@@ -124,7 +129,11 @@ namespace SqlBuildManager.Console.Queue
 
                 //Use bucketing to 1 bucket to get flattened list of targest
                 var concurrencyBuckets = Concurrency.ConcurrencyByType(multiDb, 1, ConcurrencyType.Count);
-                var messages = CreateMessages(concurrencyBuckets, jobName);
+                var messages = CreateMessages(concurrencyBuckets, jobName, cType);
+                if(messages == null)
+                {
+                    return 0;
+                }
                 int count = messages.Count();
                 int sentCount = 0;
 
@@ -185,7 +194,7 @@ namespace SqlBuildManager.Console.Queue
             }
 
         }
-        public List<ServiceBusMessage> CreateMessages(List<IEnumerable<(string, List<DatabaseOverride>)>> buckets, string jobName)
+        public List<ServiceBusMessage> CreateMessages(List<IEnumerable<(string, List<DatabaseOverride>)>> buckets, string jobName, ConcurrencyType cType)
         {
             try
             {
@@ -200,14 +209,39 @@ namespace SqlBuildManager.Console.Queue
                         TargetMessage data;
                         if (target.Item1.StartsWith("#"))
                         {
-                            data = new TargetMessage() { ServerName = target.Item2[0].Server, DbOverrideSequence = target.Item2 };
+                            data = new TargetMessage() { ServerName = target.Item2[0].Server, DbOverrideSequence = target.Item2, ConcurrencyTag = target.Item2[0].ConcurrencyTag };
                         }else
                         {
-                            data = new TargetMessage() { ServerName = target.Item1, DbOverrideSequence = target.Item2 };
+                            data = new TargetMessage() { ServerName = target.Item1, DbOverrideSequence = target.Item2, ConcurrencyTag = target.Item2[0].ConcurrencyTag };
                         }
+
+                        switch (cType)
+                        {
+                            case ConcurrencyType.Tag:
+                            case ConcurrencyType.MaxPerTag:
+                                if(data.ConcurrencyTag.Length == 0)
+                                {
+                                    var message = $"A Concurrency Tag is required in the override settings when Concurrency Type '{cType.ToString()}' is set. Unable to queue messages.";
+                                    log.LogError(message);
+                                    return null; 
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+
+
                         var msg = data.AsMessage();
                         msg.Subject = jobName;
-                        msg.SessionId = target.Item1;
+                        if (target.Item2[0].ConcurrencyTag.Length > 0)
+                        {
+                            msg.SessionId = target.Item2[0].ConcurrencyTag;
+
+                        }
+                        else
+                        {
+                            msg.SessionId = target.Item1;
+                        }
                         msg.MessageId = Guid.NewGuid().ToString();
                         msgs.Add(msg);
                     }
@@ -227,9 +261,11 @@ namespace SqlBuildManager.Console.Queue
             switch (cType)
             {
                 case ConcurrencyType.Server:
+                case ConcurrencyType.Tag:
                     return await GetSessionBasedTargetsFromQueue(1, false);
 
                 case ConcurrencyType.MaxPerServer:
+                case ConcurrencyType.MaxPerTag:
                     return await GetSessionBasedTargetsFromQueue(maxMessages, false);
 
                 case ConcurrencyType.Count:
@@ -402,9 +438,12 @@ namespace SqlBuildManager.Console.Queue
         public async Task CompleteMessage(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
+            string concurrency = t.ConcurrencyTag.Length == 0 ? "" : $" [ConcurrencyTag: {t.ConcurrencyTag}]";
             try
             {
-                log.LogInformation($"Completing {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+
+                log.LogInformation($"Completing {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency} message ID '{message.MessageId}'");
+
                 if (_sessionReceiver != null)
                 {
                     await _sessionReceiver.CompleteMessageAsync(message);
@@ -416,20 +455,21 @@ namespace SqlBuildManager.Console.Queue
             }
             catch (ServiceBusException sbE)
             {
-                log.LogError($"Unable to complete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}. This may result in duplicate processing: {sbE.Message}");
+                log.LogError($"Unable to complete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency}. This may result in duplicate processing: {sbE.Message}");
             }
             catch (Exception exe)
             {
-                log.LogError($"Unable to complete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}. This may result in duplicate processing: {exe.Message}");
+                log.LogError($"Unable to complete message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency}. This may result in duplicate processing: {exe.Message}");
             }
             return;
         }
         public async Task AbandonMessage(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
+            string concurrency = t.ConcurrencyTag.Length == 0 ? "" : $" [ConcurrencyTag: {t.ConcurrencyTag}]";
             try
             {
-                log.LogInformation($"Abandoning {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+                log.LogInformation($"Abandoning {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency} message ID '{message.MessageId}'");
                 if (_sessionReceiver != null)
                 {
                     await _sessionReceiver.AbandonMessageAsync(message);
@@ -441,16 +481,17 @@ namespace SqlBuildManager.Console.Queue
             }
             catch (Exception exe)
             {
-                log.LogError($"Failed to Abandon message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}: {exe.Message}");
+                log.LogError($"Failed to Abandon message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency}: {exe.Message}");
             }
             return;
         }
         public async Task DeadletterMessage(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
+            string concurrency = t.ConcurrencyTag.Length == 0 ? "" : $" [ConcurrencyTag: {t.ConcurrencyTag}]";
             try
             {
-                log.LogInformation($"Deadlettering {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+                log.LogInformation($"Deadlettering {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency} message ID '{message.MessageId}'");
                 if (_sessionReceiver != null)
                 {
                     await _sessionReceiver.DeadLetterMessageAsync(message);
@@ -462,16 +503,17 @@ namespace SqlBuildManager.Console.Queue
             }
             catch (Exception exe)
             {
-                log.LogError($"Failed to Deadletter message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}: {exe.Message}");
+                log.LogError($"Failed to Deadletter message for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency}: {exe.Message}");
             }
             return;
         }
         public async Task RenewMessageLock(ServiceBusReceivedMessage message)
         {
             var t = message.As<TargetMessage>();
+            string concurrency = t.ConcurrencyTag.Length == 0 ? "" : $" [ConcurrencyTag: {t.ConcurrencyTag}]";
             try
             {
-                log.LogDebug($"Renewing message lock on {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget} message ID '{message.MessageId}'");
+                log.LogDebug($"Renewing message lock on {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency} message ID '{message.MessageId}'");
                 if (_sessionReceiver != null)
                 {
                     await _sessionReceiver.RenewSessionLockAsync();
@@ -483,7 +525,7 @@ namespace SqlBuildManager.Console.Queue
             }
             catch (Exception exe)
             {
-                log.LogError($"Failed to renew message lock for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}: {exe.Message}");
+                log.LogError($"Failed to renew message lock for {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency}: {exe.Message}");
             }
             return;
         }
@@ -578,6 +620,8 @@ namespace SqlBuildManager.Console.Queue
                 {
                     case ConcurrencyType.MaxPerServer:
                     case ConcurrencyType.Server:
+                    case ConcurrencyType.MaxPerTag:
+                    case ConcurrencyType.Tag:
                         return await AdminClient.SubscriptionExistsAsync(topicName, topicSessionSubscriptionName);
 
                     case ConcurrencyType.Count:
@@ -611,6 +655,8 @@ namespace SqlBuildManager.Console.Queue
 
                     case ConcurrencyType.MaxPerServer:
                     case ConcurrencyType.Server:
+                    case ConcurrencyType.Tag:
+                    case ConcurrencyType.MaxPerTag:
                         if (!await AdminClient.SubscriptionExistsAsync(topicName, topicSessionSubscriptionName))
                         {
                             log.LogInformation($"Creating session enabled topic subscripton for `{jobName}'");
@@ -717,16 +763,22 @@ namespace SqlBuildManager.Console.Queue
         public async Task<long> MonitorServiceBustopic(ConcurrencyType concurrencyType)
         {
             SubscriptionRuntimeProperties props;
-            if (concurrencyType == ConcurrencyType.Count)
+            switch (concurrencyType)
             {
-                props = await AdminClient.GetSubscriptionRuntimePropertiesAsync(topicName, topicSubscriptionName, new CancellationToken());
-            }
-            else
-            {
-                props = await AdminClient.GetSubscriptionRuntimePropertiesAsync(topicName, topicSessionSubscriptionName, new CancellationToken());
+                case ConcurrencyType.Count:
+                
+                    props = await AdminClient.GetSubscriptionRuntimePropertiesAsync(topicName, topicSubscriptionName, new CancellationToken());
+                    break;
+                case ConcurrencyType.MaxPerTag:
+                case ConcurrencyType.MaxPerServer:
+                case ConcurrencyType.Server:
+                case ConcurrencyType.Tag:
+                    props = await AdminClient.GetSubscriptionRuntimePropertiesAsync(topicName, topicSessionSubscriptionName, new CancellationToken());
+                    break;
+                default:
+                    throw new ArgumentException($"Unknow concurrency type of {concurrencyType}");
             }
             return props.ActiveMessageCount;
-
         }
 
         public void Dispose()

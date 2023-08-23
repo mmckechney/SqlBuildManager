@@ -273,10 +273,36 @@ namespace SqlSync.SqlBuild
                     log.LogWarning($"Timeout encountered. Incrementing retries to {buildRetries}");
                 }
             }
-            
+
+            bool candidateForCustomDacPac = false;
+            switch (buildResults.FinalStatus)
+            {
+                case BuildItemStatus.Committed:
+                case BuildItemStatus.CommittedWithTimeoutRetries:
+                case BuildItemStatus.AlreadyInSync:
+                case BuildItemStatus.TrialRolledBack:
+                case BuildItemStatus.CommittedWithCustomDacpac:
+                case BuildItemStatus.Pending:
+                    candidateForCustomDacPac = false;
+                    break;
+                case BuildItemStatus.FailedDueToScriptTimeout:
+                case BuildItemStatus.FailedWithCustomDacpac:
+                    candidateForCustomDacPac = false;
+                    log.LogWarning($"Build was not successful. Status is {buildResults.FinalStatus} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName)}' ");
+                    break;
+                case BuildItemStatus.RolledBack:
+                case BuildItemStatus.PendingRollBack:
+                case BuildItemStatus.FailedNoTransaction:
+                case BuildItemStatus.RolledBackAfterRetries:
+                    candidateForCustomDacPac = true;
+                    break;
+                 default:
+                    log.LogWarning($"Unrecognized Build Item status of {buildResults.FinalStatus}");
+                    candidateForCustomDacPac = true;
+                    break;
+            }
             //Do we need to try to update the target using the Platinum Dacpac?
-            if (buildResults.FinalStatus != BuildItemStatus.Committed && buildResults.FinalStatus != BuildItemStatus.TrialRolledBack &&
-                !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName) && !runData.ForceCustomDacpac)
+            if (candidateForCustomDacPac && !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName) && !runData.ForceCustomDacpac)
             {
                 var database = ((SqlSyncBuildData.ScriptRow)filteredScripts[0].Row).Database;
                 string targetDatabase = GetTargetDatabase(database);
@@ -291,8 +317,13 @@ namespace SqlSync.SqlBuild
                     if (dacStat.FinalStatus == BuildItemStatus.Committed || dacStat.FinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
                     {
                         dacStat.FinalStatus = BuildItemStatus.CommittedWithCustomDacpac;
+                        buildResults.FinalStatus = dacStat.FinalStatus;
                         if (BuildCommittedEvent != null)
                             BuildCommittedEvent(this, RunnerReturn.CommittedWithCustomDacpac);
+                    }else
+                    {
+                        dacStat.FinalStatus = BuildItemStatus.FailedWithCustomDacpac;
+                        buildResults.FinalStatus = dacStat.FinalStatus;
                     }
                 }
                 else if (stat == DacpacDeltasStatus.InSync || stat == DacpacDeltasStatus.OnlyPostDeployment)
@@ -303,18 +334,31 @@ namespace SqlSync.SqlBuild
                 }
 
             }
-            else if (buildResults.FinalStatus != BuildItemStatus.Committed && buildResults.FinalStatus != BuildItemStatus.Pending)
-            {
-                log.LogWarning($"Build was not successful. Status is {buildResults.FinalStatus.ToString()} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName)}' ");
-            }
-
-
 
             //If a timeout gets here.. need to decide how to label the rollback
             if (buildResults.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout && buildRetries > 1) //will always be at least 1..
+            {
                 buildResults.FinalStatus = BuildItemStatus.RolledBackAfterRetries;
+            }
             else if (buildResults.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout)
+            {
                 buildResults.FinalStatus = BuildItemStatus.RolledBack;
+            }
+
+            switch (buildResults.FinalStatus)
+            {
+                case BuildItemStatus.Committed:
+                case BuildItemStatus.Pending:
+                case BuildItemStatus.CommittedWithTimeoutRetries:
+                case BuildItemStatus.TrialRolledBack:
+                case BuildItemStatus.AlreadyInSync:
+                case BuildItemStatus.CommittedWithCustomDacpac:
+                    break;
+                default:
+                    log.LogWarning($"Build was not successful. Status is {buildResults.FinalStatus} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName)}' ");
+                    break;
+
+            }
 
             return buildResults;
         }

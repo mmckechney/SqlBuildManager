@@ -583,7 +583,7 @@ namespace SqlBuildManager.Console.UnitTest
                 var output = Concurrency.ConcurrencyByInt(multiData, 10);
                 var qMgr = new QueueManager("", "testing", CommandLine.ConcurrencyType.Count, true);
 
-                var messages = qMgr.CreateMessages(output, "testing");
+                var messages = qMgr.CreateMessages(output, "testing", CommandLine.ConcurrencyType.Count);
                 var msg = messages.First().As<TargetMessage>();
                 Assert.AreEqual(2, msg.DbOverrideSequence.Count());
             }

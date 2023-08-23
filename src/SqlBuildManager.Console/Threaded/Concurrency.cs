@@ -265,7 +265,14 @@ namespace SqlBuildManager.Console.Threaded
                 var tmp = new List<string>();
                 foreach (var sub in bucket)
                 {
-                    tmp.Add($"{sub.Item1}:{sub.Item2.ToList().Select(d => $"{d.DefaultDbTarget},{d.OverrideDbTarget}").Aggregate((a, b) => $"{a};{b}")}");
+                    if(sub.Item1.StartsWith("#"))
+                    {
+                        tmp.Add($"{sub.Item2[0].Server}:{sub.Item2.ToList().Select(d => $"{d.DefaultDbTarget},{d.OverrideDbTarget}#{d.ConcurrencyTag}").Aggregate((a, b) => $"{a};{b}")}");
+                    }
+                    else
+                    {
+                        tmp.Add($"{sub.Item1}:{sub.Item2.ToList().Select(d => $"{d.DefaultDbTarget},{d.OverrideDbTarget}#{d.ConcurrencyTag}").Aggregate((a, b) => $"{a};{b}")}");
+                    }
                 }
                 bucketStrings.Add(tmp.ToArray());
             }

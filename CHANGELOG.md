@@ -1,5 +1,10 @@
 # SQL Build Manager Change Log
 
+### Version 15.5.0
+- *NEW:* For muti-database target builds, you can now specify custom concurrency tag. Previously, the only concurrency differentitor was by SQL Server Name. Please see the docs on [Concurrency](/docs/concurrency_options.md) and [Database targeting options](docs/override_options.md) to understand how to use this new feature.
+- *UPDATED:* DACPAC creation timeouts now set to the value of `--defaultscripttimeout`. Previously, it was using the default settings.
+- *UPDATED:* If a script package is failing after retries due to a timeout, the build will now immediately fail. The prior behavior was to create a custom DACPAC (if configured) and continue trying the build. This was just delaying the inevitable failure and wasting time.
+
 ### Version 15.4.2
 - *UPDATED:* Converted Batch Node Pool creation to the new `Azure.ResourceManager.Batch` SDK. **NOTE:** This may require you to add batch specific NSG rules if you deploy into a subnet. See [network.bicep's](./scripts/templates/Modules/network.bicep) `nsgBatchResource` resource to see the rules that are needed.
 

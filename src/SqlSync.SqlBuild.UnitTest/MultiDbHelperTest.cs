@@ -418,6 +418,29 @@ ServerB:default5,override5
 
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
+        public void SerializeMultiDbWithTagAsJson_Test()
+        {
+            MultiDbData cfg = new MultiDbData
+            {
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default1", "override1", "TagA")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default2", "override2", "TagA")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","default0", "override0", "TagA")) },
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA","defaultX", "overrideX", "TagB"), new DatabaseOverride("ServerA","defaultY", "overrideY", "TagB")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default6", "override6", "TagB")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default7", "override7", "TagB")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides( new DatabaseOverride("ServerB","default5", "override5", "TagB")) },
+            };
+
+
+            string actual;
+            actual = MultiDbHelper.SerializeMultiDbConfigurationToJson(cfg);
+            var expected = Properties.Resources.serialized_multidb_json_withtag_json;
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod()]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void SerializeAndDeserializeMultiDbAsJson_Test()
         {
             MultiDbData cfg = new MultiDbData

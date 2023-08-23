@@ -23,4 +23,4 @@ param (
 ./aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix  
 
 . ./prefix_resource_names.ps1 -prefix $prefix
-./Database/create_database_override_files.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName
+./Database/create_database_override_files.ps1 -path $outputPath -prefix $prefix 

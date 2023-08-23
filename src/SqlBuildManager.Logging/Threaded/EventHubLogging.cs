@@ -43,7 +43,7 @@ namespace SqlBuildManager.Logging.Threaded
             }
             catch(Exception exe)
             {
-                Console.WriteLine("Failed to create EventHub Logger: " + exe.ToString());
+                Console.WriteLine("Failed to create EventHub Logger: " + exe.Message);
             }
         }
         private static TokenCredential GetAadTokenCredential()

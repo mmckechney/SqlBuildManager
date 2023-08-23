@@ -133,6 +133,9 @@
   <data name="serialized_multidb_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\serialized_multidb_json.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="serialized_multidb_json_withtag_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\serialized_multidb_json_withtag_json.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
   <data name="serialized_multidb_xml" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\serialized_multidb_xml.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>

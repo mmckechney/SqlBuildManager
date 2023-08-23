@@ -41,7 +41,7 @@ namespace SqlBuildManager.Console
                 Directory.CreateDirectory(path);
             }
 
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName))
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName, cmdLine.DefaultScriptTimeout))
             {
                 log.LogError($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -270,7 +270,7 @@ namespace SqlBuildManager.Console
             string id = Guid.NewGuid().ToString();
             string goldTmp = Path.Combine(path, $"gold-{id}.dacpac");
             string targetTmp = Path.Combine(path, $"target-{id}.dacpac");
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.SynchronizeArgs.GoldServer, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, goldTmp))
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.SynchronizeArgs.GoldServer, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, goldTmp, cmdLine.DefaultScriptTimeout))
             {
                 log.LogError($"Error creating the tempprary dacpac from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -280,7 +280,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation($"Temporary DACPAC created from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase} saved to -- {goldTmp}");
             }
 
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, targetTmp))
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, targetTmp, cmdLine.DefaultScriptTimeout))
             {
                 log.LogError($"Error creating the tempprary dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;

@@ -15,7 +15,7 @@ namespace SqlSync.SqlBuild
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType, string userName, string password, string dacPacFileName)
+        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType, string userName, string password, string dacPacFileName, int timeouts)
         {
 
             try
@@ -25,7 +25,9 @@ namespace SqlSync.SqlBuild
                 DacExtractOptions opts = new DacExtractOptions();
                 opts.IgnoreExtendedProperties = true;
                 opts.IgnoreUserLoginMappings = true;
-                opts.LongRunningCommandTimeout = 120;
+                opts.LongRunningCommandTimeout = timeouts;
+                opts.CommandTimeout = timeouts;
+                opts.DatabaseLockTimeout = timeouts;
 
                 ConnectionData connData = new ConnectionData(sourceServer, sourceDatabase);
                 connData.AuthenticationType = authType;
@@ -280,7 +282,7 @@ namespace SqlSync.SqlBuild
         public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, AuthenticationType authType, string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete)
         {
             string tmpDacPacName = Path.Combine(workingDirectory, targetDatabase + ".dacpac");
-            if (!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName))
+            if (!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName, runData.DefaultScriptTimeout))
             {
                 return DacpacDeltasStatus.ExtractionFailure;
             }
@@ -339,7 +341,7 @@ namespace SqlSync.SqlBuild
             else if (!string.IsNullOrEmpty(database) && !string.IsNullOrEmpty(server))
             {
                 string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
-                if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac))
+                if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac, defaultScriptTimeout))
                 {
                     log.LogError($"Error extracting dacpac from {database} : {server}");
                     return DacpacDeltasStatus.ExtractionFailure;
@@ -357,7 +359,7 @@ namespace SqlSync.SqlBuild
                         database = serv.Overrides.ElementAt(i).OverrideDbTarget;
 
                         string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
-                        if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac))
+                        if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac, defaultScriptTimeout))
                         {
                             log.LogError($"Error extracting dacpac from {server} : {database}");
                             return DacpacDeltasStatus.ExtractionFailure;

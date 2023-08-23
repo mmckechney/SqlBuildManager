@@ -1,8 +1,7 @@
 param
 (
     [string] $path,
-    [string] $prefix,
-    [string] $resourceGroupName
+    [string] $prefix
 )
 
 . ./../prefix_resource_names.ps1 -prefix $prefix
@@ -17,6 +16,7 @@ $databaseDbWithBadTargetConfigFile = Join-Path $path "databasetargets-badtargets
 $clientDbConfigFile = Join-Path $path "clientdbtargets.cfg"
 $doubleClientDbConfigFile = Join-Path $path "clientdbtargets-doubledb.cfg"
 $taggedDbConfigFile = Join-Path $path "databasetargets-tag.cfg"
+$taggedClientDbConfigFile = Join-Path $path "clientdbtargets-tag.cfg"
 $serverTextFile = Join-Path $path "server.txt"
 $tag = @("TagA","TagB","TagC")
 $counter = 0
@@ -37,8 +37,9 @@ foreach($server in $sqlServers)
             }
             $outputDbConfig += ,@($server.fullyQualifiedDomainName + ":SqlBuildTest,"+$db) 
             $databaseDbWithBadTargetConfig += ,@($server.fullyQualifiedDomainName + ":SqlBuildTest,"+$db) 
-            $clientDbConfig += ,@($server.fullyQualifiedDomainName + ":client,"+$db) 
             $taggedDbConfig += ,@($server.fullyQualifiedDomainName + ":SqlBuildTest,"+$db +"#" + $tag[$counter])
+            $taggedClientDbConfig += ,@($server.fullyQualifiedDomainName + ":client,"+$db +"#" + $tag[$counter])
+            $clientDbConfig += ,@($server.fullyQualifiedDomainName + ":client,"+$db) 
             $counter = $counter +1; 
         }
         
@@ -63,19 +64,22 @@ foreach($server in $sqlServers)
 }
     <# Action that will repeat until the condition is met #>
 
-Write-Host "Writing test database config to  path set to $outputDbConfigFile" -ForegroundColor DarkGreen
+Write-Host "Writing test database config to   $outputDbConfigFile" -ForegroundColor DarkGreen
 $outputDbConfig | Set-Content -Path $outputDbConfigFile
 
-Write-Host "Writing test database config to  path set to $clientDbConfigFile" -ForegroundColor DarkGreen
+Write-Host "Writing test database config to path $clientDbConfigFile" -ForegroundColor DarkGreen
 $clientDbConfig | Set-Content -Path $clientDbConfigFile
 
-Write-Host "Writing test database config to  path set to $doubleClientDbConfigFile" -ForegroundColor DarkGreen
+Write-Host "Writing test database config with tags to path $taggedClientDbConfigFile" -ForegroundColor DarkGreen
+$taggedClientDbConfigFile | Set-Content -Path $taggedClientDbConfigFile
+
+Write-Host "Writing test database config to path $doubleClientDbConfigFile" -ForegroundColor DarkGreen
 $doubleClientDbConfig | Set-Content -Path $doubleClientDbConfigFile
 
-Write-Host "Writing test database config to  path set to $databaseDbWithBadTargetConfigFile" -ForegroundColor DarkGreen
+Write-Host "Writing test database config to path $databaseDbWithBadTargetConfigFile" -ForegroundColor DarkGreen
 $databaseDbWithBadTargetConfig | Set-Content -Path $databaseDbWithBadTargetConfigFile
 
-Write-Host "Writing test database config to  path set to $taggedDbConfigFile" -ForegroundColor DarkGreen
+Write-Host "Writing test database config with tags to path $taggedDbConfigFile" -ForegroundColor DarkGreen
 $taggedDbConfig | Set-Content -Path $taggedDbConfigFile
 
 Write-Host "Creating server.txt file for SQL Query override config tests" -ForegroundColor DarkGreen

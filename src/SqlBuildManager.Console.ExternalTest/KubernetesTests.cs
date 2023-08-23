@@ -364,6 +364,76 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
+        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.Count, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.Server, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.Tag, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json", ConcurrencyType.MaxPerTag, 3)]
+        [DataRow("TestConfig/settingsfile-k8s-sec.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataTestMethod]
+        public void Kubernetes_Run_Queue_Concurrency_SBMSource_Success(string settingsFile, ConcurrencyType concurType, int concurrencyCount)
+        {
+            try
+            {
+                var prc = new ProcessHelper();
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFilePlain = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var overrideFileTags = Path.GetFullPath("TestConfig/databasetargets-tag.cfg");
+                var overrideFile = concurType == ConcurrencyType.Tag || concurType == ConcurrencyType.MaxPerTag ? overrideFileTags : overrideFilePlain;
+
+                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect_DoubleClient);
+                }
+                string jobName = TestHelper.GetUniqueJobName("k8s");
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+
+                //Clear any exiting pods
+                var result = prc.ExecuteProcess("kubectl", $"delete job sqlbuildmanager ");
+
+                var args = new string[]
+                {
+                "--loglevel", "debug", 
+                "k8s", "run",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--jobname", jobName,
+                "--override", overrideFile,
+                "--packagename", sbmFileName,
+                "--force",
+                "--unittest",
+                "--stream",
+                "--concurrencytype", concurType.ToString(),
+                "--concurrency", concurrencyCount.ToString()
+                };
+
+
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+
+                Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
         //Can't run local unit tests with MI since an SBM package needs to be created  :-)
         [DataRow("TestConfig/settingsfile-k8s-kv.json")]
         [DataRow("TestConfig/settingsfile-k8s-sec.json")]

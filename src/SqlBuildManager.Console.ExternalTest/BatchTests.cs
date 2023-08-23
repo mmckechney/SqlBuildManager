@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using SqlBuildManager.Console.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch;
+using System.Threading;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -151,7 +152,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--packagename", sbmFileName,
                 "--concurrency", concurrency.ToString(),
                 "--concurrencytype",concurType.ToString(),
-                "--jobname", jobName };
+                "--jobname", jobName,
+                "--unittest",
+                "--monitor",
+                "--stream",
+                "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -170,6 +175,144 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count()}"), $"Should have run against a {overrideFileContents.Count()} databases");
             }
+        }
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Tag, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Tag, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.Tag, 10)]
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerTag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerTag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux.json", ConcurrencyType.MaxPerTag, 2)]
+        [DataTestMethod]
+        public void Batch_Override_SBMSource_ByTag_ConcurrencyType_MissingTag_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+
+            settingsFile = Path.GetFullPath(settingsFile);
+            string jobName = GetUniqueBatchJobName("batch-sbm-tag");
+
+            //get the size of the log file before we start
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "--loglevel", "Debug",
+                "batch",  batchMethod,
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override", overrideFilePath,
+                "--packagename", sbmFileName,
+                "--concurrency", concurrency.ToString(),
+                "--concurrencytype",concurType.ToString(),
+                "--jobname", jobName,
+                "--unittest",
+                "--monitor",
+                "--stream",
+                "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+            Assert.IsTrue(val.Result != 0);
+        }
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Tag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Tag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Tag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.Tag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.Tag, 2)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataTestMethod]
+        public void Batch_Queue_SBMSource_ByTag_ConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+            string jobName = GetUniqueBatchJobName("batch-sbm-tag");
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override" , overrideWithTagFilePath,
+                "--concurrencytype",  concurType.ToString(),
+                "--jobname", jobName};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            Task<int> val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+
+            args = new string[]{
+             "--loglevel", "debug",
+            "batch",  batchMethod,
+            "--settingsfile", settingsFile,
+            "--settingsfilekey", settingsFileKeyPath,
+            "--override", overrideWithTagFilePath,
+            "--packagename", sbmFileName,
+            "--concurrencytype", concurType.ToString(),
+            "--concurrency", concurrency.ToString(),
+            "--jobname", jobName,
+            "--unittest",
+            "--monitor",
+            "--stream" };
+
+
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+        }
+
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Tag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Tag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.Tag, 2)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataTestMethod]
+        public void Batch_Queue_SBMSource_ByTag_ConcurrencyType_MissingTag_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+            string jobName = GetUniqueBatchJobName("batch-sbm-tag");
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--settingsfilekey", settingsFileKeyPath,
+                "--override" , overrideFilePath,
+                "--concurrencytype",  concurType.ToString(),
+                "--jobname", jobName};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            Task<int> val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            Assert.IsTrue(val.Result != 0);
+            
         }
 
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
@@ -207,7 +350,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--packagename", sbmFileName,
                 "--concurrency", concurrency.ToString(),
                 "--concurrencytype",concurType.ToString(),
-                "--jobname", jobName }; 
+                "--jobname", jobName,
+                 "--unittest",
+                "--monitor",
+                "--stream",
+                "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.InvokeAsync(args);
@@ -297,8 +444,6 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--username", un,
                 "--password", pw,
                 "--outputfile", tmpOverride,
-                "--concurrency", concurrency.ToString(),
-                "--concurrencytype",concurType.ToString(),
                 "--force"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -317,8 +462,8 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfilekey", settingsFileKeyPath,
                 "--override", tmpOverride,
                 "--packagename", sbmFileName,
-                "--concurrency", "2",
-                "--concurrencytype","Server",
+                "--concurrency", concurrency.ToString(),
+                "--concurrencytype",concurType.ToString(),
                 "--jobname", jobName};
 
             rootCommand = CommandLineBuilder.SetUp();
@@ -345,8 +490,6 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             catch { }
         }
-
-
 
         [DataRow("run", "TestConfig/settingsfile-batch-windows-mi.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi.json", ConcurrencyType.Count, 10)]
@@ -396,8 +539,6 @@ namespace SqlBuildManager.Console.ExternalTest
             }
         }
 
-
-
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
@@ -427,7 +568,6 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.IsTrue(logFileContents.Contains("Completed with Errors"), "This test was supposed to have errors in the run");
             Assert.IsTrue(logFileContents.Contains("Invalid command line set") && logFileContents.ToLower().Contains("packagename"), "This test should report a missing commandline");
         }
-
 
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
@@ -526,6 +666,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
 
         }
+        
         [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux.json")]
@@ -1789,33 +1930,38 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public async Task CreateBatchPool_Success(string settingsFile, string settingsFileKeyPath)
         {
-            var poolId = "TestPool1";
-            settingsFile = Path.GetFullPath(settingsFile);
             
-            CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.SettingsFileKey = settingsFileKeyPath;
-            cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
-            if (cmdLine.IdentityArgs != null) SqlBuildManager.Console.Aad.AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
-            if (cmdLine.IdentityArgs != null) SqlBuildManager.Console.Aad.AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
+                var poolId = "TestPool1";
+                settingsFile = Path.GetFullPath(settingsFile);
 
-            
-            BatchManager mgr = new BatchManager(cmdLine);
-            var result = await mgr.CreateBatchPool(cmdLine, poolId);
-            
-            Assert.IsTrue(result);
-
-            
-            var batchToken = await SqlBuildManager.Console.Aad.AadHelper.GetBatchTokenString();
-            BatchTokenCredentials batchTokenCredentials = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, batchToken);
-            BatchClient batchClient = BatchClient.Open(batchTokenCredentials);
-
-            var existingPool = await batchClient.PoolOperations.GetPoolAsync(poolId);
+                CommandLineArgs cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFileKey = settingsFileKeyPath;
+                cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
+                if (cmdLine.IdentityArgs != null) SqlBuildManager.Console.Aad.AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+                if (cmdLine.IdentityArgs != null) SqlBuildManager.Console.Aad.AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
 
 
-            Assert.IsNotNull(existingPool);
-            Assert.IsNotNull(existingPool.Identity);
+                BatchManager mgr = new BatchManager(cmdLine);
+                var result = await mgr.CreateBatchPool(cmdLine, poolId);
+
+                Assert.IsTrue(result);
 
 
+                var batchToken = await SqlBuildManager.Console.Aad.AadHelper.GetBatchTokenString();
+                BatchTokenCredentials batchTokenCredentials = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, batchToken);
+                BatchClient batchClient = BatchClient.Open(batchTokenCredentials);
+            try
+            {
+                var existingPool = await batchClient.PoolOperations.GetPoolAsync(poolId);
+
+
+                Assert.IsNotNull(existingPool);
+                Assert.IsNotNull(existingPool.Identity);
+            }
+            finally
+            {
+                batchClient.PoolOperations.DeletePool(poolId);
+            }
         }
 
     }

@@ -1,4 +1,4 @@
-# Concurrency Options for Threaded, Batch and Kubernetes executions
+# Concurrency Options for Threaded, Batch, Kubernetes, Container App and ACI executions
 
 You can control the level of parallel execution with the combination of two arguments: `--concurrency` and `--concurrencytype`. While their meaning for threaded and batch/kubernetes are similar, there are some distinctions and subtleties when used together
 
@@ -19,7 +19,7 @@ You can control the level of parallel execution with the combination of two argu
 - `Count` - (default) will use the value for `concurrency` as the maximum number of concurrent tasks allowed
 - `Server` - When using this value, the `concurrency` value is ignored. Instead, the app will interrogate the database targets and allow one task per SQL Server at a time
 
-    _For example:_ if there are 5 unuque SQL Server targets in the database targets config, there will 1 task per server, up to 5 concurrent tasks total
+    _For example:_ if there are 5 unique SQL Server targets in the database targets config, there will 1 task per server, up to 5 concurrent tasks total
 
 - `MaxPerServer` - Will interrogate the database targets and allow multiple tasks per server, up to the `concurrency` value.
 
@@ -28,6 +28,9 @@ You can control the level of parallel execution with the combination of two argu
 - `Tag` - Same behavior as `Server` but allows you to set a concurrency value per tag value instead of server. See [database targets config file](override_options.md) for details on setting the concurrency tag value.
 
 - `MaxPerTag` -  - Same behavior as `MaxPerServer` but allows you to set a concurrency value per tag value instead of server.  See [database targets config file](override_options.md) for details on setting the concurrency tag value
+
+*NOTE:* If a concurrency typf of `Tag` or `MaxPerTag` is set but there are database targets that are missing a tag value, the build will not start. 
+
 
 ### --concurrency
 
