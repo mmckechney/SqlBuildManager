@@ -307,7 +307,7 @@ namespace SqlSync.SqlBuild
                 var database = ((SqlSyncBuildData.ScriptRow)filteredScripts[0].Row).Database;
                 string targetDatabase = GetTargetDatabase(database);
                 log.LogWarning($"Custom dacpac required for {serverName} : {targetDatabase}. Generating file.");
-                var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, connData.AuthenticationType, connData.UserId, connData.Password, projectFilePath, runData.BuildRevision, runData.DefaultScriptTimeout, runData.AllowObjectDelete);
+                var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, serverName, targetDatabase, connData.AuthenticationType, connData.UserId, connData.Password, projectFilePath, runData.BuildRevision, runData.DefaultScriptTimeout, runData.AllowObjectDelete, connData.ManagedIdentityClientId);
 
                 if (stat == DacpacDeltasStatus.Success)
                 {

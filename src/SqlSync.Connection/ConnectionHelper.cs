@@ -159,6 +159,7 @@ namespace SqlSync.Connection
             DbConnection conn = null;
             try
             {
+                connData.ScriptTimeout = 60;
                 conn = GetConnection(connData);
                 conn.Open();
                 conn.Close();

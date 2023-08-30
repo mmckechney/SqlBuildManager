@@ -15,7 +15,7 @@ namespace SqlSync.SqlBuild
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType, string userName, string password, string dacPacFileName, int timeouts)
+        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType, string userName, string password, string dacPacFileName, int timeouts, string managedIdentityClientId)
         {
 
             try
@@ -35,7 +35,7 @@ namespace SqlSync.SqlBuild
                 if (!string.IsNullOrWhiteSpace(password)) connData.Password = password;
 
                 //Pre-test the connection. the DacServices can hang for a long time if the connection is bad
-                if (!ConnectionHelper.TestDatabaseConnection(connData))
+                if (!ConnectionHelper.TestDatabaseConnection(sourceDatabase, sourceServer, userName, password,authType, timeouts, managedIdentityClientId))
                 {
                     log.LogError($"Unable to create Dacpac for {sourceServer}.{sourceDatabase}. Database connection test failed.");
                     return false;
@@ -279,10 +279,10 @@ namespace SqlSync.SqlBuild
         }
 
 
-        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, AuthenticationType authType, string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete)
+        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, AuthenticationType authType, string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, string managedIdentityClientId)
         {
             string tmpDacPacName = Path.Combine(workingDirectory, targetDatabase + ".dacpac");
-            if (!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName, runData.DefaultScriptTimeout))
+            if (!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName, runData.DefaultScriptTimeout, managedIdentityClientId))
             {
                 return DacpacDeltasStatus.ExtractionFailure;
             }
@@ -320,7 +320,7 @@ namespace SqlSync.SqlBuild
             return DacpacDeltasStatus.Success;
         }
 
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete)
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete, string managedIdentityClientId)
         {
             string workingFolder = (!string.IsNullOrEmpty(rootLoggingPath) ? rootLoggingPath : Path.GetTempPath());
 
@@ -341,7 +341,7 @@ namespace SqlSync.SqlBuild
             else if (!string.IsNullOrEmpty(database) && !string.IsNullOrEmpty(server))
             {
                 string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
-                if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac, defaultScriptTimeout))
+                if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac, defaultScriptTimeout, managedIdentityClientId))
                 {
                     log.LogError($"Error extracting dacpac from {database} : {server}");
                     return DacpacDeltasStatus.ExtractionFailure;
@@ -359,7 +359,7 @@ namespace SqlSync.SqlBuild
                         database = serv.Overrides.ElementAt(i).OverrideDbTarget;
 
                         string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
-                        if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac, defaultScriptTimeout))
+                        if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac, defaultScriptTimeout, managedIdentityClientId))
                         {
                             log.LogError($"Error extracting dacpac from {server} : {database}");
                             return DacpacDeltasStatus.ExtractionFailure;
@@ -407,9 +407,9 @@ namespace SqlSync.SqlBuild
             }
             return stat;
         }
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, AuthenticationType authType, string server, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete)
+        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, AuthenticationType authType, string server, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete, string managedIdentityClientId)
         {
-            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, authType, username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName, batchScripts, allowObjectDelete);
+            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, authType, username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName, batchScripts, allowObjectDelete, managedIdentityClientId);
         }
 
 

@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Console.KeyVault;
-using SqlBuildManager.Console.Kubernetes;
-using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.MultiDb;
@@ -11,10 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using sb = SqlSync.SqlBuild;
 
 namespace SqlBuildManager.Console
@@ -41,7 +36,7 @@ namespace SqlBuildManager.Console
                 Directory.CreateDirectory(path);
             }
 
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName, cmdLine.DefaultScriptTimeout))
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
             {
                 log.LogError($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -270,7 +265,7 @@ namespace SqlBuildManager.Console
             string id = Guid.NewGuid().ToString();
             string goldTmp = Path.Combine(path, $"gold-{id}.dacpac");
             string targetTmp = Path.Combine(path, $"target-{id}.dacpac");
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.SynchronizeArgs.GoldServer, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, goldTmp, cmdLine.DefaultScriptTimeout))
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.SynchronizeArgs.GoldServer, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, goldTmp, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
             {
                 log.LogError($"Error creating the tempprary dacpac from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -280,7 +275,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation($"Temporary DACPAC created from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase} saved to -- {goldTmp}");
             }
 
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, targetTmp, cmdLine.DefaultScriptTimeout))
+            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, targetTmp, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
             {
                 log.LogError($"Error creating the tempprary dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -575,7 +570,7 @@ namespace SqlBuildManager.Console
                    cmd.AuthenticationArgs.Password,
                    cmd.BuildRevision,
                    cmd.DefaultScriptTimeout,
-                   multiDb, out sbmName, batchScripts, cmd.AllowObjectDelete);
+                   multiDb, out sbmName, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
             }
             else
             {
@@ -589,7 +584,7 @@ namespace SqlBuildManager.Console
                     cmd.AuthenticationArgs.Password,
                     cmd.BuildRevision,
                     cmd.DefaultScriptTimeout,
-                    multiDb, out sbmName, batchScripts, cmd.AllowObjectDelete);
+                    multiDb, out sbmName, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
             }
         }
 
@@ -748,6 +743,16 @@ namespace SqlBuildManager.Console
             }
             sb.AppendLine("|" + new string('-', total) + "|");
             return sb.ToString().Trim();
+        }
+
+        internal static void DecryptSettingsFile(CommandLineArgs cmdLine, string settingsfilekey)
+        {
+            (var success, cmdLine) = Init(cmdLine);
+            var serialized = JsonSerializer.Serialize<CommandLineArgs>(cmdLine, new JsonSerializerOptions() { WriteIndented = true });
+            System.Console.WriteLine();
+            System.Console.WriteLine(serialized);
+            System.Console.WriteLine();
+
         }
 
         internal static int ShowCommands(bool markdown)
