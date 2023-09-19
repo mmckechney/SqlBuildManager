@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sbm-runner
+  namespace: sqlbuildmanager
+  labels:
+    azure.workload.identity/use: 'true'
+spec:
+  nodeSelector:
+    kubernetes.io/os: linux
+  serviceAccountName: <<prefix>>serviceaccount
+  containers:
+  - name:  sbm-runner
+    image: <<prefix>>containerregistry.azurecr.io/sqlbuildmanager:latest-vNext
+    imagePullPolicy: Always
+    resources:
+      limits:
+        memory: 512M
+        cpu: 500m
+    command:
+    - sh
+    - -c
+    - tail -f /dev/null 
+  restartPolicy: Always
+ 
+      
+#kubectl get pods -n sqlbuildmanager
+#kubectl exec --stdin --tty  sbm-runner -n sqlbuildmanager -- /bin/bash

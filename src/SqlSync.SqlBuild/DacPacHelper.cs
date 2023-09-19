@@ -33,18 +33,24 @@ namespace SqlSync.SqlBuild
                 connData.AuthenticationType = authType;
                 if (!string.IsNullOrWhiteSpace(userName)) connData.UserId = userName;
                 if (!string.IsNullOrWhiteSpace(password)) connData.Password = password;
+                if (!string.IsNullOrWhiteSpace(managedIdentityClientId)) connData.ManagedIdentityClientId = managedIdentityClientId;
 
                 //Pre-test the connection. the DacServices can hang for a long time if the connection is bad
+                log.LogInformation($"Testing connection to {sourceServer}/{sourceDatabase} using authentication type {authType}");
                 if (!ConnectionHelper.TestDatabaseConnection(sourceDatabase, sourceServer, userName, password,authType, timeouts, managedIdentityClientId))
                 {
-                    log.LogError($"Unable to create Dacpac for {sourceServer}.{sourceDatabase}. Database connection test failed.");
+                    log.LogError($"Unable to create Dacpac for {sourceServer}/{sourceDatabase}. Database connection test failed.");
                     return false;
+                }
+                else
+                {
+                    log.LogInformation($"Connection to {sourceServer}/{sourceDatabase} with authentication type {authType} was successful");
                 }
                 var connString = ConnectionHelper.GetConnectionString(connData);
                 Version ver = Assembly.GetExecutingAssembly().GetName().Version;
                 DacServices service = new DacServices(connString);
                 service.Extract(dacPacFileName, sourceDatabase, "Sql Build Manager", ver, "Sql Build Manager",null, opts);
-                log.LogInformation($"dacpac from {sourceServer}.{sourceDatabase} saved to {dacPacFileName}");
+                log.LogInformation($"DACPAC from {sourceServer}.{sourceDatabase} saved to {dacPacFileName}");
                 return true;
             }
             catch (Exception exe)

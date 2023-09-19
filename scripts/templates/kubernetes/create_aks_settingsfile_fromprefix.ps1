@@ -50,3 +50,8 @@ Write-Host "Using keyvault name: '$keyVaultName'" -ForegroundColor DarkGreen
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 .$scriptDir/create_aks_settingsfile.ps1 -sbmExe $sbmExe -path $path -resourceGroupName  $resourceGroupName -storageAccountName $storageAccountName -eventHubNamespaceName $eventHubNamespaceName -serviceBusNamespaceName $serviceBusNamespaceName -sqlUserName $sqlUserName -sqlPassword $sqlPassword -acrName $containerRegistryName  -keyVaultName $keyVaultName -serviceAccount $serviceAccountName -podCount $podCount
 
+$yaml = Join-Path -Path $scriptDir -ChildPath "runnerpod.yaml"
+$destYaml = Join-Path -Path $path -ChildPath "runnerpod.yaml"
+(Get-Content $yaml) | foreach-object { $_ -replace "<<prefix>>", $prefix } | Set-Content $destYaml
+
+

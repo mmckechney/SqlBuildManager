@@ -106,6 +106,7 @@ namespace SqlSync.Connection
                     builder.Password = pw;
                     break;
             }
+            log.LogDebug($"Database Connection string: {builder.ConnectionString}");
             return builder.ConnectionString;
         }
 
