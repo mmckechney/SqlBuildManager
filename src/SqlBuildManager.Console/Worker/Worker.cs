@@ -94,7 +94,7 @@ namespace SqlBuildManager.Console
             return Task.CompletedTask;
         }
 
-        internal static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine)
+        internal static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine, bool clearText = false)
         {
             if (cmdLine.IdentityArgs != null)
             {
@@ -115,11 +115,14 @@ namespace SqlBuildManager.Console
             }
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
-            bool decryptSuccess;
-            (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-            if (!decryptSuccess)
+            if (!clearText)
             {
-                log.LogWarning("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                bool decryptSuccess;
+                (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+                if (!decryptSuccess)
+                {
+                    log.LogWarning("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                }
             }
             bool tmp;
             (tmp, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
