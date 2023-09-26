@@ -119,7 +119,7 @@ namespace SqlBuildManager.Console
             (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
             if (!decryptSuccess)
             {
-                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                log.LogWarning("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
             }
             bool tmp;
             (tmp, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
@@ -228,7 +228,7 @@ namespace SqlBuildManager.Console
             (kvSuccess, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
             if (!decryptSuccess)
             {
-                log.LogError("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                log.LogWarning("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
                 return -53443;
             }
 

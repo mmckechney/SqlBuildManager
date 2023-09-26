@@ -59,6 +59,7 @@ namespace SqlSync.SqlBuild.MultiDb
     [Serializable]
     public class DbOverrides : List<DatabaseOverride>
     {
+
         public DbOverrides() { }
         public DbOverrides(params DatabaseOverride[] ovr)
         {

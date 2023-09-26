@@ -15,18 +15,30 @@ namespace SqlBuildManager.Console.UnitTest
     [TestClass()]
     public partial class ConcurrencyTest
     {
-        internal static (string, MultiDbData) GetMultiDbData(bool doubleTarget = false)
+        internal enum MultiDbType
+        {
+            SingleTarget,
+            DoubleTarget,
+            Tag
+        }
+        internal static (string, MultiDbData) GetMultiDbData(MultiDbType targetType)
         {
             var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
 
-            if (doubleTarget)
+            switch (targetType)
             {
-                File.WriteAllBytes(tmpCfg, Properties.Resources.concurrency_doubledb);
+                case MultiDbType.DoubleTarget:
+                    File.WriteAllBytes(tmpCfg, Properties.Resources.concurrency_doubledb);
+                    break;
+                case MultiDbType.Tag:
+                      File.WriteAllBytes(tmpCfg, Properties.Resources.concurrency_tag);
+                      break;
+                case MultiDbType.SingleTarget:
+                default:
+                    File.WriteAllBytes(tmpCfg, Properties.Resources.concurrency);
+                    break;
             }
-            else
-            {
-                File.WriteAllBytes(tmpCfg, Properties.Resources.concurrency);
-            }
+           
             MultiDbData multiData;
             string[] errorMessages;
             CommandLineArgs cmdLine = new CommandLineArgs()
@@ -280,7 +292,7 @@ namespace SqlBuildManager.Console.UnitTest
 
             try
             {
-                (tmpFile, multiData) = GetMultiDbData();
+                (tmpFile, multiData) = GetMultiDbData( MultiDbType.SingleTarget);
                 var flattened = Concurrency.FlattenOverride(multiData);
                 Assert.AreEqual(2366, flattened.Count);
 
@@ -306,7 +318,7 @@ namespace SqlBuildManager.Console.UnitTest
 
             try
             {
-                (tmpFile, multiData) = GetMultiDbData();
+                (tmpFile, multiData) = GetMultiDbData(MultiDbType.SingleTarget);
                 var flattened = Concurrency.FlattenOverride(multiData);
                 int totalRowCount = flattened.Count();
                 double expectedChunks = Math.Ceiling((double)totalRowCount / (double)concurrencyCount);
@@ -327,18 +339,88 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
         [TestMethod]
-        public void DbOverrideConcurrencyByServerTest()
+        public void DbOverrideConcurrency_ByServer_Test()
         {
             string tmpFile = string.Empty;
             MultiDbData multiData;
 
             try
             {
-                (tmpFile, multiData) = GetMultiDbData();
+                (tmpFile, multiData) = GetMultiDbData(MultiDbType.SingleTarget);
                 var output = Concurrency.ConcurrencyByServer(multiData);
                 Assert.AreEqual(449, output[0].Count());
                 Assert.AreEqual(5, output.Count());
                 Assert.AreEqual(96, output.Last().Count());
+            }
+            finally
+            {
+                if (File.Exists(tmpFile))
+                {
+                    File.Delete(tmpFile);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void DbOverrideConcurrency_MaxConcurrency_ByTag_Test()
+        {
+            string tmpFile = string.Empty;
+            MultiDbData multiData;
+
+            try
+            {
+                (tmpFile, multiData) = GetMultiDbData(MultiDbType.Tag);
+                var output = Concurrency.ConcurrencyByType(multiData, 10, ConcurrencyType.MaxPerTag);
+                Assert.AreEqual(70, output.Count());
+                Assert.AreEqual(5, output[0].Count());
+                Assert.AreEqual(28, output.Last().Count());
+                Assert.AreEqual("#PoolA", output[0].First().Item1);
+                Assert.AreEqual("#PoolA", output[3].First().Item1);
+                Assert.AreEqual(5, output[3].Count());
+                
+                Assert.AreEqual("#PoolA", output[7].First().Item1);
+                Assert.AreEqual(5, output[7].Count());
+                
+                Assert.AreEqual("#PoolC", output[26].First().Item1);
+                Assert.AreEqual(30, output[26].Count());
+                
+                Assert.AreEqual("#PoolD", output[36].First().Item1);
+                Assert.AreEqual(30, output[36].Count());
+                
+                Assert.AreEqual("#PoolE", output[41].First().Item1);
+                Assert.AreEqual(50, output[41].Count());
+                
+                Assert.AreEqual("#PoolF", output[59].First().Item1);
+                Assert.AreEqual(75, output[59].Count());
+                
+                Assert.AreEqual("#PoolG", output.Last().First().Item1);
+                Assert.AreEqual(28, output.Last().Count());
+            }
+            finally
+            {
+                if (File.Exists(tmpFile))
+                {
+                    File.Delete(tmpFile);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void DbOverrideConcurrency_Concurrency_ByTag_Test()
+        {
+            string tmpFile = string.Empty;
+            MultiDbData multiData;
+
+            try
+            {
+                (tmpFile, multiData) = GetMultiDbData(MultiDbType.Tag);
+                var output = Concurrency.ConcurrencyByType(multiData, 50, ConcurrencyType.Tag);
+                Assert.AreEqual(7, output.Count());
+                Assert.AreEqual(50, output[0].Count());
+                Assert.AreEqual(316, output.Last().Count());
+                Assert.AreEqual("#PoolA", output[0].First().Item1);
+                Assert.AreEqual("#PoolD", output[3].First().Item1);
+                Assert.AreEqual("#PoolG", output.Last().First().Item1);
             }
             finally
             {
@@ -357,7 +439,7 @@ namespace SqlBuildManager.Console.UnitTest
 
             try
             {
-                (tmpFile, multiData) = GetMultiDbData(true);
+                (tmpFile, multiData) = GetMultiDbData(MultiDbType.DoubleTarget);
                 var output = Concurrency.ConcurrencyByServer(multiData);
                 Assert.AreEqual(449, output[0].Count());
                 Assert.AreEqual(5, output.Count());
@@ -384,7 +466,7 @@ namespace SqlBuildManager.Console.UnitTest
 
             try
             {
-                (tmpFile, multiData) = GetMultiDbData();
+                (tmpFile, multiData) = GetMultiDbData(MultiDbType.SingleTarget);
                 var output = Concurrency.MaxConcurrencyByServer(multiData, concurrency);
                 Assert.AreEqual(totalChunks, output.Count());
                 Assert.AreEqual(firstCount, output.First().Count());
@@ -497,11 +579,11 @@ namespace SqlBuildManager.Console.UnitTest
 
             try
             {
-                (tmpFile, multiData) = ConcurrencyTest.GetMultiDbData(true);
+                (tmpFile, multiData) = ConcurrencyTest.GetMultiDbData(MultiDbType.DoubleTarget) ;
                 var output = Concurrency.ConcurrencyByInt(multiData, 10);
                 var qMgr = new QueueManager("", "testing", CommandLine.ConcurrencyType.Count, true);
 
-                var messages = qMgr.CreateMessages(output, "testing");
+                var messages = qMgr.CreateMessages(output, "testing", CommandLine.ConcurrencyType.Count);
                 var msg = messages.First().As<TargetMessage>();
                 Assert.AreEqual(2, msg.DbOverrideSequence.Count());
             }

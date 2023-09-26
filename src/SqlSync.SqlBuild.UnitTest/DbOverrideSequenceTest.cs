@@ -199,12 +199,12 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             DbOverrides target = new DbOverrides();
             List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
-            tmp1.Add(new DatabaseOverride("default1a", "override1a"));
-            tmp1.Add(new DatabaseOverride("default1b", "override1b"));
+            tmp1.Add(new DatabaseOverride("server1", "default1a", "override1a"));
+            tmp1.Add(new DatabaseOverride("server1", "default1b", "override1b"));
 
             List<DatabaseOverride> tmp2 = new List<DatabaseOverride>();
-            tmp2.Add(new DatabaseOverride("default2a", "override2a"));
-            tmp2.Add(new DatabaseOverride("default2b", "override2b"));
+            tmp2.Add(new DatabaseOverride("server1", "default2a", "override2a"));
+            tmp2.Add(new DatabaseOverride("server1", "default2b", "override2b"));
             target.AddRange(tmp1);
             target.AddRange(tmp2);
 
@@ -223,8 +223,8 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             DbOverrides target = new DbOverrides();
             List<DatabaseOverride> tmp1 = new List<DatabaseOverride>();
-            tmp1.Add(new DatabaseOverride("default1a", "override1a"));
-            tmp1.Add(new DatabaseOverride("default1b", "override1b"));
+            tmp1.Add(new DatabaseOverride("server1", "default1a", "override1a"));
+            tmp1.Add(new DatabaseOverride("server1", "default1b", "override1b"));
             target.AddRange(tmp1);
 
             Assert.AreEqual(2, target.Count);

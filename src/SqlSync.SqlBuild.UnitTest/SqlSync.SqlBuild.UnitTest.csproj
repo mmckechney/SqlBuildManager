@@ -8,6 +8,7 @@
   <ItemGroup>
     <None Remove="Resources\dbconfig-doubledb.cfg" />
     <None Remove="Resources\serialized_multidb_json.txt" />
+    <None Remove="Resources\serialized_multidb_json_withtag_json.txt" />
     <None Remove="Resources\serialized_multidb_xml.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -16,15 +17,16 @@
     <EmbeddedResource Include="Resources\LoggingTable.sql" />
     <EmbeddedResource Include="Resources\MultiDb_WithQueryRowData.xml" />
     <EmbeddedResource Include="Resources\sbx_package_tester.sbx" />
+    <EmbeddedResource Include="Resources\serialized_multidb_json_withtag_json.txt" />
     <EmbeddedResource Include="Resources\serialized_multidb_json.txt" />
     <EmbeddedResource Include="Resources\serialized_multidb_xml.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.0.4" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

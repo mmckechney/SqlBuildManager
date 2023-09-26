@@ -260,7 +260,31 @@ namespace SqlBuildManager.Console
                 log.LogError(error);
                 return (int)ExecutionReturn.MissingTargetDbOverrideSetting;
             }
+
+            if (!ValidateMultiDatabaseTags(multiData, cmdLine == null? ConcurrencyType.Count : cmdLine.ConcurrencyType))
+            {
+
+                error = $"There are database targets that do not have a concurrency tag. This is required when the Concurrency Type is '{cmdLine.ConcurrencyType}'. Please add a concurrency tag to all database targets.";
+                errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingOverrideTags };
+                log.LogError(error);
+                return (int)ExecutionReturn.MissingOverrideTags;
+            }
             return 0;
+        }
+
+        public static bool ValidateMultiDatabaseTags(MultiDbData multiData, ConcurrencyType concurrencyType)
+        {
+            switch(concurrencyType)
+            {
+                case ConcurrencyType.Tag:
+                case ConcurrencyType.MaxPerTag:
+                    if(multiData.AsQueryable().Where(m => m.Overrides.Where(o => o.ConcurrencyTag.Length == 0).Any()).Any())
+                    {
+                        return false;
+                    }
+                    break;
+            }
+            return true;
         }
         private static ConnectionData GetConnDataFromCommandLine(CommandLineArgs cmdLine)
         {

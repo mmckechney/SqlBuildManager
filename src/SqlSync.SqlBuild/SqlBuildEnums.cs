@@ -128,6 +128,8 @@ namespace SqlSync.SqlBuild
         /// Database was updated but required the creation and use of a custom dacpac
         /// </summary>
         public const string CommittedWithCustomDacpac = "CommittedWithCustomDacpac";
+
+        public const string FailedWithCustomDacpac = "FailedWithCustomDacpac";
     }
     public class BatchParsing
     {

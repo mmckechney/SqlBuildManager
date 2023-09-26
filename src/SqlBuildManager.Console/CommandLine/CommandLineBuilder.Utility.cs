@@ -243,6 +243,22 @@ namespace SqlBuildManager.Console.CommandLine
 			}
 		}
 
+		private static Command DecryptSettingsFile
+		{
+			get
+			{
+                var cmd = new Command("decrypt", "Decrypt a settings file")
+                {
+                    settingsfileExistingRequiredOption,
+                    settingsfileKeyRequiredOption
+                };
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, string>(Worker.DecryptSettingsFile);
+				cmd.IsHidden = true;
+                return cmd;
+
+            }
+		}
+
 		/// <summary>
 		/// Utility commands for generating override file from SQL statement and interrogating Service Bus and EventHubs
 		/// </summary>
@@ -254,8 +270,9 @@ namespace SqlBuildManager.Console.CommandLine
 				{
 					OverrideFromSqlUtilityCommand,
 					QueueUtilityCommand,
-					EventHubUtilityCommand
-				};
+					EventHubUtilityCommand,
+                    DecryptSettingsFile
+                };
 				return cmd;
 			}
 		}

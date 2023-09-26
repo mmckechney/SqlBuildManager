@@ -181,7 +181,7 @@ namespace SqlSync.SqlBuild.MultiDb
                         }
                         if (!found)
                         {
-                            DatabaseOverride tmp = new DatabaseOverride(defaultDb.DatabaseName, defaultDb.DatabaseName);
+                            DatabaseOverride tmp = new DatabaseOverride(srvData.ServerName,defaultDb.DatabaseName, defaultDb.DatabaseName);
                             srvData.Overrides.Add(tmp);
                         }
 

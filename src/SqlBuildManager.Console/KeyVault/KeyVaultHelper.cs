@@ -167,7 +167,7 @@ namespace SqlBuildManager.Console.KeyVault
 
 
             tmp = GetSecret(kvName, KeyVaultHelper.ContainerRegistryPassword);
-            if (!string.IsNullOrWhiteSpace(tmp))
+            if (!string.IsNullOrWhiteSpace(tmp) && cmdLine.ContainerRegistryArgs != null)
             {
                 cmdLine.RegistryPassword = tmp;
                 retrieved.Add(KeyVaultHelper.ContainerRegistryPassword);

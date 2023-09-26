@@ -8,6 +8,8 @@ namespace SqlSync.Connection
 {
     public class DatabaseOverride
     {
+        public string ConcurrencyTag { get; set; } = string.Empty;
+        public string Server { get; set; }
         public string DefaultDbTarget { get; set; } = string.Empty;
         private string overrideDbTarget = string.Empty;
         public string OverrideDbTarget
@@ -25,14 +27,24 @@ namespace SqlSync.Connection
         public DatabaseOverride()
         {
         }
-        public DatabaseOverride(string defaultDbTarget, string overrideDbTarget)
+        public DatabaseOverride(string server, string defaultDbTarget, string overrideDbTarget, string tag = "")
         {
-            DefaultDbTarget = defaultDbTarget;
+            this.Server = server;
+            this.DefaultDbTarget = defaultDbTarget;
             this.overrideDbTarget = overrideDbTarget;
+            this.ConcurrencyTag = tag;
         }
         public override string ToString()
         {
-            return DefaultDbTarget + ";" + overrideDbTarget;
+            if(this.ConcurrencyTag.Length > 0)
+            {
+                return DefaultDbTarget + ";" + overrideDbTarget + "#" + ConcurrencyTag;
+            }
+            else
+            {
+                return DefaultDbTarget + ";" + overrideDbTarget;
+            }
+           
         }
         private List<QueryRowItem> queryRowData = new List<QueryRowItem>();
 

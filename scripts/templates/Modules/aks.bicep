@@ -35,11 +35,11 @@ resource aksAcrPull 'Microsoft.Authorization/roleAssignments@2020-04-01-preview'
   }
 }
 
-resource aks 'Microsoft.ContainerService/managedClusters@2022-05-02-preview' = {
+resource aks 'Microsoft.ContainerService/managedClusters@2023-05-01' = {
   name: aksClusterName
   location: location
   sku:{
-    name: 'Basic'
+    name: 'Base'
     tier: 'Free'
   }
   identity: {

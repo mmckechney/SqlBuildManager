@@ -3,7 +3,7 @@
     "ServerName": "ServerA",
     "Overrides": [
       {
-        "ConcurrencyTag": "",
+        "ConcurrencyTag": "TagA",
         "Server": "ServerA",
         "DefaultDbTarget": "default1",
         "OverrideDbTarget": "override1"
@@ -14,7 +14,7 @@
     "ServerName": "ServerA",
     "Overrides": [
       {
-        "ConcurrencyTag": "",
+        "ConcurrencyTag": "TagA",
         "Server": "ServerA",
         "DefaultDbTarget": "default2",
         "OverrideDbTarget": "override2"
@@ -25,7 +25,7 @@
     "ServerName": "ServerA",
     "Overrides": [
       {
-        "ConcurrencyTag": "",
+        "ConcurrencyTag": "TagA",
         "Server": "ServerA",
         "DefaultDbTarget": "default0",
         "OverrideDbTarget": "override0"
@@ -36,13 +36,13 @@
     "ServerName": "ServerA",
     "Overrides": [
       {
-        "ConcurrencyTag": "",
+        "ConcurrencyTag": "TagB",
         "Server": "ServerA",
         "DefaultDbTarget": "defaultX",
         "OverrideDbTarget": "overrideX"
       },
       {
-        "ConcurrencyTag": "",
+        "ConcurrencyTag": "TagB",
         "Server": "ServerA",
         "DefaultDbTarget": "defaultY",
         "OverrideDbTarget": "overrideY"
@@ -53,7 +53,7 @@
     "ServerName": "ServerB",
     "Overrides": [
       {
-        "ConcurrencyTag": "",
+        "ConcurrencyTag": "TagB",
         "Server": "ServerB",
         "DefaultDbTarget": "default6",
         "OverrideDbTarget": "override6"
@@ -64,7 +64,7 @@
     "ServerName": "ServerB",
     "Overrides": [
       {
-        "ConcurrencyTag": "",
+        "ConcurrencyTag": "TagB",
         "Server": "ServerB",
         "DefaultDbTarget": "default7",
         "OverrideDbTarget": "override7"
@@ -75,7 +75,7 @@
     "ServerName": "ServerB",
     "Overrides": [
       {
-        "ConcurrencyTag": "",
+        "ConcurrencyTag": "TagB",
         "Server": "ServerB",
         "DefaultDbTarget": "default5",
         "OverrideDbTarget": "override5"

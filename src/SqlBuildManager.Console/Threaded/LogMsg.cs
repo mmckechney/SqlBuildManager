@@ -79,6 +79,9 @@ namespace SqlBuildManager.Console.Threaded
         [JsonPropertyName("ComputeHostName")]
         public string ComputeHostName { get; set; } = string.Empty;
 
+        [JsonPropertyName("ConcurrencyTag")]
+        public string ConcurrencyTag { get; set; } = string.Empty;
+
         [JsonPropertyName("ScriptLog")]
         public ScriptLogData ScriptLog { get; set; } = null;
             

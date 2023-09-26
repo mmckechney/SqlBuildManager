@@ -79,6 +79,15 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
             }
         }
 
+        internal static byte[] concurrency_tag
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("concurrency_tag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+
         internal static byte[] concurrency_doubledb
         {
             get

@@ -15,6 +15,7 @@ using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.Status;
 using Azure.Messaging.ServiceBus;
+using Azure.ResourceManager.Resources.Models;
 
 namespace SqlBuildManager.Console.Threaded
 {
@@ -145,8 +146,13 @@ namespace SqlBuildManager.Console.Threaded
                     {
                         var target = message.As<TargetMessage>();
                         var targetDb = target.DbOverrideSequence[0].OverrideDbTarget;
+                    
+                        if(target.ServerName.StartsWith("#"))
+                        {
+                            target.ServerName = target.DbOverrideSequence[0].Server;
+                        }
                         var runner = new QueryCollectionRunner(target.ServerName, targetDb, query, new List<QueryRowItem>(), ReportType.CSV, tmpOutput,cmdLine.DefaultScriptTimeout, connData);
-                        var msg = new LogMsg() { DatabaseName = targetDb, ServerName = target.ServerName, RunId = this.runId, Message = "Queuing up thread", LogType = LogType.Message };
+                        var msg = new LogMsg() { DatabaseName = targetDb, ServerName = target.ServerName, RunId = this.runId, Message = "Queuing up thread", LogType = LogType.Message, ConcurrencyTag = target.ConcurrencyTag };
                         threadLogger.WriteToLog(msg);
                         tasks.Add(ProcessThreadedQueryWithQueue(runner, message));
                     }
@@ -164,19 +170,20 @@ namespace SqlBuildManager.Console.Threaded
         private async Task<(int, string)> ProcessThreadedQueryWithQueue(QueryCollectionRunner runner, ServiceBusReceivedMessage message)
         {
             var target = message.As<TargetMessage>();
-            threadLogger.WriteToLog(new LogMsg() { DatabaseName = target.DbOverrideSequence[0].OverrideDbTarget, ServerName = target.ServerName, RunId = this.runId, Message = "Starting up thread", LogType = LogType.Message });
+            target.DbOverrideSequence[0].ConcurrencyTag = target.ConcurrencyTag;
+            threadLogger.WriteToLog(new LogMsg() { DatabaseName = target.DbOverrideSequence[0].OverrideDbTarget, ServerName = target.ServerName, RunId = this.runId, Message = "Starting up thread", LogType = LogType.Message, ConcurrencyTag = target.DbOverrideSequence[0].ConcurrencyTag });
             var retVal = await runner.CollectQueryData();
-            threadLogger.WriteToLog(new LogMsg() { DatabaseName = target.DbOverrideSequence[0].OverrideDbTarget, ServerName = target.ServerName, RunId = this.runId, Message = "Thread complete", LogType = LogType.Message });
+            threadLogger.WriteToLog(new LogMsg() { DatabaseName = target.DbOverrideSequence[0].OverrideDbTarget, ServerName = target.ServerName, RunId = this.runId, Message = "Thread complete", LogType = LogType.Message, ConcurrencyTag = target.DbOverrideSequence[0].ConcurrencyTag });
 
             if (retVal.Item1 == 0)
             {
                 await qManager.CompleteMessage(message);
-                threadLogger.WriteToLog(new LogMsg() { DatabaseName = target.DbOverrideSequence[0].OverrideDbTarget, ServerName = target.ServerName, RunId = this.runId, Message = "Thread complete", LogType = LogType.Commit });
+                threadLogger.WriteToLog(new LogMsg() { DatabaseName = target.DbOverrideSequence[0].OverrideDbTarget, ServerName = target.ServerName, RunId = this.runId, Message = "Thread complete", LogType = LogType.Commit, ConcurrencyTag = target.DbOverrideSequence[0].ConcurrencyTag });
             }
             else
             {
                 await qManager.DeadletterMessage(message);
-                threadLogger.WriteToLog(new LogMsg() { DatabaseName = target.DbOverrideSequence[0].OverrideDbTarget, ServerName = target.ServerName, RunId = this.runId, Message = "Thread complete", LogType = LogType.Commit });
+                threadLogger.WriteToLog(new LogMsg() { DatabaseName = target.DbOverrideSequence[0].OverrideDbTarget, ServerName = target.ServerName, RunId = this.runId, Message = "Thread complete", LogType = LogType.Commit, ConcurrencyTag = target.DbOverrideSequence[0].ConcurrencyTag });
             }
             return retVal;
         }

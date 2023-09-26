@@ -546,7 +546,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 lstSrv.Add(new ServerData()
                 {
                     ServerName = serverName,
-                    Overrides = new DbOverrides() { new DatabaseOverride(defaultDatabases[0], db.DatabaseName) }
+                    Overrides = new DbOverrides() { new DatabaseOverride(serverName, defaultDatabases[0], db.DatabaseName) }
                 });
             }
             ServerData dat = new ServerData();

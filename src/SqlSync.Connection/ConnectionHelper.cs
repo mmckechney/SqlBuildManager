@@ -106,6 +106,7 @@ namespace SqlSync.Connection
                     builder.Password = pw;
                     break;
             }
+            log.LogDebug($"Database Connection string: {builder.ConnectionString}");
             return builder.ConnectionString;
         }
 
@@ -159,6 +160,7 @@ namespace SqlSync.Connection
             DbConnection conn = null;
             try
             {
+                connData.ScriptTimeout = 60;
                 conn = GetConnection(connData);
                 conn.Open();
                 conn.Close();

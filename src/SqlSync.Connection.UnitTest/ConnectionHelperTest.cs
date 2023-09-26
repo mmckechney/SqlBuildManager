@@ -184,10 +184,10 @@ namespace SqlSync.Connection.UnitTest
         public void GetTargetDatabaseTest()
         {
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("default1", "override1"));
-            overrides.Add(new DatabaseOverride("default2", "override2"));
-            overrides.Add(new DatabaseOverride("default4", "default4"));
-            overrides.Add(new DatabaseOverride("MixedCASE", "override5"));
+            overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
+            overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
+            overrides.Add(new DatabaseOverride("server1", "default4", "default4"));
+            overrides.Add(new DatabaseOverride("server1", "MixedCASE", "override5"));
 
             string actual = ConnectionHelper.GetTargetDatabase("default2", overrides);
             Assert.AreEqual("override2", actual);
@@ -206,8 +206,8 @@ namespace SqlSync.Connection.UnitTest
         public void GetTargetDatabaseTest_EmptyDefault()
         {
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("default1", "override1"));
-            overrides.Add(new DatabaseOverride("default2", "override2"));
+            overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
+            overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
 
             string actual = ConnectionHelper.GetTargetDatabase("", overrides);
             Assert.AreEqual("override1", actual);
@@ -221,8 +221,8 @@ namespace SqlSync.Connection.UnitTest
         public void GetTargetDatabaseTest_NullDefault()
         {
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("default1", "override1"));
-            overrides.Add(new DatabaseOverride("default2", "override2"));
+            overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
+            overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
 
             string actual = ConnectionHelper.GetTargetDatabase(null, overrides);
             Assert.AreEqual("override1", actual);
@@ -236,8 +236,8 @@ namespace SqlSync.Connection.UnitTest
         public void GetTargetDatabaseTest_NoOverrideFound()
         {
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("default1", "override1"));
-            overrides.Add(new DatabaseOverride("default2", "override2"));
+            overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
+            overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
 
             string actual = ConnectionHelper.GetTargetDatabase("default3", overrides);
             Assert.AreEqual("default3", actual);
@@ -251,10 +251,10 @@ namespace SqlSync.Connection.UnitTest
         public void GetTargetDatabaseTest_CaseInsensitive()
         {
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("default1", "override1"));
-            overrides.Add(new DatabaseOverride("default2", "override2"));
-            overrides.Add(new DatabaseOverride("default4", "default4"));
-            overrides.Add(new DatabaseOverride("MixedCASE", "override5"));
+            overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
+            overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
+            overrides.Add(new DatabaseOverride("server1", "default4", "default4"));
+            overrides.Add(new DatabaseOverride("server1", "MixedCASE", "override5"));
 
             string actual = ConnectionHelper.GetTargetDatabase("mixedCaSe", overrides);
             Assert.AreEqual("override5", actual);
@@ -269,10 +269,10 @@ namespace SqlSync.Connection.UnitTest
         public void ValidateDatabaseOverridesTest_Good()
         {
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("default1", "override1"));
-            overrides.Add(new DatabaseOverride("default2", "override2"));
-            overrides.Add(new DatabaseOverride("default4", "default4"));
-            overrides.Add(new DatabaseOverride("MixedCASE", "override5"));
+            overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
+            overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
+            overrides.Add(new DatabaseOverride("server1", "default4", "default4"));
+            overrides.Add(new DatabaseOverride("server1", "MixedCASE", "override5"));
 
             bool expected = true;
             bool actual;
@@ -287,10 +287,10 @@ namespace SqlSync.Connection.UnitTest
         public void ValidateDatabaseOverridesTest_MissingSetting()
         {
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("default1", "override1"));
-            overrides.Add(new DatabaseOverride("default2", "override2"));
-            overrides.Add(new DatabaseOverride("", ""));
-            overrides.Add(new DatabaseOverride("MixedCASE", "override5"));
+            overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
+            overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
+            overrides.Add(new DatabaseOverride("server1", "", ""));
+            overrides.Add(new DatabaseOverride("server1", "MixedCASE", "override5"));
 
             bool expected = false;
             bool actual;
@@ -318,10 +318,10 @@ namespace SqlSync.Connection.UnitTest
         public void ValidateDatabaseOverridesTest_NullOverride()
         {
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-            overrides.Add(new DatabaseOverride("default1", "override1"));
-            overrides.Add(new DatabaseOverride("default2", "override2"));
+            overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
+            overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
             overrides.Add(null);
-            overrides.Add(new DatabaseOverride("MixedCASE", "override5"));
+            overrides.Add(new DatabaseOverride("server1", "MixedCASE", "override5"));
 
             bool expected = false;
             bool actual;

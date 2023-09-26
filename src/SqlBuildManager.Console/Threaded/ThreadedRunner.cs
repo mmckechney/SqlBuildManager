@@ -85,6 +85,19 @@ namespace SqlBuildManager.Console.Threaded
             get { return forceCustomDacpac; }
             set { forceCustomDacpac = value; }
         }
+
+        private string concurrencyTag = string.Empty;
+        public string ConcurrencyTag
+        {
+            get
+            {
+                return concurrencyTag;
+            }
+            set
+            {
+                concurrencyTag = value;
+            }
+        }
         public string DacpacName { get; set; } = string.Empty;
         private string username = string.Empty;
         private string password = string.Empty;
@@ -95,7 +108,15 @@ namespace SqlBuildManager.Console.Threaded
 
         public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac)
         {
-            server = serverName;
+            if (serverName.StartsWith("#"))
+            {
+                this.server = overrides[0].Server;
+            }   
+            else
+            {
+                this.server = serverName;
+            }
+            this.concurrencyTag = overrides[0].ConcurrencyTag;
             this.overrides = overrides;
             isTrial = cmdArgs.Trial;
             this.cmdArgs = cmdArgs;
@@ -170,7 +191,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     runData.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
-                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, authType, username, password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete);
+                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, authType, username, password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete, cmdArgs.IdentityArgs.ClientId);
                     switch (status)
                     {
                         case DacpacDeltasStatus.Success:

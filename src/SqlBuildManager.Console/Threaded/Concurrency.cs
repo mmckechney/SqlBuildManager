@@ -1,4 +1,5 @@
-﻿using MoreLinq;
+﻿using Microsoft.Extensions.Logging;
+using MoreLinq;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
@@ -10,6 +11,7 @@ namespace SqlBuildManager.Console.Threaded
 {
     public class Concurrency
     {
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static List<IEnumerable<(string, List<DatabaseOverride>)>> ConcurrencyByType(MultiDbData multiData, int concurrency, ConcurrencyType concurrencyType)
         {
             switch (concurrencyType)
@@ -18,11 +20,66 @@ namespace SqlBuildManager.Console.Threaded
                     return ConcurrencyByServer(multiData);
                 case ConcurrencyType.MaxPerServer:
                     return MaxConcurrencyByServer(multiData, concurrency);
+                
+                case ConcurrencyType.Tag:
+                    return ConcurrencyByTag(multiData);
+                case ConcurrencyType.MaxPerTag:
+                    return MaxConcurrencyByTag(multiData, concurrency);
+                
                 case ConcurrencyType.Count:
                 default:
                     return ConcurrencyByInt(multiData, concurrency);
             }
         }
+
+        private static List<IEnumerable<(string, List<DatabaseOverride>)>> MaxConcurrencyByTag(MultiDbData multiData, int concurrency)
+        {
+            List<IEnumerable<(string, List<DatabaseOverride>)>> tmp = new List<IEnumerable<(string, List<DatabaseOverride>)>>();
+            var serverChunks = ConcurrencyByTag(multiData);
+            foreach (var sC in serverChunks)
+            {
+
+                var subChunks = sC.SplitIntoChunks(concurrency);
+                tmp.AddRange(subChunks);
+            }
+            return tmp;
+        }
+
+        private static List<IEnumerable<(string, List<DatabaseOverride>)>> ConcurrencyByTag(MultiDbData multiData)
+        {
+            List<IEnumerable<(string, List<DatabaseOverride>)>> tmp = new();
+
+            //get a single list of db overrides
+            var lstOverrides = new List<DatabaseOverride>();
+            FlattenOverride(multiData).Select(f => f.Item2).ForEach(o => lstOverrides.AddRange(o));
+
+            var tagGroup = lstOverrides.GroupBy(o => o.ConcurrencyTag);
+            foreach (var s in tagGroup)
+            {
+                var lstSrv = new List<(string, List<DatabaseOverride>)>();
+                foreach (var o in s)
+
+                    if (lstSrv.Where(x => $"#{x.Item1}" == $"#{s.Key}").Any())
+                    {
+                        lstSrv.Where(x => $"#{x.Item1}" == $"#{s.Key}").First().Item2.Add(o);
+                    }
+                    else
+                    {
+                        lstSrv.Add(($"#{s.Key}", new List<DatabaseOverride>() { o }));
+                    }
+                tmp.Add(lstSrv);
+            }
+
+            var emptyTag = tmp.Where(t => t.Where(a => a.Item1 == "#").Any()).Any();
+            if(emptyTag)
+            {
+                string msg = "Empty database target tags found. Please ensure all database targets have a tag when using ConcurrencyType of `Tag` or `MaxPerTag`";
+                log.LogError(msg);
+                throw new Exception(msg);
+            }
+            return tmp;
+        }
+
         /// <summary>
         /// Divides the targets into the "concurrency" count of Lists. The lists would be run in parallel, with the items in each list run in serial
         /// Fully parallel to the extent of the concurrency number
@@ -208,7 +265,14 @@ namespace SqlBuildManager.Console.Threaded
                 var tmp = new List<string>();
                 foreach (var sub in bucket)
                 {
-                    tmp.Add($"{sub.Item1}:{sub.Item2.ToList().Select(d => $"{d.DefaultDbTarget},{d.OverrideDbTarget}").Aggregate((a, b) => $"{a};{b}")}");
+                    if(sub.Item1.StartsWith("#"))
+                    {
+                        tmp.Add($"{sub.Item2[0].Server}:{sub.Item2.ToList().Select(d => $"{d.DefaultDbTarget},{d.OverrideDbTarget}#{d.ConcurrencyTag}").Aggregate((a, b) => $"{a};{b}")}");
+                    }
+                    else
+                    {
+                        tmp.Add($"{sub.Item1}:{sub.Item2.ToList().Select(d => $"{d.DefaultDbTarget},{d.OverrideDbTarget}#{d.ConcurrencyTag}").Aggregate((a, b) => $"{a};{b}")}");
+                    }
                 }
                 bucketStrings.Add(tmp.ToArray());
             }
