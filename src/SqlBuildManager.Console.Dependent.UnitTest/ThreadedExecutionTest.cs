@@ -383,6 +383,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[] {
+                "--loglevel", "debug",
                 "threaded", "run",
                 "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
@@ -451,6 +452,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[] {
+                "--loglevel", "debug",
                 "threaded", "run",
                 "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
@@ -516,7 +518,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         [TestMethod()]
         public void InfiniteLock_Test()
         {
-            var res = StartInfiniteLockingThread(2);
+            var res = StartInfiniteLockingThread(1.5);
             Assert.AreEqual(0, res);
         }
         /// <summary>
@@ -537,6 +539,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int retryCount = 20;
 
             string[] args = new string[] {
+                "--loglevel", "debug",
                 "threaded", "run",
                 "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
@@ -556,7 +559,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             {
                 var task = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartInfiniteLockingThread(1);
                 });
                 while (true)
                 {
@@ -868,6 +871,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[] {
+                "--loglevel", "debug",
                 "threaded", "run",
                 "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
@@ -1090,6 +1094,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int retryCount = 20;
 
             string[] args = new string[] {
+                "--loglevel", "debug",
                 "threaded", "run",
                 "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
@@ -1109,7 +1114,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             {
                 var task = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartInfiniteLockingThread(1);
                 });
                 while (true)
                 {

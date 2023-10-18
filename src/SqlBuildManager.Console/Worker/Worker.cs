@@ -126,7 +126,7 @@ namespace SqlBuildManager.Console
             }
             bool tmp;
             (tmp, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
-            return (decryptSuccess, cmdLine);
+            return (tmp, cmdLine);
         }
 
         internal static int QueryDatabases(CommandLineArgs cmdLine)

@@ -22,10 +22,10 @@
 		<ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.10.1" />
+		<PackageReference Include="Azure.Identity" Version="1.10.2" />
 		<PackageReference Include="Azure.Messaging.EventHubs" Version="5.9.3" />
 		<PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.9.3" />
-		<PackageReference Include="Azure.Messaging.ServiceBus" Version="7.16.1" />
+		<PackageReference Include="Azure.Messaging.ServiceBus" Version="7.16.2" />
 		<PackageReference Include="Azure.ResourceManager" Version="1.7.0" />
 		<PackageReference Include="Azure.ResourceManager.AppContainers" Version="1.1.0" />
 		<PackageReference Include="Azure.ResourceManager.Batch" Version="1.2.0" />
@@ -62,7 +62,7 @@
 		<PackageReference Include="Microsoft.Rest.ClientRuntime" Version="3.0.3" />
 		<PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="4.0.3" />
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
-		<PackageReference Include="YamlDotNet" Version="13.3.1" />
+		<PackageReference Include="YamlDotNet" Version="13.7.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="Aci\aci_arm_template.json">
