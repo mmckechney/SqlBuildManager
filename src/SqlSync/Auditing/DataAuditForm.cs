@@ -1050,7 +1050,7 @@ namespace SqlSync
 
                         if (tables[i].TableName.ToLower() == selectedDb.TableToAudit[j].Name.ToLower())
                         {
-                            ListViewItem item = new ListViewItem(new string[] { selectedDb.TableToAudit[j].Name, tables[i].StrRowCount });
+                            ListViewItem item = new ListViewItem(new string[] { selectedDb.TableToAudit[j].Name, tables[i].RowCount.ToString() });
                             item.Tag = selectedDb.TableToAudit[j];
                             item.Group = lstTables.Groups["lstGrpAdded"];
 
@@ -1072,7 +1072,7 @@ namespace SqlSync
                     {
                         if (tables[i].TableName.ToLower() == trigTable[j].TableName.ToLower())
                         {
-                            ListViewItem item = new ListViewItem(new string[] { trigTable[j].TableName, trigTable[j].StringRowCount });
+                            ListViewItem item = new ListViewItem(new string[] { trigTable[j].TableName, trigTable[j].RowCount.ToString() });
                             if (!trigTable[j].HasAuditDeleteTrigger || !trigTable[j].HasAuditInsertTrigger || !trigTable[j].HasAuditUpdateTrigger)
                                 item.BackColor = Color.Red;
                             else

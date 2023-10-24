@@ -393,7 +393,7 @@ namespace SqlSync.SqlBuild.Objects
 
         private void AddItemToList(ObjectData objectData)
         {
-            ListViewItem item = new ListViewItem(new string[] { objectData.SchemaOwner + "." + objectData.ObjectName, objectData.StrAlteredDate, objectData.StrCreateDate });
+            ListViewItem item = new ListViewItem(new string[] { objectData.SchemaOwner + "." + objectData.ObjectName, objectData.AlteredDate.ToString(), objectData.CreateDate.ToString() });
             item.Tag = objectData;
             //item.Group = this.lstAdds.Groups[1]; 
             lstAdds.Items.Add(item);

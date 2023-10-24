@@ -1193,7 +1193,7 @@ namespace SqlSync
                         }
 
                 ListViewItem item;
-                item = new ListViewItem(new string[] { auditTable.Value.TableName, auditTable.Value.StrRowCount });
+                item = new ListViewItem(new string[] { auditTable.Value.TableName, auditTable.Value.RowCount.ToString() });
                 item.Tag = auditTable.Value;
                 item.ToolTipText = auditTable.Value.TableName + "\r\n" +
                     "Create ID:\t" + (auditTable.Value.CreateIdColumn.Length > 0 ? auditTable.Value.CreateIdColumn : "<Missing>") +

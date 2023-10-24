@@ -144,7 +144,7 @@ namespace SqlSync.SqlBuild
             List<CommittedBuildData> bldData = (List<CommittedBuildData>)e.Result;
             for (int i = 0; i < bldData.Count; i++)
             {
-                ListViewItem item = new ListViewItem(new string[] { bldData[i].BuildFileName, bldData[i].Database, bldData[i].StrCommitDate, bldData[i].StrScriptCount });
+                ListViewItem item = new ListViewItem(new string[] { bldData[i].BuildFileName, bldData[i].Database, bldData[i].CommitDate.ToString(), bldData[i].ScriptCount.ToString() });
                 item.Tag = bldData[i];
                 lstBuildFiles.Items.Add(item);
             }
