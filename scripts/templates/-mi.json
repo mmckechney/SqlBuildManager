@@ -1,0 +1,42 @@
+{
+  "AuthenticationArgs": {
+    "AuthenticationType": "Password"
+  },
+  "ConnectionArgs": {
+    "KeyVaultName": "sbm235keyvault",
+    "ServiceBusTopicConnectionString": "0WzwQWxjx4WQa5rJTbSb/kPl0YBdfitD73Q1lt/4rX065uiufICp5kSzwrMGSahu139FfgGpCmxpJPDRporxKACd\u002BiaCtwFSmIOAIgcBwfMgC38eoXI/qp2Y9uHG51b97UgdJ9gQXUduMFiAsEh8vxwaije1ZpBFuqNcCu66XOcviiIAq233GFP6UkL89o394LJQqCcsX22QMLEdQOTwXUMYBq5Hz7/46dHhuyaryKIusN3gtrETZiyHrmjF2kLx",
+    "StorageAccountName": "sbm235storage"
+  },
+  "ContainerAppArgs": {
+    "EnvironmentName": "sbm235containerappenv",
+    "SubscriptionId": "0d901325-d643-4db7-ae90-58b4e3834629",
+    "ResourceGroup": "sbm235-rg",
+    "Location": "South Central US",
+    "MaxContainerCount": 10
+  },
+  "ContainerRegistryArgs": {
+    "RegistryServer": "sbm235containerregistry.azurecr.io",
+    "ImageName": "sqlbuildmanager",
+    "ImageTag": "latest-vNext",
+    "RegistryUserName": "sbm235containerregistry"
+  },
+  "EventHubArgs": {
+    "ResourceGroup": "sbm235-rg",
+    "SubscriptionId": "0d901325-d643-4db7-ae90-58b4e3834629",
+    "Logging": [
+      "EssentialOnly",
+      "ScriptErrors"
+    ]
+  },
+  "IdentityArgs": {
+    "IdentityName": "sbm235identity",
+    "ClientId": "837e7b19-7a0c-4820-9df6-7b6913e4380a",
+    "ResourceGroup": "sbm235-rg",
+    "SubscriptionId": "0d901325-d643-4db7-ae90-58b4e3834629",
+    "TenantId": "16b3c013-d300-468d-ac64-7eda0820b6d3"
+  },
+  "Concurrency": 10,
+  "ConcurrencyType": "Count",
+  "TimeoutRetryCount": 0,
+  "DefaultScriptTimeout": 500
+}

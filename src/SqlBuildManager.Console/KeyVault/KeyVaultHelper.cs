@@ -165,14 +165,18 @@ namespace SqlBuildManager.Console.KeyVault
             }
 
 
-
-            tmp = GetSecret(kvName, KeyVaultHelper.ContainerRegistryPassword);
-            if (!string.IsNullOrWhiteSpace(tmp) && cmdLine.ContainerRegistryArgs != null)
+            //Only try to get the Container Registry password if the user has supplied a registry name
+            if (cmdLine.ContainerRegistryArgs != null)
             {
-                cmdLine.RegistryPassword = tmp;
-                retrieved.Add(KeyVaultHelper.ContainerRegistryPassword);
+                tmp = GetSecret(kvName, KeyVaultHelper.ContainerRegistryPassword);
+                if (!string.IsNullOrWhiteSpace(tmp))
+                {
+                    cmdLine.RegistryPassword = tmp;
+                    retrieved.Add(KeyVaultHelper.ContainerRegistryPassword);
+                }
             }
 
+            //Only get password and user name if not using managed identity
             if (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
             {
                 tmp = GetSecret(kvName, KeyVaultHelper.UserName);
@@ -189,6 +193,8 @@ namespace SqlBuildManager.Console.KeyVault
                     retrieved.Add(KeyVaultHelper.Password);
                 }
             }
+
+            //Only get Batch Account Key if the user has supplied batch args and a pool name
             if (cmdLine.BatchArgs != null && !string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchPoolName))
             {
                 tmp = GetSecret(kvName, KeyVaultHelper.BatchAccountKey);

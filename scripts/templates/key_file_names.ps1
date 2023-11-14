@@ -8,8 +8,9 @@ if($false -eq (Test-Path $path))
 {
     New-Item -Path $path -ItemType Directory
 }
+$resolvedPath = Resolve-Path $path
 
-$keyFile = Resolve-Path (Join-Path $path "settingsfilekey.txt")
+$keyFile = (Join-Path $resolvedPath "settingsfilekey.txt")
 if($false -eq (Test-Path $keyFile))
 {
     Write-Host "Writing new key file $keyFile" -ForegroundColor DarkGreen
@@ -19,8 +20,8 @@ if($false -eq (Test-Path $keyFile))
     $settingsFileKey |  Set-Content -Path $keyFile
 }
 
-$unFile = Resolve-Path (Join-Path $path "un.txt")
-$pwFile = Resolve-Path (Join-Path $path "pw.txt")
+$unFile = (Join-Path $resolvedPath "un.txt")
+$pwFile = (Join-Path $resolvedPath "pw.txt")
 
 if(Test-Path $unFile)
 {
@@ -48,6 +49,11 @@ if([string]::IsNullOrWhiteSpace($sqlUserName))
 
 if([string]::IsNullOrWhiteSpace($sqlPassword))
 {
+    Write-Host "Generating new SQL Password" -ForegroundColor DarkGreen
+    $AESKey = New-Object Byte[] 32
+    [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AESKey)
+    $sqlPassword = [System.Convert]::ToBase64String($AESKey);
+    
     Write-Host "Writing new password file" -ForegroundColor DarkGreen
     Write-Host "Saving content of $pwFile" -ForegroundColor DarkGreen
     $sqlPassword | Set-Content -Path $pwFile

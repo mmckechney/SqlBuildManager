@@ -54,7 +54,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void SettingsFile_oldstyle_eventhublogging()
         {
             var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".json";
-            File.WriteAllBytes(tmpCfg, Properties.Resources.batch_setting_oldstyle_eventhublogging);
+            File.WriteAllBytes(tmpCfg, Properties.Resources.batch_settings_oldstyle_eventhublogging);
             try
             {
                 string[] args = new string[] {

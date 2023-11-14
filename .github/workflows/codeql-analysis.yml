@@ -21,8 +21,8 @@ on:
     - cron: '37 9 * * 2'
 
 env:
-  DOTNET_VERSION: 'net7.0'
-  DOTNET_FRAMEWORK_VERSION: '7.x'  
+  DOTNET_VERSION: 'net8.0'
+  DOTNET_FRAMEWORK_VERSION: '8.x'  
 
 jobs:
   analyze:

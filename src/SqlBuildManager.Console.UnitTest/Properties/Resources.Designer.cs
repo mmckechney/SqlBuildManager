@@ -19,7 +19,7 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -63,40 +63,93 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] batch_settings {
+            get {
+                object obj = ResourceManager.GetObject("batch-settings", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] batch_settings_encrypted {
+            get {
+                object obj = ResourceManager.GetObject("batch_settings_encrypted", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] batch_settings_multipleeh {
+            get {
+                object obj = ResourceManager.GetObject("batch_settings_multipleeh", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] batch_settings_multipleeh_oldstyle {
+            get {
+                object obj = ResourceManager.GetObject("batch_settings_multipleeh_oldstyle", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] batch_settings_oldstyle_eventhublogging {
+            get {
+                object obj = ResourceManager.GetObject("batch-settings-oldstyle-eventhublogging", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] concurrency {
+            get {
+                object obj = ResourceManager.GetObject("concurrency", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] concurrency_doubledb {
+            get {
+                object obj = ResourceManager.GetObject("concurrency_doubledb", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] concurrency_tag {
+            get {
+                object obj = ResourceManager.GetObject("concurrency_tag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] dbconfig {
             get {
                 object obj = ResourceManager.GetObject("dbconfig", resourceCulture);
                 return ((byte[])(obj));
             }
         }
-
-        internal static byte[] concurrency
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("concurrency", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-
-        internal static byte[] concurrency_tag
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("concurrency_tag", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-
-        internal static byte[] concurrency_doubledb
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("concurrency_doubledb", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
@@ -116,44 +169,7 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
                 return ((byte[])(obj));
             }
         }
-
-        internal static byte[] batch_settings
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("batch-settings", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-
-        internal static byte[] batch_setting_oldstyle_eventhublogging
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("batch-settings-oldstyle-eventhublogging", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-
-
-
-        internal static byte[] batch_settings_multipleeh
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("batch_settings_multipleeh", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-
-        internal static byte[] batch_settings_multipleeh_oldstyle        {
-            get
-            {
-                object obj = ResourceManager.GetObject("batch_settings_multipleeh_oldstyle", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
@@ -161,6 +177,15 @@ namespace SqlBuildManager.Console.UnitTest.Properties {
             get {
                 object obj = ResourceManager.GetObject("NoTrans_MultiDb_sbm", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to jbsUw8PLkrBu6HAf/O9jJEDiDxFrTivdvvMkYiMvTqU=.
+        /// </summary>
+        internal static string settingsfilekey {
+            get {
+                return ResourceManager.GetString("settingsfilekey", resourceCulture);
             }
         }
         

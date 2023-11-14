@@ -57,6 +57,161 @@ namespace SqlBuildManager.Console.UnitTest
                 }
             }
         }
-        
+
+        [TestMethod]
+        public void WorkerInit_success_with_keyfile()
+        {
+            var tmpJsonFile = Path.GetTempFileName();
+            var tmpSecretFile = Path.GetTempFileName();
+            try
+            {
+
+                File.WriteAllBytes(tmpJsonFile, Properties.Resources.batch_settings_encrypted);
+                File.WriteAllText(tmpSecretFile, Properties.Resources.settingsfilekey);
+                var cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFileKey = tmpSecretFile;
+                cmdLine.SettingsFile = tmpJsonFile;
+                (bool success, cmdLine) = Worker.Init(cmdLine, false);
+
+                Assert.IsTrue(success);
+                Assert.IsTrue(cmdLine.Decrypted);
+                Assert.IsTrue(cmdLine.AuthenticationArgs.Password.EndsWith("="));
+            }
+            finally
+            {
+                if (File.Exists(tmpJsonFile))
+                    File.Delete(tmpJsonFile);
+
+                if (File.Exists(tmpSecretFile))
+                    File.Delete(tmpSecretFile);
+            }
+        }
+
+        [TestMethod]
+        public void WorkerInit_fail_with_bad_keyfile()
+        {
+            var tmpJsonFile = Path.GetTempFileName();
+            var tmpSecretFile = Path.GetTempFileName();
+            try
+            {
+
+                File.WriteAllBytes(tmpJsonFile, Properties.Resources.batch_settings_encrypted);
+                File.WriteAllText(tmpSecretFile, "QDQE@Q!EQQEQD#EQ#DQ#DQ#D#DQ#DQ");
+                var cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFileKey = tmpSecretFile;
+                cmdLine.SettingsFile = tmpJsonFile;
+                (bool success, cmdLine) = Worker.Init(cmdLine, false);
+
+                Assert.IsFalse(success);
+                Assert.IsFalse(cmdLine.Decrypted);
+            }
+            finally
+            {
+                if (File.Exists(tmpJsonFile))
+                    File.Delete(tmpJsonFile);
+
+                if (File.Exists(tmpSecretFile))
+                    File.Delete(tmpSecretFile);
+            }
+
+        }
+
+        [TestMethod]
+        public void WorkerInit_success_with_keystring()
+        {
+            var tmpJsonFile = Path.GetTempFileName();
+            try
+            {
+
+                File.WriteAllBytes(tmpJsonFile, Properties.Resources.batch_settings_encrypted);
+                var cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFileKey = Properties.Resources.settingsfilekey;
+                cmdLine.SettingsFile = tmpJsonFile;
+                (bool success, cmdLine) = Worker.Init(cmdLine, false);
+
+                Assert.IsTrue(success);
+                Assert.IsTrue(cmdLine.Decrypted);
+                Assert.IsTrue(cmdLine.AuthenticationArgs.Password.EndsWith("="));
+            }
+            finally
+            {
+                if (File.Exists(tmpJsonFile))
+                    File.Delete(tmpJsonFile);
+            }
+
+        }
+
+        [TestMethod]
+        public void WorkerInit_decrypt_success_and_keyvault_fail()
+        {
+            var tmpJsonFile = Path.GetTempFileName();
+            try
+            {
+
+                File.WriteAllBytes(tmpJsonFile, Properties.Resources.batch_settings_encrypted);
+                var cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFileKey = Properties.Resources.settingsfilekey;
+                cmdLine.SettingsFile = tmpJsonFile;
+                cmdLine.KeyVaultName = "doesnotexistawtgfs";
+                (bool success, cmdLine) = Worker.Init(cmdLine, false);
+
+                Assert.IsFalse(success);
+                Assert.IsTrue(cmdLine.Decrypted);
+                Assert.IsTrue(cmdLine.AuthenticationArgs.Password.EndsWith("="));
+            }
+            finally
+            {
+                if (File.Exists(tmpJsonFile))
+                    File.Delete(tmpJsonFile);
+            }
+
+        }
+        [TestMethod]
+        public void WorkerInit_fail_with_bad_keystring()
+        {
+            var tmpJsonFile = Path.GetTempFileName();
+            try
+            {
+
+                File.WriteAllBytes(tmpJsonFile, Properties.Resources.batch_settings_encrypted);
+                var cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFileKey = "XXXXX";
+                cmdLine.SettingsFile = tmpJsonFile;
+                (bool success, cmdLine) = Worker.Init(cmdLine, false);
+                Assert.IsFalse(success);
+                Assert.IsFalse(cmdLine.Decrypted);
+            }
+            finally
+            {
+                if (File.Exists(tmpJsonFile))
+                    File.Delete(tmpJsonFile);
+            }
+
+        }
+
+        [TestMethod]
+        public void WorkerInit_fail_with_missing_keystring()
+        {
+            var tmpJsonFile = Path.GetTempFileName();
+            try
+            {
+
+                File.WriteAllBytes(tmpJsonFile, Properties.Resources.batch_settings_encrypted);
+                var cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFile = tmpJsonFile;
+                (bool success, cmdLine) = Worker.Init(cmdLine, false);
+
+                Assert.IsFalse(success);
+                Assert.IsFalse(cmdLine.Decrypted);
+            }
+            finally
+            {
+                if (File.Exists(tmpJsonFile))
+                    File.Delete(tmpJsonFile);
+            }
+
+        }
+
+
     }
 }

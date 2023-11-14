@@ -116,7 +116,7 @@ if($shouldDeploy)
     ############################################################################################
     # Storage Account, Event Hub and Service Bus Topic, Key Vault, Identity and RBAC Assignments
     ############################################################################################
-    $ipAddress = (Invoke-WebRequest ifconfig.me/ip).Content.Trim()
+    $ipAddress = (Invoke-WebRequest https://api.ipify.org/?format=text).Content.Trim()
     Write-Host "Using IP Address: $ipAddress" -ForegroundColor Green
 
     $userIdGuid = az ad signed-in-user show -o tsv --query id

@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using sb = SqlSync.SqlBuild;
+using SqlBuildManager.Console.KeyVault;
 namespace SqlBuildManager.Console.CommandLine
 {
 
@@ -12,13 +13,19 @@ namespace SqlBuildManager.Console.CommandLine
     public static class Cryptography
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly string keyEnvronmentVariableName = "sbm-settingsfilekey";
 
         public static CommandLineArgs EncryptSensitiveFields(CommandLineArgs cmdLine)
         {
             //Don't double in encrypt..
             bool tmp;
             (tmp, cmdLine) = DecryptSensitiveFields(cmdLine, true);
-            string key = GetSettingsFileEncryptionKey(cmdLine);
+            (bool success, string key) = GetSettingsFileEncryptionKey(cmdLine);
+            if(!success && string.IsNullOrEmpty(key))
+            {
+                log.LogError("Unable to encrypt sensitive fields. No encryption key found.");
+                return cmdLine;
+            }
 
 
             if (cmdLine.ContainerRegistryArgs != null && !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryPassword))
@@ -73,8 +80,12 @@ namespace SqlBuildManager.Console.CommandLine
                 return (true, cmdLine);
             }
             bool consolidated = true;
-            bool success;
-            string key = GetSettingsFileEncryptionKey(cmdLine);
+            (bool success, string key) = GetSettingsFileEncryptionKey(cmdLine);
+            if (!success && string.IsNullOrEmpty(key))
+            {
+                log.LogError("Unable to decrypt sensitive fields. No encryption key found.");
+                return (false, cmdLine);
+            }
 
             if (cmdLine.ContainerRegistryArgs != null && !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryPassword))
             {
@@ -127,56 +138,67 @@ namespace SqlBuildManager.Console.CommandLine
         }
 
 
-        private static string GetSettingsFileEncryptionKey(CommandLineArgs cmdLine)
+        private static (bool success, string key) GetSettingsFileEncryptionKey(CommandLineArgs cmdLine)
         {
+            string encryptionKey = string.Empty;
             if (!string.IsNullOrWhiteSpace(cmdLine.SettingsFileKey))
             {
                 if (File.Exists(Path.GetFullPath(cmdLine.SettingsFileKey)))
                 {
-                    return File.ReadAllText(cmdLine.SettingsFileKey).Trim();
+                    encryptionKey = File.ReadAllText(cmdLine.SettingsFileKey).Trim();
                 }
                 else
                 {
-                    return cmdLine.SettingsFileKey;
+                    encryptionKey = cmdLine.SettingsFileKey;
                 }
             }
 
-            var ev = Environment.GetEnvironmentVariable(keyEnvronmentVariableName);
-            if (!string.IsNullOrWhiteSpace(ev))
+            if (encryptionKey.Length == 0)
             {
-                return ev;
+                var ev = Environment.GetEnvironmentVariable(keyEnvronmentVariableName);
+                if (!string.IsNullOrWhiteSpace(ev))
+                {
+                    encryptionKey = ev;
+                }
             }
 
-            return GetDerivedKey();
+
+            if(encryptionKey.Length == 0)
+            {
+                return (false, encryptionKey);
+            }
+            else
+            {
+               return (true, encryptionKey);
+            }
         }
-        private static readonly string keyEnvronmentVariableName = "sbm-settingsfilekey";
         private static readonly string store = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", "sbm-store.txt");
-        private static readonly string kek = "x/A?D(G+KbPeShVmYq3t6w9y$B&E)H@McQfTjWnZr4u7x!A%C*F-JaNdRgUkXp2s5v8y/B?E(G+KbPeShVmYq3t6w9z$C&F)J@McQfTjWnZr4u7x!A%D*G-KaPdRgUkXp2s5v8y/B?E(H+MbQeThVmYq3t6w9z$C&F)J@NcRfUjXnZr4u7x!A%D*G-KaPdSgVkYp3s5v8y/B?E(H+MbQeThWmZq4t7w9z$C&F)J@NcRfUjXn2r5u8x/A%D*G-KaP";
-        private static string GetDerivedKey()
-        {
+        //private static readonly string kek = "x/A?D(G+KbPeShVmYq3t6w9y$B&E)H@McQfTjWnZr4u7x!A%C*F-JaNdRgUkXp2s5v8y/B?E(G+KbPeShVmYq3t6w9z$C&F)J@McQfTjWnZr4u7x!A%D*G-KaPdRgUkXp2s5v8y/B?E(H+MbQeThVmYq3t6w9z$C&F)J@NcRfUjXnZr4u7x!A%D*G-KaPdSgVkYp3s5v8y/B?E(H+MbQeThWmZq4t7w9z$C&F)J@NcRfUjXn2r5u8x/A%D*G-KaP";
+        //private static string GetDerivedKey()
+        //{
 
 
-            if (!File.Exists(store))
-            {
-                SetDerivedKey();
-            }
-            string e = File.ReadAllText(store);
-            (bool success, string pt) = sb.Cryptography.DecryptText(e, kek, "");
-            return pt;
-        }
-        private static bool SetDerivedKey()
-        {
-            string key = GenerateEncryptionKey();
-            string wrapped = sb.Cryptography.EncryptText(key, kek);
-            File.WriteAllText(store, wrapped);
-            return true;
-        }
-        private static string GenerateEncryptionKey()
-        {
-            var a = Aes.Create();
-            a.GenerateKey();
-            var encoded = Convert.ToBase64String(a.Key);
-            return encoded;
-        }
+        //    if (!File.Exists(store))
+        //    {
+        //        SetDerivedKey();
+        //    }
+        //    string e = File.ReadAllText(store);
+        //    (bool success, string pt) = sb.Cryptography.DecryptText(e, kek, "");
+        //    return pt;
+        //}
+        //private static bool SetDerivedKey()
+        //{
+        //    string key = GenerateEncryptionKey();
+        //    string wrapped = sb.Cryptography.EncryptText(key, kek);
+        //    File.WriteAllText(store, wrapped);
+        //    return true;
+        //}
+        //private static string GenerateEncryptionKey()
+        //{
+        //    var a = Aes.Create();
+        //    a.GenerateKey();
+        //    var encoded = Convert.ToBase64String(a.Key);
+        //    return encoded;
+        //}
     }
 }

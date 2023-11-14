@@ -1,5 +1,11 @@
 # SQL Build Manager Change Log
 
+### Version 15.6.0
+- *UPDATED:* Now targets .NET 8.0 
+- *UPDATED:* Simplified data object classes and regenerated typed DataSet classes
+- *UPDATED:* Docker base set to .NET Runtime 8.0 and .NET SDK to 8.0
+- *REMOVED:* Removed fall back Settings File Key generation from machine value. Now must be provided via `--settingsfilekey` argument or `sbm-settingsfilekey` Environment variable
+
 ### Version 15.5.0
 - *NEW:* For muti-database target builds, you can now specify custom concurrency tag. Previously, the only concurrency differentitor was by SQL Server Name. Please see the docs on [Concurrency](/docs/concurrency_options.md) and [Database targeting options](docs/override_options.md) to understand how to use this new feature.
 - *UPDATED:* DACPAC creation timeouts now set to the value of `--defaultscripttimeout`. Previously, it was using the default settings.

@@ -94,7 +94,7 @@ namespace SqlBuildManager.Console
             return Task.CompletedTask;
         }
 
-        internal static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine, bool clearText = false)
+        public static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine, bool clearText = false)
         {
             if (cmdLine.IdentityArgs != null)
             {
@@ -115,9 +115,9 @@ namespace SqlBuildManager.Console
             }
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
+            bool decryptSuccess = true;
             if (!clearText)
             {
-                bool decryptSuccess;
                 (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
                 if (!decryptSuccess)
                 {
@@ -126,7 +126,7 @@ namespace SqlBuildManager.Console
             }
             bool tmp;
             (tmp, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
-            return (tmp, cmdLine);
+            return (tmp & decryptSuccess, cmdLine);
         }
 
         internal static int QueryDatabases(CommandLineArgs cmdLine)
