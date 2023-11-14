@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net7.0</TargetFramework>
@@ -61,7 +61,7 @@
 		<PackageReference Include="Microsoft.Azure.Batch" Version="16.0.0" />
 		<PackageReference Include="Microsoft.Rest.ClientRuntime" Version="3.0.3" />
 		<PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="4.0.3" />
-		<PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
 		<PackageReference Include="YamlDotNet" Version="13.7.1" />
 	</ItemGroup>
 	<ItemGroup>
