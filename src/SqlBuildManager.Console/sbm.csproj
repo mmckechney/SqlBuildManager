@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net7.0</TargetFramework>
@@ -43,7 +43,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
 		<PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.1.167" />
-		<PackageReference Include="morelinq" Version="3.4.2" />
+		<PackageReference Include="morelinq" Version="4.0.0" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
 		<PackageReference Include="Serilog.Expressions" Version="3.4.1" />
 		<PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
