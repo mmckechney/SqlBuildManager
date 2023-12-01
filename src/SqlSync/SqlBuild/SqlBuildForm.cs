@@ -35,7 +35,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Serialization;
-using sb = SqlSync.SqlBuild;
+using sqlB = SqlSync.SqlBuild;
 //using SqlBuildManager.Enterprise.CodeReview;
 namespace SqlSync.SqlBuild
 
@@ -5167,7 +5167,7 @@ namespace SqlSync.SqlBuild
             string lastDatabase = string.Empty;
 
             SqlSyncBuildData.ScriptRow newRow = buildData.Script.NewScriptRow();
-            sb.BuildDataHelper.GetLastBuildNumberAndDb(buildData, out lastBuildNumber, out lastDatabase);
+            sqlB.BuildDataHelper.GetLastBuildNumberAndDb(buildData, out lastBuildNumber, out lastDatabase);
             newRow.Database = lastDatabase;
             newRow.BuildOrder = Math.Floor(lastBuildNumber + 1);
             newRow.CausesBuildFailure = true;
@@ -5478,7 +5478,7 @@ namespace SqlSync.SqlBuild
             string lastDatabase;
             for (int i = 0; i < fileNames.Length; i++)
             {
-                sb.BuildDataHelper.GetLastBuildNumberAndDb(buildData, out lastBuildNumber, out lastDatabase);
+                sqlB.BuildDataHelper.GetLastBuildNumberAndDb(buildData, out lastBuildNumber, out lastDatabase);
 
                 double importStartNumber = ImportSqlScriptFile(fileNames[i], lastBuildNumber, out addedFileNames);
                 if (importStartNumber > 0)
@@ -5695,7 +5695,7 @@ namespace SqlSync.SqlBuild
         {
             double lastBuildNumber;
             string lastDatabase;
-            sb.BuildDataHelper.GetLastBuildNumberAndDb(buildData, out lastBuildNumber, out lastDatabase);
+            sqlB.BuildDataHelper.GetLastBuildNumberAndDb(buildData, out lastBuildNumber, out lastDatabase);
 
             //Get the last whole number since we initially add 1
             lastBuildNumber = Math.Floor(lastBuildNumber);

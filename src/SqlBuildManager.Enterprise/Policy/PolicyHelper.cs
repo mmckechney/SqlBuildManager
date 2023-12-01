@@ -12,7 +12,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.XPath;
 using System.Xml.Xsl;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using shP = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 
 namespace SqlBuildManager.Enterprise.Policy
 {
@@ -20,11 +20,11 @@ namespace SqlBuildManager.Enterprise.Policy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public const string LineNumberToken = "{lineNumber}";
-        internal static Dictionary<string, p.IScriptPolicy> allPolicies;
-        internal static List<p.IScriptPolicy> activePolicies = null;
+        internal static Dictionary<string, shP.IScriptPolicy> allPolicies;
+        internal static List<shP.IScriptPolicy> activePolicies = null;
         static PolicyHelper()
         {
-            allPolicies = new Dictionary<string, p.IScriptPolicy>();
+            allPolicies = new Dictionary<string, shP.IScriptPolicy>();
 
             GrantExecutePolicy grant = new GrantExecutePolicy();
             allPolicies.Add(grant.PolicyId, grant);
@@ -69,12 +69,12 @@ namespace SqlBuildManager.Enterprise.Policy
             GetPolicies();
 
         }
-        public static List<p.IScriptPolicy> GetPolicies()
+        public static List<shP.IScriptPolicy> GetPolicies()
         {
             if (activePolicies != null && activePolicies.Count > 0)
                 return activePolicies;
 
-            activePolicies = new List<p.IScriptPolicy>();
+            activePolicies = new List<shP.IScriptPolicy>();
 
             EnterpriseConfiguration cfg = EnterpriseConfigHelper.EnterpriseConfig;
             if (cfg.ScriptPolicy != null && cfg.ScriptPolicy.Length > 0)
@@ -86,11 +86,11 @@ namespace SqlBuildManager.Enterprise.Policy
 
                     if (allPolicies.ContainsKey(policy.PolicyId))
                     {
-                        if ((allPolicies[policy.PolicyId] is p.IScriptPolicyMultiple)) //Create new instances for "Multiple" items...
+                        if ((allPolicies[policy.PolicyId] is shP.IScriptPolicyMultiple)) //Create new instances for "Multiple" items...
                         {
-                            p.IScriptPolicyMultiple tmpNew = (p.IScriptPolicyMultiple)Activator.CreateInstance(allPolicies[policy.PolicyId].GetType());
-                            p.ViolationSeverity severity;
-                            p.ViolationSeverity.TryParse(policy.Severity.ToString(), true, out severity);
+                            shP.IScriptPolicyMultiple tmpNew = (shP.IScriptPolicyMultiple)Activator.CreateInstance(allPolicies[policy.PolicyId].GetType());
+                            shP.ViolationSeverity severity;
+                            shP.ViolationSeverity.TryParse(policy.Severity.ToString(), true, out severity);
                             tmpNew.Severity = severity;
                             if (policy.ScriptPolicyDescription != null)
                             {
@@ -109,7 +109,7 @@ namespace SqlBuildManager.Enterprise.Policy
                             {
                                 foreach (ScriptPolicyArgument argument in policy.Argument)
                                 {
-                                    tmpNew.Arguments.Add(new p.IScriptPolicyArgument()
+                                    tmpNew.Arguments.Add(new shP.IScriptPolicyArgument()
                                     {
                                         Name = argument.Name,
                                         Value = argument.Value,
@@ -123,12 +123,12 @@ namespace SqlBuildManager.Enterprise.Policy
                             activePolicies.Add(tmpNew);
 
                         }
-                        else if ((allPolicies[policy.PolicyId] is p.IScriptPolicyWithArguments) && policy.Argument != null) //Add arguments as needed
+                        else if ((allPolicies[policy.PolicyId] is shP.IScriptPolicyWithArguments) && policy.Argument != null) //Add arguments as needed
                         {
 
                             foreach (ScriptPolicyArgument argument in policy.Argument)
                             {
-                                ((p.IScriptPolicyWithArguments)allPolicies[policy.PolicyId]).Arguments.Add(new p.IScriptPolicyArgument()
+                                ((shP.IScriptPolicyWithArguments)allPolicies[policy.PolicyId]).Arguments.Add(new shP.IScriptPolicyArgument()
                                 {
                                     Name = argument.Name,
                                     Value = argument.Value,
@@ -143,7 +143,7 @@ namespace SqlBuildManager.Enterprise.Policy
 
                             activePolicies.Add(allPolicies[policy.PolicyId]);
                         }
-                        else if (allPolicies[policy.PolicyId] is p.IScriptPolicy)
+                        else if (allPolicies[policy.PolicyId] is shP.IScriptPolicy)
                         {
                             allPolicies[policy.PolicyId].Severity = (SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity)
                               Enum.Parse(typeof(SqlBuildManager.Interfaces.ScriptHandling.Policy.ViolationSeverity), policy.Severity.ToString());
@@ -188,9 +188,9 @@ namespace SqlBuildManager.Enterprise.Policy
         public Script ValidateScriptAgainstPolicies(string scriptName, string scriptGuid, string scriptText, string targetDatabase, int commentDayThreshold)
         {
             Script violations = new Script(scriptName, scriptGuid);
-            List<p.IScriptPolicy> policies = GetPolicies();
+            List<shP.IScriptPolicy> policies = GetPolicies();
 
-            foreach (p.IScriptPolicy policy in policies)
+            foreach (shP.IScriptPolicy policy in policies)
             {
                 if (policy is CommentHeaderPolicy)
                     ((CommentHeaderPolicy)policy).DayThreshold = commentDayThreshold;
@@ -206,19 +206,19 @@ namespace SqlBuildManager.Enterprise.Policy
                 return null;
 
         }
-        public static Violation ValidateScriptAgainstPolicy(string script, string targetDatabase, p.IScriptPolicy policy)
+        public static Violation ValidateScriptAgainstPolicy(string script, string targetDatabase, shP.IScriptPolicy policy)
         {
             string message;
             List<Match> commentBlockMatches = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
-            if (policy is p.IScriptPolicyWithArguments && policy.Enforce)
+            if (policy is shP.IScriptPolicyWithArguments && policy.Enforce)
             {
-                if (!((p.IScriptPolicyWithArguments)policy).CheckPolicy(script, targetDatabase, commentBlockMatches, out message))
-                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(p.ViolationSeverity), policy.Severity));
+                if (!((shP.IScriptPolicyWithArguments)policy).CheckPolicy(script, targetDatabase, commentBlockMatches, out message))
+                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(shP.ViolationSeverity), policy.Severity));
             }
             else if (policy.Enforce)
             {
                 if (!policy.CheckPolicy(script, commentBlockMatches, out message))
-                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(p.ViolationSeverity), policy.Severity));
+                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(shP.ViolationSeverity), policy.Severity));
             }
             return null;
         }
@@ -436,15 +436,6 @@ namespace SqlBuildManager.Enterprise.Policy
                 foreach (var violation in violationMessages)
                 {
                     policyReturns.Add(new string[] { violation.Severity, violation.ScriptName, violation.Message });
-
-                    //string message = string.Format($"Severity [{violation.Severity}]; Script: {violation.ScriptName}; Message: {violation.Message}");
-                    ////Add messages to log
-                    //if (violation.Severity == ViolationSeverity.High.ToString())
-                    //    log.LogError(message);   
-                    //else if(violation.Severity == ViolationSeverity.Medium.ToString())
-                    //    log.LogWarning(message);
-                    //else 
-                    //    log.LogInformation(message);
                 }
                 return policyReturns;
             }

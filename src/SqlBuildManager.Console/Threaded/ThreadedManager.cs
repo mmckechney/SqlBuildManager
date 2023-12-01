@@ -22,7 +22,6 @@ namespace SqlBuildManager.Console.Threaded
         MultiDbData multiData = null;
         DateTime startTime;
         bool hasError = false;
-        bool theadedLoggingInitiated = false;
         private CommandLineArgs cmdLine = null;
         private QueueManager qManager = null;
         private int queueReturnValue = 0;

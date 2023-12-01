@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using shP = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
-    class ScriptSyntaxCheckPolicy : p.IScriptPolicyMultiple
+    class ScriptSyntaxCheckPolicy : shP.IScriptPolicyMultiple
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
@@ -18,8 +18,8 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.ScriptSyntaxCheckPolicy;
             }
         }
-        private p.ViolationSeverity severity = p.ViolationSeverity.High;
-        public p.ViolationSeverity Severity
+        private shP.ViolationSeverity severity = shP.ViolationSeverity.High;
+        public shP.ViolationSeverity Severity
         {
             get { return severity; }
             set { severity = value; }
@@ -53,7 +53,7 @@ namespace SqlBuildManager.Enterprise.Policy
             {
                 message = string.Empty;
                 Dictionary<int, bool> rulesLine = new Dictionary<int, bool>();
-                foreach (p.IScriptPolicyArgument argument in arguments)
+                foreach (shP.IScriptPolicyArgument argument in arguments)
                 {
                     Regex syntaxCheck = new Regex(argument.Value, RegexOptions.IgnoreCase);
                     MatchCollection syntaxMatches = syntaxCheck.Matches(script);
@@ -121,8 +121,8 @@ namespace SqlBuildManager.Enterprise.Policy
         #endregion
 
         #region IScriptPolicyWithArguments Members
-        private List<p.IScriptPolicyArgument> arguments = new List<p.IScriptPolicyArgument>();
-        public List<p.IScriptPolicyArgument> Arguments
+        private List<shP.IScriptPolicyArgument> arguments = new List<shP.IScriptPolicyArgument>();
+        public List<shP.IScriptPolicyArgument> Arguments
         {
             get
             {

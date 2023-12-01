@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using sb = SqlSync.SqlBuild;
+using sqlB = SqlSync.SqlBuild;
 
 namespace SqlBuildManager.Console.ContainerShared
 {
@@ -190,7 +190,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 string sbmName;
                 cmdLine.PlatinumDacpac = platinumDacpac.FullName;
                 var stat = Worker.GetSbmFromDacPac(cmdLine, multiData, out sbmName, true);
-                if (stat == sb.DacpacDeltasStatus.Success)
+                if (stat == sqlB.DacpacDeltasStatus.Success)
                 {
                     if (Path.GetFileNameWithoutExtension(sbmName) != Path.GetFileNameWithoutExtension(platinumDacpac.FullName))
                     {

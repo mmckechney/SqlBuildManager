@@ -33,5 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
   </ItemGroup>
-
+	<PropertyGroup>
+		<NoWarn>CA1416</NoWarn>
+	</PropertyGroup>
 </Project>

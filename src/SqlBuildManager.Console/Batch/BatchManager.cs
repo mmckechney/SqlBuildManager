@@ -1,6 +1,6 @@
 ﻿using Azure.Core;
 using Azure.ResourceManager;
-using arb = Azure.ResourceManager.Batch;
+using azB = Azure.ResourceManager.Batch;
 using Azure.ResourceManager.Batch.Models;
 using Azure.ResourceManager.Models;
 using Microsoft.Azure.Batch;
@@ -560,15 +560,15 @@ namespace SqlBuildManager.Console.Batch
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
             ArmClient client = new ArmClient(AadHelper.TokenCredential);
 
-            ResourceIdentifier batchAccountResourceId = arb.BatchAccountResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, batchAccountName);
-            arb.BatchAccountResource batchAccount = client.GetBatchAccountResource(batchAccountResourceId);
+            ResourceIdentifier batchAccountResourceId = azB.BatchAccountResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, batchAccountName);
+            azB.BatchAccountResource batchAccount = client.GetBatchAccountResource(batchAccountResourceId);
 
             // get the collection of this BatchAccountPoolResource
-            arb.BatchAccountPoolCollection collection = batchAccount.GetBatchAccountPools();
+            azB.BatchAccountPoolCollection collection = batchAccount.GetBatchAccountPools();
 
             // invoke the operation
             
-            arb.BatchAccountPoolData data = new arb.BatchAccountPoolData();
+            azB.BatchAccountPoolData data = new azB.BatchAccountPoolData();
          
             data.Identity = new ManagedServiceIdentity("UserAssigned")
             {

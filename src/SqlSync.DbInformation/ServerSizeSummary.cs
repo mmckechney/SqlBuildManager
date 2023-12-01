@@ -54,12 +54,7 @@ namespace SqlSync.DbInformation
 				this.ImportRow(tmpRow);
 			}
 		}
-		public ServerSizeSummary(SerializationInfo info, StreamingContext context):base(info,context)
-		{
-			this.InitVars();
-			this.ColumnChanged += new DataColumnChangeEventHandler( myColumn_Changed );
-		}
-	
+
 		private void myColumn_Changed( object sender, DataColumnChangeEventArgs e )
 		{
 			this.InitVars();

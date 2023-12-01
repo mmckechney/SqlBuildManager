@@ -50,7 +50,7 @@ namespace SqlSync.SqlBuild.Notification
                 Process prc = new Process();
                 prc.StartInfo.FileName = mailto;
                 prc.Start();
-            }catch(Exception exe)
+            }catch(Exception)
             {
                 string msg = $"Unable to send email. Please notify these people manually:\r\n";
                 for (int i = 0; i < watch.Notify.Length; i++)

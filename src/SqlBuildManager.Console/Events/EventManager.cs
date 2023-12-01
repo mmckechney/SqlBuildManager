@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using cs = SqlBuildManager.Console.CloudStorage;
+using ccS = SqlBuildManager.Console.CloudStorage;
 using Azure.ResourceManager.EventHubs;
 using Azure.ResourceManager.EventHubs.Models;
 using Azure.ResourceManager.Resources;
@@ -84,7 +84,7 @@ namespace SqlBuildManager.Console.Events
             {
                 if (_blobClient == null)
                 {
-                    _blobClient = cs.StorageManager.GetBlobContainerClient(storageAccountName, storageAccountKey, this.eventHubCheckpointContainer);
+                    _blobClient = ccS.StorageManager.GetBlobContainerClient(storageAccountName, storageAccountKey, this.eventHubCheckpointContainer);
                 }
                 return _blobClient;
             }
@@ -349,7 +349,7 @@ namespace SqlBuildManager.Console.Events
                     log.LogInformation($"Removed custom Event Hub Consumer Group: {this.consumerGroup}");
 
                 }
-                catch (Exception exe)
+                catch (Exception)
                 {
                     log.LogError($"Unable to remove custom consumer group {this.consumerGroup}");
                 }

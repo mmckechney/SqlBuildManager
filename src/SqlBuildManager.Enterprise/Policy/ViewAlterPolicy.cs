@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using shP = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
-    class ViewAlterPolicy : p.IScriptPolicy
+    class ViewAlterPolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
@@ -13,7 +13,7 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get { return PolicyIdKey.ViewAlterPolicy; }
         }
-        public p.ViolationSeverity Severity { get; set; }
+        public shP.ViolationSeverity Severity { get; set; }
         public string ShortDescription
         {
             get { return "Alter View Reminder"; }

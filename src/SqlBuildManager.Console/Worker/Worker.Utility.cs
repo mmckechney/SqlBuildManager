@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using sb = SqlSync.SqlBuild;
+using sqlB = SqlSync.SqlBuild;
 
 namespace SqlBuildManager.Console
 {
@@ -36,7 +36,7 @@ namespace SqlBuildManager.Console
                 Directory.CreateDirectory(path);
             }
 
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
+            if (!sqlB.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
             {
                 log.LogError($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -73,7 +73,7 @@ namespace SqlBuildManager.Console
             cmdLine.RootLoggingPath = Path.GetDirectoryName(cmdLine.OutputSbm);
 
             var status = Worker.GetSbmFromDacPac(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), out name, true);
-            if (status == sb.DacpacDeltasStatus.Success)
+            if (status == sqlB.DacpacDeltasStatus.Success)
             {
                 File.Move(name, cmdLine.OutputSbm);
                 ListPackageScripts(new FileInfo[] { new FileInfo(cmdLine.OutputSbm) }, true);
@@ -167,9 +167,9 @@ namespace SqlBuildManager.Console
                     workingDir = Directory.GetCurrentDirectory();
                 }
                 log.LogInformation("Creating Base Build File XML");
-                var buildData = sb.SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+                var buildData = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
                 buildData.AcceptChanges();
-                sb.SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, workingDir, sbxFileName);
+                sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, workingDir, sbxFileName);
                 buildData.WriteXml(sbxFileName);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
@@ -178,7 +178,7 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    sb.SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, sbxFileName, file.Name, counter, "", true, true, "client", true, "", false, true, Environment.UserName, 500, "");
+                    sqlB.SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, sbxFileName, file.Name, counter, "", true, true, "client", true, "", false, true, Environment.UserName, 500, "");
                     counter++;
                 }
                 buildData.AcceptChanges();
@@ -187,8 +187,8 @@ namespace SqlBuildManager.Console
             else
             {
                 string workingDir = "", projFilePath = "", projectFileName = "";
-                sb.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.OutputSbm, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
-                bool success = sb.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sb.SqlSyncBuildData buildData, projectFileName, true);
+                sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.OutputSbm, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
+                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlB.SqlSyncBuildData buildData, projectFileName, true);
                 if (success)
                 {
                     List<string> copied = new List<string>();
@@ -200,13 +200,13 @@ namespace SqlBuildManager.Console
                             copied.Add(Path.Combine(workingDir, f.Name));
                         }
                     });
-                    sb.BuildDataHelper.GetLastBuildNumberAndDb(buildData, out double lastBuildNumber, out string lastDatabase);
+                    sqlB.BuildDataHelper.GetLastBuildNumberAndDb(buildData, out double lastBuildNumber, out string lastDatabase);
                     foreach (var file in cmdLine.Scripts)
                     {
                         lastBuildNumber++;
-                        sb.SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, 500, "");
+                        sqlB.SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, 500, "");
                     }
-                    sb.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
+                    sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
                 }
                 else
                 {
@@ -224,9 +224,9 @@ namespace SqlBuildManager.Console
         internal static int CreatePackageFromDacpacs(string outputSbm, FileInfo platinumDacpac, FileInfo targetDacpac, bool allowObjectDelete)
         {
             var outputSbmFile = Path.GetFullPath(outputSbm);
-            var res = sb.DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacpac.FullName, targetDacpac.FullName, true, string.Empty, 500, allowObjectDelete, out string tmpSbm);
+            var res = sqlB.DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacpac.FullName, targetDacpac.FullName, true, string.Empty, 500, allowObjectDelete, out string tmpSbm);
 
-            if (res == sb.DacpacDeltasStatus.Success)
+            if (res == sqlB.DacpacDeltasStatus.Success)
             {
                 File.Move(tmpSbm, outputSbmFile, true);
                 log.LogInformation($"Created SBM package:  {outputSbmFile}");
@@ -237,8 +237,8 @@ namespace SqlBuildManager.Console
             {
                 switch (res)
                 {
-                    case sb.DacpacDeltasStatus.InSync:
-                    case sb.DacpacDeltasStatus.OnlyPostDeployment:
+                    case sqlB.DacpacDeltasStatus.InSync:
+                    case sqlB.DacpacDeltasStatus.OnlyPostDeployment:
                         log.LogWarning("No package created -- the databases are already in sync");
                         break;
                     default:
@@ -265,7 +265,7 @@ namespace SqlBuildManager.Console
             string id = Guid.NewGuid().ToString();
             string goldTmp = Path.Combine(path, $"gold-{id}.dacpac");
             string targetTmp = Path.Combine(path, $"target-{id}.dacpac");
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.SynchronizeArgs.GoldServer, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, goldTmp, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
+            if (!sqlB.DacPacHelper.ExtractDacPac(cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.SynchronizeArgs.GoldServer, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, goldTmp, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
             {
                 log.LogError($"Error creating the tempprary dacpac from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -275,7 +275,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation($"Temporary DACPAC created from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase} saved to -- {goldTmp}");
             }
 
-            if (!sb.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, targetTmp, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
+            if (!sqlB.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, targetTmp, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
             {
                 log.LogError($"Error creating the tempprary dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -285,12 +285,12 @@ namespace SqlBuildManager.Console
                 log.LogInformation($"Temporary DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {targetTmp}");
             }
 
-            var res = sb.DacPacHelper.CreateSbmFromDacPacDifferences(goldTmp, targetTmp, true, string.Empty, 500, cmdLine.AllowObjectDelete, out string tmpSbm);
+            var res = sqlB.DacPacHelper.CreateSbmFromDacPacDifferences(goldTmp, targetTmp, true, string.Empty, 500, cmdLine.AllowObjectDelete, out string tmpSbm);
             log.LogInformation("Cleaning up temporary files");
             File.Delete(goldTmp);
             File.Delete(targetTmp);
 
-            if (res == sb.DacpacDeltasStatus.Success)
+            if (res == sqlB.DacpacDeltasStatus.Success)
             {
                 File.Move(tmpSbm, sbmFileName);
                 log.LogInformation($"Created SBM package:  {sbmFileName}");
@@ -301,8 +301,8 @@ namespace SqlBuildManager.Console
             {
                 switch (res)
                 {
-                    case sb.DacpacDeltasStatus.InSync:
-                    case sb.DacpacDeltasStatus.OnlyPostDeployment:
+                    case sqlB.DacpacDeltasStatus.InSync:
+                    case sqlB.DacpacDeltasStatus.OnlyPostDeployment:
                         log.LogWarning("No package created -- the databases are already in sync");
                         break;
                     default:
@@ -319,8 +319,8 @@ namespace SqlBuildManager.Console
 
             foreach (var file in packages)
             {
-                sb.SqlBuildFileHelper.ExtractSqlBuildZipFile(file.FullName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
-                bool success = sb.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sb.SqlSyncBuildData buildData, projectFileName, true);
+                sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(file.FullName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
+                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlB.SqlSyncBuildData buildData, projectFileName, true);
                 List<string[]> contents = new List<string[]>();
                 string dateformat = "yyyy-MM-dd hh:mm:ss";
                 if (!withHash)
@@ -343,7 +343,7 @@ namespace SqlBuildManager.Console
                     {
                         if (withHash)
                         {
-                            sb.SqlBuildFileHelper.GetSHA1Hash(Path.Combine(projFilePath, s.FileName), out string fileHash, out string textHash, s.StripTransactionText);
+                            sqlB.SqlBuildFileHelper.GetSHA1Hash(Path.Combine(projFilePath, s.FileName), out string fileHash, out string textHash, s.StripTransactionText);
                             contents.Add(new string[] { s.BuildOrder.ToString(), s.FileName, (s.DateModified == DateTime.MinValue) ? s.DateAdded.ToString(dateformat) : s.DateModified.ToString(dateformat), string.IsNullOrWhiteSpace(s.ModifiedBy) ? s.AddedBy : s.ModifiedBy, s.ScriptId, textHash });
 
                         }
@@ -358,7 +358,7 @@ namespace SqlBuildManager.Console
                 string hash = "";
                 if (withHash)
                 {
-                    hash = $" (Package Hash: {sb.SqlBuildFileHelper.CalculateSha1HashFromPackage(file.FullName)})";
+                    hash = $" (Package Hash: {sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackage(file.FullName)})";
                 }
                 System.Console.WriteLine();
                 System.Console.WriteLine(file.FullName + hash);
@@ -390,9 +390,9 @@ namespace SqlBuildManager.Console
                     workingDir = Directory.GetCurrentDirectory();
                 }
                 log.LogInformation("Creating Base Build File XML");
-                var buildData = sb.SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+                var buildData = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
                 buildData.AcceptChanges();
-                sb.SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, workingDir, sbxFileName);
+                sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, workingDir, sbxFileName);
                 buildData.WriteXml(sbxFileName);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
@@ -401,7 +401,7 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    sb.SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, sbxFileName, file.Name, counter, "", true, true, "client", true, "", false, true, Environment.UserName, 500, "");
+                    sqlB.SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, sbxFileName, file.Name, counter, "", true, true, "client", true, "", false, true, Environment.UserName, 500, "");
                     counter++;
                 }
                 buildData.AcceptChanges();
@@ -420,7 +420,7 @@ namespace SqlBuildManager.Console
                     }
                 });
 
-                bool success = sb.SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(cmdLine.OutputSbm, cmdLine.Scripts.Select(f => f.FullName).ToList(), "client", 500, false);
+                bool success = sqlB.SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(cmdLine.OutputSbm, cmdLine.Scripts.Select(f => f.FullName).ToList(), "client", 500, false);
                 copied.ForEach(f => File.Delete(f));
                 if (!success)
                 {
@@ -452,7 +452,7 @@ namespace SqlBuildManager.Console
 
             }
             string packageName = cmdLine.BuildFileName;
-            string hash = sb.SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
+            string hash = sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
             if (!String.IsNullOrEmpty(hash))
             {
                 //log.LogInformation(hash);
@@ -535,7 +535,7 @@ namespace SqlBuildManager.Console
             }
             string directory = cmdLine.Directory;
             string message;
-            List<string> sbmFiles = sb.SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directory, out message);
+            List<string> sbmFiles = sqlB.SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directory, out message);
             if (sbmFiles.Count > 0)
             {
                 foreach (string sbm in sbmFiles)
@@ -555,12 +555,12 @@ namespace SqlBuildManager.Console
         }
 
 
-        internal static sb.DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName, bool batchScripts = false)
+        internal static sqlB.DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName, bool batchScripts = false)
         {
             if (cmd.MultiDbRunConfigFileName.Trim().ToLower().EndsWith("sql"))
             {
                 //if we are getting the list from a SQL statement, then the database and server settings mean something different! Dont pass them in.
-                return sb.DacPacHelper.GetSbmFromDacPac(cmd.RootLoggingPath,
+                return sqlB.DacPacHelper.GetSbmFromDacPac(cmd.RootLoggingPath,
                    cmd.DacPacArgs.PlatinumDacpac,
                    cmd.DacPacArgs.TargetDacpac,
                    string.Empty,
@@ -574,7 +574,7 @@ namespace SqlBuildManager.Console
             }
             else
             {
-                return sb.DacPacHelper.GetSbmFromDacPac(cmd.RootLoggingPath,
+                return sqlB.DacPacHelper.GetSbmFromDacPac(cmd.RootLoggingPath,
                     cmd.DacPacArgs.PlatinumDacpac,
                     cmd.DacPacArgs.TargetDacpac,
                     cmd.Database,

@@ -23,7 +23,6 @@ namespace SqlBuildManager.Console.Threaded
     {
         private ILogger log;
         private QueueManager qManager = null;
-        private static ILogger logEventHub;
         private ThreadedLogging threadLogger;
         private string runId;
         internal int QueryDatabases(CommandLineArgs cmdLine, string runId)

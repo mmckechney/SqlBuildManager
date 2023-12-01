@@ -3,10 +3,10 @@ using SqlBuildManager.ScriptHandling;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using shP = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
-    public class WithNoLockPolicy : p.IScriptPolicy
+    public class WithNoLockPolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
@@ -17,7 +17,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.WithNoLockPolicy;
             }
         }
-        public p.ViolationSeverity Severity { get; set; }
+        public shP.ViolationSeverity Severity { get; set; }
         public string ShortDescription
         {
             get { return "WITH (NOLOCK)"; }

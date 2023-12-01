@@ -22,6 +22,7 @@
 		<ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+		<PackageReference Include="Azure.Core" Version="1.36.0" />
 		<PackageReference Include="Azure.Identity" Version="1.10.4" />
 		<PackageReference Include="Azure.Messaging.EventHubs" Version="5.10.0" />
 		<PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.10.0" />
@@ -59,8 +60,6 @@
 		<PackageReference Include="System.ComponentModel.EventBasedAsync" Version="4.3.0" />
 		<PackageReference Include="System.DirectoryServices" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Azure.Batch" Version="16.0.0" />
-		<PackageReference Include="Microsoft.Rest.ClientRuntime" Version="3.0.3" />
-		<PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="4.0.3" />
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
 		<PackageReference Include="YamlDotNet" Version="13.7.1" />
 	</ItemGroup>
