@@ -80,11 +80,21 @@ namespace SqlBuildManager.Console.CommandLine
                 return (true, cmdLine);
             }
             bool consolidated = true;
+
+            //Look for a encryption key in the settings file, if not found, and there is a value for keyvault, then skip decryption and return true
             (bool success, string key) = GetSettingsFileEncryptionKey(cmdLine);
             if (!success && string.IsNullOrEmpty(key))
             {
-                log.LogError("Unable to decrypt sensitive fields. No encryption key found.");
-                return (false, cmdLine);
+                if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+                {
+                    log.LogError("Unable to decrypt sensitive fields. No encryption key found.");
+                    return (false, cmdLine);
+                }
+                else
+                {
+                    log.LogInformation("No SettingsFileKey found, but KeyVaultName was provided. Assuming Key Vault will be used to retrieve sensitive fields.");
+                    return (true, cmdLine);
+                }
             }
 
             if (cmdLine.ContainerRegistryArgs != null && !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryPassword))

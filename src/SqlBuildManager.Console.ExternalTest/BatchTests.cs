@@ -1964,5 +1964,60 @@ namespace SqlBuildManager.Console.ExternalTest
             }
         }
 
+
+
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.Tag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.Tag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault-mi.json", ConcurrencyType.Tag, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json", ConcurrencyType.Tag, 2)]
+        [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataTestMethod]
+        public void Batch_Queue_SBMSource_KeyVault_NoSettingsFileKey_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+            if (!File.Exists(sbmFileName))
+            {
+                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+            }
+            string jobName = GetUniqueBatchJobName("batch-sbm-tag");
+            int startingLine = LogFileCurrentLineCount();
+
+            var args = new string[]{
+                "batch", "enqueue",
+                "--settingsfile", settingsFile,
+                "--override" , overrideWithTagFilePath,
+                "--concurrencytype",  concurType.ToString(),
+                "--jobname", jobName};
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            Task<int> val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            var result = val.Result;
+
+            var logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+
+            args = new string[]{
+             "--loglevel", "debug",
+            "batch",  batchMethod,
+            "--settingsfile", settingsFile,
+            "--override", overrideWithTagFilePath,
+            "--packagename", sbmFileName,
+            "--concurrencytype", concurType.ToString(),
+            "--concurrency", concurrency.ToString(),
+            "--jobname", jobName,
+            "--unittest",
+            "--monitor",
+            "--stream" };
+
+
+            val = rootCommand.InvokeAsync(args);
+            val.Wait();
+            result = val.Result;
+
+            logFileContents = ReleventLogFileContents(startingLine);
+            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+        }
     }
 }
