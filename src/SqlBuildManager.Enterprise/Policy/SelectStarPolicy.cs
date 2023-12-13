@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using shP = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
-    class SelectStarPolicy : p.IScriptPolicyWithArguments
+    class SelectStarPolicy : shP.IScriptPolicyWithArguments
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
@@ -18,8 +18,8 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.SelectStarPolicy;
             }
         }
-        private p.ViolationSeverity severity = p.ViolationSeverity.Medium;
-        public p.ViolationSeverity Severity
+        private shP.ViolationSeverity severity = shP.ViolationSeverity.Medium;
+        public shP.ViolationSeverity Severity
         {
             get { return severity; }
             set { severity = value; }
@@ -111,8 +111,8 @@ namespace SqlBuildManager.Enterprise.Policy
         #endregion
 
         #region IScriptPolicyWithArguments Members
-        private List<p.IScriptPolicyArgument> arguments = new List<p.IScriptPolicyArgument>();
-        public List<p.IScriptPolicyArgument> Arguments
+        private List<shP.IScriptPolicyArgument> arguments = new List<shP.IScriptPolicyArgument>();
+        public List<shP.IScriptPolicyArgument> Arguments
         {
             get
             {

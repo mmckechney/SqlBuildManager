@@ -448,7 +448,7 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
         private static Option<FileInfo> settingsfileExistingOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile" }.ExistingOnly();
-        private static Option<string> settingsfileKeyOption = new Option<string>(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive informtation in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable. If not provided a machine value will be used.");
+        private static Option<string> settingsfileKeyOption = new Option<string>(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive information in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable.");
         private static Option<FileInfo> settingsfileNewOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile", IsRequired = true };
 
         /// <summary>
@@ -467,7 +467,7 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
         private static Option<FileInfo> settingsfileExistingRequiredOption = new Option<FileInfo>(new string[] { "--settingsfile" }, "Saved settings file to load parameters from") { Name = "FileInfoSettingsFile", IsRequired = true }.ExistingOnly();
-        private static Option<string> settingsfileKeyRequiredOption = new Option<string>(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive informtation in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable. If not provided a machine value will be used.") { IsRequired = true };
+        private static Option<string> settingsfileKeyRequiredOption = new Option<string>(new string[] { "--settingsfilekey" }, "Key for the encryption of sensitive information in the settings file (must be at least 16 characters). It can be either the key string or a file path to a key file. The key may also provided by setting a 'sbm-settingsfilekey' Environment variable.") { IsRequired = true };
 
         private static Option<bool> sectionPlaceholderOption = new Option<bool>("placeholder");
     

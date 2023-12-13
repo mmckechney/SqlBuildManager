@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using sb = SqlSync.SqlBuild;
+using sqlB = SqlSync.SqlBuild;
 
 namespace SqlBuildManager.Console
 {
@@ -65,7 +65,7 @@ namespace SqlBuildManager.Console
                 }
                 else if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
                 {
-                    cmdLine.ManualOverRideSets = sb.SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName, cmdLine.Database);
+                    cmdLine.ManualOverRideSets = sqlB.SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName, cmdLine.Database);
                     var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
                     var def = ovrRide.Split(':')[1].Split(',')[0];
                     var target = ovrRide.Split(':')[1].Split(',')[1];
@@ -86,16 +86,16 @@ namespace SqlBuildManager.Console
                 }
 
                 string projFilePath = "", projectFileName = "";
-                sb.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.BuildFileName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
+                sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.BuildFileName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
 
-                bool success = sb.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sb.SqlSyncBuildData buildData, projectFileName, true);
+                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlB.SqlSyncBuildData buildData, projectFileName, true);
                 if (!success)
                 {
                     log.LogError($"Unable to load and extract build file: {cmdLine.BuildFileName}");
                     return -1;
                 }
 
-                sb.SqlBuildRunData sqlBuildRunData = new sb.SqlBuildRunData()
+                sqlB.SqlBuildRunData sqlBuildRunData = new sqlB.SqlBuildRunData()
                 {
                     ForceCustomDacpac = false,
                     BuildData = buildData,
@@ -119,7 +119,7 @@ namespace SqlBuildManager.Console
                     Password = cmdLine.AuthenticationArgs.Password,
                     ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId
                 };
-                sb.SqlBuildHelper helper = new sb.SqlBuildHelper(connData, true, "", cmdLine.Transactional);
+                sqlB.SqlBuildHelper helper = new sqlB.SqlBuildHelper(connData, true, "", cmdLine.Transactional);
                 BackgroundWorker bg = new BackgroundWorker()
                 {
                     WorkerReportsProgress = true,
@@ -146,7 +146,7 @@ namespace SqlBuildManager.Console
             }
             finally
             {
-                sb.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
+                sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
             }
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
@@ -162,9 +162,9 @@ namespace SqlBuildManager.Console
         private static void Bg_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
 
-            if (e.UserState is sb.GeneralStatusEventArgs) //Update the general run status
+            if (e.UserState is sqlB.GeneralStatusEventArgs) //Update the general run status
             {
-                var stat = (sb.GeneralStatusEventArgs)e.UserState;
+                var stat = (sqlB.GeneralStatusEventArgs)e.UserState;
                 log.LogInformation(stat.StatusMessage);
                 if (stat.StatusMessage.ToLower().Contains("build failure") || stat.StatusMessage.ToLower().Contains("build failed"))
                 {
@@ -172,21 +172,21 @@ namespace SqlBuildManager.Console
                 }
             }
 
-            else if (e.UserState is sb.CommitFailureEventArgs)
+            else if (e.UserState is sqlB.CommitFailureEventArgs)
             {
-                log.LogError("Failed to Commit Build " + ((sb.CommitFailureEventArgs)e.UserState).ErrorMessage);
+                log.LogError("Failed to Commit Build " + ((sqlB.CommitFailureEventArgs)e.UserState).ErrorMessage);
                 LocalRunInfo.Success = false;
             }
-            else if (e.UserState is sb.ScriptRunStatusEventArgs)
+            else if (e.UserState is sqlB.ScriptRunStatusEventArgs)
             {
-                log.LogInformation(((sb.ScriptRunStatusEventArgs)e.UserState).Status);
+                log.LogInformation(((sqlB.ScriptRunStatusEventArgs)e.UserState).Status);
             }
-            else if (e.UserState is sb.ScriptRunProjectFileSavedEventArgs)
+            else if (e.UserState is sqlB.ScriptRunProjectFileSavedEventArgs)
             {
                 log.LogInformation("Saving updated build file to disk");
                 try
                 {
-                    sb.SqlBuildFileHelper.PackageProjectFileIntoZip(LocalRunInfo.Sq1SyncBuildData, LocalRunInfo.WorkingDirectory, LocalRunInfo.BuildZipFileName);
+                    sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(LocalRunInfo.Sq1SyncBuildData, LocalRunInfo.WorkingDirectory, LocalRunInfo.BuildZipFileName);
                     log.LogInformation("Build file saved to disk");
                 }
                 catch (Exception exe)
@@ -269,7 +269,7 @@ namespace SqlBuildManager.Console
 
         private static class LocalRunInfo
         {
-            public static sb.SqlSyncBuildData Sq1SyncBuildData { get; set; }
+            public static sqlB.SqlSyncBuildData Sq1SyncBuildData { get; set; }
             public static string WorkingDirectory { get; set; }
             public static string BuildZipFileName { get; set; }
             public static bool Success { get; set; } = true;

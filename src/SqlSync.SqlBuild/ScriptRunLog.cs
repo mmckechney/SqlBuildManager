@@ -61,11 +61,6 @@ namespace SqlSync.SqlBuild
 				this.ImportRow(tmpRow);
 			}
 		}
-		public ScriptRunLog(SerializationInfo info, StreamingContext context):base(info,context)
-		{
-			this.InitVars();
-			this.ColumnChanged += new DataColumnChangeEventHandler( myColumn_Changed );
-		}
 	
 		private void myColumn_Changed( object sender, DataColumnChangeEventArgs e )
 		{

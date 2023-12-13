@@ -15,7 +15,7 @@ $frameworkTarget = Invoke-Expression -Command (Join-Path $scriptDir ..\get_targe
 
 Write-Host "Target Framework:  $frameworkTarget" -ForegroundColor DarkGreen
 
-Write-Output "Using Batch Account: $batchAcctName" -ForegroundColor DarkGreen
+Write-Host "Using Batch Account: $batchAcctName" -ForegroundColor DarkGreen
 
 $winenv =@{
     ApplicationName = "SqlBuildManagerWindows"

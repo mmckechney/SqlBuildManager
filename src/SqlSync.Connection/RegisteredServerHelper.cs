@@ -122,7 +122,7 @@ namespace SqlSync.Connection
             }
             catch (Exception exe)
             {
-                log.LogError("Error deserializing registered server contents", exe);
+                log.LogError(exe,"Error deserializing registered server contents");
             }
 
             return null;

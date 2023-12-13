@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using shP = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
-    class ConstraintNamePolicy : p.IScriptPolicy
+    class ConstraintNamePolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
@@ -17,7 +17,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.ConstraintNamePolicy;
             }
         }
-        public p.ViolationSeverity Severity { get; set; }
+        public shP.ViolationSeverity Severity { get; set; }
         public string ShortDescription
         {
             get { return "Constraint Naming (beta)"; }

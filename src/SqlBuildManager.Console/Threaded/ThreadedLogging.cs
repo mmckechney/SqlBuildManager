@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ehm = SqlBuildManager.Console.Events.EventManager;
+using ehM = SqlBuildManager.Console.Events.EventManager;
 namespace SqlBuildManager.Console.Threaded
 {
     public class ThreadedLogging
@@ -46,7 +46,7 @@ namespace SqlBuildManager.Console.Threaded
             }
             else
             {
-                (string namespacename, string ehName) = ehm.GetEventHubNamespaceAndName(cmdLine.ConnectionArgs.EventHubConnectionString);
+                (string namespacename, string ehName) = ehM.GetEventHubNamespaceAndName(cmdLine.ConnectionArgs.EventHubConnectionString);
                 log.LogInformation($"Using Managed Identity '{cmdLine.IdentityArgs.ClientId}' for Event Logging");
                 logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, namespacename, ehName, cmdLine.IdentityArgs.ClientId);
             }

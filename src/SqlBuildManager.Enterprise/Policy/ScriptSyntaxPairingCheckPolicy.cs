@@ -3,10 +3,10 @@ using SqlBuildManager.ScriptHandling;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using shP = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
-    class ScriptSyntaxPairingCheckPolicy : p.IScriptPolicyMultiple
+    class ScriptSyntaxPairingCheckPolicy : shP.IScriptPolicyMultiple
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -22,8 +22,8 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.ScriptSyntaxPairingCheckPolicy;
             }
         }
-        private p.ViolationSeverity severity = p.ViolationSeverity.High;
-        public p.ViolationSeverity Severity
+        private shP.ViolationSeverity severity = shP.ViolationSeverity.High;
+        public shP.ViolationSeverity Severity
         {
             get { return severity; }
             set { severity = value; }
@@ -59,8 +59,8 @@ namespace SqlBuildManager.Enterprise.Policy
         #endregion
 
         #region IScriptPolicyWithArguments Members
-        private List<p.IScriptPolicyArgument> arguments = new List<p.IScriptPolicyArgument>();
-        public List<p.IScriptPolicyArgument> Arguments
+        private List<shP.IScriptPolicyArgument> arguments = new List<shP.IScriptPolicyArgument>();
+        public List<shP.IScriptPolicyArgument> Arguments
         {
             get
             {
@@ -81,10 +81,10 @@ namespace SqlBuildManager.Enterprise.Policy
 
                 string parentRegex = string.Empty;
                 string policyTargetDatabase = string.Empty;
-                List<p.IScriptPolicyArgument> childPairRegexList = new List<p.IScriptPolicyArgument>();
-                List<p.IScriptPolicyArgument> childDontPairRegexList = new List<p.IScriptPolicyArgument>();
+                List<shP.IScriptPolicyArgument> childPairRegexList = new List<shP.IScriptPolicyArgument>();
+                List<shP.IScriptPolicyArgument> childDontPairRegexList = new List<shP.IScriptPolicyArgument>();
                 //Parse out the arguments
-                foreach (p.IScriptPolicyArgument argument in arguments)
+                foreach (shP.IScriptPolicyArgument argument in arguments)
                 {
                     switch (argument.Name)
                     {
@@ -162,7 +162,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
 
                 //If we have a match.. let's make sure we have the child matches
-                foreach (p.IScriptPolicyArgument child in childPairRegexList)
+                foreach (shP.IScriptPolicyArgument child in childPairRegexList)
                 {
                     Regex childPair = new Regex(child.Value, RegexOptions.IgnoreCase);
                     MatchCollection childPairMatches = childPair.Matches(script);
@@ -198,7 +198,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
 
                 //If we have a match.. let's make sure we have the child matches
-                foreach (p.IScriptPolicyArgument child in childDontPairRegexList)
+                foreach (shP.IScriptPolicyArgument child in childDontPairRegexList)
                 {
                     Regex childPair = new Regex(child.Value, RegexOptions.IgnoreCase);
                     MatchCollection childPairMatches = childPair.Matches(script);

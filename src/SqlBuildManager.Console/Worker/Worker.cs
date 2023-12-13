@@ -18,9 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
-using clb = SqlBuildManager.Console.CommandLine.CommandLineBuilder;
-using sb = SqlSync.SqlBuild;
+using clB = SqlBuildManager.Console.CommandLine.CommandLineBuilder;
 
 namespace SqlBuildManager.Console
 {
@@ -57,7 +55,7 @@ namespace SqlBuildManager.Console
             {
                 Task.Run(async () =>
                 {
-                    var parser = clb.GetCommandParser();
+                    var parser = clB.GetCommandParser();
 
                     try
                     {
@@ -94,7 +92,7 @@ namespace SqlBuildManager.Console
             return Task.CompletedTask;
         }
 
-        internal static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine, bool clearText = false)
+        public static (bool, CommandLineArgs) Init(CommandLineArgs cmdLine, bool clearText = false)
         {
             if (cmdLine.IdentityArgs != null)
             {
@@ -115,9 +113,9 @@ namespace SqlBuildManager.Console
             }
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
+            bool decryptSuccess = true;
             if (!clearText)
             {
-                bool decryptSuccess;
                 (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
                 if (!decryptSuccess)
                 {
@@ -126,7 +124,7 @@ namespace SqlBuildManager.Console
             }
             bool tmp;
             (tmp, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
-            return (tmp, cmdLine);
+            return (tmp & decryptSuccess, cmdLine);
         }
 
         internal static int QueryDatabases(CommandLineArgs cmdLine)
@@ -527,14 +525,14 @@ namespace SqlBuildManager.Console
             bool firstLoop = true;
             (junk, cmdLine) = Init(cmdLine);
             Stopwatch timeoutStopWatch = new Stopwatch();
-            var offSet = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+            var offSet = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
             if (startDate.HasValue && offSet.TotalSeconds != 0)
             {
-                startDate = TimeZone.CurrentTimeZone.ToUniversalTime(startDate.Value);
+                startDate = TimeZoneInfo.ConvertTimeToUtc(startDate.Value);
             }
 
             (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
-            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, cmdLine.EventHubArgs.SubscriptionId,cmdLine.EventHubArgs.ResourceGroup, cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName);
+            var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, cmdLine.EventHubArgs.SubscriptionId, cmdLine.EventHubArgs.ResourceGroup, cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName);
             if (!startDate.HasValue)
             {
                 startDate = DateTime.UtcNow.AddMinutes(-5);
@@ -553,7 +551,7 @@ namespace SqlBuildManager.Console
             System.Console.WriteLine();
             System.Console.WriteLine($"Counting Events for job: {jobName}");
             timeoutStopWatch.Start();
-            while (true &&  (timeoutStopWatch.Elapsed.Seconds <= timeout || timeout == 0))
+            while (true && (timeoutStopWatch.Elapsed.Seconds <= timeout || timeout == 0))
             {
 
                 (currentCommit, currentError, currentEvents, currentWorkers) = ehandler.GetCommitErrorScannedAndWorkerCompleteCounts();
@@ -572,16 +570,16 @@ namespace SqlBuildManager.Console
                 }
 
                 var lines = new List<CursorStatusItem>()
-                {
-                        new CursorStatusItem(){Label= "Events Scanned:", Counter = currentEvents},
-                };
-                if(cmdLine.JobName.ToLower() != "all")
+        {
+            new CursorStatusItem(){Label= "Events Scanned:", Counter = currentEvents},
+        };
+                if (cmdLine.JobName.ToLower() != "all")
                 {
                     lines.AddRange(new List<CursorStatusItem>() {
-                        new CursorStatusItem() { Label = "Database Commits:", Counter = currentCommit },
-                        new CursorStatusItem() { Label = "Database Errors:", Counter = currentError },
-                        new CursorStatusItem() { Label = "Workers Completed:", Counter = currentWorkers }
-                        }
+                new CursorStatusItem() { Label = "Database Commits:", Counter = currentCommit },
+                new CursorStatusItem() { Label = "Database Errors:", Counter = currentError },
+                new CursorStatusItem() { Label = "Workers Completed:", Counter = currentWorkers }
+                }
                     );
                 }
                 SetCursorStatus(lines, firstLoop, stream);

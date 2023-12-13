@@ -2,10 +2,10 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using p = SqlBuildManager.Interfaces.ScriptHandling.Policy;
+using shP = SqlBuildManager.Interfaces.ScriptHandling.Policy;
 namespace SqlBuildManager.Enterprise.Policy
 {
-    public class CommentHeaderPolicy : p.IScriptPolicy
+    public class CommentHeaderPolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region IScriptPolicy Members
@@ -17,7 +17,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 return PolicyIdKey.CommentHeaderPolicy;
             }
         }
-        public p.ViolationSeverity Severity { get; set; }
+        public shP.ViolationSeverity Severity { get; set; }
         private int dayThreshold = 10;
 
         public int DayThreshold

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using sb = SqlSync.SqlBuild.DefaultScripts;
+using sqlB = SqlSync.SqlBuild.DefaultScripts;
 namespace SqlBuildManager.Enterprise.DefaultScripts
 {
     public class DefaultScriptHelper
@@ -24,7 +24,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 }
             }
 
-            sb.DefaultScriptRegistry reg = GetEnterpriseRegistrySetting(SqlBuildFileHelper.DefaultScriptXmlFile);
+            sqlB.DefaultScriptRegistry reg = GetEnterpriseRegistrySetting(SqlBuildFileHelper.DefaultScriptXmlFile);
             if (reg == null)
                 return false;
 
@@ -35,7 +35,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             }
 
             string localScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile);
-            foreach (sb.DefaultScript item in reg.Items)
+            foreach (sqlB.DefaultScript item in reg.Items)
             {
                 if (!ValidateLocalToEnterprise(Path.Combine(localScriptPath, item.ScriptName), Path.Combine(defaultReg.Path, item.ScriptName)))
                 {
@@ -47,18 +47,18 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             return true;
         }
 
-        internal static sb.DefaultScriptRegistry GetEnterpriseRegistrySetting(string filePath)
+        internal static sqlB.DefaultScriptRegistry GetEnterpriseRegistrySetting(string filePath)
         {
-            sb.DefaultScriptRegistry registry = null;
+            sqlB.DefaultScriptRegistry registry = null;
             log.LogDebug($"Deserializing DefaultScriptRegistry file from '{filePath}'");
             try
             {
 
                 using (StreamReader sr = new StreamReader(filePath))
                 {
-                    System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(sb.DefaultScriptRegistry));
+                    System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(sqlB.DefaultScriptRegistry));
                     object obj = serializer.Deserialize(sr);
-                    registry = (sb.DefaultScriptRegistry)obj;
+                    registry = (sqlB.DefaultScriptRegistry)obj;
                     sr.Close();
                 }
             }
