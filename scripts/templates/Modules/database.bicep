@@ -47,7 +47,7 @@ module identityResource 'identity.bicep' = {
 
 
 // SQL Server 'A' resources
-resource sqlserverAResource 'Microsoft.Sql/servers@2021-02-01-preview' = {
+resource sqlserverAResource 'Microsoft.Sql/servers@2021-11-01' = {
   name: '${sqlserverNameVar}-a'
   location: location
   
@@ -67,7 +67,7 @@ resource sqlserverAResource 'Microsoft.Sql/servers@2021-02-01-preview' = {
   }
 }
 
-resource sqlserverAFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-02-01-preview' = if(currentIpAddress != '') {
+resource sqlserverAFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-11-01' = if(currentIpAddress != '') {
   parent: sqlserverAResource
   name: '${sqlserverNameVar}A_AllowIp'
   properties: {
@@ -76,7 +76,7 @@ resource sqlserverAFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-02-01-
   }
 }
 
-resource sqlserverA_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2022-11-01-preview' = [for subnet in subnetNamesArray:{
+resource sqlserverA_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-01' = [for subnet in subnetNamesArray:{
   parent: sqlserverAResource
   name: '${sqlserverNameVar}A_${subnet}'
   properties: {
@@ -86,7 +86,7 @@ resource sqlserverA_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2022-11-
   }
 }]
 
-resource sqlserverAResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-02-01-preview' = {
+resource sqlserverAResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-11-01' = {
   parent: sqlserverAResource
   name: '${sqlpoolNameVar}-a'  
   location: location
@@ -105,7 +105,7 @@ resource sqlserverAResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-02-01-
   }
 }
 
-resource sqlserverAResourceDatabase 'Microsoft.Sql/servers/databases@2021-02-01-preview' = [for i in range(1,testDbCountPerServer):{
+resource sqlserverAResourceDatabase 'Microsoft.Sql/servers/databases@2021-11-01' = [for i in range(1,testDbCountPerServer):{
   parent: sqlserverAResource
   name: 'SqlBuildTest${i}'
   location: location
@@ -128,7 +128,7 @@ resource sqlserverAResourceDatabase 'Microsoft.Sql/servers/databases@2021-02-01-
 
 
 // SQL Server 'B' resources
-resource sqlserverBResource 'Microsoft.Sql/servers@2021-02-01-preview' = {
+resource sqlserverBResource 'Microsoft.Sql/servers@2021-11-01' = {
   name: '${sqlserverNameVar}-b'
   location: location  
   properties: {
@@ -145,7 +145,7 @@ resource sqlserverBResource 'Microsoft.Sql/servers@2021-02-01-preview' = {
     } 
   } 
 }
-resource sqlserverBFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-02-01-preview' = if(currentIpAddress != '') {
+resource sqlserverBFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-11-01' = if(currentIpAddress != '') {
   parent: sqlserverBResource
   name: '${sqlserverNameVar}B_AllowIp'
   properties: {
@@ -154,7 +154,7 @@ resource sqlserverBFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-02-01-
   }
 }
 
-resource sqlserverB_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2022-11-01-preview' = [for subnet in subnetNamesArray:{
+resource sqlserverB_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-01' = [for subnet in subnetNamesArray:{
   parent: sqlserverBResource
   name: '${sqlserverNameVar}B_${subnet}'
   properties: {
@@ -164,7 +164,7 @@ resource sqlserverB_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2022-11-
   }
 }]
 
-resource sqlserverBResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-02-01-preview' = {
+resource sqlserverBResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-11-01' = {
   parent: sqlserverBResource
   name: '${sqlpoolNameVar}-b'  
   location: location
@@ -183,7 +183,7 @@ resource sqlserverBResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-02-01-
   }
 }
 
-resource sqlserverBResource_Database 'Microsoft.Sql/servers/databases@2021-02-01-preview' = [for i in range(1,testDbCountPerServer):{
+resource sqlserverBResource_Database 'Microsoft.Sql/servers/databases@2021-11-01' = [for i in range(1,testDbCountPerServer):{
   parent: sqlserverBResource
   name: 'SqlBuildTest${i}'
   location: location
