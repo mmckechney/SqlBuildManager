@@ -4,6 +4,11 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ApplicationIcon>..\SqlSync\Images\Database-commandline.ico</ApplicationIcon>
 	</PropertyGroup>
+	<PropertyGroup>
+		<RestoreFallbackFolders>clear</RestoreFallbackFolders>
+		<DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<Compile Remove="ProcessHelper.cs" />
 	</ItemGroup>
