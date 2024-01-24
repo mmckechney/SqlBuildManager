@@ -30,15 +30,14 @@ COPY ["SqlSync.SqlBuild/SqlSync.SqlBuild.csproj", "SqlSync.SqlBuild/SqlSync.SqlB
 RUN true 
 COPY ["SqlBuildManager.ScriptHandling/SqlBuildManager.ScriptHandling.csproj", "SqlBuildManager.ScriptHandling/"]
 
-#RUN true 
-#RUN dotnet restore "SqlBuildManager.Console/sbm.csproj"
-
 
 COPY . .
 WORKDIR "/src/SqlBuildManager.Console"
-#RUN dotnet build "sbm.csproj" --configuration Release -f net8.0 -o /app/build -r linux-x64 --self-contained
 
-FROM build AS publish
+
+FROM build AS publish   
+RUN dotnet clean 
+RUN dotnet nuget locals all --clear
 RUN dotnet publish "sbm.csproj" --configuration Release -f net8.0 -o /app/publish -r linux-x64  --self-contained
 
 FROM base AS final
