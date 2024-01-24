@@ -12,7 +12,7 @@ WORKDIR "/SqlBuildManager.Console"
 FROM build AS publish   
 RUN dotnet clean --configuration Release -f net8.0 
 RUN dotnet nuget locals all --clear
-RUN dotnet publish "sbm.csproj" --configuration Release -f net8.0 -o /app/publish   --self-contained
+RUN dotnet publish sbm.csproj --configuration Release -f net8.0 -o /app/publish   --self-contained
 
 FROM base AS final
 WORKDIR /app
