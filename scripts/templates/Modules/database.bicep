@@ -56,6 +56,7 @@ resource sqlserverAResource 'Microsoft.Sql/servers@2021-11-01' = {
     administratorLoginPassword: sqladminpassword
     publicNetworkAccess: 'Enabled'
     restrictOutboundNetworkAccess: 'Disabled'
+    minimalTlsVersion: '1.2'
     administrators: {
       administratorType: 'ActiveDirectory'
       principalType: 'Application'
@@ -136,6 +137,7 @@ resource sqlserverBResource 'Microsoft.Sql/servers@2021-11-01' = {
     administratorLoginPassword: sqladminpassword
     publicNetworkAccess: 'Enabled'
     restrictOutboundNetworkAccess: 'Disabled'
+    minimalTlsVersion: '1.2'
     administrators: {
       administratorType: 'ActiveDirectory'
       principalType: 'Application'

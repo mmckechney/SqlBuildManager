@@ -133,7 +133,7 @@ module containerAppEnv './Modules/containerappenv.bicep' = if(deployContainerApp
   params: { 
     containerAppEnvName: containerAppEnvNameVar
     logAnalyticsClientId: logAnalyticsWorkspaceResource.properties.customerId
-    logAnalyticsKey: logAnalyticsWorkspaceResource.listkeys().primarySharedKey
+    logAnalyticsWorkspaceName: logAnalyticsWorkspaceVar
     subnetId: networkResource.outputs.containerAppSubnetId
     location: location
 
