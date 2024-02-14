@@ -1,5 +1,9 @@
 # SQL Build Manager Change Log
 
+### Version 15.6.1
+- *FIXED:* [GitHub Issue #469](https://github.com/mmckechney/SqlBuildManager/issues/469) - New tables with foreign key constraints not generating the CREATE TABLE statements
+- *FIXED:* GitHub Action for container build
+
 ### Version 15.6.0
 - *UPDATED:* Now targets .NET 8.0 
 - *UPDATED:* Simplified data object classes and regenerated typed DataSet classes
