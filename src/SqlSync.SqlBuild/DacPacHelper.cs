@@ -240,13 +240,21 @@ namespace SqlSync.SqlBuild
 
             //look for the database settings header 
             endMatchs = Regex.Matches(cleanedScript, Regex.Escape("$(DatabaseName)"));
-            endMatch = endMatchs.Cast<Match>().LastOrDefault();
+            endMatch = endMatchs.Cast<Match>().FirstOrDefault();
+            
+           //remove anything before the first match
             if (endMatch != null && endMatch.Index != -1)
             {
                 matchFound = true;
                 //get the "GO" delimiter after this match
                 index = 2 + Regex.Matches(cleanedScript, "GO").Where(m => m.Index > endMatch.Index).FirstOrDefault().Index;
                 cleanedScript = cleanedScript.Substring(index);
+            }
+
+            //Just remove any remaining USE statements
+            if(endMatchs.Count > 0)
+            {
+               cleanedScript = cleanedScript.Replace("USE [$(DatabaseName)];", "");
             }
 
             if (!matchFound)

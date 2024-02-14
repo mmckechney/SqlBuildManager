@@ -1,8 +1,14 @@
 param containerAppEnvName string
 param logAnalyticsClientId string
-param logAnalyticsKey string
+param logAnalyticsWorkspaceName string
 param location string = resourceGroup().location
 param subnetId string = ''
+
+
+resource logAnalyticsWorkspaceResource 'Microsoft.OperationalInsights/workspaces@2021-06-01' existing = {
+  name:logAnalyticsWorkspaceName
+
+}
 
 resource containerAppEnvWithSubnet 'Microsoft.App/managedEnvironments@2022-11-01-preview' =  if(subnetId != '') {
   name: containerAppEnvName
@@ -12,7 +18,8 @@ resource containerAppEnvWithSubnet 'Microsoft.App/managedEnvironments@2022-11-01
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
         customerId: logAnalyticsClientId
-        sharedKey: logAnalyticsKey
+        sharedKey: logAnalyticsWorkspaceResource.listkeys().primarySharedKey
+
       }
     }
     workloadProfiles: [
@@ -35,7 +42,7 @@ resource containerAppEnvNoSubnet 'Microsoft.App/managedEnvironments@2022-11-01-p
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
         customerId: logAnalyticsClientId
-        sharedKey: logAnalyticsKey
+        sharedKey: logAnalyticsWorkspaceResource.listkeys().primarySharedKey
       }
     }
     workloadProfiles: [
