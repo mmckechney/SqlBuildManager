@@ -49,7 +49,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
 		<PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.2.111" />
-		<PackageReference Include="morelinq" Version="4.1.0" />
+		<PackageReference Include="morelinq" Version="4.2.0" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
 		<PackageReference Include="Serilog.Expressions" Version="4.0.0" />
 		<PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
