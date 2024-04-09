@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.2.111" />
-    <PackageReference Include="Polly" Version="8.3.0" />
+    <PackageReference Include="Polly" Version="8.3.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
