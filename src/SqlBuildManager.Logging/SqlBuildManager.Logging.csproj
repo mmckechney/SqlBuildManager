@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Azure.Identity" Version="1.10.4" />
+	<PackageReference Include="Azure.Identity" Version="1.11.2" />
     <PackageReference Include="Azure.Messaging.EventHubs" Version="5.11.1" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
     <PackageReference Include="Serilog.Expressions" Version="4.0.0" />
