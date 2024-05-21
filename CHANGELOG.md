@@ -1,5 +1,10 @@
 # SQL Build Manager Change Log
 
+### Version 15.6.2
+- *UPDATED:* Specifying Batch Node Communication model as `Simplified` (vs. prior default of `Classic`) as [classic is getting retired in 2026](https://azure.microsoft.com/en-us/updates/azure-batch-classic-compute-node-communication-model-will-be-retired-on-31-march-2026/)
+- *FIXED:* [GitHub Issue #501](https://github.com/mmckechney/SqlBuildManager/issues/501) - DeleteBatchPool settingsfile setting not honored for batch run commands / logging issue with --deletebatchpool override
+- *FIXED:* [GitHub Issue #513](https://github.com/mmckechney/SqlBuildManager/issues/513) - PreStage incorrectly reports batch node readiness if quota has been reached
+
 ### Version 15.6.1
 - *FIXED:* [GitHub Issue #469](https://github.com/mmckechney/SqlBuildManager/issues/469) - New tables with foreign key constraints not generating the CREATE TABLE statements
 - *FIXED:* GitHub Action for container build

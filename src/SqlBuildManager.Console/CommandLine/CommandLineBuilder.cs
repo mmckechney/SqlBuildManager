@@ -162,7 +162,7 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
         private static Option<string> batchjobnameOption = new Option<string>(new string[] { "--jobname", "--batchjobname" }, "User friendly name for the job. This will also be the container name for the stored logs. Any disallowed URL characters will be removed");
-        private static Option<bool> deletebatchjobOption = new Option<bool>(new string[] { "--deletebatchjob" }, () => false, "Whether or not to delete the batch job after an execution");
+        private static Option<bool> deletebatchjobOption = new Option<bool>(new string[] { "--deletebatchjob" }, "Whether or not to delete the batch job after an execution");
         private static Option<bool> pollbatchpoolstatusOption = new Option<bool>(new string[] { "--poll", "--pollbatchpoolstatus" }, "Whether or not you want to get updated status (true) or fire and forget (false)");
 
         /// <summary>
@@ -191,7 +191,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static Option<string> batchvmsizeOption = new Option<string>(new string[] { "--vmsize", "--batchvmsize" }, "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) ");
         private static Option<string> batchResourceGroupOption = new Option<string>(new string[] { "--batchresourcegroup", "--batchrg" }, "The Resource Group name for the Batch Account");
         private static Option<string> batchpoolnameOption = new Option<string>(new string[] { "--poolname", "--batchpoolname" }, "Override for the default pool name of \"SqlBuildManagerPool\"");
-        private static Option<bool> deletebatchpoolOption = new Option<bool>(new string[] { "--deletebatchpool" }, () => false, "Whether or not to delete the batch pool servers after an execution");
+        private static Option<bool> deletebatchpoolOption = new Option<bool>(new string[] { "--deletebatchpool" }, "Whether or not to delete the batch pool servers after an execution");
         private static Option<string> batchApplicationOption = new Option<string>(new string[] { "--apppackage", "--applicationpackage" }, "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux");
         private static Option<string> outputcontainersasurlOption = new Option<string>(new string[] { "--outputcontainersasurl" }, "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command") { IsHidden = true };
         private static Option<int> batchJobMonitorTimeoutMin = new Option<int>(new string[] { "--monitortimeout", "--batchjobmonitortimeout" }, "Timeout (in minutes) for the batch job monitor to wait for the job to complete. Default is 30 minutes");
