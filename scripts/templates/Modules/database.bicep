@@ -2,7 +2,7 @@
 param namePrefix string = 'eztmwm'
 
 @description('Name for SQL Admin account')
-param sqladminname string = 'sqladmin_user'
+param sqladminname string = 'SqlBuildManagerSqlAdmin'
 
 @description('Value for SQL Admin password')
 @secure()

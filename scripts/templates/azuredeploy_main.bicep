@@ -41,7 +41,7 @@ param deployAks bool = true
 param testDbCountPerServer int = 10
 
 @description('Name for SQL Admin account')
-param sqladminname string = 'sqladmin_user'
+param sqladminname string = 'SqlBuildManagerSqlAdmin'
 
 @description('Value for SQL Admin password')
 @secure()
