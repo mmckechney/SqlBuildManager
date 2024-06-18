@@ -1,22 +1,22 @@
 # SQL Build Manager Change Log
 
-### Version 15.6.2
+### [Version 15.6.2](https://github.com/mmckechney/SqlBuildManager/releases/tag/v15.6.2)
 - *UPDATED:* Specifying Batch Node Communication model as `Simplified` (vs. prior default of `Classic`) as [classic is getting retired in 2026](https://azure.microsoft.com/en-us/updates/azure-batch-classic-compute-node-communication-model-will-be-retired-on-31-march-2026/)
 - *FIXED:* [GitHub Issue #501](https://github.com/mmckechney/SqlBuildManager/issues/501) - DeleteBatchPool settingsfile setting not honored for batch run commands / logging issue with --deletebatchpool override
 - *FIXED:* [GitHub Issue #513](https://github.com/mmckechney/SqlBuildManager/issues/513) - PreStage incorrectly reports batch node readiness if quota has been reached
 
-### Version 15.6.1
+### [Version 15.6.1](https://github.com/mmckechney/SqlBuildManager/releases/tag/v16.6.1)
 - *FIXED:* [GitHub Issue #469](https://github.com/mmckechney/SqlBuildManager/issues/469) - New tables with foreign key constraints not generating the CREATE TABLE statements
 - *FIXED:* GitHub Action for container build
 
-### Version 15.6.0
+### [Version 15.6.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v15.6.0)
 - *UPDATED:* Now targets .NET 8.0 
 - *UPDATED:* Simplified data object classes and regenerated typed DataSet classes
 - *UPDATED:* Docker base set to .NET Runtime 8.0 and .NET SDK to 8.0
 - *REMOVED:* Removed fall back Settings File Key generation from machine value. Now must be provided via `--settingsfilekey` argument or `sbm-settingsfilekey` Environment variable
 - *ADDED:* `--settingsfilekey` is no longer required when a Key Vault Name is provided. This will bypass any settings file decryption and only retrieve the secrets directly from Key Vault
 
-### Version 15.5.0
+### [Version 15.5.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v15.5.0)
 - *NEW:* For muti-database target builds, you can now specify custom concurrency tag. Previously, the only concurrency differentitor was by SQL Server Name. Please see the docs on [Concurrency](/docs/concurrency_options.md) and [Database targeting options](docs/override_options.md) to understand how to use this new feature.
 - *UPDATED:* DACPAC creation timeouts now set to the value of `--defaultscripttimeout`. Previously, it was using the default settings.
 - *UPDATED:* If a script package is failing after retries due to a timeout, the build will now immediately fail. The prior behavior was to create a custom DACPAC (if configured) and continue trying the build. This was just delaying the inevitable failure and wasting time.
@@ -24,7 +24,7 @@
 ### Version 15.4.2
 - *UPDATED:* Converted Batch Node Pool creation to the new `Azure.ResourceManager.Batch` SDK. **NOTE:** This may require you to add batch specific NSG rules if you deploy into a subnet. See [network.bicep's](./scripts/templates/Modules/network.bicep) `nsgBatchResource` resource to see the rules that are needed.
 
-### Version 15.4.1
+### [Version 15.4.1](https://github.com/mmckechney/SqlBuildManager/releases/tag/v15.4.1)
 - *UPDATED:* Changed the test environment creation from az CLI commands to Bicep templates/modules
 - *UPDATED:* Modified/refactored internal handling of Manged Identity Client ID
 - *ADDED:* New EventHub logging type of `ScriptErrors` which will event out any script error messages that occur during execution
@@ -38,8 +38,7 @@
 - *UPDATED:* Added ability for `sbm utility override` to accept `--settingsfile`, `--settingsfilekey` and identity arguments 
 - *UPDATED:* Changed `sbm dacpac` command to accept `--settingsfile`, `--settingsfilekey` and identity arguments (previously only accepted SQL authentication via `--username` and `--password`)
 
-
-### Version 15.3.0
+### [Version 15.3.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v15.3.0)
 _Consolidated updates in Version 15+_
 *NEW:* Removing `beta` tag as the new AKS  [Workload Identity](https://docs.microsoft.com/en-us/azure/aks/use-managed-identity) implementation is now GA.  This replaces of AAD Pod Identity and is a *breaking change* from any previous Kubernetes deployments. To understand how to configure your cluster, review the steps in the [create_aks_cluster.ps1](scripts/templates/kubernetes/create_aks_cluster.ps1) script.
 
@@ -112,7 +111,7 @@ _Platform updates:_
   - *ADDED:* VNET integration for Azure Container Instances
   - *ADDED:* VNET integration for Batch Nodes
   
-### Version 15.0.3-beta
+### [Version 15.0.3-beta](https://github.com/mmckechney/SqlBuildManager/releases/tag/v15.0.1-beta)
 
 - *NEW:* With v15+ the Kubernetes implementation is switching from using AAD Pod Identity to [Workload Identity (preview)](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview). Because Workload Identity is in Public Preview, v15 will remain in beta until the feature goes GA. This is a breaking change from any previous Kubernetes deployments. To understand how to configure your cluster, review the steps in the [create_aks_cluster.ps1](scripts/templates/kubernetes/create_aks_cluster.ps1) script.
 - *UPDATED:* Application now targets .NET 7
@@ -121,24 +120,24 @@ _ *ADDED:* Option to provide Azure AD Tenant ID for deployments. This will be ne
 - *UPDATED:* General code cleanup and switch from System.Data.SqlClient for Microsoft.Data.SqlClient
 - *UPDATED:* Docker base images updated to .NET Runtime 7.0.2 and .NET SDK to 7.0.102
   
-### Version 14.6.1
+### [Version 14.6.1](https://github.com/mmckechney/SqlBuildManager/releases/tag/v14.6.1)
 
  - *UPDATED:* Added Windows installer setup project for SQL Build Manager windows form app
 
-### Version 14.6.0
+### [Version 14.6.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v14.6.0)
 
  - *ADDED:* Added Kubernetes namespace isolation in `sqlbuildmanager` namespace when using `sbm k8s run` and creating yaml files via `sbm k8s createyaml`
  - *ADDED:* Added `jobname` based kubernetes resources to isolate independent and/or concurrent runs when using `sbm k8s run`
  - *UPDATED:* Switched pre-build image source from docker hub blueskydevus/sqlbuildmanager to GitHub container registry mmckechney/sqlbuildmanager
  
-### Version 14.5.0
+### [Version 14.5.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v14.5.0)
 
  - *ADDED:* Simplified Kubernetes with `sbm k8s run` that will orchestrate the individual steps (`prep`, `enqueue`, `monitor`) and encapsulate all `kubectl` commands used to create resources
  - *ADDED:* Simplified Container Apps with `sbm containerapp run` that will orchestrate the individual steps (`prep`, `enqueue`, `deploy` and `montitor`)
  - *UPDATED:* `sbm k8s savesettings` will now create a json file instead of yaml files. All other subcommands will also take `--settingsfile` and `--settingsfilekey` values to be more in sync with the other execution types. You can still generate YAML files dynamically with `sbm k8s creatyaml` if you want to
  - *UPDATED:* Overhaul of [template scripts](scripts/templates/README.md) used to create sample and integration test resources and settings files to unify prefix resource names
 
-### Version 14.4.0
+### [Version 14.4.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v14.4.0)
 
  - *ADDED:* Added new `ManagedIdentity` authentication type to eliminate the need for a UserName and Password to authenticate to Azure SQL databases that have Azure AD authentication enabled and identity assigned
  - *ADDED:* Ability to use Managed Identity for Service Bus, Event Hub and Blob storage connections with most services (see [managed_identity.md](/docs/managed_identity.md) for details and limitations)
@@ -147,7 +146,7 @@ _ *ADDED:* Option to provide Azure AD Tenant ID for deployments. This will be ne
  - *UPDATED:* Monitoring of remaining queue messages only when Service Bus is used, but no Event Hub connection is provided
  - *UPDATED:* Reorganized Unit Test settings file creation scripts to group by execution compute type
 
-### Version 14.3.0
+### [Version 14.3.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v14.3.0)
 
 - *ADDED:* Managed Identity and Key Vault support for Container Apps
 - *ADDED:* Categorized subcommands in command line help output
@@ -156,14 +155,14 @@ _ *ADDED:* Option to provide Azure AD Tenant ID for deployments. This will be ne
 - *FIXED:* Missing custom container registry settings on ACI deployments
 - *ADDED:* Added new package management command `sbm unpack` to extract the contents of an SMB file into scripts and SBX control file
 
-### Version 14.2.1
+### [Version 14.2.1](https://github.com/mmckechney/SqlBuildManager/releases/tag/v14.2.1)
 
 - *UPDATED:* Updated Azure Container App resource manager API
 - *FIXED:* Build issue with Batch deployments in .NET 6
 - *FIXED:* Updated AKS creation script to fix VNET assignment
 - *UPDATED:* Updated Azure SDK packages to latest versions (requiring some code changes)
 
-### Version 14.2.0
+### [Version 14.2.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v14.2.0)
 
 - *ADDED:* You can now use Azure Container Apps as a compute platform for leveraging database builds with the new `sbm containerapps` commands. See the [Azure Container Apps documentation](docs/containerapp.md) for background, information and how-to examples
 - *ADDED:* New options for container image tags and container registries for all container options (Azure Container Apps, Kubernetes, Azure Container Instance)
@@ -180,7 +179,7 @@ _ *ADDED:* Option to provide Azure AD Tenant ID for deployments. This will be ne
 
 - *ADDED:* New argument `--stream` for `sbm k8s monitor` and `sbm aci monitor` as a flag whether or not to output the individual database commit/errors messages. Default is `false`
 
-### **Version 14.0.0**
+### [Version 14.0.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v14.0.0)
 
 There are three new options to massively parallel processing: [Azure Container Apps](docs/containerapp.md), [Kubernetes](docs/kubernetes.md) and [Azure Container Instance](docs/aci.md)!
 
@@ -200,21 +199,21 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
 - *UPDATED:* Automation scripts `/scripts/templates` have been updated to simplify the creation of Azure resources, runtime, secrets file and pushing secrets to Key Vault
 - *UPDATED:* Batch and Kubernetes now have Managed Identity assigned to allow seamless access to Key Vault
 
-### Version 13.1.0
+### [Version 13.1.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v13.1.0)
 
 - *UPDATED:* The `sbm create` command now has four sub-commands `fromscripts`,  `fromdiff`, `fromdacpacs` and `fromdacpacdiff`. See the [Command Line Reference](docs/commandline.md) for details and usage
 - **NOTE:** The `sbm scriptextract` command is being deprecated in favor of `sbm create fromdacpacdiff` and will be removed in a future release
 - *UPDATED:* Corrected how the `sbm build` local build command handles logging. It is now all encapsulated in the `.sbm` file as it should be
 - *UPDATED:* Documentation updates and improvements
 
-### Version 13.0.4
+### [Version 13.0.4](https://github.com/mmckechney/SqlBuildManager/releases/tag/v13.0.4)
 
 - *ADDED:* New command `sbm add` to add scripts to an existing SBM package or SBX project file from a list of scripts
 - *ADDED:* New command `sbm list` to output script information of SBM packages (run order, script name, date added/modified, user info, script ids, script hashes)
 - *UPDATED:* The `sbm create` command can now also create an SBX project file, not just an SBM package
 - *UPDATED:* Tabular output for `sbm policycheck` command to make it easier to read. Defaulting enterprise config to GitHub file.
 
-### Version 13.0.3
+### [Version 13.0.3](https://github.com/mmckechney/SqlBuildManager/releases/tag/v13.0.3)
 
 - *FIXED:* Update to Dacpac change scripts to identify new header delimiter
 - *FIXED:* Issue creating scripts between incompatible SQL Server versions. Will now output a warning and continue to create the scripts with the flag `AllowIncompatiblePlatform=true` 
@@ -222,7 +221,7 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
 - *UPDATED:* Can now use Windows authentication for DACPAC creation
 - *UPDATED:* updated NuGet packages
 
-### Version 13.0.2
+### [Version 13.0.2](https://github.com/mmckechney/SqlBuildManager/releases/tag/v13.0.2)
 
 - *FIXED:* Update to ensure all Queue messages are retrieved efficiently
 - *ADDED:* New utility method `sbm batch dequeue` to remove all messages from the Service Bus Queue topic (without processing them)
@@ -230,12 +229,12 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
 - *FIXED:* Issue with SQL text syntax highlighting formatting in .NET 5.0
 - **NOTE:** Removed "Construct Command Line" menu options from Windows UI. Users should leverage the generated help docs for sbm.exe
 
-### Version 13.0.1
+### [Version 13.0.1](https://github.com/mmckechney/SqlBuildManager/releases/tag/v13.0.1)
 
 - *FIXED:* Updated distribution algorithm for `--concurrencytype` of `Server` and `MaxPerServer` when number of Batch nodes is very close to the number of SQL Server targets. Was yielding less than the number of nodes.  
 - *FIXED:* Updated Service Bus message retrieval to better manage when messages not matching the job name are in large quantity
 
-### Version 13.0.0
+### [Version 13.0.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v13.0.0)
 
 - *ADDED:* New option to leverage Azure Service Bus Topic as a database target source. See the [Azure Batch](docs/azure_batch.md) docs for more detail
 - *ADDED:* New command option `--settingsfilekey`, a key for the encryption of sensitive information in the settings file. If provided when saving the settings file, it of course must also be provided when using the settings file. This version moved away from a static (and not really secure) encryption key used prior. The argument value can be either the key string or a file path to a key file. The key may also be 'silently' provided by setting a `sbm-settingsfilekey` Environment variable. If not provided a machine value will be used.
@@ -245,7 +244,7 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
 
 - *UPDATED:* Removed log4net logging. Unified logging via ILogger created in SqlBuildManager.Logging. Implements Serilog
 
-### Version 12.0.0
+### [Version 12.0.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v12.0.0)
 
 - **NOTE:** **Removed old style command line (leveraging the `/Action=verb` flag etc.). Run `sbm --help` for instructions**
 - **NOTE:** Now built against .NET 5 and .NET Core 3.1
@@ -253,24 +252,24 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
 - *UPDATED:* Now leveraging `Microsoft.SqlServer.DACFx` NuGet package instead of `sqlpackage.exe` command line to manage DACPACs
 - *FIXED:* Updated `BlueSkyDev.Logging.AzureEventHubAppender` to v1.3.2 due to app hanging if EventHub connection string was incorrect
 
-### Version 11.3.1
+### [Version 11.3.1](https://github.com/mmckechney/SqlBuildManager/releases/tag/v11.3.1)
 
 - *UPDATED:* Changes to the deployment templates and PowerShell files to be more friendly with Azure DevOps release pipelines 
 - *FIXED:* `sbm batch run` regression introduced with new query option
 
-### Version 11.3.0
+### [Version 11.3.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v11.3.0)
 
 - **NOTE:** **The old style command line (leveraging the `/Action=verb` flag etc.) will be deprecated soon!**
 - *ADDED:* New querying across databases from command line for threaded and batch [`sbm batch query`] and [`sbm threaded query`]. Brings the exsting UI feature (Action-> Configure Multi server/Database run-> Reports -> Adhoc Query Execution) to command line  
 - *UPDATED:* Running a threaded update is now performed via [`sbm threaded run`] (vs just [`sbm threaded`]), now that there is also a query option for threaded runs
 
-### Version 11.2.0
+### [Version 11.2.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v11.2.0)
 
 - *ADDED:* The Batch processors now work on Linux worker nodes!
 - *UPDATED:* New batch command option to support Linux: `--os [Windows,Linux]`. Note also that the `--batchpoolname` option now has important relevance for Batch accounts that have both Linux and Windows pools
 - *UPDATED:* The Azure setup scripts (see /doc/setup_azure_environment) now also include setting up a Linux pool and the creation of settings files and application package zips for both environments
 
-### Version 11.1.0
+### [Version 11.1.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v11.1.0)
 
 - **NOTE:** Now built against .NET Standard 2.1 and .NET Core 3.1
 - *ADDED:* New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution
@@ -281,14 +280,14 @@ You will also need to be logged into Azure if you are leveraging Azure Key Vault
 		
 - **NOTE:** The CLI and core UI components of the app have been thoroughly tested. Some ancillary UI pieces have not. If you find an issue, please log it in GitHub
 
-### Version 11.0.0
+### [Version 11.0.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v11.0.0)
 
 - **NOTE:** MAJOR CHANGE -- removed the legacy Azure Cloud Service deployment model. Please update to use the Azure Batch model instead!
 - *ADDED:* New feature to allow Azure EventHub logging for Azure Batch and Threaded model execution
 - *UPDATED:* Refactored unit tests to separate those that are dependent on a local build environment and SQLExpress install and those that are not
 - *ADDED:* YML files for Azure DevOps builds (and changes to ensure they build successfully)
 
-### Version 10.4.4
+### [Version 10.4.4](https://github.com/mmckechney/SqlBuildManager/releases/tag/v10.4.4)
 
 - *ADDED:* Added command line argument `/DefaultScriptTimeout` (integer) to allow custom settings for the timeout of scripts when created from a DACPAC. Default is 500 seconds
 - *UPDATED:* Refactored the `/TimeoutRetryCount` (integer) setting so it will be included in the `/SettingsFile`. This setting will retry build failures `X` times if the build fails because of any timeout error that results in a build rollback
