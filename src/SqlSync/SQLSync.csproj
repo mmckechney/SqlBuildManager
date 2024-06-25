@@ -345,7 +345,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.3.563" />
+    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.3.566" />
     <PackageReference Include="morelinq" Version="4.2.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
@@ -355,7 +355,7 @@
     <PackageReference Include="Serilog.Sinks.Async" Version="2.0.0" />
     <PackageReference Include="Serilog.Sinks.AzureEventHub" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
   </ItemGroup>
   
   <ItemGroup>
