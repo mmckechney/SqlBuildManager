@@ -39,17 +39,17 @@
 		<PackageReference Include="Azure.ResourceManager.EventHubs" Version="1.1.0" />
 		<PackageReference Include="Azure.ResourceManager.Network" Version="1.8.0" />
 		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.6.0" />
-		<PackageReference Include="Azure.ResourceManager.Resources" Version="1.7.3" />
+		<PackageReference Include="Azure.ResourceManager.Resources" Version="1.8.0" />
 		<!--<PackageReference Include="Microsoft.Azure.Management.Batch" Version="15.0.0" />-->
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
 		<PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.3.566" />
-		<PackageReference Include="morelinq" Version="4.2.0" />
+		<PackageReference Include="morelinq" Version="4.3.0" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
 		<PackageReference Include="Serilog.Expressions" Version="5.0.0" />
 		<PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
