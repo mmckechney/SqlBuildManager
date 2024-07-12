@@ -27,7 +27,7 @@
 		<ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Azure.Core" Version="1.40.0" />
+		<PackageReference Include="Azure.Core" Version="1.41.0" />
 		<PackageReference Include="Azure.Identity" Version="1.12.0" />
 		<PackageReference Include="Azure.Messaging.EventHubs" Version="5.11.3" />
 		<PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.11.3" />
@@ -54,7 +54,7 @@
 		<PackageReference Include="Serilog.Expressions" Version="5.0.0" />
 		<PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
-		<PackageReference Include="Serilog.Settings.Configuration" Version="8.0.1" />
+		<PackageReference Include="Serilog.Settings.Configuration" Version="8.0.2" />
 		<PackageReference Include="Serilog.Sinks.Async" Version="2.0.0" />
 		<PackageReference Include="Serilog.Sinks.AzureEventHub" Version="6.0.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
