@@ -65,7 +65,7 @@
 		<PackageReference Include="System.ComponentModel.EventBasedAsync" Version="4.3.0" />
 		<PackageReference Include="System.DirectoryServices" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Azure.Batch" Version="16.2.0" />
-		<PackageReference Include="Azure.Storage.Blobs" Version="12.21.1" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.21.2" />
 		<PackageReference Include="YamlDotNet" Version="16.0.0" />
 	</ItemGroup>
 	<ItemGroup>
