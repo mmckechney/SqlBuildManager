@@ -19,7 +19,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup .NET ${{ env.DOTNET_FRAMEWORK_VERSION }}
       uses: actions/setup-dotnet@v1
@@ -69,19 +69,19 @@ jobs:
 
     # .NET 7 artifacts
     - name: Upload a Build Artifact sbm-windows
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sbm-windows-${{ env.DOTNET_VERSION }}
         path: "./src/SqlBuildManager.Console/bin/Release/${{ env.DOTNET_VERSION }}/win-x64/publish"
 
     - name: Upload a Build Artifact sbm-linux
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sbm-linux-${{ env.DOTNET_VERSION }}
         path: "./src/SqlBuildManager.Console/bin/Release/${{ env.DOTNET_VERSION }}/linux-x64/publish"
 
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: SqlBuildManager Desktop ${{ env.DOTNET_VERSION }}
         path: "./src/SqlSync/bin/Release/${{ env.DOTNET_VERSION }}-windows/win-x64/publish"     
