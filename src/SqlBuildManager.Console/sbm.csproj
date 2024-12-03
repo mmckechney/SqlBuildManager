@@ -42,13 +42,13 @@
 		<PackageReference Include="Azure.ResourceManager.Resources" Version="1.9.0" />
 		<!--<PackageReference Include="Microsoft.Azure.Management.Batch" Version="15.0.0" />-->
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
-		<PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.4.92" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+		<PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.5.57" />
 		<PackageReference Include="morelinq" Version="4.3.0" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
 		<PackageReference Include="Serilog.Expressions" Version="5.0.0" />
@@ -65,8 +65,8 @@
 		<PackageReference Include="System.ComponentModel.EventBasedAsync" Version="4.3.0" />
 		<PackageReference Include="System.DirectoryServices" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Azure.Batch" Version="16.3.1" />
-		<PackageReference Include="Azure.Storage.Blobs" Version="12.22.2" />
-		<PackageReference Include="YamlDotNet" Version="16.2.0" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
+		<PackageReference Include="YamlDotNet" Version="16.2.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="Aci\aci_arm_template.json">
