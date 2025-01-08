@@ -346,7 +346,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.5.57" />
-    <PackageReference Include="morelinq" Version="4.3.0" />
+    <PackageReference Include="morelinq" Version="4.4.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
