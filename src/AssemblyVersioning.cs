@@ -6,8 +6,8 @@
 // associated with an assembly.
 //
 [assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2024")]
-[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2024")]
+[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2025")]
+[assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2025")]
 
 //
 // Version information for an assembly consists of the following four values:
@@ -24,5 +24,5 @@
 //   2) Update the installer version to match the AssemblyVersion below.
 //   These can be found in SqlBuildManager.Setup -> Organize Your Setup -> General Information
 
-[assembly: AssemblyVersion("15.6.2")]
-[assembly: AssemblyFileVersion("15.6.2")]
+[assembly: AssemblyVersion("15.6.3")]
+[assembly: AssemblyFileVersion("15.6.3")]

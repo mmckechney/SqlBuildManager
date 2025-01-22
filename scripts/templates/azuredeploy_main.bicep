@@ -179,6 +179,9 @@ module aks './Modules/aks.bicep' = if(deployAks){
     subnetName: aksSubnetVar
     vnetName: vnetVar
   }
+  dependsOn: [
+      networkResource
+  ]
 }
 resource storageAccountName 'Microsoft.Storage/storageAccounts@2018-07-01' = {
   name: storageAccountNameVar
