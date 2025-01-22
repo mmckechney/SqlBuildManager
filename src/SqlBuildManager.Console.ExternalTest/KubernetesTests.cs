@@ -434,8 +434,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        //Can't run local unit tests with MI since an SBM package needs to be created  :-)
-        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
+        //Can't run local unit tests with MI or KeyVault since an SBM package needs to be created  :-)
         [DataRow("TestConfig/settingsfile-k8s-sec.json")]
         [DataTestMethod]
         public void Kubernetes_Run_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile)

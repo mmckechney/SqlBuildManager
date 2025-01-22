@@ -3,6 +3,7 @@
     internal enum PodStatus
     {
         Unknown,
+        Creating,
         Running,
         Completed,
         Error,
