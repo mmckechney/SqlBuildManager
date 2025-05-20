@@ -130,7 +130,7 @@ if($shouldDeploy)
     }
 
 
-    Write-Host "Deplpoying Azure resources: Virtual Network, Subnets, Storage Account, Event Hub, Service Bus Topic, Key Vault, Identity and RBAC Assignments" -ForegroundColor Cyan
+    Write-Host "Deploying Azure resources: Virtual Network, Subnets, Storage Account, Event Hub, Service Bus Topic, Key Vault, Identity and RBAC Assignments" -ForegroundColor Cyan
 
     if($deployAks) {Write-Host "Deploying AKS Cluster" -ForegroundColor Cyan} else {Write-Host "Skipping AKS deployment" -ForegroundColor DarkBlue}
     if($deployBatch) {Write-Host "Deploying Batch Account" -ForegroundColor Cyan} else {Write-Host "Skipping Batch deployment" -ForegroundColor DarkBlue}

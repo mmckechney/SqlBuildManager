@@ -6,7 +6,7 @@ param sqladminname string = 'SqlBuildManagerSqlAdmin'
 
 @description('Value for SQL Admin password')
 @secure()
-param sqladminpassword string = 'ERFSC#$%Ygvswer'
+param sqladminpassword string
 
 @description('Number of test databases to create per server')
 param testDbCountPerServer int = 10

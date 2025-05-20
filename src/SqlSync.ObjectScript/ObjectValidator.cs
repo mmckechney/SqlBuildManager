@@ -51,12 +51,12 @@ namespace SqlSync.ObjectScript
                     return;
                 }
                 conn.ConnectionString = SqlSync.Connection.ConnectionHelper.GetConnectionString(connData);
-                string objectName = procRow["Name"].ToString();
-                string quoted_ident = Convert.ToBoolean(procRow["quoted_ident_on"]) ? "ON" : "OFF";
-                string ansi_nulls_on = Convert.ToBoolean(procRow["ansi_nulls_on"]) ? "ON" : "OFF";
-                string owner = procRow["owner"].ToString();
-                string type = procRow["type"].ToString();
-                string schema = procRow["schema"].ToString();
+                string objectName = procRow["Name"].ToString().Sanitize();
+                string quoted_ident = Convert.ToBoolean(procRow["quoted_ident_on"]) ? "ON" : "OFF".Sanitize();
+                string ansi_nulls_on = Convert.ToBoolean(procRow["ansi_nulls_on"]) ? "ON" : "OFF".Sanitize();
+                string owner = procRow["owner"].ToString().Sanitize();
+                string type = procRow["type"].ToString().Sanitize();
+                string schema = procRow["schema"].ToString().Sanitize();
 
                 //call sp_helptext to the create command
                 string getObjTextSql = string.Format("exec sp_helptext '{1}.{0}'", objectName, schema);
