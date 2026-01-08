@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 using System.Data.Entity.Core.EntityClient;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,6 +41,18 @@ namespace SqlBuildManager.Enterprise.CodeReview
                 codeReviewRow.ReviewStatus,
                 scriptText);
         }
+
+        public static string CalculateReviewCheckSum(CodeReview codeReview, string scriptText)
+        {
+            return CalculateReviewCheckSum(
+                codeReview.CodeReviewId ?? Guid.Empty,
+                codeReview.ReviewBy ?? string.Empty,
+                codeReview.ReviewDate ?? DateTime.MinValue,
+                codeReview.Comment ?? string.Empty,
+                codeReview.ReviewNumber ?? string.Empty,
+                codeReview.ReviewStatus ?? 0,
+                scriptText);
+        }
         internal static string GetConsolidatedBase(Guid codeReviewId, string reviewer, DateTime reviewDate, string comment, string reviewNumber, short reviewStatus, string scriptText)
         {
             string consolidated = String.Format(colsolidatedFormat, codeReviewId.ToString(), reviewer, reviewDate.ToString(), comment, reviewNumber, reviewStatus, scriptText, randomStuff1, randomStuff2);
@@ -51,6 +64,13 @@ namespace SqlBuildManager.Enterprise.CodeReview
 
             string newCheckSum = CalculateReviewCheckSum(codeReviewRow, scriptText);
 
+            return existingCheckSum == newCheckSum;
+        }
+
+        public static bool ValidateReviewCheckSum(CodeReview codeReviewRow, string scriptText)
+        {
+            string existingCheckSum = codeReviewRow.CheckSum ?? string.Empty;
+            string newCheckSum = CalculateReviewCheckSum(codeReviewRow, scriptText);
             return existingCheckSum == newCheckSum;
         }
         public static void ValidateReviewCheckSum(SqlSyncBuildData sqlSyncBuildData, string baseDirectory)
@@ -74,6 +94,13 @@ namespace SqlBuildManager.Enterprise.CodeReview
                 }
             }
             sqlSyncBuildData.AcceptChanges();
+        }
+
+        public static SqlSyncBuildDataModel ValidateReviewCheckSum(SqlSyncBuildDataModel model, string baseDirectory)
+        {
+            var ds = model.ToDataSet();
+            ValidateReviewCheckSum(ds, baseDirectory);
+            return ds.ToModel();
         }
 
         public static void SetValidationKey(ref SqlSyncBuildData.CodeReviewRow codeReviewRow)
@@ -165,6 +192,13 @@ namespace SqlBuildManager.Enterprise.CodeReview
             }
 
         }
+
+        public static SqlSyncBuildDataModel SaveCodeReview(SqlSyncBuildDataModel model, SqlSyncBuildData.ScriptRow scriptRow, string scriptText, string comment, string reviewBy, DateTime reviewDate, string reviewNumber, int reviewStatus)
+        {
+            var ds = model.ToDataSet();
+            bool ok = SaveCodeReview(ref ds, ref scriptRow, scriptText, comment, reviewBy, reviewDate, reviewNumber, reviewStatus);
+            return ok ? ds.ToModel() : model;
+        }
         public static void SaveCodeReviewToDatabase(SqlSyncBuildData.CodeReviewRow codeReviewRow)
         {
             var task = Task.Factory.StartNew(() =>
@@ -196,6 +230,38 @@ namespace SqlBuildManager.Enterprise.CodeReview
                         log.Error(String.Format("Unable to save new CodeReview entity for {0}.",codeReviewRow.CodeReviewId), exe);
                     }
                 });
+        }
+
+        public static void SaveCodeReviewToDatabase(SqlSyncBuildDataModel model, CodeReview codeReview)
+        {
+            var rowDs = model.ToDataSet();
+            // map CodeReview POCO -> EF entity (same type name but different namespace; assuming `SqlCodeReviewEntities` uses `CodeReview` EF type)
+            var task = Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    SqlCodeReviewEntities e = GetNewEntity();
+                    var entity = new CodeReview()
+                    {
+                        CheckSum = codeReview.CheckSum,
+                        CodeReviewId = codeReview.CodeReviewId ?? Guid.NewGuid(),
+                        Comment = codeReview.Comment,
+                        ReviewBy = codeReview.ReviewBy,
+                        ReviewDate = codeReview.ReviewDate ?? DateTime.UtcNow,
+                        ReviewNumber = codeReview.ReviewNumber,
+                        ReviewStatus = codeReview.ReviewStatus ?? 0,
+                        ScriptId = codeReview.ScriptId,
+                        ValidationKey = codeReview.ValidationKey
+                    };
+                    e.AddToCodeReviews(entity);
+                    e.SaveChanges();
+                    log.DebugFormat("Saved new CodeReview entity for {0} (model overload).", entity.CodeReviewId);
+                }
+                catch (Exception exe)
+                {
+                    log.Error("Error saving CodeReview entity (model overload)", exe);
+                }
+            });
         }
 
         public static bool UpdateCodeReview(ref SqlSyncBuildData buildData, ref SqlSyncBuildData.CodeReviewRow reviewRow, string scriptText)

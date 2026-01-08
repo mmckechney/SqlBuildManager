@@ -1,5 +1,6 @@
 using Algorithm.Diff;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -39,6 +40,12 @@ namespace SqlSync.Compare
             onlyInRight = GetFileContents(extractPathRightFile, filesOnlyInRight);
             onlyInLeft = GetFileContents(extractPathLeftFile, filesOnlyInLeft);
 
+        }
+
+        public void GetUnifiedDiff(SqlSyncBuildDataModel leftBuildDataModel, string leftTempFilePath, string rightBuildZipPath, out List<FileCompareResults> onlyInLeft, out List<FileCompareResults> onlyInRight, out List<FileCompareResults> modified, out string rightFileTempDirectory)
+        {
+            var leftDs = leftBuildDataModel.ToDataSet();
+            GetUnifiedDiff(ref leftDs, leftTempFilePath, rightBuildZipPath, out onlyInLeft, out onlyInRight, out modified, out rightFileTempDirectory);
         }
         public List<FileCompareResults> GetFileContents(string basePath, List<FileCompareResults> fileList)
         {

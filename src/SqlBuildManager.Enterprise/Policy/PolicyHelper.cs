@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Objects;
 using System;
 using System.Collections.Generic;
@@ -314,6 +315,12 @@ namespace SqlBuildManager.Enterprise.Policy
             return scriptPackage;
 
         }
+
+        public Package CreateScriptPolicyPackage(SqlSyncBuildDataModel buildDataModel, string extractedProjectPath)
+        {
+            var ds = buildDataModel.ToDataSet();
+            return CreateScriptPolicyPackage(ds, extractedProjectPath);
+        }
         public static string TransformViolationstoXml(Package currentViolations)
         {
             try
@@ -398,6 +405,7 @@ namespace SqlBuildManager.Enterprise.Policy
             passed = true;
             List<string[]> policyReturns = new List<string[]>();
             SqlSyncBuildData buildData = null;
+            SqlSyncBuildDataModel buildModel = null;
 
             if (String.IsNullOrEmpty(buildPackageName))
                 return policyReturns;
@@ -415,18 +423,20 @@ namespace SqlBuildManager.Enterprise.Policy
                                            ref projFileName,
                                            out result);
                     SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projFileName, false);
+                    buildModel = buildData.ToModel();
                     break;
                 case ".sbx":
                     projectFilePath = Path.GetDirectoryName(buildPackageName);
                     SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, buildPackageName, false);
+                    buildModel = buildData.ToModel();
                     break;
                 default:
                     return policyReturns;
             }
 
-            if (buildData != null)
+            if (buildModel != null)
             {
-                Package pkg = CreateScriptPolicyPackage(buildData, projectFilePath);
+                Package pkg = CreateScriptPolicyPackage(buildModel, projectFilePath);
                 passed = !pkg.Select(p => p.Violations.Select(v => v.Severity == highSeverity)).Any();
 
                 var violationMessages = from s in pkg
