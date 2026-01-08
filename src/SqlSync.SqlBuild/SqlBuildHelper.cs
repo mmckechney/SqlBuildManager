@@ -6,6 +6,8 @@ using SqlSync.Connection;
 using SqlSync.Constants;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.SqlLogging;
+using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
+using BuildModels = SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -140,7 +142,7 @@ namespace SqlSync.SqlBuild
         /// <summary>
         /// List of the scripts that have been run and will be committed when the build is committed.
         /// </summary>
-        private List<CommittedScript> committedScripts = new List<CommittedScript>();
+        private List<LoggingCommittedScript> committedScripts = new List<LoggingCommittedScript>();
         /// <summary>
         /// Used by the remote service to record the user that requested the build (vs. the user id used in execution) since they may be different
         /// </summary>
@@ -589,7 +591,7 @@ namespace SqlSync.SqlBuild
 
                     //Add script Id to the arraylist for use later
                     string scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts); // String.Join("\r\n"+BatchParsing.Delimiter+"\r\n",batchScripts);
-                    CommittedScript tmpCommmittedScr = new CommittedScript(new Guid(myRow.ScriptId), myRunRow.FileHash, runSequence++, scriptText, myRow.Tag, cData.ServerName, cData.DatabaseName);
+                    LoggingCommittedScript tmpCommmittedScr = new LoggingCommittedScript(new Guid(myRow.ScriptId), myRunRow.FileHash, runSequence++, scriptText, myRow.Tag, cData.ServerName, cData.DatabaseName);
 
 
                     //Create a transaction save point
@@ -1396,7 +1398,7 @@ namespace SqlSync.SqlBuild
                 try
                 {
 
-                    CommittedScript script = committedScripts[i];
+                    LoggingCommittedScript script = committedScripts[i];
                     DataRow[] rows = buildData.Script.Select(buildData.Script.ScriptIdColumn.ColumnName + " ='" + script.ScriptId.ToString() + "'");
                     if (rows.Length > 0)
                     {
@@ -2118,7 +2120,7 @@ namespace SqlSync.SqlBuild
         /// This leaves the original object in tact.
         /// </summary>
         /// <returns>SqlSyncBuildData.ScriptDataTable populated with the ScriptRows from the SqlSyncBuildData object</returns>
-		public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(SqlSyncBuildData buildData)
+            public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(SqlSyncBuildData buildData)
         {
             if (buildData == null)
             {
@@ -2149,6 +2151,18 @@ namespace SqlSync.SqlBuild
                 log.LogError(exe, "Unable to get script rows from SqlSyncBuildData object");
             }
             return null;
+        }
+
+        public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(BuildModels.SqlSyncBuildDataModel buildDataModel)
+        {
+            if (buildDataModel == null)
+            {
+                log.LogWarning("The SqlSyncBuildDataModel object passed into \"GetScriptSourceTable\" was null. Unable to process build");
+                return null;
+            }
+
+            var ds = buildDataModel.ToDataSet();
+            return GetScriptSourceTable(ds);
         }
         internal void SaveBuildDataSet(bool fireSavedEvent)
         {

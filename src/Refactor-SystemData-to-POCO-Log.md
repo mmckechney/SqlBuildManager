@@ -33,7 +33,7 @@
 | 6 | Design | Document global design decisions | Done |  |
 | 7 | Execution | Select first module to refactor | Done |  |
 | 8 | Design | Define mapping helpers (DataRow/DataTable→POCO) | Done | `ServerConnectConfigMappers` created |
-| 9 | SqlSync.SqlBuild | Replace `SqlSyncBuildData` typed dataset with POCOs | Planned | Tables: SqlSyncBuildProject, Scripts, Script, Builds, Build, ScriptRun, CommittedScript, CodeReview |
+| 9 | SqlSync.SqlBuild | Replace `SqlSyncBuildData` typed dataset with POCOs | In Progress | Tables: SqlSyncBuildProject, Scripts, Script, Builds, Build, ScriptRun, CommittedScript, CodeReview |
 | 10 | SqlSync.SqlBuild | Replace `ServerConnectConfig` typed dataset with POCOs | Done | POCOs + mappers + Utility updated; UI module removed |
 | 11 | SqlSync.ObjectScript | Replace `AutoScriptingConfig` typed dataset with POCOs | Planned | Tables: AutoScripting, DatabaseScriptConfig, PostScriptingAction |
 | 12 | SqlSync.DbInformation | Replace `SizeAnalysis`, `ServerSizeSummary` DataTables | Planned |  |
@@ -45,6 +45,10 @@
 - 2026-01-08 01:00 UTC — `dotnet test SqlSync.SqlBuild.Dependent.UnitTest` (partial): warnings CS8632 (nullable) and MSTEST warnings; run canceled after ~300s (long-running tests). Added `#nullable enable` to models to resolve CS8632.
 - 2026-01-08 01:30 UTC — User removed `SqlSync` UI module; will not modify that module further.
 - 2026-01-08 01:35 UTC — Added `SqlSyncBuildDataModel` POCOs and `SqlSyncBuildDataMappers` for all typed tables.
+- 2026-01-08 01:50 UTC — Added model overloads to `SqlBuildFileHelper` (`LoadSqlBuildProjectFile`/`SaveSqlBuildProjectFile`, `CreateShellSqlSyncBuildDataModel`).
+- 2026-01-08 01:55 UTC — `dotnet test SqlSync.SqlBuild.UnitTest` succeeded (55 tests). Model round-trip tests added.
+- 2026-01-08 02:05 UTC — Added `GetScriptSourceTable` overload for models; resolved `CommittedScript` ambiguity.
+- 2026-01-08 02:10 UTC — `dotnet test SqlSync.SqlBuild.UnitTest` succeeded (56 tests). Added model source-table test.
 - 2026-01-08 01:45 UTC — `dotnet test SqlSync.SqlBuild.UnitTest` succeeded (53 tests, 0 failures). Excluded Dependent/External suites.
 - 2026-01-08 00:20 UTC — Decisions confirmed: **record class** preference, keep names unchanged, stick with `DateTime`.
 - 2026-01-08 00:20 UTC — Selected **ServerConnectConfig** as first module; mapping helpers in progress.

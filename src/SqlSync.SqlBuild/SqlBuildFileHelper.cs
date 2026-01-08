@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using SqlSync.SqlBuild.Models;
 
 namespace SqlSync.SqlBuild
 {
@@ -163,6 +164,19 @@ namespace SqlSync.SqlBuild
             }
             log.LogDebug($"LoadSqlBuildProjectFile: Returning successfulLoad =  {successfulLoad.ToString()}.");
             return successfulLoad;
+        }
+
+        public static bool LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, string projFileName, bool validateSchema)
+        {
+            var ok = LoadSqlBuildProjectFile(out SqlSyncBuildData ds, projFileName, validateSchema);
+            model = ds.ToModel();
+            return ok;
+        }
+
+        public static SqlSyncBuildDataModel LoadSqlBuildProjectModel(string projFileName, bool validateSchema)
+        {
+            LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, projFileName, validateSchema);
+            return model;
         }
         #endregion
 
@@ -345,11 +359,23 @@ namespace SqlSync.SqlBuild
             return newData;
         }
 
+        public static SqlSyncBuildDataModel CreateShellSqlSyncBuildDataModel()
+        {
+            var ds = CreateShellSqlSyncBuildDataObject();
+            return ds.ToModel();
+        }
+
 
         public static void SaveSqlBuildProjectFile(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
         {
             buildData.WriteXml(projFileName);
             PackageProjectFileIntoZip(buildData, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs);
+        }
+
+        public static void SaveSqlBuildProjectFile(SqlSyncBuildDataModel model, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
+        {
+            var ds = model.ToDataSet();
+            SaveSqlBuildProjectFile(ref ds, projFileName, buildZipFileName, includeHistoryAndLogs);
         }
 
         public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout, bool includeHistoryAndLogs = true)
