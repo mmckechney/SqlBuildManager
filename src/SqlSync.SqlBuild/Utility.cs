@@ -12,27 +12,34 @@ namespace SqlSync.SqlBuild
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public const string ConfigFileName = "SqlSync.cfg";
+        [Obsolete("Use GetRecentServers(out IReadOnlyList<ServerConfiguration> serverConfigs)")]
         public static List<string> GetRecentServers(out ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl)
         {
-            serverConfigTbl = null;
-            string homePath = SqlBuildManager.Logging.Configure.AppDataPath;
-            List<string> recentDbs = new List<string>();
+            var recent = GetRecentServers(out IReadOnlyList<ServerConfiguration> serverConfigs);
+            serverConfigTbl = serverConfigs.ToDataTable();
+            return recent;
+        }
 
-            if (System.IO.File.Exists(Path.Combine(homePath, ConfigFileName)))
+        public static List<string> GetRecentServers(out IReadOnlyList<ServerConfiguration> serverConfigs)
+        {
+            serverConfigs = Array.Empty<ServerConfiguration>();
+            string homePath = SqlBuildManager.Logging.Configure.AppDataPath;
+            string cfgPath = Path.Combine(homePath, ConfigFileName);
+            List<string> recentDbs = new();
+
+            if (File.Exists(cfgPath))
             {
                 try
                 {
-                    ServerConnectConfig config = new ServerConnectConfig();
-                    config.ReadXml(Path.Combine(homePath, ConfigFileName));
-                    serverConfigTbl = config.ServerConfiguration;
-                    DataView view = config.ServerConfiguration.DefaultView;
-                    view.Sort = config.ServerConfiguration.LastAccessedColumn.ColumnName + " DESC";
-                    for (int i = 0; i < view.Count; i++)
-                        recentDbs.Add(((ServerConnectConfig.ServerConfigurationRow)view[i].Row).Name);
+                    var model = ServerConnectConfigPersistence.Load(cfgPath);
+                    serverConfigs = model.ServerConfiguration
+                        .OrderByDescending(s => s.LastAccessed)
+                        .ToList();
+                    recentDbs.AddRange(serverConfigs.Select(s => s.Name));
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    log.LogError(ex, "Error reading recent servers from {CfgPath}", cfgPath);
                 }
             }
             return recentDbs;
@@ -44,25 +51,23 @@ namespace SqlSync.SqlBuild
                 userName = Cryptography.EncryptText(userName, ConnectionHelper.ConnectCryptoKey);
                 password = Cryptography.EncryptText(password, ConnectionHelper.ConnectCryptoKey);
                 string configFileFullPath = Path.Combine(SqlBuildManager.Logging.Configure.AppDataPath, ConfigFileName);
-                ServerConnectConfig config = new ServerConnectConfig();
-                if (File.Exists(configFileFullPath))
-                    config.ReadXml(configFileFullPath);
-
-                DataRow[] row = config.ServerConfiguration.Select(config.ServerConfiguration.NameColumn.ColumnName + " ='" + databaseName + "'");
-                if (row.Length == 0)
+                var model = ServerConnectConfigPersistence.Load(configFileFullPath);
+                var list = model.ServerConfiguration.ToList();
+                var existing = list.FirstOrDefault(x => string.Equals(x.Name, databaseName, StringComparison.OrdinalIgnoreCase));
+                var now = DateTime.UtcNow;
+                if (existing is null)
                 {
-                    config.ServerConfiguration.AddServerConfigurationRow(databaseName, DateTime.Now, userName, password, authType.ToString());
+                    list.Add(new ServerConfiguration(databaseName, now, userName, password, authType.ToString()));
                 }
                 else
                 {
-                    var r = (ServerConnectConfig.ServerConfigurationRow)row[0];
-                    r.LastAccessed = DateTime.UtcNow;
-                    r.UserName = userName;
-                    r.Password = password;
-                    r.AuthenticationType = authType.ToString();
-                    r.AcceptChanges();
+                    var updated = existing with { LastAccessed = now, UserName = userName, Password = password, AuthenticationType = authType.ToString() };
+                    var idx = list.IndexOf(existing);
+                    list[idx] = updated;
                 }
-                config.WriteXml(configFileFullPath);
+
+                var updatedModel = new ServerConnectConfigModel(list, model.LastProgramUpdateCheck, model.LastDirectory);
+                ServerConnectConfigPersistence.Save(configFileFullPath, updatedModel);
             }
             catch (Exception exe)
             {
@@ -73,10 +78,18 @@ namespace SqlSync.SqlBuild
         }
         public static AuthenticationType GetServerCredentials(ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl, string serverName, out string username, out string password)
         {
+            var pojo = serverConfigTbl.Cast<ServerConnectConfig.ServerConfigurationRow>()
+                .Select(r => r.ToModel())
+                .ToList();
+            return GetServerCredentials(pojo, serverName, out username, out password);
+        }
+
+        public static AuthenticationType GetServerCredentials(IReadOnlyList<ServerConfiguration> serverConfigs, string serverName, out string username, out string password)
+        {
             bool s;
-            if (serverConfigTbl != null)
+            if (serverConfigs != null)
             {
-                var row = serverConfigTbl.Where(r => r.Name.Trim().ToLower() == serverName.Trim().ToLower());
+                var row = serverConfigs.Where(r => r.Name.Trim().ToLower() == serverName.Trim().ToLower());
                 if (row.Any())
                 {
                     var r = row.First();

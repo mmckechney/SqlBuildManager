@@ -1,6 +1,0 @@
-${Title: Add Foreign Key <<Foreign Key Name>>}
-IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WITH (NOLOCK) WHERE CONSTRAINT_NAME = '<<Foreign Key Name>>')
-BEGIN
-	ALTER TABLE [<<Table Schema>>].[<<Table Name>>] ADD <<INSERT>>
-END
-GO

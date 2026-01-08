@@ -49,7 +49,7 @@ namespace SqlSync
 
         private SqlSync.Connection.AuthenticationType? initialAuthenticationType;
 
-        private ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl = null;
+        private IReadOnlyList<ServerConfiguration> serverConfigs = Array.Empty<ServerConfiguration>();
         [Category("Appearance")]
         public bool DisplayDatabaseDropDown
         {
@@ -524,7 +524,7 @@ namespace SqlSync
         {
             try
             {
-                string[] recentDbs = UtilityHelper.GetRecentServers(out serverConfigTbl).ToArray();
+                string[] recentDbs = UtilityHelper.GetRecentServers(out serverConfigs).ToArray();
                 if (recentDbs.Length > 0)
                 {
                     ddServers.Items.AddRange(recentDbs);
@@ -836,7 +836,7 @@ namespace SqlSync
         private void ddServers_SelectionChangeCommitted(object sender, EventArgs e)
         {
             string username, password;
-            Connection.AuthenticationType authType = UtilityHelper.GetServerCredentials(serverConfigTbl, ddServers.SelectedItem.ToString(), out username, out password);
+            Connection.AuthenticationType authType = UtilityHelper.GetServerCredentials(serverConfigs, ddServers.SelectedItem.ToString(), out username, out password);
 
             if (!string.IsNullOrWhiteSpace(username) || !string.IsNullOrWhiteSpace(password))
             {

@@ -25,7 +25,7 @@ namespace SqlSync
         private Label lblRecentServers;
         private ToolTip toolTip1;
         private IContainer components;
-        private ServerConnectConfig.ServerConfigurationDataTable serverConfigTbl = null;
+        private IReadOnlyList<ServerConfiguration> serverConfigs = Array.Empty<ServerConfiguration>();
 
         public string ProjectLabelText
         {
@@ -272,7 +272,7 @@ namespace SqlSync
             ddRecentServers.Items.Clear();
 
 
-            List<string> recentDbs = UtilityHelper.GetRecentServers(out serverConfigTbl);
+            List<string> recentDbs = UtilityHelper.GetRecentServers(out serverConfigs);
             ddRecentServers.Items.AddRange(recentDbs.ToArray());
             fireServerChangeEvent = true;
         }
@@ -289,7 +289,7 @@ namespace SqlSync
                     lblServer.Text = ddRecentServers.SelectedItem.ToString();
 
                     string username, password;
-                    AuthenticationType authType = UtilityHelper.GetServerCredentials(serverConfigTbl, ddRecentServers.SelectedItem.ToString(), out username, out password);
+                    AuthenticationType authType = UtilityHelper.GetServerCredentials(serverConfigs, ddRecentServers.SelectedItem.ToString(), out username, out password);
 
                     ServerChanged(this, ddRecentServers.SelectedItem.ToString(), username, password, authType);
                 }
