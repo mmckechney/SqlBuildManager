@@ -19,7 +19,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SqlSync.SqlBuild
-{
+            return model; // Ensure the model is returned correctly
     /// <summary>
     /// Summary description for SqlBuildHelper.
     /// </summary>
@@ -170,7 +170,7 @@ namespace SqlSync.SqlBuild
         public void ProcessMultiDbBuild(MultiDbData multiDbRunData, string projectFileName, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             this.projectFileName = projectFileName;
-            ProcessMultiDbBuild(multiDbRunData, bgWorker, e);
+            ProcessMultiDbBuild(multiDbRunData, bgWorker, e); // Call to process the multi-db build
         }
         /// <summary>
         /// Used when the user wants to run the build across multiple databases and/or servers
@@ -184,8 +184,9 @@ namespace SqlSync.SqlBuild
             committedScripts.Clear();
             connectDictionary.Clear();
 
-            List<SqlSyncBuildData.BuildRow> buildResults = new List<SqlSyncBuildData.BuildRow>();
-            foreach (ServerData srvData in multiDbRunData)
+            SqlSyncBuildDataXmlSerializer.Save(Path.Combine(projFilePath, XmlFileNames.MainProjectFile), model);
+            var ds = model.ToDataSet(); // Convert model to DataSet
+            return PackageProjectFileIntoZip(ds, projFilePath, zipFileName, includeHistoryAndLogs); // Package the project file into a zip
             {
                 SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData();
                 runData.BuildData = multiDbRunData.BuildData;
