@@ -57,9 +57,9 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
    - **Suggested commit**: `refactor: persist ServerConnectConfig/AutoScriptingConfig via POCO`
 
 8. **ScriptRunLog / SizeAnalysis / ServerSizeSummary**
-   - **Goal**: Replace DataTable-derived classes with POCO collections.
-   - **Components**: Introduce collection types; update consumers and mappers.
-   - **Tests**: Add/adjust unit tests in `SqlSync.SqlBuild.UnitTest` & `SqlSync.DbInformation.UnitTest`.
+   - ✅ **Done**: Replaced DataTable-derived classes with POCO collections/models.
+   - **Components**: `ScriptRunLogEntry` model & reader mappers; `SizeAnalysisModel` & `ServerSizeInfo` lists; InfoHelper returns models.
+   - **Tests**: Updated `SqlSync.SqlBuild.UnitTest` & `SqlSync.DbInformation.UnitTest`.
    - **Suggested commit**: `refactor: remove DataTable-derived log/info tables`
 
 9. **Dependent/External Tests**
@@ -88,8 +88,8 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
    - `SqlSync.SqlBuild/SQLSyncBuildProject.Designer.cs`
    - `SqlSync.SqlBuild/ServerConnectConfig.Designer.cs`
    - `SqlSync.ObjectScript/AutoScriptingConfig.Designer.cs`
-   - `SqlSync.DbInformation/SizeAnalysis.cs`, `ServerSizeSummary.cs`
-- **Goal**: remove these once POCO persistence & collections are in place.
+- **Removed**: `SqlSync.DbInformation/SizeAnalysis.cs`, `ServerSizeSummary.cs`, `SqlSync.SqlBuild/ScriptRunLog.cs`
+- **Goal**: remove remaining designers once no external contract depends on them.
 
 ## Follow-Ups / Technical Debt
 - Resolve MSTest `TestContext` analyzer warnings.
@@ -97,6 +97,7 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
 - Add CI filters to skip Dependent/External projects.
 
 ## Log (Recent)
+- 2026-01-08 — ScriptRunLog -> POCO entries; DbInformation DataTables removed; all unit tests passing.
 - 2026-01-08 — All POCO migrations complete; model APIs added; UnitTests passing; Dependent/External excluded.
 - 2026-01-08 — Console UnitTest passing; icon path conditional.
 - 2026-01-08 — DbInformation POCO/mappers added; DbInformation UnitTest passing.

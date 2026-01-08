@@ -10,21 +10,21 @@ namespace SqlSync.DbInformation.UnitTest
     public class SizeAnalysisModelTest
     {
         [TestMethod]
-        public void ToModel_FromDataTable_Works()
+        public void ToModel_FromModelLists_Works()
         {
-            var table = new SizeAnalysisTable();
-            var row = table.NewRow();
-            row["Table Name"] = "dbo.Table";
-            row["Row Count"] = 10;
-            row["Data Size"] = 1;
-            row["Index Size"] = 2;
-            row["Unused Size"] = 1;
-            row["Total Reserved Size"] = 4;
-            row["Average Data Row Size"] = 0.1;
-            row["Average Index Row Size"] = 0.2;
-            table.Rows.Add(row);
-
-            var model = table.ToModel();
+            var model = new SizeAnalysisModel(
+                SizeAnalysis: new[] {
+                    new SizeAnalysis(
+                        TableName: "dbo.Table",
+                        RowCount: 10,
+                        DataSize: 1,
+                        IndexSize: 2,
+                        UnusedSize: 1,
+                        TotalReservedSize: 4,
+                        AverageDataRowSize: 0.1,
+                        AverageIndexRowSize: 0.2)
+                },
+                ServerSizeSummary: Array.Empty<ServerSizeInfo>());
             Assert.AreEqual(1, model.SizeAnalysis.Count);
             var item = model.SizeAnalysis.Single();
             Assert.AreEqual("dbo.Table", item.TableName);

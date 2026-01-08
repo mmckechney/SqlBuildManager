@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1547,18 +1548,21 @@ namespace SqlSync.SqlBuild
         /// <param name="scriptId">Guid for the script in question</param>
         /// <param name="connData">The ConnectionData object for the target database</param>
         /// <returns>ScriptRunLog table containing the history</returns>
-        public static ScriptRunLog GetScriptRunLog(System.Guid scriptId, ConnectionData connData)
+        public static IReadOnlyList<SqlSync.SqlBuild.Models.ScriptRunLogEntry> GetScriptRunLog(System.Guid scriptId, ConnectionData connData)
         {
             try
             {
                 SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC");
-                ScriptRunLog log = new ScriptRunLog();
                 cmd.Parameters.AddWithValue("@ScriptId", scriptId);
                 cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
-                SqlDataAdapter adapt = new SqlDataAdapter(cmd);
-                DataSet ds = new DataSet();
-                adapt.Fill(log);
-                return log;
+                cmd.Connection.Open();
+                var list = new List<SqlSync.SqlBuild.Models.ScriptRunLogEntry>();
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    list.Add(ReadScriptRunLogEntry(reader));
+                }
+                return list;
             }
             catch (Exception e)
             {
@@ -1573,24 +1577,68 @@ namespace SqlSync.SqlBuild
         /// <param name="scriptId">Guid for the script in question</param>
         /// <param name="connData">The ConnectionData object for the target database</param>
         /// <returns>ScriptRunLog table containing the history</returns>
-        public static ScriptRunLog GetObjectRunHistoryLog(string objectFileName, ConnectionData connData)
+        public static IReadOnlyList<SqlSync.SqlBuild.Models.ScriptRunLogEntry> GetObjectRunHistoryLog(string objectFileName, ConnectionData connData)
         {
             try
             {
                 SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WITH (NOLOCK) WHERE [ScriptFileName] = @ScriptFileName ORDER BY CommitDate DESC");
-                ScriptRunLog log = new ScriptRunLog();
                 cmd.Parameters.AddWithValue("@ScriptFileName", objectFileName);
                 cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
-                SqlDataAdapter adapt = new SqlDataAdapter(cmd);
-                DataSet ds = new DataSet();
-                adapt.Fill(log);
-                return log;
+                cmd.Connection.Open();
+                var list = new List<SqlSync.SqlBuild.Models.ScriptRunLogEntry>();
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    list.Add(ReadScriptRunLogEntry(reader));
+                }
+                return list;
             }
             catch (Exception e)
             {
                 log.LogError(e, $"Unable to retrieve object history for {objectFileName} on database {connData.SQLServerName}.{connData.DatabaseName}");
                 throw new ApplicationException("Error retrieving Script Run Log", e);
             }
+        }
+
+        private static SqlSync.SqlBuild.Models.ScriptRunLogEntry ReadScriptRunLogEntry(IDataRecord reader)
+        {
+            Guid? TryGuid(string name)
+            {
+                try { var val = reader[name]; if (val == DBNull.Value) return null; return Guid.Parse(val.ToString() ?? string.Empty); } catch { return null; }
+            }
+
+            bool? TryBool(string name)
+            {
+                try { var val = reader[name]; if (val == DBNull.Value) return null; return Convert.ToBoolean(val, CultureInfo.InvariantCulture); } catch { return null; }
+            }
+
+            int? TryInt(string name)
+            {
+                try { var val = reader[name]; if (val == DBNull.Value) return null; return Convert.ToInt32(val, CultureInfo.InvariantCulture); } catch { return null; }
+            }
+
+            DateTime? TryDate(string name)
+            {
+                try { var val = reader[name]; if (val == DBNull.Value) return null; return Convert.ToDateTime(val, CultureInfo.InvariantCulture); } catch { return null; }
+            }
+
+            string? TryString(string name)
+            {
+                try { var val = reader[name]; if (val == DBNull.Value) return null; return val.ToString(); } catch { return null; }
+            }
+
+            return new SqlSync.SqlBuild.Models.ScriptRunLogEntry(
+                BuildFileName: TryString("BuildFileName"),
+                ScriptFileName: TryString("ScriptFileName"),
+                ScriptId: TryGuid("ScriptId"),
+                ScriptFileHash: TryString("ScriptFileHash"),
+                CommitDate: TryDate("CommitDate"),
+                Sequence: TryInt("Sequence"),
+                UserId: TryString("UserId"),
+                AllowScriptBlock: TryBool("AllowScriptBlock"),
+                AllowBlockUpdateId: TryString("AllowBlockUpdateId"),
+                ScriptText: TryString("ScriptText"),
+                Tag: TryString("Tag"));
         }
 
 
