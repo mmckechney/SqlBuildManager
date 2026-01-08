@@ -38,7 +38,7 @@ namespace SqlSync.ObjectScript.UnitTest
         public void Mapper_DataSet_RoundTrip()
         {
             var ds = new AutoScriptingConfig();
-            ds.AutoScripting.AddAutoScriptingRow(true, true, false, true, 1);
+            ds.AutoScripting.AddAutoScriptingRow(true, true, false, true);
             ds.DatabaseScriptConfig.AddDatabaseScriptConfigRow("srv", "db", "user", "pwd", "auth", "path", null);
             ds.PostScriptingAction.AddPostScriptingActionRow("name", "cmd", "args", null);
 

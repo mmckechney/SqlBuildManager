@@ -6,6 +6,9 @@
     <EmbeddedResource Include="Hash\Xml\DatabaseDiff_Summary.xslt" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="AutoScriptingConfigModelTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -15,6 +15,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AutoScriptingConfigModelTest.cs" />
+    <Compile Include="Initialization.cs" />
+    <Compile Include="ObjectScriptHelperTest.cs" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj" />
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />

@@ -50,6 +50,7 @@
 - 2026-01-08 02:05 UTC — Added `GetScriptSourceTable` overload for models; resolved `CommittedScript` ambiguity.
 - 2026-01-08 02:10 UTC — `dotnet test SqlSync.SqlBuild.UnitTest` succeeded (56 tests). Added model source-table test.
 - 2026-01-08 02:20 UTC — Added model overloads for `CodeReviewManager`, `PolicyHelper`, `SqlUnifiedDiff`; `dotnet test SqlSync.SqlBuild.UnitTest` ✅ (56 tests).
+- 2026-01-08 02:30 UTC — Added AutoScripting POCOs/mappers/persistence; created `SqlSync.ObjectScript.UnitTest`; `dotnet test SqlSync.ObjectScript.UnitTest` ✅ (8 tests).
 - 2026-01-08 01:45 UTC — `dotnet test SqlSync.SqlBuild.UnitTest` succeeded (53 tests, 0 failures). Excluded Dependent/External suites.
 - 2026-01-08 00:20 UTC — Decisions confirmed: **record class** preference, keep names unchanged, stick with `DateTime`.
 - 2026-01-08 00:20 UTC — Selected **ServerConnectConfig** as first module; mapping helpers in progress.
