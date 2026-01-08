@@ -35,7 +35,7 @@
 | 8 | Design | Define mapping helpers (DataRow/DataTable→POCO) | Done | `ServerConnectConfigMappers` created |
 | 9 | SqlSync.SqlBuild | Replace `SqlSyncBuildData` typed dataset with POCOs | In Progress | Tables: SqlSyncBuildProject, Scripts, Script, Builds, Build, ScriptRun, CommittedScript, CodeReview |
 | 10 | SqlSync.SqlBuild | Replace `ServerConnectConfig` typed dataset with POCOs | Done | POCOs + mappers + Utility updated; UI module removed |
-| 11 | SqlSync.ObjectScript | Replace `AutoScriptingConfig` typed dataset with POCOs | Planned | Tables: AutoScripting, DatabaseScriptConfig, PostScriptingAction |
+| 11 | SqlSync.ObjectScript | Replace `AutoScriptingConfig` typed dataset with POCOs | In Progress | POCOs/mappers/persistence added |
 | 12 | SqlSync.DbInformation | Replace `SizeAnalysis`, `ServerSizeSummary` DataTables | Planned |  |
 | 14 | Tests | Update console tests using DataTables/DataSets | Planned | Exclude *Dependent*/*External*; focus on UnitTest |
 
