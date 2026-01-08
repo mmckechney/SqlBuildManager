@@ -36,7 +36,7 @@
 | 9 | SqlSync.SqlBuild | Replace `SqlSyncBuildData` typed dataset with POCOs | In Progress | Tables: SqlSyncBuildProject, Scripts, Script, Builds, Build, ScriptRun, CommittedScript, CodeReview |
 | 10 | SqlSync.SqlBuild | Replace `ServerConnectConfig` typed dataset with POCOs | Done | POCOs + mappers + Utility updated; UI module removed |
 | 11 | SqlSync.ObjectScript | Replace `AutoScriptingConfig` typed dataset with POCOs | In Progress | POCOs/mappers/persistence added |
-| 12 | SqlSync.DbInformation | Replace `SizeAnalysis`, `ServerSizeSummary` DataTables | Planned |  |
+| 12 | SqlSync.DbInformation | Replace `SizeAnalysis`, `ServerSizeSummary` DataTables | Done | POCOs/mappers + UnitTest |
 | 14 | Tests | Update console tests using DataTables/DataSets | Planned | Exclude *Dependent*/*External*; focus on UnitTest |
 
 ## Progress Updates
@@ -51,6 +51,7 @@
 - 2026-01-08 02:10 UTC — `dotnet test SqlSync.SqlBuild.UnitTest` succeeded (56 tests). Added model source-table test.
 - 2026-01-08 02:20 UTC — Added model overloads for `CodeReviewManager`, `PolicyHelper`, `SqlUnifiedDiff`; `dotnet test SqlSync.SqlBuild.UnitTest` ✅ (56 tests).
 - 2026-01-08 02:30 UTC — Added AutoScripting POCOs/mappers/persistence; created `SqlSync.ObjectScript.UnitTest`; `dotnet test SqlSync.ObjectScript.UnitTest` ✅ (8 tests).
+- 2026-01-08 02:40 UTC — Added `SizeAnalysis`/`ServerSizeSummary` POCOs/mappers; created `SqlSync.DbInformation.UnitTest`; `dotnet test SqlSync.DbInformation.UnitTest` ✅ (1 test).
 - 2026-01-08 01:45 UTC — `dotnet test SqlSync.SqlBuild.UnitTest` succeeded (53 tests, 0 failures). Excluded Dependent/External suites.
 - 2026-01-08 00:20 UTC — Decisions confirmed: **record class** preference, keep names unchanged, stick with `DateTime`.
 - 2026-01-08 00:20 UTC — Selected **ServerConnectConfig** as first module; mapping helpers in progress.
