@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
-		<ApplicationIcon>..\SqlSync\Images\Database-commandline.ico</ApplicationIcon>
+		<ApplicationIcon Condition="Exists('..\SqlSync\Images\Database-commandline.ico')">..\SqlSync\Images\Database-commandline.ico</ApplicationIcon>
 	</PropertyGroup>
 	<PropertyGroup>
 		<RestoreFallbackFolders>clear</RestoreFallbackFolders>
