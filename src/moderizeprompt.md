@@ -179,3 +179,143 @@ Keep this log updated as you progress so a human reviewer can easily follow the 
     - Update the log (tasks and progress updates).
     - Run relevant unit tests and report the results.
 - If at any point assumptions are unclear (schema inference, naming, nullability, how a typed dataset maps to domain POCOs, etc.), ask clarifying questions or present recommended options before moving forward at scale.
+
+=====================================================================
+
+You are an AI developer working in a C#/.NET solution that is being modernized.
+
+# Goal
+Complete the migration away from legacy ADO.NET DataSet-based APIs to C# POCO-based models, removing usage of:
+- System.Data.DataSet and strongly typed DataSets
+- DataTable
+- DataRow
+- DataColumn
+
+and then **delete the ADO.NET-based classes and files from the solution** once they are no longer referenced, while preserving existing behavior and keeping all tests passing.
+
+# Context
+- POCO classes have already been created to replace the strongly typed DataSet/Table/Column/Row objects.
+- Mapping helpers exist to map between the old DataSet-based structures and the new POCO models.
+- Unit tests have been created or updated to validate the new POCO-based behavior.
+- A dedicated feature branch has already been created and checked out for this work.
+- You have access to the full repository, can edit files, run tests, and make local git commits.
+
+Assume this is a typical .NET solution. When you need to run tests, use:
+- `dotnet test` from the solution root (adjust if you detect a more appropriate test command or solution file).
+
+# High-Level Responsibilities
+1. **Analyze usage of ADO.NET DataSet-based types**
+   - Find all remaining usages of:
+     - `System.Data.DataSet`
+     - `System.Data.DataTable`
+     - `System.Data.DataRow`
+     - `System.Data.DataColumn`
+     - Any **strongly typed DataSet classes** and related ADO.NET-based data classes (e.g., designer-generated dataset classes).
+   - Identify the files, projects, and layers (e.g., data access, service, UI, tests) that depend on these types.
+   - Produce a short, structured plan (with milestones) describing how you will:
+     - Replace these usages with the new POCO models and mapping helpers.
+     - Update all impacted unit tests.
+     - Delete the obsolete ADO.NET-based classes and their files.
+
+2. **Plan and progress log**
+   - Create or update a markdown file to track the migration, for example:
+     - `docs/dataset-migration-plan.md`
+   - In this file, maintain:
+     - A brief overview of the goal.
+     - A checklist of milestones (e.g., by module, project, or feature area).
+     - For each milestone: description, impacted components, and test coverage notes.
+     - A running log of what has been completed, including relevant file paths and key changes.
+
+3. **Refactor code and tests in milestones**
+   For each milestone in your plan:
+
+   - **Implementation code**
+     - Replace DataSet/DataTable/DataRow/DataColumn (and typed DataSet types) with the appropriate POCO classes and mapping helpers.
+     - Update any methods, services, repositories, or UI code that previously depended on DataSet-based objects to use the POCO models instead.
+     - Ensure that public APIs and external contracts remain backward compatible unless a breaking change is explicitly required.
+
+   - **Unit tests and other tests**
+     - Update or add unit tests so they:
+       - Use POCOs instead of DataSet-based objects.
+       - Validate that behavior, input/output contracts, and edge cases remain equivalent.
+     - Remove or refactor any test helpers or fixtures that construct or assert against DataSet/DataTable/DataRow/DataColumn or typed DataSet types.
+
+   - **Local verification for the milestone**
+     - Run the relevant tests (preferably `dotnet test` at the appropriate scope).
+     - Fix any test failures caused by the migration as part of that milestone.
+     - Update the migration markdown file with:
+       - The milestone status.
+       - Key files changed.
+       - Tests run and outcomes.
+
+4. **Deletion of ADO.NET-based classes and files**
+   - After you have migrated all usages of a given ADO.NET-based type or typed DataSet class:
+     - Confirm there are **no remaining references** in the codebase (including tests).
+     - Remove the corresponding ADO.NET-based classes **and their source files** from the solution.
+       - This includes any designer-generated `.cs` files and related `.xsd` files for typed DataSets.
+     - Update project files (e.g., `.csproj`) to ensure these files are no longer compiled or included.
+   - Document, in the migration markdown file:
+     - Which classes and files were deleted.
+     - Where their functionality is now handled in terms of POCOs/mapping helpers.
+
+5. **Final cleanup and verification milestone**
+   - Add a final milestone to your plan for cleanup and verification that:
+     - There are **no remaining references** to:
+       - `System.Data.DataSet`
+       - `System.Data.DataTable`
+       - `System.Data.DataRow`
+       - `System.Data.DataColumn`
+       - Any typed DataSet classes or DataSet-backed “table/row” types.
+     - Any remaining necessary uses (e.g., at external integration boundaries that cannot yet be changed) are:
+       - Clearly documented in the migration markdown file, and
+       - Isolated to well-defined boundary components.
+   - Verify:
+     - All affected projects build successfully.
+     - `dotnet test` (or the appropriate test command) passes successfully for the solution.
+   - Document the final state in the migration markdown, including:
+     - Completed milestones.
+     - Any exceptions and TODOs.
+
+6. **Git workflow**
+   - After successfully completing each milestone (including passing tests for that milestone):
+     - Stage the related changes.
+     - Commit to the **current local branch** with a clear, descriptive message.
+       - Use a consistent pattern, for example:
+         - `refactor: replace DataSet with POCO in <module-name>`
+         - `test: update unit tests for <module-name> POCO migration`
+         - `chore: remove legacy DataSet classes from <project-name>`
+     - Do not push to remote; only make local commits.
+
+7. **Design decisions and when to stop**
+   - You may proceed through your milestones without waiting for my input.
+   - However, **pause and ask for my guidance before proceeding** if:
+     - You need to change a public API or external contract in a way that might be breaking.
+     - You are unsure how to model a shape or behavior with POCOs (e.g., complex hierarchies, dynamic schemas).
+     - You encounter an area where performance, concurrency, or transaction semantics might be impacted by the refactor.
+     - You find code that relies on DataSet-specific features (e.g., DataRelations, constraints, row state tracking) that are not clearly covered by the existing POCO/mapping design.
+   - When you pause, summarize:
+     - The options you see.
+     - Pros/cons of each.
+     - Your recommended approach.
+   - Wait for my response before making changes in that area.
+
+8. **Documentation and communication**
+   - Throughout the process, keep the migration markdown file updated with:
+     - Current plan and status (e.g., “Milestone 2 of 5 complete”).
+     - Short bullet points summarizing changes per milestone.
+     - Any technical debt, follow-up items, or TODOs you discover.
+   - In your responses to me:
+     - First, show the updated plan checklist with completed/remaining milestones.
+     - Then summarize what changed in the last milestone, including:
+       - Key files touched.
+       - Behavioral equivalence notes.
+       - Test commands run and their outcomes.
+       - Commit message(s) used.
+
+# Constraints and Quality Bar
+- Preserve behavior and data semantics; do not simplify away important validation or edge cases even if the legacy code looks messy.
+- Keep public interfaces stable where possible. If you must introduce a breaking change, clearly highlight it and explain why it is necessary.
+- Avoid large, cross-cutting changes in a single commit. Prefer smaller, logically grouped commits per milestone or feature area.
+- Ensure there are no remaining references to DataSet/DataTable/DataRow/DataColumn (and typed DataSet classes) in the application code and tests once the migration is complete, except where absolutely necessary (e.g., external library boundaries you cannot change). Document any such exceptions as part of the final milestone.
+- Ensure that all obsolete ADO.NET-based classes and their associated files are removed from the solution and its projects once their usages have been fully migrated to POCOs.
+You do not need to wait for my response between milestones/tasks; you may proceed through your plan autonomously. Only stop and request input if you encounter a design decision as described above.

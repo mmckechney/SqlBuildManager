@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace SqlSync.SqlBuild
@@ -7,18 +8,16 @@ namespace SqlSync.SqlBuild
     {
         public static ServerConnectConfigModel Load(string path)
         {
-            var ds = new ServerConnectConfig();
             if (File.Exists(path))
             {
-                ds.ReadXml(path);
+                return ServerConnectConfigXmlSerializer.Load(path);
             }
-            return ds.ToModel();
+            return new ServerConnectConfigModel(new List<ServerConfiguration>(), new List<LastProgramUpdateCheck>(), new List<LastDirectory>());
         }
 
         public static void Save(string path, ServerConnectConfigModel model)
         {
-            var ds = model.ToDataSet();
-            ds.WriteXml(path);
+            ServerConnectConfigXmlSerializer.Save(path, model);
         }
     }
 }

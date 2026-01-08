@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using SqlSync.ObjectScript.Models;
 
@@ -7,18 +8,16 @@ namespace SqlSync.ObjectScript
     {
         public static AutoScriptingConfigModel Load(string path)
         {
-            var ds = new AutoScriptingConfig();
             if (File.Exists(path))
             {
-                ds.ReadXml(path);
+                return AutoScriptingConfigXmlSerializer.Load(path);
             }
-            return ds.ToModel();
+            return new AutoScriptingConfigModel(new List<AutoScripting>(), new List<DatabaseScriptConfig>(), new List<PostScriptingAction>());
         }
 
         public static void Save(string path, AutoScriptingConfigModel model)
         {
-            var ds = model.ToDataSet();
-            ds.WriteXml(path);
+            AutoScriptingConfigXmlSerializer.Save(path, model);
         }
     }
 }

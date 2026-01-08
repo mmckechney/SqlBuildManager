@@ -54,6 +54,8 @@
 - 2026-01-08 02:40 UTC — Added `SizeAnalysis`/`ServerSizeSummary` POCOs/mappers; created `SqlSync.DbInformation.UnitTest`; `dotnet test SqlSync.DbInformation.UnitTest` ✅ (1 test).
 - 2026-01-08 02:50 UTC — Added console model tests & made `ApplicationIcon` conditional; `dotnet test SqlBuildManager.Console.UnitTest` ✅ (91/93 passed, 2 skipped).
 - 2026-01-08 03:00 UTC — Summary: All planned POCO migrations completed (SqlSyncBuildData, ServerConnectConfig, AutoScriptingConfig, SizeAnalysis/ServerSizeSummary). Model APIs added to helpers/review/policy/diff. UnitTest suites passing (SqlSync.SqlBuild, SqlSync.ObjectScript, SqlSync.DbInformation, SqlBuildManager.Console). Dependent/External tests excluded.
+- 2026-01-08 03:10 UTC — Added `docs/dataset-migration-plan.md` with milestones, tests matrix, exceptions, and follow-ups.
+ - 2026-01-08 03:20 UTC — Scan shows remaining DataSet references limited to typed designer files and legacy DataTable-derived types (`ScriptRunLog`, `SizeAnalysis`, `ServerSizeSummary`), plus External/Dependent tests. Plan extended with POCO-only persistence/collections and deletion milestones.
 - 2026-01-08 01:45 UTC — `dotnet test SqlSync.SqlBuild.UnitTest` succeeded (53 tests, 0 failures). Excluded Dependent/External suites.
 - 2026-01-08 00:20 UTC — Decisions confirmed: **record class** preference, keep names unchanged, stick with `DateTime`.
 - 2026-01-08 00:20 UTC — Selected **ServerConnectConfig** as first module; mapping helpers in progress.

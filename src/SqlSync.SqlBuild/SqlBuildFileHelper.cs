@@ -168,9 +168,18 @@ namespace SqlSync.SqlBuild
 
         public static bool LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, string projFileName, bool validateSchema)
         {
-            var ok = LoadSqlBuildProjectFile(out SqlSyncBuildData ds, projFileName, validateSchema);
-            model = ds.ToModel();
-            return ok;
+            if (File.Exists(projFileName))
+            {
+                model = SqlSyncBuildDataXmlSerializer.Load(projFileName);
+                return true;
+            }
+            else
+            {
+                log.LogInformation($"LoadSqlBuildProjectFile: unable to find projectFile at {projFileName}. Creating shell.");
+                model = CreateShellSqlSyncBuildDataModel();
+                SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+                return false;
+            }
         }
 
         public static SqlSyncBuildDataModel LoadSqlBuildProjectModel(string projFileName, bool validateSchema)
@@ -274,6 +283,12 @@ namespace SqlSync.SqlBuild
             bool val = ZipHelper.CreateZipPackage(fileList, projFilePath, zipFileName);
             return val;
         }
+
+        public static bool PackageProjectFileIntoZip(SqlSyncBuildDataModel model, string projFilePath, string zipFileName, bool includeHistoryAndLogs)
+        {
+            var ds = model.ToDataSet();
+            return PackageProjectFileIntoZip(ds, projFilePath, zipFileName, includeHistoryAndLogs);
+        }
         /// <summary>
         /// Minimize the size of the package by cleaing out the logs and the code review items..
         /// </summary>
@@ -374,8 +389,8 @@ namespace SqlSync.SqlBuild
 
         public static void SaveSqlBuildProjectFile(SqlSyncBuildDataModel model, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
         {
-            var ds = model.ToDataSet();
-            SaveSqlBuildProjectFile(ref ds, projFileName, buildZipFileName, includeHistoryAndLogs);
+            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            PackageProjectFileIntoZip(model, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs);
         }
 
         public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout, bool includeHistoryAndLogs = true)
