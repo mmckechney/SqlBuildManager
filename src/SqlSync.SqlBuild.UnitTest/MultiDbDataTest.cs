@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Models;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -148,8 +149,16 @@ namespace SqlSync.SqlBuild.UnitTest
         public void BuildDataTest()
         {
             MultiDbData target = new MultiDbData();
-            SqlSyncBuildData expected = new SqlSyncBuildData();
-            SqlSyncBuildData actual;
+            SqlSyncBuildDataModel expected = new SqlSyncBuildDataModel(
+                SqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
+                Scripts: Array.Empty<Scripts>(),
+                Script: Array.Empty<Script>(),
+                Builds: Array.Empty<Builds>(),
+                Build: Array.Empty<Build>(),
+                ScriptRun: Array.Empty<ScriptRun>(),
+                CommittedScript: Array.Empty<CommittedScript>(),
+                CodeReview: Array.Empty<CodeReview>());
+            SqlSyncBuildDataModel actual;
             target.BuildData = expected;
             actual = target.BuildData;
             Assert.AreEqual(expected, actual);

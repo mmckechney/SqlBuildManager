@@ -19,7 +19,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SqlSync.SqlBuild
-            return model; // Ensure the model is returned correctly
+{
     /// <summary>
     /// Summary description for SqlBuildHelper.
     /// </summary>
