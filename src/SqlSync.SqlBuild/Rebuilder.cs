@@ -114,7 +114,7 @@ namespace SqlSync.SqlBuild
 
                 var buildModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-                if (!SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, tempPath, buildFileName))
+                if (!SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, tempPath, buildFileName, true))
                 {
                     return false;
                 }

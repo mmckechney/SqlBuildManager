@@ -2014,6 +2014,21 @@ namespace SqlSync.SqlBuild
             }
             return coll;
         }
+
+        public static ScriptBatchCollection LoadAndBatchSqlScripts(BuildModels.SqlSyncBuildDataModel model, string projectFilePath)
+        {
+            ScriptBatchCollection coll = new ScriptBatchCollection();
+            var scripts = model.Script.OrderBy(s => s.BuildOrder ?? double.MaxValue).ToList();
+            foreach (var s in scripts)
+            {
+                var fileName = s.FileName ?? string.Empty;
+                var strip = s.StripTransactionText ?? false;
+                var batchScripts = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, fileName), strip, false);
+                var batch = new ScriptBatch(fileName, batchScripts, s.ScriptId ?? string.Empty);
+                coll.Add(batch);
+            }
+            return coll;
+        }
         #endregion
 
         #region ## SQL Connection Helper Methods ##

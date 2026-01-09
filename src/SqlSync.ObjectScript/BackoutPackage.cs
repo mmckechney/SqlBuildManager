@@ -201,22 +201,14 @@ namespace SqlSync.ObjectScript
                 {
                     try
                     {
-                        //Update the buildData object with the update date/time and user;
-                        var sr = from r in buildData.Script
-                                 where r.FileName == scr
-                                 select r;
-
-                        if (sr.Any())
+                        var idx = scripts.FindIndex(s => s.FileName == scr);
+                        if (idx >= 0 && markManualScriptsAsRunOnce)
                         {
-                            if (markManualScriptsAsRunOnce)
+                            var row = scripts[idx];
+                            if ((row.BuildOrder ?? 0) < 1000)
                             {
-                                SqlSyncBuildData.ScriptRow row = sr.First();
-                                if (row.BuildOrder < 1000)
-                                {
-                                    row.AllowMultipleRuns = false;
-                                    row.DateModified = updateTime;
-                                    row.ModifiedBy = System.Environment.UserName;
-                                }
+                                row = row with { AllowMultipleRuns = false, DateModified = updateTime, ModifiedBy = System.Environment.UserName };
+                                scripts[idx] = row;
                             }
                         }
 

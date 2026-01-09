@@ -9,6 +9,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using SqlSync.SqlBuild.Models;
 
+#nullable enable
+
 namespace SqlSync.SqlBuild
 {
     /// <summary>

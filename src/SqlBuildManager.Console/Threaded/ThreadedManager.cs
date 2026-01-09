@@ -5,6 +5,7 @@ using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
@@ -93,13 +94,18 @@ namespace SqlBuildManager.Console.Threaded
             get { return ThreadedManager.batchColl; }
         }
 
-        private static SqlSyncBuildData buildData = null;
+        private static SqlSyncBuildData buildData = null; // Obsolete
+        private static SqlSyncBuildDataModel buildDataModel = null;
         /// <summary>
         /// The runtime metadata object for the build execution
         ///// </summary>
         internal static SqlSyncBuildData BuildData
         {
             get { return buildData; }
+        }
+        internal static SqlSyncBuildDataModel BuildDataModel
+        {
+            get { return buildDataModel; }
         }
 
         public ThreadedManager(CommandLineArgs cmd)
@@ -412,8 +418,8 @@ namespace SqlBuildManager.Console.Threaded
 
             if (!forceCustomDacpac)
             {
-                ExtractAndLoadBuildFile(ThreadedManager.buildZipFileName, out ThreadedManager.buildData);
-                if (buildData == null)
+                ExtractAndLoadBuildFile(ThreadedManager.buildZipFileName, out ThreadedManager.buildDataModel);
+                if (buildDataModel == null)
                 {
                     var msg = new LogMsg()
                     {
@@ -426,7 +432,7 @@ namespace SqlBuildManager.Console.Threaded
                 else
                 {
                     //Load up the batched scripts into a shared object so that we can conserve memory
-                    ThreadedManager.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedManager.buildData, projectFilePath);
+                    ThreadedManager.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedManager.buildDataModel, projectFilePath);
                 }
 
             }
@@ -543,11 +549,11 @@ namespace SqlBuildManager.Console.Threaded
             return returnVal;
         }
 
-        private int ExtractAndLoadBuildFile(string sqlBuildProjectFileName, out SqlSyncBuildData buildData)
+        private int ExtractAndLoadBuildFile(string sqlBuildProjectFileName, out SqlSyncBuildDataModel model)
         {
             log.LogInformation($"Extracting build file '{sqlBuildProjectFileName}' to working directory '{ThreadedManager.WorkingDirectory}'");
 
-            buildData = null;
+            model = null;
 
             Directory.CreateDirectory(ThreadedManager.WorkingDirectory);
 
@@ -564,7 +570,7 @@ namespace SqlBuildManager.Console.Threaded
 
             }
 
-            if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, ThreadedManager.projectFileName, false))
+            if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out model, ThreadedManager.projectFileName, false))
             {
                 var msg = new LogMsg()
                 {
@@ -584,7 +590,7 @@ namespace SqlBuildManager.Console.Threaded
             string shortFileName = string.Empty;
             ThreadedManager.buildZipFileName = Path.Combine(ThreadedManager.rootLoggingPath, ThreadedManager.RunID + ".sbm");
             string projFileName = Path.Combine(ThreadedManager.WorkingDirectory, SqlSync.SqlBuild.XmlFileNames.MainProjectFile);
-            SqlSyncBuildData localBuildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            SqlSyncBuildDataModel localBuildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             List<string> fileList = new List<string>(Directory.GetFiles(directoryName, "*.sql", SearchOption.TopDirectoryOnly));
             fileList.Sort();
 
@@ -593,7 +599,7 @@ namespace SqlBuildManager.Console.Threaded
                 shortFileName = Path.GetFileName(fileList[i]);
                 File.Copy(fileList[i], Path.Combine(ThreadedManager.WorkingDirectory, shortFileName), true);
 
-                SqlBuildFileHelper.AddScriptFileToBuild(ref localBuildData,
+                localBuildData = SqlBuildFileHelper.AddScriptFileToBuild(localBuildData,
                     projFileName,
                     shortFileName,
                     i,
@@ -607,6 +613,7 @@ namespace SqlBuildManager.Console.Threaded
                     false,
                     System.Environment.UserDomainName + @"/" + System.Environment.UserName,
                     20,
+                    Guid.NewGuid(),
                     "");
             }
 
@@ -622,6 +629,7 @@ namespace SqlBuildManager.Console.Threaded
             ThreadedManager.workingDirectory = string.Empty;
             ThreadedManager.batchColl = null;
             ThreadedManager.buildData = null;
+            ThreadedManager.buildDataModel = null;
             ThreadedLogging.TheadedLoggingInitiated = false;
         }
    

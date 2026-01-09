@@ -2,6 +2,7 @@
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
+using System.Xml.Linq;
 using SqlSync.SqlBuild;
 using System;
 using System.Collections.Generic;
@@ -214,18 +215,13 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     runData.ForceCustomDacpac = false;
                     //Get a full copy of the build data to work with (avoid threading sync issues)
-                    SqlSyncBuildData buildData = new SqlSyncBuildData();
+                    var cloned = SqlSyncBuildDataXmlSerializer.Load(
+                        XDocument.Parse("<?xml version=\"1.0\" standalone=\"yes\"?>\r\n" + ThreadedManager.BuildDataModel.ToDataSet().GetXml())
+                    );
+                    //Clear out any existing CommittedScript data.. just log what is relevant to this run.
+                    cloned = cloned with { CommittedScript = Array.Empty<SqlSync.SqlBuild.Models.CommittedScript>() };
 
-                    string xml = "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n" + ThreadedManager.BuildData.GetXml();
-                    using (StringReader sr = new StringReader(xml))
-                    {
-                        buildData.ReadXml(sr);
-                    }
-                    //Clear out any existing ComittedScript data.. just log what is relevent to this run.
-                    buildData.CommittedScript.Clear();
-
-
-                    runData.BuildData = buildData;
+                    runData.BuildDataModel = cloned;
                     runData.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedManager.ProjectFileName));
                     runData.BuildFileName = ThreadedManager.BuildZipFileName;
                 }
