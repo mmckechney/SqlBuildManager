@@ -79,7 +79,7 @@ namespace SqlSync.SqlBuild
         /// <summary>
         /// Current run for 
         /// </summary>
-        private SqlSyncBuildData.ScriptRunRow myRunRow;
+        private BuildModels.ScriptRun currentRun;
         /// <summary>
         /// Flag for determining if this is a trial (rollback)
         /// </summary>
@@ -153,6 +153,9 @@ namespace SqlSync.SqlBuild
 
         internal string buildHistoryXmlFile = string.Empty;
         internal SqlSyncBuildData buildHistoryData = null;
+        private BuildModels.SqlSyncBuildDataModel buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
+        internal BuildModels.SqlSyncBuildDataModel BuildHistoryModel => buildHistoryModel;
         internal string externalScriptLogFileName = string.Empty;
         public SqlBuildHelper(ConnectionData data) : this(data, true, string.Empty, true)
         {
@@ -525,15 +528,17 @@ namespace SqlSync.SqlBuild
                             scriptRunRowId));
 
                     //Create a new ScriptRun row to record build
-                    myRunRow = buildHistoryData.ScriptRun.NewScriptRunRow();
-
-                    //Set basic run row values
-                    myRunRow.BuildRow = myBuild;
-                    myRunRow.Database = targetDatabase;
-                    myRunRow.RunOrder = i + 1;
-                    myRunRow.RunStart = DateTime.Now;
-                    myRunRow.FileName = myRow.FileName;
-                    myRunRow.ScriptRunId = scriptRunRowId.ToString();
+                    currentRun = new BuildModels.ScriptRun(
+                        FileHash: null,
+                        Results: string.Empty,
+                        FileName: myRow.FileName,
+                        RunOrder: i + 1,
+                        RunStart: DateTime.Now,
+                        RunEnd: null,
+                        Success: null,
+                        Database: targetDatabase,
+                        ScriptRunId: scriptRunRowId.ToString(),
+                        Build_Id: myBuild?.Build_Id ?? 0);
 
                     //Get the connection objects for the row
                     BuildConnectData cData = null;
@@ -544,11 +549,13 @@ namespace SqlSync.SqlBuild
                     catch (Exception e)
                     {
                         log.LogError(e, $"Database connection to {serverName}.{targetDatabase} failed");
-                        myRunRow.Results += "Database connection to " + targetDatabase + " failed\r\n" + e.Message;
-                        myRunRow.Success = false;
-                        myRunRow.RunEnd = DateTime.Now;
-                        buildHistoryData.ScriptRun.AddScriptRunRow(myRunRow);
-                        buildHistoryData.AcceptChanges();
+                        currentRun = currentRun with
+                        {
+                            Results = ((currentRun.Results ?? string.Empty) + "Database connection to " + targetDatabase + " failed\r\n" + e.Message),
+                            Success = false,
+                            RunEnd = DateTime.Now
+                        };
+                        AddScriptRunToHistory(currentRun, myBuild);
 
                         
                         //Write the error to the log...
@@ -588,11 +595,11 @@ namespace SqlSync.SqlBuild
 
                     string textHash;
                     SqlBuildFileHelper.GetSHA1Hash(batchScripts, out textHash);
-                    myRunRow.FileHash = textHash;
+                    currentRun = currentRun with { FileHash = textHash };
 
                     //Add script Id to the arraylist for use later
                     string scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts); // String.Join("\r\n"+BatchParsing.Delimiter+"\r\n",batchScripts);
-                    LoggingCommittedScript tmpCommmittedScr = new LoggingCommittedScript(new Guid(myRow.ScriptId), myRunRow.FileHash, runSequence++, scriptText, myRow.Tag, cData.ServerName, cData.DatabaseName);
+                    LoggingCommittedScript tmpCommmittedScr = new LoggingCommittedScript(new Guid(myRow.ScriptId), currentRun.FileHash, runSequence++, scriptText, myRow.Tag, cData.ServerName, cData.DatabaseName);
 
 
                     //Create a transaction save point
@@ -672,8 +679,7 @@ namespace SqlSync.SqlBuild
 
 
                             //
-                            myRunRow.Success = true;
-                            myRunRow.Results += sb.ToString();
+                            currentRun = currentRun with { Success = true, Results = (currentRun.Results ?? string.Empty) + sb.ToString() };
 
                             //Write to the log...
                             if (ScriptLogWriteEvent != null)
@@ -699,8 +705,7 @@ namespace SqlSync.SqlBuild
                                 log.LogError($"Error running script in: {myRow.FileName}");
                                 log.LogError(error.Message);
                             }
-                            myRunRow.Success = false;
-                            myRunRow.Results += sb.ToString();
+                            currentRun = currentRun with { Success = false, Results = (currentRun.Results ?? string.Empty) + sb.ToString() };
                             log.LogDebug(e, sb.ToString());
 
                             //Write the error to the log...
@@ -731,7 +736,7 @@ namespace SqlSync.SqlBuild
                                     foreach (SqlError err in sqle.Errors)
                                         sb.Append(err.Message + "\r\n");
 
-                                    myRunRow.Results += sb.ToString();
+                                    currentRun = currentRun with { Results = (currentRun.Results ?? string.Empty) + sb.ToString() };
                                     if (isTransactional)
                                     {
                                         RollbackBuild();
@@ -749,7 +754,7 @@ namespace SqlSync.SqlBuild
                                     sb.Length = 0;
                                     sb.Append(invalExe.Message + Environment.NewLine);
 
-                                    myRunRow.Results += sb.ToString();
+                                    currentRun = currentRun with { Results = (currentRun.Results ?? string.Empty) + sb.ToString() };
                                     if (isTransactional && !invalExe.Message.Contains("This SqlTransaction has completed; it is no longer usable."))
                                     {
                                         RollbackBuild();
@@ -805,7 +810,7 @@ namespace SqlSync.SqlBuild
                         }
 
                         //If one of the batch scripts for a file failed, we need to break out and fail the whole file.
-                        if (myRow.RollBackOnError && myRunRow.Success == false)
+                        if (myRow.RollBackOnError && currentRun.Success == false)
                             break;
                     }
                     if (workEventArgs.Cancel)
@@ -815,21 +820,20 @@ namespace SqlSync.SqlBuild
                         bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
                         buildFailure = true;
                     }
-                    else if (myRunRow.Success)//Only add to the committed script list if marked successful
+                    else if (currentRun.Success == true)//Only add to the committed script list if marked successful
                     {
                         DateTime end = DateTime.Now;
                         TimeSpan span = new TimeSpan(end.Ticks - start.Ticks);
-                        tmpCommmittedScr.RunStart = myRunRow.RunStart;
+                        tmpCommmittedScr.RunStart = currentRun.RunStart ?? DateTime.MinValue;
                         tmpCommmittedScr.RunEnd = DateTime.Now;
                         committedScripts.Add(tmpCommmittedScr);
                         //Send Notification
-                        bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs($"Script Successful against {myRunRow.Database}", span));
+                        bgWorker.ReportProgress(0, new ScriptRunStatusEventArgs($"Script Successful against {currentRun.Database}", span));
 
                     }
 
-                    myRunRow.RunEnd = DateTime.Now;
-                    buildHistoryData.ScriptRun.AddScriptRunRow(myRunRow);
-                    buildHistoryData.AcceptChanges();
+                    currentRun = currentRun with { RunEnd = DateTime.Now };
+                    AddScriptRunToHistory(currentRun, myBuild);
 
                     if (buildFailure)
                     {
@@ -2149,8 +2153,8 @@ namespace SqlSync.SqlBuild
             {
                 messages.Append(err.Message + "\r\n");
             }
-            if (myRunRow != null)
-                myRunRow.Results += messages.ToString();
+            if (currentRun != null)
+                currentRun = currentRun with { Results = (currentRun.Results ?? string.Empty) + messages.ToString() };
 
             sqlInfoMessage += messages.ToString();
         }
@@ -2190,6 +2194,17 @@ namespace SqlSync.SqlBuild
                 buildHistoryData.ReadXml(buildHistoryXmlFile);
             }
 
+            // keep POCO history in sync when loading persisted build history
+            try
+            {
+                buildHistoryModel = buildHistoryData.ToModel();
+            }
+            catch (Exception ex)
+            {
+                log.LogWarning(ex, "Unable to convert buildHistoryData to model; using empty model");
+                buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            }
+
 
             //Create a root Project row if needed
             if (buildHistoryData.SqlSyncBuildProject.Rows.Count == 0)
@@ -2218,6 +2233,32 @@ namespace SqlSync.SqlBuild
 
             buildTable.AddBuildRow(myBuild);
             return myBuild;
+        }
+
+        private void AddScriptRunToHistory(BuildModels.ScriptRun run, SqlSyncBuildData.BuildRow myBuild)
+        {
+            if (run == null) return;
+            // append to POCO history
+            buildHistoryModel = buildHistoryModel with { ScriptRun = buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList() };
+
+            // maintain dataset for compatibility
+            if (buildHistoryData == null)
+            {
+                buildHistoryData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            }
+            var row = buildHistoryData.ScriptRun.NewScriptRunRow();
+            row.BuildRow = myBuild;
+            row.Database = run.Database;
+            row.RunOrder = run.RunOrder ?? 0;
+            row.RunStart = run.RunStart ?? DateTime.MinValue;
+            row.FileName = run.FileName;
+            row.ScriptRunId = run.ScriptRunId;
+            if (run.FileHash != null) row.FileHash = run.FileHash;
+            if (run.RunEnd.HasValue) row.RunEnd = run.RunEnd.Value;
+            if (run.Success.HasValue) row.Success = run.Success.Value;
+            if (run.Results != null) row.Results = run.Results;
+            buildHistoryData.ScriptRun.AddScriptRunRow(row);
+            buildHistoryData.AcceptChanges();
         }
 
         /// <summary>
