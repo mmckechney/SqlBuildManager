@@ -1,15 +1,30 @@
+using System;
+using SqlSync.SqlBuild.Models;
+#nullable enable
+
 namespace SqlSync.SqlBuild
 {
     public class ClearScriptData
     {
         public readonly string[] SelectedScriptIds;
-        public readonly SqlSyncBuildData BuildData;
+        [Obsolete("Use BuildDataModel for POCO-based execution")] public readonly SqlSyncBuildData? BuildData;
+        public readonly SqlSyncBuildDataModel? BuildDataModel;
         public readonly string ProjectFileName;
         public readonly string BuildZipFileName;
+
+        [Obsolete("Use ClearScriptData(string[], SqlSyncBuildDataModel, string, string) for POCO")]
         public ClearScriptData(string[] selectedScriptIds, SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
         {
             SelectedScriptIds = selectedScriptIds;
             BuildData = buildData;
+            ProjectFileName = projectFileName;
+            BuildZipFileName = buildZipFileName;
+        }
+
+        public ClearScriptData(string[] selectedScriptIds, SqlSyncBuildDataModel buildDataModel, string projectFileName, string buildZipFileName)
+        {
+            SelectedScriptIds = selectedScriptIds;
+            BuildDataModel = buildDataModel;
             ProjectFileName = projectFileName;
             BuildZipFileName = buildZipFileName;
         }

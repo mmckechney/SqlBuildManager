@@ -1166,6 +1166,10 @@ namespace SqlSync.SqlBuild
         {
             projectFileName = scrData.ProjectFileName;
             buildData = scrData.BuildData;
+            if (buildData == null && scrData.BuildDataModel != null)
+            {
+                buildData = scrData.BuildDataModel.ToDataSet();
+            }
             buildFileName = scrData.BuildZipFileName;
             selectedScriptIds = scrData.SelectedScriptIds;
             this.bgWorker = bgWorker;
