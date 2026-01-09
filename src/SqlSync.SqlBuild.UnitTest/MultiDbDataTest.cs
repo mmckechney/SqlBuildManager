@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Models;
 

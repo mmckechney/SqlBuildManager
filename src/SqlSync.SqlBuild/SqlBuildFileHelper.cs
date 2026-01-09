@@ -376,8 +376,15 @@ namespace SqlSync.SqlBuild
 
         public static SqlSyncBuildDataModel CreateShellSqlSyncBuildDataModel()
         {
-            var ds = CreateShellSqlSyncBuildDataObject();
-            return ds.ToModel();
+            return new SqlSyncBuildDataModel(
+                SqlSyncBuildProject: new[] { new SqlSyncBuildProject(0, string.Empty, false) },
+                Scripts: new[] { new Scripts(0, 0) },
+                Script: Array.Empty<Script>(),
+                Builds: new[] { new Builds(0, 0) },
+                Build: Array.Empty<Build>(),
+                ScriptRun: Array.Empty<ScriptRun>(),
+                CommittedScript: Array.Empty<CommittedScript>(),
+                CodeReview: Array.Empty<CodeReview>());
         }
 
 
