@@ -48,6 +48,12 @@ namespace SqlSync.SqlBuild
         /// Optional reference to original DataSet for backward compatibility tests
         /// </summary>
         internal SqlSyncBuildData buildDataCompat;
+
+        internal sealed record BuildPreparationResult(
+            IReadOnlyList<BuildModels.Script> FilteredScripts,
+            BuildModels.Build Build,
+            string BuildPackageHash
+        );
         /// <summary>
         /// Data collection used to pass connection data
         /// </summary>
@@ -478,6 +484,7 @@ namespace SqlSync.SqlBuild
         /// Sets the parameters for the build run 
         /// </summary>
         /// <param name="workEventArgs"></param>
+        [Obsolete("Use PrepareBuildForRun(BuildModels.SqlSyncBuildDataModel, ...) for POCO workflows")] 
         internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
         {
             try
@@ -566,6 +573,94 @@ namespace SqlSync.SqlBuild
             catch (Exception ex)
             {
                 log.LogError($"[PrepareBuildForRun] Exception: {ex}");
+                throw;
+            }
+        }
+
+        internal BuildPreparationResult PrepareBuildForRun(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
+        {
+            try
+            {
+                EnsureBgWorker();
+                // Make sure the project file is not read-only
+                if (File.Exists(projectFileName))
+                {
+                    File.SetAttributes(projectFileName, FileAttributes.Normal);
+                }
+                else
+                {
+                    log.LogError($"[PrepareBuildForRunModel] projectFileName does not exist: '{projectFileName}'");
+                }
+
+                if (string.IsNullOrWhiteSpace(projectFilePath))
+                {
+                    if (!string.IsNullOrWhiteSpace(projectFileName))
+                    {
+                        projectFilePath = Path.GetDirectoryName(projectFileName);
+                    }
+                    if (string.IsNullOrWhiteSpace(projectFilePath))
+                    {
+                        projectFilePath = Path.GetTempPath();
+                    }
+                }
+                log.LogDebug($"[PrepareBuildForRunModel] projectFilePath='{projectFilePath}'");
+
+                bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
+                scriptLogFileName = Path.Combine(projectFilePath, $"LogFile-{DateTime.Now:yyyy-MM-dd at HH_mm_ss}.log");
+
+                bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Generating Build Record"));
+                var nextBuildId = (buildDataModelParam.Build.Count > 0 ? buildDataModelParam.Build.Max(b => b.Build_Id) + 1 : 1);
+                var myBuild = new BuildModels.Build(
+                    Name: buildDescription,
+                    BuildType: buildType,
+                    BuildStart: DateTime.Now,
+                    BuildEnd: null,
+                    ServerName: serverName,
+                    FinalStatus: null,
+                    BuildId: Guid.NewGuid().ToString(),
+                    UserId: Environment.UserName,
+                    Build_Id: nextBuildId,
+                    Builds_Id: null);
+
+                bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Reading Scripting configuration"));
+                var scripts = buildDataModelParam.Script ?? Array.Empty<BuildModels.Script>();
+
+                var filtered = scripts
+                    .Where(s => s != null)
+                    .OrderBy(s => s.BuildOrder ?? double.MaxValue)
+                    .ToList();
+
+                if (runItemIndexes.Length > 0)
+                {
+                    var indexSet = new HashSet<double>(runItemIndexes);
+                    filtered = filtered.Where(s => (s.BuildOrder ?? double.MaxValue) != double.MaxValue && indexSet.Contains(s.BuildOrder!.Value)).ToList();
+                }
+                else
+                {
+                    filtered = filtered.Where(s => (s.BuildOrder ?? double.MaxValue) >= startIndex).ToList();
+                }
+
+                if (filtered.Count == 0)
+                {
+                    if (isMultiDbRun)
+                        myBuild = myBuild with { FinalStatus = BuildItemStatus.PendingRollBack.ToString() };
+                    else
+                        myBuild = myBuild with { FinalStatus = BuildItemStatus.RolledBack.ToString() };
+
+                    return new BuildPreparationResult(Array.Empty<BuildModels.Script>(), myBuild, string.Empty);
+                }
+
+                if (scriptBatchColl == null)
+                    buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, buildDataModelParam.ToDataSet());
+                else
+                    buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
+
+                log.LogInformation($"Prepared build for run. Build Package hash = {buildPackageHash}");
+                return new BuildPreparationResult(filtered, myBuild, buildPackageHash);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "[PrepareBuildForRunModel] Exception");
                 throw;
             }
         }

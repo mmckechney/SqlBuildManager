@@ -983,6 +983,44 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
         }
 
+        [TestMethod()]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        public void PrepareBuildForRun_Poco_Success()
+        {
+            Initialization init = GetInitializationObject();
+            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            init.AddInsertScript(ref buildData, true);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+
+            string serverName = init.serverName;
+            bool isMultiDbRun = false;
+            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
+            Assert.AreEqual(1, prep.FilteredScripts.Count);
+            Assert.AreEqual(Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.IsFalse(string.IsNullOrEmpty(prep.BuildPackageHash));
+        }
+
+        [TestMethod()]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        public void PrepareBuildForRun_Poco_NoScripts()
+        {
+            Initialization init = GetInitializationObject();
+            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+
+            string serverName = init.serverName;
+            bool isMultiDbRun = false;
+            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
+            Assert.AreEqual(0, prep.FilteredScripts.Count);
+            Assert.AreEqual(Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.IsTrue(string.IsNullOrEmpty(prep.BuildPackageHash));
+            Assert.AreEqual(BuildItemStatus.RolledBack.ToString(), prep.Build.FinalStatus);
+        }
+
         /// <summary>
         ///A test for PrepareBuildForRun
         ///</summary>
