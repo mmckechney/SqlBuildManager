@@ -4,6 +4,8 @@ using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
 
+#nullable enable
+
 namespace SqlSync.SqlBuild.UnitTest
 {
     [TestClass]

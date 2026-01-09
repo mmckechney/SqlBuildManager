@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using SqlSync.SqlBuild.Models;
 
+#nullable enable
+
 namespace SqlSync.SqlBuild.MultiDb
 {
     public class MultiDbData : List<ServerData>

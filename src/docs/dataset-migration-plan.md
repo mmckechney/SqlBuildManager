@@ -94,6 +94,12 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
 - **Removed**: `SqlSync.DbInformation/SizeAnalysis.cs`, `ServerSizeSummary.cs`, `SqlSync.SqlBuild/ScriptRunLog.cs`
 - **Note**: POCO serializers are default; typed DataSets are kept for legacy APIs and tests.
 
+## Legacy Dataset Call Sites (2026-01-09)
+- `SqlSync.SqlBuild.SqlBuildFileHelper` — legacy XML load/save (`ReadXml`/`WriteXml`) and shell creation.
+- `SqlSync.SqlBuild.Utility` — `ServerConnectConfig` DataSet for legacy conversions.
+- `SqlSync.ObjectScript.UnitTest.AutoScriptingConfigModelTest` — compatibility test (`new AutoScriptingConfig()`).
+- `SqlSync.SqlBuild.Dependent.UnitTest` — legacy DataSet tests (excluded from CI).
+
 ## Follow-Ups / Technical Debt
 - Resolve MSTest `TestContext` analyzer warnings.
 - Consider removing typed datasets entirely if no external contract depends on them.
