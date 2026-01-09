@@ -158,6 +158,21 @@ namespace SqlSync.SqlBuild
         internal BuildModels.SqlSyncBuildDataModel BuildHistoryModel => buildHistoryModel;
         internal BuildModels.SqlSyncBuildDataModel BuildDataModel => buildDataModel;
 
+        internal static BuildModels.SqlSyncBuildDataModel ClearAllowScriptBlocks(BuildModels.SqlSyncBuildDataModel model, string serverName, IReadOnlyList<string> selectedScriptIds)
+        {
+            var updatedCommitted = model.CommittedScript.ToList();
+            var idSet = new HashSet<string>(selectedScriptIds, StringComparer.OrdinalIgnoreCase);
+            for (var j = 0; j < updatedCommitted.Count; j++)
+            {
+                var cs = updatedCommitted[j];
+                if (cs.ScriptId != null && idSet.Contains(cs.ScriptId) && string.Equals(cs.ServerName, serverName, StringComparison.OrdinalIgnoreCase))
+                {
+                    updatedCommitted[j] = cs with { AllowScriptBlock = false };
+                }
+            }
+            return model with { CommittedScript = updatedCommitted };
+        }
+
         private static SqlSyncBuildData ToDataSet(BuildModels.SqlSyncBuildDataModel model) => model.ToDataSet();
         private void SyncBuildDataModel(SqlSyncBuildData ds) => buildDataModel = ds.ToModel();
         private SqlSyncBuildData EnsureBuildDataSet()
@@ -1167,7 +1182,9 @@ namespace SqlSync.SqlBuild
         public void ClearScriptBlocks(ClearScriptData scrData, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             projectFileName = scrData.ProjectFileName;
-            var buildData = scrData.BuildData ?? scrData.BuildDataModel?.ToDataSet() ?? EnsureBuildDataSet();
+            var model = scrData.BuildDataModel ?? scrData.BuildData?.ToModel();
+            if (model == null)
+                throw new ArgumentException("ClearScriptData must provide BuildDataModel or BuildData", nameof(scrData));
             buildFileName = scrData.BuildZipFileName;
             selectedScriptIds = scrData.SelectedScriptIds;
             this.bgWorker = bgWorker;
@@ -1179,47 +1196,35 @@ namespace SqlSync.SqlBuild
             SqlCommand cmd = new SqlCommand("UPDATE SqlBuild_Logging SET AllowScriptBlock = 0, AllowBlockUpdateId = @UserId WHERE ScriptId = @ScriptId AND AllowScriptBlock = 1");
             cmd.Parameters.Add("@ScriptId", SqlDbType.UniqueIdentifier);
             cmd.Parameters.AddWithValue("@UserId", System.Environment.UserName);
+            var scriptsById = model.Script
+                .Where(s => s.ScriptId != null)
+                .ToDictionary(s => s.ScriptId!, s => s, StringComparer.OrdinalIgnoreCase);
+            var updatedCommitted = model.CommittedScript.ToList();
             for (int i = 0; i < selectedScriptIds.Length; i++)
             {
-                DataRow[] rows = buildData.Script.Select(buildData.Script.ScriptIdColumn.ColumnName + "='" + selectedScriptIds[i] + "'");
-                if (rows != null && rows.Length > 0)
-                {
-                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)rows[0];
-                    bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Clearing " + row.FileName));
+                var id = selectedScriptIds[i];
+                if (!scriptsById.TryGetValue(id, out var script))
+                    continue;
 
-                    //Update local XML Log
-                    DataRow[] commitRows = buildData.CommittedScript.Select(
-                        buildData.CommittedScript.ServerNameColumn.ColumnName + "='" + connData.SQLServerName + "' AND " +
-                        buildData.CommittedScript.ScriptIdColumn.ColumnName + "='" + selectedScriptIds[i] + "' AND (" +
-                        buildData.CommittedScript.AllowScriptBlockColumn.ColumnName + "= 1 OR " +
-                        buildData.CommittedScript.AllowScriptBlockColumn.ColumnName + "='true' OR " +
-                        buildData.CommittedScript.AllowScriptBlockColumn.ColumnName + " IS NULL)");
+                bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Clearing " + (script.FileName ?? id)));
 
-                    if (commitRows != null && commitRows.Length > 0)
-                    {
-                        for (int j = 0; j < commitRows.Length; j++)
-                        {
-                            ((SqlSyncBuildData.CommittedScriptRow)commitRows[j]).AllowScriptBlock = false;
-                        }
-                        buildData.CommittedScript.AcceptChanges();
-                    }
+                model = ClearAllowScriptBlocks(model, connData.SQLServerName, selectedScriptIds);
 
-                    //Update Sql server log
-                    string targetDatabase = GetTargetDatabase(row.Database);
-                    BuildConnectData cData = GetConnectionDataClass(connData.SQLServerName, targetDatabase);
-                    EnsureLogTablePresence();
-                    cmd.Connection = cData.Connection;
-                    cmd.Transaction = cData.Transaction;
-                    cmd.Parameters["@ScriptId"].Value = new System.Guid(selectedScriptIds[i]);
-                    cmd.ExecuteNonQuery();
-                }
+                //Update Sql server log
+                string targetDatabase = GetTargetDatabase(script.Database ?? string.Empty);
+                BuildConnectData cData = GetConnectionDataClass(connData.SQLServerName, targetDatabase);
+                EnsureLogTablePresence();
+                cmd.Connection = cData.Connection;
+                cmd.Transaction = cData.Transaction;
+                cmd.Parameters["@ScriptId"].Value = new System.Guid(id);
+                cmd.ExecuteNonQuery();
             }
 
+            buildDataModel = model;
             CommitBuild();
             SaveBuildDataSet(true);
 
             bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Selected Script Blocks Cleared"));
-            SyncBuildDataModel(buildData);
         }
 
         /// <summary>
@@ -1362,7 +1367,7 @@ namespace SqlSync.SqlBuild
         /// <returns>True if the commit was successful</returns>
         private bool LogCommittedScriptsToDatabase(List<CommittedScript> committedScripts, MultiDbData multiDbRunData)
         {
-            var buildData = EnsureBuildDataSet();
+            var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             bool returnValue = true;
             //If using an alternate database to log the commits to, we need to initiate the connection objects 
             //so that the EnsureLogTablePresence method catches them and creates the tables as needed.
@@ -1442,10 +1447,9 @@ namespace SqlSync.SqlBuild
                 {
 
                     LoggingCommittedScript script = committedScripts[i];
-                    DataRow[] rows = buildData.Script.Select(buildData.Script.ScriptIdColumn.ColumnName + " ='" + script.ScriptId.ToString() + "'");
-                    if (rows.Length > 0)
+                    var row = model.Script.FirstOrDefault(s => string.Equals(s.ScriptId, script.ScriptId.ToString(), StringComparison.OrdinalIgnoreCase));
+                    if (row != null)
                     {
-                        SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlBuild.SqlSyncBuildData.ScriptRow)rows[0];
 
                         bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Script: " + row.FileName));
 
@@ -2317,8 +2321,7 @@ namespace SqlSync.SqlBuild
                 throw new ArgumentException(message);
             }
 
-            var ds = EnsureBuildDataSet();
-            ds.WriteXml(projectFileName);
+            SqlBuildFileHelper.SaveSqlBuildProjectFile(buildDataModel, projectFileName, buildFileName, includeHistoryAndLogs: true);
 
 
             if (buildHistoryXmlFile == null || buildHistoryXmlFile.Length == 0)
@@ -2330,8 +2333,6 @@ namespace SqlSync.SqlBuild
 
             if (buildHistoryData != null)
                 buildHistoryData.WriteXml(buildHistoryXmlFile);
-
-            SyncBuildDataModel(ds);
 
             if (fireSavedEvent)
                 bgWorker.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
