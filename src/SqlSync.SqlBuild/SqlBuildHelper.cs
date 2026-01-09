@@ -483,8 +483,7 @@ namespace SqlSync.SqlBuild
             try
             {
                 EnsureBgWorker();
-                Console.WriteLine($"[PrepareBuildForRun] bgWorker null? {bgWorker == null}, buildData null? {buildData == null}, projectFileName='{projectFileName}'");
-
+ 
             //Make sure the project file is not read-only
             if (File.Exists(projectFileName))
             {
@@ -492,7 +491,7 @@ namespace SqlSync.SqlBuild
             }
             else
             {
-                Console.WriteLine($"[PrepareBuildForRun] projectFileName does not exist: '{projectFileName}'");
+                log.LogError($"[PrepareBuildForRun] projectFileName does not exist: '{projectFileName}'");
             }
                 if (string.IsNullOrWhiteSpace(projectFilePath))
                 {
@@ -505,7 +504,7 @@ namespace SqlSync.SqlBuild
                         projectFilePath = Path.GetTempPath();
                     }
                 }
-                Console.WriteLine($"[PrepareBuildForRun] projectFilePath='{projectFilePath}'");
+                log.LogDebug($"[PrepareBuildForRun] projectFilePath='{projectFilePath}'");
 
             //Set the file name for the script log
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
@@ -516,13 +515,13 @@ namespace SqlSync.SqlBuild
 
             buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
                 myBuild = GetNewBuildRow(serverName);
-                Console.WriteLine($"[PrepareBuildForRun] myBuild created? {myBuild != null}");
+            log.LogDebug($"[PrepareBuildForRun] myBuild created? {myBuild != null}");
             myBuild.UserId = System.Environment.UserName;
 
             //Read scripting configuration
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Reading Scripting configuration"));
                 SqlSyncBuildData.ScriptDataTable scriptTable = GetScriptSourceTable(buildData);
-                Console.WriteLine($"[PrepareBuildForRun] scriptTable null? {scriptTable == null}");
+                    log.LogDebug($"[PrepareBuildForRun] scriptTable null? {scriptTable == null}");
 
             if (scriptTable == null)
             {
@@ -538,7 +537,7 @@ namespace SqlSync.SqlBuild
 
             //Get View
                 filteredScripts = scriptTable.DefaultView;
-                Console.WriteLine($"[PrepareBuildForRun] filteredScripts null? {filteredScripts == null}");
+                log.LogDebug($"[PrepareBuildForRun] filteredScripts null? {filteredScripts == null}");
             //Sort by Build order column
             filteredScripts.Sort = scriptTable.BuildOrderColumn.ColumnName + " ASC ";
             //Filter by BuildOrder >= start index
@@ -566,7 +565,7 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PrepareBuildForRun] Exception: {ex}");
+                log.LogError($"[PrepareBuildForRun] Exception: {ex}");
                 throw;
             }
         }
