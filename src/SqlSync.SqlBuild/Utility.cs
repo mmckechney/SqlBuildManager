@@ -6,6 +6,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using SqlSync.SqlBuild.Models;
 namespace SqlSync.SqlBuild
 {
     public class UtilityHelper
@@ -148,5 +149,36 @@ namespace SqlSync.SqlBuild
         }
 
 
+    }
+}
+
+namespace SqlSync.SqlBuild
+{
+    public static class ServerConnectConfigExtensions
+    {
+        public static ServerConfiguration ToModel(this ServerConnectConfig.ServerConfigurationRow row)
+        {
+            var name = row.IsNameNull() ? string.Empty : row.Name;
+            var lastAccessed = row.IsLastAccessedNull() ? DateTime.MinValue : row.LastAccessed;
+            var userName = row.IsUserNameNull() ? null : row.UserName;
+            var password = row.IsPasswordNull() ? null : row.Password;
+            var authenticationType = row.IsAuthenticationTypeNull() ? null : row.AuthenticationType;
+            return new ServerConfiguration(name, lastAccessed, userName, password, authenticationType);
+        }
+
+        public static ServerConnectConfig.ServerConfigurationDataTable ToDataTable(this IReadOnlyList<ServerConfiguration> configs)
+        {
+            var ds = new ServerConnectConfig();
+            foreach (var sc in configs)
+            {
+                ds.ServerConfiguration.AddServerConfigurationRow(
+                    sc.Name ?? string.Empty,
+                    sc.LastAccessed,
+                    sc.UserName ?? string.Empty,
+                    sc.Password ?? string.Empty,
+                    sc.AuthenticationType ?? string.Empty);
+            }
+            return ds.ServerConfiguration;
+        }
     }
 }

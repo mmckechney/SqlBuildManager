@@ -183,27 +183,25 @@ namespace SqlSync.SqlBuild
             this.bgWorker = bgWorker;
             committedScripts.Clear();
             connectDictionary.Clear();
+            var buildResults = new List<SqlSyncBuildData.BuildRow>();
 
-            SqlSyncBuildDataXmlSerializer.Save(Path.Combine(projFilePath, XmlFileNames.MainProjectFile), model);
-            var ds = model.ToDataSet(); // Convert model to DataSet
-            return PackageProjectFileIntoZip(ds, projFilePath, zipFileName, includeHistoryAndLogs); // Package the project file into a zip
+            foreach (var srvData in multiDbRunData)
             {
-                SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData();
-                runData.BuildData = multiDbRunData.BuildData;
-                runData.BuildType = "Multi Db Build";
-
-                if (multiDbRunData.BuildDescription == null || multiDbRunData.BuildDescription.Length == 0)
-                    runData.BuildDescription = $"Multi-Database Run ID: {multiDbRunData.MultiRunId}.  Server:{srvData.ServerName}";
-                else
-                    runData.BuildDescription = multiDbRunData.BuildDescription;
-
-                runData.StartIndex = 0;
-                runData.ProjectFileName = multiDbRunData.ProjectFileName;
-                runData.IsTrial = multiDbRunData.RunAsTrial;
-                runData.BuildFileName = multiDbRunData.BuildFileName;
-                runData.TargetDatabaseOverrides = srvData.Overrides;
+                var runData = new SqlBuildRunData
+                {
+                    BuildData = multiDbRunData.BuildData != null ? multiDbRunData.BuildData.ToDataSet() : null,
+                    BuildType = "Multi Db Build",
+                    BuildDescription = string.IsNullOrEmpty(multiDbRunData.BuildDescription)
+                        ? $"Multi-Database Run ID: {multiDbRunData.MultiRunId}.  Server:{srvData.ServerName}"
+                        : multiDbRunData.BuildDescription,
+                    StartIndex = 0,
+                    ProjectFileName = multiDbRunData.ProjectFileName,
+                    IsTrial = multiDbRunData.RunAsTrial,
+                    BuildFileName = multiDbRunData.BuildFileName,
+                    TargetDatabaseOverrides = srvData.Overrides
+                };
                 targetDatabaseOverrides = srvData.Overrides;
-                SqlSyncBuildData.BuildRow buildResult = ProcessBuild(runData, bgWorker, e, srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
+                var buildResult = ProcessBuild(runData, bgWorker, e, srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
                 buildResults.Add(buildResult);
 
                 if (buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
@@ -211,7 +209,6 @@ namespace SqlSync.SqlBuild
                     PerformRunScriptFinalization(true, buildResults, multiDbRunData, bgWorker, ref e);
                     return;
                 }
-
             }
 
             PerformRunScriptFinalization(false, buildResults, multiDbRunData, bgWorker, ref e);
