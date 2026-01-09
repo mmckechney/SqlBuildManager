@@ -326,6 +326,11 @@ namespace SqlSync.SqlBuild
 
             PrepareBuildForRun(serverName, isMultiDbRun, scriptBatchColl, buildData, ref e, out filteredScripts, out myBuild);
             SqlSyncBuildData.BuildRow buildResults = null;
+            if (filteredScripts == null)
+            {
+                // No scripts to run; return prepared build row
+                return myBuild;
+            }
 
             //Run the build... retry as needed until we exceed the retry count.
             while (buildRetries <= allowableTimeoutRetries &&
@@ -522,7 +527,7 @@ namespace SqlSync.SqlBuild
             if (scriptTable == null)
             {
                 bgWorker.ReportProgress(0, new GeneralStatusEventArgs("ERROR Reading <script> element in config template"));
-                filteredScripts = new SqlSyncBuildData.ScriptDataTable().DefaultView;
+                filteredScripts = null;
                 if (isMultiDbRun)
                     myBuild.FinalStatus = BuildItemStatus.PendingRollBack;
                 else
@@ -1231,6 +1236,34 @@ namespace SqlSync.SqlBuild
             var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             var ok = RecordCommittedScripts(committedScripts, model, out var updated);
             buildDataModel = updated;
+            // Back-compat: update original DataSet if available
+            if (buildDataCompat != null && committedScripts != null)
+            {
+                try
+                {
+                    foreach (var cs in committedScripts)
+                    {
+                        var row = buildDataCompat.CommittedScript.NewCommittedScriptRow();
+                        row.ScriptId = cs.ScriptId.ToString();
+                        row.ServerName = cs.ServerName;
+                        row.AllowScriptBlock = true;
+                        if (cs.FileHash != null)
+                            row.ScriptHash = cs.FileHash;
+                        row.CommittedDate = DateTime.Now;
+                        // Set project id if exists
+                        if (buildDataCompat.SqlSyncBuildProject?.Rows.Count > 0 && buildDataCompat.CommittedScript.Columns.Contains("SqlSyncBuildProject_Id"))
+                        {
+                            row.SqlSyncBuildProject_Id = ((SqlSyncBuildData.SqlSyncBuildProjectRow)buildDataCompat.SqlSyncBuildProject.Rows[0]).SqlSyncBuildProject_Id;
+                        }
+                        buildDataCompat.CommittedScript.AddCommittedScriptRow(row);
+                    }
+                    buildDataCompat.CommittedScript.AcceptChanges();
+                }
+                catch (Exception ex)
+                {
+                    log.LogWarning(ex, "Unable to update compatibility DataSet in RecordCommittedScripts");
+                }
+            }
             return ok;
         }
 
