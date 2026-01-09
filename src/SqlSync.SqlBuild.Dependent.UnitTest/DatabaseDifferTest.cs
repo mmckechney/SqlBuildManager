@@ -4,6 +4,8 @@ using SqlSync.SqlBuild.Syncronizer;
 using System;
 using System.Linq;
 
+#nullable enable
+
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
 
@@ -22,23 +24,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Initialization init = new Initialization();
         }
 
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; } = null!;
 
         #region Additional test attributes
         // 

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
-    class SqlBuildHelperTest_MultiDb
+    [TestClass]
+    public class SqlBuildHelperTest_MultiDb
     {
 
         private static List<Initialization> initColl;

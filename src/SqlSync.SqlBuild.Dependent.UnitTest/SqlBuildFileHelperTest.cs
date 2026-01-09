@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+
+#nullable enable
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
 
@@ -15,25 +17,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     {
 
 
-        private TestContext testContextInstance;
+        public TestContext TestContext { get; set; } = null!;
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        private static List<Initialization> initColl;
+        private static List<Initialization> initColl = new();
 
         [ClassInitialize()]
         public static void InitializeTests(TestContext testContext)
@@ -709,7 +695,7 @@ END
                 row.FileName = Path.GetFileName(row.FileName);
 
             string zipFileName = init.GetTrulyUniqueFile() + ".sbm";
-            string path = Path.GetDirectoryName(zipFileName);
+            string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
 
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
 
@@ -760,7 +746,7 @@ END
 
             string zipFileName = init.GetTrulyUniqueFile();
 
-            string path = Path.GetDirectoryName(zipFileName);
+            string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
             buildData.WriteXml(projectFileName);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
@@ -805,7 +791,7 @@ END
 
             string zipFileName = init.GetTrulyUniqueFile();
 
-            string path = Path.GetDirectoryName(zipFileName);
+            string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
             buildData.WriteXml(projectFileName);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
@@ -853,7 +839,7 @@ END
 
             string zipFileName = init.GetTrulyUniqueFile();
 
-            string path = Path.GetDirectoryName(zipFileName);
+            string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
             buildData.WriteXml(projectFileName);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);

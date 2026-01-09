@@ -8,7 +8,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
-
+using SqlSync.SqlBuild.Models;
+using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
 
@@ -1245,12 +1246,12 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             ConnectionData connData = init.connData;
-            ScriptRunLog actual;
+            IReadOnlyList<ScriptRunLogEntry> actual;
             actual = SqlBuildHelper.GetScriptRunLog(scriptId, connData);
-            Assert.IsTrue(actual.Rows.Count > 0, String.Format("Missing rows for pre-run script. {0}", Initialization.MissingDatabaseErrorMessage));
+            Assert.IsTrue(actual.Count > 0, String.Format("Missing rows for pre-run script. {0}", Initialization.MissingDatabaseErrorMessage));
 
             actual = SqlBuildHelper.GetScriptRunLog(Guid.NewGuid(), connData);
-            Assert.IsTrue(actual.Rows.Count == 0, String.Format("Rows found for new unique script id. {0}", Initialization.MissingDatabaseErrorMessage));
+            Assert.IsTrue(actual.Count == 0, String.Format("Rows found for new unique script id. {0}", Initialization.MissingDatabaseErrorMessage));
 
 
         }
@@ -1267,7 +1268,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             ConnectionData connData = init.connData;
             connData.DatabaseName = "invalidDatabaseName";
-            ScriptRunLog actual;
+            IReadOnlyList<ScriptRunLogEntry> actual;
             actual = SqlBuildHelper.GetScriptRunLog(scriptId, connData);
         }
         #endregion
@@ -1779,8 +1780,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             Guid scriptID = Guid.NewGuid();
             string hash = "WETRWEW@#$@$WEQW#$#R";
-            CommittedScript script = new CommittedScript(scriptID, hash, 20, "My script text", "TAGID", init.serverName, init.testDatabaseNames[0]);
-            List<CommittedScript> committedScripts = new List<CommittedScript>();
+            LoggingCommittedScript script = new LoggingCommittedScript(scriptID, hash, 20, "My script text", "TAGID", init.serverName, init.testDatabaseNames[0]);
+            List<LoggingCommittedScript> committedScripts = new List<LoggingCommittedScript>();
             committedScripts.Add(script);
 
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
