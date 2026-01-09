@@ -23,3 +23,5 @@
 - ✅ `myRunRow` replaced with POCO `ScriptRun`; history helper writes to model + DataSet.
 - ✅ `BuildHistoryModel` exposed (internal) and synced from persisted history.
 - ✅ Unit test: `BuildHistoryModelTest.AddScriptRunToHistory_AppendsToModelAndDataSet`.
+- ✅ `buildData` replaced with `SqlSyncBuildDataModel` inside `SqlBuildHelper`; ephemeral DataSet derived via helpers.
+- ✅ Unit test: `RecordCommittedScriptsObsoleteTest` ensures obsolete path updates model.

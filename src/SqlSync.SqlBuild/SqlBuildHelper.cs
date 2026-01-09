@@ -41,9 +41,9 @@ namespace SqlSync.SqlBuild
         /// </summary>
         public bool ErrorOccured;
         /// <summary>
-        /// DataSet holding build configuration data
+        /// POCO model holding build configuration data
         /// </summary>
-        internal SqlSyncBuildData buildData;
+        internal BuildModels.SqlSyncBuildDataModel buildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
         /// <summary>
         /// Data collection used to pass connection data
         /// </summary>
@@ -156,6 +156,15 @@ namespace SqlSync.SqlBuild
         private BuildModels.SqlSyncBuildDataModel buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
         internal BuildModels.SqlSyncBuildDataModel BuildHistoryModel => buildHistoryModel;
+        internal BuildModels.SqlSyncBuildDataModel BuildDataModel => buildDataModel;
+
+        private static SqlSyncBuildData ToDataSet(BuildModels.SqlSyncBuildDataModel model) => model.ToDataSet();
+        private void SyncBuildDataModel(SqlSyncBuildData ds) => buildDataModel = ds.ToModel();
+        private SqlSyncBuildData EnsureBuildDataSet()
+        {
+            buildDataModel ??= SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            return buildDataModel.ToDataSet();
+        }
         internal string externalScriptLogFileName = string.Empty;
         public SqlBuildHelper(ConnectionData data) : this(data, true, string.Empty, true)
         {
@@ -235,7 +244,8 @@ namespace SqlSync.SqlBuild
         {
             this.bgWorker = bgWorker;
             ErrorOccured = false;
-            buildData = runData.BuildData ?? runData.BuildDataModel?.ToDataSet();
+            buildDataModel = runData.BuildDataModel ?? runData.BuildData?.ToModel() ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var buildData = EnsureBuildDataSet();
             buildType = runData.BuildType;
             buildDescription = runData.BuildDescription;
             startIndex = runData.StartIndex;
@@ -255,7 +265,7 @@ namespace SqlSync.SqlBuild
             DataView filteredScripts;
             SqlSyncBuildData.BuildRow myBuild;
 
-            PrepareBuildForRun(serverName, isMultiDbRun, scriptBatchColl, ref e, out filteredScripts, out myBuild);
+            PrepareBuildForRun(serverName, isMultiDbRun, scriptBatchColl, buildData, ref e, out filteredScripts, out myBuild);
             SqlSyncBuildData.BuildRow buildResults = null;
 
             //Run the build... retry as needed until we exceed the retry count.
@@ -268,7 +278,7 @@ namespace SqlSync.SqlBuild
                         ScriptLogWriteEvent(null, false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
 
                 }
-                buildResults = RunBuildScripts(filteredScripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, ref e);
+                buildResults = RunBuildScripts(filteredScripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildData, ref e);
 
                 if (buildRetries > 0 && buildResults.FinalStatus == BuildItemStatus.Committed)
                     buildResults.FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries;
@@ -366,6 +376,7 @@ namespace SqlSync.SqlBuild
 
             }
 
+            SyncBuildDataModel(buildData);
             return buildResults;
         }
         /// <summary>
@@ -403,7 +414,7 @@ namespace SqlSync.SqlBuild
         /// Sets the parameters for the build run 
         /// </summary>
         /// <param name="workEventArgs"></param>
-        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
+        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
         {
 
             //Make sure the project file is not read-only
@@ -477,7 +488,7 @@ namespace SqlSync.SqlBuild
         /// <param name="myBuild">The build row that has been prepared and is used to contain the build history data</param>
         /// <param name="serverName">The name of the server that will be used for the build</param>
         /// <param name="workEventArgs"></param>
-        internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
+        internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs)
         {
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Proceeding with Build"));
             log.LogDebug($"Processing with build for build Package hash = {buildPackageHash}");
@@ -906,7 +917,7 @@ namespace SqlSync.SqlBuild
                 log.LogError("Build failure. Check execution logs for details");
                 if (!isMultiDbRun)
                 {
-                    PerformRunScriptFinalization(buildFailure, myBuild, null, ref workEventArgs);
+                    PerformRunScriptFinalization(buildFailure, myBuild, null, buildData, ref workEventArgs);
                 }
                 else
                 {
@@ -927,7 +938,7 @@ namespace SqlSync.SqlBuild
                 if (isMultiDbRun)
                     myBuild.FinalStatus = BuildItemStatus.Pending;
                 else
-                    PerformRunScriptFinalization(buildFailure, myBuild, null, ref workEventArgs);
+                    PerformRunScriptFinalization(buildFailure, myBuild, null, buildData, ref workEventArgs);
                 log.LogDebug("Build Successful!");
             }
 
@@ -959,7 +970,7 @@ namespace SqlSync.SqlBuild
             return script;
 
         }
-        internal void PerformRunScriptFinalization(bool buildFailure, SqlSyncBuildData.BuildRow myBuild, BackgroundWorker bgWorker, ref DoWorkEventArgs workEventArgs)
+        internal void PerformRunScriptFinalization(bool buildFailure, SqlSyncBuildData.BuildRow myBuild, BackgroundWorker bgWorker, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs)
         {
             List<SqlSyncBuildData.BuildRow> tmp = new List<SqlSyncBuildData.BuildRow>();
             tmp.Add(myBuild);
@@ -1119,22 +1130,10 @@ namespace SqlSync.SqlBuild
         [Obsolete("Use RecordCommittedScripts(List<SqlLogging.CommittedScript>, SqlSyncBuildDataModel, out SqlSyncBuildDataModel) for POCO entry")] 
         internal bool RecordCommittedScripts(List<CommittedScript> committedScripts)
         {
-            if (buildData == null)
-            {
-                buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            }
-            if (buildData.SqlSyncBuildProject.Rows.Count == 0)
-            {
-                buildData.SqlSyncBuildProject.AddSqlSyncBuildProjectRow(string.Empty, false);
-            }
-            bgWorker?.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Scripts to Log"));
-
-            for (int i = 0; i < committedScripts.Count; i++)
-            {
-                buildData.CommittedScript.AddCommittedScriptRow(committedScripts[i].ScriptId.ToString(), committedScripts[i].ServerName, DateTime.Now, true, committedScripts[i].FileHash, buildData.SqlSyncBuildProject[0]);
-            }
-            return true;
-
+            var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var ok = RecordCommittedScripts(committedScripts, model, out var updated);
+            buildDataModel = updated;
+            return ok;
         }
 
         internal bool RecordCommittedScripts(List<CommittedScript> committedScripts, BuildModels.SqlSyncBuildDataModel buildDataModel, out BuildModels.SqlSyncBuildDataModel updatedModel)
@@ -1160,20 +1159,15 @@ namespace SqlSync.SqlBuild
 
             // Fallback to DataSet
             var ds = buildDataModel.ToDataSet();
-            buildData = ds;
             var result = RecordCommittedScripts(committedScripts);
-            updatedModel = ds.ToModel();
+            updatedModel = buildDataModel;
             return result;
         }
 
         public void ClearScriptBlocks(ClearScriptData scrData, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             projectFileName = scrData.ProjectFileName;
-            buildData = scrData.BuildData;
-            if (buildData == null && scrData.BuildDataModel != null)
-            {
-                buildData = scrData.BuildDataModel.ToDataSet();
-            }
+            var buildData = scrData.BuildData ?? scrData.BuildDataModel?.ToDataSet() ?? EnsureBuildDataSet();
             buildFileName = scrData.BuildZipFileName;
             selectedScriptIds = scrData.SelectedScriptIds;
             this.bgWorker = bgWorker;
@@ -1225,6 +1219,7 @@ namespace SqlSync.SqlBuild
             SaveBuildDataSet(true);
 
             bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Selected Script Blocks Cleared"));
+            SyncBuildDataModel(buildData);
         }
 
         /// <summary>
@@ -1367,6 +1362,7 @@ namespace SqlSync.SqlBuild
         /// <returns>True if the commit was successful</returns>
         private bool LogCommittedScriptsToDatabase(List<CommittedScript> committedScripts, MultiDbData multiDbRunData)
         {
+            var buildData = EnsureBuildDataSet();
             bool returnValue = true;
             //If using an alternate database to log the commits to, we need to initiate the connection objects 
             //so that the EnsureLogTablePresence method catches them and creates the tables as needed.
@@ -2321,7 +2317,8 @@ namespace SqlSync.SqlBuild
                 throw new ArgumentException(message);
             }
 
-            buildData.WriteXml(projectFileName);
+            var ds = EnsureBuildDataSet();
+            ds.WriteXml(projectFileName);
 
 
             if (buildHistoryXmlFile == null || buildHistoryXmlFile.Length == 0)
@@ -2333,6 +2330,8 @@ namespace SqlSync.SqlBuild
 
             if (buildHistoryData != null)
                 buildHistoryData.WriteXml(buildHistoryXmlFile);
+
+            SyncBuildDataModel(ds);
 
             if (fireSavedEvent)
                 bgWorker.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
