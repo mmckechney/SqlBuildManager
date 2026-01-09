@@ -1257,6 +1257,23 @@ namespace SqlSync.SqlBuild
             }
 
             buildDataModel = model;
+
+            // Keep legacy DataSet (if provided) in sync for compatibility callers/tests
+            if (scrData.BuildData != null)
+            {
+                var ids = new HashSet<string>(selectedScriptIds ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+                foreach (SqlSyncBuildData.CommittedScriptRow row in scrData.BuildData.CommittedScript)
+                {
+                    if (row.ScriptId != null && ids.Contains(row.ScriptId))
+                    {
+                        row.AllowScriptBlock = false;
+                        if (row.Table.Columns.Contains("AllowBlockUpdateId"))
+                        {
+                            row["AllowBlockUpdateId"] = Environment.UserName;
+                        }
+                    }
+                }
+            }
             CommitBuild();
             SaveBuildDataSet(true);
 

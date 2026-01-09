@@ -39,8 +39,22 @@ namespace SqlSync.SqlBuild
                     {
                         if (File.Exists(file) == false)
                             continue;
-
-                        newFile.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Fastest);
+//TODO: raise a zip failure more aggressively?
+                        try
+                        {
+                            newFile.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Fastest);
+                        }
+                        catch (IOException ioex)
+                        {
+                            // Skip locked files (e.g., log files held by another process)
+                            log.LogWarning(ioex, $"Unable to add file {file} to zip package; skipping.");
+                            continue;
+                        }
+                        catch (UnauthorizedAccessException uaex)
+                        {
+                            log.LogWarning(uaex, $"Unable to add file {file} to zip package due to access; skipping.");
+                            continue;
+                        }
 
                     }
                 }
@@ -192,7 +206,7 @@ namespace SqlSync.SqlBuild
                 throw new ArgumentNullException(nameof(sourceFileName));
             if (entryName == null)
                 throw new ArgumentNullException(nameof(entryName));
-            using (Stream stream = (Stream)File.Open(sourceFileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (Stream stream = (Stream)File.Open(sourceFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 ZipArchiveEntry zipArchiveEntry = compressionLevel.HasValue ? destination.CreateEntry(entryName, compressionLevel.Value) : destination.CreateEntry(entryName);
                 DateTime dateTime = File.GetLastWriteTime(sourceFileName);
