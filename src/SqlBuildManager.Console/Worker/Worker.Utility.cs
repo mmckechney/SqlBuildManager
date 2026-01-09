@@ -170,10 +170,10 @@ namespace SqlBuildManager.Console
                     workingDir = Directory.GetCurrentDirectory();
                 }
                 log.LogInformation("Creating Base Build File XML");
-                var buildData = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-                buildData.AcceptChanges();
-                sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, workingDir, sbxFileName);
-                buildData.WriteXml(sbxFileName);
+                var buildModel = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+                var projFile = Path.Combine(workingDir, sqlB.XmlFileNames.MainProjectFile);
+                sqlB.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
                 {
@@ -181,17 +181,18 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    sqlB.SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, sbxFileName, file.Name, counter, "", true, true, "client", true, "", false, true, Environment.UserName, 500, "");
+                    buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
                     counter++;
                 }
-                buildData.AcceptChanges();
-                buildData.WriteXml(sbxFileName);
+                // Note: AddScriptFileToBuild with saveToZip=true already persists the project file and packages the zip.
+                // Avoid overwriting the .sbx zip with plain XML.
+                sqlB.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
             }
             else
             {
                 string workingDir = "", projFilePath = "", projectFileName = "";
                 sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.OutputSbm, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
-                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlB.SqlSyncBuildData buildData, projectFileName, true);
+                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlM.SqlSyncBuildDataModel buildModel, projectFileName, true);
                 if (success)
                 {
                     List<string> copied = new List<string>();
@@ -203,12 +204,11 @@ namespace SqlBuildManager.Console
                             copied.Add(Path.Combine(workingDir, f.Name));
                         }
                     });
-                    var buildModel = buildData.ToModel();
                     sqlB.BuildDataHelper.GetLastBuildNumberAndDb(buildModel, out double lastBuildNumber, out string lastDatabase);
                     foreach (var file in cmdLine.Scripts)
                     {
                         lastBuildNumber++;
-                        sqlB.SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, 500, "");
+                        buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
                     }
                     sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
                 }
@@ -394,10 +394,10 @@ namespace SqlBuildManager.Console
                     workingDir = Directory.GetCurrentDirectory();
                 }
                 log.LogInformation("Creating Base Build File XML");
-                var buildData = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-                buildData.AcceptChanges();
-                sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, workingDir, sbxFileName);
-                buildData.WriteXml(sbxFileName);
+                var buildModel = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+                var projFile = Path.Combine(workingDir, sqlB.XmlFileNames.MainProjectFile);
+                    sqlB.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
                 {
@@ -405,11 +405,10 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    sqlB.SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, sbxFileName, file.Name, counter, "", true, true, "client", true, "", false, true, Environment.UserName, 500, "");
+                    buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
                     counter++;
                 }
-                buildData.AcceptChanges();
-                buildData.WriteXml(sbxFileName);
+                    sqlB.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
 
             }
             else

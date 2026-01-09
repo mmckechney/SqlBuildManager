@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.IO.Compression;
 using System.Xml.Linq;
 using SqlSync.SqlBuild.Models;
 
@@ -21,8 +22,30 @@ namespace SqlSync.SqlBuild
         public static SqlSyncBuildDataModel Load(string path)
         {
             using var stream = File.OpenRead(path);
-            var doc = XDocument.Load(stream);
-            return Load(doc);
+            if (LooksLikeZip(stream))
+            {
+                stream.Position = 0;
+                using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+                var entry = archive.GetEntry(XmlFileNames.MainProjectFile)
+                           ?? archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
+                if (entry == null)
+                    throw new InvalidOperationException($"Zip package '{path}' does not contain a project XML file.");
+                using var entryStream = entry.Open();
+                return Load(XDocument.Load(entryStream));
+            }
+
+            stream.Position = 0;
+            return Load(XDocument.Load(stream));
+        }
+
+        private static bool LooksLikeZip(Stream stream)
+        {
+            if (!stream.CanSeek) return false;
+            var pos = stream.Position;
+            Span<byte> header = stackalloc byte[4];
+            var read = stream.Read(header);
+            stream.Position = pos;
+            return read >= 2 && header[0] == 0x50 && header[1] == 0x4B; // 'PK'
         }
 
         public static SqlSyncBuildDataModel Load(XDocument doc)
