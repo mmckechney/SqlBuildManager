@@ -11,15 +11,29 @@ namespace SqlSync.SqlBuild
     {
         public static SqlSyncBuildDataModel ToModel(this SqlSyncBuildData ds)
         {
+            if (ds == null)
+            {
+                return new SqlSyncBuildDataModel(
+                    SqlSyncBuildProject: new List<SqlSyncBuildProject>(),
+                    Scripts: new List<Scripts>(),
+                    Script: new List<Script>(),
+                    Builds: new List<Builds>(),
+                    Build: new List<Build>(),
+                    ScriptRun: new List<ScriptRun>(),
+                    CommittedScript: new List<CommittedScript>(),
+                    CodeReview: new List<CodeReview>()
+                );
+            }
+
             return new SqlSyncBuildDataModel(
-                SqlSyncBuildProject: new List<SqlSyncBuildProject>(),
-                Scripts: new List<Scripts>(),
-                Script: new List<Script>(),
-                Builds: new List<Builds>(),
-                Build: new List<Build>(),
-                ScriptRun: new List<ScriptRun>(),
-                CommittedScript: new List<CommittedScript>(),
-                CodeReview: new List<CodeReview>()
+                SqlSyncBuildProject: ds.SqlSyncBuildProject?.Cast<SqlSyncBuildData.SqlSyncBuildProjectRow>().Select(r => r.ToModel()).ToList() ?? new List<SqlSyncBuildProject>(),
+                Scripts: ds.Scripts?.Cast<SqlSyncBuildData.ScriptsRow>().Select(r => r.ToModel()).ToList() ?? new List<Scripts>(),
+                Script: ds.Script?.Cast<SqlSyncBuildData.ScriptRow>().Select(r => r.ToModel()).ToList() ?? new List<Script>(),
+                Builds: ds.Builds?.Cast<SqlSyncBuildData.BuildsRow>().Select(r => r.ToModel()).ToList() ?? new List<Builds>(),
+                Build: ds.Build?.Cast<SqlSyncBuildData.BuildRow>().Select(r => r.ToModel()).ToList() ?? new List<Build>(),
+                ScriptRun: ds.ScriptRun?.Cast<SqlSyncBuildData.ScriptRunRow>().Select(r => r.ToModel()).ToList() ?? new List<ScriptRun>(),
+                CommittedScript: ds.CommittedScript?.Cast<SqlSyncBuildData.CommittedScriptRow>().Select(r => r.ToModel()).ToList() ?? new List<CommittedScript>(),
+                CodeReview: ds.CodeReview?.Cast<SqlSyncBuildData.CodeReviewRow>().Select(r => r.ToModel()).ToList() ?? new List<CodeReview>()
             );
         }
 

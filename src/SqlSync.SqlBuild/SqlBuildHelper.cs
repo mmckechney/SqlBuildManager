@@ -45,6 +45,10 @@ namespace SqlSync.SqlBuild
         /// </summary>
         internal BuildModels.SqlSyncBuildDataModel buildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
         /// <summary>
+        /// Optional reference to original DataSet for backward compatibility tests
+        /// </summary>
+        internal SqlSyncBuildData buildDataCompat;
+        /// <summary>
         /// Data collection used to pass connection data
         /// </summary>
         private ConnectionData connData;
@@ -187,7 +191,11 @@ namespace SqlSync.SqlBuild
 
         // Compatibility helpers for tests (internal) to ease migration from DataSet APIs
         internal SqlSyncBuildData BuildData => BuildDataModel.ToDataSet();
-        internal void SetBuildData(SqlSyncBuildData ds) => BuildDataModel = ds.ToModel();
+        internal void SetBuildData(SqlSyncBuildData ds)
+        {
+            buildDataCompat = ds;
+            BuildDataModel = ds.ToModel();
+        }
 
         internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl)
         {
@@ -467,16 +475,32 @@ namespace SqlSync.SqlBuild
         /// <param name="workEventArgs"></param>
         internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
         {
+            try
+            {
+                EnsureBgWorker();
+                Console.WriteLine($"[PrepareBuildForRun] bgWorker null? {bgWorker == null}, buildData null? {buildData == null}, projectFileName='{projectFileName}'");
 
             //Make sure the project file is not read-only
             if (File.Exists(projectFileName))
             {
                 File.SetAttributes(projectFileName, System.IO.FileAttributes.Normal);
             }
-            if (projectFilePath == null && !string.IsNullOrWhiteSpace(projectFileName))
+            else
             {
-                projectFilePath = Path.GetDirectoryName(projectFileName);
+                Console.WriteLine($"[PrepareBuildForRun] projectFileName does not exist: '{projectFileName}'");
             }
+                if (string.IsNullOrWhiteSpace(projectFilePath))
+                {
+                    if (!string.IsNullOrWhiteSpace(projectFileName))
+                    {
+                        projectFilePath = Path.GetDirectoryName(projectFileName);
+                    }
+                    if (string.IsNullOrWhiteSpace(projectFilePath))
+                    {
+                        projectFilePath = Path.GetTempPath();
+                    }
+                }
+                Console.WriteLine($"[PrepareBuildForRun] projectFilePath='{projectFilePath}'");
 
             //Set the file name for the script log
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
@@ -486,17 +510,19 @@ namespace SqlSync.SqlBuild
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Generating Build Record"));
 
             buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
-            myBuild = GetNewBuildRow(serverName);
+                myBuild = GetNewBuildRow(serverName);
+                Console.WriteLine($"[PrepareBuildForRun] myBuild created? {myBuild != null}");
             myBuild.UserId = System.Environment.UserName;
 
             //Read scripting configuration
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Reading Scripting configuration"));
-            SqlSyncBuildData.ScriptDataTable scriptTable = GetScriptSourceTable(buildData);
+                SqlSyncBuildData.ScriptDataTable scriptTable = GetScriptSourceTable(buildData);
+                Console.WriteLine($"[PrepareBuildForRun] scriptTable null? {scriptTable == null}");
 
             if (scriptTable == null)
             {
                 bgWorker.ReportProgress(0, new GeneralStatusEventArgs("ERROR Reading <script> element in config template"));
-                filteredScripts = null;
+                filteredScripts = new SqlSyncBuildData.ScriptDataTable().DefaultView;
                 if (isMultiDbRun)
                     myBuild.FinalStatus = BuildItemStatus.PendingRollBack;
                 else
@@ -506,7 +532,8 @@ namespace SqlSync.SqlBuild
             }
 
             //Get View
-            filteredScripts = scriptTable.DefaultView;
+                filteredScripts = scriptTable.DefaultView;
+                Console.WriteLine($"[PrepareBuildForRun] filteredScripts null? {filteredScripts == null}");
             //Sort by Build order column
             filteredScripts.Sort = scriptTable.BuildOrderColumn.ColumnName + " ASC ";
             //Filter by BuildOrder >= start index
@@ -531,6 +558,26 @@ namespace SqlSync.SqlBuild
                 buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
 
             log.LogInformation($"Prepared build for run. Build Package hash = {buildPackageHash}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[PrepareBuildForRun] Exception: {ex}");
+                throw;
+            }
+        }
+
+
+        private void EnsureBgWorker()
+        {
+            if (bgWorker == null)
+            {
+                var bg = new BackgroundWorker()
+                {
+                    WorkerReportsProgress = true,
+                    WorkerSupportsCancellation = true
+                };
+                bgWorker = bg;
+            }
         }
         /// <summary>
         /// Method that performs the splitting of the scripts into their batch and then executes the scripts
