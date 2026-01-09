@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SqlSync.Connection;
 
 #nullable enable
 
@@ -81,4 +82,24 @@ namespace SqlSync.SqlBuild.Models
         IReadOnlyList<ScriptRun> ScriptRun,
         IReadOnlyList<CommittedScript> CommittedScript,
         IReadOnlyList<CodeReview> CodeReview);
+
+    public sealed record class SqlBuildRunDataModel(
+        SqlSyncBuildDataModel? BuildDataModel,
+        string? BuildType,
+        string? Server,
+        string? BuildDescription,
+        double? StartIndex,
+        string? ProjectFileName,
+        bool? IsTrial,
+        IReadOnlyList<double>? RunItemIndexes,
+        bool? RunScriptOnly,
+        string? BuildFileName,
+        string? LogToDatabaseName,
+        bool? IsTransactional,
+        string? PlatinumDacPacFileName,
+        IReadOnlyList<DatabaseOverride>? TargetDatabaseOverrides,
+        bool? ForceCustomDacpac,
+        string? BuildRevision,
+        int? DefaultScriptTimeout,
+        bool? AllowObjectDelete);
 }

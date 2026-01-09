@@ -187,6 +187,54 @@ namespace SqlSync.SqlBuild
             return model with { CommittedScript = updatedCommitted };
         }
 
+        private static SqlBuildRunData MapToLegacyRunData(BuildModels.SqlBuildRunDataModel model)
+        {
+            return new SqlBuildRunData
+            {
+                BuildDataModel = model.BuildDataModel,
+                BuildType = model.BuildType ?? string.Empty,
+                Server = model.Server ?? string.Empty,
+                BuildDescription = model.BuildDescription ?? string.Empty,
+                StartIndex = model.StartIndex ?? 0,
+                ProjectFileName = model.ProjectFileName ?? string.Empty,
+                IsTrial = model.IsTrial ?? false,
+                RunItemIndexes = model.RunItemIndexes?.ToArray() ?? Array.Empty<double>(),
+                RunScriptOnly = model.RunScriptOnly ?? false,
+                BuildFileName = model.BuildFileName ?? string.Empty,
+                LogToDatabaseName = model.LogToDatabaseName ?? string.Empty,
+                IsTransactional = model.IsTransactional ?? true,
+                PlatinumDacPacFileName = model.PlatinumDacPacFileName ?? string.Empty,
+                TargetDatabaseOverrides = model.TargetDatabaseOverrides?.ToList(),
+                ForceCustomDacpac = model.ForceCustomDacpac ?? false,
+                BuildRevision = model.BuildRevision ?? string.Empty,
+                DefaultScriptTimeout = model.DefaultScriptTimeout ?? 500,
+                AllowObjectDelete = model.AllowObjectDelete ?? false
+            };
+        }
+
+        private static BuildModels.SqlBuildRunDataModel MapToRunDataModel(SqlBuildRunData runData)
+        {
+            return new BuildModels.SqlBuildRunDataModel(
+                BuildDataModel: runData.BuildDataModel,
+                BuildType: runData.BuildType,
+                Server: runData.Server,
+                BuildDescription: runData.BuildDescription,
+                StartIndex: runData.StartIndex,
+                ProjectFileName: runData.ProjectFileName,
+                IsTrial: runData.IsTrial,
+                RunItemIndexes: runData.RunItemIndexes,
+                RunScriptOnly: runData.RunScriptOnly,
+                BuildFileName: runData.BuildFileName,
+                LogToDatabaseName: runData.LogToDatabaseName,
+                IsTransactional: runData.IsTransactional,
+                PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
+                TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
+                ForceCustomDacpac: runData.ForceCustomDacpac,
+                BuildRevision: runData.BuildRevision,
+                DefaultScriptTimeout: runData.DefaultScriptTimeout,
+                AllowObjectDelete: runData.AllowObjectDelete);
+        }
+
         private static SqlSyncBuildData ToDataSet(BuildModels.SqlSyncBuildDataModel model) => model.ToDataSet();
         private void SyncBuildDataModel(SqlSyncBuildData ds) => buildDataModel = ds.ToModel();
         private SqlSyncBuildData EnsureBuildDataSet()
@@ -262,23 +310,32 @@ namespace SqlSync.SqlBuild
             this.bgWorker = bgWorker;
             committedScripts.Clear();
             connectDictionary.Clear();
-            var buildResults = new List<SqlSyncBuildData.BuildRow>();
+            var buildResults = new List<BuildModels.Build>();
 
             foreach (var srvData in multiDbRunData)
             {
-                var runData = new SqlBuildRunData
-                {
-                    BuildDataModel = multiDbRunData.BuildData,
-                    BuildType = "Multi Db Build",
-                    BuildDescription = string.IsNullOrEmpty(multiDbRunData.BuildDescription)
+                var runData = new BuildModels.SqlBuildRunDataModel(
+                    BuildDataModel: multiDbRunData.BuildData,
+                    BuildType: "Multi Db Build",
+                    Server: srvData.ServerName,
+                    BuildDescription: string.IsNullOrEmpty(multiDbRunData.BuildDescription)
                         ? $"Multi-Database Run ID: {multiDbRunData.MultiRunId}.  Server:{srvData.ServerName}"
                         : multiDbRunData.BuildDescription,
-                    StartIndex = 0,
-                    ProjectFileName = multiDbRunData.ProjectFileName,
-                    IsTrial = multiDbRunData.RunAsTrial,
-                    BuildFileName = multiDbRunData.BuildFileName,
-                    TargetDatabaseOverrides = srvData.Overrides
-                };
+                    StartIndex: 0,
+                    ProjectFileName: multiDbRunData.ProjectFileName,
+                    IsTrial: multiDbRunData.RunAsTrial,
+                    RunItemIndexes: Array.Empty<double>(),
+                    RunScriptOnly: false,
+                    BuildFileName: multiDbRunData.BuildFileName,
+                    LogToDatabaseName: string.Empty,
+                    IsTransactional: true,
+                    PlatinumDacPacFileName: string.Empty,
+                    TargetDatabaseOverrides: srvData.Overrides,
+                    ForceCustomDacpac: false,
+                    BuildRevision: string.Empty,
+                    DefaultScriptTimeout: 500,
+                    AllowObjectDelete: false);
+
                 targetDatabaseOverrides = srvData.Overrides;
                 var buildResult = ProcessBuild(runData, bgWorker, e, srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
                 buildResults.Add(buildResult);
@@ -305,6 +362,7 @@ namespace SqlSync.SqlBuild
         /// <param name="isMultiDbRun">Whether or not this is a UI based multi-database execution run</param>
         /// <param name="scriptBatchColl">Pre-batched script collection. Provided by console based threaded execution</param>
         /// <returns>BuildRow object with the result data.</returns>
+        [Obsolete("Use ProcessBuild(SqlSync.SqlBuild.Models.SqlBuildRunDataModel, ...)")]
         internal SqlSyncBuildData.BuildRow ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
         {
             this.bgWorker = bgWorker;
@@ -335,6 +393,7 @@ namespace SqlSync.SqlBuild
             }
 
             BuildModels.Build buildResultsModel = null;
+            bool timedOut = false;
             //Run the build... retry as needed until we exceed the retry count.
             while (buildRetries <= allowableTimeoutRetries &&
                 (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString()))
@@ -343,6 +402,8 @@ namespace SqlSync.SqlBuild
                 {
                     if (ScriptLogWriteEvent != null)
                         ScriptLogWriteEvent(null, false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
+
+                    ResetConnectionsForRetry();
 
                 }
                 buildResultsModel = RunBuildScripts(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref e);
@@ -353,6 +414,7 @@ namespace SqlSync.SqlBuild
                 buildRetries++;
                 if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString())
                 {
+                    timedOut = true;
                     log.LogWarning($"Timeout encountered. Incrementing retries to {buildRetries}");
                 }
             }
@@ -426,6 +488,10 @@ namespace SqlSync.SqlBuild
             {
                 buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.RolledBack.ToString() };
             }
+            else if (timedOut && buildRetries > 1 && buildResultsModel.FinalStatus == BuildItemStatus.RolledBack.ToString())
+            {
+                buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.RolledBackAfterRetries.ToString() };
+            }
 
             switch (buildResultsModel.FinalStatus)
             {
@@ -446,6 +512,146 @@ namespace SqlSync.SqlBuild
             var dsResult = buildDataModel.ToDataSet();
             return dsResult.Build.Count > 0 ? dsResult.Build[dsResult.Build.Count - 1] : dsResult.Build.NewBuildRow();
         }
+
+        internal BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, BackgroundWorker bgWorker, DoWorkEventArgs e, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
+        {
+            this.bgWorker = bgWorker;
+            ErrorOccured = false;
+            buildDataModel = runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            buildType = runData.BuildType ?? string.Empty;
+            buildDescription = runData.BuildDescription ?? string.Empty;
+            startIndex = runData.StartIndex ?? 0;
+            projectFileName = runData.ProjectFileName ?? string.Empty;
+            projectFilePath = Path.GetDirectoryName(projectFileName);
+            isTrialBuild = runData.IsTrial ?? false;
+            runItemIndexes = runData.RunItemIndexes?.ToArray() ?? Array.Empty<double>();
+            runScriptOnly = runData.RunScriptOnly ?? false;
+            buildFileName = Path.GetFileName(runData.BuildFileName ?? string.Empty);
+            targetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList();
+            logToDatabaseName = runData.LogToDatabaseName ?? string.Empty;
+            int buildRetries = 0;
+
+            if (bgWorker != null)
+                bgWorker.ReportProgress(0, new GeneralStatusEventArgs($"Starting Build Process targeting: {serverName} "));
+
+            var prep = PrepareBuildForRun(buildDataModel, serverName, isMultiDbRun, scriptBatchColl, ref e);
+            if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
+            {
+                return prep.Build;
+            }
+
+            BuildModels.Build buildResultsModel = null;
+            //Run the build... retry as needed until we exceed the retry count.
+            while (buildRetries <= allowableTimeoutRetries &&
+                (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString()))
+            {
+                if (buildRetries > 0)
+                {
+                    ScriptLogWriteEvent?.Invoke(null, false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
+                    ResetConnectionsForRetry();
+                }
+                buildResultsModel = RunBuildScripts(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref e);
+
+                if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed.ToString())
+                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries.ToString() };
+
+                buildRetries++;
+                if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString())
+                {
+                    log.LogWarning($"Timeout encountered. Incrementing retries to {buildRetries}");
+                }
+            }
+
+            bool candidateForCustomDacPac = false;
+            switch (buildResultsModel.FinalStatus)
+            {
+                case BuildItemStatus.Committed:
+                case BuildItemStatus.CommittedWithTimeoutRetries:
+                case BuildItemStatus.AlreadyInSync:
+                case BuildItemStatus.TrialRolledBack:
+                case BuildItemStatus.CommittedWithCustomDacpac:
+                case BuildItemStatus.Pending:
+                    candidateForCustomDacPac = false;
+                    break;
+                case BuildItemStatus.FailedDueToScriptTimeout:
+                case BuildItemStatus.FailedWithCustomDacpac:
+                    candidateForCustomDacPac = false;
+                    log.LogWarning($"Build was not successful. Status is {buildResultsModel.FinalStatus} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName ?? string.Empty)}' ");
+                    break;
+                case BuildItemStatus.RolledBack:
+                case BuildItemStatus.PendingRollBack:
+                case BuildItemStatus.FailedNoTransaction:
+                case BuildItemStatus.RolledBackAfterRetries:
+                    candidateForCustomDacPac = true;
+                    break;
+                default:
+                    log.LogWarning($"Unrecognized Build Item status of {buildResultsModel.FinalStatus}");
+                    candidateForCustomDacPac = true;
+                    break;
+            }
+            //Do we need to try to update the target using the Platinum Dacpac?
+            if (candidateForCustomDacPac && !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName) && !(runData.ForceCustomDacpac ?? false))
+            {
+                var database = prep.FilteredScripts[0].Database;
+                string targetDatabase = GetTargetDatabase(database);
+                log.LogWarning($"Custom dacpac required for {serverName} : {targetDatabase}. Generating file.");
+                var legacyRunData = MapToLegacyRunData(runData);
+                var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref legacyRunData, serverName, targetDatabase, connData.AuthenticationType, connData.UserId, connData.Password, projectFilePath, runData.BuildRevision ?? string.Empty, runData.DefaultScriptTimeout ?? 500, runData.AllowObjectDelete ?? false, connData.ManagedIdentityClientId);
+
+                if (stat == DacpacDeltasStatus.Success)
+                {
+                    var updatedRunData = MapToRunDataModel(legacyRunData) with { PlatinumDacPacFileName = string.Empty };
+                    log.LogInformation($"Executing custom dacpac on {targetDatabase}");
+                    var dacBuild = ProcessBuild(updatedRunData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                    var dacFinalStatus = dacBuild.FinalStatus;
+                    if (dacFinalStatus == BuildItemStatus.Committed.ToString() || dacFinalStatus == BuildItemStatus.CommittedWithTimeoutRetries.ToString())
+                    {
+                        buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithCustomDacpac.ToString() };
+                        if (BuildCommittedEvent != null)
+                            BuildCommittedEvent(this, RunnerReturn.CommittedWithCustomDacpac);
+                    }
+                    else
+                    {
+                        buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.FailedWithCustomDacpac.ToString() };
+                    }
+                }
+                else if (stat == DacpacDeltasStatus.InSync || stat == DacpacDeltasStatus.OnlyPostDeployment)
+                {
+                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.AlreadyInSync.ToString() };
+                    if (BuildCommittedEvent != null)
+                        BuildCommittedEvent(this, RunnerReturn.DacpacDatabasesInSync);
+                }
+
+            }
+
+            //If a timeout gets here.. need to decide how to label the rollback
+            if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString() && buildRetries > 1) //will always be at least 1..
+            {
+                buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.RolledBackAfterRetries.ToString() };
+            }
+            else if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString())
+            {
+                buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.RolledBack.ToString() };
+            }
+
+            switch (buildResultsModel.FinalStatus)
+            {
+                case BuildItemStatus.Committed:
+                case BuildItemStatus.Pending:
+                case BuildItemStatus.CommittedWithTimeoutRetries:
+                case BuildItemStatus.TrialRolledBack:
+                case BuildItemStatus.AlreadyInSync:
+                case BuildItemStatus.CommittedWithCustomDacpac:
+                    break;
+                default:
+                    log.LogWarning($"Build was not successful. Status is {buildResultsModel.FinalStatus} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName ?? string.Empty)}' ");
+                    break;
+
+            }
+
+            SyncBuildDataModel(buildDataModel.ToDataSet());
+            return buildResultsModel;
+        }
         /// <summary>
         /// Entry method to kick off a build.
         /// This overload should be used for single server runs as it clears out the committedScript List collection
@@ -453,6 +659,7 @@ namespace SqlSync.SqlBuild
         /// <param name="runData"></param>
         /// <param name="bgWorker"></param>
         /// <param name="e"></param>
+        [Obsolete("Use ProcessBuild(SqlSync.SqlBuild.Models.SqlBuildRunDataModel, ...)")]
         public void ProcessBuild(SqlBuildRunData runData, int allowableTimeoutRetries, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             connectDictionary.Clear();
@@ -469,6 +676,7 @@ namespace SqlSync.SqlBuild
         /// <param name="bgWorker"></param>
         /// <param name="e"></param>
         /// <param name="scriptBatchColl"></param>
+        [Obsolete("Use ProcessBuild(SqlSync.SqlBuild.Models.SqlBuildRunDataModel, ...)")]
         public void ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, ScriptBatchCollection scriptBatchColl, string buildRequestedBy, int allowableTimeoutRetries)
         {
             connectDictionary.Clear();
@@ -476,6 +684,23 @@ namespace SqlSync.SqlBuild
             this.buildRequestedBy = buildRequestedBy;
 
             ProcessBuild(runData, bgWorker, e, connData.SQLServerName, false, scriptBatchColl, allowableTimeoutRetries);
+        }
+
+        public BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries, BackgroundWorker bgWorker, DoWorkEventArgs e)
+        {
+            connectDictionary.Clear();
+            committedScripts.Clear();
+
+            return ProcessBuild(runData, bgWorker, e, connData.SQLServerName, false, null, allowableTimeoutRetries);
+        }
+
+        public BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, BackgroundWorker bgWorker, DoWorkEventArgs e, ScriptBatchCollection scriptBatchColl, string buildRequestedBy, int allowableTimeoutRetries)
+        {
+            connectDictionary.Clear();
+            committedScripts.Clear();
+            this.buildRequestedBy = buildRequestedBy;
+
+            return ProcessBuild(runData, bgWorker, e, connData.SQLServerName, false, scriptBatchColl, allowableTimeoutRetries);
         }
         /// <summary>
         /// Sets the parameters for the build run 
@@ -679,6 +904,22 @@ namespace SqlSync.SqlBuild
                 };
                 bgWorker = bg;
             }
+        }
+
+        private void ResetConnectionsForRetry()
+        {
+            try
+            {
+                foreach (var kvp in connectDictionary.ToList())
+                {
+                    try { kvp.Value.Transaction?.Dispose(); } catch { }
+                    try { kvp.Value.Connection?.Close(); } catch { }
+                    try { kvp.Value.Connection?.Dispose(); } catch { }
+                }
+            }
+            catch { }
+            connectDictionary.Clear();
+            committedScripts.Clear();
         }
         /// <summary>
         /// Method that performs the splitting of the scripts into their batch and then executes the scripts
@@ -1651,6 +1892,147 @@ namespace SqlSync.SqlBuild
                             workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
                         }
                         else //should never really get here
+                        {
+                            if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Committed with no transaction"));
+                            workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
+
+                        }
+                    }
+                }
+            }
+
+            //All connections committed...clear out dictionary
+            connectDictionary.Clear();
+        }
+
+        internal void PerformRunScriptFinalization(bool buildFailure, List<BuildModels.Build> myBuilds, MultiDbData multiDbRunData, BackgroundWorker bgWorker, ref DoWorkEventArgs workEventArgs)
+        {
+            DateTime end = DateTime.Now;
+            for (int i = 0; i < myBuilds.Count; i++)
+                myBuilds[i] = myBuilds[i] with { BuildEnd = DateTime.Now };
+
+            if (buildFailure)
+            {
+                ErrorOccured = true;
+                for (int i = 0; i < myBuilds.Count; i++)
+                {
+                    myBuilds[i] = myBuilds[i] with { FinalStatus = (isTransactional ? BuildItemStatus.RolledBack.ToString() : BuildItemStatus.FailedNoTransaction.ToString()) };
+                }
+
+                if (!isTransactional)
+                {
+                    RecordCommittedScripts(committedScripts, buildDataModel, out var updatedModel);
+                    buildDataModel = updatedModel;
+                    LogCommittedScriptsToDatabase(committedScripts, multiDbRunData);
+                }
+            }
+            else
+            {
+                if (!isTrialBuild)
+                {
+                    if (isTransactional)
+                    {
+                        if (bgWorker != null)
+                            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Attempting to Commit Build"));
+
+                        bool commitSuccess = CommitBuild();
+
+                        if (commitSuccess && bgWorker != null)
+                            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Commit Successful"));
+                    }
+
+                    for (int i = 0; i < myBuilds.Count; i++)
+                        myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.Committed.ToString() };
+
+                    RecordCommittedScripts(committedScripts, buildDataModel, out var updatedModel);
+                    buildDataModel = updatedModel;
+                    LogCommittedScriptsToDatabase(committedScripts, multiDbRunData);
+
+                    if (BuildCommittedEvent != null)
+                        BuildCommittedEvent(this, RunnerReturn.BuildCommitted);
+                }
+                else
+                {
+                    if (isTransactional)
+                    {
+                        RollbackBuild();
+
+                        for (int i = 0; i < myBuilds.Count; i++)
+                            myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.TrialRolledBack.ToString() };
+
+                        if (BuildSuccessTrialRolledBackEvent != null)
+                            BuildSuccessTrialRolledBackEvent(this, EventArgs.Empty);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < myBuilds.Count; i++)
+                            myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.Committed.ToString() };
+                    }
+                }
+            }
+
+            if (buildFailure)
+            {
+                if (BuildErrorRollBackEvent != null)
+                    BuildErrorRollBackEvent(this, EventArgs.Empty);
+            }
+
+            SaveBuildDataSet(true);
+
+
+            //Set final status
+            if (buildFailure)
+            {
+                if (workEventArgs.Cancel)
+                {
+                    if (isTransactional)
+                    {
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
+                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK;
+                    }
+                    else
+                    {
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
+                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION;
+
+                    }
+                }
+                else
+                {
+                    if (isTransactional)
+                    {
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
+                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
+                    }
+                    else
+                    {
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
+                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
+                    }
+                }
+            }
+            else
+            {
+                if (runScriptOnly)
+                {
+                    if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Script Generation Complete"));
+                    workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
+                }
+                else
+                {
+                    if (isTrialBuild == false)
+                    {
+                        if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Committed"));
+                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
+                    }
+                    else
+                    {
+                        if (isTransactional)
+                        {
+                            if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Rolled back for Trial Build"));
+                            workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
+                        }
+                        else //should never really get here, but just in case :-)
                         {
                             if (bgWorker != null) bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Committed with no transaction"));
                             workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;

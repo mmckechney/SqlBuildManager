@@ -135,7 +135,27 @@ namespace SqlBuildManager.Console
 
                 if (multiDbData == null)
                 {
-                    helper.ProcessBuild(sqlBuildRunData, cmdLine.TimeoutRetryCount, bg, workArgs);
+                    var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
+                        BuildDataModel: sqlBuildRunData.BuildDataModel ?? buildModel,
+                        BuildType: sqlBuildRunData.BuildType,
+                        Server: sqlBuildRunData.Server,
+                        BuildDescription: sqlBuildRunData.BuildDescription,
+                        StartIndex: sqlBuildRunData.StartIndex,
+                        ProjectFileName: sqlBuildRunData.ProjectFileName,
+                        IsTrial: sqlBuildRunData.IsTrial,
+                        RunItemIndexes: sqlBuildRunData.RunItemIndexes,
+                        RunScriptOnly: sqlBuildRunData.RunScriptOnly,
+                        BuildFileName: sqlBuildRunData.BuildFileName,
+                        LogToDatabaseName: sqlBuildRunData.LogToDatabaseName,
+                        IsTransactional: sqlBuildRunData.IsTransactional,
+                        PlatinumDacPacFileName: sqlBuildRunData.PlatinumDacPacFileName,
+                        TargetDatabaseOverrides: sqlBuildRunData.TargetDatabaseOverrides,
+                        ForceCustomDacpac: sqlBuildRunData.ForceCustomDacpac,
+                        BuildRevision: sqlBuildRunData.BuildRevision,
+                        DefaultScriptTimeout: sqlBuildRunData.DefaultScriptTimeout,
+                        AllowObjectDelete: sqlBuildRunData.AllowObjectDelete);
+
+                    helper.ProcessBuild(runDataModel, cmdLine.TimeoutRetryCount, bg, workArgs);
                 }
                 else
                 {

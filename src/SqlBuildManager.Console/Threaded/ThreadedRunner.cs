@@ -275,7 +275,27 @@ namespace SqlBuildManager.Console.Threaded
 
                 await Task.Run(() =>
                 {
-                    helper.ProcessBuild(runData, bg, e, ThreadedManager.BatchColl, buildRequestedBy, cmdArgs.TimeoutRetryCount);
+                    var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
+                        BuildDataModel: runData.BuildDataModel ?? runData.BuildData?.ToModel(),
+                        BuildType: runData.BuildType,
+                        Server: runData.Server,
+                        BuildDescription: runData.BuildDescription,
+                        StartIndex: runData.StartIndex,
+                        ProjectFileName: runData.ProjectFileName,
+                        IsTrial: runData.IsTrial,
+                        RunItemIndexes: runData.RunItemIndexes,
+                        RunScriptOnly: runData.RunScriptOnly,
+                        BuildFileName: runData.BuildFileName,
+                        LogToDatabaseName: runData.LogToDatabaseName,
+                        IsTransactional: runData.IsTransactional,
+                        PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
+                        TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
+                        ForceCustomDacpac: runData.ForceCustomDacpac,
+                        BuildRevision: runData.BuildRevision,
+                        DefaultScriptTimeout: runData.DefaultScriptTimeout,
+                        AllowObjectDelete: runData.AllowObjectDelete);
+
+                    helper.ProcessBuild(runDataModel, bg, e, ThreadedManager.BatchColl, buildRequestedBy, cmdArgs.TimeoutRetryCount);
                 });
             }
             catch (Exception exe)
