@@ -424,7 +424,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             bg.WorkerSupportsCancellation = true;
             target.bgWorker = bg;
 
-            target.buildData = buildData;
+            target.SetBuildData(buildData);
 
             string logFile = GetTrulyUniqueFile();
             tempFiles.Add(logFile);
@@ -450,7 +450,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             bg.WorkerSupportsCancellation = true;
             sbh.bgWorker = bg;
 
-            sbh.buildData = buildData;
+            sbh.SetBuildData(buildData);
 
             string logFile = GetTrulyUniqueFile();
             sbh.scriptLogFileName = logFile;

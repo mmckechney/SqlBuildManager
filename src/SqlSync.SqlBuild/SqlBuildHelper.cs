@@ -156,7 +156,11 @@ namespace SqlSync.SqlBuild
         private BuildModels.SqlSyncBuildDataModel buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
         internal BuildModels.SqlSyncBuildDataModel BuildHistoryModel => buildHistoryModel;
-        internal BuildModels.SqlSyncBuildDataModel BuildDataModel => buildDataModel;
+        internal BuildModels.SqlSyncBuildDataModel BuildDataModel
+        {
+            get => buildDataModel;
+            set => buildDataModel = value;
+        }
 
         internal static BuildModels.SqlSyncBuildDataModel ClearAllowScriptBlocks(BuildModels.SqlSyncBuildDataModel model, string serverName, IReadOnlyList<string> selectedScriptIds)
         {
@@ -180,6 +184,38 @@ namespace SqlSync.SqlBuild
             buildDataModel ??= SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             return buildDataModel.ToDataSet();
         }
+
+        // Compatibility helpers for tests (internal) to ease migration from DataSet APIs
+        internal SqlSyncBuildData BuildData => BuildDataModel.ToDataSet();
+        internal void SetBuildData(SqlSyncBuildData ds) => BuildDataModel = ds.ToModel();
+
+        internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl)
+        {
+            var ds = BuildDataModel.ToDataSet();
+            var dwe = new DoWorkEventArgs(null);
+            return RunBuildScripts(view, myBuild, serverName, isMultiDbRun, scriptBatchColl, ds, ref dwe);
+        }
+
+        internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
+        {
+            var ds = BuildDataModel.ToDataSet();
+            return RunBuildScripts(view, myBuild, serverName, isMultiDbRun, scriptBatchColl, ds, ref workEventArgs);
+        }
+
+        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
+        {
+            var ds = BuildDataModel.ToDataSet();
+            var dwe = new DoWorkEventArgs(null);
+            PrepareBuildForRun(serverName, isMultiDbRun, scriptBatchColl, ds, ref dwe, out filteredScripts, out myBuild);
+        }
+
+        // Compatibility overload for legacy callers that pass DoWorkEventArgs without explicit BuildData
+        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
+        {
+            var ds = BuildDataModel.ToDataSet();
+            PrepareBuildForRun(serverName, isMultiDbRun, scriptBatchColl, ds, ref workEventArgs, out filteredScripts, out myBuild);
+        }
+
         internal string externalScriptLogFileName = string.Empty;
         public SqlBuildHelper(ConnectionData data) : this(data, true, string.Empty, true)
         {
