@@ -191,7 +191,7 @@ namespace SqlSync.SqlBuild
             {
                 var runData = new SqlBuildRunData
                 {
-                    BuildData = multiDbRunData.BuildData != null ? multiDbRunData.BuildData.ToDataSet() : null,
+                    BuildDataModel = multiDbRunData.BuildData,
                     BuildType = "Multi Db Build",
                     BuildDescription = string.IsNullOrEmpty(multiDbRunData.BuildDescription)
                         ? $"Multi-Database Run ID: {multiDbRunData.MultiRunId}.  Server:{srvData.ServerName}"

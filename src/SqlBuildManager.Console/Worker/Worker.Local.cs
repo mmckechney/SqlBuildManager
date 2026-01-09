@@ -98,12 +98,10 @@ namespace SqlBuildManager.Console
                     return -1;
                 }
 
-                var buildData = buildModel.ToDataSet();
-
                 sqlB.SqlBuildRunData sqlBuildRunData = new sqlB.SqlBuildRunData()
                 {
                     ForceCustomDacpac = false,
-                    BuildData = buildData,
+                    BuildDataModel = buildModel,
                     IsTransactional = cmdLine.Transactional,
                     BuildDescription = cmdLine.Description,
                     BuildRevision = cmdLine.BuildRevision,

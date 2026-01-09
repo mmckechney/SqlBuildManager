@@ -99,6 +99,7 @@ namespace SqlBuildManager.Console.Threaded
         /// <summary>
         /// The runtime metadata object for the build execution
         ///// </summary>
+        [Obsolete("Use BuildDataModel for POCO-based execution")]
         internal static SqlSyncBuildData BuildData
         {
             get { return buildData; }
