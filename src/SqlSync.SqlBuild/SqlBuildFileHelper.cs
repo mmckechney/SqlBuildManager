@@ -120,6 +120,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
+        [Obsolete("Use LoadSqlBuildProjectFile(out SqlSyncBuildDataModel, ...) for POCO")] 
         public static bool LoadSqlBuildProjectFile(out SqlSyncBuildData buildData, string projFileName, bool validateSchema)
         {
             bool successfulLoad = true;
@@ -236,10 +237,12 @@ namespace SqlSync.SqlBuild
             return ovr.ToString();
         }
 
+        [Obsolete("Use PackageProjectFileIntoZip(SqlSyncBuildDataModel, ...) for POCO")] 
         public static bool PackageProjectFileIntoZip(SqlSyncBuildData projData, string projFilePath, string zipFileName)
         {
             return PackageProjectFileIntoZip(projData, projFilePath, zipFileName, true);
         }
+        [Obsolete("Use PackageProjectFileIntoZip(SqlSyncBuildDataModel, ...) for POCO")] 
         public static bool PackageProjectFileIntoZip(SqlSyncBuildData projData, string projFilePath, string zipFileName, bool includeHistoryAndLogs)
         {
             if (String.IsNullOrEmpty(zipFileName))
@@ -289,6 +292,7 @@ namespace SqlSync.SqlBuild
             var ds = model.ToDataSet();
             return PackageProjectFileIntoZip(ds, projFilePath, zipFileName, includeHistoryAndLogs);
         }
+
         /// <summary>
         /// Minimize the size of the package by cleaing out the logs and the code review items..
         /// </summary>
@@ -299,11 +303,19 @@ namespace SqlSync.SqlBuild
             SqlSyncBuildData cleanedBuildData;
             return CleanProjectFileForRemoteExecution(fileName, out cleanedBuildData);
         }
+
+        public static byte[] CleanProjectFileForRemoteExecution(string fileName, out SqlSyncBuildDataModel cleanedBuildData)
+        {
+            var bytes = CleanProjectFileForRemoteExecution(fileName, out SqlSyncBuildData ds);
+            cleanedBuildData = ds.ToModel();
+            return bytes;
+        }
         /// <summary>
         /// Minimize the size of the package by cleaing out the logs and the code review items..
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
+        [Obsolete("Use CleanProjectFileForRemoteExecution(string, out SqlSyncBuildDataModel) for POCO")] 
         public static byte[] CleanProjectFileForRemoteExecution(string fileName, out SqlSyncBuildData cleanedBuildData)
         {
             cleanedBuildData = new SqlSyncBuildData();
@@ -354,6 +366,7 @@ namespace SqlSync.SqlBuild
                 }
             }
         }
+        [Obsolete("Use CreateShellSqlSyncBuildDataModel for POCO")] 
         public static SqlSyncBuildData CreateShellSqlSyncBuildDataObject()
         {
             SqlSyncBuildData newData = new SqlSyncBuildData();
@@ -388,6 +401,7 @@ namespace SqlSync.SqlBuild
         }
 
 
+        [Obsolete("Use SaveSqlBuildProjectFile(SqlSyncBuildDataModel, ...) for POCO")] 
         public static void SaveSqlBuildProjectFile(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
         {
             buildData.WriteXml(projFileName);
@@ -641,6 +655,7 @@ namespace SqlSync.SqlBuild
             return true;
 
         }
+        [Obsolete("Use AddScriptFileToBuild(SqlSyncBuildDataModel, ...) for POCO")] 
         public static void AddScriptFileToBuild(ref SqlSyncBuildData buildData, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, System.Guid scriptId, string tag)
         {
             //Create new project row if needed 

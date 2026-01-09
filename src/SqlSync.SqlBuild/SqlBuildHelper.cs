@@ -232,7 +232,7 @@ namespace SqlSync.SqlBuild
         {
             this.bgWorker = bgWorker;
             ErrorOccured = false;
-            buildData = runData.BuildData;
+            buildData = runData.BuildData ?? runData.BuildDataModel?.ToDataSet();
             buildType = runData.BuildType;
             buildDescription = runData.BuildDescription;
             startIndex = runData.StartIndex;
@@ -1112,9 +1112,18 @@ namespace SqlSync.SqlBuild
         /// </summary>
         /// <param name="committedScriptIds"></param>
         /// <returns></returns>
+        [Obsolete("Use RecordCommittedScripts(List<SqlLogging.CommittedScript>, SqlSyncBuildDataModel, out SqlSyncBuildDataModel) for POCO entry")] 
         internal bool RecordCommittedScripts(List<CommittedScript> committedScripts)
         {
-            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Scripts to Log"));
+            if (buildData == null)
+            {
+                buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            }
+            if (buildData.SqlSyncBuildProject.Rows.Count == 0)
+            {
+                buildData.SqlSyncBuildProject.AddSqlSyncBuildProjectRow(string.Empty, false);
+            }
+            bgWorker?.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Scripts to Log"));
 
             for (int i = 0; i < committedScripts.Count; i++)
             {
@@ -1122,6 +1131,35 @@ namespace SqlSync.SqlBuild
             }
             return true;
 
+        }
+
+        internal bool RecordCommittedScripts(List<CommittedScript> committedScripts, BuildModels.SqlSyncBuildDataModel buildDataModel, out BuildModels.SqlSyncBuildDataModel updatedModel)
+        {
+            // Fast POCO path
+            if (buildDataModel != null)
+            {
+                var list = new List<BuildModels.CommittedScript>(buildDataModel.CommittedScript);
+                var projectId = buildDataModel.SqlSyncBuildProject.Count > 0 ? buildDataModel.SqlSyncBuildProject[0].SqlSyncBuildProject_Id : 0;
+                foreach (var cs in committedScripts)
+                {
+                    list.Add(new BuildModels.CommittedScript(
+                        cs.ScriptId.ToString(),
+                        cs.ServerName,
+                        DateTime.Now,
+                        true,
+                        cs.FileHash,
+                        projectId));
+                }
+                updatedModel = buildDataModel with { CommittedScript = list };
+                return true;
+            }
+
+            // Fallback to DataSet
+            var ds = buildDataModel.ToDataSet();
+            buildData = ds;
+            var result = RecordCommittedScripts(committedScripts);
+            updatedModel = ds.ToModel();
+            return result;
         }
 
         public void ClearScriptBlocks(ClearScriptData scrData, BackgroundWorker bgWorker, DoWorkEventArgs e)

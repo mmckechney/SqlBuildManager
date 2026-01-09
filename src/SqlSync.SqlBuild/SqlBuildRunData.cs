@@ -1,10 +1,14 @@
+using System;
 using SqlSync.Connection;
 using System.Collections.Generic;
 namespace SqlSync.SqlBuild
 {
+    #nullable enable
     public class SqlBuildRunData
     {
+        [Obsolete("Use BuildDataModel for POCO-based execution")] 
         public SqlSyncBuildData BuildData { get; set; } = null;
+        public Models.SqlSyncBuildDataModel? BuildDataModel { get; set; } = null;
         public string BuildType { get; set; } = string.Empty;
         public string Server { get; set; } = string.Empty;
         public string BuildDescription { get; set; } = string.Empty;
