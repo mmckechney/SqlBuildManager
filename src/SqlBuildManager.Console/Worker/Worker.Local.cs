@@ -12,7 +12,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using SqlSync.SqlBuild;
 using sqlB = SqlSync.SqlBuild;
+using sqlM = SqlSync.SqlBuild.Models;
+using Cryptography = SqlBuildManager.Console.CommandLine.Cryptography;
 
 namespace SqlBuildManager.Console
 {
@@ -88,12 +91,14 @@ namespace SqlBuildManager.Console
                 string projFilePath = "", projectFileName = "";
                 sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.BuildFileName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
 
-                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlB.SqlSyncBuildData buildData, projectFileName, true);
+                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlM.SqlSyncBuildDataModel buildModel, projectFileName, true);
                 if (!success)
                 {
                     log.LogError($"Unable to load and extract build file: {cmdLine.BuildFileName}");
                     return -1;
                 }
+
+                var buildData = buildModel.ToDataSet();
 
                 sqlB.SqlBuildRunData sqlBuildRunData = new sqlB.SqlBuildRunData()
                 {
@@ -126,7 +131,7 @@ namespace SqlBuildManager.Console
                 };
                 bg.ProgressChanged += Bg_ProgressChanged;
                 DoWorkEventArgs workArgs = new DoWorkEventArgs(sqlBuildRunData);
-                LocalRunInfo.Sq1SyncBuildData = buildData;
+                LocalRunInfo.Sq1SyncBuildData = buildModel;
                 LocalRunInfo.BuildZipFileName = cmdLine.BuildFileName;
                 LocalRunInfo.WorkingDirectory = workingDir;
 
@@ -140,7 +145,7 @@ namespace SqlBuildManager.Console
                     multiDbData.RunAsTrial = cmdLine.Trial;
                     multiDbData.BuildFileName = cmdLine.BuildFileName;
                     multiDbData.BuildDescription = cmdLine.Description;
-                    multiDbData.BuildData = buildData;
+                    multiDbData.BuildData = buildModel;
                     helper.ProcessMultiDbBuild(multiDbData, projectFileName, bg, workArgs);
                 }
             }
@@ -186,7 +191,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Saving updated build file to disk");
                 try
                 {
-                    sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(LocalRunInfo.Sq1SyncBuildData, LocalRunInfo.WorkingDirectory, LocalRunInfo.BuildZipFileName);
+                    sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(LocalRunInfo.Sq1SyncBuildData, LocalRunInfo.WorkingDirectory, LocalRunInfo.BuildZipFileName, includeHistoryAndLogs: true);
                     log.LogInformation("Build file saved to disk");
                 }
                 catch (Exception exe)
@@ -269,7 +274,7 @@ namespace SqlBuildManager.Console
 
         private static class LocalRunInfo
         {
-            public static sqlB.SqlSyncBuildData Sq1SyncBuildData { get; set; }
+            public static sqlM.SqlSyncBuildDataModel Sq1SyncBuildData { get; set; }
             public static string WorkingDirectory { get; set; }
             public static string BuildZipFileName { get; set; }
             public static bool Success { get; set; } = true;

@@ -99,6 +99,10 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
 - `SqlSync.SqlBuild.Utility` — `ServerConnectConfig` DataSet for legacy conversions.
 - `SqlSync.ObjectScript.UnitTest.AutoScriptingConfigModelTest` — compatibility test (`new AutoScriptingConfig()`).
 - `SqlSync.SqlBuild.Dependent.UnitTest` — legacy DataSet tests (excluded from CI).
+- **Console (`sbm`)**:
+   - `Worker.Utility` — packaging flows (`CreateShellSqlSyncBuildDataObject`, `LoadSqlBuildProjectFile`, `AddScriptFileToBuild`).
+   - `ThreadedManager` / `ThreadedRunner` — legacy `SqlSyncBuildData` fields and loaders.
+   - `Worker.Local` — now loads POCO, converts to DataSet for `SqlBuildRunData`; MultiDb uses POCO.
 
 ## Follow-Ups / Technical Debt
 - Resolve MSTest `TestContext` analyzer warnings.

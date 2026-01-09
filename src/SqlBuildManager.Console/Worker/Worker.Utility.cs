@@ -10,7 +10,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using SqlSync.SqlBuild;
 using sqlB = SqlSync.SqlBuild;
+using sqlM = SqlSync.SqlBuild.Models;
+using Cryptography = SqlBuildManager.Console.CommandLine.Cryptography;
 
 namespace SqlBuildManager.Console
 {
@@ -200,7 +203,8 @@ namespace SqlBuildManager.Console
                             copied.Add(Path.Combine(workingDir, f.Name));
                         }
                     });
-                    sqlB.BuildDataHelper.GetLastBuildNumberAndDb(buildData, out double lastBuildNumber, out string lastDatabase);
+                    var buildModel = buildData.ToModel();
+                    sqlB.BuildDataHelper.GetLastBuildNumberAndDb(buildModel, out double lastBuildNumber, out string lastDatabase);
                     foreach (var file in cmdLine.Scripts)
                     {
                         lastBuildNumber++;
