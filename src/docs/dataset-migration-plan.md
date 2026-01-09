@@ -16,13 +16,16 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
 - [ ] Clean MSTest warnings (`TestContext` analyzer warnings)
 - [ ] Optional: remove typed DataSet designer files if no longer required
 
+## Next
+- Sweep warnings: MSTEST0005 (avoid inheritance); nullable annotations in tests.
+- Track legacy dataset call sites; plan staged removal once external contracts migrated.
+
 ## Milestones
-1. **SqlSync.SqlBuild**
-   - **Components**: `SqlSyncBuildDataModels`, `SqlSyncBuildDataMappers`, `SqlBuildFileHelper` model overloads, `SqlBuildHelper` mapping overload, aliasing `CommittedScript`.
+1. **SqlSyncBuildData**
+   - **Components**: `SqlSyncBuildDataModel` POCOs, mappers, `SqlBuildFileHelper`/`SqlBuildHelper` model APIs.
    - **Tests**: `dotnet test SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj`
    - **Notes**: Typed dataset retained for mapping/persistence; prefer model APIs for consumers.
    - **Suggested commit**: `refactor: add SqlSyncBuildData POCOs and model APIs`
-
 2. **ServerConnectConfig**
    - **Components**: `ServerConnectConfigModels`, `ServerConnectConfigMappers`, `ServerConnectConfigPersistence`, `UtilityHelper` overloads; UI consumers updated.
    - **Tests**: Covered via SqlSync.SqlBuild.UnitTest
@@ -84,12 +87,12 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
 > **Excluded**: *Dependent* / *External* suites (require external resources)
 
 ## Known Exceptions
-- Typed dataset designer files currently remain for backward compatibility & mapping:
+- Typed dataset designers retained for backward compatibility & runtime features:
    - `SqlSync.SqlBuild/SQLSyncBuildProject.Designer.cs`
    - `SqlSync.SqlBuild/ServerConnectConfig.Designer.cs`
    - `SqlSync.ObjectScript/AutoScriptingConfig.Designer.cs`
 - **Removed**: `SqlSync.DbInformation/SizeAnalysis.cs`, `ServerSizeSummary.cs`, `SqlSync.SqlBuild/ScriptRunLog.cs`
-- **Goal**: remove remaining designers once no external contract depends on them.
+- **Note**: POCO serializers are default; typed DataSets are kept for legacy APIs and tests.
 
 ## Follow-Ups / Technical Debt
 - Resolve MSTest `TestContext` analyzer warnings.
@@ -97,6 +100,7 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
 - Add CI filters to skip Dependent/External projects.
 
 ## Log (Recent)
+- 2026-01-09 — Designers restored for compatibility; all unit tests passing (SqlBuild/ObjectScript/DbInformation).
 - 2026-01-08 — ScriptRunLog -> POCO entries; DbInformation DataTables removed; all unit tests passing.
 - 2026-01-08 — All POCO migrations complete; model APIs added; UnitTests passing; Dependent/External excluded.
 - 2026-01-08 — Console UnitTest passing; icon path conditional.
