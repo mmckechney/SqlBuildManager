@@ -98,7 +98,7 @@ namespace SqlSync.SqlBuild.Syncronizer
             {
                 log.LogInformation($"Synchronization run for {Path.GetFileName(sbmPackageName)}");
                 //Unzip and read the package
-                SqlSyncBuildData buildData;
+                Models.SqlSyncBuildDataModel buildModel;
                 if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmPackageName, ref workingDirectory, ref projectFilePath,
                                                                ref projFileName,
                                                                out result))
@@ -107,18 +107,17 @@ namespace SqlSync.SqlBuild.Syncronizer
                     return false;
                 }
 
-                if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projFileName, false))
+                if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projFileName, false))
                 {
                     PushInfo(string.Format("Unable to load build file {0}. See log for details", sbmPackageName));
                     return false;
                 }
 
                 //set the build data for a new run 
-                foreach (SqlSyncBuildData.ScriptRow scriptRow in buildData.Script)
-                {
-                    scriptRow.Database = "placeholder";
-                    scriptRow.AllowMultipleRuns = true;
-                }
+                var updatedScripts = buildModel.Script
+                    .Select(s => s with { Database = "placeholder", AllowMultipleRuns = true })
+                    .ToList();
+                buildModel = buildModel with { Script = updatedScripts };
 
                 List<DatabaseOverride> lstOverride = new List<DatabaseOverride>();
                 lstOverride.Add(new DatabaseOverride()
@@ -130,7 +129,7 @@ namespace SqlSync.SqlBuild.Syncronizer
                 //Set the run meta-data
                 SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData()
                 {
-                    BuildData = buildData,
+                    BuildDataModel = buildModel,
                     BuildType = BuildType.Other,
                     BuildDescription = new Random().Next(int.MinValue, int.MaxValue).ToString(),
                     //assign random build description

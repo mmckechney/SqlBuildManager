@@ -3,6 +3,7 @@ using SqlSync.Connection;
 using SqlSync.Constants;
 using SqlSync.DbInformation;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Objects;
 using System;
 using System.Collections.Generic;
@@ -63,9 +64,9 @@ namespace SqlSync.ObjectScript
             }
 
             //Load the build data 
-            SqlSyncBuildData buildData;
+            SqlSyncBuildDataModel buildModel;
             if (reportProgress) bg.ReportProgress(-1, "Loading project file for modification.");
-            bool successfulLoad = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projectFileName, false);
+            bool successfulLoad = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projectFileName, false);
             if (!successfulLoad)
             {
                 log.LogError("Unable to load SBM project data");
@@ -107,6 +108,7 @@ namespace SqlSync.ObjectScript
             //Save the updated scripts...
             DateTime updateTime = DateTime.Now;
             bool errorWriting = false;
+            var scripts = buildModel.Script.ToList();
             if (lstScripts != null)
             {
                 foreach (UpdatedObject obj in lstScripts)
@@ -115,16 +117,10 @@ namespace SqlSync.ObjectScript
                     {
                         File.WriteAllText(projectPath + obj.ScriptName, obj.ScriptContents);
 
-                        //Update the buildData object with the update date/time and user;
-                        var sr = from r in buildData.Script
-                                 where r.FileName == obj.ScriptName
-                                 select r;
-
-                        if (sr.Any())
+                        var idx = scripts.FindIndex(s => s.FileName == obj.ScriptName);
+                        if (idx >= 0)
                         {
-                            SqlSyncBuildData.ScriptRow row = sr.First();
-                            row.DateModified = updateTime;
-                            row.ModifiedBy = System.Environment.UserName;
+                            scripts[idx] = scripts[idx] with { DateModified = updateTime, ModifiedBy = System.Environment.UserName };
                         }
 
                     }
@@ -144,13 +140,10 @@ namespace SqlSync.ObjectScript
                     try
                     {
                         //Update the buildData object with the update date/time and user;
-                        var sr = from r in buildData.Script
-                                 where r.FileName == obj.ShortFileName
-                                 select r;
-
-                        if (sr.Any())
+                        var idx = scripts.FindIndex(s => s.FileName == obj.ShortFileName);
+                        if (idx >= 0)
                         {
-                            SqlSyncBuildData.ScriptRow row = sr.First();
+                            var row = scripts[idx];
                             if (obj.ObjectType == DbScriptDescription.StoredProcedure ||
                                 obj.ObjectType == DbScriptDescription.UserDefinedFunction ||
                                 obj.ObjectType == DbScriptDescription.Trigger ||
@@ -164,28 +157,25 @@ namespace SqlSync.ObjectScript
                                     objName = arr[1];
 
                                     string str = CreateRoutineDropScript(schema, objName, obj.ObjectType);
-                                    File.WriteAllText(projectPath + "DROP " + row.FileName, str);
-                                    row.FileName = "DROP " + row.FileName;
-                                    row.DateModified = updateTime;
-                                    row.ModifiedBy = System.Environment.UserName;
+                                    var newFileName = "DROP " + row.FileName;
+                                    File.WriteAllText(projectPath + newFileName, str);
+                                    row = row with { FileName = newFileName, DateModified = updateTime, ModifiedBy = System.Environment.UserName };
                                 }
                                 else
                                 {
-                                    row.AllowMultipleRuns = false;
-                                    row.DateModified = updateTime;
-                                    row.ModifiedBy = System.Environment.UserName;
+                                    row = row with { AllowMultipleRuns = false, DateModified = updateTime, ModifiedBy = System.Environment.UserName };
                                 }
                             }
                             else if (removeNewObjectsFromPackage)
                             {
-                                buildData.Script.RemoveScriptRow(row);
+                                scripts.RemoveAt(idx);
                             }
                             else
                             {
-                                row.AllowMultipleRuns = false;
-                                row.DateModified = updateTime;
-                                row.ModifiedBy = System.Environment.UserName;
+                                row = row with { AllowMultipleRuns = false, DateModified = updateTime, ModifiedBy = System.Environment.UserName };
                             }
+                            if (idx < scripts.Count)
+                                scripts[idx] = row;
                         }
 
                     }
@@ -244,8 +234,8 @@ namespace SqlSync.ObjectScript
                 return false;
             if (reportProgress) bg.ReportProgress(-1, "Saving backout package.");
 
-            buildData.AcceptChanges();
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projectFileName, destinationBuildZipFileName);
+            buildModel = buildModel with { Script = scripts };
+            SqlBuildFileHelper.SaveSqlBuildProjectFile(buildModel, projectFileName, destinationBuildZipFileName);
 
 
             return true;
@@ -279,7 +269,7 @@ namespace SqlSync.ObjectScript
             string projectFilePath = string.Empty;
             string projectFileName = string.Empty;
             string result;
-            SqlSyncBuildData buildData;
+            SqlSyncBuildDataModel buildData;
             BackgroundWorker bg = new BackgroundWorker();
             bg.WorkerReportsProgress = true;
 
@@ -300,7 +290,7 @@ namespace SqlSync.ObjectScript
 
             //Get the scriptable objects
             log.LogDebug($"Getting the scriptable objects from {sourceBuildZipFileName}");
-            SqlBuildFileHelper.GetFileDataForObjectUpdates(ref buildData, projectFileName, out initialCanUpdateList, out manualScriptsCanNotUpdate);
+            SqlBuildFileHelper.GetFileDataForObjectUpdates(buildData, projectFileName, out initialCanUpdateList, out manualScriptsCanNotUpdate);
 
             //Get object that are also on the target (ie are "existing") -- only these will be updated
             log.LogDebug($"Getting list of objects can be rolled back from {sourceServer}:{sourceDb}");

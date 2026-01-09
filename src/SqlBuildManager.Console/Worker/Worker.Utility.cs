@@ -324,7 +324,7 @@ namespace SqlBuildManager.Console
             foreach (var file in packages)
             {
                 sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(file.FullName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
-                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlB.SqlSyncBuildData buildData, projectFileName, true);
+                var buildModel = sqlB.SqlSyncBuildDataXmlSerializer.Load(projectFileName);
                 List<string[]> contents = new List<string[]>();
                 string dateformat = "yyyy-MM-dd hh:mm:ss";
                 if (!withHash)
@@ -339,22 +339,26 @@ namespace SqlBuildManager.Console
                     contents.Add(new string[] { "Order", "Script Name", "Last Date", "Last User", "Script Id", "SHA1 Hash" });
                     contents.Add(new string[] { "", "", "", "", "", "" });
                 }
-                if (success)
+                var rows = buildModel.Script.OrderBy(r => r.BuildOrder).ToList();
+                foreach (var s in rows)
                 {
-                    var rows = buildData.Script.OrderBy(r => r.BuildOrder).ToList();
-                    //for (int i = 0; i < buildData.Script.Rows.Count; i++)
-                    foreach (var s in rows)
+                    var buildOrder = s.BuildOrder?.ToString() ?? string.Empty;
+                    var fileName = s.FileName ?? string.Empty;
+                    var dateAdded = s.DateAdded ?? DateTime.MinValue;
+                    var dateModified = s.DateModified ?? DateTime.MinValue;
+                    var lastDate = (dateModified == DateTime.MinValue) ? dateAdded : dateModified;
+                    var addedBy = s.AddedBy ?? string.Empty;
+                    var modifiedBy = s.ModifiedBy ?? string.Empty;
+                    var user = string.IsNullOrWhiteSpace(modifiedBy) ? addedBy : modifiedBy;
+                    var scriptId = s.ScriptId ?? string.Empty;
+                    if (withHash)
                     {
-                        if (withHash)
-                        {
-                            sqlB.SqlBuildFileHelper.GetSHA1Hash(Path.Combine(projFilePath, s.FileName), out string fileHash, out string textHash, s.StripTransactionText);
-                            contents.Add(new string[] { s.BuildOrder.ToString(), s.FileName, (s.DateModified == DateTime.MinValue) ? s.DateAdded.ToString(dateformat) : s.DateModified.ToString(dateformat), string.IsNullOrWhiteSpace(s.ModifiedBy) ? s.AddedBy : s.ModifiedBy, s.ScriptId, textHash });
-
-                        }
-                        else
-                        {
-                            contents.Add(new string[] { s.BuildOrder.ToString(), s.FileName, (s.DateModified == DateTime.MinValue) ? s.DateAdded.ToString(dateformat) : s.DateModified.ToString(dateformat), string.IsNullOrWhiteSpace(s.ModifiedBy) ? s.AddedBy : s.ModifiedBy, s.ScriptId });
-                        }
+                        sqlB.SqlBuildFileHelper.GetSHA1Hash(Path.Combine(projFilePath, fileName), out string fileHash, out string textHash, s.StripTransactionText ?? false);
+                        contents.Add(new string[] { buildOrder, fileName, lastDate.ToString(dateformat), user, scriptId, textHash });
+                    }
+                    else
+                    {
+                        contents.Add(new string[] { buildOrder, fileName, lastDate.ToString(dateformat), user, scriptId });
                     }
                 }
                 var sizing = TablePrintSizing(contents);

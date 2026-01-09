@@ -320,13 +320,13 @@ namespace SqlSync.SqlBuild
                 return DacpacDeltasStatus.SbmProcessingFailure;
             }
 
-            SqlSyncBuildData buildData;
-            if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projectFileName, false))
+            Models.SqlSyncBuildDataModel buildModel;
+            if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projectFileName, false))
             {
                 return DacpacDeltasStatus.SbmProcessingFailure;
             }
 
-            runData.BuildData = buildData;
+            runData.BuildDataModel = buildModel;
             runData.BuildFileName = sbmFileName;
             runData.ProjectFileName = projectFileName;
 

@@ -865,6 +865,52 @@ namespace SqlSync.SqlBuild
             else
                 return null;
         }
+
+        public static SqlBuild.Objects.ObjectUpdates[]? GetFileDataForObjectUpdates(SqlSyncBuildDataModel model, string projFileName)
+        {
+            GetFileDataForObjectUpdates(model, projFileName, out List<SqlBuild.Objects.ObjectUpdates>? canUpdate, out List<string>? canNotUpdate);
+            return canUpdate?.ToArray();
+        }
+
+        public static void GetFileDataForObjectUpdates(SqlSyncBuildDataModel model, string projFileName, out List<SqlBuild.Objects.ObjectUpdates>? canUpdate, out List<string>? canNotUpdate)
+        {
+            if (model == null)
+            {
+                canUpdate = null;
+                canNotUpdate = null;
+                return;
+            }
+
+            canUpdate = new List<Objects.ObjectUpdates>();
+            canNotUpdate = new List<string>();
+
+            foreach (var row in model.Script)
+            {
+                if (row.FileName == null)
+                {
+                    canNotUpdate.Add(string.Empty);
+                    continue;
+                }
+
+                //Find the database objects that can be updated...SP, View, UDF, Trigger
+                var ext = Path.GetExtension(row.FileName).ToUpper();
+                if (ext != SqlSync.Constants.DbObjectType.StoredProcedure &&
+                    ext != SqlSync.Constants.DbObjectType.View &&
+                    ext != SqlSync.Constants.DbObjectType.UserDefinedFunction &&
+                    ext != SqlSync.Constants.DbObjectType.Trigger)
+                {
+                    canNotUpdate.Add(row.FileName);
+                }
+                else
+                {
+                    SqlBuild.Objects.ObjectUpdates obj = GetFileDataForObjectUpdates(row.FileName, projFileName);
+                    if (obj != null)
+                    {
+                        canUpdate.Add(obj);
+                    }
+                }
+            }
+        }
         public static void GetFileDataForObjectUpdates(ref SqlSyncBuildData buildData, string projFileName, out List<SqlBuild.Objects.ObjectUpdates> canUpdate, out List<string> canNotUpdate)
         {
             if (buildData == null)

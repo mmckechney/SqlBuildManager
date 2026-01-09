@@ -112,10 +112,9 @@ namespace SqlSync.SqlBuild
                     File.WriteAllText(Path.Combine(tempPath, rebuildData[i].ScriptFileName), rebuildData[i].ScriptText);
                 }
 
-                SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-                buildData.AcceptChanges();
+                var buildModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-                if (!SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, tempPath, buildFileName))
+                if (!SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, tempPath, buildFileName))
                 {
                     return false;
                 }
@@ -127,7 +126,7 @@ namespace SqlSync.SqlBuild
 
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
-                    SqlBuildFileHelper.AddScriptFileToBuild(ref buildData,
+                    buildModel = SqlBuildFileHelper.AddScriptFileToBuild(buildModel,
                         projFileName,
                         rebuildData[i].ScriptFileName,
                         rebuildData[i].Sequence + 1,
@@ -145,7 +144,7 @@ namespace SqlSync.SqlBuild
                         rebuildData[i].Tag);
                 }
 
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildFileName);
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(buildModel, projFileName, buildFileName);
 
                 return true;
             }

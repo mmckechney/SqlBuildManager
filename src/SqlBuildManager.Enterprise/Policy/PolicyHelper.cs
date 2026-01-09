@@ -404,7 +404,6 @@ namespace SqlBuildManager.Enterprise.Policy
             string highSeverity = ViolationSeverity.High.ToString();
             passed = true;
             List<string[]> policyReturns = new List<string[]>();
-            SqlSyncBuildData buildData = null;
             SqlSyncBuildDataModel buildModel = null;
 
             if (String.IsNullOrEmpty(buildPackageName))
@@ -422,13 +421,11 @@ namespace SqlBuildManager.Enterprise.Policy
                     SqlBuildFileHelper.ExtractSqlBuildZipFile(buildPackageName, ref workingDirectory, ref projectFilePath,
                                            ref projFileName,
                                            out result);
-                    SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projFileName, false);
-                    buildModel = buildData.ToModel();
+                    SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projFileName, false);
                     break;
                 case ".sbx":
                     projectFilePath = Path.GetDirectoryName(buildPackageName);
-                    SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, buildPackageName, false);
-                    buildModel = buildData.ToModel();
+                    buildModel = SqlSyncBuildDataXmlSerializer.Load(buildPackageName);
                     break;
                 default:
                     return policyReturns;
