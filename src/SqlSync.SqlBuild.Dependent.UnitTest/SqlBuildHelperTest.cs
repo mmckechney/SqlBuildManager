@@ -946,12 +946,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
             DataView filteredScripts = null;
             SqlSyncBuildData.BuildRow myBuild = null;
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(1, filteredScripts.Count);
-            Assert.AreEqual("BuildOrder >=0", filteredScripts.RowFilter);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
+            Assert.AreEqual(1, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
 
         }
 
@@ -973,12 +972,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
             DataView filteredScripts = null;
             SqlSyncBuildData.BuildRow myBuild = null;
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(1, filteredScripts.Count);
-            Assert.AreEqual("BuildOrder >=0", filteredScripts.RowFilter);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
+            Assert.AreEqual(1, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
 
 
         }
@@ -1043,13 +1041,12 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             ScriptBatchCollection coll = init.GetScriptBatchCollection();
 
-            target.PrepareBuildForRun(serverName, isMultiDbRun, coll, ref workEventArgs, out filteredScripts, out myBuild);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, coll, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(1, filteredScripts.Count);
-            Assert.AreEqual("BuildOrder >=0", filteredScripts.RowFilter);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
-            Assert.AreEqual("DAA5499C760402A0F64DE5393BF82BB45E382075", target.buildPackageHash, "Invalid hash, did the methodology change?");
+            Assert.AreEqual(1, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.AreEqual("DAA5499C760402A0F64DE5393BF82BB45E382075", prep.BuildPackageHash, "Invalid hash, did the methodology change?");
 
         }
 
@@ -1075,12 +1072,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             DataView filteredScripts = null;
             SqlSyncBuildData.BuildRow myBuild = null;
             target.runItemIndexes = new double[] { 0, 1 };
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(3, filteredScripts.Count);
-            Assert.AreEqual("BuildOrder IN (0,1)", filteredScripts.RowFilter);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
+            Assert.AreEqual(3, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
 
         }
         // <summary>
@@ -1100,12 +1096,12 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
             DataView filteredScripts = null;
             SqlSyncBuildData.BuildRow myBuild = null;
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(null, filteredScripts);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
-            Assert.AreEqual("RolledBack", myBuild.FinalStatus);
+            Assert.AreEqual(0, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.AreEqual("RolledBack", prep.Build.FinalStatus);
         }
         // <summary>
         ///A test for PrepareBuildForRun
@@ -1124,12 +1120,12 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
             DataView filteredScripts = null;
             SqlSyncBuildData.BuildRow myBuild = null;
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(null, filteredScripts);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
-            Assert.AreEqual("PendingRollback", myBuild.FinalStatus);
+            Assert.AreEqual(0, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.AreEqual("PendingRollback", prep.Build.FinalStatus);
         }
         #endregion
 
