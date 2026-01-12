@@ -125,48 +125,15 @@ namespace SqlSync.SqlBuild
         [Obsolete("Use LoadSqlBuildProjectFile(out SqlSyncBuildDataModel, ...) for POCO")] 
         public static bool LoadSqlBuildProjectFile(out SqlSyncBuildData buildData, string projFileName, bool validateSchema)
         {
-            bool successfulLoad = true;
-            string returnName = string.Empty;
-
-            buildData = new SqlSyncBuildData();
-            if (File.Exists(projFileName))
+            #pragma warning disable CS0618
+            if (LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, projFileName, validateSchema))
             {
-                log.LogDebug($"LoadSqlBuildProjectFile: found projectFile at {projFileName}");
-                //Read the table list
-                try
-                {
-                    bool isValid = true;
-                    string valErrorMessage;
-                    if (validateSchema)
-                    {
-
-                        isValid = ValidateAgainstSchema(projFileName, out valErrorMessage);
-                    }
-
-                    if (isValid)
-                    {
-                        buildData.ReadXml(projFileName);
-                    }
-                    else
-                    {
-                        log.LogError("Unable to load Sql Project file. XML file is not valid");
-                        successfulLoad = false;
-                    }
-                }
-                catch (Exception exe)
-                {
-                    log.LogError(exe, "Unable to load Sql Project file");
-                    successfulLoad = false;
-                }
+                buildData = model.ToDataSet();
+                return true;
             }
-            else
-            {
-                log.LogInformation($"LoadSqlBuildProjectFile: unable to find projectFile at {projFileName}. Creating shell.");
-                buildData = CreateShellSqlSyncBuildDataObject();
-                buildData.WriteXml(projFileName);
-            }
-            log.LogDebug($"LoadSqlBuildProjectFile: Returning successfulLoad =  {successfulLoad.ToString()}.");
-            return successfulLoad;
+            buildData = CreateShellSqlSyncBuildDataObject();
+            return false;
+            #pragma warning restore CS0618
         }
 
         public static bool LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, string projFileName, bool validateSchema)
@@ -1820,3 +1787,4 @@ namespace SqlSync.SqlBuild
 
     }
 }
+

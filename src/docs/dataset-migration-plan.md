@@ -21,11 +21,11 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
 - Track legacy dataset call sites; plan staged removal once external contracts migrated.
 
 ## Milestones
-1. **SqlSyncBuildData**
-   - **Components**: `SqlSyncBuildDataModel` POCOs, mappers, `SqlBuildFileHelper`/`SqlBuildHelper` model APIs.
+1. **SqlSyncBuildDataModel (POCO)**
+   - **Components**: `SqlSyncBuildDataModel` POCOs, mappers, `SqlBuildFileHelper`/`SqlBuildHelper` model APIs (DS wrappers delegate).
    - **Tests**: `dotnet test SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj`
    - **Notes**: Typed dataset retained for mapping/persistence; prefer model APIs for consumers.
-   - **Suggested commit**: `refactor: add SqlSyncBuildData POCOs and model APIs`
+   - **Suggested commit**: `refactor: enforce SqlSyncBuildDataModel POCO APIs`
 2. **ServerConnectConfig**
    - **Components**: `ServerConnectConfigModels`, `ServerConnectConfigMappers`, `ServerConnectConfigPersistence`, `UtilityHelper` overloads; UI consumers updated.
    - **Tests**: Covered via SqlSync.SqlBuild.UnitTest
@@ -47,11 +47,11 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
    - **Suggested commit**: `test: add console model tests & fix icon dependency`
 
 6. **SqlSyncBuildData XML Persistence (POCO-only)**
-   - **Goal**: Eliminate `SqlSyncBuildData` DataSet usage; implement POCO XML serialization compatible with existing `.sbm` format.
+   - **Goal**: Eliminate `SqlSyncBuildData` DataSet usage; POCO XML serialization compatible with `.sbm` format (DS wrappers remain for legacy).
    - **Components**: Replace `ReadXml`/`WriteXml` with custom serializer; update `SqlBuildFileHelper` consumers.
    - **Tests**: Extend `SqlSync.SqlBuild.UnitTest` with round-trip tests using the new serializer and legacy fixtures.
    - **Risk**: `.sbm` file format compatibility (external contract) — needs confirmation.
-   - **Suggested commit**: `refactor: add POCO serializer for SqlSyncBuildData`
+   - **Suggested commit**: `refactor: add POCO serializer for SqlSyncBuildDataModel`
 
 7. **ServerConnectConfig & AutoScriptingConfig Persistence (POCO-only)**
    - **Goal**: Replace DataSet-based XML load/save with POCO XML (or JSON) while reading legacy XML without `DataSet`.
@@ -100,7 +100,7 @@ Replace legacy `System.Data` DataSet/DataTable/DataRow/DataColumn (including typ
 - `SqlSync.ObjectScript.UnitTest.AutoScriptingConfigModelTest` — compatibility test (`new AutoScriptingConfig()`).
 - `SqlSync.SqlBuild.Dependent.UnitTest` — legacy DataSet tests (excluded from CI).
 - **Console (`sbm`)**:
-   - `Worker.Utility` — packaging flows (`CreateShellSqlSyncBuildDataObject`, `LoadSqlBuildProjectFile`, `AddScriptFileToBuild`).
+   - `Worker.Utility` — packaging flows (`CreateShellSqlSyncBuildDataModel`, `LoadSqlBuildProjectFile(model)`, `AddScriptFileToBuild(model, ...)`); DS wrappers call POCO APIs.
    - `ThreadedManager` / `ThreadedRunner` — legacy `SqlSyncBuildData` fields and loaders.
    - `Worker.Local` — now loads POCO, converts to DataSet for `SqlBuildRunData`; MultiDb uses POCO.
 

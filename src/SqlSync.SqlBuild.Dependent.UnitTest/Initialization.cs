@@ -556,9 +556,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         public SqlBuildRunData GetSqlBuildRunData_TransactionalNotTrial(SqlSyncBuildData buildData)
         {
+            var model = buildData.ToModel();
             SqlBuildRunData runData = new SqlBuildRunData()
             {
-                BuildData = buildData,
+                BuildDataModel = model,
                 BuildDescription = "UnitTestRun",
                 BuildFileName = @"C:\temp\UnitTestBuildFile.sbm",
                 BuildType = "Development",

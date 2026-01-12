@@ -14,14 +14,14 @@ Replace remaining `System.Data` (`DataSet`/`DataTable`/`DataRow`/`DataView`) usa
 ## Inventory (initial)
 | Area | Member | ADO.NET Types | Notes |
 | --- | --- | --- | --- |
-| `SqlSync.SqlBuild.SqlBuildHelper` | `ProcessBuild`, `ProcessMultiDbBuild` | `SqlSyncBuildData`, `DataView`, `DataRow` | Core engine uses typed DataSet
-| `SqlSync.SqlBuild.SqlBuildHelper` | `RecordCommittedScripts(List<SqlLogging.CommittedScript>)` | `SqlSyncBuildData` | Writes CommittedScript rows
-| `SqlSync.SqlBuild.SqlBuildHelper` | `PrepareBuildForRun`, `RunBuildScripts`, `ClearScriptBlocks` | `SqlSyncBuildData`, `DataView` | Execution flow
-| `SqlSync.SqlBuild.SqlBuildHelper` | `buildData` fields/events | `SqlSyncBuildData` | State storage
-| `SqlSync.SqlBuild.SqlBuildFileHelper` | `LoadSqlBuildProjectFile`, `CreateShellSqlSyncBuildDataObject`, `SaveSqlBuildProjectFile`, `AddScriptFileToBuild`, `PackageProjectFileIntoZip`, `CleanProjectFileForRemoteExecution` | `SqlSyncBuildData` | Legacy file IO
+| `SqlSync.SqlBuild.SqlBuildHelper` | `ProcessBuild`, `ProcessMultiDbBuild` | **POCO** `SqlSyncBuildDataModel` | Core engine uses models (DataSet wrappers remain for legacy)
+| `SqlSync.SqlBuild.SqlBuildHelper` | `RecordCommittedScripts(List<SqlLogging.CommittedScript>, SqlSyncBuildDataModel, out SqlSyncBuildDataModel)` | **POCO** model | Writes CommittedScript list (legacy DS wrapper delegates)
+| `SqlSync.SqlBuild.SqlBuildHelper` | `PrepareBuildForRun`, `RunBuildScripts`, `ClearScriptBlocks` | **POCO** model | Execution flow (legacy DS wrapper builds `DataView` from model)
+| `SqlSync.SqlBuild.SqlBuildHelper` | `BuildDataModel` fields/events | **POCO** model | State storage (DS compatibility via `BuildData` wrapper)
+| `SqlSync.SqlBuild.SqlBuildFileHelper` | `LoadSqlBuildProjectFile`, `CreateShellSqlSyncBuildDataModel`, `SaveSqlBuildProjectFile`, `AddScriptFileToBuild`, `PackageProjectFileIntoZip`, `CleanProjectFileForRemoteExecution` | **POCO** model | File IO; DS wrappers delegate to POCO
 | `SqlSync.SqlBuild.Utility` | `ServerConnectConfig` converters | `ServerConnectConfig` DataSet | Legacy config persistence
-| `SqlBuildManager.Console` | `Worker.Utility` packaging flows | `SqlSyncBuildData` | Create sbm packages
-| `SqlBuildManager.Console` | `ThreadedManager`, `ThreadedRunner` | `SqlSyncBuildData` | Threaded execution
+| `SqlBuildManager.Console` | `Worker.Utility` packaging flows | **POCO** `SqlSyncBuildDataModel` | Create sbm packages
+| `SqlBuildManager.Console` | `ThreadedManager`, `ThreadedRunner` | **POCO** `SqlSyncBuildDataModel` | Threaded execution
 
 ## Plan
 1. **Inventory** (this doc) ✅ ongoing
