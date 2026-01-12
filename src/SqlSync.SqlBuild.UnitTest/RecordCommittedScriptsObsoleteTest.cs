@@ -11,7 +11,7 @@ namespace SqlSync.SqlBuild.UnitTest
     public class RecordCommittedScriptsObsoleteTest
     {
         [TestMethod]
-        public void Obsolete_RecordCommittedScripts_UpdatesModel()
+        public void RecordCommittedScripts_UpdatesModel()
         {
             var helper = new SqlBuildHelper(new SqlSync.Connection.ConnectionData());
             var scriptId = Guid.NewGuid();
@@ -20,13 +20,13 @@ namespace SqlSync.SqlBuild.UnitTest
                 new LoggingCommittedScript(scriptId, "HASH", 1, "text", "tag", "server", "db")
             };
 
-            var ok = helper.RecordCommittedScripts(committed);
+            var ok = helper.RecordCommittedScripts(committed, helper.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(), out var updatedModel);
 
             Assert.IsTrue(ok);
-            Assert.IsNotNull(helper.BuildDataModel);
-            Assert.AreEqual(1, helper.BuildDataModel.CommittedScript.Count);
-            Assert.AreEqual(scriptId.ToString(), helper.BuildDataModel.CommittedScript[0].ScriptId);
-            Assert.AreEqual("server", helper.BuildDataModel.CommittedScript[0].ServerName);
+            Assert.IsNotNull(updatedModel);
+            Assert.AreEqual(1, updatedModel.CommittedScript.Count);
+            Assert.AreEqual(scriptId.ToString(), updatedModel.CommittedScript[0].ScriptId);
+            Assert.AreEqual("server", updatedModel.CommittedScript[0].ServerName);
         }
     }
 }

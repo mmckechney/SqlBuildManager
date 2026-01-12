@@ -276,7 +276,7 @@ namespace SqlBuildManager.Console.Threaded
                 await Task.Run(() =>
                 {
                     var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
-                        BuildDataModel: runData.BuildDataModel ?? runData.BuildData?.ToModel(),
+                        BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
                         BuildType: runData.BuildType,
                         Server: runData.Server,
                         BuildDescription: runData.BuildDescription,

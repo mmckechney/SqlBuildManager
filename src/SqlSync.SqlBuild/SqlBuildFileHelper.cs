@@ -198,15 +198,15 @@ namespace SqlSync.SqlBuild
             string projectFilePath = string.Empty;
             string projectFileName = string.Empty;
             string result;
-            SqlSyncBuildData buildData;
+            SqlSyncBuildDataModel model;
             StringBuilder ovr = new StringBuilder();
             try
             {
                 ExtractSqlBuildZipFile(sbmFileName, ref tempWorkingDir, ref projectFilePath, ref projectFileName, out result);
-                LoadSqlBuildProjectFile(out buildData, projectFileName, false);
-                if (buildData != null)
+                LoadSqlBuildProjectFile(out model, projectFileName, false);
+                if (model != null)
                 {
-                    var targets = buildData.Script.Select(s => s.Database).Distinct();
+                    var targets = model.Script.Select(s => s.Database).Distinct();
                     if (targets != null && targets.Count() > 0)
                     {
                         foreach (var t in targets)
@@ -291,8 +291,45 @@ namespace SqlSync.SqlBuild
 
         public static bool PackageProjectFileIntoZip(SqlSyncBuildDataModel model, string projFilePath, string zipFileName, bool includeHistoryAndLogs)
         {
-            var ds = model.ToDataSet();
-            return PackageProjectFileIntoZip(ds, projFilePath, zipFileName, includeHistoryAndLogs);
+            if (String.IsNullOrEmpty(zipFileName))
+                return true;
+
+            if (model == null)
+                return false;
+
+            ArrayList alFiles = new ArrayList();
+
+            // Write the latest project file
+            SqlSyncBuildDataXmlSerializer.Save(Path.Combine(projFilePath, XmlFileNames.MainProjectFile), model);
+
+            // Get the file list from the model
+            for (int i = 0; i < model.Script.Count; i++)
+                alFiles.Add(model.Script[i].FileName);
+
+            // Add the project file 
+            alFiles.Add(XmlFileNames.MainProjectFile);
+
+            if (includeHistoryAndLogs)
+            {
+                // Add the history file
+                if (File.Exists(Path.Combine(projFilePath, XmlFileNames.HistoryFile)))
+                {
+                    alFiles.Add(XmlFileNames.HistoryFile);
+                }
+
+                // Add any log files
+                string[] logFiles = Directory.GetFiles(projFilePath, "*.log");
+                for (int j = 0; j < logFiles.Length; j++)
+                    alFiles.Add(Path.GetFileName(logFiles[j]));
+            }
+
+            // Put all files into a string array
+            string[] fileList = new string[alFiles.Count];
+            alFiles.CopyTo(fileList);
+
+            // Create the Zip file
+            bool val = ZipHelper.CreateZipPackage(fileList, projFilePath, zipFileName);
+            return val;
         }
 
         /// <summary>
@@ -302,15 +339,59 @@ namespace SqlSync.SqlBuild
         /// <returns></returns>
         public static byte[] CleanProjectFileForRemoteExecution(string fileName)
         {
-            SqlSyncBuildData cleanedBuildData;
-            return CleanProjectFileForRemoteExecution(fileName, out cleanedBuildData);
+            return CleanProjectFileForRemoteExecution(fileName, out SqlSyncBuildDataModel _);
         }
 
         public static byte[] CleanProjectFileForRemoteExecution(string fileName, out SqlSyncBuildDataModel cleanedBuildData)
         {
-            var bytes = CleanProjectFileForRemoteExecution(fileName, out SqlSyncBuildData ds);
-            cleanedBuildData = ds.ToModel();
-            return bytes;
+            cleanedBuildData = CreateShellSqlSyncBuildDataModel();
+            if (!File.Exists(fileName))
+                return Array.Empty<byte>();
+
+            string tmpDir = string.Empty;
+            try
+            {
+                tmpDir = Path.Combine(Path.GetDirectoryName(fileName) ?? Path.GetTempPath(), Guid.NewGuid().ToString());
+                Directory.CreateDirectory(tmpDir);
+
+                string tmpZipShortName = "~" + Path.GetFileName(fileName);
+                string tmpProjectFileName = Path.Combine(tmpDir, XmlFileNames.MainProjectFile);
+
+                string tmpZipFullName = Path.Combine(tmpDir, tmpZipShortName);
+                File.Copy(fileName, tmpZipFullName, true);
+
+                string result;
+                if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName, false, false, out result))
+                {
+                    LoadSqlBuildProjectFile(out cleanedBuildData, tmpProjectFileName, false);
+                    cleanedBuildData = cleanedBuildData with
+                    {
+                        CodeReview = Array.Empty<CodeReview>(),
+                        ScriptRun = Array.Empty<ScriptRun>(),
+                        Build = Array.Empty<Build>()
+                    };
+                    SqlSyncBuildDataXmlSerializer.Save(tmpProjectFileName, cleanedBuildData);
+
+                    if (PackageProjectFileIntoZip(cleanedBuildData, tmpDir, tmpZipFullName, includeHistoryAndLogs: false))
+                    {
+                        return File.ReadAllBytes(tmpZipFullName);
+                    }
+                }
+
+                // can't clean for some reason, so just get the raw file...
+                return File.ReadAllBytes(fileName);
+            }
+            catch
+            {
+                return File.ReadAllBytes(fileName);
+            }
+            finally
+            {
+                if (Directory.Exists(tmpDir))
+                {
+                    Directory.Delete(tmpDir, true);
+                }
+            }
         }
         /// <summary>
         /// Minimize the size of the package by cleaing out the logs and the code review items..
@@ -434,7 +515,7 @@ namespace SqlSync.SqlBuild
             }
             try
             {
-                SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+                SqlSyncBuildDataModel model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
                 string projFileName = Path.Combine(directory, XmlFileNames.MainProjectFile);
                 int i = 0;
                 foreach (string file in fileNames)
@@ -445,24 +526,26 @@ namespace SqlSync.SqlBuild
                         continue;
 
                     i++;
-                    SqlBuildFileHelper.AddScriptFileToBuild(
-                        ref buildData,
+                    model = SqlBuildFileHelper.AddScriptFileToBuild(
+                        model,
                         projFileName,
                         shortFileName,
                         i,
                         "",
-                        true,
-                        true,
-                        targetDatabaseName,
-                        false,
-                        buildFileName,
-                        false,
-                        true,
-                        System.Environment.UserName,
-                        defaultScriptTimeout, "");
+                        rollBackScript: true,
+                        rollBackBuild: true,
+                        databaseName: targetDatabaseName,
+                        stripTransactions: false,
+                        buildZipFileName: buildFileName,
+                        saveToZip: false,
+                        allowMultipleRuns: true,
+                        addedBy: System.Environment.UserName,
+                        scriptTimeOut: defaultScriptTimeout,
+                        scriptId: Guid.NewGuid(),
+                        tag: string.Empty);
 
                 }
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildFileName, includeHistoryAndLogs);
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, buildFileName, includeHistoryAndLogs);
 
                 //Clean up project file (not needed, it is now in the package)
                 try
@@ -554,8 +637,8 @@ namespace SqlSync.SqlBuild
                     File.Delete(sbmProjectFileName);
                 }
 
-                SqlSyncBuildData buildData = null;
-                bool successfulLoad = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, sbxBuildControlFileName, true);
+                SqlSyncBuildDataModel model = null;
+                bool successfulLoad = SqlBuildFileHelper.LoadSqlBuildProjectFile(out model, sbxBuildControlFileName, true);
                 if (!successfulLoad)
                 {
                     log.LogError($"Problem loading SBX file: {sbxBuildControlFileName}. ");
@@ -579,6 +662,7 @@ namespace SqlSync.SqlBuild
                 File.Copy(sbxBuildControlFileName, mainProjectFileFullPath, true);
 
                 //Validate that all of the script files are present...
+                var buildData = model.ToDataSet();
                 foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
                 {
                     if (!File.Exists(Path.Combine(path, row.FileName)))
@@ -587,9 +671,7 @@ namespace SqlSync.SqlBuild
                         return false;
                     }
                 }
-
-
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, mainProjectFileFullPath, sbmProjectFileName);
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, mainProjectFileFullPath, sbmProjectFileName);
 
 
                 if (copied)
@@ -653,7 +735,9 @@ namespace SqlSync.SqlBuild
             }
 
             buildData.Script.AcceptChanges();
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildZipFileName);
+            var model = buildData.ToModel();
+            SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, buildZipFileName);
+            buildData = model.ToDataSet();
             return true;
 
         }
@@ -692,18 +776,47 @@ namespace SqlSync.SqlBuild
 
             //Save the changes
             if (saveToZip)
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildZipFileName);
+            {
+                var model = buildData.ToModel();
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, buildZipFileName);
+                buildData = model.ToDataSet();
+            }
         }
         public static void AddScriptFileToBuild(ref SqlSyncBuildData buildData, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, string tag)
         {
+    #pragma warning disable CS0618
             AddScriptFileToBuild(ref buildData, projFileName, fileName, buildOrder, description, rollBackScript, rollBackBuild, databaseName, stripTransactions, buildZipFileName, saveToZip, allowMultipleRuns, addedBy, scriptTimeOut, System.Guid.NewGuid(), tag);
+    #pragma warning restore CS0618
         }
 
         public static SqlSyncBuildDataModel AddScriptFileToBuild(SqlSyncBuildDataModel model, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, Guid scriptId, string tag)
         {
-            var ds = model.ToDataSet();
-            AddScriptFileToBuild(ref ds, projFileName, fileName, buildOrder, description, rollBackScript, rollBackBuild, databaseName, stripTransactions, buildZipFileName, saveToZip, allowMultipleRuns, addedBy, scriptTimeOut, scriptId, tag);
-            return ds.ToModel();
+            var scriptsId = model.Scripts.FirstOrDefault()?.Scripts_Id ?? 0;
+            var newScript = new Script(
+                FileName: fileName,
+                BuildOrder: buildOrder,
+                Description: description,
+                RollBackOnError: rollBackScript,
+                CausesBuildFailure: rollBackBuild,
+                DateAdded: DateTime.Now,
+                ScriptId: (scriptId == Guid.Empty ? Guid.NewGuid() : scriptId).ToString(),
+                Database: databaseName,
+                StripTransactionText: stripTransactions,
+                AllowMultipleRuns: allowMultipleRuns,
+                AddedBy: addedBy,
+                ScriptTimeOut: scriptTimeOut,
+                DateModified: DateTime.MinValue,
+                ModifiedBy: string.Empty,
+                Scripts_Id: scriptsId,
+                Tag: tag);
+
+            var updatedScripts = model.Script.Concat(new[] { newScript }).ToList();
+            var updatedModel = model with { Script = updatedScripts };
+            if (saveToZip)
+            {
+                SaveSqlBuildProjectFile(updatedModel, projFileName, buildZipFileName);
+            }
+            return updatedModel;
         }
         #endregion
 
@@ -767,7 +880,9 @@ namespace SqlSync.SqlBuild
                 File.Copy(fullScriptPath, newLocalFile, true);
             }
 
-            AddScriptFileToBuild(ref buildData,
+            var model = buildData.ToModel();
+            model = AddScriptFileToBuild(
+                model,
                 projFileName,
                 defaultScript.ScriptName,
                 defaultScript.BuildOrder,
@@ -777,11 +892,15 @@ namespace SqlSync.SqlBuild
                 defaultScript.DatabaseName,
                 defaultScript.StripTransactions,
                 buildZipFileName,
-                false,
-                defaultScript.AllowMultipleRuns,
-                System.Environment.UserName, defaultScript.ScriptTimeout, defaultScript.ScriptTag);
+                saveToZip: false,
+                allowMultipleRuns: defaultScript.AllowMultipleRuns,
+                addedBy: System.Environment.UserName,
+                scriptTimeOut: defaultScript.ScriptTimeout,
+                scriptId: Guid.Empty,
+                tag: defaultScript.ScriptTag);
 
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, buildZipFileName);
+            SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, buildZipFileName);
+            buildData = model.ToDataSet();
 
             return status;
         }
@@ -1036,7 +1155,7 @@ namespace SqlSync.SqlBuild
 
         public static string CalculateSha1HashFromPackage(string buildPackageName)
         {
-            SqlSyncBuildData buildData = null;
+            SqlSyncBuildDataModel model = null;
 
             if (String.IsNullOrEmpty(buildPackageName))
                 return string.Empty;
@@ -1053,18 +1172,19 @@ namespace SqlSync.SqlBuild
                     ExtractSqlBuildZipFile(buildPackageName, ref workingDirectory, ref projectFilePath,
                                            ref projFileName,
                                            out result);
-                    LoadSqlBuildProjectFile(out buildData, projFileName, false);
+                    LoadSqlBuildProjectFile(out model, projFileName, false);
                     break;
                 case ".sbx":
                     projectFilePath = Path.GetDirectoryName(buildPackageName);
-                    LoadSqlBuildProjectFile(out buildData, buildPackageName, false);
+                    LoadSqlBuildProjectFile(out model, buildPackageName, false);
                     break;
                 default:
                     return string.Empty;
             }
 
-            if (buildData != null)
+            if (model != null)
             {
+                var buildData = model.ToDataSet();
                 string hash = CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, buildData);
                 if (extension == ".sbm")
                     CleanUpAndDeleteWorkingDirectory(projectFilePath);
@@ -1116,6 +1236,11 @@ namespace SqlSync.SqlBuild
                 return "Error calculating hash";
             }
 
+        }
+
+        public static string CalculateBuildPackageSHA1SignatureFromPath(string projectFileExtractionPath, SqlSyncBuildDataModel model)
+        {
+            return CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, model.ToDataSet());
         }
 
         /// <summary>
@@ -1252,7 +1377,9 @@ namespace SqlSync.SqlBuild
                     ((SqlSyncBuildData.ScriptRow)view[i].Row).BuildOrder = i + 1;
                 }
                 view.Table.AcceptChanges();
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projectFileName, buildZipFileName);
+                var model = buildData.ToModel();
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projectFileName, buildZipFileName);
+                buildData = model.ToDataSet();
                 return true;
             }
             catch (Exception e)
@@ -1309,7 +1436,9 @@ namespace SqlSync.SqlBuild
                 ((SqlSyncBuildData.ScriptRow)leftOver[i].Row).BuildOrder = leftOverStart++;
 
             buildData.Script.AcceptChanges();
-            SaveSqlBuildProjectFile(ref buildData, projectFileName, buildZipFileName);
+            var model = buildData.ToModel();
+            SaveSqlBuildProjectFile(model, projectFileName, buildZipFileName);
+            buildData = model.ToDataSet();
 
             RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName, 19999);
             RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName);
@@ -1384,7 +1513,8 @@ namespace SqlSync.SqlBuild
                 buildData.AcceptChanges();
             }
 
-            PackageProjectFileIntoZip(buildData, projFilePath, zipFileName);
+            var model = buildData.ToModel();
+            PackageProjectFileIntoZip(model, projFilePath, zipFileName, includeHistoryAndLogs: true);
 
 
         }
@@ -1549,7 +1679,9 @@ namespace SqlSync.SqlBuild
                 }
 
                 buildData.AcceptChanges();
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projectFileName, buildZipFileName);
+                var model = buildData.ToModel();
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projectFileName, buildZipFileName);
+                buildData = model.ToDataSet();
                 addedFileNames = new string[list.Count];
                 list.CopyTo(addedFileNames);
                 if (cleanUp)

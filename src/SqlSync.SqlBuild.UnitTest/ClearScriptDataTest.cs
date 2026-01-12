@@ -56,12 +56,12 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ClearScriptDataConstructorTest()
         {
             string[] selectedScriptIds = new string[] { "1", "3", "5" };
-            SqlSyncBuildData buildData = new SqlSyncBuildData();
+            var buildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string projectFileName = "MyProjectFile";
             string buildZipFileName = "MyZipFileName.sbm";
-            ClearScriptData target = new ClearScriptData(selectedScriptIds, buildData, projectFileName, buildZipFileName);
+            ClearScriptData target = new ClearScriptData(selectedScriptIds, buildDataModel, projectFileName, buildZipFileName);
             Assert.AreEqual(selectedScriptIds, target.SelectedScriptIds);
-            Assert.AreEqual(buildData, target.BuildData);
+            Assert.AreEqual(buildDataModel, target.BuildDataModel);
             Assert.AreEqual(projectFileName, target.ProjectFileName);
             Assert.AreEqual(buildZipFileName, target.BuildZipFileName);
         }

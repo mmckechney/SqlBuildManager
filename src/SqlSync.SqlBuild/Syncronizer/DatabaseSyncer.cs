@@ -127,22 +127,28 @@ namespace SqlSync.SqlBuild.Syncronizer
                 });
 
                 //Set the run meta-data
-                SqlSync.SqlBuild.SqlBuildRunData runData = new SqlBuildRunData()
-                {
-                    BuildDataModel = buildModel,
-                    BuildType = BuildType.Other,
-                    BuildDescription = new Random().Next(int.MinValue, int.MaxValue).ToString(),
-                    //assign random build description
-                    StartIndex = -1000, //make sure start a the beginning
-                    ProjectFileName = projFileName,
-                    IsTrial = runAsTrial,
-                    BuildFileName = sbmPackageName,
-                    IsTransactional = true,
-                    TargetDatabaseOverrides = lstOverride
-                };
+                var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
+                    BuildDataModel: buildModel,
+                    BuildType: BuildType.Other,
+                    Server: toUpdate.SQLServerName,
+                    BuildDescription: new Random().Next(int.MinValue, int.MaxValue).ToString(),
+                    StartIndex: -1000,
+                    ProjectFileName: projFileName,
+                    IsTrial: runAsTrial,
+                    RunItemIndexes: Array.Empty<double>(),
+                    RunScriptOnly: false,
+                    BuildFileName: sbmPackageName,
+                    LogToDatabaseName: string.Empty,
+                    IsTransactional: true,
+                    PlatinumDacPacFileName: string.Empty,
+                    TargetDatabaseOverrides: lstOverride,
+                    ForceCustomDacpac: false,
+                    BuildRevision: string.Empty,
+                    DefaultScriptTimeout: 0,
+                    AllowObjectDelete: false);
 
                 //Execute the package
-                SqlBuildHelper helper = new SqlBuildHelper(toUpdate, false, string.Empty, runData.IsTransactional);
+                SqlBuildHelper helper = new SqlBuildHelper(toUpdate, false, string.Empty, runDataModel.IsTransactional ?? true);
                 helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
                 helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
                 BackgroundWorker bg = new BackgroundWorker()
@@ -153,7 +159,7 @@ namespace SqlSync.SqlBuild.Syncronizer
                 DoWorkEventArgs e = new DoWorkEventArgs(null);
 
                 PushInfo(string.Format("Applying {0}", Path.GetFileName(sbmPackageName)));
-                helper.ProcessBuild(runData, 0, bg, e);
+                helper.ProcessBuild(runDataModel, 0, bg, e);
 
                 if (lastBuildSuccessful)
                 {
