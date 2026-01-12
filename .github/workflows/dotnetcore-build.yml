@@ -29,14 +29,8 @@ jobs:
     - name: Clean
       run: dotnet clean ./src/SqlBuildManager.Console/sbm.csproj --configuration Release && dotnet nuget locals all --clear
 
-    - name: Clean
-      run: dotnet clean ./src/SqlSync/SQLSync.csproj --configuration Release && dotnet nuget locals all --clear  
- 
     - name: Restore and build console app
       run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f ${{ env.DOTNET_VERSION }}
-
-    - name: Restore and build desktop app
-      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f ${{ env.DOTNET_VERSION }}-windows 
 
     # Run tests
     - name: Run SqlBuildManager.Console.UnitTest
@@ -57,17 +51,14 @@ jobs:
     - name: Run SqlSync.SqlBuild.UnitTest
       run: dotnet test ./src/SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --configuration Release
 
-    # .NET 7.0 pubish
-    - name: Publish the Windows desktop app
-      run: dotnet publish ./src/SqlSync/SqlSync.csproj -r win-x64 --configuration Release -f ${{ env.DOTNET_VERSION }}-windows 
-
+    # Pubish
     - name: Publish the Windows CLI app 
       run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release -f ${{ env.DOTNET_VERSION }} --self-contained
 
     - name: Publish the Linux CLI app
       run: dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f ${{ env.DOTNET_VERSION }} --self-contained
 
-    # .NET 7 artifacts
+    # Artifacts
     - name: Upload a Build Artifact sbm-windows
       uses: actions/upload-artifact@v4
       with:
@@ -79,12 +70,4 @@ jobs:
       with:
         name: sbm-linux-${{ env.DOTNET_VERSION }}
         path: "./src/SqlBuildManager.Console/bin/Release/${{ env.DOTNET_VERSION }}/linux-x64/publish"
-
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: SqlBuildManager Desktop ${{ env.DOTNET_VERSION }}
-        path: "./src/SqlSync/bin/Release/${{ env.DOTNET_VERSION }}-windows/win-x64/publish"     
-        
-
     
