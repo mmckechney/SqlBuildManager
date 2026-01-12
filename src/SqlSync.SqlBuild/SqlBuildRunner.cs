@@ -46,7 +46,7 @@ namespace SqlSync.SqlBuild
     /// <summary>
     /// Extracted runner responsible for executing build scripts. All stateful dependencies are provided via context.
     /// </summary>
-    internal sealed class SqlBuildRunner
+    internal class SqlBuildRunner
     {
         private readonly ISqlBuildRunnerContext _ctx;
         private readonly ISqlCommandExecutor _executor;
@@ -57,7 +57,7 @@ namespace SqlSync.SqlBuild
             _executor = executor ?? new SqlCommandExecutor(ctx.Log);
         }
 
-        internal BuildModels.Build Run(
+        public virtual BuildModels.Build Run(
             IReadOnlyList<BuildModels.Script> scripts,
             BuildModels.Build myBuild,
             string serverName,
