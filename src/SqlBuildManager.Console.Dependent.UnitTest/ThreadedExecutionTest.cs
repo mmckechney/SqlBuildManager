@@ -1114,7 +1114,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             {
                 var task = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(1);
+                    StartInfiniteLockingThread(.5);
                 });
                 while (true)
                 {
@@ -1271,7 +1271,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
                 cmdStr = string.Format(Properties.Resources.TableLockingScript, waitMin.ToString());
                 SqlCommand cmd = new SqlCommand(cmdStr, conn);
-                cmd.CommandTimeout = (int)(waitMin * 60 + 10);
+                cmd.CommandTimeout = (int)(waitMin * 60 + 30);
                 conn.Open();
                 cmd.ExecuteNonQuery();
                 return 0;

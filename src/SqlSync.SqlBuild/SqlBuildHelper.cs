@@ -251,25 +251,13 @@ namespace SqlSync.SqlBuild
             BuildDataModel = ds.ToModel();
         }
 
-        internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl)
-        {
-            var ds = BuildDataModel.ToDataSet();
-            var dwe = new DoWorkEventArgs(null);
-            return RunBuildScripts(view, myBuild, serverName, isMultiDbRun, scriptBatchColl, ds, ref dwe);
-        }
-
+        [Obsolete("Use RunBuildScripts(IReadOnlyList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)")]
         internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
         {
             var ds = BuildDataModel.ToDataSet();
             return RunBuildScripts(view, myBuild, serverName, isMultiDbRun, scriptBatchColl, ds, ref workEventArgs);
         }
 
-        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
-        {
-            var ds = BuildDataModel.ToDataSet();
-            var dwe = new DoWorkEventArgs(null);
-            PrepareBuildForRun(serverName, isMultiDbRun, scriptBatchColl, ds, ref dwe, out filteredScripts, out myBuild);
-        }
 
         // Compatibility overload for legacy callers that pass DoWorkEventArgs without explicit BuildData
         internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
@@ -733,6 +721,7 @@ namespace SqlSync.SqlBuild
                         projectFilePath = Path.GetTempPath();
                     }
                 }
+                buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
                 log.LogDebug($"[PrepareBuildForRun] projectFilePath='{projectFilePath}'");
 
             //Set the file name for the script log
@@ -825,6 +814,7 @@ namespace SqlSync.SqlBuild
                         projectFilePath = Path.GetTempPath();
                     }
                 }
+                buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
                 log.LogDebug($"[PrepareBuildForRunModel] projectFilePath='{projectFilePath}'");
 
                 bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
@@ -928,6 +918,7 @@ namespace SqlSync.SqlBuild
         /// <param name="myBuild">The build row that has been prepared and is used to contain the build history data</param>
         /// <param name="serverName">The name of the server that will be used for the build</param>
         /// <param name="workEventArgs"></param>
+        [Obsolete("Use RunBuildScripts(IReadOnlyList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)")]
         internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs)
         {
             bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Proceeding with Build"));
@@ -3312,6 +3303,7 @@ namespace SqlSync.SqlBuild
             return myBuild;
         }
 
+        [Obsolete("Use AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild)")]
         private void AddScriptRunToHistory(BuildModels.ScriptRun run, SqlSyncBuildData.BuildRow myBuild)
         {
             if (run == null) return;
