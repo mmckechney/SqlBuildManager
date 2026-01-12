@@ -973,8 +973,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
             var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
@@ -999,8 +997,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
             var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
@@ -1065,8 +1061,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
 
             ScriptBatchCollection coll = init.GetScriptBatchCollection();
 
@@ -1098,8 +1092,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
             target.runItemIndexes = new double[] { 0, 1 };
             var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
@@ -1123,8 +1115,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = false;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
             var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(0, prep.FilteredScripts.Count);
@@ -1147,8 +1137,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             bool isMultiDbRun = true;
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
             var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
             Assert.AreEqual(workEventArgsExpected, workEventArgs);
             Assert.AreEqual(0, prep.FilteredScripts.Count);
